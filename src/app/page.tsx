@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
 import dynamic from "next/dynamic";
 import { StatsCards } from "@/components/stats/StatsCards";
 import { BreakdownCharts } from "@/components/stats/BreakdownCharts";
@@ -13,7 +14,8 @@ import {
   Zap,
   Ban,
   RefreshCw,
-  Map as MapIcon
+  Map as MapIcon,
+  Loader2
 } from "lucide-react";
 
 // Dynamic import for map to avoid SSR issues with MapLibre
@@ -26,6 +28,36 @@ const TrafficMap = dynamic(() => import("@/components/map/TrafficMap"), {
   ),
 });
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+interface V16Response {
+  count: number;
+  beacons: Array<{
+    id: string;
+    lat: number;
+    lng: number;
+    road?: string;
+    km?: number;
+    severity: string;
+    activatedAt?: string;
+    description?: string;
+  }>;
+}
+
+interface IncidentsResponse {
+  count: number;
+  incidents: Array<{
+    id: string;
+    lat: number;
+    lng: number;
+    type: string;
+    road?: string;
+    km?: number;
+    severity: string;
+    description?: string;
+  }>;
+}
+
 export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [activeLayers, setActiveLayers] = useState({
@@ -37,9 +69,30 @@ export default function Dashboard() {
     weather: true,
   });
 
+  // Fetch real data from API
+  const { data: v16Data, mutate: mutateV16, isLoading: v16Loading } = useSWR<V16Response>(
+    "/api/v16",
+    fetcher,
+    { refreshInterval: 60000, revalidateOnFocus: true }
+  );
+
+  const { data: incidentsData, mutate: mutateIncidents, isLoading: incidentsLoading } = useSWR<IncidentsResponse>(
+    "/api/incidents",
+    fetcher,
+    { refreshInterval: 60000, revalidateOnFocus: true }
+  );
+
   const toggleLayer = (layer: keyof typeof activeLayers) => {
     setActiveLayers((prev) => ({ ...prev, [layer]: !prev[layer] }));
   };
+
+  const handleRefresh = () => {
+    setLastUpdated(new Date());
+    mutateV16();
+    mutateIncidents();
+  };
+
+  const isLoading = v16Loading || incidentsLoading;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,14 +113,22 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-500">
-                Actualizado: {lastUpdated.toLocaleTimeString("es-ES")}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Actualizando...
+                  </span>
+                ) : (
+                  `Actualizado: ${lastUpdated.toLocaleTimeString("es-ES")}`
+                )}
               </span>
               <button
-                onClick={() => setLastUpdated(new Date())}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
                 title="Actualizar"
               >
-                <RefreshCw className="w-5 h-5 text-gray-600" />
+                <RefreshCw className={`w-5 h-5 text-gray-600 ${isLoading ? "animate-spin" : ""}`} />
               </button>
             </div>
           </div>
@@ -82,9 +143,17 @@ export default function Dashboard() {
         <section className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Mapa Interactivo
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Mapa Interactivo
+                </h2>
+                {v16Data && (
+                  <span className="text-sm text-gray-500">
+                    ({v16Data.count} balizas V16
+                    {incidentsData ? `, ${incidentsData.count} incidencias` : ""})
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <LayerToggle
                   label="V16 Balizas"
@@ -124,7 +193,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <TrafficMap activeLayers={activeLayers} />
+          <TrafficMap
+            activeLayers={activeLayers}
+            v16Data={v16Data?.beacons}
+            incidentData={incidentsData?.incidents}
+          />
         </section>
 
         {/* Charts Section */}
@@ -141,14 +214,14 @@ export default function Dashboard() {
             Datos: DGT NAP, AEMET | Actualizado cada 60 segundos
           </p>
           <p className="mt-1">
-            Powered by <span className="font-semibold">Abemon</span> |{" "}
+            Powered by{" "}
             <a
-              href="https://github.com/abemon-es/trafico-dashboard"
-              className="text-blue-600 hover:underline"
+              href="https://abemon.es"
+              className="font-semibold text-blue-600 hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Código fuente
+              Abemon
             </a>
           </p>
         </footer>

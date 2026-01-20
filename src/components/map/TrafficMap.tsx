@@ -13,8 +13,41 @@ interface ActiveLayers {
   weather: boolean;
 }
 
+interface V16Beacon {
+  id: string;
+  lat: number;
+  lng: number;
+  road?: string;
+  km?: number;
+  severity: string;
+  activatedAt?: string;
+  description?: string;
+}
+
+interface Incident {
+  id: string;
+  lat: number;
+  lng: number;
+  type: string;
+  road?: string;
+  km?: number;
+  severity: string;
+  description?: string;
+}
+
+interface Camera {
+  id: string;
+  lat: number;
+  lng: number;
+  name: string;
+  feedUrl?: string;
+}
+
 interface TrafficMapProps {
   activeLayers: ActiveLayers;
+  v16Data?: V16Beacon[];
+  incidentData?: Incident[];
+  cameraData?: Camera[];
 }
 
 // Spain center coordinates
@@ -24,22 +57,8 @@ const SPAIN_BOUNDS: [[number, number], [number, number]] = [
   [4.5, 44.0],  // NE
 ];
 
-// Sample data for demonstration (will be replaced with API data)
-const SAMPLE_V16_BEACONS = [
-  { id: "v16-1", lat: 40.4168, lng: -3.7038, road: "A-1", km: 23, severity: "HIGH" },
-  { id: "v16-2", lat: 41.3851, lng: 2.1734, road: "AP-7", km: 156, severity: "MEDIUM" },
-  { id: "v16-3", lat: 39.4699, lng: -0.3763, road: "A-3", km: 345, severity: "LOW" },
-  { id: "v16-4", lat: 37.3891, lng: -5.9845, road: "A-4", km: 528, severity: "HIGH" },
-  { id: "v16-5", lat: 43.2630, lng: -2.9350, road: "A-8", km: 89, severity: "MEDIUM" },
-];
-
-const SAMPLE_INCIDENTS = [
-  { id: "inc-1", lat: 40.5, lng: -3.5, type: "ACCIDENT", description: "Accidente múltiple" },
-  { id: "inc-2", lat: 41.2, lng: 1.8, type: "ROADWORK", description: "Obras en calzada" },
-  { id: "inc-3", lat: 38.9, lng: -0.2, type: "CONGESTION", description: "Retención 3km" },
-];
-
-const SAMPLE_CAMERAS = [
+// Fallback sample data (only used if no data provided)
+const SAMPLE_CAMERAS: Camera[] = [
   { id: "cam-1", lat: 40.42, lng: -3.71, name: "M-30 km 12", feedUrl: "#" },
   { id: "cam-2", lat: 40.45, lng: -3.68, name: "A-1 km 5", feedUrl: "#" },
   { id: "cam-3", lat: 40.38, lng: -3.75, name: "A-42 km 3", feedUrl: "#" },
@@ -60,11 +79,16 @@ const INCIDENT_COLORS: Record<string, string> = {
   OTHER: "#6b7280",
 };
 
-export default function TrafficMap({ activeLayers }: TrafficMapProps) {
+export default function TrafficMap({ activeLayers, v16Data, incidentData, cameraData }: TrafficMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Use provided data or empty arrays
+  const beacons = v16Data || [];
+  const incidents = incidentData || [];
+  const cameras = cameraData || SAMPLE_CAMERAS;
 
   // Initialize map
   useEffect(() => {
@@ -99,7 +123,7 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
     };
   }, []);
 
-  // Update markers when layers change
+  // Update markers when layers or data change
   useEffect(() => {
     if (!map.current || !isLoaded) return;
 
@@ -108,14 +132,14 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
     markersRef.current = [];
 
     // Add V16 beacons
-    if (activeLayers.v16) {
-      SAMPLE_V16_BEACONS.forEach((beacon) => {
+    if (activeLayers.v16 && beacons.length > 0) {
+      beacons.forEach((beacon) => {
         const el = document.createElement("div");
         el.className = "v16-marker";
         el.style.width = "16px";
         el.style.height = "16px";
         el.style.borderRadius = "50%";
-        el.style.backgroundColor = SEVERITY_COLORS[beacon.severity];
+        el.style.backgroundColor = SEVERITY_COLORS[beacon.severity] || SEVERITY_COLORS.LOW;
         el.style.border = "3px solid white";
         el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
         el.style.cursor = "pointer";
@@ -129,11 +153,13 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
             new maplibregl.Popup({ offset: 25 }).setHTML(`
               <div class="p-2 min-w-[150px]">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="w-3 h-3 rounded-full" style="background-color: ${SEVERITY_COLORS[beacon.severity]}"></span>
+                  <span class="w-3 h-3 rounded-full" style="background-color: ${SEVERITY_COLORS[beacon.severity] || SEVERITY_COLORS.LOW}"></span>
                   <span class="font-bold text-sm">V16 Baliza</span>
                 </div>
-                <p class="text-sm font-medium">${beacon.road} km ${beacon.km}</p>
+                ${beacon.road ? `<p class="text-sm font-medium">${beacon.road}${beacon.km ? ` km ${beacon.km}` : ""}</p>` : ""}
                 <p class="text-xs text-gray-500">Severidad: ${beacon.severity}</p>
+                ${beacon.description ? `<p class="text-xs mt-1">${beacon.description}</p>` : ""}
+                ${beacon.activatedAt ? `<p class="text-xs text-gray-400 mt-1">Desde: ${new Date(beacon.activatedAt).toLocaleString("es-ES")}</p>` : ""}
               </div>
             `)
           )
@@ -144,13 +170,13 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
     }
 
     // Add incidents
-    if (activeLayers.incidents) {
-      SAMPLE_INCIDENTS.forEach((incident) => {
+    if (activeLayers.incidents && incidents.length > 0) {
+      incidents.forEach((incident) => {
         const el = document.createElement("div");
         el.className = "incident-marker";
         el.innerHTML = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 22H22L12 2Z" fill="${INCIDENT_COLORS[incident.type]}" stroke="white" stroke-width="2"/>
+            <path d="M12 2L2 22H22L12 2Z" fill="${INCIDENT_COLORS[incident.type] || INCIDENT_COLORS.OTHER}" stroke="white" stroke-width="2"/>
             <text x="12" y="18" text-anchor="middle" fill="white" font-size="12" font-weight="bold">!</text>
           </svg>
         `;
@@ -162,7 +188,8 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
             new maplibregl.Popup({ offset: 25 }).setHTML(`
               <div class="p-2 min-w-[150px]">
                 <p class="font-bold text-sm">${incident.type}</p>
-                <p class="text-sm">${incident.description}</p>
+                ${incident.road ? `<p class="text-sm">${incident.road}${incident.km ? ` km ${incident.km}` : ""}</p>` : ""}
+                ${incident.description ? `<p class="text-sm mt-1">${incident.description}</p>` : ""}
               </div>
             `)
           )
@@ -173,8 +200,8 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
     }
 
     // Add cameras
-    if (activeLayers.cameras) {
-      SAMPLE_CAMERAS.forEach((camera) => {
+    if (activeLayers.cameras && cameras.length > 0) {
+      cameras.forEach((camera) => {
         const el = document.createElement("div");
         el.className = "camera-marker";
         el.innerHTML = `
@@ -191,9 +218,7 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
             new maplibregl.Popup({ offset: 25 }).setHTML(`
               <div class="p-2 min-w-[150px]">
                 <p class="font-bold text-sm">${camera.name}</p>
-                <a href="${camera.feedUrl}" target="_blank" class="text-blue-600 text-sm hover:underline">
-                  Ver cámara en vivo
-                </a>
+                ${camera.feedUrl ? `<a href="${camera.feedUrl}" target="_blank" class="text-blue-600 text-sm hover:underline">Ver cámara en vivo</a>` : ""}
               </div>
             `)
           )
@@ -202,7 +227,7 @@ export default function TrafficMap({ activeLayers }: TrafficMapProps) {
         markersRef.current.push(marker);
       });
     }
-  }, [activeLayers, isLoaded]);
+  }, [activeLayers, isLoaded, beacons, incidents, cameras]);
 
   return (
     <>
