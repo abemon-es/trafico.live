@@ -1,0 +1,461 @@
+// Prisma Schema for Spanish Road Intelligence Platform
+// trafico.abemon.es
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// REAL-TIME EVENTS (Time-Series)
+// ============================================
+
+model V16BeaconEvent {
+  id              String    @id @default(cuid())
+  situationId     String
+  recordId        String?
+
+  // Temporal data
+  activatedAt     DateTime  @db.Timestamptz
+  deactivatedAt   DateTime? @db.Timestamptz
+  lastUpdatedAt   DateTime  @db.Timestamptz
+  fetchedAt       DateTime  @default(now()) @db.Timestamptz
+
+  // Geographic data
+  latitude        Decimal   @db.Decimal(9, 6)
+  longitude       Decimal   @db.Decimal(9, 6)
+
+  // Location metadata
+  roadNumber      String?
+  roadType        RoadType?
+  kmPoint         Decimal?  @db.Decimal(7, 2)
+  direction       Direction?
+  carriageway     String?
+
+  // Administrative division
+  province        String?   // INE code
+  provinceName    String?
+  community       String?   // INE code
+  communityName   String?
+
+  // Incident details
+  severity        Severity  @default(LOW)
+  mobilityType    MobilityType @default(STATIONARY)
+  description     String?   @db.Text
+
+  // Status
+  isActive        Boolean   @default(true)
+
+  @@index([activatedAt])
+  @@index([province, activatedAt])
+  @@index([community, activatedAt])
+  @@index([isActive])
+  @@index([roadNumber])
+  @@unique([situationId, recordId])
+}
+
+model TrafficIncident {
+  id              String    @id @default(cuid())
+  situationId     String    @unique
+
+  // Type and timing
+  type            IncidentType
+  startedAt       DateTime  @db.Timestamptz
+  endedAt         DateTime? @db.Timestamptz
+  fetchedAt       DateTime  @default(now()) @db.Timestamptz
+
+  // Geographic data
+  latitude        Decimal   @db.Decimal(9, 6)
+  longitude       Decimal   @db.Decimal(9, 6)
+
+  // Location metadata
+  roadNumber      String?
+  roadType        RoadType?
+  kmPoint         Decimal?  @db.Decimal(7, 2)
+  direction       Direction?
+
+  // Administrative division
+  province        String?
+  provinceName    String?
+  community       String?
+  communityName   String?
+
+  // Details
+  description     String?   @db.Text
+  severity        Severity
+  source          String?   // DGT, HERE, etc.
+
+  // Status
+  isActive        Boolean   @default(true)
+
+  @@index([startedAt])
+  @@index([type, isActive])
+  @@index([province])
+  @@index([roadNumber])
+}
+
+model WeatherCondition {
+  id              String    @id @default(cuid())
+  recordedAt      DateTime  @db.Timestamptz
+  expiresAt       DateTime? @db.Timestamptz
+
+  // Location
+  roadNumber      String
+  kmStart         Decimal   @db.Decimal(7, 2)
+  kmEnd           Decimal   @db.Decimal(7, 2)
+  province        String?
+
+  // Conditions
+  conditionType   WeatherType
+  severity        WeatherSeverity
+  temperature     Decimal?  @db.Decimal(4, 1)
+  windSpeed       Decimal?  @db.Decimal(5, 1)
+  visibility      Decimal?  @db.Decimal(7, 1)
+  precipitation   Decimal?  @db.Decimal(5, 1)
+  description     String?
+
+  @@index([recordedAt])
+  @@index([roadNumber])
+  @@index([province])
+}
+
+// ============================================
+// INFRASTRUCTURE (Semi-Static)
+// ============================================
+
+model Camera {
+  id              String    @id
+  name            String
+
+  // Location
+  latitude        Decimal   @db.Decimal(9, 6)
+  longitude       Decimal   @db.Decimal(9, 6)
+  roadNumber      String?
+  kmPoint         Decimal?  @db.Decimal(7, 2)
+
+  // Administrative
+  province        String?
+  provinceName    String?
+
+  // Feed info
+  feedUrl         String?
+  thumbnailUrl    String?
+
+  // Status
+  isActive        Boolean   @default(true)
+  lastUpdated     DateTime  @default(now())
+
+  @@index([province])
+  @@index([roadNumber])
+  @@index([isActive])
+}
+
+model EVCharger {
+  id              String    @id
+  name            String
+
+  // Location
+  latitude        Decimal   @db.Decimal(9, 6)
+  longitude       Decimal   @db.Decimal(9, 6)
+  address         String?
+  city            String?
+  postalCode      String?
+
+  // Administrative
+  province        String?
+  provinceName    String?
+
+  // Technical
+  chargerTypes    ChargerType[]
+  powerKw         Decimal?  @db.Decimal(6, 2)
+  connectors      Int?
+
+  // Operator info
+  operator        String?
+  network         String?
+
+  // Availability
+  isPublic        Boolean   @default(true)
+  is24h           Boolean   @default(false)
+
+  // Payment
+  paymentMethods  String[]
+
+  lastUpdated     DateTime  @default(now())
+
+  @@index([province])
+  @@index([city])
+  @@index([isPublic])
+}
+
+model ZBEZone {
+  id              String    @id
+  name            String
+  cityName        String
+
+  // Geographic boundary (GeoJSON)
+  polygon         Json
+  centroid        Json?     // { lat, lng }
+
+  // Restrictions by vehicle label
+  restrictions    Json      // { "A": "denied", "B": "restricted", "C": "allowed", ... }
+
+  // Schedule
+  schedule        Json?     // Operating hours
+  activeAllYear   Boolean   @default(true)
+
+  // Penalties
+  fineAmount      Decimal?  @db.Decimal(8, 2)
+
+  // Dates
+  effectiveFrom   DateTime
+  effectiveUntil  DateTime?
+
+  // Source
+  sourceUrl       String?
+  lastUpdated     DateTime  @default(now())
+
+  @@index([cityName])
+}
+
+model RiskZone {
+  id              String    @id
+  type            RiskType
+
+  // Location
+  roadNumber      String
+  kmStart         Decimal   @db.Decimal(7, 2)
+  kmEnd           Decimal   @db.Decimal(7, 2)
+
+  // Geographic (optional LineString)
+  geometry        Json?
+
+  // Details
+  severity        Severity
+  description     String?
+
+  // For animal zones
+  animalType      String?   // deer, wild boar, etc.
+  incidentCount   Int?      // historical count
+
+  lastUpdated     DateTime  @default(now())
+
+  @@index([type])
+  @@index([roadNumber])
+}
+
+// ============================================
+// STATISTICS (Aggregates)
+// ============================================
+
+model HourlyStats {
+  id              String    @id @default(cuid())
+  hourStart       DateTime  @unique @db.Timestamptz
+
+  // Counts
+  v16Count        Int       @default(0)
+  incidentCount   Int       @default(0)
+  newActivations  Int       @default(0)
+  deactivations   Int       @default(0)
+
+  // Breakdowns (JSON for flexibility)
+  byProvince      Json?     // { "28": 45, "08": 32 }
+  byCommunity     Json?     // { "13": 120, "09": 85 }
+  byRoadType      Json?     // { "AUTOPISTA": 20, "NACIONAL": 45 }
+  bySeverity      Json?     // { "LOW": 50, "MEDIUM": 30, "HIGH": 10 }
+  byIncidentType  Json?     // { "ACCIDENT": 5, "ROADWORK": 12 }
+
+  // Weather
+  weatherAlerts   Int       @default(0)
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([hourStart])
+}
+
+model DailyStats {
+  id              String    @id @default(cuid())
+  dateStart       DateTime  @unique @db.Date
+
+  // Aggregated metrics
+  v16Total        Int       @default(0)
+  incidentTotal   Int       @default(0)
+
+  // Peak analysis
+  peakHour        Int?
+  peakCount       Int?
+
+  // Duration
+  avgDurationSecs Int?
+
+  // Breakdowns
+  byHourOfDay     Json?     // { "0": 12, "1": 8, ... "23": 45 }
+  byProvince      Json?
+  byCommunity     Json?
+  byRoadType      Json?
+  byIncidentType  Json?
+
+  // Weather summary
+  weatherAlertDays Int      @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([dateStart])
+}
+
+model HistoricalAccidents {
+  id              String    @id @default(cuid())
+  year            Int
+  province        String
+  provinceName    String?
+
+  // Counts
+  accidents       Int
+  fatalities      Int
+  hospitalized    Int
+  nonHospitalized Int
+
+  // Road type breakdown
+  roadType        RoadType?
+
+  // Additional metrics
+  vehiclesInvolved Int?
+  pedestrians     Int?
+
+  @@unique([year, province, roadType])
+  @@index([year])
+  @@index([province])
+}
+
+// ============================================
+// REFERENCE DATA
+// ============================================
+
+model Province {
+  code            String    @id  // INE 2-digit code: "28", "08"
+  name            String         // "Madrid", "Barcelona"
+  communityCode   String
+  community       Community @relation(fields: [communityCode], references: [code])
+
+  // Stats (cached)
+  population      Int?
+  area            Decimal?  @db.Decimal(10, 2)  // km2
+
+  @@index([communityCode])
+}
+
+model Community {
+  code            String    @id  // INE 2-digit code: "13", "09"
+  name            String         // "Comunidad de Madrid", "Cataluña"
+
+  // Flag for regions with their own traffic systems
+  isExcluded      Boolean   @default(false)
+  excludedReason  String?   // "Regional traffic system"
+
+  provinces       Province[]
+}
+
+model Road {
+  id              String    @id  // "A-1", "AP-7", "N-340"
+  name            String?        // "Autovía del Norte"
+  type            RoadType
+
+  // Coverage
+  kmStart         Decimal?  @db.Decimal(7, 2)
+  kmEnd           Decimal?  @db.Decimal(7, 2)
+  totalKm         Decimal?  @db.Decimal(7, 2)
+
+  // Provinces it passes through
+  provinces       String[]
+
+  @@index([type])
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum RoadType {
+  AUTOPISTA    // AP-* (toll motorway)
+  AUTOVIA      // A-* (motorway)
+  NACIONAL     // N-* (national road)
+  COMARCAL     // C-* (regional road)
+  PROVINCIAL   // Provincial roads
+  URBANA       // Urban roads
+  OTHER
+}
+
+enum Direction {
+  ASCENDING    // Km increasing
+  DESCENDING   // Km decreasing
+  BOTH
+  UNKNOWN
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum MobilityType {
+  MOBILE
+  STATIONARY
+  UNKNOWN
+}
+
+enum IncidentType {
+  ACCIDENT
+  ROADWORK
+  CONGESTION
+  HAZARD
+  VEHICLE_BREAKDOWN
+  WEATHER
+  EVENT
+  CLOSURE
+  OTHER
+}
+
+enum WeatherType {
+  RAIN
+  SNOW
+  ICE
+  FOG
+  WIND
+  STORM
+  HEAT
+  COLD
+}
+
+enum WeatherSeverity {
+  FAVORABLE
+  MODERATE
+  ADVERSE
+  EXTREME
+}
+
+enum ChargerType {
+  AC_TYPE1
+  AC_TYPE2
+  DC_CHADEMO
+  DC_CCS
+  DC_CCS2
+  TESLA
+  SCHUKO
+  OTHER
+}
+
+enum RiskType {
+  MOTORCYCLE
+  ANIMAL
+  CYCLIST
+  PEDESTRIAN
+}
