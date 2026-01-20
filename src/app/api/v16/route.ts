@@ -10,7 +10,7 @@ export const revalidate = 60;
 
 const DGT_DATEX_URL =
   process.env.DGT_DATEX_URL ||
-  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/date";
+  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
 
 export async function GET() {
   try {

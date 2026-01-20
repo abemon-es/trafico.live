@@ -8,7 +8,7 @@ import {
 export const revalidate = 60;
 
 const DGT_NAP_URL =
-  process.env.DGT_NAP_URL || "https://nap.dgt.es/api/1.0/nap";
+  process.env.DGT_NAP_URL || "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
 
 export async function GET() {
   try {

@@ -26,6 +26,8 @@ export interface DatexSituationRecord {
   road?: string;
   kmPoint?: number;
   direction?: string;
+  province?: string;
+  municipality?: string;
   description?: string;
   severity?: string;
   validityStatus?: string;
@@ -41,6 +43,8 @@ export interface V16BeaconData {
   roadNumber?: string;
   kmPoint?: number;
   direction?: string;
+  province?: string;
+  municipality?: string;
   severity: "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH";
   mobilityType: "MOBILE" | "STATIONARY" | "UNKNOWN";
   description?: string;
@@ -56,6 +60,8 @@ export interface TrafficIncidentData {
   roadNumber?: string;
   kmPoint?: number;
   direction?: string;
+  province?: string;
+  municipality?: string;
   severity: "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH";
   description?: string;
   source?: string;
@@ -65,7 +71,10 @@ export interface TrafficIncidentData {
 export function parseDatexResponse(xml: string): DatexSituation[] {
   try {
     const result = parser.parse(xml);
+
+    // Handle DATEX II v3.6 format (d2:payload root)
     const publication =
+      result?.payload ||
       result?.d2LogicalModel?.payloadPublication ||
       result?.payloadPublication ||
       result?.SituationPublication;
@@ -141,6 +150,8 @@ function parseSituationRecord(
       road: locationInfo.road,
       kmPoint: locationInfo.kmPoint,
       direction: locationInfo.direction,
+      province: locationInfo.province,
+      municipality: locationInfo.municipality,
       description,
       severity,
       validityStatus,
@@ -186,7 +197,37 @@ function extractCoordinates(
 
   if (!locationReference) return undefined;
 
-  // Point location
+  // DATEX II v3.6 TPEG location (most common in DGT data)
+  const tpegLinearLocation = locationReference.tpegLinearLocation as Record<string, unknown> | undefined;
+  if (tpegLinearLocation) {
+    // Try 'to' point first, then 'from'
+    const toPoint = tpegLinearLocation.to as Record<string, unknown> | undefined;
+    const fromPoint = tpegLinearLocation.from as Record<string, unknown> | undefined;
+
+    const point = toPoint || fromPoint;
+    if (point) {
+      const pointCoordinates = point.pointCoordinates as Record<string, unknown> | undefined;
+      if (pointCoordinates) {
+        const lat = parseFloat(String(pointCoordinates.latitude || 0));
+        const lng = parseFloat(String(pointCoordinates.longitude || 0));
+        if (lat && lng) return { lat, lng };
+      }
+    }
+  }
+
+  // TPEG point location
+  const tpegPointLocation = locationReference.tpegPointLocation as Record<string, unknown> | undefined;
+  if (tpegPointLocation) {
+    const point = tpegPointLocation.point as Record<string, unknown> | undefined;
+    const pointCoordinates = point?.pointCoordinates as Record<string, unknown> | undefined;
+    if (pointCoordinates) {
+      const lat = parseFloat(String(pointCoordinates.latitude || 0));
+      const lng = parseFloat(String(pointCoordinates.longitude || 0));
+      if (lat && lng) return { lat, lng };
+    }
+  }
+
+  // Point location (older format)
   const pointByCoordinates =
     (locationReference.pointByCoordinates as Record<string, unknown>) ||
     (locationReference.locationForDisplay as Record<string, unknown>);
@@ -210,13 +251,6 @@ function extractCoordinates(
     }
   }
 
-  // Alert C location
-  const alertCPoint = locationReference.alertCPoint as Record<string, unknown> | undefined;
-  if (alertCPoint) {
-    const specificLocation = alertCPoint.specificLocation as string | undefined;
-    // Would need AlertC location database to resolve
-  }
-
   return undefined;
 }
 
@@ -224,43 +258,97 @@ function extractLocationInfo(record: Record<string, unknown>): {
   road?: string;
   kmPoint?: number;
   direction?: string;
+  province?: string;
+  municipality?: string;
 } {
   const locationReference = record.locationReference as Record<string, unknown> | undefined;
-  const supplementaryInfo = record.supplementaryPositionalDescription as
-    | Record<string, unknown>
-    | undefined;
 
   let road: string | undefined;
   let kmPoint: number | undefined;
   let direction: string | undefined;
+  let province: string | undefined;
+  let municipality: string | undefined;
 
-  // Extract road identifier
-  const roadNumber =
-    supplementaryInfo?.roadNumber ||
-    locationReference?.roadNumber ||
-    record.roadNumber;
-  if (roadNumber) {
-    road = String(roadNumber);
-  }
+  if (!locationReference) return { road, kmPoint, direction, province, municipality };
 
-  // Extract km point
-  const distanceFromPoint = supplementaryInfo?.distanceAlongLinearElement as
+  // DATEX II v3.6 format
+  const supplementaryPositionalDescription = locationReference.supplementaryPositionalDescription as
     | Record<string, unknown>
     | undefined;
-  if (distanceFromPoint?.distanceAlong) {
-    kmPoint = parseFloat(String(distanceFromPoint.distanceAlong)) / 1000; // Convert to km
+
+  if (supplementaryPositionalDescription) {
+    // Extract road name
+    const roadInformation = supplementaryPositionalDescription.roadInformation as
+      | Record<string, unknown>
+      | undefined;
+    if (roadInformation?.roadName) {
+      road = String(roadInformation.roadName);
+    }
+
+    // Extract direction from carriageway
+    const carriageway = supplementaryPositionalDescription.carriageway as
+      | Record<string, unknown>
+      | undefined;
+    if (carriageway?.carriageway) {
+      direction = String(carriageway.carriageway);
+    }
   }
 
-  // Extract direction
-  const directionValue =
-    supplementaryInfo?.carriageway ||
-    locationReference?.directionBound ||
-    record.direction;
-  if (directionValue) {
-    direction = String(directionValue);
+  // Extract from TPEG extension (v3.6)
+  const tpegLinearLocation = locationReference.tpegLinearLocation as Record<string, unknown> | undefined;
+  if (tpegLinearLocation) {
+    const toPoint = tpegLinearLocation.to as Record<string, unknown> | undefined;
+    const fromPoint = tpegLinearLocation.from as Record<string, unknown> | undefined;
+    const point = toPoint || fromPoint;
+
+    if (point) {
+      // Extract from Spanish extension
+      const extension = point._tpegNonJunctionPointExtension as Record<string, unknown> | undefined;
+      const extendedPoint = extension?.extendedTpegNonJunctionPoint as Record<string, unknown> | undefined;
+
+      if (extendedPoint) {
+        if (extendedPoint.kilometerPoint) {
+          kmPoint = parseFloat(String(extendedPoint.kilometerPoint));
+        }
+        if (extendedPoint.province) {
+          province = String(extendedPoint.province);
+        }
+        if (extendedPoint.municipality) {
+          municipality = String(extendedPoint.municipality);
+        }
+      }
+    }
+
+    // Extract direction from extension
+    const tpegExtension = tpegLinearLocation._tpegLinearLocationExtension as Record<string, unknown> | undefined;
+    const extendedLinear = tpegExtension?.extendedTpegLinearLocation as Record<string, unknown> | undefined;
+    if (extendedLinear?.tpegDirectionRoad) {
+      direction = String(extendedLinear.tpegDirectionRoad);
+    }
   }
 
-  return { road, kmPoint, direction };
+  // Fallback to older format
+  const supplementaryInfo = record.supplementaryPositionalDescription as
+    | Record<string, unknown>
+    | undefined;
+  if (!road && supplementaryInfo?.roadNumber) {
+    road = String(supplementaryInfo.roadNumber);
+  }
+  if (!road && locationReference?.roadNumber) {
+    road = String(locationReference.roadNumber);
+  }
+
+  // Extract km point from older format
+  if (kmPoint === undefined) {
+    const distanceFromPoint = supplementaryInfo?.distanceAlongLinearElement as
+      | Record<string, unknown>
+      | undefined;
+    if (distanceFromPoint?.distanceAlong) {
+      kmPoint = parseFloat(String(distanceFromPoint.distanceAlong)) / 1000;
+    }
+  }
+
+  return { road, kmPoint, direction, province, municipality };
 }
 
 function extractDescription(record: Record<string, unknown>): string | undefined {
@@ -342,6 +430,8 @@ export function extractV16Beacons(situations: DatexSituation[]): V16BeaconData[]
             roadNumber: record.road,
             kmPoint: record.kmPoint,
             direction: record.direction,
+            province: record.province,
+            municipality: record.municipality,
             severity: (record.severity as "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH") || "LOW",
             mobilityType: "STATIONARY",
             description: record.description,
@@ -378,6 +468,8 @@ export function extractTrafficIncidents(
           roadNumber: record.road,
           kmPoint: record.kmPoint,
           direction: record.direction,
+          province: record.province,
+          municipality: record.municipality,
           severity: (record.severity || situation.overallSeverity || "MEDIUM") as "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH",
           description: record.description,
           source: "DGT",
