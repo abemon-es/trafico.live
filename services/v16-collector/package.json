@@ -5,8 +5,7 @@
   "main": "collector.ts",
   "type": "module",
   "scripts": {
-    "start": "tsx collector.ts",
-    "postinstall": "prisma generate"
+    "start": "tsx collector.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.0",
