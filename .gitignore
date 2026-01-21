@@ -49,3 +49,4 @@ next-env.d.ts
 
 # Collector node_modules
 services/v16-collector/node_modules/
+services/incident-collector/node_modules/

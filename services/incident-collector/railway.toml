@@ -1,0 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile.incident-collector"
+watchPatterns = ["services/incident-collector/**", "prisma/schema.prisma", "Dockerfile.incident-collector"]
+
+[deploy]
+cronSchedule = "*/5 * * * *"
+numReplicas = 1
+restartPolicyType = "NEVER"

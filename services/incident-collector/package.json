@@ -1,0 +1,23 @@
+{
+  "name": "incident-collector",
+  "version": "1.0.0",
+  "description": "Regional traffic incident collector (SCT + Euskadi)",
+  "main": "collector.ts",
+  "type": "module",
+  "scripts": {
+    "start": "tsx collector.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "fast-xml-parser": "^5.1.1",
+    "pg": "^8.17.2",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "dotenv": "^17.2.3",
+    "prisma": "^7.2.0",
+    "typescript": "^5.7.3"
+  }
+}
