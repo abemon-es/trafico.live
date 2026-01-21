@@ -46,6 +46,7 @@ model V16BeaconEvent {
   provinceName    String?
   community       String?   // INE code
   communityName   String?
+  municipality    String?   // Town name
 
   // Incident details
   severity        Severity  @default(LOW)
@@ -69,7 +70,12 @@ model TrafficIncident {
   id              String    @id @default(cuid())
   situationId     String    @unique
 
-  // Type and timing
+  // Lifecycle tracking (for historical analysis)
+  firstSeenAt     DateTime  @default(now()) @db.Timestamptz  // When we first observed this incident
+  lastSeenAt      DateTime  @default(now()) @db.Timestamptz  // Last time incident appeared in API response
+  durationSecs    Int?      // Calculated when deactivated (lastSeenAt - firstSeenAt)
+
+  // Type and timing (from source)
   type            IncidentType
   startedAt       DateTime  @db.Timestamptz
   endedAt         DateTime? @db.Timestamptz
@@ -90,11 +96,17 @@ model TrafficIncident {
   provinceName    String?
   community       String?
   communityName   String?
+  municipality    String?   // Town name
+
+  // Cause categorization (from DATEX II)
+  causeType         String?   // "roadMaintenance", "accident", "weather"
+  detailedCauseType String?   // "resurfacingWork", "fog", "ice", etc.
+  managementType    String?   // "laneClosures", "diversion", etc.
 
   // Details
   description     String?   @db.Text
   severity        Severity
-  source          String?   // DGT, HERE, etc.
+  source          String?   // DGT, SCT, EUSKADI, MADRID, etc.
 
   // Status
   isActive        Boolean   @default(true)
@@ -103,6 +115,7 @@ model TrafficIncident {
   @@index([type, isActive])
   @@index([province])
   @@index([roadNumber])
+  @@index([source, isActive])
 }
 
 model WeatherCondition {
@@ -128,6 +141,45 @@ model WeatherCondition {
   @@index([recordedAt])
   @@index([roadNumber])
   @@index([province])
+}
+
+// AEMET weather alerts for traffic impact correlation
+model WeatherAlert {
+  id              String    @id @default(cuid())
+  alertId         String    @unique
+  type            WeatherAlertType
+  severity        Severity
+
+  // Location
+  province        String
+  provinceName    String?
+
+  // Timing
+  startedAt       DateTime  @db.Timestamptz
+  endedAt         DateTime? @db.Timestamptz
+  fetchedAt       DateTime  @default(now()) @db.Timestamptz
+
+  // Details
+  description     String?   @db.Text
+
+  // Status
+  isActive        Boolean   @default(true)
+
+  @@index([province, isActive])
+  @@index([type, isActive])
+  @@index([startedAt])
+}
+
+enum WeatherAlertType {
+  RAIN
+  SNOW
+  ICE
+  FOG
+  WIND
+  TEMPERATURE
+  STORM
+  COASTAL
+  OTHER
 }
 
 // ============================================

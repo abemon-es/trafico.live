@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
 import dynamic from "next/dynamic";
 import { Map as MapIcon, AlertTriangle, Loader2 } from "lucide-react";
@@ -13,6 +14,7 @@ import {
   CAUSE_LABELS,
   EFFECT_COLORS,
 } from "./IncidentMarker";
+import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 
 // Dynamic import for map to avoid SSR issues
 const TrafficMap = dynamic(() => import("./TrafficMap"), {
@@ -67,6 +69,11 @@ interface UnifiedMapProps {
   id?: string;
 }
 
+// Valid filter values for URL parsing
+const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
+const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
+const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces"];
+
 export function UnifiedMap({
   defaultHeight = "500px",
   showStats = true,
@@ -74,27 +81,96 @@ export function UnifiedMap({
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<TrafficMapRef>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
-  const [activeLayers, setActiveLayers] = useState<ActiveLayers>({
-    v16: true,
-    incidents: true,
-    cameras: false,
-    chargers: false,
-    zbe: false,
-    weather: true,
-    highways: true,
-    provinces: false,
-  });
+  // Parse initial state from URL
+  const getInitialLayers = (): ActiveLayers => {
+    const layersParam = searchParams.get("layers");
+    if (layersParam) {
+      const urlLayers = layersParam.split(",").filter((l) => VALID_LAYERS.includes(l as keyof ActiveLayers));
+      return {
+        v16: urlLayers.includes("v16"),
+        incidents: urlLayers.includes("incidents"),
+        cameras: urlLayers.includes("cameras"),
+        chargers: urlLayers.includes("chargers"),
+        zbe: urlLayers.includes("zbe"),
+        weather: urlLayers.includes("weather"),
+        highways: urlLayers.includes("highways"),
+        provinces: urlLayers.includes("provinces"),
+      };
+    }
+    // Default layers
+    return {
+      v16: true,
+      incidents: true,
+      cameras: false,
+      chargers: false,
+      zbe: false,
+      weather: true,
+      highways: true,
+      provinces: false,
+    };
+  };
 
-  const [incidentFilters, setIncidentFilters] = useState<IncidentFilters>({
-    effects: [],
-    causes: [],
-  });
+  const getInitialFilters = (): IncidentFilters => {
+    const effectsParam = searchParams.get("effect");
+    const causesParam = searchParams.get("cause");
+
+    const effects = effectsParam
+      ? effectsParam.split(",").filter((e) => VALID_EFFECTS.includes(e as IncidentEffect)) as IncidentEffect[]
+      : [];
+    const causes = causesParam
+      ? causesParam.split(",").filter((c) => VALID_CAUSES.includes(c as IncidentCause)) as IncidentCause[]
+      : [];
+
+    return { effects, causes };
+  };
+
+  const [activeLayers, setActiveLayers] = useState<ActiveLayers>(getInitialLayers);
+  const [incidentFilters, setIncidentFilters] = useState<IncidentFilters>(getInitialFilters);
+
+  // Update URL when state changes
+  const updateURL = useCallback((layers: ActiveLayers, filters: IncidentFilters) => {
+    const params = new URLSearchParams();
+
+    // Only add layers param if different from default
+    const activeLs = Object.entries(layers)
+      .filter(([, active]) => active)
+      .map(([key]) => key);
+    const defaultLayers = ["v16", "incidents", "weather", "highways"];
+    const isDefaultLayers = activeLs.length === defaultLayers.length &&
+      defaultLayers.every((l) => activeLs.includes(l));
+
+    if (!isDefaultLayers) {
+      params.set("layers", activeLs.join(","));
+    }
+
+    // Add filter params if any
+    if (filters.effects.length > 0) {
+      params.set("effect", filters.effects.join(","));
+    }
+    if (filters.causes.length > 0) {
+      params.set("cause", filters.causes.join(","));
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+    // Use replaceState to avoid adding to history
+    window.history.replaceState(null, "", newUrl);
+  }, [pathname]);
+
+  // Sync URL when filters or layers change
+  useEffect(() => {
+    updateURL(activeLayers, incidentFilters);
+  }, [activeLayers, incidentFilters, updateURL]);
 
   // Fetch data
   const {

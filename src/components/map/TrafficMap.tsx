@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
+import type { GeoJSON } from "geojson";
 import {
   createIncidentMarkerElement,
   createSimpleMarkerElement,
@@ -112,7 +113,63 @@ const SEVERITY_COLORS: Record<string, string> = {
   VERY_HIGH: "#7f1d1d",
 };
 
-// Legacy incident colors - now using EFFECT_COLORS from IncidentMarker
+// Cluster colors by size
+const CLUSTER_COLORS = {
+  small: "#51bbd6",   // < 10
+  medium: "#f1f075",  // 10-50
+  large: "#f28cb1",   // > 50
+};
+
+// Helper to convert incidents to GeoJSON
+function incidentsToGeoJSON(incidents: Incident[]): GeoJSON {
+  return {
+    type: "FeatureCollection",
+    features: incidents.map((inc) => ({
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [inc.lng, inc.lat],
+      },
+      properties: {
+        id: inc.id,
+        type: inc.type,
+        effect: inc.effect,
+        cause: inc.cause,
+        road: inc.road || "",
+        km: inc.km || 0,
+        province: inc.province || "",
+        severity: inc.severity,
+        description: inc.description || "",
+        laneInfo: inc.laneInfo || "",
+        startedAt: inc.startedAt || "",
+        color: EFFECT_COLORS[inc.effect] || EFFECT_COLORS.OTHER_EFFECT,
+      },
+    })),
+  };
+}
+
+// Helper to convert V16 beacons to GeoJSON
+function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
+  return {
+    type: "FeatureCollection",
+    features: beacons.map((beacon) => ({
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [beacon.lng, beacon.lat],
+      },
+      properties: {
+        id: beacon.id,
+        road: beacon.road || "",
+        km: beacon.km || 0,
+        severity: beacon.severity,
+        description: beacon.description || "",
+        activatedAt: beacon.activatedAt || "",
+        color: SEVERITY_COLORS[beacon.severity] || SEVERITY_COLORS.LOW,
+      },
+    })),
+  };
+}
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
   { activeLayers, v16Data, incidentData, cameraData, chargerData, incidentFilters, height = "500px", onIncidentClick },
@@ -369,16 +426,227 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     }
   }, [activeLayers.provinces, isLoaded]);
 
-  // Update markers when layers or data change
+  // Setup clustering sources and layers (run once after map loads)
   useEffect(() => {
     if (!map.current || !isLoaded) return;
 
-    // Clear existing markers
+    // Skip if sources already exist
+    if (map.current.getSource("incidents-cluster")) return;
+
+    // Add incidents cluster source
+    map.current.addSource("incidents-cluster", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50,
+    });
+
+    // Add V16 cluster source
+    map.current.addSource("v16-cluster", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50,
+    });
+
+    // Incident cluster circles
+    map.current.addLayer({
+      id: "incident-clusters",
+      type: "circle",
+      source: "incidents-cluster",
+      filter: ["has", "point_count"],
+      paint: {
+        "circle-color": [
+          "step",
+          ["get", "point_count"],
+          CLUSTER_COLORS.small,
+          10,
+          CLUSTER_COLORS.medium,
+          50,
+          CLUSTER_COLORS.large,
+        ],
+        "circle-radius": ["step", ["get", "point_count"], 18, 10, 24, 50, 32],
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#fff",
+      },
+    });
+
+    // Incident cluster count labels
+    map.current.addLayer({
+      id: "incident-cluster-count",
+      type: "symbol",
+      source: "incidents-cluster",
+      filter: ["has", "point_count"],
+      layout: {
+        "text-field": "{point_count_abbreviated}",
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-size": 12,
+      },
+      paint: {
+        "text-color": "#333",
+      },
+    });
+
+    // V16 cluster circles
+    map.current.addLayer({
+      id: "v16-clusters",
+      type: "circle",
+      source: "v16-cluster",
+      filter: ["has", "point_count"],
+      paint: {
+        "circle-color": [
+          "step",
+          ["get", "point_count"],
+          "#f97316", // orange for V16
+          10,
+          "#ef4444", // red for larger
+          50,
+          "#7f1d1d",
+        ],
+        "circle-radius": ["step", ["get", "point_count"], 16, 10, 22, 50, 28],
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#fff",
+      },
+    });
+
+    // V16 cluster count labels
+    map.current.addLayer({
+      id: "v16-cluster-count",
+      type: "symbol",
+      source: "v16-cluster",
+      filter: ["has", "point_count"],
+      layout: {
+        "text-field": "{point_count_abbreviated}",
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-size": 11,
+      },
+      paint: {
+        "text-color": "#fff",
+      },
+    });
+
+    // Click handler for incident clusters - zoom in
+    map.current.on("click", "incident-clusters", async (e) => {
+      const features = map.current!.queryRenderedFeatures(e.point, {
+        layers: ["incident-clusters"],
+      });
+      if (!features.length) return;
+
+      const clusterId = features[0].properties?.cluster_id;
+      if (clusterId === undefined) return;
+
+      const source = map.current!.getSource("incidents-cluster") as maplibregl.GeoJSONSource;
+      try {
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        const geometry = features[0].geometry;
+        if (geometry.type === "Point") {
+          map.current!.easeTo({
+            center: geometry.coordinates as [number, number],
+            zoom: zoom,
+          });
+        }
+      } catch {
+        // Ignore cluster expansion errors
+      }
+    });
+
+    // Click handler for V16 clusters - zoom in
+    map.current.on("click", "v16-clusters", async (e) => {
+      const features = map.current!.queryRenderedFeatures(e.point, {
+        layers: ["v16-clusters"],
+      });
+      if (!features.length) return;
+
+      const clusterId = features[0].properties?.cluster_id;
+      if (clusterId === undefined) return;
+
+      const source = map.current!.getSource("v16-cluster") as maplibregl.GeoJSONSource;
+      try {
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        const geometry = features[0].geometry;
+        if (geometry.type === "Point") {
+          map.current!.easeTo({
+            center: geometry.coordinates as [number, number],
+            zoom: zoom,
+          });
+        }
+      } catch {
+        // Ignore cluster expansion errors
+      }
+    });
+
+    // Cursor change on cluster hover
+    map.current.on("mouseenter", "incident-clusters", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "pointer";
+    });
+    map.current.on("mouseleave", "incident-clusters", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "";
+    });
+    map.current.on("mouseenter", "v16-clusters", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "pointer";
+    });
+    map.current.on("mouseleave", "v16-clusters", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "";
+    });
+  }, [isLoaded]);
+
+  // Update cluster data when incidents change
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    const source = map.current.getSource("incidents-cluster") as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    // Update visibility
+    const visibility = activeLayers.incidents ? "visible" : "none";
+    if (map.current.getLayer("incident-clusters")) {
+      map.current.setLayoutProperty("incident-clusters", "visibility", visibility);
+    }
+    if (map.current.getLayer("incident-cluster-count")) {
+      map.current.setLayoutProperty("incident-cluster-count", "visibility", visibility);
+    }
+
+    // Update data
+    if (activeLayers.incidents) {
+      source.setData(incidentsToGeoJSON(incidents) as maplibregl.GeoJSONSourceSpecification["data"]);
+    }
+  }, [activeLayers.incidents, isLoaded, incidents]);
+
+  // Update cluster data when V16 beacons change
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    const source = map.current.getSource("v16-cluster") as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    // Update visibility
+    const visibility = activeLayers.v16 ? "visible" : "none";
+    if (map.current.getLayer("v16-clusters")) {
+      map.current.setLayoutProperty("v16-clusters", "visibility", visibility);
+    }
+    if (map.current.getLayer("v16-cluster-count")) {
+      map.current.setLayoutProperty("v16-cluster-count", "visibility", visibility);
+    }
+
+    // Update data
+    if (activeLayers.v16) {
+      source.setData(v16ToGeoJSON(beacons) as maplibregl.GeoJSONSourceSpecification["data"]);
+    }
+  }, [activeLayers.v16, isLoaded, beacons]);
+
+  // Update individual markers for cameras, chargers, and unclustered points
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    // Clear existing markers (cameras, chargers, unclustered items)
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    // Add V16 beacons
-    if (activeLayers.v16 && beacons.length > 0) {
+    // Add individual V16 markers for unclustered beacons (at high zoom)
+    // This provides the pulsing animation and popup functionality
+    if (activeLayers.v16 && beacons.length > 0 && beacons.length <= 50) {
       beacons.forEach((beacon) => {
         const el = document.createElement("div");
         el.className = "v16-marker";
@@ -389,8 +657,6 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         el.style.border = "3px solid white";
         el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
         el.style.cursor = "pointer";
-
-        // Pulsing animation for active beacons
         el.style.animation = "pulse 2s infinite";
 
         const marker = new maplibregl.Marker({ element: el })
@@ -413,11 +679,18 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
         markersRef.current.push(marker);
       });
+
+      // Hide cluster layer when showing individual markers
+      if (map.current.getLayer("v16-clusters")) {
+        map.current.setLayoutProperty("v16-clusters", "visibility", "none");
+      }
+      if (map.current.getLayer("v16-cluster-count")) {
+        map.current.setLayoutProperty("v16-cluster-count", "visibility", "none");
+      }
     }
 
-    // Add incidents with new DGT-style markers
-    if (activeLayers.incidents && incidents.length > 0) {
-      // Use simple markers when there are many incidents, detailed when fewer
+    // Add individual incident markers when count is low
+    if (activeLayers.incidents && incidents.length > 0 && incidents.length <= 50) {
       const useDetailedMarkers = incidents.length < 100;
 
       incidents.forEach((incident) => {
@@ -425,7 +698,6 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
           ? createIncidentMarkerElement(incident.effect, incident.cause, 28)
           : createSimpleMarkerElement(incident.effect, 14);
 
-        // Add click handler to open modal if callback provided
         if (onIncidentClick) {
           el.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -439,6 +711,14 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
         markersRef.current.push(marker);
       });
+
+      // Hide cluster layer when showing individual markers
+      if (map.current.getLayer("incident-clusters")) {
+        map.current.setLayoutProperty("incident-clusters", "visibility", "none");
+      }
+      if (map.current.getLayer("incident-cluster-count")) {
+        map.current.setLayoutProperty("incident-cluster-count", "visibility", "none");
+      }
     }
 
     // Add cameras
@@ -489,7 +769,6 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         `;
         el.style.cursor = "pointer";
 
-        // Build popup HTML
         const powerDisplay = charger.totalPowerKw >= 1
           ? `${Math.round(charger.totalPowerKw)} kW`
           : `${Math.round(charger.totalPowerKw * 1000)} W`;

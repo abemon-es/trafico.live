@@ -9,6 +9,17 @@ const nextConfig: NextConfig = {
         destination: "/espana",
         permanent: true,
       },
+      // Redirect /mapa and /incidencias to homepage (unified map now on /)
+      {
+        source: "/mapa",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/incidencias",
+        destination: "/",
+        permanent: true,
+      },
       // Note: /provincias/[code] redirects would need middleware
       // since we need to look up the slug from the code
     ];

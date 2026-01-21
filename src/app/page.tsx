@@ -1,9 +1,24 @@
 "use client";
 
+import { Suspense } from "react";
 import { StatsCards } from "@/components/stats/StatsCards";
 import { BreakdownCharts } from "@/components/stats/BreakdownCharts";
 import { TimeSeriesChart } from "@/components/stats/TimeSeriesChart";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
+import { Map as MapIcon } from "lucide-react";
+
+function MapLoading() {
+  return (
+    <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="p-4 border-b border-gray-200">
+        <div className="h-6 w-40 bg-gray-200 animate-pulse rounded" />
+      </div>
+      <div className="h-[550px] bg-gray-100 animate-pulse flex items-center justify-center">
+        <MapIcon className="w-12 h-12 text-gray-400" />
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   return (
@@ -13,7 +28,9 @@ export default function Dashboard() {
         <StatsCards />
 
         {/* Unified Map Section */}
-        <UnifiedMap defaultHeight="550px" />
+        <Suspense fallback={<MapLoading />}>
+          <UnifiedMap defaultHeight="550px" />
+        </Suspense>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -15,18 +15,24 @@ import { Pool } from "pg";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
+import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
 
 // Community codes
 const COMMUNITY_CATALUNA = "09";
 const COMMUNITY_PAIS_VASCO = "16";
+const COMMUNITY_MADRID = "13";
+
+// Province codes
+const PROVINCE_MADRID = "28";
 
 // Community names
 const COMMUNITIES: Record<string, string> = {
   "09": "Cataluña",
+  "13": "Comunidad de Madrid",
   "16": "País Vasco",
 };
 
-type IncidentData = SCTIncident | EuskadiIncident | DGTIncident;
+type IncidentData = SCTIncident | EuskadiIncident | DGTIncident | MadridIncident;
 
 interface NormalizedIncident {
   situationId: string;
@@ -43,9 +49,14 @@ interface NormalizedIncident {
   provinceName?: string;
   community?: string;
   communityName?: string;
+  municipality?: string;
   description?: string;
   severity: Severity;
   source: string;
+  // Cause categorization (DGT only)
+  causeType?: string;
+  detailedCauseType?: string;
+  managementType?: string;
 }
 
 function inferRoadType(roadNumber: string | undefined): RoadType | undefined {
@@ -111,9 +122,37 @@ function normalizeDGTIncident(incident: DGTIncident): NormalizedIncident {
     provinceName: incident.provinceName,
     community: incident.community,
     communityName: incident.communityName,
+    municipality: incident.municipality,
     description: incident.description,
     severity: incident.severity,
     source: "DGT",
+    // Cause categorization from DGT
+    causeType: incident.causeType,
+    detailedCauseType: incident.detailedCauseType,
+    managementType: incident.managementType,
+  };
+}
+
+function normalizeMadridIncident(incident: MadridIncident): NormalizedIncident {
+  return {
+    situationId: incident.situationId,
+    type: incident.type,
+    startedAt: incident.startedAt,
+    endedAt: undefined, // Madrid doesn't provide end times
+    latitude: incident.latitude,
+    longitude: incident.longitude,
+    roadNumber: incident.roadNumber,
+    roadType: inferRoadType(incident.roadNumber),
+    kmPoint: undefined,
+    direction: undefined,
+    province: PROVINCE_MADRID,
+    provinceName: "Madrid",
+    community: COMMUNITY_MADRID,
+    communityName: COMMUNITIES[COMMUNITY_MADRID],
+    municipality: "Madrid",
+    description: incident.description,
+    severity: incident.severity,
+    source: "MADRID",
   };
 }
 
@@ -132,10 +171,11 @@ async function main() {
 
   try {
     // Fetch incidents from all sources in parallel
-    const [sctResult, euskadiResult, dgtResult] = await Promise.allSettled([
+    const [sctResult, euskadiResult, dgtResult, madridResult] = await Promise.allSettled([
       fetchSCTIncidents(),
       fetchEuskadiIncidents(),
       fetchDGTIncidents(),
+      fetchMadridIncidents(),
     ]);
 
     const allIncidents: NormalizedIncident[] = [];
@@ -170,6 +210,16 @@ async function main() {
       console.error("[collector] Euskadi fetch failed:", euskadiResult.reason);
     }
 
+    // Process Madrid incidents (real-time traffic intensity)
+    if (madridResult.status === "fulfilled") {
+      console.log(`[collector] Madrid returned ${madridResult.value.length} incidents`);
+      for (const incident of madridResult.value) {
+        allIncidents.push(normalizeMadridIncident(incident));
+      }
+    } else {
+      console.error("[collector] Madrid fetch failed:", madridResult.reason);
+    }
+
     console.log(`[collector] Total incidents to process: ${allIncidents.length}`);
 
     if (allIncidents.length === 0) {
@@ -198,6 +248,9 @@ async function main() {
             startedAt: incident.startedAt,
             endedAt: incident.endedAt,
             fetchedAt: now,
+            // Lifecycle tracking - firstSeenAt defaults to now(), lastSeenAt set explicitly
+            firstSeenAt: now,
+            lastSeenAt: now,
             latitude: incident.latitude,
             longitude: incident.longitude,
             roadNumber: incident.roadNumber,
@@ -208,15 +261,22 @@ async function main() {
             provinceName: incident.provinceName,
             community: incident.community,
             communityName: incident.communityName,
+            municipality: incident.municipality,
             description: incident.description,
             severity: incident.severity,
             source: incident.source,
+            // Cause categorization (from DGT)
+            causeType: incident.causeType,
+            detailedCauseType: incident.detailedCauseType,
+            managementType: incident.managementType,
             isActive: true,
           },
           update: {
             type: incident.type,
             endedAt: incident.endedAt,
             fetchedAt: now,
+            // Lifecycle tracking - update lastSeenAt on every observation
+            lastSeenAt: now,
             latitude: incident.latitude,
             longitude: incident.longitude,
             roadNumber: incident.roadNumber,
@@ -224,6 +284,10 @@ async function main() {
             kmPoint: incident.kmPoint,
             description: incident.description,
             severity: incident.severity,
+            // Update cause categorization if available
+            causeType: incident.causeType,
+            detailedCauseType: incident.detailedCauseType,
+            managementType: incident.managementType,
             isActive: true,
           },
         });
@@ -244,18 +308,38 @@ async function main() {
     console.log(`[collector] Processing complete: ${created} created, ${updated} updated, ${skipped} skipped`);
 
     // Deactivate old incidents from all sources (not seen in 1 hour)
+    // Calculate durationSecs based on lifecycle tracking (lastSeenAt - firstSeenAt)
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-    const deactivated = await prisma.trafficIncident.updateMany({
+
+    // Find incidents to deactivate
+    const staleIncidents = await prisma.trafficIncident.findMany({
       where: {
-        source: { in: ["DGT", "SCT", "EUSKADI"] },
+        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID"] },
         isActive: true,
         fetchedAt: { lt: oneHourAgo },
       },
-      data: { isActive: false },
+      select: {
+        id: true,
+        firstSeenAt: true,
+        lastSeenAt: true,
+      },
     });
 
-    if (deactivated.count > 0) {
-      console.log(`[collector] Deactivated ${deactivated.count} stale incidents`);
+    if (staleIncidents.length > 0) {
+      // Deactivate each incident and calculate duration
+      for (const incident of staleIncidents) {
+        const durationSecs = Math.round(
+          (incident.lastSeenAt.getTime() - incident.firstSeenAt.getTime()) / 1000
+        );
+        await prisma.trafficIncident.update({
+          where: { id: incident.id },
+          data: {
+            isActive: false,
+            durationSecs,
+          },
+        });
+      }
+      console.log(`[collector] Deactivated ${staleIncidents.length} stale incidents with duration tracking`);
     }
 
     // Log summary stats
@@ -263,7 +347,7 @@ async function main() {
       by: ["source", "isActive"],
       _count: true,
       where: {
-        source: { in: ["DGT", "SCT", "EUSKADI"] },
+        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID"] },
       },
     });
 
