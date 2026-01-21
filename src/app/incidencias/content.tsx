@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { IncidentFilters } from "@/components/incidents/IncidentFilters";
+import { IncidentModal, type IncidentData } from "@/components/incidents/IncidentModal";
 import {
   createIncidentMarkerElement,
   createSimpleMarkerElement,
@@ -168,23 +169,14 @@ export function IncidenciasContent() {
         ? createIncidentMarkerElement(effect, cause, 28)
         : createSimpleMarkerElement(effect, 14);
 
-      const popupHTML = getIncidentPopupHTML({
-        effect,
-        cause,
-        roadNumber: feature.properties.roadNumber || undefined,
-        kmPoint: feature.properties.kmPoint || undefined,
-        province: feature.properties.province || undefined,
-        description: feature.properties.description || undefined,
-        severity: feature.properties.severity,
-        laneInfo: feature.properties.laneInfo || undefined,
-        startedAt: feature.properties.startedAt,
+      // Add click handler to open modal
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setSelectedIncident(feature);
       });
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
-        .setPopup(
-          new maplibregl.Popup({ offset: 25, maxWidth: "300px" }).setHTML(popupHTML)
-        )
         .addTo(map.current!);
 
       markersRef.current.push(marker);
@@ -406,20 +398,37 @@ export function IncidenciasContent() {
         )}
       </main>
 
-      {/* Map popup styles */}
-      <style jsx global>{`
-        .maplibregl-popup-content {
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          padding: 0;
-        }
-        .maplibregl-popup-close-button {
-          font-size: 18px;
-          padding: 4px 8px;
-        }
-      `}</style>
+      {/* Incident Modal */}
+      {selectedIncident && (
+        <IncidentModal
+          incident={featureToIncidentData(selectedIncident)}
+          onClose={() => setSelectedIncident(null)}
+        />
+      )}
     </div>
   );
+}
+
+// Helper to convert IncidentFeature to IncidentData for the modal
+function featureToIncidentData(feature: IncidentFeature): IncidentData {
+  return {
+    situationId: feature.properties.situationId,
+    type: feature.properties.type,
+    effect: feature.properties.effect,
+    cause: feature.properties.cause,
+    startedAt: feature.properties.startedAt,
+    endedAt: feature.properties.endedAt,
+    roadNumber: feature.properties.roadNumber,
+    kmPoint: feature.properties.kmPoint,
+    direction: feature.properties.direction,
+    province: feature.properties.province,
+    community: feature.properties.community,
+    severity: feature.properties.severity,
+    description: feature.properties.description,
+    laneInfo: feature.properties.laneInfo,
+    source: feature.properties.source,
+    coordinates: feature.geometry.coordinates,
+  };
 }
 
 // List item component
