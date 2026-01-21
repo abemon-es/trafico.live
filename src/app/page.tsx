@@ -52,10 +52,14 @@ interface IncidentsResponse {
     lat: number;
     lng: number;
     type: string;
+    effect: "ROAD_CLOSED" | "SLOW_TRAFFIC" | "RESTRICTED" | "DIVERSION" | "OTHER_EFFECT";
+    cause: "ROADWORK" | "ACCIDENT" | "WEATHER" | "RESTRICTION" | "OTHER_CAUSE";
     road?: string;
     km?: number;
+    province?: string;
     severity: string;
     description?: string;
+    laneInfo?: string;
   }>;
 }
 

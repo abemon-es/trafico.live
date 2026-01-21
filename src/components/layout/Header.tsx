@@ -13,11 +13,13 @@ import {
   X,
   History,
   Camera,
+  AlertTriangle,
 } from "lucide-react";
 
 const navigation = [
   { name: "Inicio", href: "/", icon: Car },
   { name: "Mapa", href: "/mapa", icon: Map },
+  { name: "Incidencias", href: "/incidencias", icon: AlertTriangle },
   { name: "Cámaras", href: "/camaras", icon: Camera },
   { name: "España", href: "/espana", icon: Building2 },
   { name: "Histórico", href: "/historico", icon: History },

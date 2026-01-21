@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
+import {
+  createIncidentMarkerElement,
+  createSimpleMarkerElement,
+  getIncidentPopupHTML,
+  EFFECT_COLORS,
+} from "./IncidentMarker";
 
 interface ActiveLayers {
   v16: boolean;
@@ -31,10 +38,15 @@ interface Incident {
   lat: number;
   lng: number;
   type: string;
+  effect: IncidentEffect;
+  cause: IncidentCause;
   road?: string;
   km?: number;
+  province?: string;
   severity: string;
   description?: string;
+  laneInfo?: string;
+  startedAt?: string;
 }
 
 interface Camera {
@@ -71,13 +83,7 @@ const SEVERITY_COLORS: Record<string, string> = {
   VERY_HIGH: "#7f1d1d",
 };
 
-const INCIDENT_COLORS: Record<string, string> = {
-  ACCIDENT: "#dc2626",
-  ROADWORK: "#f59e0b",
-  CONGESTION: "#f97316",
-  WEATHER: "#3b82f6",
-  OTHER: "#6b7280",
-};
+// Legacy incident colors - now using EFFECT_COLORS from IncidentMarker
 
 export default function TrafficMap({ activeLayers, v16Data, incidentData, cameraData }: TrafficMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -353,29 +359,32 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
       });
     }
 
-    // Add incidents
+    // Add incidents with new DGT-style markers
     if (activeLayers.incidents && incidents.length > 0) {
+      // Use simple markers when there are many incidents, detailed when fewer
+      const useDetailedMarkers = incidents.length < 100;
+
       incidents.forEach((incident) => {
-        const el = document.createElement("div");
-        el.className = "incident-marker";
-        el.innerHTML = `
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 22H22L12 2Z" fill="${INCIDENT_COLORS[incident.type] || INCIDENT_COLORS.OTHER}" stroke="white" stroke-width="2"/>
-            <text x="12" y="18" text-anchor="middle" fill="white" font-size="12" font-weight="bold">!</text>
-          </svg>
-        `;
-        el.style.cursor = "pointer";
+        const el = useDetailedMarkers
+          ? createIncidentMarkerElement(incident.effect, incident.cause, 28)
+          : createSimpleMarkerElement(incident.effect, 14);
+
+        const popupHTML = getIncidentPopupHTML({
+          effect: incident.effect,
+          cause: incident.cause,
+          roadNumber: incident.road,
+          kmPoint: incident.km,
+          province: incident.province,
+          description: incident.description,
+          severity: incident.severity,
+          laneInfo: incident.laneInfo,
+          startedAt: incident.startedAt,
+        });
 
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat([incident.lng, incident.lat])
           .setPopup(
-            new maplibregl.Popup({ offset: 25 }).setHTML(`
-              <div class="p-2 min-w-[150px]">
-                <p class="font-bold text-sm">${incident.type}</p>
-                ${incident.road ? `<p class="text-sm">${incident.road}${incident.km ? ` km ${incident.km}` : ""}</p>` : ""}
-                ${incident.description ? `<p class="text-sm mt-1">${incident.description}</p>` : ""}
-              </div>
-            `)
+            new maplibregl.Popup({ offset: 25, maxWidth: "300px" }).setHTML(popupHTML)
           )
           .addTo(map.current!);
 

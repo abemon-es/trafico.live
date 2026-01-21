@@ -179,6 +179,16 @@ function parseSituationRecord(
     // Extract validity status
     const validityStatus = String(validity?.validityStatus || "");
 
+    // Extract cause information (DGT categorization)
+    const causeInfo = extractCauseInfo(record);
+
+    // Extract management/effect type
+    const managementType = extractManagementType(record);
+    const abnormalTrafficType = extractAbnormalTrafficType(record);
+
+    // Extract lane usage
+    const laneUsage = extractLaneUsage(record);
+
     return {
       id,
       type,
@@ -190,9 +200,15 @@ function parseSituationRecord(
       direction: locationInfo.direction,
       province: locationInfo.province,
       municipality: locationInfo.municipality,
+      community: locationInfo.community,
       description,
       severity,
       validityStatus,
+      causeType: causeInfo.causeType,
+      detailedCauseType: causeInfo.detailedCauseType,
+      managementType,
+      abnormalTrafficType,
+      laneUsage,
     };
   } catch (error) {
     console.error("Error parsing situation record:", error);
@@ -298,6 +314,7 @@ function extractLocationInfo(record: Record<string, unknown>): {
   direction?: string;
   province?: string;
   municipality?: string;
+  community?: string;
 } {
   const locationReference = record.locationReference as Record<string, unknown> | undefined;
 
@@ -306,8 +323,9 @@ function extractLocationInfo(record: Record<string, unknown>): {
   let direction: string | undefined;
   let province: string | undefined;
   let municipality: string | undefined;
+  let community: string | undefined;
 
-  if (!locationReference) return { road, kmPoint, direction, province, municipality };
+  if (!locationReference) return { road, kmPoint, direction, province, municipality, community };
 
   // DATEX II v3.6 format
   const supplementaryPositionalDescription = locationReference.supplementaryPositionalDescription as
@@ -354,6 +372,9 @@ function extractLocationInfo(record: Record<string, unknown>): {
         if (extendedPoint.municipality) {
           municipality = String(extendedPoint.municipality);
         }
+        if (extendedPoint.autonomousCommunity) {
+          community = String(extendedPoint.autonomousCommunity);
+        }
       }
     }
 
@@ -386,7 +407,142 @@ function extractLocationInfo(record: Record<string, unknown>): {
     }
   }
 
-  return { road, kmPoint, direction, province, municipality };
+  return { road, kmPoint, direction, province, municipality, community };
+}
+
+function extractCauseInfo(record: Record<string, unknown>): {
+  causeType?: string;
+  detailedCauseType?: string;
+} {
+  const cause = record.cause as Record<string, unknown> | undefined;
+  if (!cause) return {};
+
+  const causeType = cause.causeType as string | undefined;
+  const detailedCause = cause.detailedCauseType as Record<string, unknown> | undefined;
+
+  // Extract the specific detailed cause type (roadMaintenanceType, accidentType, etc.)
+  let detailedCauseType: string | undefined;
+  if (detailedCause) {
+    // Try various detailed cause type fields
+    detailedCauseType =
+      (detailedCause.roadMaintenanceType as string) ||
+      (detailedCause.accidentType as string) ||
+      (detailedCause.poorEnvironmentType as string) ||
+      (detailedCause.roadOrCarriagewayOrLaneManagementType as string) ||
+      (detailedCause.abnormalTrafficType as string) ||
+      (detailedCause.weatherRelatedRoadConditionType as string);
+  }
+
+  return { causeType, detailedCauseType };
+}
+
+function extractManagementType(record: Record<string, unknown>): string | undefined {
+  // roadOrCarriagewayOrLaneManagementType is the "effect" - what happened to the road
+  return (record.roadOrCarriagewayOrLaneManagementType as string) || undefined;
+}
+
+function extractAbnormalTrafficType(record: Record<string, unknown>): string | undefined {
+  return (record.abnormalTrafficType as string) || undefined;
+}
+
+function extractLaneUsage(record: Record<string, unknown>): string | undefined {
+  const locationReference = record.locationReference as Record<string, unknown> | undefined;
+  const supplementary = locationReference?.supplementaryPositionalDescription as Record<string, unknown> | undefined;
+  const carriageway = supplementary?.carriageway as Record<string, unknown> | undefined;
+  const lane = carriageway?.lane as Record<string, unknown> | undefined;
+  return (lane?.laneUsage as string) || undefined;
+}
+
+// Map raw DATEX2 values to IncidentEffect
+function mapToIncidentEffect(
+  managementType?: string,
+  abnormalTrafficType?: string,
+  laneUsage?: string
+): IncidentEffect {
+  // Road closed - highest priority
+  if (managementType === "roadClosed" || laneUsage === "allLanesCompleteCarriageway") {
+    return "ROAD_CLOSED";
+  }
+
+  // Slow/stationary traffic
+  if (
+    abnormalTrafficType === "slowTraffic" ||
+    abnormalTrafficType === "stationaryTraffic" ||
+    abnormalTrafficType === "queueingTraffic" ||
+    abnormalTrafficType === "heavyTraffic"
+  ) {
+    return "SLOW_TRAFFIC";
+  }
+
+  // Lane closures / restrictions
+  if (
+    managementType === "laneClosures" ||
+    managementType === "carriagewayClosures" ||
+    managementType === "narrowLanes" ||
+    managementType === "contraflow" ||
+    laneUsage === "rightLane" ||
+    laneUsage === "leftLane" ||
+    laneUsage === "middleLane"
+  ) {
+    return "RESTRICTED";
+  }
+
+  // Diversions
+  if (
+    managementType === "localDiversion" ||
+    managementType === "diversion"
+  ) {
+    return "DIVERSION";
+  }
+
+  return "OTHER_EFFECT";
+}
+
+// Map raw DATEX2 values to IncidentCause
+function mapToIncidentCause(causeType?: string, detailedCauseType?: string): IncidentCause {
+  // Roadwork / maintenance
+  if (
+    causeType === "roadMaintenance" ||
+    detailedCauseType === "roadworks" ||
+    detailedCauseType === "resurfacingWork" ||
+    detailedCauseType === "maintenanceWork"
+  ) {
+    return "ROADWORK";
+  }
+
+  // Accidents
+  if (
+    causeType === "accident" ||
+    detailedCauseType === "accident" ||
+    detailedCauseType === "vehicleAccident" ||
+    detailedCauseType === "multiVehicleAccident"
+  ) {
+    return "ACCIDENT";
+  }
+
+  // Weather
+  if (
+    causeType === "poorEnvironmentConditions" ||
+    detailedCauseType === "fog" ||
+    detailedCauseType === "rain" ||
+    detailedCauseType === "snow" ||
+    detailedCauseType === "ice" ||
+    detailedCauseType === "wind" ||
+    detailedCauseType === "flooding"
+  ) {
+    return "WEATHER";
+  }
+
+  // Traffic management / restrictions
+  if (
+    causeType === "trafficManagement" ||
+    causeType === "roadOrCarriagewayOrLaneManagement" ||
+    detailedCauseType === "other"
+  ) {
+    return "RESTRICTION";
+  }
+
+  return "OTHER_CAUSE";
 }
 
 function extractDescription(record: Record<string, unknown>): string | undefined {
@@ -496,9 +652,19 @@ export function extractTrafficIncidents(
       if (record.coordinates && record.startTime) {
         const incidentType = mapRecordTypeToIncident(record.type);
 
+        // Map to DGT-style categorization
+        const effect = mapToIncidentEffect(
+          record.managementType,
+          record.abnormalTrafficType,
+          record.laneUsage
+        );
+        const cause = mapToIncidentCause(record.causeType, record.detailedCauseType);
+
         incidents.push({
           situationId: situation.id,
           type: incidentType,
+          effect,
+          cause,
           startedAt: record.startTime,
           endedAt: record.endTime,
           latitude: record.coordinates.lat,
@@ -508,8 +674,10 @@ export function extractTrafficIncidents(
           direction: record.direction,
           province: record.province,
           municipality: record.municipality,
+          community: record.community,
           severity: (record.severity || situation.overallSeverity || "MEDIUM") as "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH",
           description: record.description,
+          laneInfo: record.laneUsage,
           source: "DGT",
         });
       }
