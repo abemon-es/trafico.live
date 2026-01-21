@@ -28,9 +28,16 @@ export interface DatexSituationRecord {
   direction?: string;
   province?: string;
   municipality?: string;
+  community?: string;
   description?: string;
   severity?: string;
   validityStatus?: string;
+  // Raw DATEX2 fields for DGT categorization
+  causeType?: string;
+  detailedCauseType?: string;
+  managementType?: string;
+  abnormalTrafficType?: string;
+  laneUsage?: string;
 }
 
 export interface V16BeaconData {
@@ -50,9 +57,26 @@ export interface V16BeaconData {
   description?: string;
 }
 
+// DGT-style categorization types
+export type IncidentEffect =
+  | "ROAD_CLOSED"      // Carreteras cortadas
+  | "SLOW_TRAFFIC"     // Tráfico lento
+  | "RESTRICTED"       // Circulación restringida
+  | "DIVERSION"        // Desvíos y embolsamientos
+  | "OTHER_EFFECT";    // Otras afecciones
+
+export type IncidentCause =
+  | "ROADWORK"         // Obras
+  | "ACCIDENT"         // Accidentes
+  | "WEATHER"          // Meteorológicos
+  | "RESTRICTION"      // Restricciones de circulación
+  | "OTHER_CAUSE";     // Otras incidencias
+
 export interface TrafficIncidentData {
   situationId: string;
   type: string;
+  effect: IncidentEffect;
+  cause: IncidentCause;
   startedAt: Date;
   endedAt?: Date;
   latitude: number;
@@ -62,8 +86,10 @@ export interface TrafficIncidentData {
   direction?: string;
   province?: string;
   municipality?: string;
+  community?: string;
   severity: "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH";
   description?: string;
+  laneInfo?: string;
   source?: string;
 }
 

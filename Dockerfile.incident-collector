@@ -5,7 +5,7 @@ WORKDIR /app
 # Install OpenSSL for Prisma
 RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Copy package files from incident-collector service
+# Copy package files
 COPY services/incident-collector/package*.json ./
 
 # Install dependencies
@@ -13,6 +13,7 @@ RUN npm install
 
 # Copy Prisma schema and generate client
 COPY prisma/schema.prisma ./prisma/
+COPY prisma.config.ts ./
 RUN npx prisma generate
 
 # Copy service code
