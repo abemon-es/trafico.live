@@ -14,7 +14,8 @@ import {
   Ban,
   RefreshCw,
   Map as MapIcon,
-  Loader2
+  Loader2,
+  Route,
 } from "lucide-react";
 
 // Dynamic import for map to avoid SSR issues with MapLibre
@@ -66,6 +67,7 @@ export default function Dashboard() {
     chargers: false,
     zbe: false,
     weather: true,
+    highways: true,
   });
 
   // Fetch real data from API
@@ -173,6 +175,13 @@ export default function Dashboard() {
                   onClick={() => toggleLayer("zbe")}
                   color="purple"
                   icon={<Ban className="w-4 h-4" />}
+                />
+                <LayerToggle
+                  label="Autovías"
+                  active={activeLayers.highways}
+                  onClick={() => toggleLayer("highways")}
+                  color="cyan"
+                  icon={<Route className="w-4 h-4" />}
                 />
               </div>
             </div>

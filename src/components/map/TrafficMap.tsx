@@ -11,6 +11,7 @@ interface ActiveLayers {
   chargers: boolean;
   zbe: boolean;
   weather: boolean;
+  highways: boolean;
 }
 
 interface V16Beacon {
@@ -114,6 +115,73 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
     );
 
     map.current.on("load", () => {
+      // Load highways GeoJSON
+      fetch("/geojson/highways.json")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!map.current) return;
+
+          // Add highways source
+          map.current.addSource("highways", {
+            type: "geojson",
+            data: data,
+          });
+
+          // Add highway lines layer (background/casing)
+          map.current.addLayer({
+            id: "highways-casing",
+            type: "line",
+            source: "highways",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+              visibility: "none",
+            },
+            paint: {
+              "line-color": "#ffffff",
+              "line-width": 8,
+              "line-opacity": 0.9,
+            },
+          });
+
+          // Add highway lines layer (main)
+          map.current.addLayer({
+            id: "highways-line",
+            type: "line",
+            source: "highways",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+              visibility: "none",
+            },
+            paint: {
+              "line-color": ["get", "color"],
+              "line-width": 4,
+              "line-opacity": 0.8,
+            },
+          });
+
+          // Add highway labels
+          map.current.addLayer({
+            id: "highways-labels",
+            type: "symbol",
+            source: "highways",
+            layout: {
+              "symbol-placement": "line",
+              "text-field": ["get", "id"],
+              "text-size": 12,
+              "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+              visibility: "none",
+            },
+            paint: {
+              "text-color": "#374151",
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 2,
+            },
+          });
+        })
+        .catch((err) => console.error("Failed to load highways GeoJSON:", err));
+
       setIsLoaded(true);
     });
 
@@ -122,6 +190,23 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
       map.current = null;
     };
   }, []);
+
+  // Toggle highway layers visibility
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    const visibility = activeLayers.highways ? "visible" : "none";
+
+    if (map.current.getLayer("highways-casing")) {
+      map.current.setLayoutProperty("highways-casing", "visibility", visibility);
+    }
+    if (map.current.getLayer("highways-line")) {
+      map.current.setLayoutProperty("highways-line", "visibility", visibility);
+    }
+    if (map.current.getLayer("highways-labels")) {
+      map.current.setLayoutProperty("highways-labels", "visibility", visibility);
+    }
+  }, [activeLayers.highways, isLoaded]);
 
   // Update markers when layers or data change
   useEffect(() => {
