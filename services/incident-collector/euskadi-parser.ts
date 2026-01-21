@@ -137,60 +137,100 @@ function buildDescription(incident: EuskadiIncidence): string {
   return parts.join(" | ");
 }
 
+function parseEuskadiIncidence(inc: EuskadiIncidence): EuskadiIncident | null {
+  const startDate = new Date(inc.startDate);
+  if (isNaN(startDate.getTime())) return null;
+
+  const lat = parseFloat(inc.latitude);
+  const lng = parseFloat(inc.longitude);
+
+  const province = mapProvince(inc.province);
+
+  // Parse km point
+  let kmPoint: number | undefined;
+  if (inc.pkStart && inc.pkStart !== "0.0") {
+    kmPoint = parseFloat(inc.pkStart);
+    if (isNaN(kmPoint)) kmPoint = undefined;
+  }
+
+  return {
+    situationId: `EUSKADI-${inc.incidenceId}`,
+    type: mapIncidentType(inc.incidenceType),
+    startedAt: startDate,
+    endedAt: inc.endDate ? new Date(inc.endDate) : undefined,
+    latitude: lat || 0,
+    longitude: lng || 0,
+    roadNumber: inc.road?.trim() || undefined,
+    kmPoint,
+    direction: inc.direction !== "NO DISPONIBLE" ? inc.direction : undefined,
+    province: province?.code,
+    provinceName: province?.name,
+    description: buildDescription(inc),
+    severity: estimateSeverity(inc),
+  };
+}
+
+function isActiveIncident(inc: EuskadiIncidence): boolean {
+  // No end date = still active
+  if (!inc.endDate) return true;
+
+  // End date in the future = still active
+  const endDate = new Date(inc.endDate);
+  if (isNaN(endDate.getTime())) return true; // Assume active if unparseable
+  return endDate > new Date();
+}
+
 export async function fetchEuskadiIncidents(): Promise<EuskadiIncident[]> {
   console.log("[EUSKADI] Fetching from:", EUSKADI_URL);
 
-  const response = await fetch(EUSKADI_URL, {
-    headers: { "Accept": "application/json" },
-  });
+  const allIncidents: EuskadiIncident[] = [];
+  let page = 1;
+  const pageSize = 100; // Request more items per page
+  let hasMore = true;
 
-  if (!response.ok) {
-    throw new Error(`Euskadi API error: ${response.status} ${response.statusText}`);
-  }
+  // Safety limit to avoid infinite loops
+  const maxPages = 50;
 
-  const data: EuskadiApiResponse = await response.json();
-  console.log(`[EUSKADI] API returned ${data.totalItems} total items, page ${data.currentPage}`);
+  while (hasMore && page <= maxPages) {
+    const url = `${EUSKADI_URL}?_page=${page}&_pageSize=${pageSize}`;
 
-  const incidents: EuskadiIncident[] = [];
+    const response = await fetch(url, {
+      headers: { "Accept": "application/json" },
+    });
 
-  for (const inc of data.incidences) {
-    // Parse coordinates - skip if invalid (0,0)
-    const lat = parseFloat(inc.latitude);
-    const lng = parseFloat(inc.longitude);
-
-    // Skip incidents with no valid coordinates
-    // Note: Many Euskadi incidents have 0,0 coordinates, we'll still include them
-    // but try to use road info for location context
-
-    const startDate = new Date(inc.startDate);
-    if (isNaN(startDate.getTime())) continue;
-
-    const province = mapProvince(inc.province);
-
-    // Parse km point
-    let kmPoint: number | undefined;
-    if (inc.pkStart && inc.pkStart !== "0.0") {
-      kmPoint = parseFloat(inc.pkStart);
-      if (isNaN(kmPoint)) kmPoint = undefined;
+    if (!response.ok) {
+      throw new Error(`Euskadi API error: ${response.status} ${response.statusText}`);
     }
 
-    incidents.push({
-      situationId: `EUSKADI-${inc.incidenceId}`,
-      type: mapIncidentType(inc.incidenceType),
-      startedAt: startDate,
-      endedAt: inc.endDate ? new Date(inc.endDate) : undefined,
-      latitude: lat || 0,
-      longitude: lng || 0,
-      roadNumber: inc.road?.trim() || undefined,
-      kmPoint,
-      direction: inc.direction !== "NO DISPONIBLE" ? inc.direction : undefined,
-      province: province?.code,
-      provinceName: province?.name,
-      description: buildDescription(inc),
-      severity: estimateSeverity(inc),
-    });
+    const data: EuskadiApiResponse = await response.json();
+
+    if (page === 1) {
+      console.log(`[EUSKADI] API has ${data.totalItems} total items, ${data.totalPages} pages`);
+    }
+
+    // Filter for active incidents only and parse
+    for (const inc of data.incidences) {
+      if (!isActiveIncident(inc)) continue;
+
+      const incident = parseEuskadiIncidence(inc);
+      if (incident) {
+        allIncidents.push(incident);
+      }
+    }
+
+    // Check if we should continue
+    hasMore = page < data.totalPages;
+    page++;
+
+    // If we've found fewer than 5 active incidents in this page,
+    // we're likely past the active section (API returns newest first)
+    const activeInThisPage = data.incidences.filter(isActiveIncident).length;
+    if (activeInThisPage < 5 && page > 2) {
+      console.log(`[EUSKADI] Found only ${activeInThisPage} active incidents on page ${page - 1}, stopping pagination`);
+      break;
+    }
   }
 
-  console.log(`[EUSKADI] Parsed ${incidents.length} incidents from first page`);
-  return incidents;
+  console.log(`[EUSKADI] Parsed ${allIncidents.length} active incidents from ${page - 1} pages`);
+  return allIncidents;
 }

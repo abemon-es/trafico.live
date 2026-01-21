@@ -33,8 +33,13 @@ export interface DGTIncident {
   provinceName?: string;
   community?: string;
   communityName?: string;
+  municipality?: string;
   description?: string;
   severity: Severity;
+  // Cause categorization
+  causeType?: string;
+  detailedCauseType?: string;
+  managementType?: string;
 }
 
 export async function fetchDGTIncidents(): Promise<DGTIncident[]> {
@@ -140,6 +145,18 @@ function parseRecord(
     // Extract description
     const description = extractDescription(record);
 
+    // Extract cause categorization
+    const cause = record.cause as Record<string, unknown> | undefined;
+    const causeType = cause?.causeType as string | undefined;
+    const detailedCause = cause?.detailedCauseType as Record<string, unknown> | undefined;
+    // detailedCauseType is usually an object like { fog: {} } - extract the key
+    const detailedCauseType = detailedCause
+      ? Object.keys(detailedCause)[0]
+      : undefined;
+
+    // Extract management type from roadOrCarriagewayOrLaneManagementType
+    const managementType = extractManagementType(record);
+
     return {
       situationId: `DGT-${situationId}`,
       type,
@@ -154,8 +171,12 @@ function parseRecord(
       provinceName: locationInfo.province, // DGT uses names, not codes
       community: locationInfo.community,
       communityName: locationInfo.community,
+      municipality: locationInfo.municipality,
       description,
       severity,
+      causeType,
+      detailedCauseType,
+      managementType,
     };
   } catch (error) {
     console.error("[DGT] Error parsing record:", error);
@@ -276,6 +297,7 @@ function extractLocationInfo(record: Record<string, unknown>): {
   direction?: string;
   province?: string;
   community?: string;
+  municipality?: string;
 } {
   const locationReference = record.locationReference as Record<string, unknown> | undefined;
 
@@ -284,8 +306,9 @@ function extractLocationInfo(record: Record<string, unknown>): {
   let direction: string | undefined;
   let province: string | undefined;
   let community: string | undefined;
+  let municipality: string | undefined;
 
-  if (!locationReference) return { road, kmPoint, direction, province, community };
+  if (!locationReference) return { road, kmPoint, direction, province, community, municipality };
 
   // Supplementary positional description
   const supplementary = locationReference.supplementaryPositionalDescription as Record<string, unknown> | undefined;
@@ -322,6 +345,9 @@ function extractLocationInfo(record: Record<string, unknown>): {
         if (extendedPoint.autonomousCommunity) {
           community = String(extendedPoint.autonomousCommunity);
         }
+        if (extendedPoint.municipality) {
+          municipality = String(extendedPoint.municipality);
+        }
       }
     }
 
@@ -333,7 +359,7 @@ function extractLocationInfo(record: Record<string, unknown>): {
     }
   }
 
-  return { road, kmPoint, direction, province, community };
+  return { road, kmPoint, direction, province, community, municipality };
 }
 
 function extractDescription(record: Record<string, unknown>): string | undefined {
@@ -354,6 +380,32 @@ function extractDescription(record: Record<string, unknown>): string | undefined
 
   const freeText = record.situationDescription as string | undefined;
   if (freeText) return freeText;
+
+  return undefined;
+}
+
+function extractManagementType(record: Record<string, unknown>): string | undefined {
+  // Check for road/carriageway/lane management type
+  const managementType = record.roadOrCarriagewayOrLaneManagementType as string | undefined;
+  if (managementType) return managementType;
+
+  // Check within nested management object
+  const management = record.management as Record<string, unknown> | undefined;
+  if (management?.roadManagementType) {
+    return String(management.roadManagementType);
+  }
+
+  // Check for lane closures info
+  const laneClosures = record.numberOfLanesRestricted as number | undefined;
+  if (laneClosures && laneClosures > 0) {
+    return "laneClosures";
+  }
+
+  // Check for diversion
+  const diversion = record.diversionInForce as boolean | undefined;
+  if (diversion) {
+    return "diversion";
+  }
 
   return undefined;
 }

@@ -234,8 +234,8 @@ export async function fetchSCTIncidents(): Promise<SCTIncident[]> {
         latitude: coords.lat,
         longitude: coords.lng,
         roadNumber: road,
-        province: province || "08", // Default to Barcelona if not found
-        provinceName: provinceName || "Barcelona",
+        province,  // Don't default - let NULL indicate unknown
+        provinceName,
         description: extractDescription(record),
         severity: extractSeverity(record.severity),
       });
