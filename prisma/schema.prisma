@@ -19,7 +19,12 @@ model V16BeaconEvent {
   situationId     String
   recordId        String?
 
-  // Temporal data
+  // Lifecycle tracking (for historical analysis)
+  firstSeenAt     DateTime  @default(now()) @db.Timestamptz  // When we first observed this beacon
+  lastSeenAt      DateTime  @default(now()) @db.Timestamptz  // Last time beacon appeared in API response
+  durationSecs    Int?      // Calculated when deactivated (lastSeenAt - firstSeenAt)
+
+  // DGT-provided timestamps
   activatedAt     DateTime  @db.Timestamptz
   deactivatedAt   DateTime? @db.Timestamptz
   lastUpdatedAt   DateTime  @db.Timestamptz
@@ -55,6 +60,8 @@ model V16BeaconEvent {
   @@index([community, activatedAt])
   @@index([isActive])
   @@index([roadNumber])
+  @@index([lastSeenAt])
+  @@index([isActive, lastSeenAt])
   @@unique([situationId, recordId])
 }
 
@@ -341,6 +348,7 @@ model HistoricalAccidents {
 model Province {
   code            String    @id  // INE 2-digit code: "28", "08"
   name            String         // "Madrid", "Barcelona"
+  slug            String    @unique  // URL-friendly: "madrid"
   communityCode   String
   community       Community @relation(fields: [communityCode], references: [code])
 
@@ -348,18 +356,44 @@ model Province {
   population      Int?
   area            Decimal?  @db.Decimal(10, 2)  // km2
 
+  // Municipalities
+  municipalities  Municipality[]
+
   @@index([communityCode])
+  @@index([slug])
 }
 
 model Community {
   code            String    @id  // INE 2-digit code: "13", "09"
   name            String         // "Comunidad de Madrid", "Cataluña"
+  slug            String    @unique  // URL-friendly: "comunidad-de-madrid"
 
   // Flag for regions with their own traffic systems
   isExcluded      Boolean   @default(false)
   excludedReason  String?   // "Regional traffic system"
 
   provinces       Province[]
+
+  @@index([slug])
+}
+
+model Municipality {
+  code            String    @id  // INE 5-digit code: "28079" (Madrid city)
+  name            String         // "Madrid"
+  slug            String    @unique  // URL-friendly: "madrid"
+  provinceCode    String
+  province        Province  @relation(fields: [provinceCode], references: [code])
+
+  // Stats
+  population      Int?
+  area            Decimal?  @db.Decimal(10, 2)  // km2
+
+  // Geographic center (optional)
+  latitude        Decimal?  @db.Decimal(9, 6)
+  longitude       Decimal?  @db.Decimal(9, 6)
+
+  @@index([provinceCode])
+  @@index([slug])
 }
 
 model Road {

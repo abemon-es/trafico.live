@@ -1,0 +1,21 @@
+{
+  "name": "v16-collector",
+  "version": "1.0.0",
+  "description": "V16 beacon data collector for trafico-dashboard",
+  "main": "collector.ts",
+  "type": "module",
+  "scripts": {
+    "start": "tsx collector.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.0",
+    "fast-xml-parser": "^5.1.1",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "prisma": "^6.2.0",
+    "typescript": "^5.7.3"
+  }
+}

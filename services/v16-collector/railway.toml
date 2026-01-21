@@ -1,0 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "services/v16-collector/Dockerfile"
+watchPatterns = ["services/v16-collector/**", "prisma/schema.prisma"]
+
+[deploy]
+cronSchedule = "*/5 * * * *"
+numReplicas = 1
+restartPolicyType = "NEVER"
