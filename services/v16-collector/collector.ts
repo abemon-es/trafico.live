@@ -305,7 +305,13 @@ function detectRoadType(roadNumber?: string): RoadType | undefined {
 }
 
 async function main() {
-  const prisma = new PrismaClient();
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+  });
   const now = new Date();
 
   console.log(`[collector] Starting V16 beacon collection at ${now.toISOString()}`);
