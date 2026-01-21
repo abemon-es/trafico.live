@@ -7,9 +7,17 @@
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "date-fns": "^4.1.0",
     "fast-xml-parser": "^5.3.3",
@@ -17,6 +25,7 @@
     "maplibre-gl": "^5.16.0",
     "next": "16.1.4",
     "node-cron": "^4.2.1",
+    "pg": "^8.17.2",
     "prisma": "^7.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -27,11 +36,14 @@
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
