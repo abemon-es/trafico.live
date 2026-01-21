@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -11,7 +11,7 @@ import {
   EFFECT_COLORS,
 } from "./IncidentMarker";
 
-interface ActiveLayers {
+export interface ActiveLayers {
   v16: boolean;
   incidents: boolean;
   cameras: boolean;
@@ -22,7 +22,12 @@ interface ActiveLayers {
   provinces: boolean;
 }
 
-interface V16Beacon {
+export interface IncidentFilters {
+  effects: IncidentEffect[];
+  causes: IncidentCause[];
+}
+
+export interface V16Beacon {
   id: string;
   lat: number;
   lng: number;
@@ -33,7 +38,7 @@ interface V16Beacon {
   description?: string;
 }
 
-interface Incident {
+export interface Incident {
   id: string;
   lat: number;
   lng: number;
@@ -49,7 +54,7 @@ interface Incident {
   startedAt?: string;
 }
 
-interface Camera {
+export interface Camera {
   id: string;
   lat: number;
   lng: number;
@@ -59,16 +64,20 @@ interface Camera {
   imageUrl?: string;
 }
 
+export interface TrafficMapRef {
+  flyTo: (lng: number, lat: number, zoom?: number) => void;
+  getMap: () => maplibregl.Map | null;
+}
+
 interface TrafficMapProps {
   activeLayers: ActiveLayers;
   v16Data?: V16Beacon[];
   incidentData?: Incident[];
   cameraData?: Camera[];
+  incidentFilters?: IncidentFilters;
+  height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
-
-// Export Incident type for use in other components
-export type { Incident };
 
 // Spain center coordinates
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168];
@@ -89,7 +98,10 @@ const SEVERITY_COLORS: Record<string, string> = {
 
 // Legacy incident colors - now using EFFECT_COLORS from IncidentMarker
 
-export default function TrafficMap({ activeLayers, v16Data, incidentData, cameraData, onIncidentClick }: TrafficMapProps) {
+const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
+  { activeLayers, v16Data, incidentData, cameraData, incidentFilters, height = "500px", onIncidentClick },
+  ref
+) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -97,8 +109,31 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
 
   // Use provided data or empty arrays
   const beacons = v16Data || [];
-  const incidents = incidentData || [];
   const cameras = cameraData || SAMPLE_CAMERAS;
+
+  // Filter incidents based on incidentFilters
+  const incidents = (incidentData || []).filter((incident) => {
+    if (!incidentFilters) return true;
+    const { effects, causes } = incidentFilters;
+
+    // If no filters active, show all
+    if (effects.length === 0 && causes.length === 0) return true;
+
+    // If effect filters active, must match one
+    const effectMatch = effects.length === 0 || effects.includes(incident.effect);
+    // If cause filters active, must match one
+    const causeMatch = causes.length === 0 || causes.includes(incident.cause);
+
+    return effectMatch && causeMatch;
+  });
+
+  // Expose map methods via ref
+  useImperativeHandle(ref, () => ({
+    flyTo: (lng: number, lat: number, zoom: number = 12) => {
+      map.current?.flyTo({ center: [lng, lat], zoom, duration: 1000 });
+    },
+    getMap: () => map.current,
+  }));
 
   // Initialize map
   useEffect(() => {
@@ -446,9 +481,11 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
       `}</style>
       <div
         ref={mapContainer}
-        className="w-full h-[500px]"
-        style={{ backgroundColor: "#f5f5f5" }}
+        className="w-full"
+        style={{ backgroundColor: "#f5f5f5", height }}
       />
     </>
   );
-}
+});
+
+export default TrafficMap;
