@@ -175,7 +175,7 @@ export function IncidenciasContent() {
         setSelectedIncident(feature);
       });
 
-      const marker = new maplibregl.Marker({ element: el })
+      const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([lng, lat])
         .addTo(map.current!);
 
@@ -344,14 +344,12 @@ export function IncidenciasContent() {
             </div>
           )}
 
-          {/* Map view */}
-          {!isLoading && !error && viewMode === "map" && (
-            <div
-              ref={mapContainer}
-              className="w-full h-[600px]"
-              style={{ backgroundColor: "#f5f5f5" }}
-            />
-          )}
+          {/* Map container - always rendered to avoid race condition */}
+          <div
+            ref={mapContainer}
+            className={`w-full h-[600px] ${viewMode !== "map" || isLoading || error ? "hidden" : ""}`}
+            style={{ backgroundColor: "#f5f5f5" }}
+          />
 
           {/* List view */}
           {!isLoading && !error && viewMode === "list" && (

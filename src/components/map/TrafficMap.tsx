@@ -64,7 +64,11 @@ interface TrafficMapProps {
   v16Data?: V16Beacon[];
   incidentData?: Incident[];
   cameraData?: Camera[];
+  onIncidentClick?: (incident: Incident) => void;
 }
+
+// Export Incident type for use in other components
+export type { Incident };
 
 // Spain center coordinates
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168];
@@ -85,7 +89,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 
 // Legacy incident colors - now using EFFECT_COLORS from IncidentMarker
 
-export default function TrafficMap({ activeLayers, v16Data, incidentData, cameraData }: TrafficMapProps) {
+export default function TrafficMap({ activeLayers, v16Data, incidentData, cameraData, onIncidentClick }: TrafficMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -369,23 +373,16 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
           ? createIncidentMarkerElement(incident.effect, incident.cause, 28)
           : createSimpleMarkerElement(incident.effect, 14);
 
-        const popupHTML = getIncidentPopupHTML({
-          effect: incident.effect,
-          cause: incident.cause,
-          roadNumber: incident.road,
-          kmPoint: incident.km,
-          province: incident.province,
-          description: incident.description,
-          severity: incident.severity,
-          laneInfo: incident.laneInfo,
-          startedAt: incident.startedAt,
-        });
+        // Add click handler to open modal if callback provided
+        if (onIncidentClick) {
+          el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            onIncidentClick(incident);
+          });
+        }
 
-        const marker = new maplibregl.Marker({ element: el })
+        const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
           .setLngLat([incident.lng, incident.lat])
-          .setPopup(
-            new maplibregl.Popup({ offset: 25, maxWidth: "300px" }).setHTML(popupHTML)
-          )
           .addTo(map.current!);
 
         markersRef.current.push(marker);
@@ -426,7 +423,7 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
         markersRef.current.push(marker);
       });
     }
-  }, [activeLayers, isLoaded, beacons, incidents, cameras]);
+  }, [activeLayers, isLoaded, beacons, incidents, cameras, onIncidentClick]);
 
   return (
     <>

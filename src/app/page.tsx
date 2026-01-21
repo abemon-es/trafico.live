@@ -7,6 +7,8 @@ import { StatsCards } from "@/components/stats/StatsCards";
 import { BreakdownCharts } from "@/components/stats/BreakdownCharts";
 import { TimeSeriesChart } from "@/components/stats/TimeSeriesChart";
 import { LayerToggle } from "@/components/map/LayerToggle";
+import { IncidentModal, type IncidentData } from "@/components/incidents/IncidentModal";
+import type { Incident } from "@/components/map/TrafficMap";
 import {
   AlertTriangle,
   Camera,
@@ -88,6 +90,7 @@ export default function Dashboard() {
     highways: true,
     provinces: false,
   });
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
   // Fetch real data from API
   const { data: v16Data, mutate: mutateV16, isLoading: v16Loading } = useSWR<V16Response>(
@@ -225,6 +228,7 @@ export default function Dashboard() {
             v16Data={v16Data?.beacons}
             incidentData={incidentsData?.incidents}
             cameraData={camerasData?.cameras}
+            onIncidentClick={setSelectedIncident}
           />
         </section>
 
@@ -254,6 +258,36 @@ export default function Dashboard() {
           </p>
         </footer>
       </main>
+
+      {/* Incident Modal */}
+      {selectedIncident && (
+        <IncidentModal
+          incident={incidentToModalData(selectedIncident)}
+          onClose={() => setSelectedIncident(null)}
+        />
+      )}
     </div>
   );
+}
+
+// Helper to convert TrafficMap Incident to IncidentModal data
+function incidentToModalData(incident: Incident): IncidentData {
+  return {
+    situationId: incident.id,
+    type: incident.type,
+    effect: incident.effect,
+    cause: incident.cause,
+    startedAt: incident.startedAt || new Date().toISOString(),
+    endedAt: null,
+    roadNumber: incident.road || null,
+    kmPoint: incident.km || null,
+    direction: null,
+    province: incident.province || null,
+    community: null,
+    severity: incident.severity,
+    description: incident.description || null,
+    laneInfo: incident.laneInfo || null,
+    source: "DGT",
+    coordinates: [incident.lng, incident.lat],
+  };
 }
