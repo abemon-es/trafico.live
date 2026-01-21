@@ -67,6 +67,18 @@ export interface TrafficIncidentData {
   source?: string;
 }
 
+export interface CameraData {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  road: string;
+  direction: string;
+  kmPoint: number | null;
+  province: string;
+  imageUrl: string;
+}
+
 // Parse raw DATEX II XML response
 export function parseDatexResponse(xml: string): DatexSituation[] {
   try {
@@ -512,4 +524,117 @@ export async function fetchDGTData(url: string): Promise<DatexSituation[]> {
 
   const xml = await response.text();
   return parseDatexResponse(xml);
+}
+
+// Parse DevicePublication XML (for cameras)
+export function parseDevicePublication(xml: string): CameraData[] {
+  try {
+    const result = parser.parse(xml);
+
+    // Handle DATEX II v3.6 DevicePublication format
+    const publication = result?.payload;
+
+    if (!publication) {
+      console.warn("No payload found in device publication response");
+      return [];
+    }
+
+    const devices = ensureArray(publication.device) as Record<string, unknown>[];
+    const cameras: CameraData[] = [];
+
+    for (const device of devices) {
+      // Only process camera devices
+      const deviceType = device.typeOfDevice;
+      if (deviceType !== "camera") continue;
+
+      const camera = parseDeviceAsCamera(device);
+      if (camera) {
+        cameras.push(camera);
+      }
+    }
+
+    return cameras;
+  } catch (error) {
+    console.error("Error parsing device publication XML:", error);
+    return [];
+  }
+}
+
+function parseDeviceAsCamera(device: Record<string, unknown>): CameraData | null {
+  try {
+    const id = String(device["@_id"] || "");
+    const imageUrl = String(device.deviceUrl || "");
+
+    if (!id || !imageUrl) return null;
+
+    // Extract location data
+    const pointLocation = device.pointLocation as Record<string, unknown> | undefined;
+    if (!pointLocation) return null;
+
+    // Get coordinates from TPEG point location
+    const tpegPointLocation = pointLocation.tpegPointLocation as Record<string, unknown> | undefined;
+    const point = tpegPointLocation?.point as Record<string, unknown> | undefined;
+    const pointCoordinates = point?.pointCoordinates as Record<string, unknown> | undefined;
+
+    const latitude = parseFloat(String(pointCoordinates?.latitude || 0));
+    const longitude = parseFloat(String(pointCoordinates?.longitude || 0));
+
+    if (!latitude || !longitude) return null;
+
+    // Get road info from supplementary description
+    const supplementary = pointLocation.supplementaryPositionalDescription as Record<string, unknown> | undefined;
+    const roadInfo = supplementary?.roadInformation as Record<string, unknown> | undefined;
+
+    const road = String(roadInfo?.roadName || "");
+    const direction = String(roadInfo?.roadDestination || "");
+
+    // Get km point and province from TPEG extension
+    const extension = point?._tpegNonJunctionPointExtension as Record<string, unknown> | undefined;
+    const extendedPoint = extension?.extendedTpegNonJunctionPoint as Record<string, unknown> | undefined;
+
+    const kmPoint = extendedPoint?.kilometerPoint
+      ? parseFloat(String(extendedPoint.kilometerPoint))
+      : null;
+    const province = String(extendedPoint?.province || "");
+
+    // Build camera name: "A-62 km 25.3 → BURGOS"
+    const kmStr = kmPoint !== null ? ` km ${kmPoint}` : "";
+    const dirStr = direction ? ` → ${direction}` : "";
+    const name = `${road}${kmStr}${dirStr}`;
+
+    return {
+      id,
+      name: name || `Cámara ${id}`,
+      latitude,
+      longitude,
+      road,
+      direction,
+      kmPoint,
+      province,
+      imageUrl,
+    };
+  } catch (error) {
+    console.error("Error parsing camera device:", error);
+    return null;
+  }
+}
+
+// Fetch cameras from DGT DevicePublication
+export async function fetchDGTCameras(): Promise<CameraData[]> {
+  const url = "https://nap.dgt.es/datex2/v3/dgt/DevicePublication/camaras_datex2_v36.xml";
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/xml",
+      "User-Agent": "TraficoEspana/1.0 (https://trafico.abemon.es)",
+    },
+    next: { revalidate: 300 }, // Cache for 5 minutes
+  });
+
+  if (!response.ok) {
+    throw new Error(`DGT Camera API error: ${response.status} ${response.statusText}`);
+  }
+
+  const xml = await response.text();
+  return parseDevicePublication(xml);
 }

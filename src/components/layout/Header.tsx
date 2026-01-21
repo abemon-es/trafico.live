@@ -12,11 +12,13 @@ import {
   Menu,
   X,
   History,
+  Camera,
 } from "lucide-react";
 
 const navigation = [
   { name: "Inicio", href: "/", icon: Car },
   { name: "Mapa", href: "/mapa", icon: Map },
+  { name: "Cámaras", href: "/camaras", icon: Camera },
   { name: "España", href: "/espana", icon: Building2 },
   { name: "Histórico", href: "/historico", icon: History },
   { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },

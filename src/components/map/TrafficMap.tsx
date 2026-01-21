@@ -42,7 +42,9 @@ interface Camera {
   lat: number;
   lng: number;
   name: string;
-  feedUrl?: string;
+  road?: string;
+  province?: string;
+  imageUrl?: string;
 }
 
 interface TrafficMapProps {
@@ -59,12 +61,8 @@ const SPAIN_BOUNDS: [[number, number], [number, number]] = [
   [4.5, 44.0],  // NE
 ];
 
-// Fallback sample data (only used if no data provided)
-const SAMPLE_CAMERAS: Camera[] = [
-  { id: "cam-1", lat: 40.42, lng: -3.71, name: "M-30 km 12", feedUrl: "#" },
-  { id: "cam-2", lat: 40.45, lng: -3.68, name: "A-1 km 5", feedUrl: "#" },
-  { id: "cam-3", lat: 40.38, lng: -3.75, name: "A-42 km 3", feedUrl: "#" },
-];
+// Empty array - cameras will be loaded from API
+const SAMPLE_CAMERAS: Camera[] = [];
 
 const SEVERITY_COLORS: Record<string, string> = {
   LOW: "#22c55e",
@@ -401,10 +399,16 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat([camera.lng, camera.lat])
           .setPopup(
-            new maplibregl.Popup({ offset: 25 }).setHTML(`
-              <div class="p-2 min-w-[150px]">
+            new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
+              <div class="p-2">
+                ${camera.imageUrl ? `
+                  <div class="mb-2 bg-gray-100 rounded overflow-hidden">
+                    <img src="${camera.imageUrl}" alt="${camera.name}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'" />
+                  </div>
+                ` : ""}
                 <p class="font-bold text-sm">${camera.name}</p>
-                ${camera.feedUrl ? `<a href="${camera.feedUrl}" target="_blank" class="text-blue-600 text-sm hover:underline">Ver cámara en vivo</a>` : ""}
+                ${camera.province ? `<p class="text-xs text-gray-500">${camera.province}</p>` : ""}
+                <a href="/camaras?id=${camera.id}" class="inline-block mt-2 text-blue-600 text-sm hover:underline">Ver cámara →</a>
               </div>
             `)
           )

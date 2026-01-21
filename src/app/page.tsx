@@ -59,6 +59,19 @@ interface IncidentsResponse {
   }>;
 }
 
+interface CamerasResponse {
+  count: number;
+  cameras: Array<{
+    id: string;
+    name: string;
+    lat: number;
+    lng: number;
+    road: string;
+    province: string;
+    imageUrl: string;
+  }>;
+}
+
 export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [activeLayers, setActiveLayers] = useState({
@@ -83,6 +96,13 @@ export default function Dashboard() {
     "/api/incidents",
     fetcher,
     { refreshInterval: 60000, revalidateOnFocus: true }
+  );
+
+  // Fetch cameras (less frequent refresh since positions don't change)
+  const { data: camerasData } = useSWR<CamerasResponse>(
+    activeLayers.cameras ? "/api/cameras" : null,
+    fetcher,
+    { revalidateOnFocus: false }
   );
 
   const toggleLayer = (layer: keyof typeof activeLayers) => {
@@ -138,7 +158,8 @@ export default function Dashboard() {
                 {v16Data && (
                   <span className="text-sm text-gray-500">
                     ({v16Data.count} balizas V16
-                    {incidentsData ? `, ${incidentsData.count} incidencias` : ""})
+                    {incidentsData ? `, ${incidentsData.count} incidencias` : ""}
+                    {camerasData && activeLayers.cameras ? `, ${camerasData.count} cámaras` : ""})
                   </span>
                 )}
               </div>
@@ -199,6 +220,7 @@ export default function Dashboard() {
             activeLayers={activeLayers}
             v16Data={v16Data?.beacons}
             incidentData={incidentsData?.incidents}
+            cameraData={camerasData?.cameras}
           />
         </section>
 
