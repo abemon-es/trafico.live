@@ -2,6 +2,4 @@
 services/
 
 # Ignore untracked directories that try to access DB during build
-src/app/comunidad-autonoma/
-src/app/espana/
 src/app/api/historical/

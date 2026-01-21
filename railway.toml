@@ -1,6 +1,6 @@
 [build]
 # Use root directory only
-watchPatterns = ["src/**", "public/**", "prisma/**", "package.json", "package-lock.json"]
+watchPatterns = ["src/**", "public/**", "prisma/**", "services/**", "package.json", "package-lock.json", "Dockerfile.*"]
 
 # Increase Node memory for TypeScript compilation
 buildCommand = "NODE_OPTIONS='--max-old-space-size=4096' npm run build"

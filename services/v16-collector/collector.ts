@@ -6,6 +6,8 @@
  */
 
 import { PrismaClient, Direction, Severity, MobilityType, RoadType } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { XMLParser } from "fast-xml-parser";
 import { aggregateStats } from "./aggregator.js";
 
@@ -305,16 +307,17 @@ function detectRoadType(roadNumber?: string): RoadType | undefined {
 }
 
 async function main() {
-  const prisma = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaPg(pool);
+  const prisma = new PrismaClient({ adapter });
   const now = new Date();
 
-  console.log(`[collector] Starting V16 beacon collection at ${now.toISOString()}`);
+  console.log(`[collector] V16 Collector v2.1 - Starting at ${now.toISOString()}`);
 
   try {
     // 1. FETCH from DGT API
@@ -460,19 +463,21 @@ async function main() {
       }
     }
 
-    // 8. QUEUE aggregation (non-blocking)
-    aggregateStats(prisma, now).catch(err => {
+    // 8. RUN aggregation (must complete before pool closes)
+    try {
+      await aggregateStats(prisma, now);
+    } catch (err) {
       console.error("[collector] Aggregation error:", err);
-    });
+    }
 
     console.log("[collector] Collection completed successfully");
 
   } catch (error) {
     console.error("[collector] Fatal error:", error);
     process.exit(1);
-  } finally {
-    await prisma.$disconnect();
   }
+  // Note: Let process exit handle cleanup
+  // Calling disconnect/pool.end() breaks async Prisma operations
 }
 
 main();

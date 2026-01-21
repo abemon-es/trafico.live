@@ -1,5 +1,33 @@
 import "dotenv/config";
 import prisma from "../src/lib/db";
+import * as fs from "fs";
+import * as path from "path";
+
+// Type for historical accidents from JSON
+interface HistoricalAccidentData {
+  year: number;
+  province: string;
+  provinceName: string;
+  accidents: number;
+  fatalities: number;
+  hospitalized: number;
+  nonHospitalized: number;
+}
+
+/**
+ * Convert a string to a URL-friendly slug
+ */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ñ/g, "n")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
 
 // Spanish Autonomous Communities (INE codes)
 const communities = [
@@ -80,42 +108,94 @@ const provinces = [
   { code: "52", name: "Melilla", communityCode: "19", population: 87076, area: 13.41 },
 ];
 
-// Sample historical accident data (DGT en Cifras 2023)
-// Real data would be imported from DGT PDFs/Excel files
-const historicalAccidents2023 = [
-  { province: "28", provinceName: "Madrid", accidents: 12453, fatalities: 98, hospitalized: 1234, nonHospitalized: 8765 },
-  { province: "08", provinceName: "Barcelona", accidents: 10234, fatalities: 87, hospitalized: 1023, nonHospitalized: 7234 },
-  { province: "46", provinceName: "Valencia", accidents: 5432, fatalities: 56, hospitalized: 654, nonHospitalized: 3876 },
-  { province: "41", provinceName: "Sevilla", accidents: 4321, fatalities: 48, hospitalized: 543, nonHospitalized: 2987 },
-  { province: "29", provinceName: "Málaga", accidents: 3876, fatalities: 42, hospitalized: 465, nonHospitalized: 2654 },
-  { province: "03", provinceName: "Alicante", accidents: 3543, fatalities: 38, hospitalized: 432, nonHospitalized: 2543 },
-  { province: "30", provinceName: "Murcia", accidents: 2987, fatalities: 35, hospitalized: 367, nonHospitalized: 2134 },
-  { province: "48", provinceName: "Bizkaia", accidents: 2654, fatalities: 28, hospitalized: 321, nonHospitalized: 1876 },
-  { province: "11", provinceName: "Cádiz", accidents: 2543, fatalities: 32, hospitalized: 298, nonHospitalized: 1765 },
-  { province: "35", provinceName: "Las Palmas", accidents: 2321, fatalities: 25, hospitalized: 276, nonHospitalized: 1654 },
+// Top Spanish Municipalities by population (INE 5-digit codes)
+const municipalities = [
+  { code: "28079", name: "Madrid", provinceCode: "28", population: 3332035, latitude: 40.4168, longitude: -3.7038 },
+  { code: "08019", name: "Barcelona", provinceCode: "08", population: 1620343, latitude: 41.3851, longitude: 2.1734 },
+  { code: "46250", name: "Valencia", provinceCode: "46", population: 791413, latitude: 39.4699, longitude: -0.3763 },
+  { code: "41091", name: "Sevilla", provinceCode: "41", population: 684234, latitude: 37.3891, longitude: -5.9845 },
+  { code: "50297", name: "Zaragoza", provinceCode: "50", population: 674997, latitude: 41.6488, longitude: -0.8891 },
+  { code: "29067", name: "Málaga", provinceCode: "29", population: 574654, latitude: 36.7213, longitude: -4.4214 },
+  { code: "30030", name: "Murcia", provinceCode: "30", population: 453258, latitude: 37.9922, longitude: -1.1307 },
+  { code: "07040", name: "Palma de Mallorca", provinceCode: "07", population: 416065, latitude: 39.5696, longitude: 2.6502 },
+  { code: "35016", name: "Las Palmas de Gran Canaria", provinceCode: "35", population: 379925, latitude: 28.1235, longitude: -15.4363 },
+  { code: "48020", name: "Bilbao", provinceCode: "48", population: 346843, latitude: 43.2630, longitude: -2.9350 },
+  { code: "03014", name: "Alicante", provinceCode: "03", population: 337304, latitude: 38.3452, longitude: -0.4810 },
+  { code: "14021", name: "Córdoba", provinceCode: "14", population: 322767, latitude: 37.8882, longitude: -4.7794 },
+  { code: "47186", name: "Valladolid", provinceCode: "47", population: 299265, latitude: 41.6523, longitude: -4.7245 },
+  { code: "36057", name: "Vigo", provinceCode: "36", population: 295364, latitude: 42.2406, longitude: -8.7207 },
+  { code: "33024", name: "Gijón", provinceCode: "33", population: 271780, latitude: 43.5322, longitude: -5.6611 },
+  { code: "28123", name: "Móstoles", provinceCode: "28", population: 207095, latitude: 40.3224, longitude: -3.8649 },
+  { code: "28074", name: "Leganés", provinceCode: "28", population: 189861, latitude: 40.3281, longitude: -3.7641 },
+  { code: "38038", name: "Santa Cruz de Tenerife", provinceCode: "38", population: 207312, latitude: 28.4636, longitude: -16.2518 },
+  { code: "33044", name: "Oviedo", provinceCode: "33", population: 220020, latitude: 43.3619, longitude: -5.8494 },
+  { code: "11012", name: "Cádiz", provinceCode: "11", population: 116979, latitude: 36.5271, longitude: -6.2886 },
+  { code: "39075", name: "Santander", provinceCode: "39", population: 172539, latitude: 43.4623, longitude: -3.8099 },
+  { code: "20069", name: "San Sebastián", provinceCode: "20", population: 187415, latitude: 43.3183, longitude: -1.9812 },
+  { code: "01059", name: "Vitoria-Gasteiz", provinceCode: "01", population: 253672, latitude: 42.8467, longitude: -2.6716 },
+  { code: "18087", name: "Granada", provinceCode: "18", population: 232770, latitude: 37.1773, longitude: -3.5986 },
+  { code: "03063", name: "Elche", provinceCode: "03", population: 234765, latitude: 38.2699, longitude: -0.6988 },
+  { code: "33037", name: "Langreo", provinceCode: "33", population: 39200, latitude: 43.3000, longitude: -5.6833 },
+  { code: "04013", name: "Almería", provinceCode: "04", population: 200753, latitude: 36.8340, longitude: -2.4637 },
+  { code: "27028", name: "Lugo", provinceCode: "27", population: 98025, latitude: 43.0097, longitude: -7.5567 },
+  { code: "15030", name: "A Coruña", provinceCode: "15", population: 245711, latitude: 43.3623, longitude: -8.4115 },
+  { code: "08101", name: "Hospitalet de Llobregat", provinceCode: "08", population: 264923, latitude: 41.3597, longitude: 2.1008 },
+  { code: "28065", name: "Getafe", provinceCode: "28", population: 183949, latitude: 40.3058, longitude: -3.7328 },
+  { code: "28006", name: "Alcalá de Henares", provinceCode: "28", population: 195671, latitude: 40.4818, longitude: -3.3636 },
+  { code: "28022", name: "Alcorcón", provinceCode: "28", population: 170514, latitude: 40.3489, longitude: -3.8245 },
+  { code: "08015", name: "Badalona", provinceCode: "08", population: 223166, latitude: 41.4500, longitude: 2.2474 },
+  { code: "03065", name: "Elda", provinceCode: "03", population: 52558, latitude: 38.4779, longitude: -0.7928 },
+  { code: "46131", name: "Gandía", provinceCode: "46", population: 74562, latitude: 38.9681, longitude: -0.1800 },
+  { code: "21041", name: "Huelva", provinceCode: "21", population: 143663, latitude: 37.2614, longitude: -6.9447 },
+  { code: "23050", name: "Jaén", provinceCode: "23", population: 113457, latitude: 37.7796, longitude: -3.7849 },
+  { code: "06015", name: "Badajoz", provinceCode: "06", population: 150530, latitude: 38.8794, longitude: -6.9706 },
+  { code: "37274", name: "Salamanca", provinceCode: "37", population: 144436, latitude: 40.9701, longitude: -5.6635 },
+  { code: "24089", name: "León", provinceCode: "24", population: 124772, latitude: 42.5987, longitude: -5.5671 },
+  { code: "26089", name: "Logroño", provinceCode: "26", population: 151113, latitude: 42.4627, longitude: -2.4449 },
+  { code: "31201", name: "Pamplona", provinceCode: "31", population: 203418, latitude: 42.8125, longitude: -1.6458 },
+  { code: "09059", name: "Burgos", provinceCode: "09", population: 176418, latitude: 42.3439, longitude: -3.6969 },
+  { code: "12040", name: "Castellón de la Plana", provinceCode: "12", population: 174264, latitude: 39.9864, longitude: -0.0513 },
+  { code: "45168", name: "Toledo", provinceCode: "45", population: 85643, latitude: 39.8628, longitude: -4.0273 },
+  { code: "10037", name: "Cáceres", provinceCode: "10", population: 96068, latitude: 39.4753, longitude: -6.3724 },
+  { code: "19130", name: "Guadalajara", provinceCode: "19", population: 87000, latitude: 40.6337, longitude: -3.1668 },
+  { code: "25120", name: "Lleida", provinceCode: "25", population: 140403, latitude: 41.6176, longitude: 0.6200 },
+  { code: "17079", name: "Girona", provinceCode: "17", population: 103369, latitude: 41.9794, longitude: 2.8214 },
 ];
 
+// Load historical accident data from JSON (generated by scripts/import-dgt-data.ts)
+function loadHistoricalAccidents(): HistoricalAccidentData[] {
+  const jsonPath = path.join(process.cwd(), "data/historical-accidents.json");
+  if (!fs.existsSync(jsonPath)) {
+    console.warn("Warning: data/historical-accidents.json not found. Run scripts/import-dgt-data.ts first.");
+    return [];
+  }
+  return JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+}
+
 async function main() {
-  console.log("🌱 Starting database seed...\n");
+  console.log("Starting database seed...\n");
 
   // Seed communities
-  console.log("📍 Seeding autonomous communities...");
+  console.log("Seeding autonomous communities...");
   for (const community of communities) {
+    const slug = slugify(community.name);
     await prisma.community.upsert({
       where: { code: community.code },
-      update: community,
-      create: community,
+      update: { ...community, slug },
+      create: { ...community, slug },
     });
   }
-  console.log(`   ✓ ${communities.length} communities seeded\n`);
+  console.log(`   ${communities.length} communities seeded\n`);
 
   // Seed provinces
-  console.log("📍 Seeding provinces...");
+  console.log("Seeding provinces...");
   for (const province of provinces) {
+    const slug = slugify(province.name);
     await prisma.province.upsert({
       where: { code: province.code },
       update: {
         name: province.name,
+        slug,
         communityCode: province.communityCode,
         population: province.population,
         area: province.area,
@@ -123,58 +203,91 @@ async function main() {
       create: {
         code: province.code,
         name: province.name,
+        slug,
         communityCode: province.communityCode,
         population: province.population,
         area: province.area,
       },
     });
   }
-  console.log(`   ✓ ${provinces.length} provinces seeded\n`);
+  console.log(`   ${provinces.length} provinces seeded\n`);
 
-  // Seed historical accidents (2023 sample data)
-  console.log("📊 Seeding historical accident data (2023)...");
-  for (const accident of historicalAccidents2023) {
-    // Use create/update separately since the unique constraint includes nullable roadType
-    const existing = await prisma.historicalAccidents.findFirst({
-      where: {
-        year: 2023,
-        province: accident.province,
-        roadType: null,
+  // Seed municipalities
+  console.log("Seeding municipalities...");
+  for (const municipality of municipalities) {
+    const slug = slugify(municipality.name);
+    await prisma.municipality.upsert({
+      where: { code: municipality.code },
+      update: {
+        name: municipality.name,
+        slug,
+        provinceCode: municipality.provinceCode,
+        population: municipality.population,
+        latitude: municipality.latitude,
+        longitude: municipality.longitude,
+      },
+      create: {
+        code: municipality.code,
+        name: municipality.name,
+        slug,
+        provinceCode: municipality.provinceCode,
+        population: municipality.population,
+        latitude: municipality.latitude,
+        longitude: municipality.longitude,
       },
     });
+  }
+  console.log(`   ${municipalities.length} municipalities seeded\n`);
 
-    if (existing) {
-      await prisma.historicalAccidents.update({
-        where: { id: existing.id },
-        data: accident,
-      });
-    } else {
-      await prisma.historicalAccidents.create({
-        data: {
-          year: 2023,
-          ...accident,
-        },
+  // Seed historical accidents (from DGT data JSON)
+  const historicalAccidents = loadHistoricalAccidents();
+  if (historicalAccidents.length > 0) {
+    console.log("Seeding historical accident data...");
+
+    // Delete existing records to avoid duplicates
+    await prisma.historicalAccidents.deleteMany({});
+
+    // Insert all records in batches
+    const batchSize = 50;
+    for (let i = 0; i < historicalAccidents.length; i += batchSize) {
+      const batch = historicalAccidents.slice(i, i + batchSize);
+      await prisma.historicalAccidents.createMany({
+        data: batch.map(accident => ({
+          year: accident.year,
+          province: accident.province,
+          provinceName: accident.provinceName,
+          accidents: accident.accidents,
+          fatalities: accident.fatalities,
+          hospitalized: accident.hospitalized,
+          nonHospitalized: accident.nonHospitalized,
+        })),
       });
     }
-  }
-  console.log(`   ✓ ${historicalAccidents2023.length} accident records seeded\n`);
 
-  console.log("✅ Database seed completed successfully!");
+    const years = [...new Set(historicalAccidents.map(a => a.year))].sort();
+    console.log(`   ${historicalAccidents.length} records seeded (years: ${years.join(", ")})\n`);
+  } else {
+    console.log("Skipping historical accidents (no data file found)\n");
+  }
+
+  console.log("Database seed completed successfully!");
 
   // Print summary
   const communityCount = await prisma.community.count();
   const provinceCount = await prisma.province.count();
+  const municipalityCount = await prisma.municipality.count();
   const accidentCount = await prisma.historicalAccidents.count();
 
-  console.log("\n📊 Summary:");
+  console.log("\nSummary:");
   console.log(`   Communities: ${communityCount}`);
   console.log(`   Provinces: ${provinceCount}`);
+  console.log(`   Municipalities: ${municipalityCount}`);
   console.log(`   Historical records: ${accidentCount}`);
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seed failed:", e);
+    console.error("Seed failed:", e);
     process.exit(1);
   })
   .finally(async () => {

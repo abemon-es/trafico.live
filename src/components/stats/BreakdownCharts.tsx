@@ -11,32 +11,33 @@ import {
   Cell,
 } from "recharts";
 
-// Sample data - will be replaced with API data
-const communityData = [
-  { name: "Andalucía", count: 45, color: "#ef4444" },
-  { name: "C. Madrid", count: 38, color: "#f97316" },
-  { name: "C. Valenciana", count: 28, color: "#eab308" },
-  { name: "Galicia", count: 22, color: "#22c55e" },
-  { name: "Castilla y León", count: 18, color: "#3b82f6" },
-  { name: "Cataluña*", count: 15, color: "#6b7280" },
+// Color palette for charts
+const COLORS = [
+  "#ef4444", // red
+  "#f97316", // orange
+  "#eab308", // yellow
+  "#22c55e", // green
+  "#3b82f6", // blue
+  "#8b5cf6", // purple
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#6366f1", // indigo
+  "#84cc16", // lime
 ];
 
-const roadTypeData = [
-  { name: "Autopista (AP)", count: 89, color: "#ef4444" },
-  { name: "Autovía (A)", count: 67, color: "#f97316" },
-  { name: "Nacional (N)", count: 45, color: "#eab308" },
-  { name: "Comarcal", count: 23, color: "#22c55e" },
-];
+export interface ChartDataItem {
+  name: string;
+  value: number;
+  color?: string;
+}
 
-function ChartCard({
-  title,
-  children,
-  note,
-}: {
+interface ChartCardProps {
   title: string;
   children: React.ReactNode;
   note?: string;
-}) {
+}
+
+function ChartCard({ title, children, note }: ChartCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
@@ -46,68 +47,131 @@ function ChartCard({
   );
 }
 
-export function BreakdownCharts() {
+interface BreakdownChartProps {
+  title: string;
+  data: ChartDataItem[];
+  note?: string;
+  dataKey?: string;
+  labelWidth?: number;
+}
+
+export function BreakdownChart({
+  title,
+  data,
+  note,
+  dataKey = "value",
+  labelWidth = 80,
+}: BreakdownChartProps) {
+  // Add colors to data if not present
+  const dataWithColors = data.map((item, index) => ({
+    ...item,
+    color: item.color || COLORS[index % COLORS.length],
+  }));
+
+  return (
+    <ChartCard title={title} note={note}>
+      <ResponsiveContainer width="100%" height={250}>
+        <BarChart
+          data={dataWithColors}
+          layout="vertical"
+          margin={{ top: 5, right: 30, left: labelWidth, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+          <XAxis type="number" />
+          <YAxis
+            type="category"
+            dataKey="name"
+            tick={{ fontSize: 12 }}
+            width={labelWidth}
+          />
+          <Tooltip
+            contentStyle={{
+              borderRadius: "8px",
+              border: "1px solid #e5e7eb",
+            }}
+            formatter={(value) => [typeof value === "number" ? value.toLocaleString("es-ES") : String(value), ""]}
+          />
+          <Bar dataKey={dataKey} radius={[0, 4, 4, 0]}>
+            {dataWithColors.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  );
+}
+
+// Props for the composite BreakdownCharts component
+interface BreakdownChartsProps {
+  communityData?: ChartDataItem[];
+  roadTypeData?: ChartDataItem[];
+  provinceData?: ChartDataItem[];
+  isLoading?: boolean;
+}
+
+// Default sample data for when no data is provided
+const defaultCommunityData: ChartDataItem[] = [
+  { name: "Andalucía", value: 45 },
+  { name: "C. Madrid", value: 38 },
+  { name: "C. Valenciana", value: 28 },
+  { name: "Galicia", value: 22 },
+  { name: "Castilla y León", value: 18 },
+  { name: "Cataluña*", value: 15 },
+];
+
+const defaultRoadTypeData: ChartDataItem[] = [
+  { name: "Autopista (AP)", value: 89 },
+  { name: "Autovía (A)", value: 67 },
+  { name: "Nacional (N)", value: 45 },
+  { name: "Comarcal", value: 23 },
+];
+
+export function BreakdownCharts({
+  communityData,
+  roadTypeData,
+  provinceData,
+  isLoading = false,
+}: BreakdownChartsProps) {
+  if (isLoading) {
+    return (
+      <>
+        <ChartCard title="Por Comunidad Autónoma">
+          <div className="h-[250px] flex items-center justify-center">
+            <div className="animate-pulse text-gray-400">Cargando datos...</div>
+          </div>
+        </ChartCard>
+        <ChartCard title="Por Tipo de Vía">
+          <div className="h-[250px] flex items-center justify-center">
+            <div className="animate-pulse text-gray-400">Cargando datos...</div>
+          </div>
+        </ChartCard>
+      </>
+    );
+  }
+
   return (
     <>
-      <ChartCard title="Por Comunidad Autónoma" note="*Datos regionales (SCT)">
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart
-            data={communityData}
-            layout="vertical"
-            margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-            <XAxis type="number" />
-            <YAxis
-              type="category"
-              dataKey="name"
-              tick={{ fontSize: 12 }}
-              width={80}
-            />
-            <Tooltip
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #e5e7eb",
-              }}
-            />
-            <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-              {communityData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
+      {provinceData && provinceData.length > 0 ? (
+        <BreakdownChart
+          title="Top 10 Provincias por Accidentes"
+          data={provinceData}
+          note="Datos históricos de DGT en Cifras"
+          labelWidth={100}
+        />
+      ) : (
+        <BreakdownChart
+          title="Por Comunidad Autónoma"
+          data={communityData || defaultCommunityData}
+          note="*Datos regionales (SCT)"
+        />
+      )}
 
-      <ChartCard title="Por Tipo de Vía">
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart
-            data={roadTypeData}
-            layout="vertical"
-            margin={{ top: 5, right: 30, left: 90, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-            <XAxis type="number" />
-            <YAxis
-              type="category"
-              dataKey="name"
-              tick={{ fontSize: 12 }}
-              width={90}
-            />
-            <Tooltip
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #e5e7eb",
-              }}
-            />
-            <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-              {roadTypeData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
+      <BreakdownChart
+        title="Por Tipo de Vía"
+        data={roadTypeData || defaultRoadTypeData}
+        labelWidth={90}
+      />
     </>
   );
 }

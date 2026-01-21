@@ -1,0 +1,235 @@
+"use client";
+
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import useSWR from "swr";
+import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, Home } from "lucide-react";
+
+interface Municipality {
+  code: string;
+  name: string;
+  slug: string;
+  population: number | null;
+}
+
+interface Province {
+  code: string;
+  name: string;
+  slug: string;
+  population: number | null;
+  municipalities: Municipality[];
+}
+
+interface Community {
+  code: string;
+  name: string;
+  slug: string;
+  isExcluded: boolean;
+  excludedReason: string | null;
+  provinces: Province[];
+}
+
+interface Stats {
+  totalAccidents: number;
+  totalFatalities: number;
+  totalHospitalized: number;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: {
+    community: Community;
+    stats: Stats;
+  };
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export default function CommunityContent() {
+  const params = useParams();
+  const communitySlug = params.community as string;
+
+  const { data, error, isLoading } = useSWR<ApiResponse>(
+    `/api/comunidad-autonoma/${communitySlug}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-3 text-gray-500">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Cargando datos de la comunidad...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data?.success) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            {data?.success === false ? "Comunidad no encontrada" : "Error al cargar datos"}
+          </h2>
+          <p className="text-gray-500">No se pudieron cargar los datos de la comunidad</p>
+          <Link href="/espana" className="mt-4 inline-block text-blue-600 hover:underline">
+            ← Volver a todas las comunidades
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { community, stats } = data.data;
+  const totalPopulation = community.provinces.reduce((sum, p) => sum + (p.population || 0), 0);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+          <Link href="/" className="hover:text-blue-600">
+            <Home className="w-4 h-4" />
+          </Link>
+          <span>/</span>
+          <Link href="/espana" className="hover:text-blue-600">
+            España
+          </Link>
+          <span>/</span>
+          <span className="text-gray-900">{community.name}</span>
+        </nav>
+
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">{community.name}</h1>
+          <p className="mt-2 text-gray-600">
+            Estado del tráfico en tiempo real en {community.name}.
+            {community.isExcluded && (
+              <span className="ml-2 text-amber-600">
+                (Esta comunidad tiene sistema de tráfico propio)
+              </span>
+            )}
+          </p>
+        </div>
+
+        {/* Excluded Warning */}
+        {community.isExcluded && community.excludedReason && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <p className="text-amber-800">
+              <strong>Nota:</strong> {community.excludedReason}
+            </p>
+          </div>
+        )}
+
+        {/* Stats Summary */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <MapPin className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{community.provinces.length}</p>
+            <p className="text-sm text-gray-500">
+              Provincia{community.provinces.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <Users className="w-5 h-5 text-purple-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {(totalPopulation / 1000000).toFixed(1)}M
+            </p>
+            <p className="text-sm text-gray-500">Población</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-red-50 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {stats.totalAccidents.toLocaleString("es-ES")}
+            </p>
+            <p className="text-sm text-gray-500">Accidentes (2023)</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Users className="w-5 h-5 text-gray-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {stats.totalFatalities.toLocaleString("es-ES")}
+            </p>
+            <p className="text-sm text-gray-500">Fallecidos (2023)</p>
+          </div>
+        </div>
+
+        {/* Provinces List */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Provincias de {community.name}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {community.provinces.map((province) => (
+              <Link
+                key={province.code}
+                href={`/comunidad-autonoma/${community.slug}/${province.slug}`}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all group"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600">
+                      {province.name}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {province.population
+                        ? `${(province.population / 1000).toFixed(0)}k habitantes`
+                        : "Sin datos de población"}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                </div>
+                {province.municipalities.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-400 mb-1">Ciudades principales:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {province.municipalities.slice(0, 3).map((m) => (
+                        <span
+                          key={m.code}
+                          className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                        >
+                          {m.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Back Link */}
+        <div className="mt-8">
+          <Link
+            href="/espana"
+            className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+          >
+            ← Volver a todas las comunidades
+          </Link>
+        </div>
+      </main>
+    </div>
+  );
+}

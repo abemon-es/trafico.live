@@ -11,10 +11,12 @@ COPY services/v16-collector/package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy Prisma schema and generate client
+# Copy Prisma files and generate client
 COPY prisma/schema.prisma ./prisma/
+COPY prisma.config.ts ./
 RUN npx prisma generate
 
+# Cache bust: 2026-01-21-v2
 # Copy service code
 COPY services/v16-collector/*.ts ./
 

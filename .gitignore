@@ -43,8 +43,9 @@ next-env.d.ts
 /src/generated/prisma
 
 # WIP pages that try to access DB during build (not ready for deploy)
-/src/app/comunidad-autonoma/
-/src/app/espana/
 /src/app/api/historical/
 /data/
 /scripts/
+
+# Collector node_modules
+services/v16-collector/node_modules/

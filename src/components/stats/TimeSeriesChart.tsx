@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   AreaChart,
   Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,42 +14,62 @@ import {
   Legend,
 } from "recharts";
 
-// Sample data for 7 days
-const generateTimeSeriesData = () => {
+// Types for different data modes
+export interface YearlyDataPoint {
+  year: number;
+  accidents: number;
+  fatalities: number;
+  hospitalized?: number;
+}
+
+export interface DailyDataPoint {
+  day: string;
+  v16: number;
+  incidents: number;
+  historical?: number;
+}
+
+export interface HourlyDataPoint {
+  time: string;
+  v16: number;
+  incidents: number;
+  historical?: number;
+}
+
+interface TimeSeriesChartProps {
+  yearlyData?: YearlyDataPoint[];
+  dailyData?: DailyDataPoint[];
+  hourlyData?: HourlyDataPoint[];
+  mode?: "yearly" | "realtime";
+  title?: string;
+  isLoading?: boolean;
+}
+
+// Sample data for real-time mode
+const generateDefaultHourlyData = () => {
   const days = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-  const data = [];
+  const data: HourlyDataPoint[] = [];
 
   for (let d = 0; d < 7; d++) {
     for (let h = 0; h < 24; h += 2) {
-      // Simulate traffic patterns
       const baseV16 = 80 + Math.random() * 40;
       const baseIncidents = 30 + Math.random() * 20;
-
-      // Rush hour peaks
       const rushHourMultiplier =
         (h >= 7 && h <= 9) || (h >= 17 && h <= 20) ? 1.5 : 1;
-
-      // Weekend reduction
       const weekendMultiplier = d >= 5 ? 0.7 : 1;
 
       data.push({
         time: `${days[d]} ${h.toString().padStart(2, "0")}:00`,
-        day: days[d],
-        hour: h,
         v16: Math.round(baseV16 * rushHourMultiplier * weekendMultiplier),
         incidents: Math.round(baseIncidents * rushHourMultiplier * weekendMultiplier),
         historical: Math.round(75 * rushHourMultiplier * weekendMultiplier),
       });
     }
   }
-
   return data;
 };
 
-const timeSeriesData = generateTimeSeriesData();
-
-// Aggregate to daily for daily view
-const dailyData = [
+const defaultDailyData: DailyDataPoint[] = [
   { day: "Lun", v16: 385, incidents: 142, historical: 350 },
   { day: "Mar", v16: 412, incidents: 156, historical: 350 },
   { day: "Mié", v16: 398, incidents: 148, historical: 350 },
@@ -57,16 +79,107 @@ const dailyData = [
   { day: "Dom", v16: 289, incidents: 87, historical: 260 },
 ];
 
-export function TimeSeriesChart() {
+export function TimeSeriesChart({
+  yearlyData,
+  dailyData,
+  hourlyData,
+  mode = "realtime",
+  title,
+  isLoading = false,
+}: TimeSeriesChartProps) {
   const [viewMode, setViewMode] = useState<"hourly" | "daily">("daily");
 
-  const data = viewMode === "hourly" ? timeSeriesData.slice(-48) : dailyData; // Last 48 hours or 7 days
+  // Determine which data to show based on mode
+  const isYearlyMode = mode === "yearly" && yearlyData && yearlyData.length > 0;
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {title || "Evolución Temporal"}
+          </h3>
+        </div>
+        <div className="h-[300px] flex items-center justify-center">
+          <div className="animate-pulse text-gray-400">Cargando datos...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Yearly historical data mode
+  if (isYearlyMode) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {title || "Evolución Anual"}
+          </h3>
+        </div>
+
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart
+            data={yearlyData}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} />
+            <Tooltip
+              contentStyle={{
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb",
+              }}
+              formatter={(value) => [typeof value === "number" ? value.toLocaleString("es-ES") : String(value), ""]}
+            />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="accidents"
+              name="Accidentes"
+              stroke="#ef4444"
+              strokeWidth={2}
+              dot={{ fill: "#ef4444", r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="fatalities"
+              name="Fallecidos"
+              stroke="#6b7280"
+              strokeWidth={2}
+              dot={{ fill: "#6b7280", r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+            {yearlyData[0]?.hospitalized !== undefined && (
+              <Line
+                type="monotone"
+                dataKey="hospitalized"
+                name="Hospitalizados"
+                stroke="#f97316"
+                strokeWidth={2}
+                dot={{ fill: "#f97316", r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            )}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  // Real-time mode (daily/hourly)
+  const defaultHourlyData = generateDefaultHourlyData();
+  const realtimeData =
+    viewMode === "hourly"
+      ? (hourlyData || defaultHourlyData).slice(-48)
+      : dailyData || defaultDailyData;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
-          Evolución Temporal (Últimos 7 días)
+          {title || "Evolución Temporal (Últimos 7 días)"}
         </h3>
         <div className="flex items-center gap-2">
           <button
@@ -94,7 +207,7 @@ export function TimeSeriesChart() {
 
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
-          data={data}
+          data={realtimeData}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
         >
           <defs>
