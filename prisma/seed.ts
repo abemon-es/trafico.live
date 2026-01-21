@@ -108,8 +108,19 @@ const provinces = [
   { code: "52", name: "Melilla", communityCode: "19", population: 87076, area: 13.41 },
 ];
 
-// Top Spanish Municipalities by population (INE 5-digit codes)
-const municipalities = [
+// Municipality interface for JSON loading
+interface MunicipalityData {
+  code: string;
+  name: string;
+  provinceCode: string;
+  slug: string;
+  population?: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+// Fallback municipalities (province capitals only) if JSON not found
+const fallbackMunicipalities = [
   { code: "28079", name: "Madrid", provinceCode: "28", population: 3332035, latitude: 40.4168, longitude: -3.7038 },
   { code: "08019", name: "Barcelona", provinceCode: "08", population: 1620343, latitude: 41.3851, longitude: 2.1734 },
   { code: "46250", name: "Valencia", provinceCode: "46", population: 791413, latitude: 39.4699, longitude: -0.3763 },
@@ -120,47 +131,23 @@ const municipalities = [
   { code: "07040", name: "Palma de Mallorca", provinceCode: "07", population: 416065, latitude: 39.5696, longitude: 2.6502 },
   { code: "35016", name: "Las Palmas de Gran Canaria", provinceCode: "35", population: 379925, latitude: 28.1235, longitude: -15.4363 },
   { code: "48020", name: "Bilbao", provinceCode: "48", population: 346843, latitude: 43.2630, longitude: -2.9350 },
-  { code: "03014", name: "Alicante", provinceCode: "03", population: 337304, latitude: 38.3452, longitude: -0.4810 },
-  { code: "14021", name: "Córdoba", provinceCode: "14", population: 322767, latitude: 37.8882, longitude: -4.7794 },
-  { code: "47186", name: "Valladolid", provinceCode: "47", population: 299265, latitude: 41.6523, longitude: -4.7245 },
-  { code: "36057", name: "Vigo", provinceCode: "36", population: 295364, latitude: 42.2406, longitude: -8.7207 },
-  { code: "33024", name: "Gijón", provinceCode: "33", population: 271780, latitude: 43.5322, longitude: -5.6611 },
-  { code: "28123", name: "Móstoles", provinceCode: "28", population: 207095, latitude: 40.3224, longitude: -3.8649 },
-  { code: "28074", name: "Leganés", provinceCode: "28", population: 189861, latitude: 40.3281, longitude: -3.7641 },
-  { code: "38038", name: "Santa Cruz de Tenerife", provinceCode: "38", population: 207312, latitude: 28.4636, longitude: -16.2518 },
-  { code: "33044", name: "Oviedo", provinceCode: "33", population: 220020, latitude: 43.3619, longitude: -5.8494 },
-  { code: "11012", name: "Cádiz", provinceCode: "11", population: 116979, latitude: 36.5271, longitude: -6.2886 },
-  { code: "39075", name: "Santander", provinceCode: "39", population: 172539, latitude: 43.4623, longitude: -3.8099 },
-  { code: "20069", name: "San Sebastián", provinceCode: "20", population: 187415, latitude: 43.3183, longitude: -1.9812 },
-  { code: "01059", name: "Vitoria-Gasteiz", provinceCode: "01", population: 253672, latitude: 42.8467, longitude: -2.6716 },
-  { code: "18087", name: "Granada", provinceCode: "18", population: 232770, latitude: 37.1773, longitude: -3.5986 },
-  { code: "03063", name: "Elche", provinceCode: "03", population: 234765, latitude: 38.2699, longitude: -0.6988 },
-  { code: "33037", name: "Langreo", provinceCode: "33", population: 39200, latitude: 43.3000, longitude: -5.6833 },
-  { code: "04013", name: "Almería", provinceCode: "04", population: 200753, latitude: 36.8340, longitude: -2.4637 },
-  { code: "27028", name: "Lugo", provinceCode: "27", population: 98025, latitude: 43.0097, longitude: -7.5567 },
-  { code: "15030", name: "A Coruña", provinceCode: "15", population: 245711, latitude: 43.3623, longitude: -8.4115 },
-  { code: "08101", name: "Hospitalet de Llobregat", provinceCode: "08", population: 264923, latitude: 41.3597, longitude: 2.1008 },
-  { code: "28065", name: "Getafe", provinceCode: "28", population: 183949, latitude: 40.3058, longitude: -3.7328 },
-  { code: "28006", name: "Alcalá de Henares", provinceCode: "28", population: 195671, latitude: 40.4818, longitude: -3.3636 },
-  { code: "28022", name: "Alcorcón", provinceCode: "28", population: 170514, latitude: 40.3489, longitude: -3.8245 },
-  { code: "08015", name: "Badalona", provinceCode: "08", population: 223166, latitude: 41.4500, longitude: 2.2474 },
-  { code: "03065", name: "Elda", provinceCode: "03", population: 52558, latitude: 38.4779, longitude: -0.7928 },
-  { code: "46131", name: "Gandía", provinceCode: "46", population: 74562, latitude: 38.9681, longitude: -0.1800 },
-  { code: "21041", name: "Huelva", provinceCode: "21", population: 143663, latitude: 37.2614, longitude: -6.9447 },
-  { code: "23050", name: "Jaén", provinceCode: "23", population: 113457, latitude: 37.7796, longitude: -3.7849 },
-  { code: "06015", name: "Badajoz", provinceCode: "06", population: 150530, latitude: 38.8794, longitude: -6.9706 },
-  { code: "37274", name: "Salamanca", provinceCode: "37", population: 144436, latitude: 40.9701, longitude: -5.6635 },
-  { code: "24089", name: "León", provinceCode: "24", population: 124772, latitude: 42.5987, longitude: -5.5671 },
-  { code: "26089", name: "Logroño", provinceCode: "26", population: 151113, latitude: 42.4627, longitude: -2.4449 },
-  { code: "31201", name: "Pamplona", provinceCode: "31", population: 203418, latitude: 42.8125, longitude: -1.6458 },
-  { code: "09059", name: "Burgos", provinceCode: "09", population: 176418, latitude: 42.3439, longitude: -3.6969 },
-  { code: "12040", name: "Castellón de la Plana", provinceCode: "12", population: 174264, latitude: 39.9864, longitude: -0.0513 },
-  { code: "45168", name: "Toledo", provinceCode: "45", population: 85643, latitude: 39.8628, longitude: -4.0273 },
-  { code: "10037", name: "Cáceres", provinceCode: "10", population: 96068, latitude: 39.4753, longitude: -6.3724 },
-  { code: "19130", name: "Guadalajara", provinceCode: "19", population: 87000, latitude: 40.6337, longitude: -3.1668 },
-  { code: "25120", name: "Lleida", provinceCode: "25", population: 140403, latitude: 41.6176, longitude: 0.6200 },
-  { code: "17079", name: "Girona", provinceCode: "17", population: 103369, latitude: 41.9794, longitude: 2.8214 },
 ];
+
+// Load municipalities from JSON file (generated by scripts/generate-municipalities.ts)
+function loadMunicipalities(): MunicipalityData[] {
+  const jsonPath = path.join(process.cwd(), "data/municipalities.json");
+  if (!fs.existsSync(jsonPath)) {
+    console.warn("Warning: data/municipalities.json not found. Using fallback data (52 capitals).");
+    console.warn("Run: npx tsx scripts/generate-municipalities.ts");
+    return fallbackMunicipalities.map(m => ({
+      ...m,
+      slug: slugify(m.name),
+    }));
+  }
+  const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as MunicipalityData[];
+  console.log(`   Loaded ${data.length} municipalities from JSON`);
+  return data;
+}
 
 // Load historical accident data from JSON (generated by scripts/import-dgt-data.ts)
 function loadHistoricalAccidents(): HistoricalAccidentData[] {
@@ -212,30 +199,42 @@ async function main() {
   }
   console.log(`   ${provinces.length} provinces seeded\n`);
 
-  // Seed municipalities
+  // Seed municipalities (from JSON file or fallback)
   console.log("Seeding municipalities...");
-  for (const municipality of municipalities) {
-    const slug = slugify(municipality.name);
-    await prisma.municipality.upsert({
-      where: { code: municipality.code },
-      update: {
-        name: municipality.name,
-        slug,
-        provinceCode: municipality.provinceCode,
-        population: municipality.population,
-        latitude: municipality.latitude,
-        longitude: municipality.longitude,
-      },
-      create: {
-        code: municipality.code,
-        name: municipality.name,
-        slug,
-        provinceCode: municipality.provinceCode,
-        population: municipality.population,
-        latitude: municipality.latitude,
-        longitude: municipality.longitude,
-      },
-    });
+  const municipalities = loadMunicipalities();
+
+  // Use batch upsert for better performance with large datasets
+  const batchSize = 100;
+  for (let i = 0; i < municipalities.length; i += batchSize) {
+    const batch = municipalities.slice(i, i + batchSize);
+    await Promise.all(
+      batch.map((municipality) =>
+        prisma.municipality.upsert({
+          where: { code: municipality.code },
+          update: {
+            name: municipality.name,
+            slug: municipality.slug || slugify(municipality.name),
+            provinceCode: municipality.provinceCode,
+            population: municipality.population,
+            latitude: municipality.latitude,
+            longitude: municipality.longitude,
+          },
+          create: {
+            code: municipality.code,
+            name: municipality.name,
+            slug: municipality.slug || slugify(municipality.name),
+            provinceCode: municipality.provinceCode,
+            population: municipality.population,
+            latitude: municipality.latitude,
+            longitude: municipality.longitude,
+          },
+        })
+      )
+    );
+    // Progress indicator for large datasets
+    if (municipalities.length > 500 && (i + batchSize) % 500 === 0) {
+      console.log(`   ... ${Math.min(i + batchSize, municipalities.length)}/${municipalities.length} processed`);
+    }
   }
   console.log(`   ${municipalities.length} municipalities seeded\n`);
 

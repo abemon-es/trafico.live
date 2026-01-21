@@ -1,0 +1,20 @@
+{
+  "name": "camera-collector",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --enable-source-maps dist/collector.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^6.4.1",
+    "@prisma/client": "^6.4.1",
+    "fast-xml-parser": "^5.0.9",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.7.3"
+  }
+}

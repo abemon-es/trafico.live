@@ -110,10 +110,14 @@ interface TrafficMapProps {
 
 // Spain center coordinates
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168];
-const SPAIN_BOUNDS: [[number, number], [number, number]] = [
-  [-9.5, 35.5], // SW
-  [4.5, 44.0],  // NE
-];
+
+// Map location presets for quick navigation
+export const MAP_PRESETS = {
+  peninsula: { center: [-3.7038, 40.4168] as [number, number], zoom: 6 },
+  canarias: { center: [-15.8, 28.3] as [number, number], zoom: 8 },
+  ceuta: { center: [-5.32, 35.89] as [number, number], zoom: 12 },
+  melilla: { center: [-2.94, 35.29] as [number, number], zoom: 12 },
+};
 
 // Empty array - cameras will be loaded from API
 const SAMPLE_CAMERAS: Camera[] = [];
@@ -286,7 +290,6 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
       center: SPAIN_CENTER,
       zoom: 6,
-      maxBounds: SPAIN_BOUNDS,
       attributionControl: false,
     });
 

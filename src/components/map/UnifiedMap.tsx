@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
 import dynamic from "next/dynamic";
 import { Map as MapIcon, AlertTriangle, Loader2 } from "lucide-react";
-import { MapControls, type ActiveLayers, type IncidentFilters } from "./MapControls";
+import { MapControls, type ActiveLayers, type IncidentFilters, type LocationPreset } from "./MapControls";
 import { MapStats } from "./MapStats";
 import type { V16Beacon, Incident, Camera, TrafficMapRef } from "./TrafficMap";
 import { IncidentModal, type IncidentData } from "@/components/incidents/IncidentModal";
@@ -27,6 +27,14 @@ const TrafficMap = dynamic(() => import("./TrafficMap"), {
 });
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// Map location presets for quick navigation
+const MAP_PRESETS: Record<LocationPreset, { center: [number, number]; zoom: number }> = {
+  peninsula: { center: [-3.7038, 40.4168], zoom: 6 },
+  canarias: { center: [-15.8, 28.3], zoom: 8 },
+  ceuta: { center: [-5.32, 35.89], zoom: 12 },
+  melilla: { center: [-2.94, 35.29], zoom: 12 },
+};
 
 interface V16Response {
   count: number;
@@ -281,6 +289,11 @@ export function UnifiedMap({
     mutateIncidents();
   };
 
+  const handleLocationChange = (preset: LocationPreset) => {
+    const location = MAP_PRESETS[preset];
+    mapRef.current?.flyTo(location.center[0], location.center[1], location.zoom);
+  };
+
   const handleIncidentClick = (incident: Incident) => {
     setSelectedIncident(incident);
   };
@@ -350,6 +363,7 @@ export function UnifiedMap({
         onRefresh={handleRefresh}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        onLocationChange={handleLocationChange}
         counts={counts}
       />
 

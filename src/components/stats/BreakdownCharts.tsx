@@ -117,7 +117,7 @@ const defaultCommunityData: ChartDataItem[] = [
   { name: "C. Valenciana", value: 28 },
   { name: "Galicia", value: 22 },
   { name: "Castilla y León", value: 18 },
-  { name: "Cataluña*", value: 15 },
+  { name: "Cataluña", value: 15 },
 ];
 
 const defaultRoadTypeData: ChartDataItem[] = [

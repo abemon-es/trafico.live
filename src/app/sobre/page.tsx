@@ -77,7 +77,7 @@ export default function SobrePage() {
                 <h3 className="font-semibold text-gray-900">Cobertura nacional</h3>
               </div>
               <p className="text-sm text-gray-600">
-                Información de las 52 provincias españolas (excepto País Vasco y Cataluña, que tienen sistemas propios).
+                Cobertura de las 52 provincias españolas, incluyendo datos de fuentes autonómicas.
               </p>
             </div>
           </div>
@@ -141,6 +141,42 @@ export default function SobrePage() {
                 </a>
               </div>
             </div>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-gray-900">Euskadi Traffic API</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Incidencias de tráfico del País Vasco.
+                  </p>
+                </div>
+                <a
+                  href="https://api.euskadi.eus"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
+                >
+                  Visitar <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-gray-900">SCT - Servei Català de Trànsit</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Incidencias de tráfico de Cataluña.
+                  </p>
+                </div>
+                <a
+                  href="https://transit.gencat.cat"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
+                >
+                  Visitar <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -149,10 +185,6 @@ export default function SobrePage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Limitaciones</h2>
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
             <ul className="space-y-3 text-amber-800">
-              <li className="flex items-start gap-2">
-                <span className="font-bold">•</span>
-                <span>Los datos de País Vasco y Cataluña no están disponibles a través del NAP de la DGT.</span>
-              </li>
               <li className="flex items-start gap-2">
                 <span className="font-bold">•</span>
                 <span>Puede haber un retraso de hasta 2 minutos entre que ocurre un evento y su publicación en el sistema.</span>

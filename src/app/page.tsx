@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { StatsCards } from "@/components/stats/StatsCards";
+import { EnhancedStatsCards } from "@/components/stats/EnhancedStatsCards";
 import { BreakdownCharts } from "@/components/stats/BreakdownCharts";
 import { TimeSeriesChart } from "@/components/stats/TimeSeriesChart";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
@@ -24,8 +24,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Stats Cards */}
-        <StatsCards />
+        {/* Stats Cards with sparklines and comparisons */}
+        <EnhancedStatsCards />
 
         {/* Unified Map Section */}
         <Suspense fallback={<MapLoading />}>

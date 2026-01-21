@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 import { fetchDGTCameras, CameraData } from "@/lib/parsers/datex2";
 import {
   normalizeDGTProvince,
@@ -26,6 +27,7 @@ interface CamerasResponse {
   count: number;
   cameras: CameraResponseItem[];
   provinces: string[];
+  source: "database" | "api";
 }
 
 export async function GET(request: NextRequest) {
@@ -34,43 +36,91 @@ export async function GET(request: NextRequest) {
     const filterProvince = searchParams.get("province");
     const filterCommunity = searchParams.get("community");
 
-    const rawCameras = await fetchDGTCameras();
+    // Try to fetch from database first
+    let cameras: CameraResponseItem[] = [];
+    let source: "database" | "api" = "database";
 
-    // Transform and normalize province names
-    let cameras: CameraResponseItem[] = rawCameras.map((cam: CameraData) => {
-      const normalizedProvince = normalizeDGTProvince(cam.province);
-      const community = PROVINCE_TO_COMMUNITY[normalizedProvince] || "";
+    try {
+      // Build where clause for database query
+      const whereClause: Record<string, unknown> = { isActive: true };
 
-      return {
-        id: cam.id,
-        name: cam.name,
-        lat: cam.latitude,
-        lng: cam.longitude,
-        road: cam.road,
-        direction: cam.direction,
-        kmPoint: cam.kmPoint,
-        province: normalizedProvince,
-        community,
-        imageUrl: cam.imageUrl,
-      };
-    });
+      if (filterProvince) {
+        // Filter by province name (case-insensitive)
+        whereClause.provinceName = filterProvince;
+      }
 
-    // Filter by province if specified
-    if (filterProvince) {
-      const filterLower = filterProvince.toLowerCase();
-      cameras = cameras.filter(
-        (cam) => cam.province.toLowerCase() === filterLower
-      );
+      if (filterCommunity) {
+        const communityProvinces = getProvincesForCommunity(filterCommunity);
+        if (communityProvinces.length > 0) {
+          whereClause.provinceName = { in: communityProvinces };
+        }
+      }
+
+      const dbCameras = await prisma.camera.findMany({
+        where: whereClause,
+        orderBy: { name: "asc" },
+      });
+
+      if (dbCameras.length > 0) {
+        cameras = dbCameras.map((cam) => {
+          const provinceName = cam.provinceName || "";
+          return {
+            id: cam.id,
+            name: cam.name,
+            lat: Number(cam.latitude),
+            lng: Number(cam.longitude),
+            road: cam.roadNumber || "",
+            direction: "",
+            kmPoint: cam.kmPoint ? Number(cam.kmPoint) : null,
+            province: provinceName,
+            community: PROVINCE_TO_COMMUNITY[provinceName] || "",
+            imageUrl: cam.feedUrl || cam.thumbnailUrl || "",
+          };
+        });
+      }
+    } catch (dbError) {
+      console.warn("Database query failed, falling back to API:", dbError);
     }
 
-    // Filter by community if specified
-    if (filterCommunity) {
-      const communityProvinces = getProvincesForCommunity(filterCommunity);
-      if (communityProvinces.length > 0) {
-        const provincesLower = communityProvinces.map((p) => p.toLowerCase());
-        cameras = cameras.filter((cam) =>
-          provincesLower.includes(cam.province.toLowerCase())
+    // Fallback to direct API call if database is empty
+    if (cameras.length === 0) {
+      source = "api";
+      const rawCameras = await fetchDGTCameras();
+
+      cameras = rawCameras.map((cam: CameraData) => {
+        const normalizedProvince = normalizeDGTProvince(cam.province);
+        const community = PROVINCE_TO_COMMUNITY[normalizedProvince] || "";
+
+        return {
+          id: cam.id,
+          name: cam.name,
+          lat: cam.latitude,
+          lng: cam.longitude,
+          road: cam.road,
+          direction: cam.direction,
+          kmPoint: cam.kmPoint,
+          province: normalizedProvince,
+          community,
+          imageUrl: cam.imageUrl,
+        };
+      });
+
+      // Apply filters for API fallback
+      if (filterProvince) {
+        const filterLower = filterProvince.toLowerCase();
+        cameras = cameras.filter(
+          (cam) => cam.province.toLowerCase() === filterLower
         );
+      }
+
+      if (filterCommunity) {
+        const communityProvinces = getProvincesForCommunity(filterCommunity);
+        if (communityProvinces.length > 0) {
+          const provincesLower = communityProvinces.map((p) => p.toLowerCase());
+          cameras = cameras.filter((cam) =>
+            provincesLower.includes(cam.province.toLowerCase())
+          );
+        }
       }
     }
 
@@ -83,6 +133,7 @@ export async function GET(request: NextRequest) {
       count: cameras.length,
       cameras,
       provinces,
+      source,
     };
 
     return NextResponse.json(response);
@@ -94,6 +145,7 @@ export async function GET(request: NextRequest) {
         count: 0,
         cameras: [],
         provinces: [],
+        source: "api" as const,
       },
       { status: 500 }
     );

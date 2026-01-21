@@ -3,7 +3,22 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, Home, Building2, Camera } from "lucide-react";
+import {
+  MapPin,
+  Users,
+  ChevronRight,
+  AlertTriangle,
+  Loader2,
+  Home,
+  Building2,
+  Camera,
+  Zap,
+  TrendingUp,
+  TrendingDown,
+  Route,
+  BarChart3,
+  Clock,
+} from "lucide-react";
 import { CameraSection, type CameraItem } from "@/components/cameras/CameraSection";
 
 interface Community {
@@ -48,6 +63,32 @@ interface CamerasResponse {
   cameras: CameraItem[];
 }
 
+interface ProvinceStatsResponse {
+  success: boolean;
+  data: {
+    totals: {
+      incidents: number;
+      v16: number;
+      avgDurationMins: number | null;
+    };
+    v16DailyTrend: Array<{ date: string; count: number }>;
+    byIncidentType: Array<{ type: string; label: string; count: number }>;
+    topRoads: Array<{ road: string; incidents: number; v16: number; total: number }>;
+    comparison: {
+      incidents: {
+        province: number;
+        nationalAvg: number;
+        percentageDiff: number | null;
+      };
+      v16: {
+        province: number;
+        nationalAvg: number;
+        percentageDiff: number | null;
+      };
+    };
+  };
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ProvinceContent() {
@@ -68,6 +109,13 @@ export default function ProvinceContent() {
   const provinceName = data?.data?.province?.name;
   const { data: camerasData } = useSWR<CamerasResponse>(
     provinceName ? `/api/cameras?province=${encodeURIComponent(provinceName)}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // Fetch province statistics
+  const { data: provinceStats } = useSWR<ProvinceStatsResponse>(
+    provinceName ? `/api/province/stats?province=${encodeURIComponent(provinceName)}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -135,7 +183,7 @@ export default function ProvinceContent() {
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-blue-50 rounded-lg">
@@ -162,25 +210,64 @@ export default function ProvinceContent() {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <Zap className="w-5 h-5 text-orange-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {provinceStats?.data?.totals?.v16 ?? "-"}
+            </p>
+            <p className="text-sm text-gray-500">Balizas V16 (30d)</p>
+            {provinceStats?.data?.comparison?.v16?.percentageDiff != null && (
+              <p className={`text-xs mt-1 flex items-center gap-1 ${
+                provinceStats.data.comparison.v16.percentageDiff > 0
+                  ? "text-red-600"
+                  : "text-green-600"
+              }`}>
+                {provinceStats.data.comparison.v16.percentageDiff > 0 ? (
+                  <TrendingUp className="w-3 h-3" />
+                ) : (
+                  <TrendingDown className="w-3 h-3" />
+                )}
+                {Math.abs(provinceStats.data.comparison.v16.percentageDiff)}% vs media
+              </p>
+            )}
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-red-50 rounded-lg">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {provinceStats?.data?.totals?.incidents ?? "-"}
+            </p>
+            <p className="text-sm text-gray-500">Incidencias (30d)</p>
+            {provinceStats?.data?.comparison?.incidents?.percentageDiff != null && (
+              <p className={`text-xs mt-1 flex items-center gap-1 ${
+                provinceStats.data.comparison.incidents.percentageDiff > 0
+                  ? "text-red-600"
+                  : "text-green-600"
+              }`}>
+                {provinceStats.data.comparison.incidents.percentageDiff > 0 ? (
+                  <TrendingUp className="w-3 h-3" />
+                ) : (
+                  <TrendingDown className="w-3 h-3" />
+                )}
+                {Math.abs(provinceStats.data.comparison.incidents.percentageDiff)}% vs media
+              </p>
+            )}
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-gray-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
               {stats?.accidents?.toLocaleString("es-ES") || "-"}
             </p>
             <p className="text-sm text-gray-500">Accidentes (2023)</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Users className="w-5 h-5 text-gray-600" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats?.fatalities?.toLocaleString("es-ES") || "-"}
-            </p>
-            <p className="text-sm text-gray-500">Fallecidos (2023)</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -221,6 +308,129 @@ export default function ProvinceContent() {
             linkText="Ver todas las cámaras"
             maxItems={8}
           />
+        )}
+
+        {/* Province Statistics Section */}
+        {provinceStats?.success && (
+          <div className="mb-8 space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-blue-600" />
+              Estadísticas de Tráfico (Últimos 30 días)
+            </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* V16 Daily Trend */}
+              {provinceStats.data.v16DailyTrend.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-orange-600" />
+                    Tendencia Balizas V16
+                  </h3>
+                  <div className="h-32 flex items-end gap-0.5">
+                    {provinceStats.data.v16DailyTrend.slice(-30).map((day, idx) => {
+                      const maxCount = Math.max(...provinceStats.data.v16DailyTrend.map((d) => d.count), 1);
+                      const height = (day.count / maxCount) * 100;
+                      return (
+                        <div
+                          key={idx}
+                          className="flex-1 bg-orange-500 rounded-t hover:bg-orange-600"
+                          style={{ height: `${height}%`, minHeight: day.count > 0 ? "2px" : "0" }}
+                          title={`${day.date}: ${day.count} balizas`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Activaciones diarias</p>
+                </div>
+              )}
+
+              {/* Incident Type Breakdown */}
+              {provinceStats.data.byIncidentType.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                    Incidencias por Tipo
+                  </h3>
+                  <div className="space-y-2">
+                    {provinceStats.data.byIncidentType.slice(0, 6).map((item) => {
+                      const maxCount = Math.max(...provinceStats.data.byIncidentType.map((i) => i.count), 1);
+                      const width = (item.count / maxCount) * 100;
+                      return (
+                        <div key={item.type} className="flex items-center gap-2">
+                          <div className="w-24 text-sm text-gray-600 truncate">{item.label}</div>
+                          <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                            <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
+                          </div>
+                          <div className="w-10 text-sm text-gray-600 text-right">{item.count}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Top Roads */}
+            {provinceStats.data.topRoads.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-blue-600" />
+                  Carreteras con más Actividad
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-left text-sm text-gray-500 border-b">
+                        <th className="pb-2">Carretera</th>
+                        <th className="pb-2 text-center">Incidencias</th>
+                        <th className="pb-2 text-center">Balizas V16</th>
+                        <th className="pb-2 text-center">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {provinceStats.data.topRoads.map((road) => (
+                        <tr key={road.road} className="text-sm">
+                          <td className="py-2 font-medium text-gray-900">{road.road}</td>
+                          <td className="py-2 text-center text-gray-600">{road.incidents}</td>
+                          <td className="py-2 text-center text-gray-600">{road.v16}</td>
+                          <td className="py-2 text-center font-medium text-gray-900">{road.total}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Comparison to National Average */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-medium text-blue-900 mb-2">Comparación con Media Nacional</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                <div>
+                  <span className="font-medium">Incidencias:</span>{" "}
+                  {provinceStats.data.comparison.incidents.province} en la provincia vs{" "}
+                  {provinceStats.data.comparison.incidents.nationalAvg} media nacional
+                  {provinceStats.data.comparison.incidents.percentageDiff !== null && (
+                    <span className={provinceStats.data.comparison.incidents.percentageDiff > 0 ? "text-red-700" : "text-green-700"}>
+                      {" "}({provinceStats.data.comparison.incidents.percentageDiff > 0 ? "+" : ""}
+                      {provinceStats.data.comparison.incidents.percentageDiff}%)
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <span className="font-medium">Balizas V16:</span>{" "}
+                  {provinceStats.data.comparison.v16.province} en la provincia vs{" "}
+                  {provinceStats.data.comparison.v16.nationalAvg} media nacional
+                  {provinceStats.data.comparison.v16.percentageDiff !== null && (
+                    <span className={provinceStats.data.comparison.v16.percentageDiff > 0 ? "text-red-700" : "text-green-700"}>
+                      {" "}({provinceStats.data.comparison.v16.percentageDiff > 0 ? "+" : ""}
+                      {provinceStats.data.comparison.v16.percentageDiff}%)
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Municipalities List */}

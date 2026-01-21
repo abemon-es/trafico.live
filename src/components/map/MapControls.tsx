@@ -16,9 +16,12 @@ import {
   Map as MapIcon,
   X,
   CloudRain,
+  Navigation,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
+
+export type LocationPreset = "peninsula" | "canarias" | "ceuta" | "melilla";
 
 export interface ActiveLayers {
   v16: boolean;
@@ -47,6 +50,7 @@ interface MapControlsProps {
   onRefresh: () => void;
   viewMode: "map" | "list";
   onViewModeChange: (mode: "map" | "list") => void;
+  onLocationChange?: (preset: LocationPreset) => void;
   counts?: {
     v16: number;
     incidents: number;
@@ -83,16 +87,22 @@ export function MapControls({
   onRefresh,
   viewMode,
   onViewModeChange,
+  onLocationChange,
   counts,
 }: MapControlsProps) {
   const [showIncidentDropdown, setShowIncidentDropdown] = useState(false);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowIncidentDropdown(false);
+      }
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) {
+        setShowLocationDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -306,6 +316,48 @@ export function MapControls({
 
         {/* Right side: Actions */}
         <div className="flex items-center gap-2">
+          {/* Location presets */}
+          {onLocationChange && (
+            <div className="relative" ref={locationDropdownRef}>
+              <button
+                onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+                title="Ir a ubicación"
+              >
+                <Navigation className="w-5 h-5" />
+                <ChevronDown className={`w-3 h-3 transition-transform ${showLocationDropdown ? "rotate-180" : ""}`} />
+              </button>
+              {showLocationDropdown && (
+                <div className="absolute top-full right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                  <button
+                    onClick={() => { onLocationChange("peninsula"); setShowLocationDropdown(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <span className="text-lg">🇪🇸</span> Península
+                  </button>
+                  <button
+                    onClick={() => { onLocationChange("canarias"); setShowLocationDropdown(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <span className="text-lg">🏝️</span> Islas Canarias
+                  </button>
+                  <button
+                    onClick={() => { onLocationChange("ceuta"); setShowLocationDropdown(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <span className="text-lg">🏛️</span> Ceuta
+                  </button>
+                  <button
+                    onClick={() => { onLocationChange("melilla"); setShowLocationDropdown(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <span className="text-lg">🏛️</span> Melilla
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* View mode toggle */}
           <div className="flex rounded-lg border border-gray-200 overflow-hidden">
             <button

@@ -1,0 +1,8 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "services/panel-collector/Dockerfile"
+
+[deploy]
+# Run every 5 minutes to keep panel messages fresh
+cronSchedule = "*/5 * * * *"
+restartPolicyType = "NEVER"

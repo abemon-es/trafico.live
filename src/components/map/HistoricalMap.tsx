@@ -33,11 +33,11 @@ interface HistoricalMapProps {
   height?: string;
 }
 
-// Spain center and bounds
+// Spain center coordinates
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168];
 const SPAIN_BOUNDS: [[number, number], [number, number]] = [
-  [-9.5, 35.5],
-  [4.5, 44.0],
+  [-9.5, 35.8], // Southwest
+  [4.5, 43.9],  // Northeast
 ];
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -80,7 +80,6 @@ export function HistoricalMap({
       style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
       center: SPAIN_CENTER,
       zoom: 5.5,
-      maxBounds: SPAIN_BOUNDS,
       attributionControl: false,
     });
 
