@@ -48,13 +48,20 @@ function inferRoadType(roadNumber: string | undefined): RoadType | undefined {
 
   const road = roadNumber.toUpperCase().trim();
 
-  if (road.startsWith("A-") || road.startsWith("AP-")) return "AUTOPISTA";
+  // AP-* toll motorways
+  if (road.startsWith("AP-")) return "AUTOPISTA";
+  // A-* motorways (autovías)
+  if (road.startsWith("A-")) return "AUTOVIA";
+  // N-* national roads
   if (road.startsWith("N-")) return "NACIONAL";
-  if (road.startsWith("E-")) return "EUROPEA";
-  if (road.match(/^[A-Z]{1,2}-\d/)) return "AUTONOMICA";
-  if (road.match(/^[A-Z]{2,3}-\d/)) return "PROVINCIAL";
+  // C-* regional roads (comarcal)
+  if (road.startsWith("C-")) return "COMARCAL";
+  // E-* European routes - map to AUTOVIA (usually overlays A-* roads)
+  if (road.startsWith("E-")) return "AUTOVIA";
+  // Regional/provincial roads (B-, GI-, BI-, etc.)
+  if (road.match(/^[A-Z]{1,3}-\d/)) return "PROVINCIAL";
 
-  return undefined;
+  return "OTHER";
 }
 
 function normalizeIncident(
@@ -236,4 +243,3 @@ async function main() {
 }
 
 main();
-# Trigger deployment
