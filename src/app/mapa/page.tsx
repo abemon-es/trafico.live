@@ -15,6 +15,7 @@ import {
   Maximize2,
   Filter,
   Route,
+  MapPin,
 } from "lucide-react";
 
 const TrafficMap = dynamic(() => import("@/components/map/TrafficMap"), {
@@ -65,6 +66,7 @@ export default function MapaPage() {
     zbe: false,
     weather: true,
     highways: true,
+    provinces: false,
   });
   const [showFilters, setShowFilters] = useState(true);
 
@@ -172,6 +174,13 @@ export default function MapaPage() {
               onClick={() => toggleLayer("highways")}
               color="cyan"
               icon={<Route className="w-4 h-4" />}
+            />
+            <LayerToggle
+              label="Provincias"
+              active={activeLayers.provinces}
+              onClick={() => toggleLayer("provinces")}
+              color="purple"
+              icon={<MapPin className="w-4 h-4" />}
             />
           </div>
         )}

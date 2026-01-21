@@ -12,6 +12,7 @@ interface ActiveLayers {
   zbe: boolean;
   weather: boolean;
   highways: boolean;
+  provinces: boolean;
 }
 
 interface V16Beacon {
@@ -182,6 +183,92 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
         })
         .catch((err) => console.error("Failed to load highways GeoJSON:", err));
 
+      // Load provinces GeoJSON
+      fetch("/geojson/provinces.json")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!map.current) return;
+
+          // Add provinces source
+          map.current.addSource("provinces", {
+            type: "geojson",
+            data: data,
+          });
+
+          // Add province circles layer
+          map.current.addLayer({
+            id: "provinces-circles",
+            type: "circle",
+            source: "provinces",
+            layout: {
+              visibility: "none",
+            },
+            paint: {
+              "circle-radius": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                4, 8,
+                8, 16,
+              ],
+              "circle-color": "#6366f1",
+              "circle-opacity": 0.6,
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": 2,
+            },
+          });
+
+          // Add province labels
+          map.current.addLayer({
+            id: "provinces-labels",
+            type: "symbol",
+            source: "provinces",
+            layout: {
+              "text-field": ["get", "name"],
+              "text-size": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                4, 10,
+                8, 14,
+              ],
+              "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+              "text-offset": [0, 1.5],
+              visibility: "none",
+            },
+            paint: {
+              "text-color": "#374151",
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 1.5,
+            },
+          });
+
+          // Add click handler for provinces
+          map.current.on("click", "provinces-circles", (e) => {
+            if (e.features && e.features.length > 0) {
+              const feature = e.features[0];
+              const props = feature.properties;
+              if (props && props.code) {
+                window.location.href = `/provincias/${props.code}`;
+              }
+            }
+          });
+
+          // Change cursor on hover
+          map.current.on("mouseenter", "provinces-circles", () => {
+            if (map.current) {
+              map.current.getCanvas().style.cursor = "pointer";
+            }
+          });
+
+          map.current.on("mouseleave", "provinces-circles", () => {
+            if (map.current) {
+              map.current.getCanvas().style.cursor = "";
+            }
+          });
+        })
+        .catch((err) => console.error("Failed to load provinces GeoJSON:", err));
+
       setIsLoaded(true);
     });
 
@@ -207,6 +294,20 @@ export default function TrafficMap({ activeLayers, v16Data, incidentData, camera
       map.current.setLayoutProperty("highways-labels", "visibility", visibility);
     }
   }, [activeLayers.highways, isLoaded]);
+
+  // Toggle province layers visibility
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    const visibility = activeLayers.provinces ? "visible" : "none";
+
+    if (map.current.getLayer("provinces-circles")) {
+      map.current.setLayoutProperty("provinces-circles", "visibility", visibility);
+    }
+    if (map.current.getLayer("provinces-labels")) {
+      map.current.setLayoutProperty("provinces-labels", "visibility", visibility);
+    }
+  }, [activeLayers.provinces, isLoaded]);
 
   // Update markers when layers or data change
   useEffect(() => {

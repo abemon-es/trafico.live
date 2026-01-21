@@ -16,6 +16,7 @@ import {
   Map as MapIcon,
   Loader2,
   Route,
+  MapPin,
 } from "lucide-react";
 
 // Dynamic import for map to avoid SSR issues with MapLibre
@@ -68,6 +69,7 @@ export default function Dashboard() {
     zbe: false,
     weather: true,
     highways: true,
+    provinces: false,
   });
 
   // Fetch real data from API
@@ -182,6 +184,13 @@ export default function Dashboard() {
                   onClick={() => toggleLayer("highways")}
                   color="cyan"
                   icon={<Route className="w-4 h-4" />}
+                />
+                <LayerToggle
+                  label="Provincias"
+                  active={activeLayers.provinces}
+                  onClick={() => toggleLayer("provinces")}
+                  color="purple"
+                  icon={<MapPin className="w-4 h-4" />}
                 />
               </div>
             </div>
