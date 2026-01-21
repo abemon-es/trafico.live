@@ -1,0 +1,607 @@
+"use client";
+
+import { useState } from "react";
+import useSWR from "swr";
+import {
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  MapPin,
+  Calendar,
+  BarChart3,
+  Activity,
+} from "lucide-react";
+import { BreakdownChart, type ChartDataItem } from "@/components/stats/BreakdownCharts";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// Types
+interface DailyApiResponse {
+  success: boolean;
+  data: {
+    totals: {
+      v16Total: number;
+      incidentTotal: number;
+      daysWithData: number;
+      avgDurationSecs: number | null;
+    };
+    peak: {
+      date: string;
+      count: number;
+      peakHour: number | null;
+    } | null;
+    dailyData: Array<{
+      date: string;
+      v16Count: number;
+      incidentCount: number;
+      avgDuration: number | null;
+    }>;
+  };
+}
+
+interface HourlyApiResponse {
+  success: boolean;
+  data: {
+    hourlyAverages: Array<{ hour: number; avgCount: number }>;
+    weeklyPattern: Array<{ day: number; dayName: string; avgCount: number }>;
+    heatmapData: Array<{ hour: number; day: number; value: number }>;
+    peaks: {
+      hour: { hour: number; avgCount: number };
+      day: { dayName: string; avgCount: number };
+    };
+  };
+}
+
+interface ProvincesApiResponse {
+  success: boolean;
+  data: {
+    provinceRanking: Array<{
+      code: string;
+      name: string;
+      count: number;
+      avgDurationSecs: number | null;
+    }>;
+    communityRanking: Array<{ code: string; name: string; count: number }>;
+    roadTypeBreakdown: Array<{ type: string; count: number }>;
+    totals: { totalBeacons: number; provinces: number; communities: number };
+  };
+}
+
+interface DurationApiResponse {
+  success: boolean;
+  data: {
+    stats: {
+      count: number;
+      avgMinutes: number;
+      medianMinutes: number;
+      p90Secs: number;
+      p95Secs: number;
+    } | null;
+    distribution: Array<{ label: string; count: number; percentage: number }>;
+    byProvince: Array<{
+      code: string;
+      name: string;
+      avgDurationSecs: number;
+      count: number;
+    }>;
+    message?: string;
+  };
+}
+
+function StatCard({
+  icon: Icon,
+  iconBgColor,
+  iconColor,
+  value,
+  label,
+  subLabel,
+  isLoading,
+}: {
+  icon: React.ElementType;
+  iconBgColor: string;
+  iconColor: string;
+  value: number | string;
+  label: string;
+  subLabel?: string;
+  isLoading?: boolean;
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`p-2 ${iconBgColor} rounded-lg`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+      </div>
+      {isLoading ? (
+        <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
+      ) : (
+        <p className="text-2xl font-bold text-gray-900">
+          {typeof value === "number" ? value.toLocaleString("es-ES") : value}
+        </p>
+      )}
+      <p className="text-sm text-gray-500">{label}</p>
+      {subLabel && <p className="text-xs text-gray-400 mt-1">{subLabel}</p>}
+    </div>
+  );
+}
+
+function DailyTrendChart({
+  data,
+  isLoading,
+}: {
+  data?: DailyApiResponse["data"]["dailyData"];
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
+        <div className="h-64 bg-gray-100 animate-pulse rounded" />
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-blue-600" />
+          Tendencia Diaria
+        </h2>
+        <div className="h-64 flex items-center justify-center text-gray-500">
+          <div className="text-center">
+            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>No hay datos disponibles aún</p>
+            <p className="text-sm mt-2">Los datos se recopilarán cada 5 minutos</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const maxCount = Math.max(...data.map((d) => d.v16Count));
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <TrendingUp className="w-5 h-5 text-blue-600" />
+        Tendencia Diaria de Balizas V16
+      </h2>
+      <div className="h-64 flex items-end gap-1">
+        {data.map((day, idx) => {
+          const height = maxCount > 0 ? (day.v16Count / maxCount) * 100 : 0;
+          const date = new Date(day.date);
+          const dayLabel = date.toLocaleDateString("es-ES", { weekday: "short" });
+          return (
+            <div key={idx} className="flex-1 flex flex-col items-center">
+              <div
+                className="w-full bg-orange-500 rounded-t hover:bg-orange-600 transition-colors"
+                style={{ height: `${height}%`, minHeight: day.v16Count > 0 ? "4px" : "0" }}
+                title={`${day.date}: ${day.v16Count} balizas`}
+              />
+              <span className="text-xs text-gray-500 mt-1 truncate w-full text-center">
+                {dayLabel}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function HourlyHeatmap({
+  data,
+  isLoading,
+}: {
+  data?: HourlyApiResponse["data"];
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
+        <div className="h-48 bg-gray-100 animate-pulse rounded" />
+      </div>
+    );
+  }
+
+  if (!data || !data.heatmapData || data.heatmapData.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-purple-600" />
+          Patrón Horario
+        </h2>
+        <div className="h-48 flex items-center justify-center text-gray-500">
+          <div className="text-center">
+            <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>Sin datos de patrones horarios</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const maxValue = Math.max(...data.heatmapData.map((d) => d.value), 1);
+
+  const getColor = (value: number) => {
+    const intensity = value / maxValue;
+    if (intensity === 0) return "bg-gray-100";
+    if (intensity < 0.25) return "bg-orange-100";
+    if (intensity < 0.5) return "bg-orange-200";
+    if (intensity < 0.75) return "bg-orange-400";
+    return "bg-orange-600";
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <Activity className="w-5 h-5 text-purple-600" />
+        Patrón Hora × Día de la Semana
+      </h2>
+      <div className="overflow-x-auto">
+        <div className="min-w-[600px]">
+          {/* Hour labels */}
+          <div className="flex mb-1">
+            <div className="w-12" />
+            {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
+              <div key={h} className="flex-1 text-xs text-gray-500 text-center">
+                {h}:00
+              </div>
+            ))}
+          </div>
+          {/* Grid */}
+          {[1, 2, 3, 4, 5, 6, 0].map((day) => (
+            <div key={day} className="flex items-center mb-1">
+              <div className="w-12 text-xs text-gray-500">{dayNames[day]}</div>
+              <div className="flex-1 flex gap-0.5">
+                {Array.from({ length: 24 }, (_, hour) => {
+                  const cell = data.heatmapData.find((d) => d.hour === hour && d.day === day);
+                  const value = cell?.value || 0;
+                  return (
+                    <div
+                      key={hour}
+                      className={`flex-1 h-4 rounded-sm ${getColor(value)}`}
+                      title={`${dayNames[day]} ${hour}:00 - Promedio: ${value}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {data.peaks && (
+        <div className="mt-4 text-sm text-gray-600">
+          <p>
+            <span className="font-medium">Hora pico:</span> {data.peaks.hour.hour}:00 (promedio{" "}
+            {data.peaks.hour.avgCount} balizas)
+          </p>
+          <p>
+            <span className="font-medium">Día con más actividad:</span> {data.peaks.day.dayName}{" "}
+            (promedio {data.peaks.day.avgCount} balizas/hora)
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DurationDistribution({
+  data,
+  isLoading,
+}: {
+  data?: DurationApiResponse["data"];
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
+        <div className="h-48 bg-gray-100 animate-pulse rounded" />
+      </div>
+    );
+  }
+
+  if (!data || !data.stats || data.distribution.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Clock className="w-5 h-5 text-green-600" />
+          Duración de Balizas
+        </h2>
+        <div className="h-48 flex items-center justify-center text-gray-500">
+          <div className="text-center">
+            <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>{data?.message || "Sin datos de duración disponibles"}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const maxPercentage = Math.max(...data.distribution.map((d) => d.percentage), 1);
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <Clock className="w-5 h-5 text-green-600" />
+        Distribución de Duración
+      </h2>
+      <div className="space-y-3">
+        {data.distribution.map((bucket, idx) => (
+          <div key={idx} className="flex items-center gap-3">
+            <div className="w-24 text-sm text-gray-600">{bucket.label}</div>
+            <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded"
+                style={{ width: `${(bucket.percentage / maxPercentage) * 100}%` }}
+              />
+            </div>
+            <div className="w-16 text-sm text-gray-600 text-right">{bucket.percentage}%</div>
+          </div>
+        ))}
+      </div>
+      {data.stats && (
+        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="text-gray-500">Media:</span>{" "}
+            <span className="font-medium">{data.stats.avgMinutes} min</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Mediana:</span>{" "}
+            <span className="font-medium">{data.stats.medianMinutes} min</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function HistoricoContent() {
+  const [period, setPeriod] = useState(30);
+
+  const { data: dailyData, isLoading: dailyLoading } = useSWR<DailyApiResponse>(
+    `/api/historico/daily?days=${period}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: hourlyData, isLoading: hourlyLoading } = useSWR<HourlyApiResponse>(
+    `/api/historico/hourly?days=${Math.min(period, 14)}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: provincesData, isLoading: provincesLoading } = useSWR<ProvincesApiResponse>(
+    `/api/historico/provinces?days=${period}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: durationData, isLoading: durationLoading } = useSWR<DurationApiResponse>(
+    `/api/historico/duration?days=${period}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const hasData = dailyData?.success && dailyData.data.totals.daysWithData > 0;
+
+  // Convert province ranking to chart format
+  const provinceChartData: ChartDataItem[] =
+    provincesData?.data?.provinceRanking?.map((p) => ({
+      name: p.name,
+      value: p.count,
+    })) || [];
+
+  const roadTypeLabels: Record<string, string> = {
+    AUTOPISTA: "Autopista",
+    AUTOVIA: "Autovía",
+    NACIONAL: "Nacional",
+    COMARCAL: "Comarcal",
+    PROVINCIAL: "Provincial",
+    URBANA: "Urbana",
+    OTHER: "Otra",
+  };
+
+  const roadTypeChartData: ChartDataItem[] =
+    provincesData?.data?.roadTypeBreakdown?.map((r) => ({
+      name: roadTypeLabels[r.type] || r.type,
+      value: r.count,
+    })) || [];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Histórico de Balizas V16</h1>
+            <p className="mt-2 text-gray-600">
+              Análisis histórico de emergencias señalizadas con baliza V16 en carreteras españolas.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="period" className="text-sm text-gray-600">
+              Período:
+            </label>
+            <select
+              id="period"
+              value={period}
+              onChange={(e) => setPeriod(Number(e.target.value))}
+              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            >
+              <option value={7}>7 días</option>
+              <option value={14}>14 días</option>
+              <option value={30}>30 días</option>
+              <option value={90}>90 días</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            icon={AlertTriangle}
+            iconBgColor="bg-orange-50"
+            iconColor="text-orange-600"
+            value={hasData ? dailyData.data.totals.v16Total : "-"}
+            label="Balizas V16 Totales"
+            subLabel={hasData ? `${dailyData.data.totals.daysWithData} días de datos` : undefined}
+            isLoading={dailyLoading}
+          />
+          <StatCard
+            icon={Clock}
+            iconBgColor="bg-green-50"
+            iconColor="text-green-600"
+            value={
+              durationData?.data?.stats?.avgMinutes
+                ? `${durationData.data.stats.avgMinutes} min`
+                : "-"
+            }
+            label="Duración Media"
+            subLabel={
+              durationData?.data?.stats?.medianMinutes
+                ? `Mediana: ${durationData.data.stats.medianMinutes} min`
+                : undefined
+            }
+            isLoading={durationLoading}
+          />
+          <StatCard
+            icon={MapPin}
+            iconBgColor="bg-blue-50"
+            iconColor="text-blue-600"
+            value={provincesData?.data?.totals?.totalBeacons || "-"}
+            label="Por Ubicación"
+            subLabel={
+              provincesData?.data?.totals
+                ? `${provincesData.data.totals.provinces} provincias`
+                : undefined
+            }
+            isLoading={provincesLoading}
+          />
+          <StatCard
+            icon={Calendar}
+            iconBgColor="bg-purple-50"
+            iconColor="text-purple-600"
+            value={
+              dailyData?.data?.peak
+                ? new Date(dailyData.data.peak.date).toLocaleDateString("es-ES", {
+                    day: "numeric",
+                    month: "short",
+                  })
+                : "-"
+            }
+            label="Día Pico"
+            subLabel={
+              dailyData?.data?.peak ? `${dailyData.data.peak.count} balizas` : undefined
+            }
+            isLoading={dailyLoading}
+          />
+        </div>
+
+        {/* Charts Grid */}
+        <div className="space-y-8">
+          {/* Daily Trend - Full Width */}
+          <DailyTrendChart data={dailyData?.data?.dailyData} isLoading={dailyLoading} />
+
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Hourly Heatmap */}
+            <HourlyHeatmap data={hourlyData?.data} isLoading={hourlyLoading} />
+
+            {/* Duration Distribution */}
+            <DurationDistribution data={durationData?.data} isLoading={durationLoading} />
+          </div>
+
+          {/* Province Rankings */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {provinceChartData.length > 0 ? (
+              <BreakdownChart
+                title="Top 15 Provincias"
+                data={provinceChartData}
+                note="Balizas V16 activadas por provincia"
+                labelWidth={110}
+              />
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-gray-500" />
+                  Ranking por Provincia
+                </h2>
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  {provincesLoading ? (
+                    <div className="animate-pulse">Cargando datos...</div>
+                  ) : (
+                    <div className="text-center">
+                      <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No hay datos disponibles</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {roadTypeChartData.length > 0 ? (
+              <BreakdownChart
+                title="Por Tipo de Vía"
+                data={roadTypeChartData}
+                note="Distribución por tipo de carretera"
+                labelWidth={90}
+              />
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-gray-500" />
+                  Por Tipo de Vía
+                </h2>
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  {provincesLoading ? (
+                    <div className="animate-pulse">Cargando datos...</div>
+                  ) : (
+                    <div className="text-center">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No hay datos disponibles</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Info Section */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Sobre estos datos</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600">
+            <div>
+              <h3 className="font-medium text-gray-900">Balizas V16</h3>
+              <p className="mt-1">
+                Las balizas V16 son dispositivos luminosos de emergencia que alertan sobre vehículos
+                detenidos en la vía. Los datos se recopilan del NAP DATEX II de la DGT cada 5
+                minutos.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900">Recopilación de datos</h3>
+              <p className="mt-1">
+                Los datos históricos comenzaron a recopilarse recientemente. La cobertura y
+                precisión mejorarán con el tiempo a medida que se acumule más información.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Methodology Note */}
+        <div className="mt-4 text-sm text-gray-500">
+          <p>
+            * Los datos mostrados corresponden a los registros disponibles desde el inicio de la
+            recopilación. Las métricas de duración solo incluyen balizas que han sido desactivadas.
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+}

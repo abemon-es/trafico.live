@@ -11,12 +11,14 @@ import {
   Info,
   Menu,
   X,
+  History,
 } from "lucide-react";
 
 const navigation = [
   { name: "Inicio", href: "/", icon: Car },
   { name: "Mapa", href: "/mapa", icon: Map },
-  { name: "Provincias", href: "/provincias", icon: Building2 },
+  { name: "España", href: "/espana", icon: Building2 },
+  { name: "Histórico", href: "/historico", icon: History },
   { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
   { name: "Sobre", href: "/sobre", icon: Info },
 ];
