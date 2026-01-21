@@ -20,32 +20,32 @@ export const CAUSE_COLORS: Record<IncidentCause, string> = {
   OTHER_CAUSE: "#6b7280",     // Gray - otras
 };
 
-// SVG path data for effect icons
+// SVG path data for effect icons (Lucide-style, 24x24 viewBox)
 const EFFECT_ICONS: Record<IncidentEffect, string> = {
-  // X mark for road closed
-  ROAD_CLOSED: "M6 6L18 18M6 18L18 6",
-  // Slow waves for traffic
-  SLOW_TRAFFIC: "M4 12h4l2-4 2 8 2-4h6",
-  // Minus/restriction
-  RESTRICTED: "M6 12h12",
-  // Arrow diversion
-  DIVERSION: "M9 6l6 6-6 6M15 12H3",
-  // Question mark for other
-  OTHER_EFFECT: "M12 16v1m0-8a3 3 0 00-3 3h2a1 1 0 112 0c0 .6-.4 1-1 1v2",
+  // Ban/No entry - circle with diagonal line
+  ROAD_CLOSED: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM4.93 4.93l14.14 14.14",
+  // Gauge/speedometer for slow traffic
+  SLOW_TRAFFIC: "m12 14 4-4M3.34 19a10 10 0 1 1 17.32 0",
+  // Alert triangle for restricted
+  RESTRICTED: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3zM12 9v4M12 17h.01",
+  // Arrow turning for diversion
+  DIVERSION: "M6 9h6V4l7 7-7 7v-5H6V9z",
+  // Circle with question mark
+  OTHER_EFFECT: "M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10zM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01",
 };
 
-// SVG path data for cause icons
+// SVG path data for cause icons (Lucide-style, 24x24 viewBox)
 const CAUSE_ICONS: Record<IncidentCause, string> = {
-  // Construction/wrench
-  ROADWORK: "M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.77 3.77z",
-  // Exclamation triangle
-  ACCIDENT: "M12 9v4m0 4h.01M4.93 19h14.14c1.36 0 2.21-1.47 1.54-2.67L13.54 4.22c-.68-1.2-2.4-1.2-3.08 0L3.39 16.33c-.67 1.2.18 2.67 1.54 2.67z",
+  // Construction cone
+  ROADWORK: "M7.5 4h9L21 22H3L7.5 4zM9 4V2h6v2M12 12v5",
+  // Car crash
+  ACCIDENT: "M7 17m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0M17 17m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0M5 17H3v-4l3-5h12l3 5v4h-2M5 8V6h4l4-3 4 3h4v2",
   // Cloud with rain
-  WEATHER: "M8 19v2m4-2v2m4-2v2M4 15h16M5 15a5 5 0 015-5h.09A7 7 0 0119 10v0a3 3 0 013 3v0",
-  // Shield with slash
-  RESTRICTION: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM8 10l8 8",
-  // Circle with ?
-  OTHER_CAUSE: "M12 16v1m0-8a3 3 0 00-3 3h2a1 1 0 112 0c0 .6-.4 1-1 1v2",
+  WEATHER: "M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M16 14v6M8 14v6M12 16v6",
+  // Shield
+  RESTRICTION: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  // Circle with question mark
+  OTHER_CAUSE: "M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10zM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01",
 };
 
 // Human-readable labels
@@ -150,6 +150,13 @@ export function createIncidentMarkerElement(
   const el = document.createElement("div");
   el.className = `incident-marker incident-${effect.toLowerCase()} cause-${cause.toLowerCase()}`;
   el.innerHTML = getIncidentMarkerSVG({ effect, cause, size });
+
+  // Explicit dimensions to match SVG - critical for MapLibre anchor calculation
+  el.style.width = `${size}px`;
+  el.style.height = `${size + 4}px`;
+  el.style.display = "flex";
+  el.style.alignItems = "flex-end";
+  el.style.justifyContent = "center";
   el.style.cursor = "pointer";
   el.style.transition = "transform 0.2s ease";
 
