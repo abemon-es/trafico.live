@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  parseDatexResponse,
-  extractTrafficIncidents,
-  type IncidentEffect,
-  type IncidentCause,
-  type TrafficIncidentData,
-} from "@/lib/parsers/datex2";
 import { prisma } from "@/lib/db";
 import { IncidentType, TrafficIncident } from "@prisma/client";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
 
-const DGT_NAP_URL =
-  process.env.DGT_NAP_URL || "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
+// Effect categories for UI grouping
+type IncidentEffect = "ROAD_CLOSED" | "SLOW_TRAFFIC" | "RESTRICTED" | "DIVERSION" | "OTHER_EFFECT";
+type IncidentCause = "ROADWORK" | "ACCIDENT" | "WEATHER" | "RESTRICTION" | "OTHER_CAUSE";
 
-// Effect and cause labels for UI
 const EFFECT_LABELS: Record<IncidentEffect, string> = {
   ROAD_CLOSED: "Carreteras cortadas",
   SLOW_TRAFFIC: "Tráfico lento",
@@ -73,62 +66,6 @@ function mapTypeToCause(type: IncidentType): IncidentCause {
   }
 }
 
-// Convert database TrafficIncident to API TrafficIncidentData
-function toTrafficIncidentData(db: TrafficIncident): TrafficIncidentData {
-  return {
-    situationId: db.situationId,
-    type: db.type,
-    effect: mapTypeToEffect(db.type),
-    cause: mapTypeToCause(db.type),
-    startedAt: db.startedAt,
-    endedAt: db.endedAt ?? undefined,
-    latitude: Number(db.latitude),
-    longitude: Number(db.longitude),
-    roadNumber: db.roadNumber ?? undefined,
-    kmPoint: db.kmPoint ? Number(db.kmPoint) : undefined,
-    direction: undefined,
-    province: db.province ?? undefined,
-    municipality: undefined,
-    community: db.community ?? undefined,
-    severity: db.severity as "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH",
-    description: db.description ?? undefined,
-    laneInfo: undefined,
-    source: db.source ?? undefined,
-  };
-}
-
-// Fetch regional incidents from database (SCT + Euskadi)
-async function getRegionalIncidents(): Promise<TrafficIncidentData[]> {
-  const dbIncidents = await prisma.trafficIncident.findMany({
-    where: {
-      source: { in: ["SCT", "EUSKADI"] },
-      isActive: true,
-    },
-  });
-
-  return dbIncidents.map(toTrafficIncidentData);
-}
-
-// Fetch DGT incidents from NAP API
-async function fetchDGTIncidents(): Promise<TrafficIncidentData[]> {
-  const response = await fetch(DGT_NAP_URL, {
-    headers: {
-      Accept: "application/xml",
-      "User-Agent": "TraficoEspana/1.0 (https://trafico.abemon.es)",
-    },
-    next: { revalidate: 60 },
-  });
-
-  if (!response.ok) {
-    console.error(`DGT API error: ${response.status} ${response.statusText}`);
-    return [];
-  }
-
-  const xml = await response.text();
-  const situations = parseDatexResponse(xml);
-  return extractTrafficIncidents(situations);
-}
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -138,40 +75,48 @@ export async function GET(request: NextRequest) {
     const causeFilter = searchParams.get("cause")?.split(",").filter(Boolean) as IncidentCause[] | undefined;
     const provinceFilter = searchParams.get("province");
     const communityFilter = searchParams.get("community");
+    const sourceFilter = searchParams.get("source")?.split(",").filter(Boolean);
 
-    // Fetch from BOTH sources in parallel: DGT NAP API + Regional DB
-    const [dgtResult, regionalResult] = await Promise.allSettled([
-      fetchDGTIncidents(),
-      getRegionalIncidents(),
-    ]);
+    // Query all active incidents from database (DGT + SCT + Euskadi)
+    const whereClause: Record<string, unknown> = { isActive: true };
 
-    // Merge incidents from both sources
-    let incidents: TrafficIncidentData[] = [];
-
-    if (dgtResult.status === "fulfilled") {
-      incidents.push(...dgtResult.value);
-    } else {
-      console.error("DGT fetch failed:", dgtResult.reason);
+    // Source filter (optional)
+    if (sourceFilter && sourceFilter.length > 0) {
+      whereClause.source = { in: sourceFilter };
     }
 
-    if (regionalResult.status === "fulfilled") {
-      incidents.push(...regionalResult.value);
-    } else {
-      console.error("Regional DB fetch failed:", regionalResult.reason);
-    }
+    const dbIncidents = await prisma.trafficIncident.findMany({
+      where: whereClause,
+      orderBy: { startedAt: "desc" },
+    });
 
-    // If both sources failed, return error
-    if (incidents.length === 0 && dgtResult.status === "rejected") {
-      return NextResponse.json(
-        { error: "Error fetching incident data", incidents: [], counts: {} },
-        { status: 502 }
-      );
-    }
+    // Transform to API format with effect/cause mapping
+    let incidents = dbIncidents.map((db: TrafficIncident) => ({
+      situationId: db.situationId,
+      type: db.type,
+      effect: mapTypeToEffect(db.type),
+      cause: mapTypeToCause(db.type),
+      startedAt: db.startedAt,
+      endedAt: db.endedAt ?? undefined,
+      latitude: Number(db.latitude),
+      longitude: Number(db.longitude),
+      roadNumber: db.roadNumber ?? undefined,
+      kmPoint: db.kmPoint ? Number(db.kmPoint) : undefined,
+      direction: db.direction ?? undefined,
+      province: db.province ?? undefined,
+      provinceName: db.provinceName ?? undefined,
+      community: db.community ?? undefined,
+      communityName: db.communityName ?? undefined,
+      severity: db.severity as "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH",
+      description: db.description ?? undefined,
+      source: db.source ?? undefined,
+    }));
 
     // Calculate counts BEFORE filtering (for filter UI badges)
     const countsByEffect: Record<string, number> = {};
     const countsByCause: Record<string, number> = {};
     const countsByProvince: Record<string, number> = {};
+    const countsBySource: Record<string, number> = {};
 
     for (const incident of incidents) {
       countsByEffect[incident.effect] = (countsByEffect[incident.effect] || 0) + 1;
@@ -179,7 +124,12 @@ export async function GET(request: NextRequest) {
       if (incident.province) {
         countsByProvince[incident.province] = (countsByProvince[incident.province] || 0) + 1;
       }
+      if (incident.source) {
+        countsBySource[incident.source] = (countsBySource[incident.source] || 0) + 1;
+      }
     }
+
+    const totalCount = incidents.length;
 
     // Apply filters
     if (effectFilter && effectFilter.length > 0) {
@@ -190,11 +140,11 @@ export async function GET(request: NextRequest) {
     }
     if (provinceFilter) {
       const pLower = provinceFilter.toLowerCase();
-      incidents = incidents.filter((i) => i.province?.toLowerCase() === pLower);
+      incidents = incidents.filter((i) => i.province?.toLowerCase() === pLower || i.provinceName?.toLowerCase().includes(pLower));
     }
     if (communityFilter) {
       const cLower = communityFilter.toLowerCase();
-      incidents = incidents.filter((i) => i.community?.toLowerCase().includes(cLower));
+      incidents = incidents.filter((i) => i.community?.toLowerCase() === cLower || i.communityName?.toLowerCase().includes(cLower));
     }
 
     // Convert to GeoJSON for map consumption
@@ -218,28 +168,34 @@ export async function GET(request: NextRequest) {
           kmPoint: incident.kmPoint,
           direction: incident.direction,
           province: incident.province,
+          provinceName: incident.provinceName,
           community: incident.community,
+          communityName: incident.communityName,
           severity: incident.severity,
           description: incident.description,
-          laneInfo: incident.laneInfo,
           source: incident.source,
         },
       })),
     };
 
-    // Track total count before filtering
-    const totalCount =
-      (dgtResult.status === "fulfilled" ? dgtResult.value.length : 0) +
-      (regionalResult.status === "fulfilled" ? regionalResult.value.length : 0);
+    // Get last fetch time for freshness indicator
+    const latestFetch = dbIncidents.length > 0
+      ? dbIncidents.reduce((latest, i) =>
+          i.fetchedAt > latest ? i.fetchedAt : latest,
+          dbIncidents[0].fetchedAt
+        )
+      : new Date();
 
     return NextResponse.json({
       count: incidents.length,
       totalCount,
-      lastUpdated: new Date().toISOString(),
+      lastUpdated: latestFetch.toISOString(),
+      source: "database",
       counts: {
         byEffect: countsByEffect,
         byCause: countsByCause,
         byProvince: countsByProvince,
+        bySource: countsBySource,
       },
       labels: {
         effects: EFFECT_LABELS,
@@ -255,15 +211,15 @@ export async function GET(request: NextRequest) {
         cause: i.cause,
         road: i.roadNumber,
         km: i.kmPoint,
-        province: i.province,
-        community: i.community,
+        province: i.provinceName || i.province,
+        community: i.communityName || i.community,
         severity: i.severity,
         description: i.description,
-        laneInfo: i.laneInfo,
+        source: i.source,
       })),
     });
   } catch (error) {
-    console.error("Error fetching incidents:", error);
+    console.error("Error fetching incidents from database:", error);
     return NextResponse.json(
       { error: "Internal server error", incidents: [], counts: {} },
       { status: 500 }

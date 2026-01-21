@@ -1,18 +1,8 @@
 import { NextResponse } from "next/server";
-import {
-  parseDatexResponse,
-  extractV16Beacons,
-  extractTrafficIncidents,
-} from "@/lib/parsers/datex2";
+import { prisma } from "@/lib/db";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
-
-const DGT_DATEX_URL =
-  process.env.DGT_DATEX_URL ||
-  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
-const DGT_NAP_URL =
-  process.env.DGT_NAP_URL || "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
 
 interface Stats {
   v16Active: number;
@@ -23,6 +13,7 @@ interface Stats {
   chargers: number;
   zbeZones: number;
   lastUpdated: string;
+  source: string;
   bySeverity: {
     LOW: number;
     MEDIUM: number;
@@ -30,106 +21,194 @@ interface Stats {
     VERY_HIGH: number;
   };
   byRoadType: Record<string, number>;
-}
-
-async function fetchV16Data(): Promise<{ count: number; bySeverity: Stats["bySeverity"]; byRoadType: Record<string, number> }> {
-  try {
-    const response = await fetch(DGT_DATEX_URL, {
-      headers: {
-        Accept: "application/xml",
-        "User-Agent": "TraficoEspana/1.0 (https://trafico.abemon.es)",
-      },
-      next: { revalidate: 60 },
-    });
-
-    if (!response.ok) {
-      return { count: 0, bySeverity: { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 }, byRoadType: {} };
-    }
-
-    const xml = await response.text();
-    const situations = parseDatexResponse(xml);
-    const beacons = extractV16Beacons(situations);
-
-    // Aggregate by severity
-    const bySeverity = { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 };
-    const byRoadType: Record<string, number> = {};
-
-    for (const beacon of beacons) {
-      bySeverity[beacon.severity]++;
-
-      // Categorize road type from road number
-      const road = beacon.roadNumber || "Unknown";
-      if (road.startsWith("AP-")) {
-        byRoadType["Autopista"] = (byRoadType["Autopista"] || 0) + 1;
-      } else if (road.startsWith("A-") || road.match(/^A\d/)) {
-        byRoadType["Autovía"] = (byRoadType["Autovía"] || 0) + 1;
-      } else if (road.startsWith("N-")) {
-        byRoadType["Nacional"] = (byRoadType["Nacional"] || 0) + 1;
-      } else if (road.startsWith("C-") || road.startsWith("CM-")) {
-        byRoadType["Comarcal"] = (byRoadType["Comarcal"] || 0) + 1;
-      } else {
-        byRoadType["Otras"] = (byRoadType["Otras"] || 0) + 1;
-      }
-    }
-
-    return { count: beacons.length, bySeverity, byRoadType };
-  } catch (error) {
-    console.error("Error fetching V16 data:", error);
-    return { count: 0, bySeverity: { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 }, byRoadType: {} };
-  }
-}
-
-async function fetchIncidentData(): Promise<number> {
-  try {
-    const response = await fetch(DGT_NAP_URL, {
-      headers: {
-        Accept: "application/xml",
-        "User-Agent": "TraficoEspana/1.0 (https://trafico.abemon.es)",
-      },
-      next: { revalidate: 60 },
-    });
-
-    if (!response.ok) {
-      return 0;
-    }
-
-    const xml = await response.text();
-    const situations = parseDatexResponse(xml);
-    const incidents = extractTrafficIncidents(situations);
-
-    return incidents.length;
-  } catch (error) {
-    console.error("Error fetching incident data:", error);
-    return 0;
-  }
+  bySource: Record<string, number>;
+  byIncidentType: Record<string, number>;
+  historical?: {
+    years: number[];
+    totalAccidents: Record<number, number>;
+    totalFatalities: Record<number, number>;
+    trend: "up" | "down" | "stable";
+  };
 }
 
 export async function GET() {
   try {
-    // Fetch data in parallel
-    const [v16Data, incidentCount] = await Promise.all([
-      fetchV16Data(),
-      fetchIncidentData(),
+    // Query current counts from database in parallel
+    const [
+      v16Count,
+      incidentCount,
+      v16BySeverity,
+      v16ByRoadType,
+      incidentsByType,
+      incidentsBySource,
+      previousHourStats,
+      historicalByYear,
+    ] = await Promise.all([
+      // Active V16 beacons count
+      prisma.v16BeaconEvent.count({ where: { isActive: true } }),
+
+      // Active incidents count
+      prisma.trafficIncident.count({ where: { isActive: true } }),
+
+      // V16 by severity
+      prisma.v16BeaconEvent.groupBy({
+        by: ["severity"],
+        where: { isActive: true },
+        _count: true,
+      }),
+
+      // V16 by road type
+      prisma.v16BeaconEvent.groupBy({
+        by: ["roadType"],
+        where: { isActive: true },
+        _count: true,
+      }),
+
+      // Incidents by type
+      prisma.trafficIncident.groupBy({
+        by: ["type"],
+        where: { isActive: true },
+        _count: true,
+      }),
+
+      // Incidents by source
+      prisma.trafficIncident.groupBy({
+        by: ["source"],
+        where: { isActive: true },
+        _count: true,
+      }),
+
+      // Previous hour stats for comparison
+      prisma.hourlyStats.findFirst({
+        where: {
+          hourStart: {
+            lt: new Date(new Date().setMinutes(0, 0, 0)),
+          },
+        },
+        orderBy: { hourStart: "desc" },
+      }),
+
+      // Historical accident data by year
+      prisma.historicalAccidents.groupBy({
+        by: ["year"],
+        _sum: {
+          accidents: true,
+          fatalities: true,
+        },
+      }),
     ]);
 
-    // Static counts for now (would come from separate API endpoints)
-    // These are approximate values based on available data
+    // Build severity breakdown
+    const bySeverity = { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 };
+    for (const item of v16BySeverity) {
+      const sev = item.severity as keyof typeof bySeverity;
+      if (sev in bySeverity) {
+        bySeverity[sev] = item._count;
+      }
+    }
+
+    // Build road type breakdown (with readable names)
+    const roadTypeLabels: Record<string, string> = {
+      AUTOPISTA: "Autopista",
+      AUTOVIA: "Autovía",
+      NACIONAL: "Nacional",
+      COMARCAL: "Comarcal",
+      PROVINCIAL: "Provincial",
+      OTHER: "Otras",
+    };
+    const byRoadType: Record<string, number> = {};
+    for (const item of v16ByRoadType) {
+      const label = item.roadType ? (roadTypeLabels[item.roadType] || item.roadType) : "Otras";
+      byRoadType[label] = (byRoadType[label] || 0) + item._count;
+    }
+
+    // Build incident type breakdown
+    const byIncidentType: Record<string, number> = {};
+    for (const item of incidentsByType) {
+      byIncidentType[item.type] = item._count;
+    }
+
+    // Build source breakdown
+    const bySource: Record<string, number> = {};
+    for (const item of incidentsBySource) {
+      if (item.source) {
+        bySource[item.source] = item._count;
+      }
+    }
+
+    // Calculate changes from previous hour
+    const v16Change = previousHourStats
+      ? v16Count - previousHourStats.v16Count
+      : null;
+    const incidentsChange = previousHourStats
+      ? incidentCount - previousHourStats.incidentCount
+      : null;
+
+    // Build historical data
+    const totalAccidents: Record<number, number> = {};
+    const totalFatalities: Record<number, number> = {};
+    const years: number[] = [];
+
+    for (const item of historicalByYear) {
+      years.push(item.year);
+      totalAccidents[item.year] = item._sum.accidents || 0;
+      totalFatalities[item.year] = item._sum.fatalities || 0;
+    }
+    years.sort();
+
+    // Calculate trend (compare last two years)
+    let trend: "up" | "down" | "stable" = "stable";
+    if (years.length >= 2) {
+      const lastYear = years[years.length - 1];
+      const prevYear = years[years.length - 2];
+      const change = (totalAccidents[lastYear] - totalAccidents[prevYear]) / totalAccidents[prevYear];
+      if (change > 0.02) trend = "up";
+      else if (change < -0.02) trend = "down";
+    }
+
+    const historical = years.length > 0
+      ? { years, totalAccidents, totalFatalities, trend }
+      : undefined;
+
+    // Get most recent fetch time
+    const [latestV16, latestIncident] = await Promise.all([
+      prisma.v16BeaconEvent.findFirst({
+        where: { isActive: true },
+        orderBy: { fetchedAt: "desc" },
+        select: { fetchedAt: true },
+      }),
+      prisma.trafficIncident.findFirst({
+        where: { isActive: true },
+        orderBy: { fetchedAt: "desc" },
+        select: { fetchedAt: true },
+      }),
+    ]);
+
+    const lastUpdated = [latestV16?.fetchedAt, latestIncident?.fetchedAt]
+      .filter(Boolean)
+      .sort((a, b) => (b as Date).getTime() - (a as Date).getTime())[0]
+      || new Date();
+
     const stats: Stats = {
-      v16Active: v16Data.count,
-      v16Change: null, // Would need historical comparison
+      v16Active: v16Count,
+      v16Change,
       incidents: incidentCount,
-      incidentsChange: null,
-      cameras: 512, // Static - from DGT camera list
-      chargers: 8432, // Static - from puntos-recarga API
-      zbeZones: 156, // Static - from ZBE API
-      lastUpdated: new Date().toISOString(),
-      bySeverity: v16Data.bySeverity,
-      byRoadType: v16Data.byRoadType,
+      incidentsChange,
+      cameras: 512, // Static - would come from camera API
+      chargers: 8432, // Static - would come from charger API
+      zbeZones: 156, // Static - would come from ZBE API
+      lastUpdated: lastUpdated.toISOString(),
+      source: "database",
+      bySeverity,
+      byRoadType,
+      bySource,
+      byIncidentType,
+      historical,
     };
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error("Error fetching stats:", error);
+    console.error("Error fetching stats from database:", error);
     return NextResponse.json(
       {
         error: "Internal server error",
@@ -139,8 +218,11 @@ export async function GET() {
         chargers: 8432,
         zbeZones: 156,
         lastUpdated: new Date().toISOString(),
+        source: "error",
         bySeverity: { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 },
         byRoadType: {},
+        bySource: {},
+        byIncidentType: {},
       },
       { status: 500 }
     );

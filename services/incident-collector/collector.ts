@@ -1,8 +1,12 @@
 /**
- * Regional Incident Collector Service
+ * Incident Collector Service
  *
- * Fetches traffic incidents from SCT (Cataluña) and Euskadi (País Vasco)
- * and stores them in the TrafficIncident table.
+ * Fetches traffic incidents from all sources:
+ * - DGT (National - all of Spain)
+ * - SCT (Cataluña)
+ * - Euskadi (País Vasco)
+ *
+ * Stores them in the TrafficIncident table for database-first API serving.
  */
 
 import { PrismaClient, IncidentType, Severity, RoadType, Direction } from "@prisma/client";
@@ -10,6 +14,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
+import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
 
 // Community codes
 const COMMUNITY_CATALUNA = "09";
@@ -21,7 +26,7 @@ const COMMUNITIES: Record<string, string> = {
   "16": "País Vasco",
 };
 
-type IncidentData = SCTIncident | EuskadiIncident;
+type IncidentData = SCTIncident | EuskadiIncident | DGTIncident;
 
 interface NormalizedIncident {
   situationId: string;
@@ -90,6 +95,28 @@ function normalizeIncident(
   };
 }
 
+function normalizeDGTIncident(incident: DGTIncident): NormalizedIncident {
+  return {
+    situationId: incident.situationId,
+    type: incident.type,
+    startedAt: incident.startedAt,
+    endedAt: incident.endedAt,
+    latitude: incident.latitude,
+    longitude: incident.longitude,
+    roadNumber: incident.roadNumber,
+    roadType: inferRoadType(incident.roadNumber),
+    kmPoint: incident.kmPoint,
+    direction: undefined, // DGT provides direction as string, would need mapping
+    province: incident.province,
+    provinceName: incident.provinceName,
+    community: incident.community,
+    communityName: incident.communityName,
+    description: incident.description,
+    severity: incident.severity,
+    source: "DGT",
+  };
+}
+
 async function main() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
@@ -101,35 +128,46 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   const now = new Date();
-  console.log(`[collector] Regional Incident Collector v1.0 - Starting at ${now.toISOString()}`);
+  console.log(`[collector] Incident Collector v2.0 - Starting at ${now.toISOString()}`);
 
   try {
-    // Fetch incidents from both sources in parallel
-    const [sctIncidents, euskadiIncidents] = await Promise.allSettled([
+    // Fetch incidents from all sources in parallel
+    const [sctResult, euskadiResult, dgtResult] = await Promise.allSettled([
       fetchSCTIncidents(),
       fetchEuskadiIncidents(),
+      fetchDGTIncidents(),
     ]);
 
     const allIncidents: NormalizedIncident[] = [];
 
-    // Process SCT incidents
-    if (sctIncidents.status === "fulfilled") {
-      console.log(`[collector] SCT returned ${sctIncidents.value.length} incidents`);
-      for (const incident of sctIncidents.value) {
+    // Process DGT incidents (national - highest priority)
+    if (dgtResult.status === "fulfilled") {
+      console.log(`[collector] DGT returned ${dgtResult.value.length} incidents`);
+      for (const incident of dgtResult.value) {
+        allIncidents.push(normalizeDGTIncident(incident));
+      }
+    } else {
+      console.error("[collector] DGT fetch failed:", dgtResult.reason);
+    }
+
+    // Process SCT incidents (Cataluña regional)
+    if (sctResult.status === "fulfilled") {
+      console.log(`[collector] SCT returned ${sctResult.value.length} incidents`);
+      for (const incident of sctResult.value) {
         allIncidents.push(normalizeIncident(incident, "SCT", COMMUNITY_CATALUNA));
       }
     } else {
-      console.error("[collector] SCT fetch failed:", sctIncidents.reason);
+      console.error("[collector] SCT fetch failed:", sctResult.reason);
     }
 
-    // Process Euskadi incidents
-    if (euskadiIncidents.status === "fulfilled") {
-      console.log(`[collector] Euskadi returned ${euskadiIncidents.value.length} incidents`);
-      for (const incident of euskadiIncidents.value) {
+    // Process Euskadi incidents (País Vasco regional)
+    if (euskadiResult.status === "fulfilled") {
+      console.log(`[collector] Euskadi returned ${euskadiResult.value.length} incidents`);
+      for (const incident of euskadiResult.value) {
         allIncidents.push(normalizeIncident(incident, "EUSKADI", COMMUNITY_PAIS_VASCO));
       }
     } else {
-      console.error("[collector] Euskadi fetch failed:", euskadiIncidents.reason);
+      console.error("[collector] Euskadi fetch failed:", euskadiResult.reason);
     }
 
     console.log(`[collector] Total incidents to process: ${allIncidents.length}`);
@@ -205,11 +243,11 @@ async function main() {
 
     console.log(`[collector] Processing complete: ${created} created, ${updated} updated, ${skipped} skipped`);
 
-    // Deactivate old incidents from these sources (not seen in 1 hour)
+    // Deactivate old incidents from all sources (not seen in 1 hour)
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
     const deactivated = await prisma.trafficIncident.updateMany({
       where: {
-        source: { in: ["SCT", "EUSKADI"] },
+        source: { in: ["DGT", "SCT", "EUSKADI"] },
         isActive: true,
         fetchedAt: { lt: oneHourAgo },
       },
@@ -225,7 +263,7 @@ async function main() {
       by: ["source", "isActive"],
       _count: true,
       where: {
-        source: { in: ["SCT", "EUSKADI"] },
+        source: { in: ["DGT", "SCT", "EUSKADI"] },
       },
     });
 

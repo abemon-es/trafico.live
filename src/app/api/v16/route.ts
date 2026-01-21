@@ -1,53 +1,26 @@
 import { NextResponse } from "next/server";
-import {
-  parseDatexResponse,
-  extractV16Beacons,
-  type V16BeaconData,
-} from "@/lib/parsers/datex2";
+import { prisma } from "@/lib/db";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
 
-const DGT_DATEX_URL =
-  process.env.DGT_DATEX_URL ||
-  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
-
 export async function GET() {
   try {
-    // Fetch from DGT NAP API
-    const response = await fetch(DGT_DATEX_URL, {
-      headers: {
-        Accept: "application/xml",
-        "User-Agent": "TraficoEspana/1.0 (https://trafico.abemon.es)",
-      },
-      next: { revalidate: 60 },
+    // Query active V16 beacons from database (stored by v16-collector every 5 min)
+    const dbBeacons = await prisma.v16BeaconEvent.findMany({
+      where: { isActive: true },
+      orderBy: { activatedAt: "desc" },
     });
-
-    if (!response.ok) {
-      console.error(`DGT API error: ${response.status} ${response.statusText}`);
-      return NextResponse.json(
-        { error: "Error fetching DGT data", beacons: [] },
-        { status: 502 }
-      );
-    }
-
-    const xml = await response.text();
-
-    // Parse DATEX II XML
-    const situations = parseDatexResponse(xml);
-
-    // Extract V16 beacons
-    const beacons = extractV16Beacons(situations);
 
     // Convert to GeoJSON for map consumption
     const geojson = {
       type: "FeatureCollection" as const,
-      features: beacons.map((beacon) => ({
+      features: dbBeacons.map((beacon) => ({
         type: "Feature" as const,
-        id: beacon.recordId,
+        id: beacon.recordId || beacon.situationId,
         geometry: {
           type: "Point" as const,
-          coordinates: [beacon.longitude, beacon.latitude],
+          coordinates: [Number(beacon.longitude), Number(beacon.latitude)],
         },
         properties: {
           situationId: beacon.situationId,
@@ -55,32 +28,47 @@ export async function GET() {
           activatedAt: beacon.activatedAt.toISOString(),
           deactivatedAt: beacon.deactivatedAt?.toISOString() || null,
           roadNumber: beacon.roadNumber,
-          kmPoint: beacon.kmPoint,
+          kmPoint: beacon.kmPoint ? Number(beacon.kmPoint) : null,
           direction: beacon.direction,
           severity: beacon.severity,
           mobilityType: beacon.mobilityType,
           description: beacon.description,
+          province: beacon.province,
+          provinceName: beacon.provinceName,
+          community: beacon.community,
+          communityName: beacon.communityName,
         },
       })),
     };
 
+    // Get last fetch time for freshness indicator
+    const latestFetch = dbBeacons.length > 0
+      ? dbBeacons.reduce((latest, b) =>
+          b.fetchedAt > latest ? b.fetchedAt : latest,
+          dbBeacons[0].fetchedAt
+        )
+      : new Date();
+
     return NextResponse.json({
-      count: beacons.length,
-      lastUpdated: new Date().toISOString(),
+      count: dbBeacons.length,
+      lastUpdated: latestFetch.toISOString(),
+      source: "database",
       geojson,
-      beacons: beacons.map((b) => ({
-        id: b.recordId,
-        lat: b.latitude,
-        lng: b.longitude,
+      beacons: dbBeacons.map((b) => ({
+        id: b.recordId || b.situationId,
+        lat: Number(b.latitude),
+        lng: Number(b.longitude),
         road: b.roadNumber,
-        km: b.kmPoint,
+        km: b.kmPoint ? Number(b.kmPoint) : null,
         severity: b.severity,
         activatedAt: b.activatedAt.toISOString(),
         description: b.description,
+        province: b.provinceName,
+        community: b.communityName,
       })),
     });
   } catch (error) {
-    console.error("Error fetching V16 beacons:", error);
+    console.error("Error fetching V16 beacons from database:", error);
     return NextResponse.json(
       { error: "Internal server error", beacons: [] },
       { status: 500 }
