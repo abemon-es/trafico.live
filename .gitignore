@@ -41,3 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# WIP pages that try to access DB during build (not ready for deploy)
+/src/app/comunidad-autonoma/
+/src/app/espana/
+/src/app/api/historical/
+/data/
+/scripts/
