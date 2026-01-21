@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, Home, Building2 } from "lucide-react";
+import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, Home, Building2, Camera } from "lucide-react";
+import { CameraSection, type CameraItem } from "@/components/cameras/CameraSection";
 
 interface Community {
   code: string;
@@ -42,6 +43,11 @@ interface ApiResponse {
   };
 }
 
+interface CamerasResponse {
+  count: number;
+  cameras: CameraItem[];
+}
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ProvinceContent() {
@@ -56,6 +62,14 @@ export default function ProvinceContent() {
       revalidateOnFocus: false,
       dedupingInterval: 60000,
     }
+  );
+
+  // Fetch cameras for this province
+  const provinceName = data?.data?.province?.name;
+  const { data: camerasData } = useSWR<CamerasResponse>(
+    provinceName ? `/api/cameras?province=${encodeURIComponent(provinceName)}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
   );
 
   if (isLoading) {
@@ -168,6 +182,17 @@ export default function ProvinceContent() {
             </p>
             <p className="text-sm text-gray-500">Fallecidos (2023)</p>
           </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Camera className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {camerasData?.count || "-"}
+            </p>
+            <p className="text-sm text-gray-500">Cámaras</p>
+          </div>
         </div>
 
         {/* Area Info */}
@@ -185,6 +210,17 @@ export default function ProvinceContent() {
               )}
             </p>
           </div>
+        )}
+
+        {/* Cameras Section */}
+        {camerasData && camerasData.cameras.length > 0 && (
+          <CameraSection
+            cameras={camerasData.cameras}
+            title={`Cámaras en ${province.name}`}
+            linkUrl={`/camaras?province=${encodeURIComponent(province.name)}`}
+            linkText="Ver todas las cámaras"
+            maxItems={8}
+          />
         )}
 
         {/* Municipalities List */}

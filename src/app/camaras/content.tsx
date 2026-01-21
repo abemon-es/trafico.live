@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { Search, Camera, Filter, Loader2, AlertTriangle } from "lucide-react";
 import { CameraCard, type Camera as CameraType } from "@/components/cameras/CameraCard";
@@ -10,14 +11,28 @@ interface CamerasResponse {
   count: number;
   cameras: CameraType[];
   provinces: string[];
+  communities?: string[];
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function CamarasContent() {
+  const searchParams = useSearchParams();
+  const initialProvince = searchParams.get("province") || "";
+  const initialCommunity = searchParams.get("community") || "";
+
   const [search, setSearch] = useState("");
-  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState(initialProvince);
+  const [selectedCommunity, setSelectedCommunity] = useState(initialCommunity);
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
+
+  // Update filters when URL params change
+  useEffect(() => {
+    const province = searchParams.get("province") || "";
+    const community = searchParams.get("community") || "";
+    if (province) setSelectedProvince(province);
+    if (community) setSelectedCommunity(community);
+  }, [searchParams]);
 
   const { data, error, isLoading } = useSWR<CamerasResponse>(
     "/api/cameras",
@@ -25,11 +40,27 @@ export function CamarasContent() {
     { revalidateOnFocus: false }
   );
 
-  // Filter cameras based on search and province
+  // Get unique communities from cameras
+  const communities = useMemo(() => {
+    if (!data?.cameras) return [];
+    const communitySet = new Set(
+      data.cameras.map((c) => (c as CameraType & { community?: string }).community).filter(Boolean)
+    );
+    return Array.from(communitySet).sort() as string[];
+  }, [data?.cameras]);
+
+  // Filter cameras based on search, province, and community
   const filteredCameras = useMemo(() => {
     if (!data?.cameras) return [];
 
     return data.cameras.filter((camera) => {
+      const cam = camera as CameraType & { community?: string };
+
+      // Filter by community
+      if (selectedCommunity && cam.community !== selectedCommunity) {
+        return false;
+      }
+
       // Filter by province
       if (selectedProvince && camera.province !== selectedProvince) {
         return false;
@@ -49,7 +80,7 @@ export function CamarasContent() {
 
       return true;
     });
-  }, [data?.cameras, search, selectedProvince]);
+  }, [data?.cameras, search, selectedProvince, selectedCommunity]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -104,6 +135,26 @@ export function CamarasContent() {
                 />
               </div>
 
+              {/* Community filter */}
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={selectedCommunity}
+                  onChange={(e) => {
+                    setSelectedCommunity(e.target.value);
+                    setSelectedProvince(""); // Clear province when community changes
+                  }}
+                  className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Todas las comunidades</option>
+                  {communities.map((community) => (
+                    <option key={community} value={community}>
+                      {community}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Province filter */}
               <div className="relative">
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -122,11 +173,12 @@ export function CamarasContent() {
               </div>
 
               {/* Clear filters */}
-              {(search || selectedProvince) && (
+              {(search || selectedProvince || selectedCommunity) && (
                 <button
                   onClick={() => {
                     setSearch("");
                     setSelectedProvince("");
+                    setSelectedCommunity("");
                   }}
                   className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                 >
