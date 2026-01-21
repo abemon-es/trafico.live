@@ -58,11 +58,15 @@ export RCLONE_CONFIG_R2_PROVIDER="Cloudflare"
 export RCLONE_CONFIG_R2_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID}"
 export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY}"
 export RCLONE_CONFIG_R2_ENDPOINT="${R2_ENDPOINT}"
+export RCLONE_CONFIG_R2_REGION="auto"
+export RCLONE_CONFIG_R2_ACL="private"
 # R2-specific settings
 export RCLONE_CONFIG_R2_NO_CHECK_BUCKET="true"
 export RCLONE_CONFIG_R2_NO_HEAD_OBJECT="true"
 
 echo "[backup] R2 endpoint: ${R2_ENDPOINT}"
+echo "[backup] R2 access key: ${R2_ACCESS_KEY_ID:0:10}... (${#R2_ACCESS_KEY_ID} chars)"
+echo "[backup] R2 secret key length: ${#R2_SECRET_ACCESS_KEY} chars"
 
 # Dump PostgreSQL database with compression
 echo "[backup] Running pg_dump..."
@@ -108,23 +112,25 @@ fi
 FILESIZE="$(du -h "$TMP_FILE" | cut -f1)"
 echo "[backup] Backup size: ${FILESIZE}"
 
-# Upload to R2 using rclone
+# Upload to R2 using rclone (optional - continue on failure)
 echo "[backup] Uploading to R2..."
-if rclone copyto "$TMP_FILE" "r2:${R2_BUCKET}/${BACKUP_PATH}" --s3-no-head -v; then
+if rclone copyto "$TMP_FILE" "r2:${R2_BUCKET}/${BACKUP_PATH}" --s3-no-head -v 2>&1; then
   echo "[backup] R2 upload completed successfully"
+  R2_SUCCESS=true
 else
-  echo "[backup] ERROR: R2 upload failed"
-  rm -f "$TMP_FILE"
-  exit 1
+  echo "[backup] WARNING: R2 upload failed (will continue with Drive upload)"
+  R2_SUCCESS=false
 fi
 
 # Upload to Google Drive if configured
+DRIVE_SUCCESS=false
 if [ -n "${GOOGLE_CREDENTIALS_JSON:-}" ] && [ -n "${GDRIVE_FOLDER_ID:-}" ]; then
   echo "[backup] Uploading to Google Drive..."
   if /usr/local/bin/upload_drive.py "$TMP_FILE" "$GDRIVE_FOLDER_ID"; then
     echo "[backup] Google Drive upload completed successfully"
+    DRIVE_SUCCESS=true
   else
-    echo "[backup] WARNING: Google Drive upload failed (R2 backup succeeded)"
+    echo "[backup] WARNING: Google Drive upload failed"
   fi
 else
   echo "[backup] Skipping Google Drive upload (not configured)"
@@ -132,6 +138,12 @@ fi
 
 # Cleanup local temp file
 rm -f "$TMP_FILE"
+
+# Check if at least one upload succeeded
+if [ "$R2_SUCCESS" = "false" ] && [ "$DRIVE_SUCCESS" = "false" ]; then
+  echo "[backup] ERROR: All uploads failed!"
+  exit 1
+fi
 
 # =============================================================================
 # Retention: Apply tiered retention policy
