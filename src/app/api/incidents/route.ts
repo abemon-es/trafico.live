@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     const communityFilter = searchParams.get("community");
     const sourceFilter = searchParams.get("source")?.split(",").filter(Boolean);
 
-    // Query all active incidents from database (DGT + SCT + Euskadi)
+    // Query all active incidents from database (DGT + SCT + EUSKADI + MADRID)
     const whereClause: Record<string, unknown> = { isActive: true };
 
     // Source filter (optional)

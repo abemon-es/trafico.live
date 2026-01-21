@@ -80,6 +80,17 @@ export interface Charger {
   is24h: boolean;
 }
 
+export interface WeatherAlert {
+  id: string;
+  type: string;
+  severity: string;
+  province: string;
+  provinceName: string | null;
+  startedAt: string;
+  endedAt: string | null;
+  description: string | null;
+}
+
 export interface TrafficMapRef {
   flyTo: (lng: number, lat: number, zoom?: number) => void;
   getMap: () => maplibregl.Map | null;
@@ -91,6 +102,7 @@ interface TrafficMapProps {
   incidentData?: Incident[];
   cameraData?: Camera[];
   chargerData?: Charger[];
+  weatherData?: WeatherAlert[];
   incidentFilters?: IncidentFilters;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
@@ -118,6 +130,45 @@ const CLUSTER_COLORS = {
   small: "#51bbd6",   // < 10
   medium: "#f1f075",  // 10-50
   large: "#f28cb1",   // > 50
+};
+
+// Weather alert colors by type
+const WEATHER_COLORS: Record<string, string> = {
+  RAIN: "#3b82f6",      // Blue
+  SNOW: "#60a5fa",      // Light blue
+  ICE: "#22d3ee",       // Cyan
+  FOG: "#6b7280",       // Gray
+  WIND: "#14b8a6",      // Teal
+  TEMPERATURE: "#f97316", // Orange
+  STORM: "#8b5cf6",     // Purple
+  COASTAL: "#0ea5e9",   // Sky blue
+  OTHER: "#6b7280",     // Gray
+};
+
+// Weather alert icons (emoji)
+const WEATHER_ICONS: Record<string, string> = {
+  RAIN: "🌧️",
+  SNOW: "❄️",
+  ICE: "🧊",
+  FOG: "🌫️",
+  WIND: "💨",
+  TEMPERATURE: "🌡️",
+  STORM: "⛈️",
+  COASTAL: "🌊",
+  OTHER: "⚠️",
+};
+
+// Weather alert type labels in Spanish
+const WEATHER_LABELS: Record<string, string> = {
+  RAIN: "Lluvia",
+  SNOW: "Nieve",
+  ICE: "Hielo",
+  FOG: "Niebla",
+  WIND: "Viento",
+  TEMPERATURE: "Temperatura",
+  STORM: "Tormenta",
+  COASTAL: "Costero",
+  OTHER: "Otro",
 };
 
 // Helper to convert incidents to GeoJSON
@@ -172,13 +223,30 @@ function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
 }
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, incidentFilters, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, incidentFilters, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [provinceCoords, setProvinceCoords] = useState<Map<string, [number, number]>>(new Map());
+
+  // Load province coordinates for weather markers
+  useEffect(() => {
+    fetch("/geojson/provinces.json")
+      .then((res) => res.json())
+      .then((data) => {
+        const coords = new Map<string, [number, number]>();
+        for (const feature of data.features) {
+          const code = feature.properties.code;
+          const [lng, lat] = feature.geometry.coordinates;
+          coords.set(code, [lng, lat]);
+        }
+        setProvinceCoords(coords);
+      })
+      .catch((err) => console.error("Failed to load province coords:", err));
+  }, []);
 
   // Use provided data or empty arrays
   const beacons = v16Data || [];

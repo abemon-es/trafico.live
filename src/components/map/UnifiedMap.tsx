@@ -63,6 +63,23 @@ interface ChargersResponse {
   chargers: Charger[];
 }
 
+export interface WeatherAlert {
+  id: string;
+  type: string;
+  severity: string;
+  province: string;
+  provinceName: string | null;
+  startedAt: string;
+  endedAt: string | null;
+  description: string | null;
+}
+
+interface WeatherResponse {
+  count: number;
+  alerts: WeatherAlert[];
+  counts: { byType: Record<string, number>; byProvince: Record<string, number> };
+}
+
 interface UnifiedMapProps {
   defaultHeight?: string;
   showStats?: boolean;
@@ -203,6 +220,12 @@ export function UnifiedMap({
     { revalidateOnFocus: false }
   );
 
+  const { data: weatherData } = useSWR<WeatherResponse>(
+    activeLayers.weather ? "/api/weather" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
   const isLoading = v16Loading || incidentsLoading;
 
   // Handle fullscreen
@@ -285,6 +308,7 @@ export function UnifiedMap({
     incidents: filteredIncidents.length,
     cameras: camerasData?.count || 0,
     chargers: chargersData?.count || 0,
+    weather: weatherData?.count || 0,
   };
 
   // Height calculation
@@ -341,6 +365,7 @@ export function UnifiedMap({
               incidentData={activeLayers.incidents ? incidentsData?.incidents : undefined}
               cameraData={activeLayers.cameras ? camerasData?.cameras : undefined}
               chargerData={activeLayers.chargers ? chargersData?.chargers : undefined}
+              weatherData={activeLayers.weather ? weatherData?.alerts : undefined}
               incidentFilters={incidentFilters}
               height="100%"
               onIncidentClick={handleIncidentClick}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { MapPin, Users, ChevronRight, AlertTriangle, Loader2 } from "lucide-react";
+import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, AlertCircle, Radio } from "lucide-react";
 
 interface Province {
   code: string;
@@ -26,6 +26,11 @@ interface Stats {
   totalAccidents: number;
   totalFatalities: number;
   totalHospitalized: number;
+  // Real-time data
+  activeIncidents: number;
+  activeV16: number;
+  incidentsBySource: Record<string, number>;
+  incidentsByCommunity: Record<string, number>;
 }
 
 interface ApiResponse {
@@ -83,7 +88,26 @@ export default function EspanaContent() {
         </div>
 
         {/* National Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          {/* Real-time - highlighted first */}
+          <div className="bg-amber-50 rounded-lg shadow-sm border border-amber-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-amber-700">{stats.activeIncidents || 0}</p>
+            <p className="text-sm text-amber-600">Incidencias activas</p>
+          </div>
+          <div className="bg-orange-50 rounded-lg shadow-sm border border-orange-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Radio className="w-5 h-5 text-orange-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-orange-700">{stats.activeV16 || 0}</p>
+            <p className="text-sm text-orange-600">Balizas V16</p>
+          </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-blue-50 rounded-lg">
@@ -125,6 +149,21 @@ export default function EspanaContent() {
             <p className="text-sm text-gray-500">Accidentes (2023)</p>
           </div>
         </div>
+
+        {/* Data sources breakdown */}
+        {stats.incidentsBySource && Object.keys(stats.incidentsBySource).length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-8">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Incidencias por fuente</h3>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(stats.incidentsBySource).map(([source, count]) => (
+                <div key={source} className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full">
+                  <span className="text-sm font-medium text-gray-700">{source}</span>
+                  <span className="text-sm text-gray-500">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Communities List */}
         <div className="mb-8">

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, Home, Camera } from "lucide-react";
+import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, Home, Camera, AlertCircle, Radio } from "lucide-react";
 import { CameraSection, type CameraItem } from "@/components/cameras/CameraSection";
 
 interface Municipality {
@@ -34,6 +34,11 @@ interface Stats {
   totalAccidents: number;
   totalFatalities: number;
   totalHospitalized: number;
+  // Real-time data
+  activeIncidents: number;
+  activeV16: number;
+  incidentsByType: Record<string, number>;
+  incidentsBySource: Record<string, number>;
 }
 
 interface ApiResponse {
@@ -142,7 +147,31 @@ export default function CommunityContent() {
         )}
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          {/* Real-time incidents - highlighted */}
+          <div className="bg-amber-50 rounded-lg shadow-sm border border-amber-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-amber-700">
+              {stats.activeIncidents || 0}
+            </p>
+            <p className="text-sm text-amber-600">Incidencias activas</p>
+          </div>
+          {/* V16 beacons */}
+          <div className="bg-orange-50 rounded-lg shadow-sm border border-orange-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Radio className="w-5 h-5 text-orange-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-orange-700">
+              {stats.activeV16 || 0}
+            </p>
+            <p className="text-sm text-orange-600">Balizas V16</p>
+          </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-blue-50 rounded-lg">
@@ -167,28 +196,6 @@ export default function CommunityContent() {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-red-50 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.totalAccidents.toLocaleString("es-ES")}
-            </p>
-            <p className="text-sm text-gray-500">Accidentes (2023)</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Users className="w-5 h-5 text-gray-600" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.totalFatalities.toLocaleString("es-ES")}
-            </p>
-            <p className="text-sm text-gray-500">Fallecidos (2023)</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-blue-50 rounded-lg">
                 <Camera className="w-5 h-5 text-blue-600" />
               </div>
@@ -197,6 +204,17 @@ export default function CommunityContent() {
               {camerasData?.count || "-"}
             </p>
             <p className="text-sm text-gray-500">Cámaras</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-red-50 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {stats.totalAccidents.toLocaleString("es-ES")}
+            </p>
+            <p className="text-sm text-gray-500">Accidentes (2023)</p>
           </div>
         </div>
 

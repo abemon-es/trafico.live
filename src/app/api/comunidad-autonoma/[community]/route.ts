@@ -39,21 +39,76 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Get accident stats for the community's provinces
+    // Get province codes for filtering
     const provinceCodes = community.provinces.map((p) => p.code);
-    const accidents = await prisma.historicalAccidents.aggregate({
-      where: { province: { in: provinceCodes } },
-      _sum: {
-        accidents: true,
-        fatalities: true,
-        hospitalized: true,
-      },
-    });
+
+    // Get accident stats and real-time incident data in parallel
+    const [accidents, activeIncidents, incidentsByType, incidentsBySource, activeV16] = await Promise.all([
+      // Historical accidents
+      prisma.historicalAccidents.aggregate({
+        where: { province: { in: provinceCodes } },
+        _sum: {
+          accidents: true,
+          fatalities: true,
+          hospitalized: true,
+        },
+      }),
+      // Active traffic incidents in this community
+      prisma.trafficIncident.count({
+        where: {
+          isActive: true,
+          community: community.code,
+        },
+      }),
+      // Incidents by type
+      prisma.trafficIncident.groupBy({
+        by: ["type"],
+        where: {
+          isActive: true,
+          community: community.code,
+        },
+        _count: true,
+      }),
+      // Incidents by source
+      prisma.trafficIncident.groupBy({
+        by: ["source"],
+        where: {
+          isActive: true,
+          community: community.code,
+        },
+        _count: true,
+      }),
+      // Active V16 beacons
+      prisma.v16BeaconEvent.count({
+        where: {
+          isActive: true,
+          community: community.code,
+        },
+      }),
+    ]);
+
+    // Build incident breakdown
+    const byType: Record<string, number> = {};
+    for (const item of incidentsByType) {
+      byType[item.type] = item._count;
+    }
+
+    const bySource: Record<string, number> = {};
+    for (const item of incidentsBySource) {
+      if (item.source) {
+        bySource[item.source] = item._count;
+      }
+    }
 
     const stats = {
       totalAccidents: accidents._sum.accidents || 0,
       totalFatalities: accidents._sum.fatalities || 0,
       totalHospitalized: accidents._sum.hospitalized || 0,
+      // Real-time data
+      activeIncidents,
+      activeV16,
+      incidentsByType: byType,
+      incidentsBySource: bySource,
     };
 
     return NextResponse.json({

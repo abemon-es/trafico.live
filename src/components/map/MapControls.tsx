@@ -15,6 +15,7 @@ import {
   List,
   Map as MapIcon,
   X,
+  CloudRain,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -50,6 +51,8 @@ interface MapControlsProps {
     v16: number;
     incidents: number;
     cameras: number;
+    chargers: number;
+    weather: number;
   };
 }
 
@@ -277,6 +280,13 @@ export function MapControls({
 
           {/* More layers (collapsible on mobile) */}
           <div className="hidden sm:flex items-center gap-2">
+            <LayerToggle
+              label={`Alertas${counts?.weather ? ` (${counts.weather})` : ""}`}
+              active={activeLayers.weather}
+              onClick={() => onLayerToggle("weather")}
+              color="blue"
+              icon={<CloudRain className="w-4 h-4" />}
+            />
             <LayerToggle
               label="Cargadores EV"
               active={activeLayers.chargers}
