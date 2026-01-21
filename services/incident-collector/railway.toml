@@ -1,7 +1,7 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile.incident-collector"
-watchPatterns = ["services/incident-collector/**", "prisma/schema.prisma", "Dockerfile.incident-collector"]
+dockerfilePath = "services/incident-collector/Dockerfile"
+watchPatterns = ["services/incident-collector/**", "prisma/schema.prisma"]
 
 [deploy]
 cronSchedule = "*/5 * * * *"

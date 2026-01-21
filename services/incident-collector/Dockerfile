@@ -11,9 +11,8 @@ COPY services/incident-collector/package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy Prisma files and generate client
+# Copy Prisma schema and generate client
 COPY prisma/schema.prisma ./prisma/
-COPY prisma.config.ts ./
 RUN npx prisma generate
 
 # Copy service code
