@@ -1,0 +1,2 @@
+# Ignore services directory - it has its own Railway service
+services/
