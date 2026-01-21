@@ -15,6 +15,7 @@ import {
   PieChart,
 } from "lucide-react";
 import { BreakdownChart, type ChartDataItem } from "@/components/stats/BreakdownCharts";
+import { V16InfoSection } from "@/components/v16/V16InfoSection";
 
 // Dynamic import for map to avoid SSR issues
 const HistoricalMap = dynamic(
@@ -55,7 +56,84 @@ interface DailyApiResponse {
       incidentCount: number;
       avgDuration: number | null;
     }>;
+    dataStartDate: string | null;
   };
+}
+
+// V16 Realtime API response (from /api/v16)
+interface V16RealtimeResponse {
+  count: number;
+  lastUpdated: string;
+  beacons: Array<{
+    id: string;
+    lat: number;
+    lng: number;
+    road: string | null;
+    km: number | null;
+    severity: string;
+    activatedAt: string;
+    description: string | null;
+    province: string | null;
+  }>;
+}
+
+// Period configuration
+type PeriodValue = "ahora" | "hoy" | "7d" | "mes" | "trimestre" | "semestre" | "ano" | "todo";
+
+interface PeriodOption {
+  value: PeriodValue;
+  label: string;
+  days: number | null; // null means realtime or all data
+}
+
+const PERIOD_OPTIONS: PeriodOption[] = [
+  { value: "ahora", label: "Ahora (Tiempo real)", days: null },
+  { value: "hoy", label: "Hoy", days: 1 },
+  { value: "7d", label: "7 días", days: 7 },
+  { value: "mes", label: "Este mes", days: null },
+  { value: "trimestre", label: "Este trimestre", days: null },
+  { value: "semestre", label: "Este semestre", days: null },
+  { value: "ano", label: "Este año", days: null },
+  { value: "todo", label: "Todo", days: null },
+];
+
+function getPeriodDays(period: PeriodValue): number {
+  const now = new Date();
+
+  switch (period) {
+    case "ahora":
+      return 0; // Realtime mode
+    case "hoy":
+      return 1;
+    case "7d":
+      return 7;
+    case "mes": {
+      // Days since start of current month
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      return Math.ceil((now.getTime() - startOfMonth.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
+    case "trimestre": {
+      // Days since start of current quarter
+      const quarter = Math.floor(now.getMonth() / 3);
+      const startOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
+      return Math.ceil((now.getTime() - startOfQuarter.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
+    case "semestre": {
+      // Days since start of current semester (Jan or Jul)
+      const semester = now.getMonth() < 6 ? 0 : 6;
+      const startOfSemester = new Date(now.getFullYear(), semester, 1);
+      return Math.ceil((now.getTime() - startOfSemester.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
+    case "ano": {
+      // Days since start of current year
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      return Math.ceil((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
+    case "todo":
+      return 3650; // ~10 years - effectively all data
+    default:
+      return 30;
+  }
 }
 
 interface HourlyApiResponse {
@@ -426,45 +504,76 @@ function DurationDistribution({
 }
 
 export function HistoricoContent() {
-  const [period, setPeriod] = useState(30);
+  const [period, setPeriod] = useState<PeriodValue>("7d");
 
+  const isRealtime = period === "ahora";
+  const periodDays = getPeriodDays(period);
+
+  // Realtime data - only fetch when in realtime mode
+  const { data: realtimeData, isLoading: realtimeLoading } = useSWR<V16RealtimeResponse>(
+    isRealtime ? "/api/v16" : null,
+    fetcher,
+    { refreshInterval: isRealtime ? 30000 : 0, revalidateOnFocus: isRealtime }
+  );
+
+  // Historical data - only fetch when NOT in realtime mode
   const { data: dailyData, isLoading: dailyLoading } = useSWR<DailyApiResponse>(
-    `/api/historico/daily?days=${period}`,
+    !isRealtime ? `/api/historico/daily?days=${periodDays}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: hourlyData, isLoading: hourlyLoading } = useSWR<HourlyApiResponse>(
-    `/api/historico/hourly?days=${Math.min(period, 14)}`,
+    !isRealtime ? `/api/historico/hourly?days=${Math.min(periodDays, 14)}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: provincesData, isLoading: provincesLoading } = useSWR<ProvincesApiResponse>(
-    `/api/historico/provinces?days=${period}`,
+    !isRealtime ? `/api/historico/provinces?days=${periodDays}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: durationData, isLoading: durationLoading } = useSWR<DurationApiResponse>(
-    `/api/historico/duration?days=${period}`,
+    !isRealtime ? `/api/historico/duration?days=${periodDays}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: mapData, isLoading: mapLoading } = useSWR<MapApiResponse>(
-    `/api/historico/map?days=${period}`,
+    !isRealtime ? `/api/historico/map?days=${periodDays}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: roadsData, isLoading: roadsLoading } = useSWR<RoadsApiResponse>(
-    `/api/historico/roads?days=${period}`,
+    !isRealtime ? `/api/historico/roads?days=${periodDays}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
-  const hasData = dailyData?.success && dailyData.data.totals.daysWithData > 0;
+  const hasData = isRealtime
+    ? (realtimeData?.count || 0) > 0
+    : dailyData?.success && dailyData.data.totals.daysWithData > 0;
+
+  // Transform realtime data to map format for the HistoricalMap component
+  const mapBeacons = isRealtime
+    ? (realtimeData?.beacons || []).map((b) => ({
+        id: b.id,
+        lat: b.lat,
+        lng: b.lng,
+        activatedAt: b.activatedAt,
+        road: b.road,
+        province: b.province,
+        severity: b.severity,
+        durationSecs: null,
+        severityWeight: { LOW: 1, MEDIUM: 2, HIGH: 3, VERY_HIGH: 4 }[b.severity] || 1,
+      }))
+    : mapData?.data?.beacons || [];
+
+  // Get data start date from daily API response
+  const dataStartDate = dailyData?.data?.dataStartDate || null;
 
   // Convert province ranking to chart format
   const provinceChartData: ChartDataItem[] =
@@ -525,9 +634,11 @@ export function HistoricoContent() {
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Histórico de Balizas V16</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Balizas V16</h1>
             <p className="mt-2 text-gray-600">
-              Análisis histórico de emergencias señalizadas con baliza V16 en carreteras españolas.
+              {isRealtime
+                ? "Balizas V16 activas en tiempo real en carreteras españolas."
+                : "Análisis histórico de emergencias señalizadas con baliza V16."}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -537,23 +648,61 @@ export function HistoricoContent() {
             <select
               id="period"
               value={period}
-              onChange={(e) => setPeriod(Number(e.target.value))}
+              onChange={(e) => setPeriod(e.target.value as PeriodValue)}
               className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             >
-              <option value={7}>7 días</option>
-              <option value={14}>14 días</option>
-              <option value={30}>30 días</option>
-              <option value={90}>90 días</option>
+              {PERIOD_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
+        {/* Data start date indicator */}
+        {period === "todo" && dataStartDate && (
+          <div className="mb-4 text-sm text-gray-500">
+            Mostrando datos desde:{" "}
+            <span className="font-medium">
+              {new Date(dataStartDate).toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+        )}
+
+        {/* Realtime indicator */}
+        {isRealtime && (
+          <div className="mb-4 flex items-center gap-2 text-sm">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
+            <span className="text-green-700 font-medium">
+              Tiempo real - {realtimeData?.count || 0} balizas activas
+            </span>
+            {realtimeData?.lastUpdated && (
+              <span className="text-gray-400">
+                (actualizado:{" "}
+                {new Date(realtimeData.lastUpdated).toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+                )
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Historical Map */}
         <div className="mb-8">
           <HistoricalMap
-            beacons={mapData?.data?.beacons || []}
-            clusters={mapData?.data?.clusters}
-            isLoading={mapLoading}
+            beacons={mapBeacons}
+            clusters={isRealtime ? undefined : mapData?.data?.clusters}
+            isLoading={isRealtime ? realtimeLoading : mapLoading}
             height="400px"
           />
         </div>
@@ -564,10 +713,22 @@ export function HistoricoContent() {
             icon={AlertTriangle}
             iconBgColor="bg-orange-50"
             iconColor="text-orange-600"
-            value={hasData ? dailyData.data.totals.v16Total : "-"}
-            label="Balizas V16 Totales"
-            subLabel={hasData ? `${dailyData.data.totals.daysWithData} días de datos` : undefined}
-            isLoading={dailyLoading}
+            value={
+              isRealtime
+                ? realtimeData?.count || 0
+                : hasData && dailyData?.data
+                  ? dailyData.data.totals.v16Total
+                  : "-"
+            }
+            label={isRealtime ? "Balizas Activas" : "Balizas V16 Totales"}
+            subLabel={
+              isRealtime
+                ? "En tiempo real"
+                : hasData && dailyData?.data
+                  ? `${dailyData.data.totals.daysWithData} días de datos`
+                  : undefined
+            }
+            isLoading={isRealtime ? realtimeLoading : dailyLoading}
           />
           <StatCard
             icon={Clock}
@@ -619,7 +780,15 @@ export function HistoricoContent() {
           />
         </div>
 
-        {/* Charts Grid */}
+        {/* Charts Grid - Only show for historical data, not realtime */}
+        {isRealtime ? (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <p className="text-blue-800 text-center">
+              <span className="font-medium">Modo tiempo real activo.</span> Selecciona un período
+              histórico para ver estadísticas y análisis detallados.
+            </p>
+          </div>
+        ) : (
         <div className="space-y-8">
           {/* Daily Trend - Full Width */}
           <DailyTrendChart data={dailyData?.data?.dailyData} isLoading={dailyLoading} />
@@ -799,36 +968,10 @@ export function HistoricoContent() {
             )}
           </div>
         </div>
+        )}
 
-        {/* Info Section */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Sobre estos datos</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600">
-            <div>
-              <h3 className="font-medium text-gray-900">Balizas V16</h3>
-              <p className="mt-1">
-                Las balizas V16 son dispositivos luminosos de emergencia que alertan sobre vehículos
-                detenidos en la vía. Los datos se recopilan del NAP DATEX II de la DGT cada 5
-                minutos.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Recopilación de datos</h3>
-              <p className="mt-1">
-                Los datos históricos comenzaron a recopilarse recientemente. La cobertura y
-                precisión mejorarán con el tiempo a medida que se acumule más información.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Methodology Note */}
-        <div className="mt-4 text-sm text-gray-500">
-          <p>
-            * Los datos mostrados corresponden a los registros disponibles desde el inicio de la
-            recopilación. Las métricas de duración solo incluyen balizas que han sido desactivadas.
-          </p>
-        </div>
+        {/* V16 Info Section */}
+        <V16InfoSection dataStartDate={dataStartDate || undefined} />
       </main>
     </div>
   );

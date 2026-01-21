@@ -11,7 +11,6 @@ import {
   Info,
   Menu,
   X,
-  History,
   Camera,
   AlertTriangle,
 } from "lucide-react";
@@ -22,7 +21,7 @@ const navigation = [
   { name: "Incidencias", href: "/incidencias", icon: AlertTriangle },
   { name: "Cámaras", href: "/camaras", icon: Camera },
   { name: "España", href: "/espana", icon: Building2 },
-  { name: "Histórico", href: "/historico", icon: History },
+  { name: "Balizas V16", href: "/historico", icon: AlertTriangle },
   { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
   { name: "Sobre", href: "/sobre", icon: Info },
 ];

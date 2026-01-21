@@ -45,6 +45,13 @@ export async function GET(request: Request) {
       dailyStats[0] || null
     );
 
+    // Get the earliest data date
+    const earliestRecord = await prisma.v16BeaconEvent.findFirst({
+      orderBy: { firstSeenAt: "asc" },
+      select: { firstSeenAt: true },
+    });
+    const dataStartDate = earliestRecord?.firstSeenAt?.toISOString() || null;
+
     // Format daily data for charts
     const dailyData = dailyStats.map((day) => ({
       date: day.dateStart.toISOString().split("T")[0],
@@ -71,6 +78,7 @@ export async function GET(request: Request) {
             }
           : null,
         dailyData,
+        dataStartDate,
       },
     });
   } catch (error) {
