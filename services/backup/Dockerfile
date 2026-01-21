@@ -12,14 +12,17 @@ RUN apk add --no-cache \
     postgresql16-client \
     python3 \
     py3-pip \
-    py3-google-api-python-client \
-    py3-google-auth \
     ca-certificates \
     curl \
     gzip \
     unzip \
     tzdata \
     bash
+
+# Install Google API Python libraries via pip
+RUN pip3 install --no-cache-dir --break-system-packages \
+    google-api-python-client \
+    google-auth
 
 # Install rclone for R2 (S3-compatible)
 RUN curl -fsSL https://downloads.rclone.org/rclone-current-linux-amd64.zip -o /tmp/rclone.zip \
