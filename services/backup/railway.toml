@@ -1,0 +1,21 @@
+# Railway configuration for PostgreSQL backup service
+#
+# Runs daily at 3am Madrid time (2am UTC), dumps PostgreSQL,
+# uploads to R2 and Google Drive.
+#
+# Schedule: 0 2 * * * (daily at 2am UTC = 3am Madrid)
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "services/backup/Dockerfile"
+watchPatterns = ["services/backup/**"]
+
+[deploy]
+# Cron schedule: daily at 2am UTC (3am Madrid)
+cronSchedule = "0 2 * * *"
+
+# No replicas needed - runs once per schedule
+numReplicas = 1
+
+# No restart - Railway cron handles scheduling
+restartPolicyType = "NEVER"
