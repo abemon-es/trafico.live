@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import useSWR from "swr";
+import dynamic from "next/dynamic";
 import {
   AlertTriangle,
   Clock,
@@ -10,8 +11,26 @@ import {
   Calendar,
   BarChart3,
   Activity,
+  Route,
+  PieChart,
 } from "lucide-react";
 import { BreakdownChart, type ChartDataItem } from "@/components/stats/BreakdownCharts";
+
+// Dynamic import for map to avoid SSR issues
+const HistoricalMap = dynamic(
+  () => import("@/components/map/HistoricalMap").then((mod) => mod.HistoricalMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200">
+          <div className="h-6 w-48 bg-gray-200 animate-pulse rounded" />
+        </div>
+        <div className="h-[400px] bg-gray-100 animate-pulse" />
+      </div>
+    ),
+  }
+);
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -85,6 +104,52 @@ interface DurationApiResponse {
       count: number;
     }>;
     message?: string;
+  };
+}
+
+interface MapApiResponse {
+  success: boolean;
+  data: {
+    beacons: Array<{
+      id: string;
+      lat: number;
+      lng: number;
+      activatedAt: string;
+      road: string | null;
+      province: string | null;
+      severity: string;
+      durationSecs: number | null;
+      severityWeight: number;
+    }>;
+    clusters: Array<{
+      province: string;
+      lat: number;
+      lng: number;
+      count: number;
+    }>;
+    count: number;
+  };
+}
+
+interface RoadsApiResponse {
+  success: boolean;
+  data: {
+    roads: Array<{
+      road: string;
+      count: number;
+      avgDurationMins: number | null;
+      topKmPoints: Array<{ km: string; count: number }>;
+      severityBreakdown: {
+        LOW: number;
+        MEDIUM: number;
+        HIGH: number;
+        VERY_HIGH: number;
+      };
+    }>;
+    totals: {
+      uniqueRoads: number;
+      totalBeacons: number;
+    };
   };
 }
 
@@ -387,6 +452,18 @@ export function HistoricoContent() {
     { revalidateOnFocus: false }
   );
 
+  const { data: mapData, isLoading: mapLoading } = useSWR<MapApiResponse>(
+    `/api/historico/map?days=${period}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: roadsData, isLoading: roadsLoading } = useSWR<RoadsApiResponse>(
+    `/api/historico/roads?days=${period}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
   const hasData = dailyData?.success && dailyData.data.totals.daysWithData > 0;
 
   // Convert province ranking to chart format
@@ -409,6 +486,36 @@ export function HistoricoContent() {
   const roadTypeChartData: ChartDataItem[] =
     provincesData?.data?.roadTypeBreakdown?.map((r) => ({
       name: roadTypeLabels[r.type] || r.type,
+      value: r.count,
+    })) || [];
+
+  // Build severity breakdown from map data (all beacons have severity)
+  const severityChartData: ChartDataItem[] = (() => {
+    if (!mapData?.data?.beacons) return [];
+    const counts: Record<string, number> = { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 };
+    for (const beacon of mapData.data.beacons) {
+      if (beacon.severity in counts) {
+        counts[beacon.severity]++;
+      }
+    }
+    const labels: Record<string, string> = {
+      LOW: "Baja",
+      MEDIUM: "Media",
+      HIGH: "Alta",
+      VERY_HIGH: "Muy Alta",
+    };
+    return Object.entries(counts)
+      .filter(([, count]) => count > 0)
+      .map(([key, count]) => ({
+        name: labels[key] || key,
+        value: count,
+      }));
+  })();
+
+  // Build top roads chart data
+  const topRoadsChartData: ChartDataItem[] =
+    roadsData?.data?.roads?.map((r) => ({
+      name: r.road,
       value: r.count,
     })) || [];
 
@@ -439,6 +546,16 @@ export function HistoricoContent() {
               <option value={90}>90 días</option>
             </select>
           </div>
+        </div>
+
+        {/* Historical Map */}
+        <div className="mb-8">
+          <HistoricalMap
+            beacons={mapData?.data?.beacons || []}
+            clusters={mapData?.data?.clusters}
+            isLoading={mapLoading}
+            height="400px"
+          />
         </div>
 
         {/* Summary Stats */}
@@ -564,6 +681,117 @@ export function HistoricoContent() {
                     <div className="text-center">
                       <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p>No hay datos disponibles</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Severity & Top Roads */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Severity Distribution */}
+            {severityChartData.length > 0 ? (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <PieChart className="w-5 h-5 text-red-600" />
+                  Distribución por Severidad
+                </h2>
+                <div className="space-y-3">
+                  {severityChartData.map((item, idx) => {
+                    const total = severityChartData.reduce((sum, i) => sum + i.value, 0);
+                    const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
+                    const colors: Record<string, string> = {
+                      Baja: "bg-green-500",
+                      Media: "bg-orange-500",
+                      Alta: "bg-red-500",
+                      "Muy Alta": "bg-red-900",
+                    };
+                    const bgColor = colors[item.name] || "bg-gray-500";
+                    return (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="w-20 text-sm text-gray-600">{item.name}</div>
+                        <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                          <div
+                            className={`h-full ${bgColor} rounded`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <div className="w-16 text-sm text-gray-600 text-right">
+                          {item.value} ({percentage}%)
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-500 mt-4">
+                  Clasificación según nivel de urgencia de la emergencia
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <PieChart className="w-5 h-5 text-red-600" />
+                  Distribución por Severidad
+                </h2>
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  {mapLoading ? (
+                    <div className="animate-pulse">Cargando datos...</div>
+                  ) : (
+                    <div className="text-center">
+                      <PieChart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No hay datos de severidad</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Top Roads */}
+            {topRoadsChartData.length > 0 ? (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-blue-600" />
+                  Top {topRoadsChartData.length} Carreteras
+                </h2>
+                <div className="space-y-3">
+                  {topRoadsChartData.map((road, idx) => {
+                    const maxValue = Math.max(...topRoadsChartData.map((r) => r.value));
+                    const percentage = maxValue > 0 ? Math.round((road.value / maxValue) * 100) : 0;
+                    return (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="w-16 text-sm font-medium text-gray-900">{road.name}</div>
+                        <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <div className="w-10 text-sm text-gray-600 text-right">{road.value}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {roadsData?.data?.totals && (
+                  <p className="text-xs text-gray-500 mt-4">
+                    {roadsData.data.totals.totalBeacons} balizas en{" "}
+                    {roadsData.data.totals.uniqueRoads} carreteras diferentes
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-blue-600" />
+                  Carreteras con más balizas
+                </h2>
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  {roadsLoading ? (
+                    <div className="animate-pulse">Cargando datos...</div>
+                  ) : (
+                    <div className="text-center">
+                      <Route className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No hay datos de carreteras</p>
                     </div>
                   )}
                 </div>
