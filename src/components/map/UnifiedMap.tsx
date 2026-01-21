@@ -41,6 +41,26 @@ interface CamerasResponse {
   cameras: Camera[];
 }
 
+interface Charger {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  address: string | null;
+  city: string | null;
+  province: string;
+  operator: string | null;
+  totalPowerKw: number;
+  connectorCount: number;
+  connectorTypes: string[];
+  is24h: boolean;
+}
+
+interface ChargersResponse {
+  count: number;
+  chargers: Charger[];
+}
+
 interface UnifiedMapProps {
   defaultHeight?: string;
   showStats?: boolean;
@@ -97,6 +117,12 @@ export function UnifiedMap({
 
   const { data: camerasData } = useSWR<CamerasResponse>(
     activeLayers.cameras ? "/api/cameras" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: chargersData } = useSWR<ChargersResponse>(
+    activeLayers.chargers ? "/api/chargers" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -182,6 +208,7 @@ export function UnifiedMap({
     v16: v16Data?.count || 0,
     incidents: filteredIncidents.length,
     cameras: camerasData?.count || 0,
+    chargers: chargersData?.count || 0,
   };
 
   // Height calculation
@@ -237,6 +264,7 @@ export function UnifiedMap({
               v16Data={activeLayers.v16 ? v16Data?.beacons : undefined}
               incidentData={activeLayers.incidents ? incidentsData?.incidents : undefined}
               cameraData={activeLayers.cameras ? camerasData?.cameras : undefined}
+              chargerData={activeLayers.chargers ? chargersData?.chargers : undefined}
               incidentFilters={incidentFilters}
               height="100%"
               onIncidentClick={handleIncidentClick}

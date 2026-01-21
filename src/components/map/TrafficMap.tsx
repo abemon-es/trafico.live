@@ -64,6 +64,21 @@ export interface Camera {
   imageUrl?: string;
 }
 
+export interface Charger {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  address: string | null;
+  city: string | null;
+  province: string;
+  operator: string | null;
+  totalPowerKw: number;
+  connectorCount: number;
+  connectorTypes: string[];
+  is24h: boolean;
+}
+
 export interface TrafficMapRef {
   flyTo: (lng: number, lat: number, zoom?: number) => void;
   getMap: () => maplibregl.Map | null;
@@ -74,6 +89,7 @@ interface TrafficMapProps {
   v16Data?: V16Beacon[];
   incidentData?: Incident[];
   cameraData?: Camera[];
+  chargerData?: Charger[];
   incidentFilters?: IncidentFilters;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
@@ -99,7 +115,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 // Legacy incident colors - now using EFFECT_COLORS from IncidentMarker
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, incidentFilters, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, incidentFilters, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -109,7 +125,8 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
   // Use provided data or empty arrays
   const beacons = v16Data || [];
-  const cameras = cameraData || SAMPLE_CAMERAS;
+  const cameras = cameraData || [];
+  const chargers = chargerData || [];
 
   // Filter incidents based on incidentFilters
   const incidents = (incidentData || []).filter((incident) => {
@@ -458,7 +475,55 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         markersRef.current.push(marker);
       });
     }
-  }, [activeLayers, isLoaded, beacons, incidents, cameras, onIncidentClick]);
+
+    // Add chargers
+    if (activeLayers.chargers && chargers.length > 0) {
+      chargers.forEach((charger) => {
+        const el = document.createElement("div");
+        el.className = "charger-marker";
+        el.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" fill="#22c55e" stroke="white" stroke-width="2"/>
+            <path d="M13 6L9 12H11V18L15 12H13V6Z" fill="white"/>
+          </svg>
+        `;
+        el.style.cursor = "pointer";
+
+        // Build popup HTML
+        const powerDisplay = charger.totalPowerKw >= 1
+          ? `${Math.round(charger.totalPowerKw)} kW`
+          : `${Math.round(charger.totalPowerKw * 1000)} W`;
+        const connectorTypesDisplay = charger.connectorTypes.join(", ");
+        const is24hBadge = charger.is24h
+          ? '<span class="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded ml-1">24h</span>'
+          : '';
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([charger.lng, charger.lat])
+          .setPopup(
+            new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
+              <div class="p-2 min-w-[200px]">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                  <span class="font-bold text-sm flex-1">${charger.name}</span>
+                  ${is24hBadge}
+                </div>
+                <div class="text-sm text-gray-600 space-y-1">
+                  <p><strong>Potencia:</strong> ${powerDisplay}</p>
+                  <p><strong>Conectores:</strong> ${charger.connectorCount} (${connectorTypesDisplay})</p>
+                  ${charger.operator ? `<p><strong>Operador:</strong> ${charger.operator}</p>` : ""}
+                  ${charger.address ? `<p class="text-xs">${charger.address}</p>` : ""}
+                  ${charger.city ? `<p class="text-xs text-gray-500">${charger.city}, ${charger.province}</p>` : ""}
+                </div>
+              </div>
+            `)
+          )
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      });
+    }
+  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, onIncidentClick]);
 
   return (
     <>

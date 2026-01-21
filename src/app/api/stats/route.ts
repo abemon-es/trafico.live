@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { fetchDGTChargers } from "@/lib/parsers/chargers";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
@@ -43,6 +44,7 @@ export async function GET() {
       incidentsBySource,
       previousHourStats,
       historicalByYear,
+      chargerCount,
     ] = await Promise.all([
       // Active V16 beacons count
       prisma.v16BeaconEvent.count({ where: { isActive: true } }),
@@ -96,6 +98,11 @@ export async function GET() {
           fatalities: true,
         },
       }),
+
+      // EV charger count from DGT API
+      fetchDGTChargers()
+        .then((chargers) => chargers.length)
+        .catch(() => 0),
     ]);
 
     // Build severity breakdown
@@ -195,7 +202,7 @@ export async function GET() {
       incidents: incidentCount,
       incidentsChange,
       cameras: 512, // Static - would come from camera API
-      chargers: 8432, // Static - would come from charger API
+      chargers: chargerCount, // Dynamic - from DGT API
       zbeZones: 156, // Static - would come from ZBE API
       lastUpdated: lastUpdated.toISOString(),
       source: "database",
@@ -215,7 +222,7 @@ export async function GET() {
         v16Active: 0,
         incidents: 0,
         cameras: 512,
-        chargers: 8432,
+        chargers: 0,
         zbeZones: 156,
         lastUpdated: new Date().toISOString(),
         source: "error",
