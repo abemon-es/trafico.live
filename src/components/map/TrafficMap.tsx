@@ -870,7 +870,100 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         markersRef.current.push(marker);
       });
     }
-  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, onIncidentClick]);
+
+    // Add weather alerts (province-level markers)
+    if (activeLayers.weather && weatherData && weatherData.length > 0 && provinceCoords.size > 0) {
+      // Group alerts by province
+      const byProvince = new Map<string, WeatherAlert[]>();
+      for (const alert of weatherData) {
+        const list = byProvince.get(alert.province) || [];
+        list.push(alert);
+        byProvince.set(alert.province, list);
+      }
+
+      // Helper to get severity weight
+      const severityWeight = (severity: string): number => {
+        switch (severity) {
+          case "EXTREME": return 4;
+          case "SEVERE": return 3;
+          case "MODERATE": return 2;
+          case "MINOR": return 1;
+          default: return 0;
+        }
+      };
+
+      // Create marker for each province with alerts
+      for (const [province, alerts] of byProvince) {
+        const coords = provinceCoords.get(province);
+        if (!coords) continue;
+
+        // Find worst severity alert for display
+        const worstAlert = alerts.reduce((a, b) =>
+          severityWeight(b.severity) > severityWeight(a.severity) ? b : a
+        );
+
+        const el = document.createElement("div");
+        el.className = "weather-marker";
+        el.style.cursor = "pointer";
+
+        const color = WEATHER_COLORS[worstAlert.type] || WEATHER_COLORS.OTHER;
+        const icon = WEATHER_ICONS[worstAlert.type] || WEATHER_ICONS.OTHER;
+
+        el.innerHTML = `
+          <div style="
+            background: ${color};
+            padding: 4px 8px;
+            border-radius: 16px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border: 2px solid white;
+          ">
+            <span>${icon}</span>
+            ${alerts.length > 1 ? `<span>${alerts.length}</span>` : ""}
+          </div>
+        `;
+
+        // Build popup content with all alerts for this province
+        const alertsHtml = alerts.map((alert) => {
+          const alertColor = WEATHER_COLORS[alert.type] || WEATHER_COLORS.OTHER;
+          const alertIcon = WEATHER_ICONS[alert.type] || WEATHER_ICONS.OTHER;
+          const alertLabel = WEATHER_LABELS[alert.type] || alert.type;
+          return `
+            <div class="mb-2 pb-2 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+              <div class="flex items-center gap-2">
+                <span style="color: ${alertColor}">${alertIcon}</span>
+                <span class="font-medium text-sm">${alertLabel}</span>
+                <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${alertColor}20; color: ${alertColor}">${alert.severity}</span>
+              </div>
+              ${alert.description ? `<p class="text-xs text-gray-600 mt-1">${alert.description}</p>` : ""}
+              <p class="text-xs text-gray-400 mt-1">Desde: ${new Date(alert.startedAt).toLocaleString("es-ES")}</p>
+            </div>
+          `;
+        }).join("");
+
+        const provinceName = alerts[0]?.provinceName || province;
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat(coords)
+          .setPopup(
+            new maplibregl.Popup({ offset: 25, maxWidth: "300px" }).setHTML(`
+              <div class="p-2">
+                <p class="font-bold text-sm mb-2">${provinceName} - Alertas meteorológicas</p>
+                ${alertsHtml}
+              </div>
+            `)
+          )
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      }
+    }
+  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, weatherData, provinceCoords, onIncidentClick]);
 
   return (
     <>
