@@ -66,16 +66,28 @@ echo "[backup] R2 endpoint: ${R2_ENDPOINT}"
 
 # Dump PostgreSQL database with compression
 echo "[backup] Running pg_dump..."
+echo "[backup] Database URL: ${DATABASE_URL:0:50}..."
+
+# Create temp file for error output
+ERR_FILE="/tmp/pg_dump_errors.log"
+
 if timeout "${BACKUP_TIMEOUT}" pg_dump "${DATABASE_URL}" \
     --no-owner \
     --no-privileges \
     --clean \
     --if-exists \
-    2>/dev/null | gzip > "$TMP_FILE"; then
+    2>"$ERR_FILE" | gzip > "$TMP_FILE"; then
   echo "[backup] Dump completed successfully"
+  # Show any warnings
+  if [ -s "$ERR_FILE" ]; then
+    echo "[backup] Warnings:"
+    cat "$ERR_FILE"
+  fi
 else
   echo "[backup] ERROR: pg_dump failed"
-  rm -f "$TMP_FILE"
+  echo "[backup] Error details:"
+  cat "$ERR_FILE" 2>/dev/null || true
+  rm -f "$TMP_FILE" "$ERR_FILE"
   exit 1
 fi
 
