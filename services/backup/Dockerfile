@@ -7,9 +7,10 @@
 
 FROM alpine:3.19
 
-# Install PostgreSQL client and utilities
+# Install PostgreSQL 17 client and utilities
+# Note: Railway Postgres uses v17, so we need pg_dump v17+
 RUN apk add --no-cache \
-    postgresql16-client \
+    postgresql17-client \
     python3 \
     py3-pip \
     ca-certificates \
