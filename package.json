@@ -11,7 +11,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "import:roads": "tsx scripts/import-roads.ts",
+    "import:roads:json": "tsx scripts/import-roads.ts --json-only"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

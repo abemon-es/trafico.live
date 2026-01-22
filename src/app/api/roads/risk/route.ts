@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { RiskType, Severity } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +13,39 @@ function calculateRiskLevel(score: number): RiskLevel {
   return "LOW";
 }
 
+interface StaticRiskZone {
+  id: string;
+  type: RiskType;
+  roadNumber: string;
+  kmStart: number;
+  kmEnd: number;
+  geometry: unknown;
+  severity: Severity;
+  description: string | null;
+  animalType: string | null;
+  incidentCount: number | null;
+}
+
+/**
+ * GET /api/roads/risk
+ *
+ * Returns road risk analysis combining:
+ * 1. Dynamic risk scores based on recent incidents and V16 beacons
+ * 2. Static risk zones (TEFIVA, motorcycle, cyclist, pedestrian)
+ *
+ * Query parameters:
+ * - days: Number of days to analyze (default: 30)
+ * - type: Filter static zones by type (MOTORCYCLE, ANIMAL, CYCLIST, PEDESTRIAN)
+ * - road: Filter by specific road number
+ * - includeStatic: Include static risk zones ("true" or "false", default "true")
+ */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get("days") || "30", 10);
+    const riskTypeFilter = searchParams.get("type") as RiskType | null;
+    const roadFilter = searchParams.get("road");
+    const includeStatic = searchParams.get("includeStatic") !== "false";
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -141,19 +171,87 @@ export async function GET(request: Request) {
       })
       .sort((a, b) => b.riskScore - a.riskScore);
 
-    // Calculate summary
-    const summary = {
+    // Calculate summary for dynamic risk
+    const dynamicSummary = {
       totalRoads: roads.length,
       criticalRoads: roads.filter((r) => r.riskLevel === "CRITICAL").length,
       highRiskRoads: roads.filter((r) => r.riskLevel === "HIGH").length,
     };
 
+    // Fetch static risk zones if requested
+    let staticZones: StaticRiskZone[] = [];
+    let staticSummary: Record<string, number> = {};
+
+    if (includeStatic) {
+      // Build where clause for static zones
+      const staticWhere: Record<string, unknown> = {};
+      if (riskTypeFilter) {
+        staticWhere.type = riskTypeFilter;
+      }
+      if (roadFilter) {
+        staticWhere.roadNumber = {
+          contains: roadFilter,
+          mode: "insensitive",
+        };
+      }
+
+      const rawStaticZones = await prisma.riskZone.findMany({
+        where: staticWhere,
+        orderBy: [
+          { severity: "desc" },
+          { roadNumber: "asc" },
+          { kmStart: "asc" },
+        ],
+      });
+
+      staticZones = rawStaticZones.map((zone) => ({
+        id: zone.id,
+        type: zone.type,
+        roadNumber: zone.roadNumber,
+        kmStart: Number(zone.kmStart),
+        kmEnd: Number(zone.kmEnd),
+        geometry: zone.geometry,
+        severity: zone.severity,
+        description: zone.description,
+        animalType: zone.animalType,
+        incidentCount: zone.incidentCount,
+      }));
+
+      // Summary by type
+      const byType = await prisma.riskZone.groupBy({
+        by: ["type"],
+        _count: true,
+      });
+      for (const item of byType) {
+        staticSummary[item.type] = item._count;
+      }
+    }
+
+    // Optionally filter dynamic roads by roadFilter
+    let filteredRoads = roads;
+    if (roadFilter) {
+      filteredRoads = roads.filter((r) =>
+        r.road.toLowerCase().includes(roadFilter.toLowerCase())
+      );
+    }
+
     return NextResponse.json({
       success: true,
       data: {
-        roads: roads.slice(0, 50), // Top 50 roads
-        summary,
-        periodDays: days,
+        // Dynamic risk analysis (based on recent incidents)
+        dynamicRisk: {
+          roads: filteredRoads.slice(0, 50), // Top 50 roads
+          summary: dynamicSummary,
+          periodDays: days,
+        },
+        // Static risk zones (from RiskZone table)
+        staticRiskZones: includeStatic
+          ? {
+              zones: staticZones,
+              summary: staticSummary,
+              totalZones: staticZones.length,
+            }
+          : null,
       },
     });
   } catch (error) {

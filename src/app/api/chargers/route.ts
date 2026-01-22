@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchDGTChargers, type ChargerData } from "@/lib/parsers/chargers";
+import { prisma } from "@/lib/db";
 import {
-  normalizeDGTProvince,
   getProvincesForCommunity,
   PROVINCE_TO_COMMUNITY,
 } from "@/lib/geo/province-mapping";
 
-// Cache the response for 5 minutes (data updates every 24h)
+// Cache the response for 5 minutes
 export const revalidate = 300;
 
 interface ChargerResponseItem {
@@ -18,19 +17,26 @@ interface ChargerResponseItem {
   postalCode: string | null;
   city: string | null;
   province: string;
+  provinceName: string | null;
   community: string;
   operator: string | null;
   totalPowerKw: number;
   connectorCount: number;
   connectorTypes: string[];
   is24h: boolean;
-  schedule: string | null;
+  paymentMethods: string[];
 }
 
 interface ChargersResponse {
   count: number;
   chargers: ChargerResponseItem[];
   provinces: string[];
+  stats?: {
+    totalPowerMw: number;
+    avgPowerKw: number;
+    chargers24h: number;
+    byType: Record<string, number>;
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -38,65 +44,121 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const filterProvince = searchParams.get("province");
     const filterCommunity = searchParams.get("community");
+    const filterCity = searchParams.get("city");
+    const includeStats = searchParams.get("stats") === "true";
+    const minPower = searchParams.get("minPower") ? parseFloat(searchParams.get("minPower")!) : null;
+    const is24h = searchParams.get("is24h");
 
-    const rawChargers = await fetchDGTChargers();
+    // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {};
 
-    // Transform and normalize province names
-    let chargers: ChargerResponseItem[] = rawChargers.map((charger: ChargerData) => {
-      const normalizedProvince = normalizeDGTProvince(charger.province || "");
-      const community = PROVINCE_TO_COMMUNITY[normalizedProvince] || charger.community || "";
+    // Filter by province (INE code)
+    if (filterProvince) {
+      where.province = filterProvince.padStart(2, "0");
+    }
 
-      // Extract unique connector types
-      const connectorTypes = [...new Set(charger.connectors.map((c) => c.type))];
+    // Filter by community
+    if (filterCommunity && !filterProvince) {
+      const communityProvinces = getProvincesForCommunity(filterCommunity);
+      if (communityProvinces.length > 0) {
+        // Map province names to INE codes - the getProvincesForCommunity returns names
+        // We need to find the codes from the PROVINCE_TO_COMMUNITY mapping
+        const provinceCodes: string[] = [];
+        for (const [code, community] of Object.entries(PROVINCE_TO_COMMUNITY)) {
+          if (community.toLowerCase() === filterCommunity.toLowerCase()) {
+            provinceCodes.push(code);
+          }
+        }
+        if (provinceCodes.length > 0) {
+          where.province = { in: provinceCodes };
+        }
+      }
+    }
+
+    // Filter by city
+    if (filterCity) {
+      where.city = {
+        contains: filterCity,
+        mode: "insensitive",
+      };
+    }
+
+    // Filter by minimum power
+    if (minPower) {
+      where.powerKw = {
+        gte: minPower,
+      };
+    }
+
+    // Filter by 24h availability
+    if (is24h === "true") {
+      where.is24h = true;
+    }
+
+    // Fetch from database
+    const dbChargers = await prisma.eVCharger.findMany({
+      where,
+      orderBy: [
+        { provinceName: "asc" },
+        { city: "asc" },
+      ],
+    });
+
+    // Transform to response format
+    const chargers: ChargerResponseItem[] = dbChargers.map((charger) => {
+      const community = charger.province ? PROVINCE_TO_COMMUNITY[charger.province] || "" : "";
 
       return {
         id: charger.id,
         name: charger.name,
-        lat: charger.latitude,
-        lng: charger.longitude,
-        address: charger.address || null,
-        postalCode: charger.postalCode || null,
-        city: charger.city || null,
-        province: normalizedProvince || charger.province || "",
+        lat: Number(charger.latitude),
+        lng: Number(charger.longitude),
+        address: charger.address,
+        postalCode: charger.postalCode,
+        city: charger.city,
+        province: charger.province || "",
+        provinceName: charger.provinceName,
         community,
-        operator: charger.operator || null,
-        totalPowerKw: Math.round(charger.totalPowerKw * 10) / 10,
-        connectorCount: charger.connectorCount,
-        connectorTypes,
+        operator: charger.operator,
+        totalPowerKw: Math.round(Number(charger.powerKw || 0) * 10) / 10,
+        connectorCount: charger.connectors || 0,
+        connectorTypes: charger.chargerTypes,
         is24h: charger.is24h,
-        schedule: charger.schedule || null,
+        paymentMethods: charger.paymentMethods,
       };
     });
 
-    // Filter by province if specified
-    if (filterProvince) {
-      const filterLower = filterProvince.toLowerCase();
-      chargers = chargers.filter(
-        (charger) => charger.province.toLowerCase() === filterLower
-      );
-    }
-
-    // Filter by community if specified
-    if (filterCommunity) {
-      const communityProvinces = getProvincesForCommunity(filterCommunity);
-      if (communityProvinces.length > 0) {
-        const provincesLower = communityProvinces.map((p) => p.toLowerCase());
-        chargers = chargers.filter((charger) =>
-          provincesLower.includes(charger.province.toLowerCase())
-        );
-      }
-    }
-
     // Extract unique provinces for filtering dropdown
     const provinces = [
-      ...new Set(chargers.map((charger) => charger.province).filter(Boolean)),
-    ].sort();
+      ...new Set(chargers.map((charger) => charger.provinceName).filter(Boolean)),
+    ].sort() as string[];
 
     const response: ChargersResponse = {
       count: chargers.length,
       chargers,
       provinces,
     };
+
+    // Include stats if requested
+    if (includeStats) {
+      const totalPower = chargers.reduce((sum, c) => sum + c.totalPowerKw, 0);
+      const chargers24h = chargers.filter((c) => c.is24h).length;
+
+      const byType: Record<string, number> = {};
+      for (const charger of chargers) {
+        for (const type of charger.connectorTypes) {
+          byType[type] = (byType[type] || 0) + 1;
+        }
+      }
+
+      response.stats = {
+        totalPowerMw: Math.round(totalPower / 100) / 10, // Convert to MW with 1 decimal
+        avgPowerKw: chargers.length > 0 ? Math.round(totalPower / chargers.length) : 0,
+        chargers24h,
+        byType,
+      };
+    }
 
     return NextResponse.json(response);
   } catch (error) {

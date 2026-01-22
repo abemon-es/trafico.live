@@ -21,6 +21,8 @@ export interface ActiveLayers {
   weather: boolean;
   highways: boolean;
   provinces: boolean;
+  radars: boolean;
+  riskZones: boolean;
 }
 
 export interface IncidentFilters {
@@ -91,6 +93,38 @@ export interface WeatherAlert {
   description: string | null;
 }
 
+export interface Radar {
+  id: string;
+  radarId: string;
+  lat: number;
+  lng: number;
+  road: string;
+  kmPoint: number;
+  direction: string | null;
+  province: string;
+  provinceName: string;
+  type: string;
+  speedLimit: number | null;
+  avgSpeedPartner: string | null;
+  lastUpdated: string;
+}
+
+export interface RiskZone {
+  id: string;
+  type: string;
+  roadNumber: string;
+  kmStart: number;
+  kmEnd: number;
+  severity: string;
+  description: string | null;
+  animalType: string | null;
+  incidentCount: number | null;
+  lastUpdated: string;
+  // For display on map, we'll compute center point
+  lat?: number;
+  lng?: number;
+}
+
 export interface TrafficMapRef {
   flyTo: (lng: number, lat: number, zoom?: number) => void;
   getMap: () => maplibregl.Map | null;
@@ -103,6 +137,8 @@ interface TrafficMapProps {
   cameraData?: Camera[];
   chargerData?: Charger[];
   weatherData?: WeatherAlert[];
+  radarData?: Radar[];
+  riskZoneData?: RiskZone[];
   incidentFilters?: IncidentFilters;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
@@ -175,6 +211,36 @@ const WEATHER_LABELS: Record<string, string> = {
   OTHER: "Otro",
 };
 
+// Radar type colors and labels
+const RADAR_COLORS: Record<string, string> = {
+  FIXED: "#eab308",         // Yellow
+  SECTION: "#f97316",       // Orange
+  MOBILE_ZONE: "#f59e0b",   // Amber
+  TRAFFIC_LIGHT: "#ef4444", // Red
+};
+
+const RADAR_LABELS: Record<string, string> = {
+  FIXED: "Radar fijo",
+  SECTION: "Radar de tramo",
+  MOBILE_ZONE: "Zona radar móvil",
+  TRAFFIC_LIGHT: "Semáforo foto-rojo",
+};
+
+// Risk zone type colors and labels
+const RISK_ZONE_COLORS: Record<string, string> = {
+  ANIMAL: "#92400e",     // Brown
+  MOTORCYCLE: "#dc2626", // Red
+  CYCLIST: "#2563eb",    // Blue
+  PEDESTRIAN: "#7c3aed", // Purple
+};
+
+const RISK_ZONE_LABELS: Record<string, string> = {
+  ANIMAL: "Zona de fauna",
+  MOTORCYCLE: "Zona peligrosa motos",
+  CYCLIST: "Zona ciclistas",
+  PEDESTRIAN: "Zona peatones",
+};
+
 // Helper to convert incidents to GeoJSON
 function incidentsToGeoJSON(incidents: Incident[]): GeoJSON {
   return {
@@ -227,7 +293,7 @@ function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
 }
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, incidentFilters, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, incidentFilters, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -256,6 +322,8 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   const beacons = v16Data || [];
   const cameras = cameraData || [];
   const chargers = chargerData || [];
+  const radars = radarData || [];
+  const riskZones = riskZoneData || [];
 
   // Filter incidents based on incidentFilters
   const incidents = (incidentData || []).filter((incident) => {

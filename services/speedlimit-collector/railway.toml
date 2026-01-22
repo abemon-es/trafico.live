@@ -1,0 +1,9 @@
+[build]
+dockerfilePath = "services/speedlimit-collector/Dockerfile"
+
+[deploy]
+restartPolicyType = "never"
+
+[cron]
+# Run weekly on Sunday at 3:00 AM Madrid time (speed limits rarely change)
+schedule = "0 3 * * 0"

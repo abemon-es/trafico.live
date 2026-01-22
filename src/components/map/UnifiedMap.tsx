@@ -88,6 +88,56 @@ interface WeatherResponse {
   counts: { byType: Record<string, number>; byProvince: Record<string, number> };
 }
 
+export interface RadarData {
+  id: string;
+  radarId: string;
+  lat: number;
+  lng: number;
+  road: string;
+  kmPoint: number;
+  direction: string | null;
+  province: string;
+  provinceName: string;
+  type: string;
+  speedLimit: number | null;
+  avgSpeedPartner: string | null;
+  lastUpdated: string;
+}
+
+interface RadarsResponse {
+  count: number;
+  radars: RadarData[];
+  provinces: string[];
+  roads: string[];
+  types: string[];
+}
+
+export interface RiskZoneData {
+  id: string;
+  type: string;
+  roadNumber: string;
+  kmStart: number;
+  kmEnd: number;
+  severity: string;
+  description: string | null;
+  animalType: string | null;
+  incidentCount: number | null;
+  lastUpdated: string;
+}
+
+interface RiskZonesResponse {
+  success: boolean;
+  data: {
+    zones: RiskZoneData[];
+    summary: {
+      total: number;
+      byType: Record<string, number>;
+      bySeverity: Record<string, number>;
+      topRoads: { road: string; count: number }[];
+    };
+  };
+}
+
 interface UnifiedMapProps {
   defaultHeight?: string;
   showStats?: boolean;
@@ -97,7 +147,7 @@ interface UnifiedMapProps {
 // Valid filter values for URL parsing
 const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
 const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
-const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces"];
+const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones"];
 
 export function UnifiedMap({
   defaultHeight = "500px",
@@ -129,6 +179,8 @@ export function UnifiedMap({
         weather: urlLayers.includes("weather"),
         highways: urlLayers.includes("highways"),
         provinces: urlLayers.includes("provinces"),
+        radars: urlLayers.includes("radars"),
+        riskZones: urlLayers.includes("riskZones"),
       };
     }
     // Default layers
@@ -141,6 +193,8 @@ export function UnifiedMap({
       weather: true,
       highways: true,
       provinces: false,
+      radars: false,
+      riskZones: false,
     };
   };
 
@@ -234,6 +288,18 @@ export function UnifiedMap({
     { revalidateOnFocus: false }
   );
 
+  const { data: radarsData } = useSWR<RadarsResponse>(
+    activeLayers.radars ? "/api/radars" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: riskZonesData } = useSWR<RiskZonesResponse>(
+    activeLayers.riskZones ? "/api/risk-zones" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
   const isLoading = v16Loading || incidentsLoading;
 
   // Handle fullscreen
@@ -322,6 +388,8 @@ export function UnifiedMap({
     cameras: camerasData?.count || 0,
     chargers: chargersData?.count || 0,
     weather: weatherData?.count || 0,
+    radars: radarsData?.count || 0,
+    riskZones: riskZonesData?.data?.zones?.length || 0,
   };
 
   // Height calculation

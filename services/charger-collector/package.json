@@ -1,0 +1,23 @@
+{
+  "name": "charger-collector",
+  "version": "1.0.0",
+  "description": "DGT EV Charger collector for trafico.abemon.es",
+  "type": "module",
+  "scripts": {
+    "start": "npx tsx collector.ts",
+    "dev": "npx tsx watch collector.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^6.0.0",
+    "@prisma/client": "^6.0.0",
+    "fast-xml-parser": "^4.5.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.10",
+    "prisma": "^6.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

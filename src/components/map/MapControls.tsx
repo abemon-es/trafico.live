@@ -17,6 +17,8 @@ import {
   X,
   CloudRain,
   Navigation,
+  Radar,
+  ShieldAlert,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -32,6 +34,8 @@ export interface ActiveLayers {
   weather: boolean;
   highways: boolean;
   provinces: boolean;
+  radars: boolean;
+  riskZones: boolean;
 }
 
 export interface IncidentFilters {
@@ -57,6 +61,8 @@ interface MapControlsProps {
     cameras: number;
     chargers: number;
     weather: number;
+    radars: number;
+    riskZones: number;
   };
 }
 
@@ -296,6 +302,20 @@ export function MapControls({
               onClick={() => onLayerToggle("weather")}
               color="blue"
               icon={<CloudRain className="w-4 h-4" />}
+            />
+            <LayerToggle
+              label={`Radares${counts?.radars ? ` (${counts.radars})` : ""}`}
+              active={activeLayers.radars}
+              onClick={() => onLayerToggle("radars")}
+              color="yellow"
+              icon={<Radar className="w-4 h-4" />}
+            />
+            <LayerToggle
+              label={`Zonas riesgo${counts?.riskZones ? ` (${counts.riskZones})` : ""}`}
+              active={activeLayers.riskZones}
+              onClick={() => onLayerToggle("riskZones")}
+              color="red"
+              icon={<ShieldAlert className="w-4 h-4" />}
             />
             <LayerToggle
               label="Cargadores EV"

@@ -1,0 +1,8 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "services/radar-collector/Dockerfile"
+
+[deploy]
+# Run daily at 3am Madrid time to keep radar data fresh
+cronSchedule = "0 3 * * *"
+restartPolicyType = "NEVER"

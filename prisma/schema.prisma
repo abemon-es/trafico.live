@@ -476,6 +476,22 @@ model HistoricalAccidents {
   @@index([province])
 }
 
+model VehicleFleet {
+  id           String  @id @default(cuid())
+  provinceCode String
+  provinceName String?
+  year         Int
+  month        Int? // null for annual data
+  vehicleType  String // "car", "motorcycle", "truck", "bus", "trailer", "other"
+  fuelType     String? // "gasoline", "diesel", "electric", "hybrid", "other"
+  count        Int
+
+  @@unique([provinceCode, year, month, vehicleType, fuelType])
+  @@index([provinceCode])
+  @@index([year])
+  @@index([vehicleType])
+}
+
 // ============================================
 // REFERENCE DATA
 // ============================================
@@ -544,7 +560,89 @@ model Road {
   // Provinces it passes through
   provinces String[]
 
+  // Speed limits for this road
+  speedLimits SpeedLimit[]
+
   @@index([type])
+}
+
+// Speed limits by road segment (ROSATTE format from NAP)
+model SpeedLimit {
+  id String @id @default(cuid())
+
+  // Road reference
+  roadNumber String // "A-1", "N-340", "AP-7"
+  roadType   RoadType?
+  road       Road?     @relation(fields: [roadNumber], references: [id])
+
+  // Segment location
+  kmStart Decimal @db.Decimal(7, 2)
+  kmEnd   Decimal @db.Decimal(7, 2)
+
+  // Geographic coordinates (segment endpoints)
+  startLat Decimal? @db.Decimal(9, 6)
+  startLng Decimal? @db.Decimal(9, 6)
+  endLat   Decimal? @db.Decimal(9, 6)
+  endLng   Decimal? @db.Decimal(9, 6)
+
+  // Speed limit details
+  speedLimit      Int // km/h (20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120)
+  speedLimitType  SpeedLimitType @default(GENERAL)
+  vehicleType     VehicleCategory? // Specific vehicle type restriction
+  laneType        LaneType? // Specific lane restriction
+  direction       Direction?
+
+  // Conditions (when limit applies)
+  isConditional Boolean @default(false)
+  conditionType String? // "weather", "time", "congestion"
+  timeStart     String? // "07:00" for time-based limits
+  timeEnd       String? // "21:00"
+  weatherType   String? // "rain", "fog", "snow"
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Source metadata
+  sourceId    String? // ROSATTE segment ID
+  lastUpdated DateTime @default(now()) @db.Timestamptz
+
+  @@unique([roadNumber, kmStart, kmEnd, direction, vehicleType])
+  @@index([roadNumber])
+  @@index([speedLimit])
+  @@index([province])
+  @@index([speedLimitType])
+}
+
+enum SpeedLimitType {
+  GENERAL // Standard speed limit
+  URBAN // Urban area limit
+  RESIDENTIAL // Residential zone (30 km/h)
+  SCHOOL // School zone
+  WORK_ZONE // Construction/roadwork
+  WEATHER // Weather-dependent
+  VARIABLE // Variable speed limit (PMV controlled)
+  TUNNEL // Tunnel speed limit
+  BRIDGE // Bridge speed limit
+}
+
+enum VehicleCategory {
+  ALL // All vehicles
+  CAR // Passenger cars
+  MOTORCYCLE
+  TRUCK // Heavy goods vehicles
+  BUS // Buses and coaches
+  TRAILER // Vehicles with trailers
+  DANGEROUS_GOODS // ADR vehicles
+}
+
+enum LaneType {
+  ALL // All lanes
+  RIGHT // Right lane(s)
+  LEFT // Left/fast lane
+  MIDDLE // Middle lane(s)
+  BUS_LANE // Bus lane
+  HOV // High occupancy vehicle lane
 }
 
 // ============================================

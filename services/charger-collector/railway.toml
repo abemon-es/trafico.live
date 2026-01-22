@@ -1,0 +1,9 @@
+[build]
+dockerfilePath = "services/charger-collector/Dockerfile"
+
+[deploy]
+restartPolicyType = "never"
+
+[cron]
+# Run daily at 6:00 AM Madrid time (data updates ~daily)
+schedule = "0 6 * * *"
