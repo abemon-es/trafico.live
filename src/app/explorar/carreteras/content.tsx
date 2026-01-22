@@ -38,11 +38,13 @@ interface RoadsResponse {
 
 interface RankingsResponse {
   success: boolean;
-  roads: {
-    byIncidentsTotal: Array<{ roadName: string; totalIncidents: number }>;
-    byRiskScore: Array<{ roadName: string; riskScore: number }>;
-    byIMD: Array<{ roadName: string; avgIMD: number }>;
-    mostDangerous: Array<{ roadName: string; riskScore: number; incidentsPerKm: number }>;
+  data: {
+    roads: {
+      byIncidentsTotal: Array<{ roadNumber: string; value: number; incidents?: number }>;
+      byRiskScore: Array<{ roadNumber: string; value: number; incidents?: number; v16?: number }>;
+      byIMD: Array<{ roadNumber: string; value: number; imd?: number }>;
+      mostDangerous: Array<{ roadNumber: string; value: number; incidents?: number; imd?: number }>;
+    };
   };
 }
 
@@ -109,12 +111,12 @@ export default function CarreterasContent() {
   const roadMap = new Map<string, RoadStats>();
 
   // Add roads from rankings
-  if (rankingsData?.roads) {
-    for (const road of rankingsData.roads.byIncidentsTotal || []) {
-      if (!roadMap.has(road.roadName)) {
-        roadMap.set(road.roadName, {
-          roadName: road.roadName,
-          incidentCount: road.totalIncidents,
+  if (rankingsData?.data?.roads) {
+    for (const road of rankingsData.data.roads.byIncidentsTotal || []) {
+      if (!roadMap.has(road.roadNumber)) {
+        roadMap.set(road.roadNumber, {
+          roadName: road.roadNumber,
+          incidentCount: road.incidents || road.value,
           v16Count: 0,
           cameraCount: 0,
           radarCount: 0,
@@ -124,17 +126,27 @@ export default function CarreterasContent() {
       }
     }
 
-    for (const road of rankingsData.roads.byRiskScore || []) {
-      const existing = roadMap.get(road.roadName);
+    for (const road of rankingsData.data.roads.byRiskScore || []) {
+      const existing = roadMap.get(road.roadNumber);
       if (existing) {
-        existing.riskScore = road.riskScore;
+        existing.riskScore = road.value;
+      } else {
+        roadMap.set(road.roadNumber, {
+          roadName: road.roadNumber,
+          incidentCount: road.incidents || 0,
+          v16Count: road.v16 || 0,
+          cameraCount: 0,
+          radarCount: 0,
+          avgIMD: null,
+          riskScore: road.value,
+        });
       }
     }
 
-    for (const road of rankingsData.roads.byIMD || []) {
-      const existing = roadMap.get(road.roadName);
+    for (const road of rankingsData.data.roads.byIMD || []) {
+      const existing = roadMap.get(road.roadNumber);
       if (existing) {
-        existing.avgIMD = road.avgIMD;
+        existing.avgIMD = road.imd || road.value;
       }
     }
   }
@@ -226,23 +238,23 @@ export default function CarreterasContent() {
       </div>
 
       {/* Top Dangerous Roads */}
-      {rankingsData?.roads?.mostDangerous && rankingsData.roads.mostDangerous.length > 0 && (
+      {rankingsData?.data?.roads?.mostDangerous && rankingsData.data.roads.mostDangerous.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
           <h3 className="text-sm font-semibold text-red-800 mb-3 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             Carreteras con mayor riesgo
           </h3>
           <div className="flex flex-wrap gap-2">
-            {rankingsData.roads.mostDangerous.slice(0, 10).map((road, idx) => (
+            {rankingsData.data.roads.mostDangerous.slice(0, 10).map((road, idx) => (
               <Link
-                key={road.roadName}
-                href={`/explorar/carreteras/${encodeURIComponent(road.roadName)}`}
+                key={road.roadNumber}
+                href={`/explorar/carreteras/${encodeURIComponent(road.roadNumber)}`}
                 className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full text-sm border border-red-200 hover:bg-red-100 transition-colors"
               >
                 <span className="font-medium text-red-700">#{idx + 1}</span>
-                <span className="font-semibold text-gray-900">{road.roadName}</span>
+                <span className="font-semibold text-gray-900">{road.roadNumber}</span>
                 <span className="text-xs text-red-600">
-                  {road.riskScore.toFixed(1)} riesgo
+                  {road.value.toFixed(2)} riesgo
                 </span>
               </Link>
             ))}
