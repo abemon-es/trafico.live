@@ -7,28 +7,35 @@ import {
   Car,
   Map,
   BarChart3,
-  Building2,
+  Search,
   Info,
   Menu,
   X,
-  Camera,
-  AlertTriangle,
+  Home,
 } from "lucide-react";
 
+// Primary navigation - 4 main sections
 const navigation = [
-  { name: "Inicio", href: "/", icon: Car },
+  { name: "Dashboard", href: "/", icon: Home },
   { name: "Mapa", href: "/mapa", icon: Map },
-  { name: "Incidencias", href: "/incidencias", icon: AlertTriangle },
-  { name: "Cámaras", href: "/camaras", icon: Camera },
-  { name: "España", href: "/espana", icon: Building2 },
-  { name: "Balizas V16", href: "/historico", icon: AlertTriangle },
+  { name: "Explorar", href: "/explorar", icon: Search },
   { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
+];
+
+// Secondary navigation
+const secondaryNav = [
   { name: "Sobre", href: "/sobre", icon: Info },
 ];
 
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Check if path matches (exact or starts with for nested routes)
+  const isActiveRoute = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(href + "/");
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -53,7 +60,30 @@ export function Header() {
           <div className="hidden md:flex items-center gap-1">
             {navigation.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
+              const isActive = isActiveRoute(item.href);
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`
+                    flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                    ${
+                      isActive
+                        ? "bg-red-50 text-red-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    }
+                  `}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.name}
+                </Link>
+              );
+            })}
+            <span className="mx-2 h-5 w-px bg-gray-200" />
+            {secondaryNav.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActiveRoute(item.href);
 
               return (
                 <Link
@@ -95,7 +125,31 @@ export function Header() {
             <div className="flex flex-col gap-1">
               {navigation.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive = isActiveRoute(item.href);
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
+                      ${
+                        isActive
+                          ? "bg-red-50 text-red-700"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      }
+                    `}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+              <div className="my-2 border-t border-gray-200" />
+              {secondaryNav.map((item) => {
+                const Icon = item.icon;
+                const isActive = isActiveRoute(item.href);
 
                 return (
                   <Link

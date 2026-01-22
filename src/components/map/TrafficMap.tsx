@@ -942,6 +942,109 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       });
     }
 
+    // Add radars
+    if (activeLayers.radars && radars.length > 0) {
+      radars.forEach((radar) => {
+        const color = RADAR_COLORS[radar.type] || RADAR_COLORS.FIXED;
+        const label = RADAR_LABELS[radar.type] || radar.type;
+
+        const el = document.createElement("div");
+        el.className = "radar-marker";
+        el.innerHTML = `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2"/>
+            <path d="M12 6V12L16 14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="3" fill="white"/>
+          </svg>
+        `;
+        el.style.cursor = "pointer";
+
+        const speedDisplay = radar.speedLimit
+          ? `<p class="text-lg font-bold text-center" style="color: ${color}">${radar.speedLimit} km/h</p>`
+          : "";
+        const directionDisplay = radar.direction
+          ? `<span class="text-xs text-gray-500">${radar.direction === "INCREASING" ? "↑ Sentido creciente" : "↓ Sentido decreciente"}</span>`
+          : "";
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([radar.lng, radar.lat])
+          .setPopup(
+            new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
+              <div class="p-2 min-w-[180px]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full" style="background: ${color}"></span>
+                  <span class="font-bold text-sm">${label}</span>
+                </div>
+                ${speedDisplay}
+                <div class="text-sm text-gray-600 space-y-1">
+                  <p><strong>Carretera:</strong> ${radar.road} km ${radar.kmPoint}</p>
+                  ${directionDisplay}
+                  ${radar.provinceName ? `<p class="text-xs text-gray-500">${radar.provinceName}</p>` : ""}
+                  ${radar.avgSpeedPartner ? `<p class="text-xs text-orange-600">Radar de tramo (con ${radar.avgSpeedPartner})</p>` : ""}
+                </div>
+              </div>
+            `)
+          )
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      });
+    }
+
+    // Add risk zones (road segment markers)
+    if (activeLayers.riskZones && riskZones.length > 0) {
+      riskZones.forEach((zone) => {
+        // For now, we'll show risk zones as markers if they have coordinates
+        // In the future, these could be shown as line segments on the road
+        if (!zone.lat || !zone.lng) return;
+
+        const color = RISK_ZONE_COLORS[zone.type] || RISK_ZONE_COLORS.ANIMAL;
+        const label = RISK_ZONE_LABELS[zone.type] || zone.type;
+        const severityColor = SEVERITY_COLORS[zone.severity] || SEVERITY_COLORS.MEDIUM;
+
+        const el = document.createElement("div");
+        el.className = "risk-zone-marker";
+        el.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 22H22L12 2Z" fill="${color}" stroke="white" stroke-width="2"/>
+            <text x="12" y="17" text-anchor="middle" fill="white" font-size="10" font-weight="bold">!</text>
+          </svg>
+        `;
+        el.style.cursor = "pointer";
+
+        const animalInfo = zone.animalType
+          ? `<p><strong>Tipo:</strong> ${zone.animalType}</p>`
+          : "";
+        const incidentInfo = zone.incidentCount
+          ? `<p><strong>Incidentes históricos:</strong> ${zone.incidentCount}</p>`
+          : "";
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([zone.lng, zone.lat])
+          .setPopup(
+            new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
+              <div class="p-2 min-w-[200px]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full" style="background: ${color}"></span>
+                  <span class="font-bold text-sm">${label}</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${severityColor}; color: white;">${zone.severity}</span>
+                </div>
+                <div class="text-sm text-gray-600 space-y-1">
+                  <p><strong>Carretera:</strong> ${zone.roadNumber}</p>
+                  <p><strong>Tramo:</strong> km ${zone.kmStart} - ${zone.kmEnd}</p>
+                  ${animalInfo}
+                  ${incidentInfo}
+                  ${zone.description ? `<p class="text-xs text-gray-500 mt-1">${zone.description}</p>` : ""}
+                </div>
+              </div>
+            `)
+          )
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      });
+    }
+
     // Add weather alerts (province-level markers)
     if (activeLayers.weather && weatherData && weatherData.length > 0 && provinceCoords.size > 0) {
       // Group alerts by province

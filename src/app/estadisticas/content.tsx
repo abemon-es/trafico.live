@@ -177,8 +177,27 @@ interface CorrelationResponse {
   };
 }
 
+interface RankingsResponse {
+  success: boolean;
+  provinces: {
+    byIncidentsTotal: Array<{ province: string; totalIncidents: number }>;
+    byIncidentsPer100k: Array<{ province: string; incidentsPer100k: number; population: number }>;
+    byV16Total: Array<{ province: string; totalV16: number }>;
+    byV16Per100k: Array<{ province: string; v16Per100k: number; population: number }>;
+    byAccidentsPer100k: Array<{ province: string; accidentsPer100k: number }>;
+    mostImproved: Array<{ province: string; changePercent: number }>;
+    mostWorsened: Array<{ province: string; changePercent: number }>;
+  };
+  roads: {
+    byIncidentsTotal: Array<{ roadName: string; totalIncidents: number }>;
+    byRiskScore: Array<{ roadName: string; riskScore: number }>;
+    byIMD: Array<{ roadName: string; avgIMD: number }>;
+    mostDangerous: Array<{ roadName: string; riskScore: number; incidentsPerKm: number }>;
+  };
+}
+
 // Tab configuration
-type TabId = "resumen" | "incidencias" | "v16" | "correlacion" | "historico" | "carreteras" | "clima";
+type TabId = "resumen" | "incidencias" | "v16" | "correlacion" | "historico" | "carreteras" | "clima" | "rankings";
 
 const TABS: Array<{ id: TabId; label: string; icon: React.ElementType }> = [
   { id: "resumen", label: "Resumen", icon: Activity },
@@ -188,6 +207,7 @@ const TABS: Array<{ id: TabId; label: string; icon: React.ElementType }> = [
   { id: "historico", label: "Histórico", icon: Calendar },
   { id: "carreteras", label: "Carreteras", icon: Route },
   { id: "clima", label: "Clima", icon: CloudRain },
+  { id: "rankings", label: "Rankings", icon: BarChart3 },
 ];
 
 // ============================================
@@ -1327,6 +1347,335 @@ function CorrelacionSection({
   );
 }
 
+function RankingsSection({
+  data,
+  isLoading,
+}: {
+  data?: RankingsResponse;
+  isLoading: boolean;
+}) {
+  const hasData = data?.success;
+  const [rankingType, setRankingType] = useState<"provinces" | "roads">("provinces");
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <SectionHeader
+          title="Rankings"
+          description="Clasificaciones de provincias y carreteras por diferentes métricas"
+        />
+        <div className="animate-pulse space-y-4">
+          <div className="h-48 bg-gray-200 rounded-lg" />
+          <div className="h-48 bg-gray-200 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <div className="space-y-8">
+        <SectionHeader
+          title="Rankings"
+          description="Clasificaciones de provincias y carreteras por diferentes métricas"
+        />
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+          <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No hay suficientes datos para generar rankings</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <SectionHeader
+          title="Rankings"
+          description="Clasificaciones de provincias y carreteras por diferentes métricas"
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={() => setRankingType("provinces")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              rankingType === "provinces"
+                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            Provincias
+          </button>
+          <button
+            onClick={() => setRankingType("roads")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              rankingType === "roads"
+                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            Carreteras
+          </button>
+        </div>
+      </div>
+
+      {/* Province Rankings */}
+      {rankingType === "provinces" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* By Total Incidents */}
+          {data.provinces.byIncidentsTotal.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                Más Incidencias (Total)
+              </h3>
+              <div className="space-y-2">
+                {data.provinces.byIncidentsTotal.slice(0, 10).map((p, idx) => {
+                  const maxVal = data.provinces.byIncidentsTotal[0]?.totalIncidents || 1;
+                  const width = (p.totalIncidents / maxVal) * 100;
+                  return (
+                    <div key={p.province} className="flex items-center gap-2">
+                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                        <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="w-16 text-sm text-gray-600 text-right">{p.totalIncidents}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* By Incidents per 100k */}
+          {data.provinces.byIncidentsPer100k.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-500" />
+                Incidencias por 100k hab.
+              </h3>
+              <div className="space-y-2">
+                {data.provinces.byIncidentsPer100k.slice(0, 10).map((p, idx) => {
+                  const maxVal = data.provinces.byIncidentsPer100k[0]?.incidentsPer100k || 1;
+                  const width = (p.incidentsPer100k / maxVal) * 100;
+                  return (
+                    <div key={p.province} className="flex items-center gap-2">
+                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                        <div className="h-full bg-purple-500 rounded" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="w-16 text-sm text-gray-600 text-right">{p.incidentsPer100k.toFixed(1)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">Normalizado por población provincial</p>
+            </div>
+          )}
+
+          {/* By V16 Total */}
+          {data.provinces.byV16Total.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-orange-500" />
+                Más Balizas V16
+              </h3>
+              <div className="space-y-2">
+                {data.provinces.byV16Total.slice(0, 10).map((p, idx) => {
+                  const maxVal = data.provinces.byV16Total[0]?.totalV16 || 1;
+                  const width = (p.totalV16 / maxVal) * 100;
+                  return (
+                    <div key={p.province} className="flex items-center gap-2">
+                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                        <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="w-16 text-sm text-gray-600 text-right">{p.totalV16}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* By Accidents per 100k */}
+          {data.provinces.byAccidentsPer100k.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Car className="w-5 h-5 text-gray-600" />
+                Accidentes por 100k hab.
+              </h3>
+              <div className="space-y-2">
+                {data.provinces.byAccidentsPer100k.slice(0, 10).map((p, idx) => {
+                  const maxVal = data.provinces.byAccidentsPer100k[0]?.accidentsPer100k || 1;
+                  const width = (p.accidentsPer100k / maxVal) * 100;
+                  return (
+                    <div key={p.province} className="flex items-center gap-2">
+                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                        <div className="h-full bg-gray-500 rounded" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="w-16 text-sm text-gray-600 text-right">{p.accidentsPer100k.toFixed(1)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">Datos históricos DGT</p>
+            </div>
+          )}
+
+          {/* Most Improved */}
+          {data.provinces.mostImproved.length > 0 && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
+                <TrendingDown className="w-5 h-5 text-green-600" />
+                Mayor Mejora
+              </h3>
+              <div className="space-y-2">
+                {data.provinces.mostImproved.slice(0, 5).map((p, idx) => (
+                  <div key={p.province} className="flex items-center justify-between">
+                    <span className="font-medium text-green-800">{p.province}</span>
+                    <span className="text-green-600 font-bold">{p.changePercent.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-green-700 mt-3">Variación respecto al año anterior</p>
+            </div>
+          )}
+
+          {/* Most Worsened */}
+          {data.provinces.mostWorsened.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-red-600" />
+                Mayor Empeoramiento
+              </h3>
+              <div className="space-y-2">
+                {data.provinces.mostWorsened.slice(0, 5).map((p, idx) => (
+                  <div key={p.province} className="flex items-center justify-between">
+                    <span className="font-medium text-red-800">{p.province}</span>
+                    <span className="text-red-600 font-bold">+{p.changePercent.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-red-700 mt-3">Variación respecto al año anterior</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Road Rankings */}
+      {rankingType === "roads" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* By Total Incidents */}
+          {data.roads.byIncidentsTotal.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                Más Incidencias
+              </h3>
+              <div className="space-y-2">
+                {data.roads.byIncidentsTotal.slice(0, 10).map((r, idx) => {
+                  const maxVal = data.roads.byIncidentsTotal[0]?.totalIncidents || 1;
+                  const width = (r.totalIncidents / maxVal) * 100;
+                  return (
+                    <div key={r.roadName} className="flex items-center gap-2">
+                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
+                      <span className="w-20 text-sm font-bold text-blue-600">{r.roadName}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                        <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="w-12 text-sm text-gray-600 text-right">{r.totalIncidents}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* By Risk Score */}
+          {data.roads.byRiskScore.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-orange-500" />
+                Mayor Riesgo
+              </h3>
+              <div className="space-y-2">
+                {data.roads.byRiskScore.slice(0, 10).map((r, idx) => {
+                  const maxVal = data.roads.byRiskScore[0]?.riskScore || 1;
+                  const width = (r.riskScore / maxVal) * 100;
+                  return (
+                    <div key={r.roadName} className="flex items-center gap-2">
+                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
+                      <span className="w-20 text-sm font-bold text-blue-600">{r.roadName}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                        <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="w-12 text-sm text-gray-600 text-right">{r.riskScore.toFixed(1)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* By IMD */}
+          {data.roads.byIMD.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Car className="w-5 h-5 text-green-500" />
+                Mayor Tráfico (IMD)
+              </h3>
+              <div className="space-y-2">
+                {data.roads.byIMD.slice(0, 10).map((r, idx) => {
+                  const maxVal = data.roads.byIMD[0]?.avgIMD || 1;
+                  const width = (r.avgIMD / maxVal) * 100;
+                  return (
+                    <div key={r.roadName} className="flex items-center gap-2">
+                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
+                      <span className="w-20 text-sm font-bold text-blue-600">{r.roadName}</span>
+                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                        <div className="h-full bg-green-500 rounded" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="w-16 text-sm text-gray-600 text-right">{(r.avgIMD / 1000).toFixed(0)}k</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">Intensidad Media Diaria (veh/día)</p>
+            </div>
+          )}
+
+          {/* Most Dangerous */}
+          {data.roads.mostDangerous.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                Más Peligrosas
+              </h3>
+              <div className="space-y-3">
+                {data.roads.mostDangerous.slice(0, 5).map((r, idx) => (
+                  <div key={r.roadName} className="flex items-center justify-between bg-white rounded px-3 py-2">
+                    <div>
+                      <span className="font-bold text-red-800">{r.roadName}</span>
+                      <p className="text-xs text-red-600">{r.incidentsPerKm.toFixed(2)} inc/km</p>
+                    </div>
+                    <span className="text-lg font-bold text-red-700">{r.riskScore.toFixed(1)}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-red-700 mt-3">Combinación de riesgo e incidencias por km</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -1375,6 +1724,12 @@ export function EstadisticasContent() {
 
   const { data: correlation, isLoading: correlationLoading } = useSWR<CorrelationResponse>(
     "/api/historico/correlation?days=30",
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: rankings, isLoading: rankingsLoading } = useSWR<RankingsResponse>(
+    "/api/rankings",
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -1461,6 +1816,10 @@ export function EstadisticasContent() {
 
         {activeTab === "clima" && (
           <ClimaSection data={weatherImpact} isLoading={weatherLoading} />
+        )}
+
+        {activeTab === "rankings" && (
+          <RankingsSection data={rankings} isLoading={rankingsLoading} />
         )}
 
         {/* Data Sources */}

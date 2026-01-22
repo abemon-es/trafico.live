@@ -448,6 +448,8 @@ export function UnifiedMap({
               cameraData={activeLayers.cameras ? camerasData?.cameras : undefined}
               chargerData={activeLayers.chargers ? chargersData?.chargers : undefined}
               weatherData={activeLayers.weather ? weatherData?.alerts : undefined}
+              radarData={activeLayers.radars ? radarsData?.radars : undefined}
+              riskZoneData={activeLayers.riskZones ? riskZonesData?.data?.zones : undefined}
               incidentFilters={incidentFilters}
               height="100%"
               onIncidentClick={handleIncidentClick}

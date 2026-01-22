@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { EnhancedStatsCards } from "@/components/stats/EnhancedStatsCards";
 import { BreakdownCharts } from "@/components/stats/BreakdownCharts";
 import { TimeSeriesChart } from "@/components/stats/TimeSeriesChart";
+import { InfrastructureStatus } from "@/components/stats/InfrastructureStatus";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
 import { Map as MapIcon } from "lucide-react";
 
@@ -39,6 +40,9 @@ export default function Dashboard() {
 
         {/* Time Series */}
         <TimeSeriesChart />
+
+        {/* Infrastructure Status */}
+        <InfrastructureStatus />
 
         {/* Footer */}
         <footer className="text-center text-sm text-gray-500 py-8 border-t border-gray-200">
