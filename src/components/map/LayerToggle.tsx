@@ -4,7 +4,7 @@ interface LayerToggleProps {
   label: string;
   active: boolean;
   onClick: () => void;
-  color: "red" | "orange" | "blue" | "green" | "purple" | "gray" | "cyan";
+  color: "red" | "orange" | "blue" | "green" | "purple" | "gray" | "cyan" | "yellow" | "amber";
   icon?: ReactNode;
 }
 
@@ -43,6 +43,16 @@ const colorClasses = {
     active: "bg-cyan-100 border-cyan-500 text-cyan-700",
     inactive: "bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-100",
     dot: "bg-cyan-500",
+  },
+  yellow: {
+    active: "bg-yellow-100 border-yellow-500 text-yellow-700",
+    inactive: "bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-100",
+    dot: "bg-yellow-500",
+  },
+  amber: {
+    active: "bg-amber-100 border-amber-500 text-amber-700",
+    inactive: "bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-100",
+    dot: "bg-amber-500",
   },
 };
 
