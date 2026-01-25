@@ -46,18 +46,27 @@ export default function Dashboard() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-gray-500 py-8 border-t border-gray-200">
-          <p>
-            Datos: DGT NAP, AEMET | Actualizado cada 60 segundos
-          </p>
-          <p className="mt-1">
-            Powered by{" "}
+          <p>Datos: DGT NAP, AEMET | Actualizado cada 60 segundos</p>
+          <p className="mt-2">
+            Engineered & powered by{" "}
             <a
               href="https://abemon.es"
-              className="font-semibold text-blue-600 hover:underline"
+              className="font-semibold text-[#006633] hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Abemon
+              abemonFLOW™ Engine
+            </a>
+          </p>
+          <p className="mt-1">
+            Operado por{" "}
+            <a
+              href="https://www.logisticsexpress.es"
+              className="font-semibold text-[#006633] hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Logistics Express
             </a>
           </p>
         </footer>

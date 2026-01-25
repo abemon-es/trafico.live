@@ -5,7 +5,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  Car,
   Map,
   BarChart3,
   Search,
@@ -13,7 +12,6 @@ import {
   Menu,
   X,
   Home,
-  ExternalLink,
 } from "lucide-react";
 
 // Primary navigation - 4 main sections
@@ -45,23 +43,19 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="bg-[#006633] p-2 rounded-lg">
-              <Car className="w-6 h-6 text-white" />
-            </div>
-            <div>
+            <Image
+              src="/logo-logistics.png"
+              alt="Logistics Express"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+            />
+            <div className="border-l border-gray-300 pl-3">
               <span className="text-lg font-bold text-gray-900">
                 Tráfico España
               </span>
               <span className="hidden sm:block text-xs text-gray-500">
-                by{" "}
-                <a
-                  href="https://logisticsexpress.es"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#006633] hover:text-[#39a935] font-medium"
-                >
-                  Logistics Express
-                </a>
+                Inteligencia Vial en Tiempo Real
               </span>
             </div>
           </Link>

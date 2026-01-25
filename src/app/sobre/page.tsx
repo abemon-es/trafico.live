@@ -197,26 +197,53 @@ export default function SobrePage() {
           </div>
         </section>
 
-        {/* About Abemon */}
+        {/* Technology & Operator */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Desarrollado por</h2>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">A</span>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Equipo</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Technology */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tecnología</h3>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#006633] to-[#39a935] rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">A</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">abemonFLOW™ Engine</p>
+                  <p className="text-sm text-gray-500">Motor de procesamiento de datos</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-xl text-gray-900">Abemon</h3>
-                <p className="text-gray-600">Soluciones tecnológicas para empresas</p>
-                <a
-                  href="https://abemon.es"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm mt-2"
-                >
-                  abemon.es <ExternalLink className="w-4 h-4" />
-                </a>
+              <p className="text-gray-600 text-sm mb-4">
+                Plataforma de integración y procesamiento de datos en tiempo real desarrollada por Abemon.
+              </p>
+              <a
+                href="https://abemon.es"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#006633] hover:text-[#39a935] flex items-center gap-1 text-sm font-medium"
+              >
+                abemon.es <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
+
+            {/* Operator */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Operado por</h3>
+              <div className="mb-4">
+                <p className="font-semibold text-gray-900 text-lg">Logistics Express</p>
+                <p className="text-sm text-gray-500">Transporte y Aduanas Internacionales</p>
               </div>
+              <p className="text-gray-600 text-sm mb-4">
+                Empresa líder en transporte internacional y gestión aduanera con más de 100 años de experiencia.
+              </p>
+              <a
+                href="https://www.logisticsexpress.es"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#006633] hover:text-[#39a935] flex items-center gap-1 text-sm font-medium"
+              >
+                www.logisticsexpress.es <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
           </div>
         </section>
@@ -224,12 +251,36 @@ export default function SobrePage() {
         {/* Contact */}
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Contacto</h2>
-          <p className="text-gray-600">
-            Para consultas, sugerencias o reportar errores, puede contactarnos a través de{" "}
-            <a href="mailto:info@abemon.es" className="text-blue-600 hover:underline">
-              info@abemon.es
-            </a>
-          </p>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p className="text-gray-600 mb-4">
+              Para consultas, sugerencias o reportar errores sobre esta plataforma:
+            </p>
+            <div className="space-y-2 text-gray-700">
+              <p>
+                <span className="font-medium">Email:</span>{" "}
+                <a href="mailto:info@logisticsexpress.es" className="text-[#006633] hover:underline">
+                  info@logisticsexpress.es
+                </a>
+              </p>
+              <p>
+                <span className="font-medium">Teléfono:</span>{" "}
+                <a href="tel:+34951650500" className="text-[#006633] hover:underline">
+                  +34 951 650 500
+                </a>
+              </p>
+              <p>
+                <span className="font-medium">Web:</span>{" "}
+                <a
+                  href="https://www.logisticsexpress.es"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#006633] hover:underline"
+                >
+                  www.logisticsexpress.es
+                </a>
+              </p>
+            </div>
+          </div>
         </section>
       </main>
     </div>

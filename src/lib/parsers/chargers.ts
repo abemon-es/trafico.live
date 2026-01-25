@@ -311,7 +311,7 @@ export async function fetchDGTChargers(): Promise<ChargerData[]> {
   const response = await fetch(url, {
     headers: {
       Accept: "application/xml",
-      "User-Agent": "TraficoEspana/1.0 (https://trafico.abemon.es)",
+      "User-Agent": "TraficoEspana/1.0 (https://trafico.logisticsexpress.es)",
     },
     next: { revalidate: 300 }, // Cache for 5 minutes
   });
