@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
@@ -12,6 +13,7 @@ import {
   Menu,
   X,
   Home,
+  ExternalLink,
 } from "lucide-react";
 
 // Primary navigation - 4 main sections
@@ -43,7 +45,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="bg-red-600 p-2 rounded-lg">
+            <div className="bg-[#006633] p-2 rounded-lg">
               <Car className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -51,7 +53,15 @@ export function Header() {
                 Tráfico España
               </span>
               <span className="hidden sm:block text-xs text-gray-500">
-                Inteligencia Vial en Tiempo Real
+                by{" "}
+                <a
+                  href="https://logisticsexpress.es"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#006633] hover:text-[#39a935] font-medium"
+                >
+                  Logistics Express
+                </a>
               </span>
             </div>
           </Link>
@@ -70,7 +80,7 @@ export function Header() {
                     flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                     ${
                       isActive
-                        ? "bg-red-50 text-red-700"
+                        ? "bg-[#e8f5e9] text-[#006633]"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     }
                   `}
@@ -93,7 +103,7 @@ export function Header() {
                     flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                     ${
                       isActive
-                        ? "bg-red-50 text-red-700"
+                        ? "bg-[#e8f5e9] text-[#006633]"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     }
                   `}
@@ -136,7 +146,7 @@ export function Header() {
                       flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                       ${
                         isActive
-                          ? "bg-red-50 text-red-700"
+                          ? "bg-[#e8f5e9] text-[#006633]"
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                       }
                     `}
@@ -160,7 +170,7 @@ export function Header() {
                       flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                       ${
                         isActive
-                          ? "bg-red-50 text-red-700"
+                          ? "bg-[#e8f5e9] text-[#006633]"
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                       }
                     `}

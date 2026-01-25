@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | Tráfico España",
   },
   description:
-    "Monitorización en tiempo real del tráfico español: balizas V16, incidencias, cámaras, cargadores eléctricos y zonas de bajas emisiones. Datos oficiales de la DGT.",
+    "Monitorización en tiempo real del tráfico español: balizas V16, incidencias, cámaras, cargadores eléctricos y zonas de bajas emisiones. Datos oficiales de la DGT. Un servicio de Logistics Express.",
   keywords: [
     "tráfico",
     "DGT",
@@ -30,20 +30,22 @@ export const metadata: Metadata = {
     "carreteras",
     "incidencias",
     "tiempo real",
+    "logistics express",
+    "transporte",
   ],
-  authors: [{ name: "Abemon", url: "https://abemon.es" }],
+  authors: [{ name: "Logistics Express", url: "https://logisticsexpress.es" }],
   openGraph: {
     title: "Tráfico España - Inteligencia Vial en Tiempo Real",
     description:
-      "Datos en tiempo real del tráfico español: V16, incidencias, cámaras y más.",
-    url: "https://trafico.abemon.es",
-    siteName: "Tráfico España",
+      "Datos en tiempo real del tráfico español: V16, incidencias, cámaras y más. Un servicio de Logistics Express.",
+    url: "https://trafico.logisticsexpress.es",
+    siteName: "Tráfico España by Logistics Express",
     locale: "es_ES",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tráfico España",
+    title: "Tráfico España by Logistics Express",
     description: "Inteligencia vial en tiempo real",
   },
   robots: {

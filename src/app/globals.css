@@ -3,6 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Logistics Express Brand Colors */
+  --le-green-dark: #006633;
+  --le-green-light: #39a935;
+  --le-green-secondary-1: #174a16;
+  --le-green-secondary-2: #01582c;
+
+  /* Semantic colors */
+  --le-primary: var(--le-green-dark);
+  --le-primary-light: var(--le-green-light);
+  --le-primary-hover: var(--le-green-secondary-2);
+  --le-primary-bg: #e8f5e9;
+  --le-primary-bg-hover: #c8e6c9;
 }
 
 @theme inline {
@@ -10,6 +23,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Logistics Express green palette for Tailwind */
+  --color-le-50: #e8f5e9;
+  --color-le-100: #c8e6c9;
+  --color-le-200: #a5d6a7;
+  --color-le-300: #81c784;
+  --color-le-400: #66bb6a;
+  --color-le-500: #39a935;
+  --color-le-600: #006633;
+  --color-le-700: #01582c;
+  --color-le-800: #174a16;
+  --color-le-900: #0d3310;
 }
 
 @media (prefers-color-scheme: dark) {
