@@ -1,0 +1,216 @@
+import Script from "next/script";
+
+interface BaseStructuredData {
+  "@context": string;
+  "@type": string;
+  [key: string]: unknown;
+}
+
+interface StructuredDataProps {
+  data: BaseStructuredData | BaseStructuredData[];
+}
+
+export function StructuredData({ data }: StructuredDataProps) {
+  return (
+    <Script
+      id="structured-data"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data),
+      }}
+      strategy="beforeInteractive"
+    />
+  );
+}
+
+// Pre-built structured data generators
+
+interface RoadSchemaProps {
+  id: string;
+  name?: string | null;
+  type: string;
+  provinces: string[];
+  totalKm?: number | null;
+  cameraCount?: number;
+  radarCount?: number;
+  url: string;
+}
+
+export function generateRoadSchema({
+  id,
+  name,
+  type,
+  provinces,
+  totalKm,
+  cameraCount,
+  radarCount,
+  url,
+}: RoadSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Road",
+    name: name ? `${id} - ${name}` : id,
+    alternateName: id,
+    description: `${type === "AUTOPISTA" ? "Autopista" : type === "AUTOVIA" ? "Autovía" : type === "NACIONAL" ? "Carretera Nacional" : "Carretera"} ${id}${name ? ` (${name})` : ""}`,
+    ...(totalKm && {
+      length: {
+        "@type": "QuantitativeValue",
+        value: totalKm,
+        unitCode: "KMT",
+        unitText: "kilometers",
+      },
+    }),
+    containedInPlace: provinces.map((p) => ({
+      "@type": "AdministrativeArea",
+      name: p,
+    })),
+    url,
+    additionalProperty: [
+      ...(cameraCount !== undefined
+        ? [
+            {
+              "@type": "PropertyValue",
+              name: "Traffic Cameras",
+              value: cameraCount,
+            },
+          ]
+        : []),
+      ...(radarCount !== undefined
+        ? [
+            {
+              "@type": "PropertyValue",
+              name: "Speed Cameras",
+              value: radarCount,
+            },
+          ]
+        : []),
+    ],
+  };
+}
+
+interface WebPageSchemaProps {
+  title: string;
+  description: string;
+  url: string;
+  dateModified?: Date;
+  breadcrumbs?: { name: string; url: string }[];
+}
+
+export function generateWebPageSchema({
+  title,
+  description,
+  url,
+  dateModified,
+  breadcrumbs,
+}: WebPageSchemaProps): BaseStructuredData[] {
+  const schemas: BaseStructuredData[] = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: title,
+      description,
+      url,
+      ...(dateModified && { dateModified: dateModified.toISOString() }),
+      publisher: {
+        "@type": "Organization",
+        name: "Tráfico España",
+        url: "https://trafico.logisticsexpress.es",
+      },
+    },
+  ];
+
+  if (breadcrumbs && breadcrumbs.length > 0) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((crumb, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: crumb.name,
+        item: crumb.url,
+      })),
+    });
+  }
+
+  return schemas;
+}
+
+interface OrganizationSchemaProps {
+  name: string;
+  url: string;
+  description: string;
+  logo?: string;
+}
+
+export function generateOrganizationSchema({
+  name,
+  url,
+  description,
+  logo,
+}: OrganizationSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name,
+    url,
+    description,
+    ...(logo && { logo }),
+  };
+}
+
+interface DatasetSchemaProps {
+  name: string;
+  description: string;
+  url: string;
+  keywords: string[];
+  dateModified?: Date;
+  spatialCoverage?: string;
+  temporalCoverage?: string;
+}
+
+export function generateDatasetSchema({
+  name,
+  description,
+  url,
+  keywords,
+  dateModified,
+  spatialCoverage,
+  temporalCoverage,
+}: DatasetSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name,
+    description,
+    url,
+    keywords: keywords.join(", "),
+    ...(dateModified && { dateModified: dateModified.toISOString() }),
+    ...(spatialCoverage && { spatialCoverage }),
+    ...(temporalCoverage && { temporalCoverage }),
+    creator: {
+      "@type": "Organization",
+      name: "Tráfico España",
+      url: "https://trafico.logisticsexpress.es",
+    },
+    license: "https://creativecommons.org/licenses/by/4.0/",
+  };
+}
+
+interface FAQSchemaProps {
+  questions: { question: string; answer: string }[];
+}
+
+export function generateFAQSchema({ questions }: FAQSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: questions.map((q) => ({
+      "@type": "Question",
+      name: q.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: q.answer,
+      },
+    })),
+  };
+}

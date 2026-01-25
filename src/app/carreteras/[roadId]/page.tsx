@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   ExternalLink,
 } from "lucide-react";
+import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
 
 interface PageProps {
   params: Promise<{ roadId: string }>;
@@ -137,8 +138,34 @@ export default async function RoadDetailPage({ params }: PageProps) {
   const typeLabel = ROAD_TYPE_LABELS[road.type] || "Carretera";
   const provinceNames = road.provinces.map((p) => PROVINCE_NAMES[p] || p);
 
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.logisticsexpress.es";
+
+  const roadSchema = generateRoadSchema({
+    id: road.id,
+    name: road.name,
+    type: road.type,
+    provinces: provinceNames,
+    totalKm: road.totalKm ? Number(road.totalKm) : undefined,
+    cameraCount: cameras.length,
+    radarCount: radars.length,
+    url: `${BASE_URL}/carreteras/${road.id}`,
+  });
+
+  const webPageSchema = generateWebPageSchema({
+    title: road.name ? `${road.id} ${road.name}` : `${typeLabel} ${road.id}`,
+    description: `Información del tráfico en la ${road.id}. ${cameras.length} cámaras, ${radars.length} radares.`,
+    url: `${BASE_URL}/carreteras/${road.id}`,
+    dateModified: new Date(),
+    breadcrumbs: [
+      { name: "Inicio", url: BASE_URL },
+      { name: "Carreteras", url: `${BASE_URL}/carreteras` },
+      { name: road.id, url: `${BASE_URL}/carreteras/${road.id}` },
+    ],
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <StructuredData data={[roadSchema, ...webPageSchema]} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
         <nav className="text-sm text-gray-500 mb-4">

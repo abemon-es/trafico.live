@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Header } from "@/components/layout/Header";
+import { StructuredData, generateOrganizationSchema } from "@/components/seo/StructuredData";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -57,6 +58,13 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationSchema = generateOrganizationSchema({
+  name: "Tráfico España by Logistics Express",
+  url: "https://trafico.logisticsexpress.es",
+  description: "Plataforma de monitorización del tráfico español en tiempo real. Datos oficiales de la DGT incluyendo balizas V16, incidencias, cámaras, radares y estadísticas de carreteras.",
+  logo: "https://trafico.logisticsexpress.es/logo.png",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -67,6 +75,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <StructuredData data={organizationSchema} />
         <Header />
         {children}
       </body>
