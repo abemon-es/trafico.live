@@ -1,0 +1,248 @@
+import { Metadata } from "next";
+import Link from "next/link";
+import prisma from "@/lib/db";
+import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Carreteras Regionales y Comarcales | Tráfico y Radares",
+  description:
+    "Listado de carreteras regionales, comarcales y provinciales de España. Estado del tráfico, cámaras y radares en vías autonómicas.",
+  openGraph: {
+    title: "Carreteras Regionales y Comarcales de España",
+    description: "Carreteras autonómicas y provinciales con información de tráfico",
+  },
+};
+
+const PROVINCE_NAMES: Record<string, string> = {
+  "01": "Álava", "02": "Albacete", "03": "Alicante", "04": "Almería",
+  "05": "Ávila", "06": "Badajoz", "07": "Baleares", "08": "Barcelona",
+  "09": "Burgos", "10": "Cáceres", "11": "Cádiz", "12": "Castellón",
+  "13": "Ciudad Real", "14": "Córdoba", "15": "A Coruña", "16": "Cuenca",
+  "17": "Girona", "18": "Granada", "19": "Guadalajara", "20": "Gipuzkoa",
+  "21": "Huelva", "22": "Huesca", "23": "Jaén", "24": "León",
+  "25": "Lleida", "26": "La Rioja", "27": "Lugo", "28": "Madrid",
+  "29": "Málaga", "30": "Murcia", "31": "Navarra", "32": "Ourense",
+  "33": "Asturias", "34": "Palencia", "35": "Las Palmas", "36": "Pontevedra",
+  "37": "Salamanca", "38": "Santa Cruz de Tenerife", "39": "Cantabria",
+  "40": "Segovia", "41": "Sevilla", "42": "Soria", "43": "Tarragona",
+  "44": "Teruel", "45": "Toledo", "46": "Valencia", "47": "Valladolid",
+  "48": "Bizkaia", "49": "Zamora", "50": "Zaragoza", "51": "Ceuta", "52": "Melilla",
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  COMARCAL: "Comarcal",
+  PROVINCIAL: "Provincial",
+  OTHER: "Regional",
+};
+
+export default async function RegionalesPage() {
+  // Get all regional roads (COMARCAL, PROVINCIAL, OTHER)
+  const roads = await prisma.road.findMany({
+    where: { type: { in: ["COMARCAL", "PROVINCIAL", "OTHER"] } },
+    orderBy: { id: "asc" },
+  });
+
+  // Get infrastructure counts for each road
+  const roadIds = roads.map((r) => r.id);
+
+  const [camerasByRoad, radarsByRoad, incidentsByRoad] = await Promise.all([
+    prisma.camera.groupBy({
+      by: ["roadNumber"],
+      where: { roadNumber: { in: roadIds }, isActive: true },
+      _count: true,
+    }),
+    prisma.radar.groupBy({
+      by: ["roadNumber"],
+      where: { roadNumber: { in: roadIds }, isActive: true },
+      _count: true,
+    }),
+    prisma.trafficIncident.groupBy({
+      by: ["roadNumber"],
+      where: { roadNumber: { in: roadIds }, isActive: true },
+      _count: true,
+    }),
+  ]);
+
+  // Create lookup maps
+  const cameraCounts = new Map(camerasByRoad.map((c) => [c.roadNumber, c._count]));
+  const radarCounts = new Map(radarsByRoad.map((r) => [r.roadNumber, r._count]));
+  const incidentCounts = new Map(incidentsByRoad.map((i) => [i.roadNumber, i._count]));
+
+  // Get totals
+  const totalCameras = camerasByRoad.reduce((acc, c) => acc + c._count, 0);
+  const totalRadars = radarsByRoad.reduce((acc, r) => acc + r._count, 0);
+  const totalIncidents = incidentsByRoad.reduce((acc, i) => acc + i._count, 0);
+
+  // Group roads by prefix for better organization
+  const roadsByPrefix = roads.reduce((acc, road) => {
+    const prefix = road.id.match(/^([A-Z]+)-/)?.[1] || "Otras";
+    if (!acc[prefix]) acc[prefix] = [];
+    acc[prefix].push(road);
+    return acc;
+  }, {} as Record<string, typeof roads>);
+
+  // Sort prefixes by count
+  const sortedPrefixes = Object.entries(roadsByPrefix)
+    .sort((a, b) => b[1].length - a[1].length);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumbs */}
+        <nav className="text-sm text-gray-500 mb-4">
+          <Link href="/" className="hover:text-gray-700">Inicio</Link>
+          <span className="mx-2">/</span>
+          <Link href="/carreteras" className="hover:text-gray-700">Carreteras</Link>
+          <span className="mx-2">/</span>
+          <span className="text-gray-900">Regionales</span>
+        </nav>
+
+        {/* Header */}
+        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-6 mb-6 border border-orange-200">
+          <div className="flex items-center gap-3 mb-4">
+            <Construction className="w-8 h-8 text-orange-600" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Carreteras Regionales</h1>
+              <p className="text-gray-600">Vías autonómicas, comarcales y provinciales</p>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-orange-600">{roads.length}</div>
+              <div className="text-sm text-gray-600">Carreteras</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-blue-600">{totalCameras}</div>
+              <div className="text-sm text-gray-600">Cámaras</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-yellow-600">{totalRadars}</div>
+              <div className="text-sm text-gray-600">Radares</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-red-600">{totalIncidents}</div>
+              <div className="text-sm text-gray-600">Incidencias activas</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Roads grouped by prefix */}
+        <div className="space-y-6">
+          {sortedPrefixes.map(([prefix, prefixRoads]) => (
+            <div key={prefix} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b">
+                <h2 className="font-semibold text-gray-900">
+                  Carreteras {prefix} <span className="text-gray-500 font-normal">({prefixRoads.length})</span>
+                </h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm">ID</th>
+                      <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden md:table-cell">Nombre</th>
+                      <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden lg:table-cell">Tipo</th>
+                      <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                        <Camera className="w-3 h-3 inline" />
+                      </th>
+                      <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                        <Radar className="w-3 h-3 inline" />
+                      </th>
+                      <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                        <AlertTriangle className="w-3 h-3 inline" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prefixRoads.slice(0, 20).map((road) => {
+                      const cameras = cameraCounts.get(road.id) || 0;
+                      const radars = radarCounts.get(road.id) || 0;
+                      const incidents = incidentCounts.get(road.id) || 0;
+
+                      return (
+                        <tr key={road.id} className="border-b hover:bg-gray-50">
+                          <td className="py-2 px-4">
+                            <Link
+                              href={`/carreteras/${road.id}`}
+                              className="font-medium text-orange-600 hover:text-orange-800"
+                            >
+                              {road.id}
+                            </Link>
+                          </td>
+                          <td className="py-2 px-4 text-gray-600 text-sm hidden md:table-cell">
+                            {road.name || "-"}
+                          </td>
+                          <td className="py-2 px-4 text-gray-500 text-xs hidden lg:table-cell">
+                            {TYPE_LABELS[road.type] || road.type}
+                          </td>
+                          <td className="py-2 px-4 text-center text-sm">
+                            <span className={cameras > 0 ? "font-medium text-blue-600" : "text-gray-400"}>
+                              {cameras}
+                            </span>
+                          </td>
+                          <td className="py-2 px-4 text-center text-sm">
+                            <span className={radars > 0 ? "font-medium text-yellow-600" : "text-gray-400"}>
+                              {radars}
+                            </span>
+                          </td>
+                          <td className="py-2 px-4 text-center text-sm">
+                            {incidents > 0 ? (
+                              <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+                                {incidents}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">0</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {prefixRoads.length > 20 && (
+                <div className="px-4 py-2 bg-gray-50 text-sm text-gray-500 border-t">
+                  Y {prefixRoads.length - 20} carreteras más con prefijo {prefix}...
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* SEO Content */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Red de Carreteras Autonómicas y Provinciales
+          </h2>
+          <div className="prose prose-gray max-w-none">
+            <p>
+              Las carreteras regionales, comarcales y provinciales de España conforman una extensa
+              red viaria gestionada por las comunidades autónomas, diputaciones provinciales y
+              cabildos insulares. Estas vías complementan la red estatal y son fundamentales
+              para la conexión del territorio.
+            </p>
+            <h3>Nomenclatura por comunidad autónoma</h3>
+            <ul>
+              <li><strong>M-</strong>: Comunidad de Madrid (M-30, M-40, M-50...)</li>
+              <li><strong>B-, C-</strong>: Cataluña (Barcelona, carreteras comarcales)</li>
+              <li><strong>EX-</strong>: Extremadura</li>
+              <li><strong>CM-</strong>: Castilla-La Mancha</li>
+              <li><strong>CL-</strong>: Castilla y León</li>
+              <li><strong>CV-</strong>: Comunidad Valenciana</li>
+              <li><strong>GC-, TF-</strong>: Canarias (Gran Canaria, Tenerife)</li>
+            </ul>
+            <h3>Características</h3>
+            <p>
+              Estas carreteras varían enormemente en sus características, desde vías urbanas de
+              alta capacidad (como la M-30 en Madrid) hasta pequeñas carreteras locales de un
+              solo carril. La velocidad máxima y las condiciones de circulación dependen de cada
+              tramo específico.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
