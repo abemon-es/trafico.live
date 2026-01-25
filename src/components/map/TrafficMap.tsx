@@ -120,9 +120,26 @@ export interface RiskZone {
   animalType: string | null;
   incidentCount: number | null;
   lastUpdated: string;
+  geometry?: unknown;
   // For display on map, we'll compute center point
   lat?: number;
   lng?: number;
+}
+
+export interface ZBEZone {
+  id: string;
+  name: string;
+  cityName: string;
+  polygon: unknown;
+  centroid: { lat: number; lng: number } | null;
+  restrictions: Record<string, string>;
+  schedule: Record<string, string | null> | null;
+  activeAllYear: boolean;
+  fineAmount: number | null;
+  effectiveFrom: string;
+  effectiveUntil: string | null;
+  sourceUrl: string | null;
+  lastUpdated: string;
 }
 
 export interface TrafficMapRef {
@@ -139,6 +156,7 @@ interface TrafficMapProps {
   weatherData?: WeatherAlert[];
   radarData?: Radar[];
   riskZoneData?: RiskZone[];
+  zbeData?: ZBEZone[];
   incidentFilters?: IncidentFilters;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
@@ -293,7 +311,7 @@ function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
 }
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, incidentFilters, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, incidentFilters, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -324,6 +342,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   const chargers = chargerData || [];
   const radars = radarData || [];
   const riskZones = riskZoneData || [];
+  const zbeZones = zbeData || [];
 
   // Filter incidents based on incidentFilters
   const incidents = (incidentData || []).filter((incident) => {
@@ -666,6 +685,94 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       },
     });
 
+    // Add ZBE zones source
+    map.current.addSource("zbe-zones", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+
+    // ZBE fill layer (semi-transparent purple)
+    map.current.addLayer({
+      id: "zbe-fill",
+      type: "fill",
+      source: "zbe-zones",
+      paint: {
+        "fill-color": "#9333ea",
+        "fill-opacity": 0.2,
+      },
+    });
+
+    // ZBE outline layer
+    map.current.addLayer({
+      id: "zbe-outline",
+      type: "line",
+      source: "zbe-zones",
+      paint: {
+        "line-color": "#9333ea",
+        "line-width": 2,
+        "line-opacity": 0.8,
+      },
+    });
+
+    // ZBE labels at centroid
+    map.current.addSource("zbe-labels", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+
+    map.current.addLayer({
+      id: "zbe-label",
+      type: "symbol",
+      source: "zbe-labels",
+      layout: {
+        "text-field": ["get", "name"],
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-size": 12,
+        "text-anchor": "center",
+        "text-allow-overlap": false,
+      },
+      paint: {
+        "text-color": "#7c3aed",
+        "text-halo-color": "#fff",
+        "text-halo-width": 1.5,
+      },
+    });
+
+    // Click handler for ZBE zones
+    map.current.on("click", "zbe-fill", (e) => {
+      if (!e.features?.length) return;
+      const props = e.features[0].properties;
+      if (!props) return;
+
+      const restrictions = props.restrictions ? JSON.parse(props.restrictions) : {};
+      const restrictionsList = Object.entries(restrictions)
+        .map(([label, desc]) => `<li><strong>${label}:</strong> ${desc}</li>`)
+        .join("");
+
+      new maplibregl.Popup({ maxWidth: "300px" })
+        .setLngLat(e.lngLat)
+        .setHTML(`
+          <div class="p-2">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-3 h-3 rounded-full bg-purple-600"></span>
+              <span class="font-bold text-sm">${props.name}</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-2">${props.cityName}</p>
+            ${restrictionsList ? `<div class="text-xs"><strong>Restricciones:</strong><ul class="list-disc pl-4 mt-1">${restrictionsList}</ul></div>` : ""}
+            ${props.fineAmount ? `<p class="text-xs text-red-600 mt-2">Multa: ${props.fineAmount}€</p>` : ""}
+          </div>
+        `)
+        .addTo(map.current!);
+    });
+
+    // Cursor change on ZBE hover
+    map.current.on("mouseenter", "zbe-fill", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "pointer";
+    });
+    map.current.on("mouseleave", "zbe-fill", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "";
+    });
+
     // Click handler for incident clusters - zoom in
     map.current.on("click", "incident-clusters", async (e) => {
       const features = map.current!.queryRenderedFeatures(e.point, {
@@ -774,6 +881,73 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       source.setData(v16ToGeoJSON(beacons) as maplibregl.GeoJSONSourceSpecification["data"]);
     }
   }, [activeLayers.v16, isLoaded, beacons]);
+
+  // Update ZBE zones data
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    const zonesSource = map.current.getSource("zbe-zones") as maplibregl.GeoJSONSource;
+    const labelsSource = map.current.getSource("zbe-labels") as maplibregl.GeoJSONSource;
+    if (!zonesSource || !labelsSource) return;
+
+    // Update visibility
+    const visibility = activeLayers.zbe ? "visible" : "none";
+    if (map.current.getLayer("zbe-fill")) {
+      map.current.setLayoutProperty("zbe-fill", "visibility", visibility);
+    }
+    if (map.current.getLayer("zbe-outline")) {
+      map.current.setLayoutProperty("zbe-outline", "visibility", visibility);
+    }
+    if (map.current.getLayer("zbe-label")) {
+      map.current.setLayoutProperty("zbe-label", "visibility", visibility);
+    }
+
+    // Update data
+    if (activeLayers.zbe && zbeZones.length > 0) {
+      // Convert ZBE zones to GeoJSON polygons
+      const polygonFeatures = zbeZones
+        .filter((zone) => zone.polygon)
+        .map((zone) => ({
+          type: "Feature" as const,
+          geometry: zone.polygon as GeoJSON.Geometry,
+          properties: {
+            id: zone.id,
+            name: zone.name,
+            cityName: zone.cityName,
+            restrictions: JSON.stringify(zone.restrictions),
+            fineAmount: zone.fineAmount,
+          },
+        }));
+
+      zonesSource.setData({
+        type: "FeatureCollection",
+        features: polygonFeatures,
+      } as maplibregl.GeoJSONSourceSpecification["data"]);
+
+      // Create label points at centroids
+      const labelFeatures = zbeZones
+        .filter((zone) => zone.centroid)
+        .map((zone) => ({
+          type: "Feature" as const,
+          geometry: {
+            type: "Point" as const,
+            coordinates: [zone.centroid!.lng, zone.centroid!.lat],
+          },
+          properties: {
+            name: zone.cityName,
+          },
+        }));
+
+      labelsSource.setData({
+        type: "FeatureCollection",
+        features: labelFeatures,
+      } as maplibregl.GeoJSONSourceSpecification["data"]);
+    } else {
+      // Clear data when layer is disabled
+      zonesSource.setData({ type: "FeatureCollection", features: [] } as maplibregl.GeoJSONSourceSpecification["data"]);
+      labelsSource.setData({ type: "FeatureCollection", features: [] } as maplibregl.GeoJSONSourceSpecification["data"]);
+    }
+  }, [activeLayers.zbe, isLoaded, zbeZones]);
 
   // Update individual markers for cameras, chargers, and unclustered points
   useEffect(() => {
@@ -991,58 +1165,173 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       });
     }
 
-    // Add risk zones (road segment markers)
+    // Add risk zones as line segments or markers
     if (activeLayers.riskZones && riskZones.length > 0) {
-      riskZones.forEach((zone) => {
-        // For now, we'll show risk zones as markers if they have coordinates
-        // In the future, these could be shown as line segments on the road
-        if (!zone.lat || !zone.lng) return;
+      // Check if we have a source for line rendering
+      if (!map.current.getSource("risk-zones-lines")) {
+        map.current.addSource("risk-zones-lines", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
 
-        const color = RISK_ZONE_COLORS[zone.type] || RISK_ZONE_COLORS.ANIMAL;
-        const label = RISK_ZONE_LABELS[zone.type] || zone.type;
-        const severityColor = SEVERITY_COLORS[zone.severity] || SEVERITY_COLORS.MEDIUM;
+        // Risk zone line layer with glow effect
+        map.current.addLayer({
+          id: "risk-zones-glow",
+          type: "line",
+          source: "risk-zones-lines",
+          paint: {
+            "line-color": ["get", "color"],
+            "line-width": 8,
+            "line-opacity": 0.3,
+            "line-blur": 3,
+          },
+        });
 
-        const el = document.createElement("div");
-        el.className = "risk-zone-marker";
-        el.innerHTML = `
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 22H22L12 2Z" fill="${color}" stroke="white" stroke-width="2"/>
-            <text x="12" y="17" text-anchor="middle" fill="white" font-size="10" font-weight="bold">!</text>
-          </svg>
-        `;
-        el.style.cursor = "pointer";
+        map.current.addLayer({
+          id: "risk-zones-line",
+          type: "line",
+          source: "risk-zones-lines",
+          paint: {
+            "line-color": ["get", "color"],
+            "line-width": 4,
+            "line-opacity": 0.8,
+          },
+        });
 
-        const animalInfo = zone.animalType
-          ? `<p><strong>Tipo:</strong> ${zone.animalType}</p>`
-          : "";
-        const incidentInfo = zone.incidentCount
-          ? `<p><strong>Incidentes históricos:</strong> ${zone.incidentCount}</p>`
-          : "";
+        // Click handler for risk zone lines
+        map.current.on("click", "risk-zones-line", (e) => {
+          if (!e.features?.length) return;
+          const props = e.features[0].properties;
+          if (!props) return;
 
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([zone.lng, zone.lat])
-          .setPopup(
-            new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
+          const animalInfo = props.animalType
+            ? `<p><strong>Tipo:</strong> ${props.animalType}</p>`
+            : "";
+          const incidentInfo = props.incidentCount
+            ? `<p><strong>Incidentes históricos:</strong> ${props.incidentCount}</p>`
+            : "";
+
+          new maplibregl.Popup({ maxWidth: "280px" })
+            .setLngLat(e.lngLat)
+            .setHTML(`
               <div class="p-2 min-w-[200px]">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="w-3 h-3 rounded-full" style="background: ${color}"></span>
-                  <span class="font-bold text-sm">${label}</span>
-                  <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${severityColor}; color: white;">${zone.severity}</span>
+                  <span class="w-3 h-3 rounded-full" style="background: ${props.color}"></span>
+                  <span class="font-bold text-sm">${props.label}</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${props.severityColor}; color: white;">${props.severity}</span>
                 </div>
                 <div class="text-sm text-gray-600 space-y-1">
-                  <p><strong>Carretera:</strong> ${zone.roadNumber}</p>
-                  <p><strong>Tramo:</strong> km ${zone.kmStart} - ${zone.kmEnd}</p>
+                  <p><strong>Carretera:</strong> ${props.roadNumber}</p>
+                  <p><strong>Tramo:</strong> km ${props.kmStart} - ${props.kmEnd}</p>
                   ${animalInfo}
                   ${incidentInfo}
-                  ${zone.description ? `<p class="text-xs text-gray-500 mt-1">${zone.description}</p>` : ""}
+                  ${props.description ? `<p class="text-xs text-gray-500 mt-1">${props.description}</p>` : ""}
                 </div>
               </div>
             `)
-          )
-          .addTo(map.current!);
+            .addTo(map.current!);
+        });
 
-        markersRef.current.push(marker);
-      });
+        // Cursor change on hover
+        map.current.on("mouseenter", "risk-zones-line", () => {
+          if (map.current) map.current.getCanvas().style.cursor = "pointer";
+        });
+        map.current.on("mouseleave", "risk-zones-line", () => {
+          if (map.current) map.current.getCanvas().style.cursor = "";
+        });
+      }
+
+      // Build features from zones with geometry
+      const lineFeatures = riskZones
+        .filter((zone) => zone.geometry)
+        .map((zone) => {
+          const color = RISK_ZONE_COLORS[zone.type] || RISK_ZONE_COLORS.ANIMAL;
+          const label = RISK_ZONE_LABELS[zone.type] || zone.type;
+          const severityColor = SEVERITY_COLORS[zone.severity] || SEVERITY_COLORS.MEDIUM;
+
+          return {
+            type: "Feature" as const,
+            geometry: zone.geometry as GeoJSON.Geometry,
+            properties: {
+              id: zone.id,
+              type: zone.type,
+              roadNumber: zone.roadNumber,
+              kmStart: zone.kmStart,
+              kmEnd: zone.kmEnd,
+              severity: zone.severity,
+              description: zone.description || "",
+              animalType: zone.animalType || "",
+              incidentCount: zone.incidentCount || 0,
+              color,
+              label,
+              severityColor,
+            },
+          };
+        });
+
+      const source = map.current.getSource("risk-zones-lines") as maplibregl.GeoJSONSource;
+      if (source) {
+        source.setData({
+          type: "FeatureCollection",
+          features: lineFeatures,
+        } as maplibregl.GeoJSONSourceSpecification["data"]);
+      }
+
+      // For zones without geometry, show markers at computed centroid (fallback)
+      riskZones
+        .filter((zone) => !zone.geometry && zone.lat && zone.lng)
+        .forEach((zone) => {
+          const color = RISK_ZONE_COLORS[zone.type] || RISK_ZONE_COLORS.ANIMAL;
+          const label = RISK_ZONE_LABELS[zone.type] || zone.type;
+          const severityColor = SEVERITY_COLORS[zone.severity] || SEVERITY_COLORS.MEDIUM;
+
+          const el = document.createElement("div");
+          el.className = "risk-zone-marker";
+          el.innerHTML = `
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 22H22L12 2Z" fill="${color}" stroke="white" stroke-width="2"/>
+              <text x="12" y="17" text-anchor="middle" fill="white" font-size="10" font-weight="bold">!</text>
+            </svg>
+          `;
+          el.style.cursor = "pointer";
+
+          const animalInfo = zone.animalType
+            ? `<p><strong>Tipo:</strong> ${zone.animalType}</p>`
+            : "";
+          const incidentInfo = zone.incidentCount
+            ? `<p><strong>Incidentes históricos:</strong> ${zone.incidentCount}</p>`
+            : "";
+
+          const marker = new maplibregl.Marker({ element: el })
+            .setLngLat([zone.lng!, zone.lat!])
+            .setPopup(
+              new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
+                <div class="p-2 min-w-[200px]">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="w-3 h-3 rounded-full" style="background: ${color}"></span>
+                    <span class="font-bold text-sm">${label}</span>
+                    <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${severityColor}; color: white;">${zone.severity}</span>
+                  </div>
+                  <div class="text-sm text-gray-600 space-y-1">
+                    <p><strong>Carretera:</strong> ${zone.roadNumber}</p>
+                    <p><strong>Tramo:</strong> km ${zone.kmStart} - ${zone.kmEnd}</p>
+                    ${animalInfo}
+                    ${incidentInfo}
+                    ${zone.description ? `<p class="text-xs text-gray-500 mt-1">${zone.description}</p>` : ""}
+                  </div>
+                </div>
+              `)
+            )
+            .addTo(map.current!);
+
+          markersRef.current.push(marker);
+        });
+    } else if (map.current.getSource("risk-zones-lines")) {
+      // Clear risk zone lines when layer is disabled
+      const source = map.current.getSource("risk-zones-lines") as maplibregl.GeoJSONSource;
+      if (source) {
+        source.setData({ type: "FeatureCollection", features: [] } as maplibregl.GeoJSONSourceSpecification["data"]);
+      }
     }
 
     // Add weather alerts (province-level markers)

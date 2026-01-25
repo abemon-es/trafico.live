@@ -118,6 +118,7 @@ export interface RiskZoneData {
   roadNumber: string;
   kmStart: number;
   kmEnd: number;
+  geometry: unknown;
   severity: string;
   description: string | null;
   animalType: string | null;
@@ -136,6 +137,35 @@ interface RiskZonesResponse {
       topRoads: { road: string; count: number }[];
     };
   };
+}
+
+export interface ZBEZone {
+  id: string;
+  name: string;
+  cityName: string;
+  polygon: unknown;
+  centroid: { lat: number; lng: number } | null;
+  restrictions: Record<string, string>;
+  schedule: Record<string, string | null> | null;
+  activeAllYear: boolean;
+  fineAmount: number | null;
+  effectiveFrom: string;
+  effectiveUntil: string | null;
+  sourceUrl: string | null;
+  lastUpdated: string;
+}
+
+interface ZBEResponse {
+  success: boolean;
+  data?: {
+    zones: ZBEZone[];
+    summary: {
+      totalZones: number;
+      activeZones: number;
+      cities: string[];
+    };
+  };
+  error?: string;
 }
 
 interface UnifiedMapProps {
@@ -300,6 +330,12 @@ export function UnifiedMap({
     { revalidateOnFocus: false }
   );
 
+  const { data: zbeData } = useSWR<ZBEResponse>(
+    activeLayers.zbe ? "/api/zbe" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
   const isLoading = v16Loading || incidentsLoading;
 
   // Handle fullscreen
@@ -390,6 +426,7 @@ export function UnifiedMap({
     weather: weatherData?.count || 0,
     radars: radarsData?.count || 0,
     riskZones: riskZonesData?.data?.zones?.length || 0,
+    zbe: zbeData?.data?.zones?.length || 0,
   };
 
   // Height calculation
@@ -400,8 +437,8 @@ export function UnifiedMap({
       ref={containerRef}
       id={id}
       className={`
-        bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden
-        ${isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 flex flex-col" : ""}
+        bg-white rounded-lg shadow-sm border border-gray-200
+        ${isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 flex flex-col" : "overflow-hidden"}
       `}
     >
       {/* Header */}
@@ -450,6 +487,7 @@ export function UnifiedMap({
               weatherData={activeLayers.weather ? weatherData?.alerts : undefined}
               radarData={activeLayers.radars ? radarsData?.radars : undefined}
               riskZoneData={activeLayers.riskZones ? riskZonesData?.data?.zones : undefined}
+              zbeData={activeLayers.zbe ? zbeData?.data?.zones : undefined}
               incidentFilters={incidentFilters}
               height="100%"
               onIncidentClick={handleIncidentClick}

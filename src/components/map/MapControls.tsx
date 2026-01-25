@@ -63,6 +63,7 @@ interface MapControlsProps {
     weather: number;
     radars: number;
     riskZones: number;
+    zbe: number;
   };
 }
 
@@ -140,7 +141,7 @@ export function MapControls({
       {/* Main toolbar */}
       <div className="px-4 py-3 flex items-center justify-between flex-wrap gap-3">
         {/* Left side: Layer toggles */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap flex-1">
           <LayerToggle
             label={`V16${counts?.v16 ? ` (${counts.v16})` : ""}`}
             active={activeLayers.v16}
@@ -150,7 +151,7 @@ export function MapControls({
           />
 
           {/* Incidents with dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative z-[110]" ref={dropdownRef}>
             <button
               onClick={() => {
                 if (!activeLayers.incidents) {
@@ -180,14 +181,16 @@ export function MapControls({
 
             {/* Dropdown */}
             {showIncidentDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4">
+              <div className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[100] p-4 max-h-[80vh] overflow-y-auto">
                 {/* Toggle incidents layer */}
                 <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
                   <span className="text-sm font-medium text-gray-700">Mostrar incidencias</span>
                   <button
                     onClick={() => onLayerToggle("incidents")}
-                    className={`relative w-10 h-6 rounded-full transition-colors ${
-                      activeLayers.incidents ? "bg-orange-500" : "bg-gray-300"
+                    className={`relative w-10 h-6 rounded-full transition-all ${
+                      activeLayers.incidents
+                        ? "bg-orange-500 shadow-inner"
+                        : "bg-gray-200 ring-1 ring-inset ring-gray-300"
                     }`}
                   >
                     <span
@@ -318,14 +321,14 @@ export function MapControls({
               icon={<ShieldAlert className="w-4 h-4" />}
             />
             <LayerToggle
-              label="Cargadores EV"
+              label={`Cargadores EV${counts?.chargers ? ` (${counts.chargers})` : ""}`}
               active={activeLayers.chargers}
               onClick={() => onLayerToggle("chargers")}
               color="green"
               icon={<Zap className="w-4 h-4" />}
             />
             <LayerToggle
-              label="Zonas ZBE"
+              label={`Zonas ZBE${counts?.zbe ? ` (${counts.zbe})` : ""}`}
               active={activeLayers.zbe}
               onClick={() => onLayerToggle("zbe")}
               color="purple"
@@ -348,7 +351,7 @@ export function MapControls({
                 <ChevronDown className={`w-3 h-3 transition-transform ${showLocationDropdown ? "rotate-180" : ""}`} />
               </button>
               {showLocationDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                <div className="absolute top-full right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-200 z-[100] py-1">
                   <button
                     onClick={() => { onLocationChange("peninsula"); setShowLocationDropdown(false); }}
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
