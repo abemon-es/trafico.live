@@ -97,8 +97,9 @@ function parseFixedRadar(location: Record<string, unknown>): RadarData | null {
     // Extract radar ID from GUID_CABINACINEMOMETRO_120001 -> CABINACINEMOMETRO_120001
     const radarId = id.replace("GUID_", "");
 
-    // Get inner location (Point type)
-    const innerLocation = location.predefinedLocation as Record<string, unknown>;
+    // Get inner location (Point type) - predefinedLocation is always an array due to parser config
+    const innerLocations = location.predefinedLocation as Record<string, unknown>[];
+    const innerLocation = Array.isArray(innerLocations) ? innerLocations[0] : innerLocations;
     if (!innerLocation) return null;
 
     // Get coordinates from TPEG point location
@@ -150,8 +151,9 @@ function parseSectionRadar(location: Record<string, unknown>): RadarData | null 
     // Extract radar ID from GUID_CVM_161274 -> CVM_161274
     const radarId = id.replace("GUID_", "");
 
-    // Get inner location (Linear type)
-    const innerLocation = location.predefinedLocation as Record<string, unknown>;
+    // Get inner location (Linear type) - predefinedLocation is always an array due to parser config
+    const innerLocations = location.predefinedLocation as Record<string, unknown>[];
+    const innerLocation = Array.isArray(innerLocations) ? innerLocations[0] : innerLocations;
     if (!innerLocation) return null;
 
     // Section radars have from/to points - we use the "from" as the primary location

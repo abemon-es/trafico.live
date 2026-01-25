@@ -254,6 +254,135 @@ function parseAEMETResponse(data: CAPAlert[]): AEMETAlert[] {
   return alerts;
 }
 
+// Parse a single CAP XML file
+function parseCAPXml(xml: string): CAPAlert | null {
+  try {
+    // Simple XML parsing without external dependencies
+    const getTagContent = (tag: string, content: string): string | null => {
+      const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i");
+      const match = content.match(regex);
+      return match ? match[1].trim() : null;
+    };
+
+    const getAllTagContents = (tag: string, content: string): string[] => {
+      const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "gi");
+      const matches = [];
+      let match;
+      while ((match = regex.exec(content)) !== null) {
+        matches.push(match[1].trim());
+      }
+      return matches;
+    };
+
+    const identifier = getTagContent("identifier", xml);
+    const sender = getTagContent("sender", xml);
+    const sent = getTagContent("sent", xml);
+    const status = getTagContent("status", xml);
+    const msgType = getTagContent("msgType", xml);
+
+    if (!identifier) return null;
+
+    // Parse info blocks - get Spanish one
+    const infoBlocks = getAllTagContents("info", xml);
+    const infos: CAPInfo[] = [];
+
+    for (const infoXml of infoBlocks) {
+      const language = getTagContent("language", infoXml);
+      const event = getTagContent("event", infoXml);
+      const severity = getTagContent("severity", infoXml);
+      const onset = getTagContent("onset", infoXml);
+      const expires = getTagContent("expires", infoXml);
+      const effective = getTagContent("effective", infoXml);
+      const headline = getTagContent("headline", infoXml);
+      const description = getTagContent("description", infoXml);
+
+      // Parse areas
+      const areaBlocks = getAllTagContents("area", infoXml);
+      const areas: CAPArea[] = [];
+
+      for (const areaXml of areaBlocks) {
+        const areaDesc = getTagContent("areaDesc", areaXml);
+        const geocodeBlocks = getAllTagContents("geocode", areaXml);
+        const geocodes: { valueName: string; value: string }[] = [];
+
+        for (const geocodeXml of geocodeBlocks) {
+          const valueName = getTagContent("valueName", geocodeXml);
+          const value = getTagContent("value", geocodeXml);
+          if (valueName && value) {
+            geocodes.push({ valueName, value });
+          }
+        }
+
+        areas.push({ areaDesc: areaDesc || undefined, geocode: geocodes });
+      }
+
+      infos.push({
+        language: language || undefined,
+        event: event || undefined,
+        severity: severity || undefined,
+        onset: onset || undefined,
+        expires: expires || undefined,
+        effective: effective || undefined,
+        headline: headline || undefined,
+        description: description || undefined,
+        area: areas,
+      });
+    }
+
+    return {
+      identifier,
+      sender: sender || "",
+      sent: sent || "",
+      status: status || "",
+      msgType: msgType || "",
+      info: infos,
+    };
+  } catch (error) {
+    console.error("[AEMET] Error parsing CAP XML:", error);
+    return null;
+  }
+}
+
+// Extract XML files from tar archive (simple parser for uncompressed tar)
+function extractXmlFromTar(buffer: ArrayBuffer): string[] {
+  const xmlFiles: string[] = [];
+  const view = new Uint8Array(buffer);
+  const decoder = new TextDecoder("utf-8");
+
+  let offset = 0;
+  while (offset < view.length - 512) {
+    // Read tar header (512 bytes)
+    const headerSlice = view.slice(offset, offset + 512);
+    const header = decoder.decode(headerSlice);
+
+    // Check if this is a null/empty header (end of archive)
+    if (header.startsWith("\0") || header.trim() === "") {
+      break;
+    }
+
+    // Extract filename from header (first 100 bytes, null-terminated)
+    const filenameEnd = header.indexOf("\0");
+    const filename = header.slice(0, filenameEnd > 0 && filenameEnd < 100 ? filenameEnd : 100).trim();
+
+    // Extract file size from header (bytes 124-135, octal)
+    const sizeStr = header.slice(124, 135).trim();
+    const fileSize = parseInt(sizeStr, 8) || 0;
+
+    offset += 512; // Move past header
+
+    if (filename.endsWith(".xml") && fileSize > 0) {
+      const contentSlice = view.slice(offset, offset + fileSize);
+      const content = decoder.decode(contentSlice);
+      xmlFiles.push(content);
+    }
+
+    // Move to next header (files are padded to 512-byte blocks)
+    offset += Math.ceil(fileSize / 512) * 512;
+  }
+
+  return xmlFiles;
+}
+
 export async function fetchAEMETAlerts(apiKey: string): Promise<AEMETAlert[]> {
   if (!apiKey) {
     throw new Error("AEMET API key is required");
@@ -280,24 +409,38 @@ export async function fetchAEMETAlerts(apiKey: string): Promise<AEMETAlert[]> {
     return [];
   }
 
-  // Step 2: Fetch the actual data from the provided URL
-  const dataResponse = await fetch(meta.datos, {
-    headers: { Accept: "application/json" },
-  });
+  // Step 2: Fetch the actual data (tar archive with XML files)
+  const dataResponse = await fetch(meta.datos);
 
   if (!dataResponse.ok) {
     throw new Error(`AEMET data fetch error: ${dataResponse.status}`);
   }
 
-  const data: CAPAlert[] = await dataResponse.json();
+  // Read as binary (tar archive)
+  const buffer = await dataResponse.arrayBuffer();
 
-  if (!Array.isArray(data)) {
-    console.log("[AEMET] Unexpected data format");
+  // Extract XML files from tar
+  const xmlFiles = extractXmlFromTar(buffer);
+  console.log(`[AEMET] Extracted ${xmlFiles.length} CAP XML files from tar`);
+
+  if (xmlFiles.length === 0) {
+    console.log("[AEMET] No XML files found in archive");
     return [];
   }
 
-  const alerts = parseAEMETResponse(data);
-  console.log(`[AEMET] Parsed ${alerts.length} weather alerts`);
+  // Parse each XML file
+  const capAlerts: CAPAlert[] = [];
+  for (const xml of xmlFiles) {
+    const alert = parseCAPXml(xml);
+    if (alert) {
+      capAlerts.push(alert);
+    }
+  }
+
+  console.log(`[AEMET] Parsed ${capAlerts.length} CAP alerts`);
+
+  const alerts = parseAEMETResponse(capAlerts);
+  console.log(`[AEMET] Processed ${alerts.length} weather alerts`);
 
   return alerts;
 }
