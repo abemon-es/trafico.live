@@ -8,22 +8,22 @@ RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/
 
 WORKDIR /app
 
-# Copy package files from service
-COPY services/weather-collector/package*.json ./
+# Copy package files
+COPY package.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy Prisma schema and config from root project
-COPY prisma/schema.prisma ./prisma/
+# Copy Prisma schema and config
+COPY schema.prisma ./prisma/
 COPY prisma.config.ts ./
 
 # Generate Prisma client
 RUN npx prisma generate
 
 # Copy collector scripts
-COPY services/weather-collector/collector.ts ./
-COPY services/weather-collector/aemet-parser.ts ./
+COPY collector.ts ./
+COPY aemet-parser.ts ./
 
 # Run collector
 CMD ["npx", "tsx", "collector.ts"]

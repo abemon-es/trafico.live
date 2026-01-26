@@ -1,24 +1,16 @@
 {
   "name": "weather-collector",
   "version": "1.0.0",
+  "private": true,
   "description": "AEMET weather alerts collector for traffic correlation",
-  "type": "module",
-  "main": "dist/collector.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/collector.js",
-    "dev": "tsx collector.ts"
+    "collect": "npx tsx collector.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
-    "pg": "^8.13.1"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.5",
-    "@types/pg": "^8.11.10",
-    "prisma": "^6.2.1",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "pg": "^8.13.1",
+    "prisma": "^7.3.0",
+    "tsx": "^4.19.0"
   }
 }

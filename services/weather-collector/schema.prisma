@@ -1,0 +1,961 @@
+// Prisma Schema for Spanish Road Intelligence Platform
+// trafico.abemon.es
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// REAL-TIME EVENTS (Time-Series)
+// ============================================
+
+model V16BeaconEvent {
+  id          String  @id @default(cuid())
+  situationId String
+  recordId    String?
+
+  // Lifecycle tracking (for historical analysis)
+  firstSeenAt  DateTime @default(now()) @db.Timestamptz // When we first observed this beacon
+  lastSeenAt   DateTime @default(now()) @db.Timestamptz // Last time beacon appeared in API response
+  durationSecs Int? // Calculated when deactivated (lastSeenAt - firstSeenAt)
+
+  // DGT-provided timestamps
+  activatedAt   DateTime  @db.Timestamptz
+  deactivatedAt DateTime? @db.Timestamptz
+  lastUpdatedAt DateTime  @db.Timestamptz
+  fetchedAt     DateTime  @default(now()) @db.Timestamptz
+
+  // Geographic data
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+
+  // Location metadata
+  roadNumber  String?
+  roadType    RoadType?
+  kmPoint     Decimal?   @db.Decimal(7, 2)
+  direction   Direction?
+  carriageway String?
+
+  // Administrative division
+  province      String? // INE code
+  provinceName  String?
+  community     String? // INE code
+  communityName String?
+  municipality  String? // Town name
+
+  // Incident details
+  severity     Severity     @default(LOW)
+  mobilityType MobilityType @default(STATIONARY)
+  description  String?      @db.Text
+
+  // Status
+  isActive Boolean @default(true)
+
+  @@unique([situationId, recordId])
+  @@index([activatedAt])
+  @@index([province, activatedAt])
+  @@index([community, activatedAt])
+  @@index([isActive])
+  @@index([roadNumber])
+  @@index([lastSeenAt])
+  @@index([isActive, lastSeenAt])
+}
+
+model TrafficIncident {
+  id          String @id @default(cuid())
+  situationId String @unique
+
+  // Lifecycle tracking (for historical analysis)
+  firstSeenAt  DateTime @default(now()) @db.Timestamptz // When we first observed this incident
+  lastSeenAt   DateTime @default(now()) @db.Timestamptz // Last time incident appeared in API response
+  durationSecs Int? // Calculated when deactivated (lastSeenAt - firstSeenAt)
+
+  // Type and timing (from source)
+  type      IncidentType
+  startedAt DateTime     @db.Timestamptz
+  endedAt   DateTime?    @db.Timestamptz
+  fetchedAt DateTime     @default(now()) @db.Timestamptz
+
+  // Geographic data
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+
+  // Location metadata
+  roadNumber String?
+  roadType   RoadType?
+  kmPoint    Decimal?   @db.Decimal(7, 2)
+  direction  Direction?
+
+  // Administrative division
+  province      String?
+  provinceName  String?
+  community     String?
+  communityName String?
+  municipality  String? // Town name
+
+  // Cause categorization (from DATEX II)
+  causeType         String? // "roadMaintenance", "accident", "weather"
+  detailedCauseType String? // "resurfacingWork", "fog", "ice", etc.
+  managementType    String? // "laneClosures", "diversion", etc.
+
+  // Details
+  description String?  @db.Text
+  severity    Severity
+  source      String? // DGT, SCT, EUSKADI, MADRID, etc.
+
+  // Status
+  isActive Boolean @default(true)
+
+  @@index([startedAt])
+  @@index([type, isActive])
+  @@index([province])
+  @@index([roadNumber])
+  @@index([source, isActive])
+}
+
+model WeatherCondition {
+  id         String    @id @default(cuid())
+  recordedAt DateTime  @db.Timestamptz
+  expiresAt  DateTime? @db.Timestamptz
+
+  // Location
+  roadNumber String
+  kmStart    Decimal @db.Decimal(7, 2)
+  kmEnd      Decimal @db.Decimal(7, 2)
+  province   String?
+
+  // Conditions
+  conditionType WeatherType
+  severity      WeatherSeverity
+  temperature   Decimal?        @db.Decimal(4, 1)
+  windSpeed     Decimal?        @db.Decimal(5, 1)
+  visibility    Decimal?        @db.Decimal(7, 1)
+  precipitation Decimal?        @db.Decimal(5, 1)
+  description   String?
+
+  @@index([recordedAt])
+  @@index([roadNumber])
+  @@index([province])
+}
+
+// AEMET weather alerts for traffic impact correlation
+model WeatherAlert {
+  id       String           @id @default(cuid())
+  alertId  String           @unique
+  type     WeatherAlertType
+  severity Severity
+
+  // Location
+  province     String
+  provinceName String?
+
+  // Timing
+  startedAt DateTime  @db.Timestamptz
+  endedAt   DateTime? @db.Timestamptz
+  fetchedAt DateTime  @default(now()) @db.Timestamptz
+
+  // Details
+  description String? @db.Text
+
+  // Status
+  isActive Boolean @default(true)
+
+  @@index([province, isActive])
+  @@index([type, isActive])
+  @@index([startedAt])
+}
+
+enum WeatherAlertType {
+  RAIN
+  SNOW
+  ICE
+  FOG
+  WIND
+  TEMPERATURE
+  STORM
+  COASTAL
+  OTHER
+}
+
+// ============================================
+// INFRASTRUCTURE (Semi-Static)
+// ============================================
+
+model Camera {
+  id   String @id
+  name String
+
+  // Location
+  latitude   Decimal  @db.Decimal(9, 6)
+  longitude  Decimal  @db.Decimal(9, 6)
+  roadNumber String?
+  kmPoint    Decimal? @db.Decimal(7, 2)
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Feed info
+  feedUrl      String?
+  thumbnailUrl String?
+
+  // Status
+  isActive    Boolean  @default(true)
+  lastUpdated DateTime @default(now())
+
+  @@index([province])
+  @@index([roadNumber])
+  @@index([isActive])
+}
+
+model VariablePanel {
+  id      String  @id @default(cuid())
+  panelId String  @unique // DGT panel identifier
+  name    String? // Panel name/description
+
+  // Location
+  latitude   Decimal    @db.Decimal(9, 6)
+  longitude  Decimal    @db.Decimal(9, 6)
+  roadNumber String? // "A-1", "M-30"
+  kmPoint    Decimal?   @db.Decimal(7, 2)
+  direction  Direction?
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Current message
+  message     String?           @db.Text // Current display text
+  messageType PanelMessageType? // PRECAUTION, DANGER, INFO
+  messageCode String? // DGT message code
+
+  // Timing
+  messageStartAt DateTime? @db.Timestamptz
+  fetchedAt      DateTime  @default(now()) @db.Timestamptz
+  lastUpdated    DateTime  @default(now()) @db.Timestamptz
+
+  // Status
+  isActive   Boolean @default(true)
+  hasMessage Boolean @default(false) // Whether currently displaying message
+
+  @@index([province])
+  @@index([roadNumber])
+  @@index([isActive])
+  @@index([hasMessage, isActive])
+}
+
+enum PanelMessageType {
+  PRECAUTION // Yellow warning
+  DANGER // Red warning
+  INFO // Information
+  SPEED_LIMIT // Speed recommendation
+  LANE_CLOSED // Lane closure
+  DETOUR // Diversion
+  OTHER
+}
+
+model EVCharger {
+  id   String @id
+  name String
+
+  // Location
+  latitude   Decimal @db.Decimal(9, 6)
+  longitude  Decimal @db.Decimal(9, 6)
+  address    String?
+  city       String?
+  postalCode String?
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Technical
+  chargerTypes ChargerType[]
+  powerKw      Decimal?      @db.Decimal(6, 2)
+  connectors   Int?
+
+  // Operator info
+  operator String?
+  network  String?
+
+  // Availability
+  isPublic Boolean @default(true)
+  is24h    Boolean @default(false)
+
+  // Payment
+  paymentMethods String[]
+
+  lastUpdated DateTime @default(now())
+
+  @@index([province])
+  @@index([city])
+  @@index([isPublic])
+}
+
+model Radar {
+  id      String @id @default(cuid())
+  radarId String @unique // DGT radar identifier
+
+  // Location
+  latitude   Decimal    @db.Decimal(9, 6)
+  longitude  Decimal    @db.Decimal(9, 6)
+  roadNumber String // "A-1", "N-340"
+  kmPoint    Decimal    @db.Decimal(7, 2)
+  direction  Direction?
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Technical
+  type            RadarType
+  speedLimit      Int? // km/h
+  avgSpeedPartner String? // For section radars, paired radar ID
+
+  // Status
+  isActive    Boolean  @default(true)
+  lastUpdated DateTime @default(now()) @db.Timestamptz
+
+  @@index([province])
+  @@index([roadNumber])
+  @@index([type])
+  @@index([isActive])
+}
+
+enum RadarType {
+  FIXED // Fixed speed camera
+  SECTION // Average speed check (tramo)
+  MOBILE_ZONE // Mobile radar zone
+  TRAFFIC_LIGHT // Red light camera
+}
+
+model ZBEZone {
+  id       String @id
+  name     String
+  cityName String
+
+  // Geographic boundary (GeoJSON)
+  polygon  Json
+  centroid Json? // { lat, lng }
+
+  // Restrictions by vehicle label
+  restrictions Json // { "A": "denied", "B": "restricted", "C": "allowed", ... }
+
+  // Schedule
+  schedule      Json? // Operating hours
+  activeAllYear Boolean @default(true)
+
+  // Penalties
+  fineAmount Decimal? @db.Decimal(8, 2)
+
+  // Dates
+  effectiveFrom  DateTime
+  effectiveUntil DateTime?
+
+  // Source
+  sourceUrl   String?
+  lastUpdated DateTime @default(now())
+
+  @@index([cityName])
+}
+
+model RiskZone {
+  id   String   @id
+  type RiskType
+
+  // Location
+  roadNumber String
+  kmStart    Decimal @db.Decimal(7, 2)
+  kmEnd      Decimal @db.Decimal(7, 2)
+
+  // Geographic (optional LineString)
+  geometry Json?
+
+  // Details
+  severity    Severity
+  description String?
+
+  // For animal zones
+  animalType    String? // deer, wild boar, etc.
+  incidentCount Int? // historical count
+
+  lastUpdated DateTime @default(now())
+
+  @@index([type])
+  @@index([roadNumber])
+}
+
+// ============================================
+// STATISTICS (Aggregates)
+// ============================================
+
+model HourlyStats {
+  id        String   @id @default(cuid())
+  hourStart DateTime @unique @db.Timestamptz
+
+  // Counts
+  v16Count       Int @default(0)
+  incidentCount  Int @default(0)
+  newActivations Int @default(0)
+  deactivations  Int @default(0)
+
+  // Breakdowns (JSON for flexibility)
+  byProvince     Json? // { "28": 45, "08": 32 }
+  byCommunity    Json? // { "13": 120, "09": 85 }
+  byRoadType     Json? // { "AUTOPISTA": 20, "NACIONAL": 45 }
+  bySeverity     Json? // { "LOW": 50, "MEDIUM": 30, "HIGH": 10 }
+  byIncidentType Json? // { "ACCIDENT": 5, "ROADWORK": 12 }
+
+  // Weather
+  weatherAlerts Int @default(0)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hourStart])
+}
+
+model DailyStats {
+  id        String   @id @default(cuid())
+  dateStart DateTime @unique @db.Date
+
+  // Aggregated metrics
+  v16Total      Int @default(0)
+  incidentTotal Int @default(0)
+
+  // Peak analysis
+  peakHour  Int?
+  peakCount Int?
+
+  // Duration
+  avgDurationSecs Int?
+
+  // Breakdowns
+  byHourOfDay    Json? // { "0": 12, "1": 8, ... "23": 45 }
+  byProvince     Json?
+  byCommunity    Json?
+  byRoadType     Json?
+  byIncidentType Json?
+
+  // Weather summary
+  weatherAlertDays Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dateStart])
+}
+
+model HistoricalAccidents {
+  id           String  @id @default(cuid())
+  year         Int
+  province     String
+  provinceName String?
+
+  // Counts
+  accidents       Int
+  fatalities      Int
+  hospitalized    Int
+  nonHospitalized Int
+
+  // Road type breakdown
+  roadType RoadType?
+
+  // Additional metrics
+  vehiclesInvolved Int?
+  pedestrians      Int?
+
+  @@unique([year, province, roadType])
+  @@index([year])
+  @@index([province])
+  @@index([province, year])
+}
+
+model VehicleFleet {
+  id           String  @id @default(cuid())
+  provinceCode String
+  provinceName String?
+  year         Int
+  month        Int? // null for annual data
+  vehicleType  String // "car", "motorcycle", "truck", "bus", "trailer", "other"
+  fuelType     String? // "gasoline", "diesel", "electric", "hybrid", "other"
+  count        Int
+
+  @@unique([provinceCode, year, month, vehicleType, fuelType])
+  @@index([provinceCode])
+  @@index([year])
+  @@index([vehicleType])
+}
+
+// ============================================
+// REFERENCE DATA
+// ============================================
+
+model Province {
+  code          String    @id // INE 2-digit code: "28", "08"
+  name          String // "Madrid", "Barcelona"
+  slug          String    @unique // URL-friendly: "madrid"
+  communityCode String
+  community     Community @relation(fields: [communityCode], references: [code])
+
+  // Stats (cached)
+  population Int?
+  area       Decimal? @db.Decimal(10, 2) // km2
+
+  // Municipalities
+  municipalities Municipality[]
+
+  @@index([communityCode])
+  @@index([slug])
+}
+
+model Community {
+  code String @id // INE 2-digit code: "13", "09"
+  name String // "Comunidad de Madrid", "Cataluña"
+  slug String @unique // URL-friendly: "comunidad-de-madrid"
+
+  // Flag for regions with their own traffic systems
+  isExcluded     Boolean @default(false)
+  excludedReason String? // "Regional traffic system"
+
+  provinces Province[]
+
+  @@index([slug])
+}
+
+model Municipality {
+  code         String   @id // INE 5-digit code: "28079" (Madrid city)
+  name         String // "Madrid"
+  slug         String   @unique // URL-friendly: "madrid"
+  provinceCode String
+  province     Province @relation(fields: [provinceCode], references: [code])
+
+  // Stats
+  population Int?
+  area       Decimal? @db.Decimal(10, 2) // km2
+
+  // Geographic center (optional)
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+
+  @@index([provinceCode])
+  @@index([slug])
+}
+
+model Road {
+  id   String   @id // "A-1", "AP-7", "N-340"
+  name String? // "Autovía del Norte"
+  type RoadType
+
+  // Coverage
+  kmStart Decimal? @db.Decimal(7, 2)
+  kmEnd   Decimal? @db.Decimal(7, 2)
+  totalKm Decimal? @db.Decimal(7, 2)
+
+  // Provinces it passes through
+  provinces String[]
+
+  // Speed limits for this road
+  speedLimits SpeedLimit[]
+
+  @@index([type])
+}
+
+// Speed limits by road segment (ROSATTE format from NAP)
+model SpeedLimit {
+  id String @id @default(cuid())
+
+  // Road reference
+  roadNumber String // "A-1", "N-340", "AP-7"
+  roadType   RoadType?
+  road       Road?     @relation(fields: [roadNumber], references: [id])
+
+  // Segment location
+  kmStart Decimal @db.Decimal(7, 2)
+  kmEnd   Decimal @db.Decimal(7, 2)
+
+  // Geographic coordinates (segment endpoints)
+  startLat Decimal? @db.Decimal(9, 6)
+  startLng Decimal? @db.Decimal(9, 6)
+  endLat   Decimal? @db.Decimal(9, 6)
+  endLng   Decimal? @db.Decimal(9, 6)
+
+  // Speed limit details
+  speedLimit      Int // km/h (20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120)
+  speedLimitType  SpeedLimitType @default(GENERAL)
+  vehicleType     VehicleCategory? // Specific vehicle type restriction
+  laneType        LaneType? // Specific lane restriction
+  direction       Direction?
+
+  // Conditions (when limit applies)
+  isConditional Boolean @default(false)
+  conditionType String? // "weather", "time", "congestion"
+  timeStart     String? // "07:00" for time-based limits
+  timeEnd       String? // "21:00"
+  weatherType   String? // "rain", "fog", "snow"
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Source metadata
+  sourceId    String? // ROSATTE segment ID
+  lastUpdated DateTime @default(now()) @db.Timestamptz
+
+  @@unique([roadNumber, kmStart, kmEnd, direction, vehicleType])
+  @@index([roadNumber])
+  @@index([speedLimit])
+  @@index([province])
+  @@index([speedLimitType])
+  @@index([roadNumber, direction])
+  @@index([province, speedLimitType])
+}
+
+enum SpeedLimitType {
+  GENERAL // Standard speed limit
+  URBAN // Urban area limit
+  RESIDENTIAL // Residential zone (30 km/h)
+  SCHOOL // School zone
+  WORK_ZONE // Construction/roadwork
+  WEATHER // Weather-dependent
+  VARIABLE // Variable speed limit (PMV controlled)
+  TUNNEL // Tunnel speed limit
+  BRIDGE // Bridge speed limit
+}
+
+enum VehicleCategory {
+  ALL // All vehicles
+  CAR // Passenger cars
+  MOTORCYCLE
+  TRUCK // Heavy goods vehicles
+  BUS // Buses and coaches
+  TRAILER // Vehicles with trailers
+  DANGEROUS_GOODS // ADR vehicles
+}
+
+enum LaneType {
+  ALL // All lanes
+  RIGHT // Right lane(s)
+  LEFT // Left/fast lane
+  MIDDLE // Middle lane(s)
+  BUS_LANE // Bus lane
+  HOV // High occupancy vehicle lane
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum RoadType {
+  AUTOPISTA // AP-* (toll motorway)
+  AUTOVIA // A-* (motorway)
+  NACIONAL // N-* (national road)
+  COMARCAL // C-* (regional road)
+  PROVINCIAL // Provincial roads
+  URBANA // Urban roads
+  OTHER
+}
+
+enum Direction {
+  ASCENDING // Km increasing
+  DESCENDING // Km decreasing
+  BOTH
+  UNKNOWN
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum MobilityType {
+  MOBILE
+  STATIONARY
+  UNKNOWN
+}
+
+enum IncidentType {
+  ACCIDENT
+  ROADWORK
+  CONGESTION
+  HAZARD
+  VEHICLE_BREAKDOWN
+  WEATHER
+  EVENT
+  CLOSURE
+  OTHER
+}
+
+enum WeatherType {
+  RAIN
+  SNOW
+  ICE
+  FOG
+  WIND
+  STORM
+  HEAT
+  COLD
+}
+
+enum WeatherSeverity {
+  FAVORABLE
+  MODERATE
+  ADVERSE
+  EXTREME
+}
+
+enum ChargerType {
+  AC_TYPE1
+  AC_TYPE2
+  DC_CHADEMO
+  DC_CCS
+  DC_CCS2
+  TESLA
+  SCHUKO
+  OTHER
+}
+
+enum RiskType {
+  MOTORCYCLE
+  ANIMAL
+  CYCLIST
+  PEDESTRIAN
+}
+
+// ============================================
+// TRAFFIC FLOW DATA (IMD - Intensidad Media Diaria)
+// ============================================
+
+model TrafficFlow {
+  id             String    @id @default(cuid())
+  roadNumber     String // "A-1", "N-340", "AP-7"
+  roadType       RoadType?
+  kmStart        Decimal   @db.Decimal(7, 2)
+  kmEnd          Decimal   @db.Decimal(7, 2)
+  province       String? // INE 2-digit code
+  provinceName   String?
+  year           Int
+  imd            Int // Intensidad Media Diaria (vehicles/day)
+  imdPesados     Int? // IMD of heavy vehicles (trucks, buses)
+  percentPesados Decimal?  @db.Decimal(5, 2) // Percentage of heavy vehicles
+
+  @@unique([roadNumber, kmStart, kmEnd, year])
+  @@index([roadNumber])
+  @@index([province])
+  @@index([year])
+  @@index([roadType])
+}
+
+// ============================================
+// GAS STATIONS (Gasolineras)
+// ============================================
+
+model GasStation {
+  id   String @id // IDEESS from MINETUR API
+  name String // Rótulo (brand name: REPSOL, CEPSA, etc.)
+
+  // Location
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  address   String?
+  postalCode String? @db.VarChar(5)
+  locality  String?
+  municipality String?
+  municipalityCode String? // INE code for relation
+
+  // Administrative
+  province     String? // INE 2-digit code
+  provinceName String?
+  communityCode String? // INE 2-digit code
+
+  // Road association (for road listings)
+  nearestRoad String? // "A-1", "N-340"
+  roadKm      Decimal? @db.Decimal(7, 2)
+
+  // Fuel prices (EUR) - Main fuels
+  priceGasoleoA       Decimal? @db.Decimal(5, 3) // Diesel standard
+  priceGasoleoB       Decimal? @db.Decimal(5, 3) // Diesel agricultural
+  priceGasoleoPremium Decimal? @db.Decimal(5, 3) // Diesel premium
+  priceGasolina95E5   Decimal? @db.Decimal(5, 3) // Gasolina 95 (E5)
+  priceGasolina95E10  Decimal? @db.Decimal(5, 3) // Gasolina 95 (E10)
+  priceGasolina98E5   Decimal? @db.Decimal(5, 3) // Gasolina 98 (E5)
+  priceGasolina98E10  Decimal? @db.Decimal(5, 3) // Gasolina 98 (E10)
+
+  // Alternative fuels
+  priceGLP       Decimal? @db.Decimal(5, 3) // LPG
+  priceGNC       Decimal? @db.Decimal(5, 3) // Compressed Natural Gas
+  priceGNL       Decimal? @db.Decimal(5, 3) // Liquefied Natural Gas
+  priceHidrogeno Decimal? @db.Decimal(5, 3) // Hydrogen
+  priceAdblue    Decimal? @db.Decimal(5, 3) // AdBlue
+
+  // Station info
+  schedule    String? // "L-D: 24H" or "L-S: 08:00-22:00"
+  is24h       Boolean @default(false)
+  margin      String? // D (right), I (left), N (not applicable)
+  saleType    String? // P (public), R (restricted)
+
+  // Timestamps
+  lastPriceUpdate DateTime @db.Timestamptz
+  lastUpdated     DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  priceHistory  GasStationPriceHistory[]
+  dailyRankings StationDailyRanking[]
+
+  @@index([province])
+  @@index([municipality])
+  @@index([nearestRoad])
+  @@index([priceGasoleoA])
+  @@index([priceGasolina95E5])
+  @@index([is24h])
+  @@index([communityCode])
+  @@index([lastPriceUpdate])
+}
+
+model MaritimeStation {
+  id   String @id // IDEESS from MINETUR API (maritime)
+  name String // Brand name
+
+  // Location
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  port      String? // Port name
+  locality  String?
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Fuel prices (EUR) - Maritime fuels
+  // Note: priceGasoleoB is normalized to per-litre (API returns bulk per 1000L)
+  priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasoleoB     Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5 Decimal? @db.Decimal(5, 3)
+  priceGasolina98E5 Decimal? @db.Decimal(5, 3)
+
+  // Station info
+  schedule String?
+  is24h    Boolean @default(false)
+
+  // Timestamps
+  lastPriceUpdate DateTime @db.Timestamptz
+  lastUpdated     DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  priceHistory MaritimePriceHistory[]
+
+  @@index([province])
+  @@index([port])
+}
+
+// Price history for trend analysis
+model GasStationPriceHistory {
+  id         String     @id @default(cuid())
+  stationId  String
+  station    GasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  recordedAt DateTime   @db.Date // One record per day
+
+  // Main prices only (to control table size)
+  priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5 Decimal? @db.Decimal(5, 3)
+  priceGasolina98E5 Decimal? @db.Decimal(5, 3)
+  priceGLP          Decimal? @db.Decimal(5, 3)
+
+  @@unique([stationId, recordedAt])
+  @@index([stationId])
+  @@index([recordedAt])
+}
+
+model MaritimePriceHistory {
+  id         String          @id @default(cuid())
+  stationId  String
+  station    MaritimeStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  recordedAt DateTime        @db.Date
+
+  priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5 Decimal? @db.Decimal(5, 3)
+
+  @@unique([stationId, recordedAt])
+  @@index([stationId])
+  @@index([recordedAt])
+}
+
+// Daily aggregated statistics for fast queries
+model FuelPriceDailyStats {
+  id    String   @id @default(cuid())
+  date  DateTime @db.Date
+  scope String // "national", "province:28", "community:13", "road:A-1"
+
+  // Gasóleo A
+  avgGasoleoA Decimal? @db.Decimal(5, 3)
+  minGasoleoA Decimal? @db.Decimal(5, 3)
+  maxGasoleoA Decimal? @db.Decimal(5, 3)
+
+  // Gasolina 95
+  avgGasolina95 Decimal? @db.Decimal(5, 3)
+  minGasolina95 Decimal? @db.Decimal(5, 3)
+  maxGasolina95 Decimal? @db.Decimal(5, 3)
+
+  // Gasolina 98
+  avgGasolina98 Decimal? @db.Decimal(5, 3)
+  minGasolina98 Decimal? @db.Decimal(5, 3)
+  maxGasolina98 Decimal? @db.Decimal(5, 3)
+
+  stationCount Int
+
+  @@unique([date, scope])
+  @@index([date])
+  @@index([scope])
+}
+
+// Historic daily rankings for trend analysis
+model StationDailyRanking {
+  id         String     @id @default(cuid())
+  stationId  String
+  station    GasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  recordedAt DateTime   @db.Date
+
+  // Gasóleo A rankings by scope (null = not enough data in scope)
+  municipalityRankDiesel  Int?
+  municipalityTotalDiesel Int?
+  provinceRankDiesel      Int
+  provinceTotalDiesel     Int
+  nationalRankDiesel      Int
+  nationalTotalDiesel     Int
+
+  // Gasolina 95 rankings by scope
+  municipalityRank95  Int?
+  municipalityTotal95 Int?
+  provinceRank95      Int
+  provinceTotal95     Int
+  nationalRank95      Int
+  nationalTotal95     Int
+
+  // Gasolina 98 rankings by scope
+  municipalityRank98  Int?
+  municipalityTotal98 Int?
+  provinceRank98      Int?
+  provinceTotal98     Int?
+  nationalRank98      Int?
+  nationalTotal98     Int?
+
+  // GLP rankings by scope
+  municipalityRankGlp  Int?
+  municipalityTotalGlp Int?
+  provinceRankGlp      Int?
+  provinceTotalGlp     Int?
+  nationalRankGlp      Int?
+  nationalTotalGlp     Int?
+
+  @@unique([stationId, recordedAt])
+  @@index([stationId])
+  @@index([recordedAt])
+}
