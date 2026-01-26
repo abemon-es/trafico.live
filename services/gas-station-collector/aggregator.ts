@@ -9,6 +9,11 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
+// Provincias con fiscalidad especial (excluir de "national")
+// 35 = Las Palmas (IGIC 7%), 38 = Santa Cruz de Tenerife (IGIC 7%)
+// 51 = Ceuta (IPSI 0.5%), 52 = Melilla (IPSI 0.5%)
+const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
+
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
@@ -28,10 +33,13 @@ async function main() {
   console.log(`[aggregator] Starting at ${now.toISOString()}`);
 
   try {
-    // 1. National statistics
-    console.log("[aggregator] Calculating national statistics...");
+    // 1. National statistics (Península + Baleares only, excludes tax-free zones)
+    console.log("[aggregator] Calculating national statistics (excluding tax-free zones)...");
 
     const nationalStats = await prisma.gasStation.aggregate({
+      where: {
+        province: { notIn: TAX_FREE_PROVINCES },
+      },
       _avg: {
         priceGasoleoA: true,
         priceGasolina95E5: true,
@@ -85,7 +93,69 @@ async function main() {
       },
     });
 
-    console.log(`[aggregator] National: ${nationalStats._count} stations`);
+    console.log(`[aggregator] National (Península + Baleares): ${nationalStats._count} stations`);
+
+    // 1b. Tax-free territories statistics (Ceuta, Melilla, Canarias)
+    console.log("[aggregator] Calculating tax-free territories statistics...");
+
+    const taxFreeStats = await prisma.gasStation.aggregate({
+      where: {
+        province: { in: TAX_FREE_PROVINCES },
+      },
+      _avg: {
+        priceGasoleoA: true,
+        priceGasolina95E5: true,
+        priceGasolina98E5: true,
+      },
+      _min: {
+        priceGasoleoA: true,
+        priceGasolina95E5: true,
+        priceGasolina98E5: true,
+      },
+      _max: {
+        priceGasoleoA: true,
+        priceGasolina95E5: true,
+        priceGasolina98E5: true,
+      },
+      _count: true,
+    });
+
+    await prisma.fuelPriceDailyStats.upsert({
+      where: {
+        date_scope: {
+          date: today,
+          scope: "tax-free",
+        },
+      },
+      create: {
+        date: today,
+        scope: "tax-free",
+        avgGasoleoA: taxFreeStats._avg.priceGasoleoA,
+        minGasoleoA: taxFreeStats._min.priceGasoleoA,
+        maxGasoleoA: taxFreeStats._max.priceGasoleoA,
+        avgGasolina95: taxFreeStats._avg.priceGasolina95E5,
+        minGasolina95: taxFreeStats._min.priceGasolina95E5,
+        maxGasolina95: taxFreeStats._max.priceGasolina95E5,
+        avgGasolina98: taxFreeStats._avg.priceGasolina98E5,
+        minGasolina98: taxFreeStats._min.priceGasolina98E5,
+        maxGasolina98: taxFreeStats._max.priceGasolina98E5,
+        stationCount: taxFreeStats._count,
+      },
+      update: {
+        avgGasoleoA: taxFreeStats._avg.priceGasoleoA,
+        minGasoleoA: taxFreeStats._min.priceGasoleoA,
+        maxGasoleoA: taxFreeStats._max.priceGasoleoA,
+        avgGasolina95: taxFreeStats._avg.priceGasolina95E5,
+        minGasolina95: taxFreeStats._min.priceGasolina95E5,
+        maxGasolina95: taxFreeStats._max.priceGasolina95E5,
+        avgGasolina98: taxFreeStats._avg.priceGasolina98E5,
+        minGasolina98: taxFreeStats._min.priceGasolina98E5,
+        maxGasolina98: taxFreeStats._max.priceGasolina98E5,
+        stationCount: taxFreeStats._count,
+      },
+    });
+
+    console.log(`[aggregator] Tax-free territories: ${taxFreeStats._count} stations`);
 
     // 2. Province statistics
     console.log("[aggregator] Calculating province statistics...");

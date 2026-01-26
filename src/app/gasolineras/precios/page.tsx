@@ -43,6 +43,16 @@ const PROVINCE_SLUGS: Record<string, string> = {
   "48": "bizkaia", "49": "zamora", "50": "zaragoza", "51": "ceuta", "52": "melilla",
 };
 
+// Provincias con fiscalidad especial (IPSI en Ceuta/Melilla, IGIC en Canarias)
+const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
+
+const TAX_FREE_INFO: Record<string, { tax: string; rate: string }> = {
+  "35": { tax: "IGIC", rate: "7%" },
+  "38": { tax: "IGIC", rate: "7%" },
+  "51": { tax: "IPSI", rate: "0.5%" },
+  "52": { tax: "IPSI", rate: "0.5%" },
+};
+
 async function getProvinceStats() {
   // Use UTC date to ensure consistency across timezones
   const now = new Date();
@@ -56,7 +66,7 @@ async function getProvinceStats() {
     orderBy: { avgGasoleoA: "asc" },
   });
 
-  return stats.map((s) => {
+  const allProvinces = stats.map((s) => {
     const code = s.scope.replace("province:", "");
     return {
       code,
@@ -68,8 +78,15 @@ async function getProvinceStats() {
       minGasoleoA: s.minGasoleoA ? Number(s.minGasoleoA) : null,
       minGasolina95: s.minGasolina95 ? Number(s.minGasolina95) : null,
       stationCount: s.stationCount,
+      taxInfo: TAX_FREE_INFO[code] || null,
     };
   });
+
+  // Separar península/baleares de territorios con fiscalidad especial
+  const mainlandProvinces = allProvinces.filter(p => !TAX_FREE_PROVINCES.includes(p.code));
+  const taxFreeProvinces = allProvinces.filter(p => TAX_FREE_PROVINCES.includes(p.code));
+
+  return { mainlandProvinces, taxFreeProvinces };
 }
 
 async function getNationalStats() {
@@ -104,7 +121,7 @@ function TrendIndicator({ current, previous }: { current: number | null; previou
 }
 
 export default async function PreciosPage() {
-  const [provinceStats, nationalStats] = await Promise.all([
+  const [{ mainlandProvinces, taxFreeProvinces }, nationalStats] = await Promise.all([
     getProvinceStats(),
     getNationalStats(),
   ]);
@@ -121,9 +138,9 @@ export default async function PreciosPage() {
     day: "numeric",
   });
 
-  // Find cheapest province for each fuel type
-  const cheapestDiesel = provinceStats.find((p) => p.avgGasoleoA != null);
-  const cheapestGas95 = [...provinceStats].sort((a, b) =>
+  // Find cheapest province for each fuel type (solo península y Baleares)
+  const cheapestDiesel = mainlandProvinces.find((p) => p.avgGasoleoA != null);
+  const cheapestGas95 = [...mainlandProvinces].sort((a, b) =>
     (a.avgGasolina95 || 999) - (b.avgGasolina95 || 999)
   )[0];
 
@@ -145,7 +162,10 @@ export default async function PreciosPage() {
       {/* National Summary */}
       {nationalStats.today && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Media Nacional</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Media Nacional
+            <span className="text-sm font-normal text-gray-500 ml-2">(Península y Baleares)</span>
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-amber-50 rounded-lg p-4">
               <div className="text-sm text-amber-600 mb-1">Gasóleo A</div>
@@ -231,10 +251,13 @@ export default async function PreciosPage() {
         )}
       </div>
 
-      {/* Province Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Province Table - Península y Baleares */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Precios por Provincia</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Precios por Provincia
+            <span className="text-sm font-normal text-gray-500 ml-2">(Península y Baleares)</span>
+          </h2>
           <p className="text-sm text-gray-500">Ordenado por Gasóleo A (más barato primero)</p>
         </div>
         <div className="overflow-x-auto">
@@ -260,7 +283,7 @@ export default async function PreciosPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {provinceStats.map((province, idx) => (
+              {mainlandProvinces.map((province, idx) => (
                 <tr key={province.code} className={idx < 3 ? "bg-green-50/50" : ""}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -302,6 +325,83 @@ export default async function PreciosPage() {
           </table>
         </div>
       </div>
+
+      {/* Territorios con Fiscalidad Especial */}
+      {taxFreeProvinces.length > 0 && (
+        <div className="bg-amber-50 rounded-lg border border-amber-200 overflow-hidden">
+          <div className="p-4 border-b border-amber-200">
+            <h2 className="text-lg font-semibold text-amber-900">
+              Territorios con Fiscalidad Especial
+            </h2>
+            <p className="text-sm text-amber-700">
+              Sin IVA (Ceuta, Melilla con IPSI 0.5%) o con IGIC 7% (Canarias) - precios más bajos por menor carga fiscal
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-amber-100/50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                    Territorio
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                    Impuesto
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                    Gasóleo A
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                    Gasolina 95
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                    Gasolina 98
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                    Estaciones
+                  </th>
+                  <th className="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-200 bg-white">
+                {taxFreeProvinces.map((province) => (
+                  <tr key={province.code}>
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-gray-900">{province.name}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {province.taxInfo && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                          {province.taxInfo.tax} {province.taxInfo.rate}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="font-mono text-amber-700">{formatPrice(province.avgGasoleoA)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="font-mono text-blue-700">{formatPrice(province.avgGasolina95)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="font-mono text-purple-700">{formatPrice(province.avgGasolina98)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm text-gray-500">
+                      {province.stationCount}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/gasolineras/precios/${province.slug}`}
+                        className="text-orange-600 hover:text-orange-700 text-sm"
+                      >
+                        <MapPin className="w-4 h-4 inline" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

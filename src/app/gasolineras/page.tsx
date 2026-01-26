@@ -11,35 +11,77 @@ export const metadata: Metadata = {
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
 
+// Provincias con fiscalidad especial
+const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
+
 async function getStats() {
   // Use UTC date to ensure consistency across timezones
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const yesterdayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
 
-  const [nationalStats, yesterday, terrestrialCount, maritimeCount] = await Promise.all([
+  const [nationalStats, yesterday, taxFreeStats, terrestrialCount, maritimeCount] = await Promise.all([
     prisma.fuelPriceDailyStats.findFirst({
       where: { scope: "national", date: today },
     }),
     prisma.fuelPriceDailyStats.findFirst({
       where: { scope: "national", date: yesterdayDate },
     }),
-    prisma.gasStation.count(),
+    prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "tax-free", date: today },
+    }),
+    prisma.gasStation.count({
+      where: { province: { notIn: TAX_FREE_PROVINCES } },
+    }),
     prisma.maritimeStation.count(),
   ]);
 
-  return { nationalStats, yesterday, terrestrialCount, maritimeCount };
+  // Stats individuales de territorios especiales
+  const [ceutaStats, melillaStats, canariasStats] = await Promise.all([
+    prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "province:51", date: today },
+    }),
+    prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "province:52", date: today },
+    }),
+    prisma.fuelPriceDailyStats.findMany({
+      where: { scope: { in: ["province:35", "province:38"] }, date: today },
+    }),
+  ]);
+
+  // Calcular media de Canarias (Las Palmas + Santa Cruz de Tenerife)
+  const canariasAvg = canariasStats.length > 0
+    ? canariasStats.reduce((sum, s) => sum + (s.avgGasoleoA ? Number(s.avgGasoleoA) : 0), 0) / canariasStats.length
+    : null;
+
+  return {
+    nationalStats,
+    yesterday,
+    taxFreeStats,
+    ceutaStats,
+    melillaStats,
+    canariasAvg,
+    terrestrialCount,
+    maritimeCount,
+  };
 }
 
 async function getCheapestStations() {
+  // Excluir zonas con fiscalidad especial para comparación justa
   const [cheapestDiesel, cheapestGas95] = await Promise.all([
     prisma.gasStation.findMany({
-      where: { priceGasoleoA: { not: null } },
+      where: {
+        priceGasoleoA: { not: null },
+        province: { notIn: TAX_FREE_PROVINCES },
+      },
       orderBy: { priceGasoleoA: "asc" },
       take: 5,
     }),
     prisma.gasStation.findMany({
-      where: { priceGasolina95E5: { not: null } },
+      where: {
+        priceGasolina95E5: { not: null },
+        province: { notIn: TAX_FREE_PROVINCES },
+      },
       orderBy: { priceGasolina95E5: "asc" },
       take: 5,
     }),
@@ -150,6 +192,7 @@ export default async function GasolinerasPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Precios Medios Nacionales - Hoy
+            <span className="text-sm font-normal text-gray-500 ml-2">(Península y Baleares)</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-amber-50 rounded-lg p-4">
@@ -195,12 +238,66 @@ export default async function GasolinerasPage() {
         </div>
       )}
 
+      {/* Territorios con Fiscalidad Especial */}
+      {(stats.ceutaStats || stats.melillaStats || stats.canariasAvg) && (
+        <div className="bg-amber-50 rounded-lg border border-amber-200 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-amber-900 mb-2">
+            Territorios con Fiscalidad Especial
+          </h2>
+          <p className="text-sm text-amber-700 mb-4">
+            Sin IVA (Ceuta, Melilla) o con IGIC 7% (Canarias) - precios más bajos por menor carga fiscal
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Ceuta */}
+            <Link
+              href="/gasolineras/precios/ceuta"
+              className="bg-white rounded-lg p-4 border border-amber-200 hover:shadow-md transition-shadow"
+            >
+              <h3 className="font-semibold text-gray-900">Ceuta</h3>
+              <div className="text-sm text-gray-500 mb-1">IPSI 0.5%</div>
+              <div className="text-2xl font-bold text-amber-600">
+                {stats.ceutaStats?.avgGasoleoA ? formatPrice(stats.ceutaStats.avgGasoleoA) : "N/D"}
+              </div>
+              <div className="text-xs text-gray-500">Gasóleo A medio</div>
+            </Link>
+
+            {/* Melilla */}
+            <Link
+              href="/gasolineras/precios/melilla"
+              className="bg-white rounded-lg p-4 border border-amber-200 hover:shadow-md transition-shadow"
+            >
+              <h3 className="font-semibold text-gray-900">Melilla</h3>
+              <div className="text-sm text-gray-500 mb-1">IPSI 0.5%</div>
+              <div className="text-2xl font-bold text-amber-600">
+                {stats.melillaStats?.avgGasoleoA ? formatPrice(stats.melillaStats.avgGasoleoA) : "N/D"}
+              </div>
+              <div className="text-xs text-gray-500">Gasóleo A medio</div>
+            </Link>
+
+            {/* Canarias */}
+            <Link
+              href="/gasolineras/precios/las-palmas"
+              className="bg-white rounded-lg p-4 border border-amber-200 hover:shadow-md transition-shadow"
+            >
+              <h3 className="font-semibold text-gray-900">Islas Canarias</h3>
+              <div className="text-sm text-gray-500 mb-1">IGIC 7%</div>
+              <div className="text-2xl font-bold text-amber-600">
+                {stats.canariasAvg ? `${stats.canariasAvg.toFixed(3)}€` : "N/D"}
+              </div>
+              <div className="text-xs text-gray-500">Gasóleo A medio</div>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Cheapest Stations */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-amber-500"></span>
             Gasóleo A Más Barato
+            <span className="text-xs font-normal text-gray-500">(Península)</span>
           </h2>
           <div className="space-y-3">
             {cheapest.cheapestDiesel.map((station, idx) => (
@@ -230,6 +327,7 @@ export default async function GasolinerasPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500"></span>
             Gasolina 95 Más Barata
+            <span className="text-xs font-normal text-gray-500">(Península)</span>
           </h2>
           <div className="space-y-3">
             {cheapest.cheapestGas95.map((station, idx) => (
