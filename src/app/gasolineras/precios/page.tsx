@@ -44,8 +44,9 @@ const PROVINCE_SLUGS: Record<string, string> = {
 };
 
 async function getProvinceStats() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Use UTC date to ensure consistency across timezones
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   const stats = await prisma.fuelPriceDailyStats.findMany({
     where: {
@@ -72,9 +73,10 @@ async function getProvinceStats() {
 }
 
 async function getNationalStats() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  // Use UTC date to ensure consistency across timezones
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
 
   const [todayStats, yesterdayStats] = await Promise.all([
     prisma.fuelPriceDailyStats.findFirst({

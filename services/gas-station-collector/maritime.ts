@@ -128,7 +128,8 @@ function parseAPIDate(dateStr: string): Date {
 async function main() {
   const prisma = createPrismaClient();
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // Use UTC date to ensure consistency across timezones
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   console.log(`[maritime-collector] Starting at ${now.toISOString()}`);
 

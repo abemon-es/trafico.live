@@ -12,15 +12,17 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 async function getStats() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Use UTC date to ensure consistency across timezones
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const yesterdayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
 
   const [nationalStats, yesterday, terrestrialCount, maritimeCount] = await Promise.all([
     prisma.fuelPriceDailyStats.findFirst({
       where: { scope: "national", date: today },
     }),
     prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: new Date(today.getTime() - 24 * 60 * 60 * 1000) },
+      where: { scope: "national", date: yesterdayDate },
     }),
     prisma.gasStation.count(),
     prisma.maritimeStation.count(),
