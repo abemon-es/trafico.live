@@ -52,23 +52,30 @@ export async function GET(request: NextRequest) {
       prisma.maritimeStation.count({ where }),
     ]);
 
-    const responseStations = stations.map((s) => ({
-      id: s.id,
-      name: s.name,
-      latitude: Number(s.latitude),
-      longitude: Number(s.longitude),
-      port: s.port,
-      locality: s.locality,
-      province: s.province,
-      provinceName: s.provinceName,
-      priceGasoleoA: s.priceGasoleoA ? Number(s.priceGasoleoA) : null,
-      priceGasoleoB: s.priceGasoleoB ? Number(s.priceGasoleoB) : null,
-      priceGasolina95E5: s.priceGasolina95E5 ? Number(s.priceGasolina95E5) : null,
-      priceGasolina98E5: s.priceGasolina98E5 ? Number(s.priceGasolina98E5) : null,
-      schedule: s.schedule,
-      is24h: s.is24h,
-      lastPriceUpdate: s.lastPriceUpdate.toISOString(),
-    }));
+    const responseStations = stations.map((s) => {
+      // Normalize priceGasoleoB: MINETUR API reports bulk pricing per 1000L for fishing ports
+      // Convert to per-liter to match other fuel prices
+      const gasoleoB = s.priceGasoleoB ? Number(s.priceGasoleoB) : null;
+      const normalizedGasoleoB = gasoleoB && gasoleoB > 10 ? gasoleoB / 1000 : gasoleoB;
+
+      return {
+        id: s.id,
+        name: s.name,
+        latitude: Number(s.latitude),
+        longitude: Number(s.longitude),
+        port: s.port,
+        locality: s.locality,
+        province: s.province,
+        provinceName: s.provinceName,
+        priceGasoleoA: s.priceGasoleoA ? Number(s.priceGasoleoA) : null,
+        priceGasoleoB: normalizedGasoleoB,
+        priceGasolina95E5: s.priceGasolina95E5 ? Number(s.priceGasolina95E5) : null,
+        priceGasolina98E5: s.priceGasolina98E5 ? Number(s.priceGasolina98E5) : null,
+        schedule: s.schedule,
+        is24h: s.is24h,
+        lastPriceUpdate: s.lastPriceUpdate.toISOString(),
+      };
+    });
 
     return NextResponse.json({
       success: true,

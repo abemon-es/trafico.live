@@ -34,11 +34,15 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
     notFound();
   }
 
-  const formatPrice = (price: unknown) => {
+  const formatPrice = (price: unknown, normalize = false) => {
     if (price == null) return "N/D";
-    const num = typeof price === "object" && "toNumber" in price
+    let num = typeof price === "object" && "toNumber" in price
       ? (price as { toNumber: () => number }).toNumber()
       : Number(price);
+    // Normalize bulk pricing (per 1000L) to per-liter
+    if (normalize && num > 10) {
+      num = num / 1000;
+    }
     return `${num.toFixed(3)}€`;
   };
 
@@ -137,8 +141,8 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
           )}
           {station.priceGasoleoB && (
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-600 mb-1">Gasóleo B</div>
-              <div className="text-2xl font-bold text-gray-700">{formatPrice(station.priceGasoleoB)}</div>
+              <div className="text-sm text-gray-600 mb-1">Gasóleo B <span className="text-xs text-gray-400">(pesqueros)</span></div>
+              <div className="text-2xl font-bold text-gray-700">{formatPrice(station.priceGasoleoB, true)}</div>
             </div>
           )}
           {station.priceGasolina98E5 && (
