@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,9 @@ interface RankingsAPIResponse {
  * - category: Specific category to fetch ("provinces", "roads", or "all")
  */
 export async function GET(request: NextRequest): Promise<NextResponse<RankingsAPIResponse>> {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse as NextResponse<RankingsAPIResponse>;
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const days = parseInt(searchParams.get("days") || "30", 10);
