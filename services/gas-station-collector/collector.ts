@@ -5,6 +5,7 @@
  * and stores them in PostgreSQL.
  *
  * Run 3x daily via Railway cron (prices update throughout the day).
+ * Last manual trigger: 2026-01-26
  *
  * Data source:
  * - https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/
