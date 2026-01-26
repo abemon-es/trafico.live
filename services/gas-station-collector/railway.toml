@@ -3,6 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# Run 3x daily: 7:00, 14:00, 21:00 Madrid time (UTC+1/+2)
-cronSchedule = "0 6,13,20 * * *"
+# Temporary: run once now, then revert to regular schedule
+# Regular: cronSchedule = "0 6,13,20 * * *"
+cronSchedule = "*/1 * * * *"
 restartPolicyType = "NEVER"
