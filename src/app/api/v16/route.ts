@@ -1,10 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     // Query active V16 beacons from database (stored by v16-collector every 5 min)
     const dbBeacons = await prisma.v16BeaconEvent.findMany({

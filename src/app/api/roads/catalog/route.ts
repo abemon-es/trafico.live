@@ -26,6 +26,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { RoadType, Prisma } from "@prisma/client";
+import { applyRateLimit } from "@/lib/api-utils";
 
 // Valid road types
 const VALID_ROAD_TYPES: RoadType[] = [
@@ -137,6 +138,10 @@ const PROVINCE_NAMES: Record<string, string> = {
 export async function GET(
   request: NextRequest
 ): Promise<NextResponse<RoadCatalogResponse | ErrorResponse>> {
+  // Apply rate limiting (expensive endpoint)
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse as NextResponse<ErrorResponse>;
+
   try {
     const { searchParams } = new URL(request.url);
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 
 // Cache for 5 minutes (prices update 3x daily)
 export const revalidate = 300;
@@ -28,6 +29,10 @@ interface GasStationResponse {
 }
 
 export async function GET(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const searchParams = request.nextUrl.searchParams;
 

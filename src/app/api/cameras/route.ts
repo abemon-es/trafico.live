@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 import { fetchDGTCameras, CameraData } from "@/lib/parsers/datex2";
 import {
   normalizeDGTProvince,
@@ -31,6 +32,10 @@ interface CamerasResponse {
 }
 
 export async function GET(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const filterProvince = searchParams.get("province");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { IncidentType, TrafficIncident } from "@prisma/client";
+import { applyRateLimit, addSecurityHeaders } from "@/lib/api-utils";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
@@ -72,6 +73,10 @@ function mapTypeToCause(type: IncidentType): IncidentCause {
 }
 
 export async function GET(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const searchParams = request.nextUrl.searchParams;
 

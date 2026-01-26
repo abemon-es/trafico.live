@@ -1,9 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Apply rate limiting (expensive endpoint)
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     // Fetch all data in parallel for performance
     const [
