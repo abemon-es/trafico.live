@@ -17,6 +17,7 @@ import {
   Camera,
   ChevronDown,
   MapPin,
+  Fuel,
 } from "lucide-react";
 
 // Primary navigation - main sections
@@ -30,6 +31,7 @@ const navigation = [
 // Dropdown menu for "Más"
 const moreNavItems = [
   { name: "Cámaras", href: "/camaras", icon: Camera },
+  { name: "Gasolineras", href: "/gasolineras", icon: Fuel },
   { name: "Histórico", href: "/historico", icon: Clock },
   { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
   { name: "Provincias", href: "/provincias", icon: MapPin },

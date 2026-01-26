@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="bg-gray-50 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
           {/* About */}
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">Tráfico España</h3>
@@ -70,6 +70,38 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Gasolineras */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3">Gasolineras</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/gasolineras" className="text-gray-600 hover:text-gray-900">
+                  Precios de hoy
+                </Link>
+              </li>
+              <li>
+                <Link href="/gasolineras/terrestres" className="text-gray-600 hover:text-gray-900">
+                  Terrestres
+                </Link>
+              </li>
+              <li>
+                <Link href="/gasolineras/maritimas" className="text-gray-600 hover:text-gray-900">
+                  Marítimas
+                </Link>
+              </li>
+              <li>
+                <Link href="/gasolineras/precios" className="text-gray-600 hover:text-gray-900">
+                  Por provincia
+                </Link>
+              </li>
+              <li>
+                <Link href="/gasolineras/mapa" className="text-gray-600 hover:text-gray-900">
+                  Mapa
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           {/* Info */}
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">Información</h3>
@@ -107,7 +139,7 @@ export function Footer() {
         <div className="pt-6 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-gray-500">
-              <p>Datos: DGT NAP, AEMET, MITERD | Actualizado cada 60 segundos</p>
+              <p>Datos: DGT NAP, AEMET, MITERD, MINETUR | Actualizado cada 60 segundos</p>
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-500">
               <span>

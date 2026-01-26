@@ -13,6 +13,7 @@ import {
   TrendingUp,
   ArrowLeft,
   ExternalLink,
+  Fuel,
 } from "lucide-react";
 import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
 
@@ -115,7 +116,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
   }
 
   // Fetch related data in parallel
-  const [cameras, radars, incidents, chargers, riskZones, speedLimits] = await Promise.all([
+  const [cameras, radars, incidents, chargers, riskZones, speedLimits, gasStations, cheapestDiesel, cheapestGas95] = await Promise.all([
     prisma.camera.findMany({
       where: { roadNumber: road.id, isActive: true },
       orderBy: { kmPoint: "asc" },
@@ -140,6 +141,28 @@ export default async function RoadDetailPage({ params }: PageProps) {
       where: { roadNumber: road.id },
       orderBy: { kmStart: "asc" },
       take: 50,
+    }),
+    prisma.gasStation.findMany({
+      where: { nearestRoad: road.id },
+      orderBy: { roadKm: "asc" },
+      take: 30,
+      select: {
+        id: true,
+        name: true,
+        locality: true,
+        roadKm: true,
+        priceGasoleoA: true,
+        priceGasolina95E5: true,
+        is24h: true,
+      },
+    }),
+    prisma.gasStation.findFirst({
+      where: { nearestRoad: road.id, priceGasoleoA: { not: null } },
+      orderBy: { priceGasoleoA: "asc" },
+    }),
+    prisma.gasStation.findFirst({
+      where: { nearestRoad: road.id, priceGasolina95E5: { not: null } },
+      orderBy: { priceGasolina95E5: "asc" },
     }),
   ]);
 
@@ -212,7 +235,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <Camera className="w-5 h-5 mx-auto text-blue-600 mb-1" />
               <div className="text-xl font-bold text-gray-900">{cameras.length}</div>
@@ -227,6 +250,11 @@ export default async function RoadDetailPage({ params }: PageProps) {
               <AlertTriangle className="w-5 h-5 mx-auto text-red-600 mb-1" />
               <div className="text-xl font-bold text-gray-900">{incidents.length}</div>
               <div className="text-xs text-gray-600">Incidencias</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <Fuel className="w-5 h-5 mx-auto text-orange-600 mb-1" />
+              <div className="text-xl font-bold text-gray-900">{gasStations.length}</div>
+              <div className="text-xs text-gray-600">Gasolineras</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <Zap className="w-5 h-5 mx-auto text-green-600 mb-1" />
@@ -391,6 +419,112 @@ export default async function RoadDetailPage({ params }: PageProps) {
                       className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
                     >
                       Ver estadísticas <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Gas Stations */}
+            {gasStations.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Fuel className="w-5 h-5 text-orange-600" />
+                  Gasolineras en {road.id} ({gasStations.length})
+                </h2>
+
+                {/* Cheapest highlights */}
+                {(cheapestDiesel || cheapestGas95) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    {cheapestDiesel && (
+                      <Link
+                        href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
+                        className="p-3 bg-amber-50 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors"
+                      >
+                        <div className="text-xs text-amber-600 mb-1">Gasóleo A más barato</div>
+                        <div className="font-semibold text-gray-900 text-sm">{cheapestDiesel.name}</div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs text-gray-500">
+                            {cheapestDiesel.roadKm ? `km ${Number(cheapestDiesel.roadKm)}` : ""}
+                          </span>
+                          <span className="text-lg font-bold text-amber-700">
+                            {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
+                          </span>
+                        </div>
+                      </Link>
+                    )}
+                    {cheapestGas95 && (
+                      <Link
+                        href={`/gasolineras/terrestres/${cheapestGas95.id}`}
+                        className="p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
+                      >
+                        <div className="text-xs text-blue-600 mb-1">Gasolina 95 más barata</div>
+                        <div className="font-semibold text-gray-900 text-sm">{cheapestGas95.name}</div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs text-gray-500">
+                            {cheapestGas95.roadKm ? `km ${Number(cheapestGas95.roadKm)}` : ""}
+                          </span>
+                          <span className="text-lg font-bold text-blue-700">
+                            {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
+                          </span>
+                        </div>
+                      </Link>
+                    )}
+                  </div>
+                )}
+
+                {/* Station list table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 text-gray-600">Estación</th>
+                        <th className="text-left py-2 text-gray-600">km</th>
+                        <th className="text-right py-2 text-gray-600">Gasóleo A</th>
+                        <th className="text-right py-2 text-gray-600">Gasolina 95</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gasStations.slice(0, 10).map((station) => (
+                        <tr key={station.id} className="border-b border-gray-100">
+                          <td className="py-2">
+                            <Link
+                              href={`/gasolineras/terrestres/${station.id}`}
+                              className="text-orange-600 hover:underline"
+                            >
+                              {station.name}
+                            </Link>
+                            <div className="text-xs text-gray-500">{station.locality}</div>
+                          </td>
+                          <td className="py-2 text-gray-600">
+                            {station.roadKm ? Number(station.roadKm) : "-"}
+                          </td>
+                          <td className="py-2 text-right font-medium">
+                            {station.priceGasoleoA
+                              ? `${Number(station.priceGasoleoA).toFixed(3)}€`
+                              : "-"}
+                          </td>
+                          <td className="py-2 text-right font-medium">
+                            {station.priceGasolina95E5
+                              ? `${Number(station.priceGasolina95E5).toFixed(3)}€`
+                              : "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {gasStations.length > 10 && (
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-sm text-gray-500">
+                      Y {gasStations.length - 10} gasolineras más...
+                    </p>
+                    <Link
+                      href={`/gasolineras/terrestres?road=${road.id}`}
+                      className="text-sm text-orange-600 hover:text-orange-800 hover:underline flex items-center gap-1"
+                    >
+                      Ver todas <ExternalLink className="w-3 h-3" />
                     </Link>
                   </div>
                 )}

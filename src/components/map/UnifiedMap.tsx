@@ -230,6 +230,11 @@ interface UnifiedMapProps {
   defaultHeight?: string;
   showStats?: boolean;
   id?: string;
+  initialCenter?: [number, number];
+  initialZoom?: number;
+  initialLayers?: Partial<ActiveLayers>;
+  filterProvince?: string;
+  filterRoad?: string;
 }
 
 // Valid filter values for URL parsing
@@ -241,6 +246,11 @@ export function UnifiedMap({
   defaultHeight = "500px",
   showStats = true,
   id = "mapa",
+  initialCenter,
+  initialZoom,
+  initialLayers,
+  filterProvince,
+  filterRoad,
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<TrafficMapRef>(null);
@@ -253,8 +263,26 @@ export function UnifiedMap({
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
-  // Parse initial state from URL
+  // Parse initial state from URL or props
   const getInitialLayers = (): ActiveLayers => {
+    // If initialLayers prop is provided, use it as the base
+    if (initialLayers) {
+      return {
+        v16: initialLayers.v16 ?? false,
+        incidents: initialLayers.incidents ?? false,
+        cameras: initialLayers.cameras ?? false,
+        chargers: initialLayers.chargers ?? false,
+        zbe: initialLayers.zbe ?? false,
+        weather: initialLayers.weather ?? false,
+        highways: initialLayers.highways ?? false,
+        provinces: initialLayers.provinces ?? false,
+        radars: initialLayers.radars ?? false,
+        riskZones: initialLayers.riskZones ?? false,
+        gasStations: initialLayers.gasStations ?? false,
+        maritimeStations: initialLayers.maritimeStations ?? false,
+      };
+    }
+
     const layersParam = searchParams.get("layers");
     if (layersParam) {
       const urlLayers = layersParam.split(",").filter((l) => VALID_LAYERS.includes(l as keyof ActiveLayers));
@@ -398,14 +426,31 @@ export function UnifiedMap({
     { revalidateOnFocus: false }
   );
 
+  // Build gas stations URL with filters
+  const gasStationsUrl = (() => {
+    if (!activeLayers.gasStations) return null;
+    const params = new URLSearchParams({ limit: "500" });
+    if (filterProvince) params.set("province", filterProvince);
+    if (filterRoad) params.set("road", filterRoad);
+    return `/api/gas-stations?${params.toString()}`;
+  })();
+
   const { data: gasStationsData } = useSWR<GasStationsResponse>(
-    activeLayers.gasStations ? "/api/gas-stations?limit=500" : null,
+    gasStationsUrl,
     fetcher,
     { revalidateOnFocus: false }
   );
 
+  // Build maritime stations URL with filters
+  const maritimeStationsUrl = (() => {
+    if (!activeLayers.maritimeStations) return null;
+    const params = new URLSearchParams({ limit: "200" });
+    if (filterProvince) params.set("province", filterProvince);
+    return `/api/maritime-stations?${params.toString()}`;
+  })();
+
   const { data: maritimeStationsData } = useSWR<MaritimeStationsResponse>(
-    activeLayers.maritimeStations ? "/api/maritime-stations?limit=200" : null,
+    maritimeStationsUrl,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -436,6 +481,17 @@ export function UnifiedMap({
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  // Handle initial center/zoom when provided via props
+  useEffect(() => {
+    if (initialCenter && mapRef.current) {
+      // Small delay to ensure map is fully loaded
+      const timer = setTimeout(() => {
+        mapRef.current?.flyTo(initialCenter[0], initialCenter[1], initialZoom || 9);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [initialCenter, initialZoom]);
 
   // Keyboard shortcuts
   useEffect(() => {
