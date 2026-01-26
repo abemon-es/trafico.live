@@ -20,7 +20,7 @@ async function getStats() {
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const yesterdayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
 
-  const [nationalStats, yesterday, taxFreeStats, terrestrialCount, maritimeCount] = await Promise.all([
+  const [nationalStats, yesterday, taxFreeStats, terrestrialCount, maritimeCount, maritimeStats] = await Promise.all([
     prisma.fuelPriceDailyStats.findFirst({
       where: { scope: "national", date: today },
     }),
@@ -34,6 +34,12 @@ async function getStats() {
       where: { province: { notIn: TAX_FREE_PROVINCES } },
     }),
     prisma.maritimeStation.count(),
+    prisma.maritimeStation.aggregate({
+      _avg: { priceGasoleoA: true, priceGasoleoB: true, priceGasolina95E5: true },
+      _min: { priceGasoleoA: true, priceGasoleoB: true, priceGasolina95E5: true },
+      _max: { priceGasoleoA: true, priceGasoleoB: true, priceGasolina95E5: true },
+      _count: true,
+    }),
   ]);
 
   // Stats individuales de territorios especiales
@@ -63,12 +69,13 @@ async function getStats() {
     canariasAvg,
     terrestrialCount,
     maritimeCount,
+    maritimeStats,
   };
 }
 
 async function getCheapestStations() {
   // Excluir zonas con fiscalidad especial para comparación justa
-  const [cheapestDiesel, cheapestGas95] = await Promise.all([
+  const [cheapestDiesel, cheapestGas95, cheapestMaritimeDiesel] = await Promise.all([
     prisma.gasStation.findMany({
       where: {
         priceGasoleoA: { not: null },
@@ -85,9 +92,14 @@ async function getCheapestStations() {
       orderBy: { priceGasolina95E5: "asc" },
       take: 5,
     }),
+    prisma.maritimeStation.findMany({
+      where: { priceGasoleoA: { not: null } },
+      orderBy: { priceGasoleoA: "asc" },
+      take: 5,
+    }),
   ]);
 
-  return { cheapestDiesel, cheapestGas95 };
+  return { cheapestDiesel, cheapestGas95, cheapestMaritimeDiesel };
 }
 
 function TrendBadge({ current, previous }: { current: number | null; previous: number | null }) {
@@ -238,6 +250,49 @@ export default async function GasolinerasPage() {
         </div>
       )}
 
+      {/* Maritime Stats */}
+      {stats.maritimeStats._count > 0 && (
+        <div className="bg-white rounded-lg border border-blue-200 p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Anchor className="w-6 h-6 text-blue-600" />
+            Precios Medios Estaciones Marítimas
+            <span className="text-sm font-normal text-gray-500 ml-2">
+              ({stats.maritimeCount.toLocaleString("es-ES")} estaciones en puertos)
+            </span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-amber-50 rounded-lg p-4">
+              <div className="text-sm text-amber-600 mb-1">Gasóleo A</div>
+              <div className="text-3xl font-bold text-amber-700 mb-2">
+                {formatPrice(stats.maritimeStats._avg.priceGasoleoA)}
+              </div>
+              <div className="text-xs text-amber-600">
+                Min: {formatPrice(stats.maritimeStats._min.priceGasoleoA)} | Max: {formatPrice(stats.maritimeStats._max.priceGasoleoA)}
+              </div>
+            </div>
+            <div className="bg-cyan-50 rounded-lg p-4">
+              <div className="text-sm text-cyan-600 mb-1">Gasóleo B</div>
+              <div className="text-3xl font-bold text-cyan-700 mb-2">
+                {formatPrice(stats.maritimeStats._avg.priceGasoleoB)}
+              </div>
+              <div className="text-xs text-cyan-600">
+                Min: {formatPrice(stats.maritimeStats._min.priceGasoleoB)} | Max: {formatPrice(stats.maritimeStats._max.priceGasoleoB)}
+              </div>
+              <div className="text-xs text-cyan-500 mt-1">(uso náutico/pesca)</div>
+            </div>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="text-sm text-blue-600 mb-1">Gasolina 95</div>
+              <div className="text-3xl font-bold text-blue-700 mb-2">
+                {formatPrice(stats.maritimeStats._avg.priceGasolina95E5)}
+              </div>
+              <div className="text-xs text-blue-600">
+                Min: {formatPrice(stats.maritimeStats._min.priceGasolina95E5)} | Max: {formatPrice(stats.maritimeStats._max.priceGasolina95E5)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Territorios con Fiscalidad Especial */}
       {(stats.ceutaStats || stats.melillaStats || stats.canariasAvg) && (
         <div className="bg-amber-50 rounded-lg border border-amber-200 p-6 mb-8">
@@ -353,6 +408,38 @@ export default async function GasolinerasPage() {
           </div>
         </div>
       </div>
+
+      {/* Cheapest Maritime Stations */}
+      {cheapest.cheapestMaritimeDiesel.length > 0 && (
+        <div className="bg-white rounded-lg border border-blue-200 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Anchor className="w-5 h-5 text-blue-600" />
+            Gasóleo A Más Barato - Marítimas
+          </h2>
+          <div className="space-y-3">
+            {cheapest.cheapestMaritimeDiesel.map((station, idx) => (
+              <Link
+                key={station.id}
+                href={`/gasolineras/maritimas/${station.id}`}
+                className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center border border-blue-200">
+                    {idx + 1}
+                  </span>
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">{station.name}</div>
+                    <div className="text-xs text-gray-500">{station.port || station.locality}{station.provinceName && `, ${station.provinceName}`}</div>
+                  </div>
+                </div>
+                <div className="text-lg font-bold text-blue-700">
+                  {formatPrice(station.priceGasoleoA)}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Info Box */}
       <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
