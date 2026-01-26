@@ -6,7 +6,7 @@ import { BreakdownCharts } from "@/components/stats/BreakdownCharts";
 import { TimeSeriesChart } from "@/components/stats/TimeSeriesChart";
 import { InfrastructureStatus } from "@/components/stats/InfrastructureStatus";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
-import { Footer } from "@/components/layout/Footer";
+import { QuickActions } from "@/components/home/QuickActions";
 import { Map as MapIcon } from "lucide-react";
 
 function MapLoading() {
@@ -29,6 +29,9 @@ export default function Dashboard() {
         {/* Stats Cards with sparklines and comparisons */}
         <EnhancedStatsCards />
 
+        {/* Quick Actions Bar */}
+        <QuickActions />
+
         {/* Unified Map Section */}
         <Suspense fallback={<MapLoading />}>
           <UnifiedMap defaultHeight="550px" />
@@ -45,9 +48,6 @@ export default function Dashboard() {
         {/* Infrastructure Status */}
         <InfrastructureStatus />
       </main>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

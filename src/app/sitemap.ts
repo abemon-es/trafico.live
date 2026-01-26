@@ -6,6 +6,14 @@ export const dynamic = 'force-dynamic';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.logisticsexpress.es";
 
+// Major cities for city pages
+const CITIES = [
+  "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
+  "malaga", "murcia", "palma", "bilbao", "alicante",
+  "cordoba", "valladolid", "vigo", "gijon", "granada",
+  "vitoria", "oviedo", "san-sebastian", "santander", "pamplona"
+];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
@@ -23,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 0.9,
     },
+    // Roads section
     {
       url: `${BASE_URL}/carreteras`,
       lastModified: now,
@@ -53,6 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    // Incidents (with alias)
     {
       url: `${BASE_URL}/incidencias`,
       lastModified: now,
@@ -60,11 +70,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${BASE_URL}/alertas`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
+    // Cameras
+    {
       url: `${BASE_URL}/camaras`,
       lastModified: now,
       changeFrequency: "hourly",
       priority: 0.8,
     },
+    // Statistics
     {
       url: `${BASE_URL}/estadisticas`,
       lastModified: now,
@@ -77,6 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    // Geographic
     {
       url: `${BASE_URL}/espana`,
       lastModified: now,
@@ -96,11 +115,100 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${BASE_URL}/ciudad`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    // Gas stations (with alias)
+    {
+      url: `${BASE_URL}/gasolineras`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/combustible`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/gasolineras/terrestres`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/gasolineras/maritimas`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/gasolineras/precios`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/gasolineras/mapa`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    // EV Chargers section (NEW)
+    {
+      url: `${BASE_URL}/carga-ev`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/carga-ev/cerca`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    // Professional section (NEW)
+    {
+      url: `${BASE_URL}/profesional`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/profesional/diesel`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/profesional/areas`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/profesional/restricciones`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    // Explore
+    {
       url: `${BASE_URL}/explorar`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    {
+      url: `${BASE_URL}/explorar/infraestructura`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    // About
     {
       url: `${BASE_URL}/sobre`,
       lastModified: now,
@@ -108,6 +216,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     },
   ];
+
+  // City pages (NEW)
+  const cityPages: MetadataRoute.Sitemap = CITIES.map((city) => ({
+    url: `${BASE_URL}/ciudad/${city}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.75,
+  }));
+
+  // EV charger city pages (NEW)
+  const evCityPages: MetadataRoute.Sitemap = CITIES.slice(0, 10).map((city) => ({
+    url: `${BASE_URL}/carga-ev/${city}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.7,
+  }));
 
   // Get all roads for dynamic pages
   const roads = await prisma.road.findMany({
@@ -186,5 +310,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...roadPages, ...provincePages, ...communityPages];
+  return [
+    ...staticPages,
+    ...cityPages,
+    ...evCityPages,
+    ...roadPages,
+    ...provincePages,
+    ...communityPages
+  ];
 }

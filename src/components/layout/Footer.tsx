@@ -6,87 +6,51 @@ export function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
-          {/* About */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Tráfico España</h3>
-            <p className="text-sm text-gray-600">
-              Monitorización en tiempo real del tráfico español con datos oficiales de la DGT.
-            </p>
-          </div>
+        {/* Brand Section */}
+        <div className="mb-8 pb-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Tráfico España</h2>
+          <p className="text-sm text-gray-600 max-w-xl">
+            Inteligencia vial en tiempo real con datos oficiales de la DGT. Monitorización del tráfico español,
+            precios de combustible, cargadores eléctricos y zonas de bajas emisiones.
+          </p>
+        </div>
 
+        {/* Main Footer Content - 6 Columns */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-8">
           {/* Carreteras */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Carreteras</h3>
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wider">Carreteras</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/carreteras" className="text-gray-600 hover:text-gray-900">
-                  Todas las carreteras
-                </Link>
-              </li>
-              <li>
                 <Link href="/carreteras/autopistas" className="text-gray-600 hover:text-gray-900">
-                  Autopistas (AP)
+                  Autopistas
                 </Link>
               </li>
               <li>
                 <Link href="/carreteras/autovias" className="text-gray-600 hover:text-gray-900">
-                  Autovías (A)
+                  Autovías
                 </Link>
               </li>
               <li>
                 <Link href="/carreteras/nacionales" className="text-gray-600 hover:text-gray-900">
-                  Nacionales (N)
+                  Nacionales
+                </Link>
+              </li>
+              <li>
+                <Link href="/carreteras/regionales" className="text-gray-600 hover:text-gray-900">
+                  Regionales
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Herramientas */}
+          {/* Combustible */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Herramientas</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/mapa" className="text-gray-600 hover:text-gray-900">
-                  Mapa en tiempo real
-                </Link>
-              </li>
-              <li>
-                <Link href="/incidencias" className="text-gray-600 hover:text-gray-900">
-                  Incidencias activas
-                </Link>
-              </li>
-              <li>
-                <Link href="/camaras" className="text-gray-600 hover:text-gray-900">
-                  Cámaras de tráfico
-                </Link>
-              </li>
-              <li>
-                <Link href="/historico" className="text-gray-600 hover:text-gray-900">
-                  Datos históricos
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Gasolineras */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Gasolineras</h3>
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wider">Combustible</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/gasolineras" className="text-gray-600 hover:text-gray-900">
-                  Precios de hoy
-                </Link>
-              </li>
-              <li>
-                <Link href="/gasolineras/terrestres" className="text-gray-600 hover:text-gray-900">
-                  Terrestres
-                </Link>
-              </li>
-              <li>
-                <Link href="/gasolineras/maritimas" className="text-gray-600 hover:text-gray-900">
-                  Marítimas
+                  Precios hoy
                 </Link>
               </li>
               <li>
@@ -99,21 +63,107 @@ export function Footer() {
                   Mapa
                 </Link>
               </li>
+              <li>
+                <Link href="/gasolineras/maritimas" className="text-gray-600 hover:text-gray-900">
+                  Marítimas
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Info */}
+          {/* Infraestructura */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Información</h3>
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wider">Infraestr.</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/sobre" className="text-gray-600 hover:text-gray-900">
-                  Sobre nosotros
+                <Link href="/camaras" className="text-gray-600 hover:text-gray-900">
+                  Cámaras
+                </Link>
+              </li>
+              <li>
+                <Link href="/explorar/infraestructura" className="text-gray-600 hover:text-gray-900">
+                  Radares
+                </Link>
+              </li>
+              <li>
+                <Link href="/carga-ev" className="text-gray-600 hover:text-gray-900">
+                  Cargadores EV
+                </Link>
+              </li>
+              <li>
+                <Link href="/explorar/infraestructura" className="text-gray-600 hover:text-gray-900">
+                  Zonas ZBE
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Por Zona */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wider">Por Zona</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/comunidad-autonoma" className="text-gray-600 hover:text-gray-900">
+                  Comunidades
+                </Link>
+              </li>
+              <li>
+                <Link href="/espana" className="text-gray-600 hover:text-gray-900">
+                  Provincias
+                </Link>
+              </li>
+              <li>
+                <Link href="/ciudad/madrid" className="text-gray-600 hover:text-gray-900">
+                  Madrid
+                </Link>
+              </li>
+              <li>
+                <Link href="/ciudad/barcelona" className="text-gray-600 hover:text-gray-900">
+                  Barcelona
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Herramientas */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wider">Herramientas</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/" className="text-gray-600 hover:text-gray-900">
+                  Mapa en vivo
+                </Link>
+              </li>
+              <li>
+                <Link href="/incidencias" className="text-gray-600 hover:text-gray-900">
+                  Alertas
+                </Link>
+              </li>
+              <li>
+                <Link href="/camaras" className="text-gray-600 hover:text-gray-900">
+                  Cámaras DGT
                 </Link>
               </li>
               <li>
                 <Link href="/estadisticas" className="text-gray-600 hover:text-gray-900">
                   Estadísticas
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Información */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wider">Info</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/profesional" className="text-gray-600 hover:text-gray-900">
+                  Profesional
+                </Link>
+              </li>
+              <li>
+                <Link href="/sobre" className="text-gray-600 hover:text-gray-900">
+                  Sobre nosotros
                 </Link>
               </li>
               <li>

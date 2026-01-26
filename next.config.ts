@@ -53,6 +53,28 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      // Dual routing: /combustible serves /gasolineras content
+      {
+        source: "/combustible",
+        destination: "/gasolineras",
+      },
+      {
+        source: "/combustible/:path*",
+        destination: "/gasolineras/:path*",
+      },
+      // Dual routing: /alertas serves /incidencias content
+      {
+        source: "/alertas",
+        destination: "/incidencias",
+      },
+      {
+        source: "/alertas/:path*",
+        destination: "/incidencias/:path*",
+      },
+    ];
+  },
   async redirects() {
     return [
       // Redirect old /provincias to /espana
@@ -61,14 +83,9 @@ const nextConfig: NextConfig = {
         destination: "/espana",
         permanent: true,
       },
-      // Redirect /mapa and /incidencias to homepage (unified map now on /)
+      // Redirect /mapa to homepage (unified map now on /)
       {
         source: "/mapa",
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/incidencias",
         destination: "/",
         permanent: true,
       },
