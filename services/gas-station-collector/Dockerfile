@@ -23,5 +23,5 @@ RUN npx prisma generate
 # Copy collector scripts
 COPY *.ts ./
 
-# Run all collectors
-CMD ["sh", "-c", "npx tsx collector.ts && npx tsx maritime.ts && npx tsx aggregator.ts"]
+# Sync schema and run all collectors
+CMD ["sh", "-c", "npx prisma db push --skip-generate && npx tsx collector.ts && npx tsx maritime.ts && npx tsx aggregator.ts"]

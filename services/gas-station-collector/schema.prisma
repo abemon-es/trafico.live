@@ -474,6 +474,7 @@ model HistoricalAccidents {
   @@unique([year, province, roadType])
   @@index([year])
   @@index([province])
+  @@index([province, year])
 }
 
 model VehicleFleet {
@@ -612,6 +613,8 @@ model SpeedLimit {
   @@index([speedLimit])
   @@index([province])
   @@index([speedLimitType])
+  @@index([roadNumber, direction])
+  @@index([province, speedLimitType])
 }
 
 enum SpeedLimitType {
@@ -831,8 +834,10 @@ model MaritimeStation {
   provinceName String?
 
   // Fuel prices (EUR) - Maritime fuels
+  // Note: priceGasoleoB uses Decimal(7,3) because maritime/fishing ports
+  // report bulk prices per 1000L (values 500-1100 EUR)
   priceGasoleoA     Decimal? @db.Decimal(5, 3)
-  priceGasoleoB     Decimal? @db.Decimal(5, 3)
+  priceGasoleoB     Decimal? @db.Decimal(7, 3)
   priceGasolina95E5 Decimal? @db.Decimal(5, 3)
   priceGasolina98E5 Decimal? @db.Decimal(5, 3)
 
