@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   description: "Consulta los precios medios de combustible por provincia y comunidad autónoma. Actualizado varias veces al día.",
 };
 
-export const revalidate = 600;
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
 
 const PROVINCES: Record<string, string> = {
   "01": "Álava", "02": "Albacete", "03": "Alicante", "04": "Almería",

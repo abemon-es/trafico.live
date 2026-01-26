@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   description: "Consulta los precios de combustible actualizados en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti.",
 };
 
-export const revalidate = 600; // 10 minutes
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
 
 async function getStats() {
   const today = new Date();
