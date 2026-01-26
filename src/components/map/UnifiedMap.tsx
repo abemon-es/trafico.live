@@ -168,6 +168,64 @@ interface ZBEResponse {
   error?: string;
 }
 
+export interface GasStationData {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: string | null;
+  postalCode: string | null;
+  locality: string | null;
+  municipality: string | null;
+  province: string | null;
+  provinceName: string | null;
+  priceGasoleoA: number | null;
+  priceGasolina95E5: number | null;
+  priceGasolina98E5: number | null;
+  priceGLP: number | null;
+  schedule: string | null;
+  is24h: boolean;
+  lastPriceUpdate: string;
+}
+
+interface GasStationsResponse {
+  success: boolean;
+  data: GasStationData[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+}
+
+export interface MaritimeStationData {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  port: string | null;
+  locality: string | null;
+  province: string | null;
+  provinceName: string | null;
+  priceGasoleoA: number | null;
+  priceGasolina95E5: number | null;
+  schedule: string | null;
+  is24h: boolean;
+  lastPriceUpdate: string;
+}
+
+interface MaritimeStationsResponse {
+  success: boolean;
+  data: MaritimeStationData[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+}
+
 interface UnifiedMapProps {
   defaultHeight?: string;
   showStats?: boolean;
@@ -177,7 +235,7 @@ interface UnifiedMapProps {
 // Valid filter values for URL parsing
 const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
 const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
-const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones"];
+const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations"];
 
 export function UnifiedMap({
   defaultHeight = "500px",
@@ -211,6 +269,8 @@ export function UnifiedMap({
         provinces: urlLayers.includes("provinces"),
         radars: urlLayers.includes("radars"),
         riskZones: urlLayers.includes("riskZones"),
+        gasStations: urlLayers.includes("gasStations"),
+        maritimeStations: urlLayers.includes("maritimeStations"),
       };
     }
     // Default layers
@@ -225,6 +285,8 @@ export function UnifiedMap({
       provinces: false,
       radars: false,
       riskZones: false,
+      gasStations: false,
+      maritimeStations: false,
     };
   };
 
@@ -336,6 +398,18 @@ export function UnifiedMap({
     { revalidateOnFocus: false }
   );
 
+  const { data: gasStationsData } = useSWR<GasStationsResponse>(
+    activeLayers.gasStations ? "/api/gas-stations?limit=500" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: maritimeStationsData } = useSWR<MaritimeStationsResponse>(
+    activeLayers.maritimeStations ? "/api/maritime-stations?limit=200" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
   const isLoading = v16Loading || incidentsLoading;
 
   // Handle fullscreen
@@ -427,6 +501,8 @@ export function UnifiedMap({
     radars: radarsData?.count || 0,
     riskZones: riskZonesData?.data?.zones?.length || 0,
     zbe: zbeData?.data?.zones?.length || 0,
+    gasStations: gasStationsData?.pagination?.total || 0,
+    maritimeStations: maritimeStationsData?.pagination?.total || 0,
   };
 
   // Height calculation
@@ -488,6 +564,8 @@ export function UnifiedMap({
               radarData={activeLayers.radars ? radarsData?.radars : undefined}
               riskZoneData={activeLayers.riskZones ? riskZonesData?.data?.zones : undefined}
               zbeData={activeLayers.zbe ? zbeData?.data?.zones : undefined}
+              gasStationData={activeLayers.gasStations ? gasStationsData?.data : undefined}
+              maritimeStationData={activeLayers.maritimeStations ? maritimeStationsData?.data : undefined}
               incidentFilters={incidentFilters}
               height="100%"
               onIncidentClick={handleIncidentClick}

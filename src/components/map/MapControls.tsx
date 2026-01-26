@@ -19,6 +19,8 @@ import {
   Navigation,
   Radar,
   ShieldAlert,
+  Fuel,
+  Anchor,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -36,6 +38,8 @@ export interface ActiveLayers {
   provinces: boolean;
   radars: boolean;
   riskZones: boolean;
+  gasStations: boolean;
+  maritimeStations: boolean;
 }
 
 export interface IncidentFilters {
@@ -64,6 +68,8 @@ interface MapControlsProps {
     radars: number;
     riskZones: number;
     zbe: number;
+    gasStations: number;
+    maritimeStations: number;
   };
 }
 
@@ -326,6 +332,20 @@ export function MapControls({
               onClick={() => onLayerToggle("chargers")}
               color="green"
               icon={<Zap className="w-4 h-4" />}
+            />
+            <LayerToggle
+              label={`Gasolineras${counts?.gasStations ? ` (${counts.gasStations})` : ""}`}
+              active={activeLayers.gasStations}
+              onClick={() => onLayerToggle("gasStations")}
+              color="orange"
+              icon={<Fuel className="w-4 h-4" />}
+            />
+            <LayerToggle
+              label={`Marítimas${counts?.maritimeStations ? ` (${counts.maritimeStations})` : ""}`}
+              active={activeLayers.maritimeStations}
+              onClick={() => onLayerToggle("maritimeStations")}
+              color="blue"
+              icon={<Anchor className="w-4 h-4" />}
             />
             <LayerToggle
               label={`Zonas ZBE${counts?.zbe ? ` (${counts.zbe})` : ""}`}

@@ -1,0 +1,13 @@
+[build]
+dockerfilePath = "services/gas-station-collector/Dockerfile"
+
+[deploy]
+restartPolicyType = "never"
+healthcheckPath = ""
+healthcheckTimeout = 100
+numReplicas = 1
+
+[cron]
+# Run 3x daily: 7:00, 14:00, 21:00 Madrid time (UTC+1/+2)
+# Prices can change throughout the day
+schedule = "0 6,13,20 * * *"

@@ -750,3 +750,163 @@ model TrafficFlow {
   @@index([year])
   @@index([roadType])
 }
+
+// ============================================
+// GAS STATIONS (Gasolineras)
+// ============================================
+
+model GasStation {
+  id   String @id // IDEESS from MINETUR API
+  name String // Rótulo (brand name: REPSOL, CEPSA, etc.)
+
+  // Location
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  address   String?
+  postalCode String? @db.VarChar(5)
+  locality  String?
+  municipality String?
+  municipalityCode String? // INE code for relation
+
+  // Administrative
+  province     String? // INE 2-digit code
+  provinceName String?
+  communityCode String? // INE 2-digit code
+
+  // Road association (for road listings)
+  nearestRoad String? // "A-1", "N-340"
+  roadKm      Decimal? @db.Decimal(7, 2)
+
+  // Fuel prices (EUR) - Main fuels
+  priceGasoleoA       Decimal? @db.Decimal(5, 3) // Diesel standard
+  priceGasoleoB       Decimal? @db.Decimal(5, 3) // Diesel agricultural
+  priceGasoleoPremium Decimal? @db.Decimal(5, 3) // Diesel premium
+  priceGasolina95E5   Decimal? @db.Decimal(5, 3) // Gasolina 95 (E5)
+  priceGasolina95E10  Decimal? @db.Decimal(5, 3) // Gasolina 95 (E10)
+  priceGasolina98E5   Decimal? @db.Decimal(5, 3) // Gasolina 98 (E5)
+  priceGasolina98E10  Decimal? @db.Decimal(5, 3) // Gasolina 98 (E10)
+
+  // Alternative fuels
+  priceGLP       Decimal? @db.Decimal(5, 3) // LPG
+  priceGNC       Decimal? @db.Decimal(5, 3) // Compressed Natural Gas
+  priceGNL       Decimal? @db.Decimal(5, 3) // Liquefied Natural Gas
+  priceHidrogeno Decimal? @db.Decimal(5, 3) // Hydrogen
+  priceAdblue    Decimal? @db.Decimal(5, 3) // AdBlue
+
+  // Station info
+  schedule    String? // "L-D: 24H" or "L-S: 08:00-22:00"
+  is24h       Boolean @default(false)
+  margin      String? // D (right), I (left), N (not applicable)
+  saleType    String? // P (public), R (restricted)
+
+  // Timestamps
+  lastPriceUpdate DateTime @db.Timestamptz
+  lastUpdated     DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  priceHistory GasStationPriceHistory[]
+
+  @@index([province])
+  @@index([municipality])
+  @@index([nearestRoad])
+  @@index([priceGasoleoA])
+  @@index([priceGasolina95E5])
+  @@index([is24h])
+  @@index([communityCode])
+  @@index([lastPriceUpdate])
+}
+
+model MaritimeStation {
+  id   String @id // IDEESS from MINETUR API (maritime)
+  name String // Brand name
+
+  // Location
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  port      String? // Port name
+  locality  String?
+
+  // Administrative
+  province     String?
+  provinceName String?
+
+  // Fuel prices (EUR) - Maritime fuels
+  priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasoleoB     Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5 Decimal? @db.Decimal(5, 3)
+  priceGasolina98E5 Decimal? @db.Decimal(5, 3)
+
+  // Station info
+  schedule String?
+  is24h    Boolean @default(false)
+
+  // Timestamps
+  lastPriceUpdate DateTime @db.Timestamptz
+  lastUpdated     DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  priceHistory MaritimePriceHistory[]
+
+  @@index([province])
+  @@index([port])
+}
+
+// Price history for trend analysis
+model GasStationPriceHistory {
+  id         String     @id @default(cuid())
+  stationId  String
+  station    GasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  recordedAt DateTime   @db.Date // One record per day
+
+  // Main prices only (to control table size)
+  priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5 Decimal? @db.Decimal(5, 3)
+  priceGasolina98E5 Decimal? @db.Decimal(5, 3)
+  priceGLP          Decimal? @db.Decimal(5, 3)
+
+  @@unique([stationId, recordedAt])
+  @@index([stationId])
+  @@index([recordedAt])
+}
+
+model MaritimePriceHistory {
+  id         String          @id @default(cuid())
+  stationId  String
+  station    MaritimeStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  recordedAt DateTime        @db.Date
+
+  priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5 Decimal? @db.Decimal(5, 3)
+
+  @@unique([stationId, recordedAt])
+  @@index([stationId])
+  @@index([recordedAt])
+}
+
+// Daily aggregated statistics for fast queries
+model FuelPriceDailyStats {
+  id    String   @id @default(cuid())
+  date  DateTime @db.Date
+  scope String // "national", "province:28", "community:13", "road:A-1"
+
+  // Gasóleo A
+  avgGasoleoA Decimal? @db.Decimal(5, 3)
+  minGasoleoA Decimal? @db.Decimal(5, 3)
+  maxGasoleoA Decimal? @db.Decimal(5, 3)
+
+  // Gasolina 95
+  avgGasolina95 Decimal? @db.Decimal(5, 3)
+  minGasolina95 Decimal? @db.Decimal(5, 3)
+  maxGasolina95 Decimal? @db.Decimal(5, 3)
+
+  // Gasolina 98
+  avgGasolina98 Decimal? @db.Decimal(5, 3)
+  minGasolina98 Decimal? @db.Decimal(5, 3)
+  maxGasolina98 Decimal? @db.Decimal(5, 3)
+
+  stationCount Int
+
+  @@unique([date, scope])
+  @@index([date])
+  @@index([scope])
+}

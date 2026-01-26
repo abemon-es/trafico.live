@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar } from "lucide-react";
+import { ChevronLeft, AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar, Fuel } from "lucide-react";
 import prisma from "@/lib/db";
 
 // Province data
@@ -100,6 +100,9 @@ export default async function ProvinciaDetailPage({ params }: Props) {
     roads,
     historicalAccidents,
     previousYearAccidents,
+    gasStationCount,
+    cheapestDiesel,
+    cheapestGas95,
   ] = await Promise.all([
     // Active V16 beacons in this province
     prisma.v16BeaconEvent.count({
@@ -139,6 +142,20 @@ export default async function ProvinciaDetailPage({ params }: Props) {
       where: { province: code },
       orderBy: { year: "desc" },
       take: 2,
+    }),
+    // Gas stations in this province
+    prisma.gasStation.count({
+      where: { province: code },
+    }),
+    // Cheapest diesel station
+    prisma.gasStation.findFirst({
+      where: { province: code, priceGasoleoA: { not: null } },
+      orderBy: { priceGasoleoA: "asc" },
+    }),
+    // Cheapest gasoline 95 station
+    prisma.gasStation.findFirst({
+      where: { province: code, priceGasolina95E5: { not: null } },
+      orderBy: { priceGasolina95E5: "asc" },
     }),
   ]);
 
@@ -370,8 +387,68 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                   </div>
                   <span className="font-semibold text-gray-900">{roads.length}</span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Fuel className="w-4 h-4" />
+                    <span>Gasolineras</span>
+                  </div>
+                  <span className="font-semibold text-gray-900">{gasStationCount}</span>
+                </div>
               </div>
             </div>
+
+            {/* Gas Stations */}
+            {gasStationCount > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Gasolineras más baratas
+                  </h2>
+                  <Link
+                    href={`/gasolineras/terrestres?province=${code}`}
+                    className="text-sm text-orange-600 hover:text-orange-700"
+                  >
+                    Ver todas →
+                  </Link>
+                </div>
+                <div className="space-y-3">
+                  {cheapestDiesel && (
+                    <Link
+                      href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
+                      className="block p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs text-amber-600 mb-1">Gasóleo A más barato</div>
+                          <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestDiesel.name}</div>
+                          <div className="text-xs text-gray-500">{cheapestDiesel.locality}</div>
+                        </div>
+                        <div className="text-xl font-bold text-amber-700">
+                          {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
+                        </div>
+                      </div>
+                    </Link>
+                  )}
+                  {cheapestGas95 && (
+                    <Link
+                      href={`/gasolineras/terrestres/${cheapestGas95.id}`}
+                      className="block p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs text-blue-600 mb-1">Gasolina 95 más barata</div>
+                          <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestGas95.name}</div>
+                          <div className="text-xs text-gray-500">{cheapestGas95.locality}</div>
+                        </div>
+                        <div className="text-xl font-bold text-blue-700">
+                          {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
+                        </div>
+                      </div>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Historical stats */}
             {historicalAccidents && (

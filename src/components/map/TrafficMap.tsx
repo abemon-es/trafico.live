@@ -23,6 +23,8 @@ export interface ActiveLayers {
   provinces: boolean;
   radars: boolean;
   riskZones: boolean;
+  gasStations: boolean;
+  maritimeStations: boolean;
 }
 
 export interface IncidentFilters {
@@ -142,6 +144,42 @@ export interface ZBEZone {
   lastUpdated: string;
 }
 
+export interface GasStation {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: string | null;
+  postalCode: string | null;
+  locality: string | null;
+  municipality: string | null;
+  province: string | null;
+  provinceName: string | null;
+  priceGasoleoA: number | null;
+  priceGasolina95E5: number | null;
+  priceGasolina98E5: number | null;
+  priceGLP: number | null;
+  schedule: string | null;
+  is24h: boolean;
+  lastPriceUpdate: string;
+}
+
+export interface MaritimeStation {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  port: string | null;
+  locality: string | null;
+  province: string | null;
+  provinceName: string | null;
+  priceGasoleoA: number | null;
+  priceGasolina95E5: number | null;
+  schedule: string | null;
+  is24h: boolean;
+  lastPriceUpdate: string;
+}
+
 export interface TrafficMapRef {
   flyTo: (lng: number, lat: number, zoom?: number) => void;
   getMap: () => maplibregl.Map | null;
@@ -157,6 +195,8 @@ interface TrafficMapProps {
   radarData?: Radar[];
   riskZoneData?: RiskZone[];
   zbeData?: ZBEZone[];
+  gasStationData?: GasStation[];
+  maritimeStationData?: MaritimeStation[];
   incidentFilters?: IncidentFilters;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
@@ -311,7 +351,7 @@ function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
 }
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, incidentFilters, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, incidentFilters, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -343,6 +383,8 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   const radars = radarData || [];
   const riskZones = riskZoneData || [];
   const zbeZones = zbeData || [];
+  const gasStations = gasStationData || [];
+  const maritimeStations = maritimeStationData || [];
 
   // Filter incidents based on incidentFilters
   const incidents = (incidentData || []).filter((incident) => {
@@ -1426,7 +1468,142 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         markersRef.current.push(marker);
       }
     }
-  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, weatherData, provinceCoords, onIncidentClick]);
+
+    // Add gas stations
+    if (activeLayers.gasStations && gasStations.length > 0) {
+      gasStations.forEach((station) => {
+        const el = document.createElement("div");
+        el.className = "gas-station-marker";
+        el.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" fill="#f97316" stroke="white" stroke-width="2"/>
+            <path d="M7 18V8C7 7.45 7.196 6.98 7.588 6.59C7.98 6.2 8.45 6.005 9 6.005H13C13.55 6.005 14.021 6.2 14.413 6.59C14.805 6.98 15.001 7.45 15.001 8V18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M15 11H16.5C17.05 11 17.521 11.196 17.913 11.588C18.305 11.98 18.501 12.45 18.501 13V15C18.501 15.283 18.596 15.521 18.786 15.711C18.976 15.901 19.214 15.996 19.497 15.996C19.78 15.996 20.018 15.901 20.211 15.711C20.404 15.521 20.501 15.283 20.501 15V10" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <rect x="9" y="10" width="4" height="3" fill="white"/>
+          </svg>
+        `;
+        el.style.cursor = "pointer";
+
+        const formatPrice = (price: number | null) => price ? `${price.toFixed(3)}€` : "N/D";
+        const is24hBadge = station.is24h
+          ? '<span class="inline-block px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded ml-1">24h</span>'
+          : '';
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([station.longitude, station.latitude])
+          .setPopup(
+            new maplibregl.Popup({ offset: 25, maxWidth: "300px" }).setHTML(`
+              <div class="p-2 min-w-[220px]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+                  <span class="font-bold text-sm flex-1">${station.name}</span>
+                  ${is24hBadge}
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                  ${station.priceGasoleoA ? `
+                    <div class="bg-amber-50 p-1.5 rounded">
+                      <div class="text-xs text-amber-600">Gasóleo A</div>
+                      <div class="font-bold text-amber-700">${formatPrice(station.priceGasoleoA)}</div>
+                    </div>
+                  ` : ''}
+                  ${station.priceGasolina95E5 ? `
+                    <div class="bg-blue-50 p-1.5 rounded">
+                      <div class="text-xs text-blue-600">Gasolina 95</div>
+                      <div class="font-bold text-blue-700">${formatPrice(station.priceGasolina95E5)}</div>
+                    </div>
+                  ` : ''}
+                  ${station.priceGasolina98E5 ? `
+                    <div class="bg-purple-50 p-1.5 rounded">
+                      <div class="text-xs text-purple-600">Gasolina 98</div>
+                      <div class="font-bold text-purple-700">${formatPrice(station.priceGasolina98E5)}</div>
+                    </div>
+                  ` : ''}
+                  ${station.priceGLP ? `
+                    <div class="bg-green-50 p-1.5 rounded">
+                      <div class="text-xs text-green-600">GLP</div>
+                      <div class="font-bold text-green-700">${formatPrice(station.priceGLP)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="text-xs text-gray-600 space-y-1">
+                  ${station.address ? `<p>${station.address}</p>` : ''}
+                  ${station.locality ? `<p>${station.locality}${station.provinceName ? `, ${station.provinceName}` : ''}</p>` : ''}
+                  ${station.schedule ? `<p class="text-gray-400">${station.schedule}</p>` : ''}
+                </div>
+                <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
+                  <span class="text-xs text-gray-400">${station.latitude.toFixed(5)}, ${station.longitude.toFixed(5)}</span>
+                  <a href="/gasolineras/terrestres/${station.id}" class="text-orange-600 text-xs hover:underline">Ver detalles →</a>
+                </div>
+              </div>
+            `)
+          )
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      });
+    }
+
+    // Add maritime stations
+    if (activeLayers.maritimeStations && maritimeStations.length > 0) {
+      maritimeStations.forEach((station) => {
+        const el = document.createElement("div");
+        el.className = "maritime-station-marker";
+        el.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" fill="#3b82f6" stroke="white" stroke-width="2"/>
+            <path d="M12 5V12M12 12L8 16M12 12L16 16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 19H18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        `;
+        el.style.cursor = "pointer";
+
+        const formatPrice = (price: number | null) => price ? `${price.toFixed(3)}€` : "N/D";
+        const is24hBadge = station.is24h
+          ? '<span class="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded ml-1">24h</span>'
+          : '';
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([station.longitude, station.latitude])
+          .setPopup(
+            new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
+              <div class="p-2 min-w-[200px]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                  <span class="font-bold text-sm flex-1">${station.name}</span>
+                  ${is24hBadge}
+                </div>
+                ${station.port ? `<p class="text-sm text-blue-600 mb-2">Puerto: ${station.port}</p>` : ''}
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                  ${station.priceGasoleoA ? `
+                    <div class="bg-amber-50 p-1.5 rounded">
+                      <div class="text-xs text-amber-600">Gasóleo A</div>
+                      <div class="font-bold text-amber-700">${formatPrice(station.priceGasoleoA)}</div>
+                    </div>
+                  ` : ''}
+                  ${station.priceGasolina95E5 ? `
+                    <div class="bg-blue-50 p-1.5 rounded">
+                      <div class="text-xs text-blue-600">Gasolina 95</div>
+                      <div class="font-bold text-blue-700">${formatPrice(station.priceGasolina95E5)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="text-xs text-gray-600 space-y-1">
+                  ${station.locality ? `<p>${station.locality}${station.provinceName ? `, ${station.provinceName}` : ''}</p>` : ''}
+                  ${station.schedule ? `<p class="text-gray-400">${station.schedule}</p>` : ''}
+                </div>
+                <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
+                  <span class="text-xs text-gray-400">${station.latitude.toFixed(5)}, ${station.longitude.toFixed(5)}</span>
+                  <a href="/gasolineras/maritimas/${station.id}" class="text-blue-600 text-xs hover:underline">Ver detalles →</a>
+                </div>
+              </div>
+            `)
+          )
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      });
+    }
+  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, weatherData, provinceCoords, onIncidentClick, gasStations, maritimeStations]);
 
   return (
     <>

@@ -1,0 +1,17 @@
+{
+  "name": "gas-station-collector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gas station data collector from MINETUR API",
+  "scripts": {
+    "collect": "npx tsx collector.ts",
+    "maritime": "npx tsx maritime.ts",
+    "aggregate": "npx tsx aggregator.ts",
+    "all": "npm run collect && npm run maritime && npm run aggregate"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.2.0",
+    "prisma": "^7.2.0",
+    "tsx": "^4.19.0"
+  }
+}
