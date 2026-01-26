@@ -1,11 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Carreteras Regionales y Comarcales | Tráfico y Radares",
@@ -40,6 +42,8 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default async function RegionalesPage() {
+  noStore();
+
   // Get all regional roads - wrapped in try-catch for build phase
   let roads: { id: string; name: string | null; type: string; provinces: string[] }[] = [];
   let camerasByRoad: { roadNumber: string | null; _count: number }[] = [];
