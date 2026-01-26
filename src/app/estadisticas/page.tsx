@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { EstadisticasContent } from "./content";
 
 export const metadata: Metadata = {
@@ -11,6 +12,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function EstadisticasPage() {
-  return <EstadisticasContent />;
+function EstadisticasPageContent({
+  searchParams,
+}: {
+  searchParams: { tab?: string };
+}) {
+  return <EstadisticasContent initialTab={searchParams.tab} />;
+}
+
+export default function EstadisticasPage({
+  searchParams,
+}: {
+  searchParams: { tab?: string };
+}) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Cargando...</div>}>
+      <EstadisticasPageContent searchParams={searchParams} />
+    </Suspense>
+  );
 }
