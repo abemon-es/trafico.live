@@ -807,7 +807,8 @@ model GasStation {
   lastUpdated     DateTime @default(now()) @db.Timestamptz
 
   // Relations
-  priceHistory GasStationPriceHistory[]
+  priceHistory  GasStationPriceHistory[]
+  dailyRankings StationDailyRanking[]
 
   @@index([province])
   @@index([municipality])
@@ -913,4 +914,48 @@ model FuelPriceDailyStats {
   @@unique([date, scope])
   @@index([date])
   @@index([scope])
+}
+
+// Historic daily rankings for trend analysis
+model StationDailyRanking {
+  id         String     @id @default(cuid())
+  stationId  String
+  station    GasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  recordedAt DateTime   @db.Date
+
+  // Gasóleo A rankings by scope (null = not enough data in scope)
+  municipalityRankDiesel  Int?
+  municipalityTotalDiesel Int?
+  provinceRankDiesel      Int
+  provinceTotalDiesel     Int
+  nationalRankDiesel      Int
+  nationalTotalDiesel     Int
+
+  // Gasolina 95 rankings by scope
+  municipalityRank95  Int?
+  municipalityTotal95 Int?
+  provinceRank95      Int
+  provinceTotal95     Int
+  nationalRank95      Int
+  nationalTotal95     Int
+
+  // Gasolina 98 rankings by scope
+  municipalityRank98  Int?
+  municipalityTotal98 Int?
+  provinceRank98      Int?
+  provinceTotal98     Int?
+  nationalRank98      Int?
+  nationalTotal98     Int?
+
+  // GLP rankings by scope
+  municipalityRankGlp  Int?
+  municipalityTotalGlp Int?
+  provinceRankGlp      Int?
+  provinceTotalGlp     Int?
+  nationalRankGlp      Int?
+  nationalTotalGlp     Int?
+
+  @@unique([stationId, recordedAt])
+  @@index([stationId])
+  @@index([recordedAt])
 }

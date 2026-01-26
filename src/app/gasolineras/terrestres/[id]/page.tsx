@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { PriceHistoryChart } from "@/components/gas-stations";
+import { PriceHistoryChart, StationLocationMap, PriceComparisonCard, StationRanking } from "@/components/gas-stations";
 
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${station.name} - Precios Combustible | Tráfico España`,
-    description: `Precios de combustible en ${station.name}, ${station.locality}. Gasóleo A: ${station.priceGasoleoA?.toFixed(3) || "N/D"}€, Gasolina 95: ${station.priceGasolina95E5?.toFixed(3) || "N/D"}€`,
+    title: `${station.name} - Precios Combustible | Trafico Espana`,
+    description: `Precios de combustible en ${station.name}, ${station.locality}. Gasoleo A: ${station.priceGasoleoA?.toFixed(3) || "N/D"}, Gasolina 95: ${station.priceGasolina95E5?.toFixed(3) || "N/D"}`,
   };
 }
 
@@ -47,7 +47,7 @@ export default async function StationDetailPage({ params }: Props) {
     const num = typeof price === "object" && "toNumber" in price
       ? (price as { toNumber: () => number }).toNumber()
       : Number(price);
-    return `${num.toFixed(3)}€`;
+    return `${num.toFixed(3)}`;
   };
 
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`;
@@ -76,8 +76,36 @@ export default async function StationDetailPage({ params }: Props) {
     avgGasolina98: h.priceGasolina98E5 ? Number(h.priceGasolina98E5) : undefined,
   }));
 
+  // Get brand from name (usually first word or recognizable brand)
+  const brandName = station.name.split(" ")[0].toUpperCase();
+
+  // All fuel prices for display
+  const mainFuels = [
+    { key: "gasoleoA", label: "Gasoleo A", price: station.priceGasoleoA, color: "amber", trend: dieselTrend },
+    { key: "gasolina95", label: "Gasolina 95", price: station.priceGasolina95E5, color: "blue", trend: gas95Trend },
+    { key: "gasolina98", label: "Gasolina 98", price: station.priceGasolina98E5, color: "purple", trend: null },
+    { key: "glp", label: "GLP", price: station.priceGLP, color: "green", trend: null },
+  ].filter(f => f.price != null);
+
+  const additionalFuels = [
+    { key: "gasoleoB", label: "Gasoleo B", price: station.priceGasoleoB },
+    { key: "gasoleoPremium", label: "Gasoleo Premium", price: station.priceGasoleoPremium },
+    { key: "gasolina95E10", label: "Gasolina 95 E10", price: station.priceGasolina95E10 },
+    { key: "gasolina98E10", label: "Gasolina 98 E10", price: station.priceGasolina98E10 },
+    { key: "gnc", label: "GNC", price: station.priceGNC },
+    { key: "gnl", label: "GNL", price: station.priceGNL },
+    { key: "hidrogeno", label: "Hidrogeno", price: station.priceHidrogeno },
+    { key: "adblue", label: "AdBlue", price: station.priceAdblue },
+  ].filter(f => f.price != null);
+
+  // Determine service type badges
+  const badges = [];
+  if (station.is24h) badges.push({ label: "24h", color: "orange" });
+  if (station.saleType === "P") badges.push({ label: "Autoservicio", color: "gray" });
+  if (station.saleType === "R") badges.push({ label: "Asistido", color: "gray" });
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
         <Link href="/gasolineras" className="hover:text-gray-700">Gasolineras</Link>
@@ -96,15 +124,34 @@ export default async function StationDetailPage({ params }: Props) {
         Volver al listado
       </Link>
 
-      {/* Header */}
+      {/* Header with brand and badges */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Fuel className="w-6 h-6 text-orange-600" />
+          <div className="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Fuel className="w-7 h-7 text-orange-600" />
           </div>
           <div className="flex-1">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
+                {/* Brand badge */}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="inline-flex px-2 py-0.5 bg-gray-800 text-white text-xs font-bold rounded">
+                    {brandName}
+                  </span>
+                  {badges.map((badge) => (
+                    <span
+                      key={badge.label}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                        badge.color === "orange"
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {badge.label === "24h" && <Clock className="w-3 h-3" />}
+                      {badge.label}
+                    </span>
+                  ))}
+                </div>
                 <h1 className="text-2xl font-bold text-gray-900">{station.name}</h1>
                 <p className="text-gray-600">
                   {station.address && `${station.address}, `}
@@ -112,12 +159,6 @@ export default async function StationDetailPage({ params }: Props) {
                   {station.provinceName && `, ${station.provinceName}`}
                 </p>
               </div>
-              {station.is24h && (
-                <span className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-                  <Clock className="w-4 h-4" />
-                  24h
-                </span>
-              )}
             </div>
 
             {station.schedule && !station.is24h && (
@@ -135,7 +176,7 @@ export default async function StationDetailPage({ params }: Props) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Navigation className="w-4 h-4" />
-                Cómo llegar
+                Como llegar
               </a>
               <Link
                 href={`/gasolineras/mapa?lat=${station.latitude}&lng=${station.longitude}&zoom=15`}
@@ -149,95 +190,121 @@ export default async function StationDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Prices */}
+      {/* Two column layout: Map + Quick stats */}
+      <div className="grid md:grid-cols-2 gap-6 mb-6">
+        {/* Embedded Map */}
+        <StationLocationMap
+          latitude={Number(station.latitude)}
+          longitude={Number(station.longitude)}
+          name={station.name}
+          stationType="terrestrial"
+          stationId={station.id}
+          height={280}
+        />
+
+        {/* Quick Stats */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Informacion</h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Ultima actualizacion</span>
+              <span className="font-medium">{new Date(station.lastPriceUpdate).toLocaleString("es-ES")}</span>
+            </div>
+            {station.schedule && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Horario</span>
+                <span className="font-medium">{station.is24h ? "24 horas" : station.schedule}</span>
+              </div>
+            )}
+            {station.nearestRoad && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Carretera</span>
+                <span className="font-medium">
+                  {station.nearestRoad}
+                  {station.roadKm && ` - km ${Number(station.roadKm).toFixed(1)}`}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-gray-500">Municipio</span>
+              <span className="font-medium">{station.municipality || station.locality || "N/D"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Provincia</span>
+              <span className="font-medium">{station.provinceName || "N/D"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Codigo postal</span>
+              <span className="font-medium font-mono">{station.postalCode || "N/D"}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Current Prices - All fuels */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Precios Actuales</h2>
+
+        {/* Main fuels with trends */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {station.priceGasoleoA && (
-            <div className="bg-amber-50 rounded-lg p-4">
-              <div className="text-sm text-amber-600 mb-1">Gasóleo A</div>
-              <div className="text-2xl font-bold text-amber-700">{formatPrice(station.priceGasoleoA)}</div>
-              {dieselTrend && (
-                <div className={`flex items-center gap-1 text-sm mt-1 ${
-                  dieselTrend.direction === "up" ? "text-red-600" :
-                  dieselTrend.direction === "down" ? "text-green-600" : "text-gray-500"
-                }`}>
-                  {dieselTrend.direction === "up" ? <TrendingUp className="w-4 h-4" /> :
-                   dieselTrend.direction === "down" ? <TrendingDown className="w-4 h-4" /> :
-                   <Minus className="w-4 h-4" />}
-                  {dieselTrend.direction === "up" ? "+" : ""}{dieselTrend.change}€
-                </div>
-              )}
-            </div>
-          )}
-          {station.priceGasolina95E5 && (
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="text-sm text-blue-600 mb-1">Gasolina 95</div>
-              <div className="text-2xl font-bold text-blue-700">{formatPrice(station.priceGasolina95E5)}</div>
-              {gas95Trend && (
-                <div className={`flex items-center gap-1 text-sm mt-1 ${
-                  gas95Trend.direction === "up" ? "text-red-600" :
-                  gas95Trend.direction === "down" ? "text-green-600" : "text-gray-500"
-                }`}>
-                  {gas95Trend.direction === "up" ? <TrendingUp className="w-4 h-4" /> :
-                   gas95Trend.direction === "down" ? <TrendingDown className="w-4 h-4" /> :
-                   <Minus className="w-4 h-4" />}
-                  {gas95Trend.direction === "up" ? "+" : ""}{gas95Trend.change}€
-                </div>
-              )}
-            </div>
-          )}
-          {station.priceGasolina98E5 && (
-            <div className="bg-purple-50 rounded-lg p-4">
-              <div className="text-sm text-purple-600 mb-1">Gasolina 98</div>
-              <div className="text-2xl font-bold text-purple-700">{formatPrice(station.priceGasolina98E5)}</div>
-            </div>
-          )}
-          {station.priceGLP && (
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="text-sm text-green-600 mb-1">GLP</div>
-              <div className="text-2xl font-bold text-green-700">{formatPrice(station.priceGLP)}</div>
-            </div>
-          )}
+          {mainFuels.map((fuel) => {
+            const colorClasses: Record<string, { bg: string; text: string; textDark: string }> = {
+              amber: { bg: "bg-amber-50", text: "text-amber-600", textDark: "text-amber-700" },
+              blue: { bg: "bg-blue-50", text: "text-blue-600", textDark: "text-blue-700" },
+              purple: { bg: "bg-purple-50", text: "text-purple-600", textDark: "text-purple-700" },
+              green: { bg: "bg-green-50", text: "text-green-600", textDark: "text-green-700" },
+            };
+            const colors = colorClasses[fuel.color] || colorClasses.amber;
+
+            return (
+              <div key={fuel.key} className={`${colors.bg} rounded-lg p-4`}>
+                <div className={`text-sm ${colors.text} mb-1`}>{fuel.label}</div>
+                <div className={`text-2xl font-bold ${colors.textDark}`}>{formatPrice(fuel.price)}</div>
+                {fuel.trend && (
+                  <div className={`flex items-center gap-1 text-sm mt-1 ${
+                    fuel.trend.direction === "up" ? "text-red-600" :
+                    fuel.trend.direction === "down" ? "text-green-600" : "text-gray-500"
+                  }`}>
+                    {fuel.trend.direction === "up" ? <TrendingUp className="w-4 h-4" /> :
+                     fuel.trend.direction === "down" ? <TrendingDown className="w-4 h-4" /> :
+                     <Minus className="w-4 h-4" />}
+                    {fuel.trend.direction === "up" ? "+" : ""}{fuel.trend.change}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Additional fuels */}
-        <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
-          {station.priceGasoleoB && (
-            <div className="bg-gray-50 rounded p-2 text-center">
-              <div className="text-gray-500">Gasóleo B</div>
-              <div className="font-medium">{formatPrice(station.priceGasoleoB)}</div>
-            </div>
-          )}
-          {station.priceGasoleoPremium && (
-            <div className="bg-gray-50 rounded p-2 text-center">
-              <div className="text-gray-500">Gasóleo Premium</div>
-              <div className="font-medium">{formatPrice(station.priceGasoleoPremium)}</div>
-            </div>
-          )}
-          {station.priceGNC && (
-            <div className="bg-gray-50 rounded p-2 text-center">
-              <div className="text-gray-500">GNC</div>
-              <div className="font-medium">{formatPrice(station.priceGNC)}</div>
-            </div>
-          )}
-          {station.priceGNL && (
-            <div className="bg-gray-50 rounded p-2 text-center">
-              <div className="text-gray-500">GNL</div>
-              <div className="font-medium">{formatPrice(station.priceGNL)}</div>
-            </div>
-          )}
-          {station.priceHidrogeno && (
-            <div className="bg-gray-50 rounded p-2 text-center">
-              <div className="text-gray-500">Hidrógeno</div>
-              <div className="font-medium">{formatPrice(station.priceHidrogeno)}</div>
-            </div>
-          )}
-        </div>
+        {additionalFuels.length > 0 && (
+          <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
+            {additionalFuels.map((fuel) => (
+              <div key={fuel.key} className="bg-gray-50 rounded p-2 text-center">
+                <div className="text-gray-500 text-xs">{fuel.label}</div>
+                <div className="font-medium">{formatPrice(fuel.price)}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <p className="text-xs text-gray-400 mt-4">
-          Última actualización: {new Date(station.lastPriceUpdate).toLocaleString("es-ES")}
+          Ultima actualizacion: {new Date(station.lastPriceUpdate).toLocaleString("es-ES")}
         </p>
+      </div>
+
+      {/* Price Comparison Card */}
+      <div className="mb-6">
+        <PriceComparisonCard stationId={station.id} stationType="terrestrial" />
+      </div>
+
+      {/* Station Ranking */}
+      <div className="mb-6">
+        <StationRanking
+          stationId={station.id}
+          stationType="terrestrial"
+          defaultFuel={station.priceGasoleoA ? "gasoleoA" : "gasolina95"}
+        />
       </div>
 
       {/* Price History Chart */}
@@ -245,7 +312,7 @@ export default async function StationDetailPage({ params }: Props) {
         <div className="mb-6">
           <PriceHistoryChart
             data={chartData}
-            title={`Histórico de precios - ${station.name}`}
+            title={`Historico de precios - ${station.name}`}
             height={350}
           />
         </div>
@@ -253,14 +320,14 @@ export default async function StationDetailPage({ params }: Props) {
 
       {/* Location Info */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ubicación</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ubicacion</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Dirección:</span>
+            <span className="text-gray-500">Direccion:</span>
             <p className="font-medium">{station.address || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Código postal:</span>
+            <span className="text-gray-500">Codigo postal:</span>
             <p className="font-medium">{station.postalCode || "No disponible"}</p>
           </div>
           <div>
@@ -285,7 +352,7 @@ export default async function StationDetailPage({ params }: Props) {
 
         {station.nearestRoad && (
           <div className="mt-4 pt-4 border-t border-gray-100">
-            <span className="text-gray-500 text-sm">Carretera más cercana:</span>
+            <span className="text-gray-500 text-sm">Carretera mas cercana:</span>
             <p className="font-medium">
               {station.nearestRoad}
               {station.roadKm && ` - km ${Number(station.roadKm).toFixed(1)}`}
