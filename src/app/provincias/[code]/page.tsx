@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp } from "lucide-react";
+import { ChevronLeft, AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar } from "lucide-react";
+import prisma from "@/lib/db";
 
 // Province data
 const provinces: Record<string, { name: string; community: string }> = {
@@ -89,6 +90,68 @@ export default async function ProvinciaDetailPage({ params }: Props) {
     notFound();
   }
 
+  // Fetch real data from database
+  const [
+    v16Count,
+    incidentCount,
+    cameraCount,
+    radarCount,
+    incidents,
+    roads,
+    historicalAccidents,
+    previousYearAccidents,
+  ] = await Promise.all([
+    // Active V16 beacons in this province
+    prisma.v16BeaconEvent.count({
+      where: { province: code, isActive: true },
+    }),
+    // Active incidents in this province
+    prisma.trafficIncident.count({
+      where: { province: code, isActive: true },
+    }),
+    // Cameras in this province
+    prisma.camera.count({
+      where: { province: code, isActive: true },
+    }),
+    // Radars in this province
+    prisma.radar.count({
+      where: { province: code, isActive: true },
+    }),
+    // Get recent incidents for the list
+    prisma.trafficIncident.findMany({
+      where: { province: code, isActive: true },
+      orderBy: { startedAt: "desc" },
+      take: 10,
+    }),
+    // Roads passing through this province
+    prisma.road.findMany({
+      where: { provinces: { has: code } },
+      orderBy: { id: "asc" },
+      take: 20,
+    }),
+    // Historical accidents for the latest year
+    prisma.historicalAccidents.findFirst({
+      where: { province: code },
+      orderBy: { year: "desc" },
+    }),
+    // Previous year for comparison
+    prisma.historicalAccidents.findMany({
+      where: { province: code },
+      orderBy: { year: "desc" },
+      take: 2,
+    }),
+  ]);
+
+  // Calculate year-over-year change
+  let yearChange: number | null = null;
+  if (previousYearAccidents.length === 2) {
+    const current = previousYearAccidents[0].accidents;
+    const previous = previousYearAccidents[1].accidents;
+    if (previous > 0) {
+      yearChange = ((current - previous) / previous) * 100;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -121,7 +184,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
+            <p className="text-2xl font-bold text-gray-900">{v16Count}</p>
             <p className="text-sm text-gray-500">V16 Activas</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -130,7 +193,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 <AlertTriangle className="w-5 h-5 text-orange-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
+            <p className="text-2xl font-bold text-gray-900">{incidentCount}</p>
             <p className="text-sm text-gray-500">Incidencias</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -139,16 +202,26 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 <Calendar className="w-5 h-5 text-blue-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
-            <p className="text-sm text-gray-500">Accidentes (2024)</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {historicalAccidents?.accidents.toLocaleString() ?? 0}
+            </p>
+            <p className="text-sm text-gray-500">
+              Accidentes ({historicalAccidents?.year ?? new Date().getFullYear()})
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <TrendingDown className="w-5 h-5 text-green-600" />
+              <div className={`p-2 rounded-lg ${yearChange !== null && yearChange < 0 ? "bg-green-50" : "bg-red-50"}`}>
+                {yearChange !== null && yearChange < 0 ? (
+                  <TrendingDown className="w-5 h-5 text-green-600" />
+                ) : (
+                  <TrendingUp className="w-5 h-5 text-red-600" />
+                )}
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
+            <p className={`text-2xl font-bold ${yearChange !== null && yearChange < 0 ? "text-green-600" : "text-red-600"}`}>
+              {yearChange !== null ? `${yearChange > 0 ? "+" : ""}${yearChange.toFixed(1)}%` : "N/A"}
+            </p>
             <p className="text-sm text-gray-500">Variación anual</p>
           </div>
         </div>
@@ -161,23 +234,86 @@ export default async function ProvinciaDetailPage({ params }: Props) {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 Incidencias activas en {province.name}
               </h2>
-              <div className="text-center py-12 text-gray-500">
-                <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Cargando incidencias...</p>
-                <p className="text-sm mt-2">Los datos de incidencias específicas por provincia estarán disponibles próximamente.</p>
-              </div>
+              {incidents.length > 0 ? (
+                <div className="space-y-4">
+                  {incidents.map((incident) => (
+                    <div key={incident.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className={`p-2 rounded-lg ${
+                        incident.severity === "HIGH" || incident.severity === "VERY_HIGH"
+                          ? "bg-red-100"
+                          : incident.severity === "MEDIUM"
+                          ? "bg-orange-100"
+                          : "bg-yellow-100"
+                      }`}>
+                        <AlertTriangle className={`w-4 h-4 ${
+                          incident.severity === "HIGH" || incident.severity === "VERY_HIGH"
+                            ? "text-red-600"
+                            : incident.severity === "MEDIUM"
+                            ? "text-orange-600"
+                            : "text-yellow-600"
+                        }`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">{incident.type}</span>
+                          {incident.roadNumber && (
+                            <Link
+                              href={`/carreteras/${incident.roadNumber}`}
+                              className="text-sm text-blue-600 hover:underline"
+                            >
+                              {incident.roadNumber}
+                            </Link>
+                          )}
+                          {incident.kmPoint && (
+                            <span className="text-sm text-gray-500">km {Number(incident.kmPoint).toFixed(1)}</span>
+                          )}
+                        </div>
+                        {incident.description && (
+                          <p className="text-sm text-gray-600 mt-1 truncate">{incident.description}</p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(incident.startedAt).toLocaleString("es-ES", {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p>No hay incidencias activas</p>
+                  <p className="text-sm mt-2">No se registran incidencias en {province.name} en este momento.</p>
+                </div>
+              )}
             </div>
 
-            {/* Historical Data */}
+            {/* Roads in province */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Estadísticas históricas
+                Carreteras que atraviesan {province.name}
               </h2>
-              <div className="text-center py-12 text-gray-500">
-                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Datos históricos próximamente</p>
-                <p className="text-sm mt-2">Importaremos datos de DGT en Cifras (2015-2024) para mostrar tendencias.</p>
-              </div>
+              {roads.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {roads.map((road) => (
+                    <Link
+                      key={road.id}
+                      href={`/carreteras/${road.id}`}
+                      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium text-gray-700 transition-colors"
+                    >
+                      {road.id}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No hay carreteras registradas para {province.name}.
+                </p>
+              )}
             </div>
           </div>
 
@@ -207,15 +343,70 @@ export default async function ProvinciaDetailPage({ params }: Props) {
               </dl>
             </div>
 
-            {/* Main Roads */}
+            {/* Infrastructure */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Carreteras principales
+                Infraestructura
               </h2>
-              <p className="text-sm text-gray-500">
-                Información sobre las carreteras principales que atraviesan {province.name} estará disponible próximamente.
-              </p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Camera className="w-4 h-4" />
+                    <span>Cámaras</span>
+                  </div>
+                  <span className="font-semibold text-gray-900">{cameraCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Radar className="w-4 h-4" />
+                    <span>Radares</span>
+                  </div>
+                  <span className="font-semibold text-gray-900">{radarCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Route className="w-4 h-4" />
+                    <span>Carreteras</span>
+                  </div>
+                  <span className="font-semibold text-gray-900">{roads.length}</span>
+                </div>
+              </div>
             </div>
+
+            {/* Historical stats */}
+            {historicalAccidents && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Siniestralidad {historicalAccidents.year}
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Accidentes</span>
+                    <span className="font-semibold text-gray-900">
+                      {historicalAccidents.accidents.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Fallecidos</span>
+                    <span className="font-semibold text-red-600">
+                      {historicalAccidents.fatalities}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Hospitalizados</span>
+                    <span className="font-semibold text-orange-600">
+                      {historicalAccidents.hospitalized}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Heridos leves</span>
+                    <span className="font-semibold text-yellow-600">
+                      {historicalAccidents.nonHospitalized}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

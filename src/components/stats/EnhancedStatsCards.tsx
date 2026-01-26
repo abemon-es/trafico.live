@@ -269,9 +269,9 @@ export function EnhancedStatsCards() {
     v16Change: stats?.v16Change ?? null,
     incidents: stats?.incidents ?? 0,
     incidentsChange: stats?.incidentsChange ?? null,
-    cameras: stats?.cameras ?? 512,
-    chargers: stats?.chargers ?? 8432,
-    zbeZones: stats?.zbeZones ?? 156,
+    cameras: stats?.cameras ?? 0,
+    chargers: stats?.chargers ?? 0,
+    zbeZones: stats?.zbeZones ?? 0,
   };
 
   const sparklineIncidents = dashboard?.data?.sparkline?.map((d) => d.incidents) ?? [];

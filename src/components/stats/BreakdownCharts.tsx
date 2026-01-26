@@ -110,22 +110,18 @@ interface BreakdownChartsProps {
   isLoading?: boolean;
 }
 
-// Default sample data for when no data is provided
-const defaultCommunityData: ChartDataItem[] = [
-  { name: "Andalucía", value: 45 },
-  { name: "C. Madrid", value: 38 },
-  { name: "C. Valenciana", value: 28 },
-  { name: "Galicia", value: 22 },
-  { name: "Castilla y León", value: 18 },
-  { name: "Cataluña", value: 15 },
-];
-
-const defaultRoadTypeData: ChartDataItem[] = [
-  { name: "Autopista (AP)", value: 89 },
-  { name: "Autovía (A)", value: 67 },
-  { name: "Nacional (N)", value: 45 },
-  { name: "Comarcal", value: 23 },
-];
+// Empty charts fallback component
+function EmptyChart({ title, message }: { title: string; message: string }) {
+  return (
+    <ChartCard title={title}>
+      <div className="h-[250px] flex items-center justify-center">
+        <div className="text-center text-gray-400">
+          <p className="text-sm">{message}</p>
+        </div>
+      </div>
+    </ChartCard>
+  );
+}
 
 export function BreakdownCharts({
   communityData,
@@ -159,19 +155,25 @@ export function BreakdownCharts({
           note="Datos históricos de DGT en Cifras"
           labelWidth={100}
         />
-      ) : (
+      ) : communityData && communityData.length > 0 ? (
         <BreakdownChart
           title="Por Comunidad Autónoma"
-          data={communityData || defaultCommunityData}
+          data={communityData}
           note="*Datos regionales (SCT)"
         />
+      ) : (
+        <EmptyChart title="Por Comunidad Autónoma" message="No hay datos disponibles" />
       )}
 
-      <BreakdownChart
-        title="Por Tipo de Vía"
-        data={roadTypeData || defaultRoadTypeData}
-        labelWidth={90}
-      />
+      {roadTypeData && roadTypeData.length > 0 ? (
+        <BreakdownChart
+          title="Por Tipo de Vía"
+          data={roadTypeData}
+          labelWidth={90}
+        />
+      ) : (
+        <EmptyChart title="Por Tipo de Vía" message="No hay datos disponibles" />
+      )}
     </>
   );
 }

@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { MapPin, Camera, Radar, AlertTriangle } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const metadata: Metadata = {
   title: "Carreteras Nacionales de España (N) | Tráfico y Radares",
@@ -111,77 +112,86 @@ export default async function NacionalesPage() {
         </div>
 
         {/* Roads List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Nacional</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden md:table-cell">Nombre</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden lg:table-cell">Provincias</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                    <Camera className="w-4 h-4 inline" />
-                  </th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                    <Radar className="w-4 h-4 inline" />
-                  </th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                    <AlertTriangle className="w-4 h-4 inline" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {roads.map((road) => {
-                  const cameras = cameraCounts.get(road.id) || 0;
-                  const radars = radarCounts.get(road.id) || 0;
-                  const incidents = incidentCounts.get(road.id) || 0;
-                  const provinceNames = road.provinces
-                    .slice(0, 3)
-                    .map((p) => PROVINCE_NAMES[p] || p);
+        {roads.length > 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nacional</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden md:table-cell">Nombre</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden lg:table-cell">Provincias</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                      <Camera className="w-4 h-4 inline" />
+                    </th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                      <Radar className="w-4 h-4 inline" />
+                    </th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                      <AlertTriangle className="w-4 h-4 inline" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {roads.map((road) => {
+                    const cameras = cameraCounts.get(road.id) || 0;
+                    const radars = radarCounts.get(road.id) || 0;
+                    const incidents = incidentCounts.get(road.id) || 0;
+                    const provinceNames = road.provinces
+                      .slice(0, 3)
+                      .map((p) => PROVINCE_NAMES[p] || p);
 
-                  return (
-                    <tr key={road.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <Link
-                          href={`/carreteras/${road.id}`}
-                          className="font-semibold text-red-600 hover:text-red-800"
-                        >
-                          {road.id}
-                        </Link>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
-                        {road.name || "-"}
-                      </td>
-                      <td className="py-3 px-4 text-gray-500 text-sm hidden lg:table-cell">
-                        {provinceNames.join(", ")}
-                        {road.provinces.length > 3 && ` +${road.provinces.length - 3}`}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={cameras > 0 ? "font-medium text-blue-600" : "text-gray-400"}>
-                          {cameras}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={radars > 0 ? "font-medium text-yellow-600" : "text-gray-400"}>
-                          {radars}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {incidents > 0 ? (
-                          <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                            {incidents}
+                    return (
+                      <tr key={road.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4">
+                          <Link
+                            href={`/carreteras/${road.id}`}
+                            className="font-semibold text-red-600 hover:text-red-800"
+                          >
+                            {road.id}
+                          </Link>
+                        </td>
+                        <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
+                          {road.name || "-"}
+                        </td>
+                        <td className="py-3 px-4 text-gray-500 text-sm hidden lg:table-cell">
+                          {provinceNames.join(", ")}
+                          {road.provinces.length > 3 && ` +${road.provinces.length - 3}`}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className={cameras > 0 ? "font-medium text-blue-600" : "text-gray-400"}>
+                            {cameras}
                           </span>
-                        ) : (
-                          <span className="text-gray-400">0</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className={radars > 0 ? "font-medium text-yellow-600" : "text-gray-400"}>
+                            {radars}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {incidents > 0 ? (
+                            <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                              {incidents}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">0</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        ) : (
+          <EmptyState
+            icon={MapPin}
+            title="No hay carreteras nacionales registradas"
+            description="Actualmente no tenemos carreteras nacionales (N) registradas en nuestra base de datos."
+            action={{ label: "Ver todas las carreteras", href: "/carreteras" }}
+          />
+        )}
 
         {/* SEO Content */}
         <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">

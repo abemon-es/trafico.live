@@ -146,7 +146,7 @@ export default function EspanaContent() {
             <p className="text-2xl font-bold text-gray-900">
               {stats.totalAccidents.toLocaleString("es-ES")}
             </p>
-            <p className="text-sm text-gray-500">Accidentes (2023)</p>
+            <p className="text-sm text-gray-500">Accidentes (último año)</p>
           </div>
         </div>
 

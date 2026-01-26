@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const metadata: Metadata = {
   title: "Carreteras Regionales y Comarcales | Tráfico y Radares",
@@ -129,87 +130,96 @@ export default async function RegionalesPage() {
         </div>
 
         {/* Roads grouped by prefix */}
-        <div className="space-y-6">
-          {sortedPrefixes.map(([prefix, prefixRoads]) => (
-            <div key={prefix} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b">
-                <h2 className="font-semibold text-gray-900">
-                  Carreteras {prefix} <span className="text-gray-500 font-normal">({prefixRoads.length})</span>
-                </h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm">ID</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden md:table-cell">Nombre</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden lg:table-cell">Tipo</th>
-                      <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
-                        <Camera className="w-3 h-3 inline" />
-                      </th>
-                      <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
-                        <Radar className="w-3 h-3 inline" />
-                      </th>
-                      <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
-                        <AlertTriangle className="w-3 h-3 inline" />
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {prefixRoads.slice(0, 20).map((road) => {
-                      const cameras = cameraCounts.get(road.id) || 0;
-                      const radars = radarCounts.get(road.id) || 0;
-                      const incidents = incidentCounts.get(road.id) || 0;
-
-                      return (
-                        <tr key={road.id} className="border-b hover:bg-gray-50">
-                          <td className="py-2 px-4">
-                            <Link
-                              href={`/carreteras/${road.id}`}
-                              className="font-medium text-orange-600 hover:text-orange-800"
-                            >
-                              {road.id}
-                            </Link>
-                          </td>
-                          <td className="py-2 px-4 text-gray-600 text-sm hidden md:table-cell">
-                            {road.name || "-"}
-                          </td>
-                          <td className="py-2 px-4 text-gray-500 text-xs hidden lg:table-cell">
-                            {TYPE_LABELS[road.type] || road.type}
-                          </td>
-                          <td className="py-2 px-4 text-center text-sm">
-                            <span className={cameras > 0 ? "font-medium text-blue-600" : "text-gray-400"}>
-                              {cameras}
-                            </span>
-                          </td>
-                          <td className="py-2 px-4 text-center text-sm">
-                            <span className={radars > 0 ? "font-medium text-yellow-600" : "text-gray-400"}>
-                              {radars}
-                            </span>
-                          </td>
-                          <td className="py-2 px-4 text-center text-sm">
-                            {incidents > 0 ? (
-                              <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
-                                {incidents}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">0</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {prefixRoads.length > 20 && (
-                <div className="px-4 py-2 bg-gray-50 text-sm text-gray-500 border-t">
-                  Y {prefixRoads.length - 20} carreteras más con prefijo {prefix}...
+        {roads.length > 0 ? (
+          <div className="space-y-6">
+            {sortedPrefixes.map(([prefix, prefixRoads]) => (
+              <div key={prefix} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 px-4 py-3 border-b">
+                  <h2 className="font-semibold text-gray-900">
+                    Carreteras {prefix} <span className="text-gray-500 font-normal">({prefixRoads.length})</span>
+                  </h2>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm">ID</th>
+                        <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden md:table-cell">Nombre</th>
+                        <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden lg:table-cell">Tipo</th>
+                        <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                          <Camera className="w-3 h-3 inline" />
+                        </th>
+                        <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                          <Radar className="w-3 h-3 inline" />
+                        </th>
+                        <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                          <AlertTriangle className="w-3 h-3 inline" />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {prefixRoads.slice(0, 20).map((road) => {
+                        const cameras = cameraCounts.get(road.id) || 0;
+                        const radars = radarCounts.get(road.id) || 0;
+                        const incidents = incidentCounts.get(road.id) || 0;
+
+                        return (
+                          <tr key={road.id} className="border-b hover:bg-gray-50">
+                            <td className="py-2 px-4">
+                              <Link
+                                href={`/carreteras/${road.id}`}
+                                className="font-medium text-orange-600 hover:text-orange-800"
+                              >
+                                {road.id}
+                              </Link>
+                            </td>
+                            <td className="py-2 px-4 text-gray-600 text-sm hidden md:table-cell">
+                              {road.name || "-"}
+                            </td>
+                            <td className="py-2 px-4 text-gray-500 text-xs hidden lg:table-cell">
+                              {TYPE_LABELS[road.type] || road.type}
+                            </td>
+                            <td className="py-2 px-4 text-center text-sm">
+                              <span className={cameras > 0 ? "font-medium text-blue-600" : "text-gray-400"}>
+                                {cameras}
+                              </span>
+                            </td>
+                            <td className="py-2 px-4 text-center text-sm">
+                              <span className={radars > 0 ? "font-medium text-yellow-600" : "text-gray-400"}>
+                                {radars}
+                              </span>
+                            </td>
+                            <td className="py-2 px-4 text-center text-sm">
+                              {incidents > 0 ? (
+                                <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+                                  {incidents}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">0</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {prefixRoads.length > 20 && (
+                  <div className="px-4 py-2 bg-gray-50 text-sm text-gray-500 border-t">
+                    Y {prefixRoads.length - 20} carreteras más con prefijo {prefix}...
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Construction}
+            title="No hay carreteras regionales registradas"
+            description="Actualmente no tenemos carreteras regionales, comarcales o provinciales registradas en nuestra base de datos."
+            action={{ label: "Ver todas las carreteras", href: "/carreteras" }}
+          />
+        )}
 
         {/* SEO Content */}
         <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
