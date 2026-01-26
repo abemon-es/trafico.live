@@ -107,6 +107,22 @@ function parsePrice(priceStr: string): number | null {
   return isNaN(value) ? null : value;
 }
 
+/**
+ * Parse bulk price (per 1000L) and convert to per-litre
+ * MINETUR API returns Gasoleo B prices in bulk format (e.g., 626.000 = 626€/1000L)
+ * We normalize to per-litre for consistent display (0.626 €/L)
+ */
+function parseBulkPrice(priceStr: string): number | null {
+  const price = parsePrice(priceStr);
+  if (price === null) return null;
+  // If price > 10, assume it's bulk pricing (per 1000L) and convert to per-litre
+  // Normal fuel prices are always < 5 €/L
+  if (price > 10) {
+    return Math.round((price / 1000) * 1000) / 1000; // Round to 3 decimals
+  }
+  return price;
+}
+
 function parseCoordinate(coordStr: string): number {
   if (!coordStr) return NaN;
   const normalized = coordStr.replace(",", ".");
@@ -195,7 +211,7 @@ async function main() {
             province: provinceCode,
             provinceName,
             priceGasoleoA: parsePrice(station["Precio Gasoleo A habitual"]),
-            priceGasoleoB: parsePrice(station["Precio Gasoleo B"]),
+            priceGasoleoB: parseBulkPrice(station["Precio Gasoleo B"]),
             priceGasolina95E5: parsePrice(station["Precio Gasolina 95 E5"]),
             priceGasolina98E5: parsePrice(station["Precio Gasolina 98 E5"]),
             schedule: station.Horario || null,
@@ -212,7 +228,7 @@ async function main() {
             province: provinceCode,
             provinceName,
             priceGasoleoA: parsePrice(station["Precio Gasoleo A habitual"]),
-            priceGasoleoB: parsePrice(station["Precio Gasoleo B"]),
+            priceGasoleoB: parseBulkPrice(station["Precio Gasoleo B"]),
             priceGasolina95E5: parsePrice(station["Precio Gasolina 95 E5"]),
             priceGasolina98E5: parsePrice(station["Precio Gasolina 98 E5"]),
             schedule: station.Horario || null,

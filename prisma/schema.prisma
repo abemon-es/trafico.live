@@ -834,10 +834,9 @@ model MaritimeStation {
   provinceName String?
 
   // Fuel prices (EUR) - Maritime fuels
-  // Note: priceGasoleoB uses Decimal(7,3) because maritime/fishing ports
-  // report bulk prices per 1000L (values 500-1100 EUR)
+  // Note: priceGasoleoB is normalized to per-litre (API returns bulk per 1000L)
   priceGasoleoA     Decimal? @db.Decimal(5, 3)
-  priceGasoleoB     Decimal? @db.Decimal(7, 3)
+  priceGasoleoB     Decimal? @db.Decimal(5, 3)
   priceGasolina95E5 Decimal? @db.Decimal(5, 3)
   priceGasolina98E5 Decimal? @db.Decimal(5, 3)
 
