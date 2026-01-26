@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -42,6 +43,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default async function RegionalesPage() {
+  noStore();
   await connection();
 
   // Get all regional roads - wrapped in try-catch for build phase

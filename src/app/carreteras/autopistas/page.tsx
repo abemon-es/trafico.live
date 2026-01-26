@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { Car, Camera, Radar, AlertTriangle, MapPin } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -36,7 +37,7 @@ const PROVINCE_NAMES: Record<string, string> = {
 };
 
 export default async function AutopistasPage() {
-  // Force dynamic rendering - prevents static generation during build
+  noStore();
   await connection();
 
   // Get all autopistas - wrapped in try-catch for build phase

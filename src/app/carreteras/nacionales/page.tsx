@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { MapPin, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -36,6 +37,7 @@ const PROVINCE_NAMES: Record<string, string> = {
 };
 
 export default async function NacionalesPage() {
+  noStore();
   await connection();
 
   // Get all nacionales - wrapped in try-catch for build phase
