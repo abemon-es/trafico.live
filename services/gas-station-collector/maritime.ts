@@ -82,17 +82,19 @@ const PROVINCES: Record<string, string> = {
 
 interface APIMaritimeStation {
   IDEESS: string;
+  IDPosteMaritimo?: string;
   Rótulo: string;
   Latitud: string;
   "Longitud (WGS84)": string;
+  Puerto?: string;
   Localidad: string;
   Provincia: string;
   IDProvincia: string;
   Horario: string;
-  "Precio Gasoleo A": string;
-  "Precio Gasoleo B": string;
-  "Precio Gasolina 95 E5": string;
-  "Precio Gasolina 98 E5": string;
+  "Precio Gasoleo A habitual"?: string;
+  "Precio Gasoleo B"?: string;
+  "Precio Gasolina 95 E5"?: string;
+  "Precio Gasolina 98 E5"?: string;
 }
 
 interface APIResponse {
