@@ -1,11 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { Car, Camera, Radar, AlertTriangle, MapPin } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Autopistas de España (AP) | Tráfico, Cámaras y Radares",
@@ -34,6 +36,8 @@ const PROVINCE_NAMES: Record<string, string> = {
 };
 
 export default async function AutopistasPage() {
+  noStore(); // Ensure no caching/static generation
+
   // Get all autopistas - wrapped in try-catch for build phase
   let roads: { id: string; name: string | null; provinces: string[] }[] = [];
   let camerasByRoad: { roadNumber: string | null; _count: number }[] = [];
