@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar, Fuel } from "lucide-react";
 import prisma from "@/lib/db";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 // Province data
 const provinces: Record<string, { name: string; community: string }> = {
   "01": { name: "Álava", community: "País Vasco" },

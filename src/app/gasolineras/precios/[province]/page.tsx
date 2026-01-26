@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MapPin, ArrowLeft, Clock } from "lucide-react";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 const PROVINCE_SLUGS: Record<string, { code: string; name: string }> = {
   "alava": { code: "01", name: "Álava" },
   "albacete": { code: "02", name: "Albacete" },
