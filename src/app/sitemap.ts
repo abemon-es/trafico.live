@@ -1,6 +1,9 @@
 import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.logisticsexpress.es";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
