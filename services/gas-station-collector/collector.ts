@@ -375,11 +375,13 @@ async function main() {
 
     const elapsed = ((Date.now() - now.getTime()) / 1000).toFixed(1);
     console.log(`[gas-station-collector] Completed in ${elapsed}s`);
+
+    await prisma.$disconnect();
+    process.exit(0);
   } catch (error) {
     console.error("[gas-station-collector] Fatal error:", error);
-    process.exit(1);
-  } finally {
     await prisma.$disconnect();
+    process.exit(1);
   }
 }
 
