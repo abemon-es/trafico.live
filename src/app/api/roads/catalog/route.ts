@@ -143,7 +143,11 @@ export async function GET(
     // Parse query parameters
     const typeParam = searchParams.get("type")?.toUpperCase();
     const province = searchParams.get("province");
-    const search = searchParams.get("search");
+    // Sanitize search: limit length and remove special characters
+    const rawSearch = searchParams.get("search");
+    const search = rawSearch
+      ? rawSearch.slice(0, 50).replace(/[<>'"\\]/g, "").trim() || null
+      : null;
     const limitParam = parseInt(searchParams.get("limit") || "100", 10);
     const offsetParam = parseInt(searchParams.get("offset") || "0", 10);
     const orderByParam = searchParams.get("orderBy") || "id";
@@ -281,7 +285,6 @@ export async function GET(
       {
         success: false,
         error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

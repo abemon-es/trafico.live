@@ -474,6 +474,7 @@ model HistoricalAccidents {
   @@unique([year, province, roadType])
   @@index([year])
   @@index([province])
+  @@index([province, year])
 }
 
 model VehicleFleet {
@@ -612,6 +613,8 @@ model SpeedLimit {
   @@index([speedLimit])
   @@index([province])
   @@index([speedLimitType])
+  @@index([roadNumber, direction])
+  @@index([province, speedLimitType])
 }
 
 enum SpeedLimitType {

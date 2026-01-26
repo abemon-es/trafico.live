@@ -9,6 +9,11 @@ export const revalidate = 60;
 type IncidentEffect = "ROAD_CLOSED" | "SLOW_TRAFFIC" | "RESTRICTED" | "DIVERSION" | "OTHER_EFFECT";
 type IncidentCause = "ROADWORK" | "ACCIDENT" | "WEATHER" | "RESTRICTION" | "OTHER_CAUSE";
 
+// Valid values for input validation
+const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
+const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
+const VALID_SOURCES = ["DGT", "SCT", "EUSKADI", "MADRID", "NAVARRA", "OTHER"];
+
 const EFFECT_LABELS: Record<IncidentEffect, string> = {
   ROAD_CLOSED: "Carreteras cortadas",
   SLOW_TRAFFIC: "Tráfico lento",
@@ -70,12 +75,19 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
 
-    // Filter params (comma-separated values)
-    const effectFilter = searchParams.get("effect")?.split(",").filter(Boolean) as IncidentEffect[] | undefined;
-    const causeFilter = searchParams.get("cause")?.split(",").filter(Boolean) as IncidentCause[] | undefined;
-    const provinceFilter = searchParams.get("province");
-    const communityFilter = searchParams.get("community");
-    const sourceFilter = searchParams.get("source")?.split(",").filter(Boolean);
+    // Filter params (comma-separated values) with validation
+    const effectFilter = searchParams.get("effect")
+      ?.split(",")
+      .filter((v): v is IncidentEffect => VALID_EFFECTS.includes(v as IncidentEffect));
+    const causeFilter = searchParams.get("cause")
+      ?.split(",")
+      .filter((v): v is IncidentCause => VALID_CAUSES.includes(v as IncidentCause));
+    const provinceFilter = searchParams.get("province")?.replace(/[^0-9]/g, "").slice(0, 2) || null;
+    const communityFilter = searchParams.get("community")?.replace(/[^0-9]/g, "").slice(0, 2) || null;
+    const sourceFilter = searchParams.get("source")
+      ?.split(",")
+      .filter((v) => VALID_SOURCES.includes(v.toUpperCase()))
+      .map((v) => v.toUpperCase());
 
     // Query all active incidents from database (DGT + SCT + EUSKADI + MADRID)
     const whereClause: Record<string, unknown> = { isActive: true };

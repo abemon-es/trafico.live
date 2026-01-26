@@ -79,11 +79,19 @@ export async function GET(request: NextRequest) {
       where.is24h = true;
     }
 
-    // Bounding box for map
+    // Bounding box for map (validated)
     if (bbox) {
-      const [minLng, minLat, maxLng, maxLat] = bbox.split(",").map(Number);
-      where.latitude = { gte: minLat, lte: maxLat };
-      where.longitude = { gte: minLng, lte: maxLng };
+      const parts = bbox.split(",").map(Number);
+      if (parts.length === 4 && parts.every((n) => !isNaN(n))) {
+        const [minLng, minLat, maxLng, maxLat] = parts;
+        // Validate coordinates are within reasonable bounds for Spain/Portugal area
+        const isValidLat = (lat: number) => lat >= 27 && lat <= 44; // Canarias to Pyrenees
+        const isValidLng = (lng: number) => lng >= -19 && lng <= 5; // Canarias to Balearics
+        if (isValidLat(minLat) && isValidLat(maxLat) && isValidLng(minLng) && isValidLng(maxLng)) {
+          where.latitude = { gte: minLat, lte: maxLat };
+          where.longitude = { gte: minLng, lte: maxLng };
+        }
+      }
     }
 
     // Only stations with selected fuel

@@ -13,7 +13,12 @@ function createPrismaClient() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const pool = new Pool({ connectionString });
+  const pool = new Pool({
+    connectionString,
+    max: 20, // Maximum number of connections in pool
+    idleTimeoutMillis: 30000, // Close idle connections after 30s
+    connectionTimeoutMillis: 10000, // Fail if connection takes >10s
+  });
   const adapter = new PrismaPg(pool);
 
   return new PrismaClient({
