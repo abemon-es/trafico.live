@@ -6,6 +6,7 @@ import { BreakdownCharts } from "@/components/stats/BreakdownCharts";
 import { TimeSeriesChart } from "@/components/stats/TimeSeriesChart";
 import { InfrastructureStatus } from "@/components/stats/InfrastructureStatus";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
+import { Footer } from "@/components/layout/Footer";
 import { Map as MapIcon } from "lucide-react";
 
 function MapLoading() {
@@ -43,34 +44,10 @@ export default function Dashboard() {
 
         {/* Infrastructure Status */}
         <InfrastructureStatus />
-
-        {/* Footer */}
-        <footer className="text-center text-sm text-gray-500 py-8 border-t border-gray-200">
-          <p>Datos: DGT NAP, AEMET | Actualizado cada 60 segundos</p>
-          <p className="mt-2">
-            Engineered & powered by{" "}
-            <a
-              href="https://abemon.es"
-              className="font-semibold text-[#006633] hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              abemonFLOW™ Engine
-            </a>
-          </p>
-          <p className="mt-1">
-            Operado por{" "}
-            <a
-              href="https://www.logisticsexpress.es"
-              className="font-semibold text-[#006633] hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Logistics Express
-            </a>
-          </p>
-        </footer>
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
