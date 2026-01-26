@@ -114,8 +114,17 @@ export default function InfraestructuraContent() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") || "camaras";
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [provinceFilter, setProvinceFilter] = useState<string>("");
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // Update tab from URL params
   useEffect(() => {
@@ -197,6 +206,7 @@ export default function InfraestructuraContent() {
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
+                setSearchInput("");
                 setSearchTerm("");
                 setProvinceFilter("");
               }}
@@ -230,8 +240,8 @@ export default function InfraestructuraContent() {
           <input
             type="text"
             placeholder="Buscar..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

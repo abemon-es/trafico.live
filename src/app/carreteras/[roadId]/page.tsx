@@ -285,9 +285,17 @@ export default async function RoadDetailPage({ params }: PageProps) {
                   ))}
                 </div>
                 {cameras.length > 10 && (
-                  <p className="text-sm text-gray-500 mt-3">
-                    Y {cameras.length - 10} cámaras más...
-                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-sm text-gray-500">
+                      Y {cameras.length - 10} cámaras más...
+                    </p>
+                    <Link
+                      href={`/carreteras/${road.id}/camaras`}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                    >
+                      Ver todas <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
                 )}
               </div>
             )}
@@ -332,6 +340,19 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     </tbody>
                   </table>
                 </div>
+                {radars.length > 15 && (
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-sm text-gray-500">
+                      Y {radars.length - 15} radares más...
+                    </p>
+                    <Link
+                      href={`/carreteras/${road.id}/radares`}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                    >
+                      Ver todos <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
@@ -352,6 +373,19 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     </div>
                   ))}
                 </div>
+                {speedLimits.length > 10 && (
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-sm text-gray-500">
+                      Y {speedLimits.length - 10} tramos más...
+                    </p>
+                    <Link
+                      href={`/carreteras/${road.id}/estadisticas`}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                    >
+                      Ver estadísticas <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
