@@ -1,5 +1,6 @@
 # Weather Collector Service
 # Runs every 30 minutes via Railway cron to update AEMET weather alerts
+# Build cache bust: 2026-01-26-v2
 
 FROM node:20-slim
 
