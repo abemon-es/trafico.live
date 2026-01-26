@@ -56,11 +56,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
-  const roads = await prisma.road.findMany({
-    where: { type: { in: ["AUTOPISTA", "AUTOVIA", "NACIONAL"] } },
-    select: { id: true },
-  });
-  return roads.map((road) => ({ roadId: road.id }));
+  try {
+    const roads = await prisma.road.findMany({
+      where: { type: { in: ["AUTOPISTA", "AUTOVIA", "NACIONAL"] } },
+      select: { id: true },
+    });
+    return roads.map((road) => ({ roadId: road.id }));
+  } catch (error) {
+    console.error("Failed to generate static params for estadisticas:", error);
+    return [];
+  }
 }
 
 export default async function RoadStatisticsPage({ params }: PageProps) {

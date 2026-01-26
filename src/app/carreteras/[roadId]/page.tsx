@@ -83,14 +83,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export async function generateStaticParams() {
   // Generate static pages for main roads (autopistas, autovías, nacionales)
-  const roads = await prisma.road.findMany({
-    where: {
-      type: { in: ["AUTOPISTA", "AUTOVIA", "NACIONAL"] },
-    },
-    select: { id: true },
-  });
+  try {
+    const roads = await prisma.road.findMany({
+      where: {
+        type: { in: ["AUTOPISTA", "AUTOVIA", "NACIONAL"] },
+      },
+      select: { id: true },
+    });
 
-  return roads.map((road) => ({ roadId: road.id }));
+    return roads.map((road) => ({ roadId: road.id }));
+  } catch (error) {
+    console.error("Failed to generate static params for carreteras:", error);
+    return [];
+  }
 }
 
 export default async function RoadDetailPage({ params }: PageProps) {
