@@ -1,6 +1,6 @@
 # Weather Collector Service
 # Runs every 30 minutes via Railway cron to update AEMET weather alerts
-# Build cache bust: 2026-01-26-v2
+# Build context: repo root, Dockerfile: services/weather-collector/Dockerfile
 
 FROM node:20-slim
 
@@ -9,22 +9,22 @@ RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json ./
+# Copy package files from service directory
+COPY services/weather-collector/package.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy Prisma schema and config
-COPY schema.prisma ./prisma/
+# Copy Prisma schema and config from root
+COPY prisma/schema.prisma ./prisma/
 COPY prisma.config.ts ./
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Copy collector scripts
-COPY collector.ts ./
-COPY aemet-parser.ts ./
+# Copy collector scripts from service directory
+COPY services/weather-collector/collector.ts ./
+COPY services/weather-collector/aemet-parser.ts ./
 
 # Run collector
 CMD ["npx", "tsx", "collector.ts"]
