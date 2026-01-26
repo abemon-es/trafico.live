@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { Map as MapIcon, AlertTriangle, Loader2 } from "lucide-react";
 import { MapControls, type ActiveLayers, type IncidentFilters, type LocationPreset } from "./MapControls";
 import { MapStats } from "./MapStats";
-import type { V16Beacon, Incident, Camera, TrafficMapRef } from "./TrafficMap";
+import type { V16Beacon, Incident, Camera, TrafficMapRef, IncidentViewMode } from "./TrafficMap";
 import { IncidentModal, type IncidentData } from "@/components/incidents/IncidentModal";
 import {
   EFFECT_LABELS,
@@ -262,6 +262,7 @@ export function UnifiedMap({
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [incidentViewMode, setIncidentViewMode] = useState<IncidentViewMode>("clusters");
 
   // Parse initial state from URL or props
   const getInitialLayers = (): ActiveLayers => {
@@ -594,6 +595,8 @@ export function UnifiedMap({
         onLayerToggle={handleLayerToggle}
         incidentFilters={incidentFilters}
         onIncidentFiltersChange={setIncidentFilters}
+        incidentViewMode={incidentViewMode}
+        onIncidentViewModeChange={setIncidentViewMode}
         isFullscreen={isFullscreen}
         onFullscreenToggle={toggleFullscreen}
         isLoading={isLoading}
@@ -623,6 +626,7 @@ export function UnifiedMap({
               gasStationData={activeLayers.gasStations ? gasStationsData?.data : undefined}
               maritimeStationData={activeLayers.maritimeStations ? maritimeStationsData?.data : undefined}
               incidentFilters={incidentFilters}
+              incidentViewMode={incidentViewMode}
               height="100%"
               onIncidentClick={handleIncidentClick}
             />

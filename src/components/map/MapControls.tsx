@@ -21,9 +21,13 @@ import {
   ShieldAlert,
   Fuel,
   Anchor,
+  Flame,
+  Layers,
+  Circle,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
+import type { IncidentViewMode } from "./TrafficMap";
 
 export type LocationPreset = "peninsula" | "canarias" | "ceuta" | "melilla";
 
@@ -52,6 +56,8 @@ interface MapControlsProps {
   onLayerToggle: (layer: keyof ActiveLayers) => void;
   incidentFilters: IncidentFilters;
   onIncidentFiltersChange: (filters: IncidentFilters) => void;
+  incidentViewMode?: IncidentViewMode;
+  onIncidentViewModeChange?: (mode: IncidentViewMode) => void;
   isFullscreen: boolean;
   onFullscreenToggle: () => void;
   isLoading: boolean;
@@ -94,6 +100,8 @@ export function MapControls({
   onLayerToggle,
   incidentFilters,
   onIncidentFiltersChange,
+  incidentViewMode,
+  onIncidentViewModeChange,
   isFullscreen,
   onFullscreenToggle,
   isLoading,
@@ -206,6 +214,51 @@ export function MapControls({
                     />
                   </button>
                 </div>
+
+                {/* Visualization mode toggle */}
+                {activeLayers.incidents && onIncidentViewModeChange && (
+                  <div className="mb-3 pb-3 border-b border-gray-100">
+                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">Visualización</p>
+                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                      <button
+                        onClick={() => onIncidentViewModeChange("heatmap")}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                          incidentViewMode === "heatmap"
+                            ? "bg-white text-orange-600 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                        title="Mapa de calor"
+                      >
+                        <Flame className="w-3.5 h-3.5" />
+                        <span>Calor</span>
+                      </button>
+                      <button
+                        onClick={() => onIncidentViewModeChange("clusters")}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                          incidentViewMode === "clusters"
+                            ? "bg-white text-orange-600 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                        title="Agrupar"
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>Grupos</span>
+                      </button>
+                      <button
+                        onClick={() => onIncidentViewModeChange("points")}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                          incidentViewMode === "points"
+                            ? "bg-white text-orange-600 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                        title="Puntos individuales"
+                      >
+                        <Circle className="w-3.5 h-3.5" />
+                        <span>Puntos</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Effect filters */}
                 <div className="mb-3">

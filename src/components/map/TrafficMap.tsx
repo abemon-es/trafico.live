@@ -12,6 +12,8 @@ import {
   EFFECT_COLORS,
 } from "./IncidentMarker";
 
+export type IncidentViewMode = "heatmap" | "clusters" | "points";
+
 export interface ActiveLayers {
   v16: boolean;
   incidents: boolean;
@@ -198,6 +200,7 @@ interface TrafficMapProps {
   gasStationData?: GasStation[];
   maritimeStationData?: MaritimeStation[];
   incidentFilters?: IncidentFilters;
+  incidentViewMode?: IncidentViewMode;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
@@ -221,6 +224,14 @@ const SEVERITY_COLORS: Record<string, string> = {
   MEDIUM: "#f97316",
   HIGH: "#ef4444",
   VERY_HIGH: "#7f1d1d",
+};
+
+// Severity weights for heatmap intensity
+const SEVERITY_WEIGHT: Record<string, number> = {
+  LOW: 1,
+  MEDIUM: 2,
+  HIGH: 3,
+  VERY_HIGH: 4,
 };
 
 // Cluster colors by size
@@ -318,6 +329,7 @@ function incidentsToGeoJSON(incidents: Incident[]): GeoJSON {
         km: inc.km || 0,
         province: inc.province || "",
         severity: inc.severity,
+        severityWeight: SEVERITY_WEIGHT[inc.severity] || 1,
         description: inc.description || "",
         laneInfo: inc.laneInfo || "",
         startedAt: inc.startedAt || "",
@@ -351,7 +363,7 @@ function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
 }
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, incidentFilters, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, incidentFilters, incidentViewMode, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -689,6 +701,47 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       },
     });
 
+    // Add incidents heatmap source (separate from cluster source)
+    map.current.addSource("incidents-heatmap", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+
+    // Heatmap layer for incidents
+    map.current.addLayer({
+      id: "incidents-heat",
+      type: "heatmap",
+      source: "incidents-heatmap",
+      layout: { visibility: "none" },
+      paint: {
+        "heatmap-weight": [
+          "interpolate", ["linear"], ["get", "severityWeight"],
+          1, 0.3, 2, 0.5, 3, 0.7, 4, 1
+        ],
+        "heatmap-intensity": [
+          "interpolate", ["linear"], ["zoom"],
+          0, 0.5, 5, 1, 9, 2
+        ],
+        "heatmap-color": [
+          "interpolate", ["linear"], ["heatmap-density"],
+          0, "rgba(0,0,255,0)",
+          0.1, "rgba(65,105,225,0.4)",
+          0.3, "rgba(0,255,128,0.6)",
+          0.5, "rgba(255,255,0,0.7)",
+          0.7, "rgba(255,165,0,0.8)",
+          1, "rgba(255,0,0,0.9)"
+        ],
+        "heatmap-radius": [
+          "interpolate", ["linear"], ["zoom"],
+          0, 4, 5, 15, 9, 25
+        ],
+        "heatmap-opacity": [
+          "interpolate", ["linear"], ["zoom"],
+          7, 1, 9, 0.7
+        ],
+      },
+    });
+
     // V16 cluster circles
     map.current.addLayer({
       id: "v16-clusters",
@@ -880,27 +933,43 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     });
   }, [isLoaded]);
 
-  // Update cluster data when incidents change
+  // Update cluster data when incidents change (handles all view modes)
   useEffect(() => {
     if (!map.current || !isLoaded) return;
 
-    const source = map.current.getSource("incidents-cluster") as maplibregl.GeoJSONSource;
-    if (!source) return;
+    const mode = incidentViewMode || "clusters";
+    const clusterSource = map.current.getSource("incidents-cluster") as maplibregl.GeoJSONSource;
+    const heatmapSource = map.current.getSource("incidents-heatmap") as maplibregl.GeoJSONSource;
 
-    // Update visibility
-    const visibility = activeLayers.incidents ? "visible" : "none";
+    // Set visibility based on mode
+    const showClusters = activeLayers.incidents && mode === "clusters";
+    const showHeatmap = activeLayers.incidents && mode === "heatmap";
+
+    // Cluster layers visibility
     if (map.current.getLayer("incident-clusters")) {
-      map.current.setLayoutProperty("incident-clusters", "visibility", visibility);
+      map.current.setLayoutProperty("incident-clusters", "visibility", showClusters ? "visible" : "none");
     }
     if (map.current.getLayer("incident-cluster-count")) {
-      map.current.setLayoutProperty("incident-cluster-count", "visibility", visibility);
+      map.current.setLayoutProperty("incident-cluster-count", "visibility", showClusters ? "visible" : "none");
     }
 
-    // Update data
-    if (activeLayers.incidents) {
-      source.setData(incidentsToGeoJSON(incidents) as maplibregl.GeoJSONSourceSpecification["data"]);
+    // Heatmap layer visibility
+    if (map.current.getLayer("incidents-heat")) {
+      map.current.setLayoutProperty("incidents-heat", "visibility", showHeatmap ? "visible" : "none");
     }
-  }, [activeLayers.incidents, isLoaded, incidents]);
+
+    // Update data for active mode
+    if (activeLayers.incidents) {
+      const geojson = incidentsToGeoJSON(incidents);
+      if (clusterSource && mode === "clusters") {
+        clusterSource.setData(geojson as maplibregl.GeoJSONSourceSpecification["data"]);
+      }
+      if (heatmapSource && (mode === "heatmap" || mode === "points")) {
+        // Heatmap source is also used for points mode reference
+        heatmapSource.setData(geojson as maplibregl.GeoJSONSourceSpecification["data"]);
+      }
+    }
+  }, [activeLayers.incidents, isLoaded, incidents, incidentViewMode]);
 
   // Update cluster data when V16 beacons change
   useEffect(() => {
@@ -1044,8 +1113,17 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       }
     }
 
-    // Add individual incident markers when count is low
-    if (activeLayers.incidents && incidents.length > 0 && incidents.length <= 50) {
+    // Add individual incident markers based on view mode
+    const mode = incidentViewMode || "clusters";
+    // Show individual markers when:
+    // - In "points" mode: always show all markers
+    // - In "clusters" mode: show when count is low (<=50)
+    // - In "heatmap" mode: never show individual markers
+    const shouldShowIndividualIncidents = activeLayers.incidents && incidents.length > 0 && (
+      mode === "points" || (mode === "clusters" && incidents.length <= 50)
+    );
+
+    if (shouldShowIndividualIncidents) {
       const useDetailedMarkers = incidents.length < 100;
 
       incidents.forEach((incident) => {
@@ -1067,12 +1145,16 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         markersRef.current.push(marker);
       });
 
-      // Hide cluster layer when showing individual markers
+      // Hide cluster layers when showing individual markers
       if (map.current.getLayer("incident-clusters")) {
         map.current.setLayoutProperty("incident-clusters", "visibility", "none");
       }
       if (map.current.getLayer("incident-cluster-count")) {
         map.current.setLayoutProperty("incident-cluster-count", "visibility", "none");
+      }
+      // Also hide heatmap when showing individual markers
+      if (map.current.getLayer("incidents-heat")) {
+        map.current.setLayoutProperty("incidents-heat", "visibility", "none");
       }
     }
 
@@ -1603,7 +1685,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         markersRef.current.push(marker);
       });
     }
-  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, weatherData, provinceCoords, onIncidentClick, gasStations, maritimeStations]);
+  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, weatherData, provinceCoords, onIncidentClick, gasStations, maritimeStations, incidentViewMode]);
 
   return (
     <>
