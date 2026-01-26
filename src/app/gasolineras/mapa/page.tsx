@@ -32,10 +32,10 @@ export default function GasolinerasMapaPage() {
       <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
         <h3 className="font-medium text-orange-800 mb-2">Cómo usar el mapa</h3>
         <ul className="text-sm text-orange-700 space-y-1">
-          <li>• Activa la capa <strong>&quot;Gasolineras&quot;</strong> en los controles del mapa</li>
           <li>• Haz clic en un marcador para ver los precios y detalles</li>
           <li>• Los marcadores naranjas son estaciones terrestres</li>
           <li>• Los marcadores azules son estaciones marítimas</li>
+          <li>• Usa los controles del mapa para activar otras capas</li>
         </ul>
       </div>
 
@@ -46,6 +46,20 @@ export default function GasolinerasMapaPage() {
         </div>
       }>
         <UnifiedMap
+          initialLayers={{
+            v16: false,
+            incidents: false,
+            cameras: false,
+            chargers: false,
+            zbe: false,
+            weather: false,
+            highways: false,
+            provinces: false,
+            radars: false,
+            riskZones: false,
+            gasStations: true,
+            maritimeStations: true,
+          }}
           defaultHeight="600px"
           showStats={false}
           id="gasolineras-map"
