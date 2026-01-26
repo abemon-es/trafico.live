@@ -4,8 +4,11 @@
  * Fetches terrestrial gas station data and fuel prices from MINETUR API
  * and stores them in PostgreSQL.
  *
+ * Strategy:
+ * - GasStation table: Bulk upsert via raw SQL (updates current prices)
+ * - GasStationPriceHistory: Bulk insert with skip duplicates (one record/day)
+ *
  * Run 3x daily via Railway cron (prices update throughout the day).
- * Last manual trigger: 2026-01-26
  *
  * Data source:
  * - https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/
@@ -190,12 +193,7 @@ async function main() {
       return;
     }
 
-    // 2. Process stations - use transaction batching for better performance
-    const BATCH_SIZE = 100; // Smaller batches for transaction
-    let processed = 0;
-    let errors = 0;
-
-    // Prepare all station data first
+    // 2. Prepare all station data
     const validStations = stations
       .map((station) => {
         const latitude = parseCoordinate(station.Latitud);
@@ -252,119 +250,101 @@ async function main() {
 
     console.log(`[gas-station-collector] Processing ${validStations.length} valid stations...`);
 
-    // Process in transactional batches
+    // 3. Bulk upsert stations using raw SQL (MUCH faster than individual upserts)
+    const BATCH_SIZE = 1000;
+    let processed = 0;
+
     for (let i = 0; i < validStations.length; i += BATCH_SIZE) {
       const batch = validStations.slice(i, i + BATCH_SIZE);
 
-      try {
-        // Use $transaction for batch upserts
-        await prisma.$transaction(
-          batch.map((station) =>
-            prisma.gasStation.upsert({
-              where: { id: station.id },
-              create: station,
-              update: {
-                name: station.name,
-                latitude: station.latitude,
-                longitude: station.longitude,
-                address: station.address,
-                postalCode: station.postalCode,
-                locality: station.locality,
-                municipality: station.municipality,
-                municipalityCode: station.municipalityCode,
-                province: station.province,
-                provinceName: station.provinceName,
-                communityCode: station.communityCode,
-                priceGasoleoA: station.priceGasoleoA,
-                priceGasoleoB: station.priceGasoleoB,
-                priceGasoleoPremium: station.priceGasoleoPremium,
-                priceGasolina95E5: station.priceGasolina95E5,
-                priceGasolina95E10: station.priceGasolina95E10,
-                priceGasolina98E5: station.priceGasolina98E5,
-                priceGasolina98E10: station.priceGasolina98E10,
-                priceGLP: station.priceGLP,
-                priceGNC: station.priceGNC,
-                priceGNL: station.priceGNL,
-                priceHidrogeno: station.priceHidrogeno,
-                priceAdblue: station.priceAdblue,
-                schedule: station.schedule,
-                is24h: station.is24h,
-                margin: station.margin,
-                saleType: station.saleType,
-                lastPriceUpdate: station.lastPriceUpdate,
-                lastUpdated: station.lastUpdated,
-              },
-            })
-          ),
-          { timeout: 60000 } // 60 second timeout per batch
-        );
-        processed += batch.length;
-      } catch (err) {
-        errors += batch.length;
-        console.error(`[gas-station-collector] Batch error at ${i}:`, err);
-      }
+      // Build VALUES clause for bulk insert (27 parameters per station)
+      const values = batch.map((s, idx) => {
+        const base = idx * 27;
+        return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9}, $${base + 10}, $${base + 11}, $${base + 12}, $${base + 13}, $${base + 14}, $${base + 15}, $${base + 16}, $${base + 17}, $${base + 18}, $${base + 19}, $${base + 20}, $${base + 21}, $${base + 22}, $${base + 23}, $${base + 24}, $${base + 25}, $${base + 26}, $${base + 27})`;
+      }).join(", ");
 
-      // Progress every 1000
-      if ((i + BATCH_SIZE) % 1000 === 0 || i + BATCH_SIZE >= validStations.length) {
-        console.log(
-          `[gas-station-collector] Progress: ${Math.min(i + BATCH_SIZE, validStations.length)}/${validStations.length}`
-        );
+      const params = batch.flatMap((s) => [
+        s.id, s.name, s.latitude, s.longitude, s.address, s.postalCode,
+        s.locality, s.municipality, s.municipalityCode, s.province,
+        s.provinceName, s.communityCode, s.priceGasoleoA, s.priceGasoleoB,
+        s.priceGasoleoPremium, s.priceGasolina95E5, s.priceGasolina95E10,
+        s.priceGasolina98E5, s.priceGasolina98E10, s.priceGLP, s.priceGNC,
+        s.priceGNL, s.priceHidrogeno, s.schedule, s.is24h, s.margin, s.saleType
+      ]);
+
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "GasStation" (
+          id, name, latitude, longitude, address, "postalCode",
+          locality, municipality, "municipalityCode", province,
+          "provinceName", "communityCode", "priceGasoleoA", "priceGasoleoB",
+          "priceGasoleoPremium", "priceGasolina95E5", "priceGasolina95E10",
+          "priceGasolina98E5", "priceGasolina98E10", "priceGLP", "priceGNC",
+          "priceGNL", "priceHidrogeno", schedule, "is24h", margin, "saleType"
+        ) VALUES ${values}
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          latitude = EXCLUDED.latitude,
+          longitude = EXCLUDED.longitude,
+          address = EXCLUDED.address,
+          "postalCode" = EXCLUDED."postalCode",
+          locality = EXCLUDED.locality,
+          municipality = EXCLUDED.municipality,
+          "municipalityCode" = EXCLUDED."municipalityCode",
+          province = EXCLUDED.province,
+          "provinceName" = EXCLUDED."provinceName",
+          "communityCode" = EXCLUDED."communityCode",
+          "priceGasoleoA" = EXCLUDED."priceGasoleoA",
+          "priceGasoleoB" = EXCLUDED."priceGasoleoB",
+          "priceGasoleoPremium" = EXCLUDED."priceGasoleoPremium",
+          "priceGasolina95E5" = EXCLUDED."priceGasolina95E5",
+          "priceGasolina95E10" = EXCLUDED."priceGasolina95E10",
+          "priceGasolina98E5" = EXCLUDED."priceGasolina98E5",
+          "priceGasolina98E10" = EXCLUDED."priceGasolina98E10",
+          "priceGLP" = EXCLUDED."priceGLP",
+          "priceGNC" = EXCLUDED."priceGNC",
+          "priceGNL" = EXCLUDED."priceGNL",
+          "priceHidrogeno" = EXCLUDED."priceHidrogeno",
+          schedule = EXCLUDED.schedule,
+          "is24h" = EXCLUDED."is24h",
+          margin = EXCLUDED.margin,
+          "saleType" = EXCLUDED."saleType",
+          "lastPriceUpdate" = NOW(),
+          "lastUpdated" = NOW()
+      `, ...params);
+
+      processed += batch.length;
+
+      if (processed % 5000 === 0 || processed >= validStations.length) {
+        console.log(`[gas-station-collector] Stations: ${processed}/${validStations.length}`);
       }
     }
 
-    // 3. Save daily price history using bulk insert with conflict handling
+    console.log(`[gas-station-collector] Updated ${processed} stations`);
+
+    // 4. Save daily price history using bulk INSERT (skip duplicates)
+    // This keeps the FIRST prices of the day (if already exists, skip)
     console.log("[gas-station-collector] Saving daily price history...");
 
-    // Get all stations with prices
     const stationsWithPrices = validStations.filter(
       (s) => s.priceGasoleoA !== null || s.priceGasolina95E5 !== null
     );
 
-    // Prepare history records
-    const historyRecords = stationsWithPrices.map((station) => ({
-      stationId: station.id,
-      recordedAt: today,
-      priceGasoleoA: station.priceGasoleoA,
-      priceGasolina95E5: station.priceGasolina95E5,
-      priceGasolina98E5: station.priceGasolina98E5,
-      priceGLP: station.priceGLP,
-    }));
+    // Use createMany with skipDuplicates - much faster than individual upserts
+    const historyResult = await prisma.gasStationPriceHistory.createMany({
+      data: stationsWithPrices.map((s) => ({
+        stationId: s.id,
+        recordedAt: today,
+        priceGasoleoA: s.priceGasoleoA,
+        priceGasolina95E5: s.priceGasolina95E5,
+        priceGasolina98E5: s.priceGasolina98E5,
+        priceGLP: s.priceGLP,
+      })),
+      skipDuplicates: true, // Skip if already have record for this station+date
+    });
 
-    // Batch upsert history using transaction
-    let historyCount = 0;
-    for (let i = 0; i < historyRecords.length; i += BATCH_SIZE) {
-      const batch = historyRecords.slice(i, i + BATCH_SIZE);
+    console.log(`[gas-station-collector] Created ${historyResult.count} new history records (${stationsWithPrices.length - historyResult.count} already existed)`);
 
-      try {
-        await prisma.$transaction(
-          batch.map((record) =>
-            prisma.gasStationPriceHistory.upsert({
-              where: {
-                stationId_recordedAt: {
-                  stationId: record.stationId,
-                  recordedAt: record.recordedAt,
-                },
-              },
-              create: record,
-              update: {
-                priceGasoleoA: record.priceGasoleoA,
-                priceGasolina95E5: record.priceGasolina95E5,
-                priceGasolina98E5: record.priceGasolina98E5,
-                priceGLP: record.priceGLP,
-              },
-            })
-          ),
-          { timeout: 60000 }
-        );
-        historyCount += batch.length;
-      } catch (err) {
-        console.error(`[gas-station-collector] History batch error at ${i}:`, err);
-      }
-    }
-
-    console.log(`[gas-station-collector] Saved ${historyCount} history records`);
-
-    // 4. Summary statistics
+    // 5. Summary statistics
     const stats = await prisma.gasStation.groupBy({
       by: ["province"],
       _count: true,
@@ -388,15 +368,13 @@ async function main() {
     }
 
     const totalStations = stats.reduce((sum, s) => sum + s._count, 0);
-    console.log(`[gas-station-collector] Total stations: ${totalStations}`);
+    console.log(`[gas-station-collector] Total: ${totalStations} stations`);
 
-    // 24h stations count
     const stations24h = await prisma.gasStation.count({ where: { is24h: true } });
     console.log(`[gas-station-collector] 24h stations: ${stations24h}`);
 
-    console.log(
-      `[gas-station-collector] Collection completed: ${processed} processed, ${errors} errors`
-    );
+    const elapsed = ((Date.now() - now.getTime()) / 1000).toFixed(1);
+    console.log(`[gas-station-collector] Completed in ${elapsed}s`);
   } catch (error) {
     console.error("[gas-station-collector] Fatal error:", error);
     process.exit(1);
