@@ -9,9 +9,21 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+
+function createPrismaClient() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
+}
 
 const MINETUR_MARITIME_URL =
-  "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesMaritimas/";
+  "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/PostesMaritimos/";
 
 const PROVINCES: Record<string, string> = {
   "01": "Álava",
@@ -114,7 +126,7 @@ function parseAPIDate(dateStr: string): Date {
 }
 
 async function main() {
-  const prisma = new PrismaClient();
+  const prisma = createPrismaClient();
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -163,19 +175,25 @@ async function main() {
       const provinceCode = station.IDProvincia.padStart(2, "0");
       const provinceName = PROVINCES[provinceCode] || station.Provincia;
 
+      const stationId = station.IDPosteMaritimo || station.IDEESS;
+      if (!stationId) {
+        errors++;
+        continue;
+      }
+
       try {
         await prisma.maritimeStation.upsert({
-          where: { id: station.IDEESS },
+          where: { id: stationId },
           create: {
-            id: station.IDEESS,
-            name: station.Rótulo || "Sin nombre",
+            id: stationId,
+            name: station["Rótulo"] || "Sin nombre",
             latitude,
             longitude,
-            port: station.Localidad || null,
+            port: station.Puerto || null,
             locality: station.Localidad || null,
             province: provinceCode,
             provinceName,
-            priceGasoleoA: parsePrice(station["Precio Gasoleo A"]),
+            priceGasoleoA: parsePrice(station["Precio Gasoleo A habitual"]),
             priceGasoleoB: parsePrice(station["Precio Gasoleo B"]),
             priceGasolina95E5: parsePrice(station["Precio Gasolina 95 E5"]),
             priceGasolina98E5: parsePrice(station["Precio Gasolina 98 E5"]),
@@ -185,14 +203,14 @@ async function main() {
             lastUpdated: now,
           },
           update: {
-            name: station.Rótulo || "Sin nombre",
+            name: station["Rótulo"] || "Sin nombre",
             latitude,
             longitude,
-            port: station.Localidad || null,
+            port: station.Puerto || null,
             locality: station.Localidad || null,
             province: provinceCode,
             provinceName,
-            priceGasoleoA: parsePrice(station["Precio Gasoleo A"]),
+            priceGasoleoA: parsePrice(station["Precio Gasoleo A habitual"]),
             priceGasoleoB: parsePrice(station["Precio Gasoleo B"]),
             priceGasolina95E5: parsePrice(station["Precio Gasolina 95 E5"]),
             priceGasolina98E5: parsePrice(station["Precio Gasolina 98 E5"]),
@@ -205,7 +223,7 @@ async function main() {
         processed++;
       } catch (error) {
         errors++;
-        console.error(`[maritime-collector] Error for station ${station.IDEESS}:`, error);
+        console.error(`[maritime-collector] Error for station ${stationId}:`, error);
       }
     }
 
