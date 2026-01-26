@@ -10,7 +10,9 @@
     "all": "npm run collect && npm run maritime && npm run aggregate"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "pg": "^8.13.1",
     "prisma": "^7.2.0",
     "tsx": "^4.19.0"
   }

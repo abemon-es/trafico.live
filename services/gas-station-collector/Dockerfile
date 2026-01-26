@@ -8,13 +8,13 @@ RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/
 
 WORKDIR /app
 
-# Copy package files from service directory
-COPY services/gas-station-collector/package*.json ./
+# Copy package files from main project
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy Prisma schema from root project
+# Copy Prisma schema and config from root project
 COPY prisma/schema.prisma ./prisma/
 COPY prisma.config.ts ./
 
@@ -25,4 +25,4 @@ RUN npx prisma generate
 COPY services/gas-station-collector/*.ts ./
 
 # Run all collectors
-CMD ["npm", "run", "all"]
+CMD ["sh", "-c", "npx tsx collector.ts && npx tsx maritime.ts && npx tsx aggregator.ts"]
