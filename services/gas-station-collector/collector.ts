@@ -190,145 +190,176 @@ async function main() {
       return;
     }
 
-    // 2. Process in batches for better performance
-    const BATCH_SIZE = 500;
+    // 2. Process stations - use transaction batching for better performance
+    const BATCH_SIZE = 100; // Smaller batches for transaction
     let processed = 0;
     let errors = 0;
 
-    for (let i = 0; i < stations.length; i += BATCH_SIZE) {
-      const batch = stations.slice(i, i + BATCH_SIZE);
+    // Prepare all station data first
+    const validStations = stations
+      .map((station) => {
+        const latitude = parseCoordinate(station.Latitud);
+        const longitude = parseCoordinate(station["Longitud (WGS84)"]);
 
-      const operations = batch
-        .map((station) => {
-          const latitude = parseCoordinate(station.Latitud);
-          const longitude = parseCoordinate(station["Longitud (WGS84)"]);
-
-          // Skip invalid coordinates
-          if (isNaN(latitude) || isNaN(longitude)) {
-            return null;
-          }
-
-          const provinceCode = station.IDProvincia.padStart(2, "0");
-          const provinceName = PROVINCES[provinceCode] || station.Provincia;
-
-          const stationData = {
-            name: station.Rótulo || "Sin nombre",
-            latitude,
-            longitude,
-            address: station.Dirección || null,
-            postalCode: station["C.P."] || null,
-            locality: station.Localidad || null,
-            municipality: station.Municipio || null,
-            municipalityCode: station.IDMunicipio || null,
-            province: provinceCode,
-            provinceName,
-            communityCode: station.IDCCAA.padStart(2, "0"),
-
-            // Fuel prices
-            priceGasoleoA: parsePrice(station["Precio Gasoleo A"]),
-            priceGasoleoB: parsePrice(station["Precio Gasoleo B"]),
-            priceGasoleoPremium: parsePrice(station["Precio Gasoleo Premium"]),
-            priceGasolina95E5: parsePrice(station["Precio Gasolina 95 E5"]),
-            priceGasolina95E10: parsePrice(station["Precio Gasolina 95 E10"]),
-            priceGasolina98E5: parsePrice(station["Precio Gasolina 98 E5"]),
-            priceGasolina98E10: parsePrice(station["Precio Gasolina 98 E10"]),
-            priceGLP: parsePrice(station["Precio Gases licuados del petróleo"]),
-            priceGNC: parsePrice(station["Precio Gas Natural Comprimido"]),
-            priceGNL: parsePrice(station["Precio Gas Natural Licuado"]),
-            priceHidrogeno: parsePrice(station["Precio Hidrogeno"]),
-            priceAdblue: null, // Not in API response
-
-            // Station info
-            schedule: station.Horario || null,
-            is24h: is24Hours(station.Horario),
-            margin: station.Margen || null,
-            saleType: station["Tipo Venta"] || null,
-
-            // Timestamps
-            lastPriceUpdate: priceUpdateTime,
-            lastUpdated: now,
-          };
-
-          return prisma.gasStation.upsert({
-            where: { id: station.IDEESS },
-            create: { id: station.IDEESS, ...stationData },
-            update: stationData,
-          });
-        })
-        .filter(Boolean);
-
-      // Execute batch
-      const results = await Promise.allSettled(operations as Promise<unknown>[]);
-
-      for (const result of results) {
-        if (result.status === "fulfilled") {
-          processed++;
-        } else {
-          errors++;
-          if (errors <= 5) {
-            console.error(`[gas-station-collector] Error:`, result.reason);
-          }
+        // Skip invalid coordinates
+        if (isNaN(latitude) || isNaN(longitude)) {
+          return null;
         }
+
+        const provinceCode = station.IDProvincia.padStart(2, "0");
+        const provinceName = PROVINCES[provinceCode] || station.Provincia;
+
+        return {
+          id: station.IDEESS,
+          name: station.Rótulo || "Sin nombre",
+          latitude,
+          longitude,
+          address: station.Dirección || null,
+          postalCode: station["C.P."] || null,
+          locality: station.Localidad || null,
+          municipality: station.Municipio || null,
+          municipalityCode: station.IDMunicipio || null,
+          province: provinceCode,
+          provinceName,
+          communityCode: station.IDCCAA.padStart(2, "0"),
+
+          // Fuel prices
+          priceGasoleoA: parsePrice(station["Precio Gasoleo A"]),
+          priceGasoleoB: parsePrice(station["Precio Gasoleo B"]),
+          priceGasoleoPremium: parsePrice(station["Precio Gasoleo Premium"]),
+          priceGasolina95E5: parsePrice(station["Precio Gasolina 95 E5"]),
+          priceGasolina95E10: parsePrice(station["Precio Gasolina 95 E10"]),
+          priceGasolina98E5: parsePrice(station["Precio Gasolina 98 E5"]),
+          priceGasolina98E10: parsePrice(station["Precio Gasolina 98 E10"]),
+          priceGLP: parsePrice(station["Precio Gases licuados del petróleo"]),
+          priceGNC: parsePrice(station["Precio Gas Natural Comprimido"]),
+          priceGNL: parsePrice(station["Precio Gas Natural Licuado"]),
+          priceHidrogeno: parsePrice(station["Precio Hidrogeno"]),
+          priceAdblue: null as number | null, // Not in API response
+
+          // Station info
+          schedule: station.Horario || null,
+          is24h: is24Hours(station.Horario),
+          margin: station.Margen || null,
+          saleType: station["Tipo Venta"] || null,
+
+          // Timestamps
+          lastPriceUpdate: priceUpdateTime,
+          lastUpdated: now,
+        };
+      })
+      .filter((s): s is NonNullable<typeof s> => s !== null);
+
+    console.log(`[gas-station-collector] Processing ${validStations.length} valid stations...`);
+
+    // Process in transactional batches
+    for (let i = 0; i < validStations.length; i += BATCH_SIZE) {
+      const batch = validStations.slice(i, i + BATCH_SIZE);
+
+      try {
+        // Use $transaction for batch upserts
+        await prisma.$transaction(
+          batch.map((station) =>
+            prisma.gasStation.upsert({
+              where: { id: station.id },
+              create: station,
+              update: {
+                name: station.name,
+                latitude: station.latitude,
+                longitude: station.longitude,
+                address: station.address,
+                postalCode: station.postalCode,
+                locality: station.locality,
+                municipality: station.municipality,
+                municipalityCode: station.municipalityCode,
+                province: station.province,
+                provinceName: station.provinceName,
+                communityCode: station.communityCode,
+                priceGasoleoA: station.priceGasoleoA,
+                priceGasoleoB: station.priceGasoleoB,
+                priceGasoleoPremium: station.priceGasoleoPremium,
+                priceGasolina95E5: station.priceGasolina95E5,
+                priceGasolina95E10: station.priceGasolina95E10,
+                priceGasolina98E5: station.priceGasolina98E5,
+                priceGasolina98E10: station.priceGasolina98E10,
+                priceGLP: station.priceGLP,
+                priceGNC: station.priceGNC,
+                priceGNL: station.priceGNL,
+                priceHidrogeno: station.priceHidrogeno,
+                priceAdblue: station.priceAdblue,
+                schedule: station.schedule,
+                is24h: station.is24h,
+                margin: station.margin,
+                saleType: station.saleType,
+                lastPriceUpdate: station.lastPriceUpdate,
+                lastUpdated: station.lastUpdated,
+              },
+            })
+          ),
+          { timeout: 60000 } // 60 second timeout per batch
+        );
+        processed += batch.length;
+      } catch (err) {
+        errors += batch.length;
+        console.error(`[gas-station-collector] Batch error at ${i}:`, err);
       }
 
-      console.log(
-        `[gas-station-collector] Processed ${Math.min(i + BATCH_SIZE, stations.length)}/${stations.length}`
-      );
+      // Progress every 1000
+      if ((i + BATCH_SIZE) % 1000 === 0 || i + BATCH_SIZE >= validStations.length) {
+        console.log(
+          `[gas-station-collector] Progress: ${Math.min(i + BATCH_SIZE, validStations.length)}/${validStations.length}`
+        );
+      }
     }
 
-    // 3. Save daily price history (one record per day per station)
+    // 3. Save daily price history using bulk insert with conflict handling
     console.log("[gas-station-collector] Saving daily price history...");
 
     // Get all stations with prices
-    const stationsWithPrices = await prisma.gasStation.findMany({
-      where: {
-        OR: [
-          { priceGasoleoA: { not: null } },
-          { priceGasolina95E5: { not: null } },
-        ],
-      },
-      select: {
-        id: true,
-        priceGasoleoA: true,
-        priceGasolina95E5: true,
-        priceGasolina98E5: true,
-        priceGLP: true,
-      },
-    });
+    const stationsWithPrices = validStations.filter(
+      (s) => s.priceGasoleoA !== null || s.priceGasolina95E5 !== null
+    );
 
-    // Batch upsert history records
+    // Prepare history records
+    const historyRecords = stationsWithPrices.map((station) => ({
+      stationId: station.id,
+      recordedAt: today,
+      priceGasoleoA: station.priceGasoleoA,
+      priceGasolina95E5: station.priceGasolina95E5,
+      priceGasolina98E5: station.priceGasolina98E5,
+      priceGLP: station.priceGLP,
+    }));
+
+    // Batch upsert history using transaction
     let historyCount = 0;
-    for (let i = 0; i < stationsWithPrices.length; i += BATCH_SIZE) {
-      const batch = stationsWithPrices.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < historyRecords.length; i += BATCH_SIZE) {
+      const batch = historyRecords.slice(i, i + BATCH_SIZE);
 
-      await Promise.all(
-        batch.map((station) =>
-          prisma.gasStationPriceHistory.upsert({
-            where: {
-              stationId_recordedAt: {
-                stationId: station.id,
-                recordedAt: today,
+      try {
+        await prisma.$transaction(
+          batch.map((record) =>
+            prisma.gasStationPriceHistory.upsert({
+              where: {
+                stationId_recordedAt: {
+                  stationId: record.stationId,
+                  recordedAt: record.recordedAt,
+                },
               },
-            },
-            create: {
-              stationId: station.id,
-              recordedAt: today,
-              priceGasoleoA: station.priceGasoleoA,
-              priceGasolina95E5: station.priceGasolina95E5,
-              priceGasolina98E5: station.priceGasolina98E5,
-              priceGLP: station.priceGLP,
-            },
-            update: {
-              priceGasoleoA: station.priceGasoleoA,
-              priceGasolina95E5: station.priceGasolina95E5,
-              priceGasolina98E5: station.priceGasolina98E5,
-              priceGLP: station.priceGLP,
-            },
-          })
-        )
-      );
-
-      historyCount += batch.length;
+              create: record,
+              update: {
+                priceGasoleoA: record.priceGasoleoA,
+                priceGasolina95E5: record.priceGasolina95E5,
+                priceGasolina98E5: record.priceGasolina98E5,
+                priceGLP: record.priceGLP,
+              },
+            })
+          ),
+          { timeout: 60000 }
+        );
+        historyCount += batch.length;
+      } catch (err) {
+        console.error(`[gas-station-collector] History batch error at ${i}:`, err);
+      }
     }
 
     console.log(`[gas-station-collector] Saved ${historyCount} history records`);
