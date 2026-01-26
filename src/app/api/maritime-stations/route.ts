@@ -14,9 +14,30 @@ export async function GET(request: NextRequest) {
     const is24h = searchParams.get("is24h");
     const bbox = searchParams.get("bbox");
 
-    // Pagination
-    const limit = Math.min(parseInt(searchParams.get("limit") || "100"), 500);
-    const offset = parseInt(searchParams.get("offset") || "0");
+    // Pagination - support both page/pageSize and limit/offset
+    const pageParam = searchParams.get("page");
+    const pageSizeParam = searchParams.get("pageSize");
+    const limitParam = searchParams.get("limit");
+    const offsetParam = searchParams.get("offset");
+
+    let limit: number;
+    let offset: number;
+    let page: number;
+    let pageSize: number;
+
+    if (pageParam || pageSizeParam) {
+      // Page-based pagination
+      page = Math.max(1, parseInt(pageParam || "1"));
+      pageSize = Math.min(Math.max(1, parseInt(pageSizeParam || "20")), 500);
+      limit = pageSize;
+      offset = (page - 1) * pageSize;
+    } else {
+      // Legacy limit/offset pagination
+      limit = Math.min(parseInt(limitParam || "100"), 500);
+      offset = parseInt(offsetParam || "0");
+      pageSize = limit;
+      page = Math.floor(offset / limit) + 1;
+    }
 
     // Build where clause
     const where: Record<string, unknown> = {};
@@ -77,16 +98,23 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Calculate pagination
+    const totalPages = Math.ceil(total / pageSize);
+
     return NextResponse.json({
       success: true,
-      count: responseStations.length,
-      total,
-      stations: responseStations,
+      data: responseStations,
+      pagination: {
+        total,
+        page,
+        pageSize,
+        totalPages,
+      },
     });
   } catch (error) {
     console.error("Error fetching maritime stations:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch maritime stations", stations: [] },
+      { success: false, error: "Failed to fetch maritime stations", data: [], pagination: { total: 0, page: 1, pageSize: 20, totalPages: 0 } },
       { status: 500 }
     );
   }

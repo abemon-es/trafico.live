@@ -46,9 +46,30 @@ export async function GET(request: NextRequest) {
     const is24h = searchParams.get("is24h");
     const bbox = searchParams.get("bbox"); // "minLng,minLat,maxLng,maxLat"
 
-    // Pagination
-    const limit = Math.min(parseInt(searchParams.get("limit") || "100"), 1000);
-    const offset = parseInt(searchParams.get("offset") || "0");
+    // Pagination - support both page/pageSize and limit/offset
+    const pageParam = searchParams.get("page");
+    const pageSizeParam = searchParams.get("pageSize");
+    const limitParam = searchParams.get("limit");
+    const offsetParam = searchParams.get("offset");
+
+    let limit: number;
+    let offset: number;
+    let page: number;
+    let pageSize: number;
+
+    if (pageParam || pageSizeParam) {
+      // Page-based pagination
+      page = Math.max(1, parseInt(pageParam || "1"));
+      pageSize = Math.min(Math.max(1, parseInt(pageSizeParam || "20")), 1000);
+      limit = pageSize;
+      offset = (page - 1) * pageSize;
+    } else {
+      // Legacy limit/offset pagination
+      limit = Math.min(parseInt(limitParam || "100"), 1000);
+      offset = parseInt(offsetParam || "0");
+      pageSize = limit;
+      page = Math.floor(offset / limit) + 1;
+    }
 
     // Sorting
     const sort = searchParams.get("sort") || "price";
@@ -152,11 +173,18 @@ export async function GET(request: NextRequest) {
     const uniqueProvinces = [...new Set(stations.map((s) => s.provinceName).filter(Boolean))];
     const uniqueBrands = [...new Set(stations.map((s) => s.name).filter(Boolean))].slice(0, 50);
 
+    // Calculate pagination
+    const totalPages = Math.ceil(total / pageSize);
+
     return NextResponse.json({
       success: true,
-      count: responseStations.length,
-      total,
-      stations: responseStations,
+      data: responseStations,
+      pagination: {
+        total,
+        page,
+        pageSize,
+        totalPages,
+      },
       filters: {
         provinces: uniqueProvinces.sort(),
         brands: uniqueBrands.sort(),
@@ -165,7 +193,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching gas stations:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch gas stations", stations: [] },
+      { success: false, error: "Failed to fetch gas stations", data: [], pagination: { total: 0, page: 1, pageSize: 20, totalPages: 0 } },
       { status: 500 }
     );
   }
