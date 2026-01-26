@@ -1,7 +1,6 @@
 # Gas Station Collector Service
 # Runs 3x daily via Railway cron
 # Build context: repo root (GitHub integration)
-# Updated: 2026-01-26
 
 FROM node:20-slim
 
@@ -16,9 +15,11 @@ COPY services/gas-station-collector/package.json ./
 # Install dependencies
 RUN npm install
 
-# Copy Prisma schema and config
+# Copy Prisma schema
 COPY services/gas-station-collector/schema.prisma ./prisma/
-COPY services/gas-station-collector/prisma.config.ts ./
+
+# Create prisma config inline (avoids context issues)
+RUN printf 'import { defineConfig } from "prisma/config";\n\nexport default defineConfig({\n  schema: "prisma/schema.prisma",\n  datasource: { url: process.env["DATABASE_URL"] },\n});\n' > prisma.config.ts
 
 # Generate Prisma client
 RUN npx prisma generate
