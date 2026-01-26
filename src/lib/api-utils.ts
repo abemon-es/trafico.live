@@ -95,10 +95,37 @@ export async function withRateLimitHeaders(
 }
 
 /**
+ * Allowed origins for CORS
+ */
+const ALLOWED_ORIGINS = [
+  "https://trafico.logisticsexpress.es",
+  "https://trafico.abemon.es",
+  "https://logisticsexpress.es",
+  "https://abemon.es",
+  "http://localhost:3000",
+  "http://localhost:3001",
+];
+
+/**
+ * Get CORS origin header based on request origin
+ */
+export function getCORSOrigin(requestOrigin: string | null): string {
+  if (!requestOrigin) return ALLOWED_ORIGINS[0];
+  if (ALLOWED_ORIGINS.includes(requestOrigin)) return requestOrigin;
+  // Allow subdomains of allowed origins
+  const isAllowedSubdomain = ALLOWED_ORIGINS.some((allowed) => {
+    const domain = allowed.replace(/^https?:\/\//, "");
+    return requestOrigin.endsWith(`.${domain}`) || requestOrigin.endsWith(`://${domain}`);
+  });
+  if (isAllowedSubdomain) return requestOrigin;
+  return ALLOWED_ORIGINS[0];
+}
+
+/**
  * CORS headers for API responses
  */
 export const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*", // Or specify your domain
+  "Access-Control-Allow-Origin": "https://trafico.logisticsexpress.es",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
   "Access-Control-Max-Age": "86400",
