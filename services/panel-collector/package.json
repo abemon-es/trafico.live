@@ -8,8 +8,8 @@
     "dev": "npx tsx watch collector.ts"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^6.0.0",
-    "@prisma/client": "^6.0.0",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
     "fast-xml-parser": "^4.5.0",
     "pg": "^8.13.1"
   },

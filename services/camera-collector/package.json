@@ -7,8 +7,8 @@
     "start": "node --enable-source-maps dist/collector.js"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^6.4.1",
-    "@prisma/client": "^6.4.1",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
     "fast-xml-parser": "^5.0.9",
     "pg": "^8.14.1"
   },
