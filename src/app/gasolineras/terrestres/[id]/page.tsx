@@ -5,6 +5,9 @@ import { prisma } from "@/lib/db";
 import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { PriceHistoryChart } from "@/components/gas-stations";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ id: string }>;
 }

@@ -3,6 +3,9 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Route, Car, Construction, MapPin } from "lucide-react";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Carreteras de España | Tráfico en Tiempo Real",
   description:

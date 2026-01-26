@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Anchor, MapPin, Clock, Navigation, ArrowLeft } from "lucide-react";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ id: string }>;
 }

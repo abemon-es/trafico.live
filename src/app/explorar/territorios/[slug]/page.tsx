@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import prisma from "@/lib/db";
 import TerritoryDetailContent from "./content";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

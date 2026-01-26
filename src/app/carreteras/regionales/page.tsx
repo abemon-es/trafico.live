@@ -4,6 +4,9 @@ import prisma from "@/lib/db";
 import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Carreteras Regionales y Comarcales | Tráfico y Radares",
   description:

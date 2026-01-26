@@ -4,6 +4,9 @@ import prisma from "@/lib/db";
 import { Car, Camera, Radar, AlertTriangle, MapPin } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Autopistas de España (AP) | Tráfico, Cámaras y Radares",
   description:
