@@ -37,7 +37,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: https: blob:",
-      "connect-src 'self' https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com",
+      "connect-src 'self' https://*.cartocdn.com https://*.carto.com https://api.mapbox.com https://*.tiles.mapbox.com",
       "frame-ancestors 'self'",
     ].join("; "),
   },
