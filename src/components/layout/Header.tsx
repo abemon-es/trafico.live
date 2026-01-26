@@ -23,15 +23,15 @@ import {
 // Primary navigation - main sections
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
-  { name: "Mapa", href: "/mapa", icon: Map },
+  { name: "Gasolineras", href: "/gasolineras", icon: Fuel },
   { name: "Carreteras", href: "/carreteras", icon: Route },
   { name: "Incidencias", href: "/incidencias", icon: AlertTriangle },
 ];
 
 // Dropdown menu for "Más"
 const moreNavItems = [
+  { name: "Mapa", href: "/mapa", icon: Map },
   { name: "Cámaras", href: "/camaras", icon: Camera },
-  { name: "Gasolineras", href: "/gasolineras", icon: Fuel },
   { name: "Histórico", href: "/historico", icon: Clock },
   { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
   { name: "Provincias", href: "/provincias", icon: MapPin },
