@@ -141,8 +141,8 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
           )}
           {station.priceGasoleoB && (
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-600 mb-1">Gasóleo B <span className="text-xs text-gray-400">(pesqueros)</span></div>
-              <div className="text-2xl font-bold text-gray-700">{formatPrice(station.priceGasoleoB, true)}</div>
+              <div className="text-sm text-gray-600 mb-1">Gasóleo B</div>
+              <div className="text-2xl font-bold text-gray-700">{formatPrice(station.priceGasoleoB)}</div>
             </div>
           )}
           {station.priceGasolina98E5 && (

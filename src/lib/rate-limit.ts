@@ -127,13 +127,14 @@ export function getRateLimitHeaders(result: RateLimitResult): Record<string, str
  * Determine rate limit type based on endpoint
  */
 export function getRateLimitType(pathname: string): RateLimitType {
-  // Expensive endpoints - aggregations, search, statistics
+  // Expensive endpoints - aggregations, search, statistics, historical data
   const expensivePatterns = [
     "/api/roads/catalog",
     "/api/stats",
     "/api/rankings",
     "/api/historico",
     "/api/espana",
+    "/api/fuel-prices/history",
   ];
 
   // Strict endpoints - could be abused
