@@ -40,32 +40,41 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default async function RegionalesPage() {
-  // Get all regional roads (COMARCAL, PROVINCIAL, OTHER)
-  const roads = await prisma.road.findMany({
-    where: { type: { in: ["COMARCAL", "PROVINCIAL", "OTHER"] } },
-    orderBy: { id: "asc" },
-  });
+  // Get all regional roads - wrapped in try-catch for build phase
+  let roads: { id: string; name: string | null; type: string; provinces: string[] }[] = [];
+  let camerasByRoad: { roadNumber: string | null; _count: number }[] = [];
+  let radarsByRoad: { roadNumber: string | null; _count: number }[] = [];
+  let incidentsByRoad: { roadNumber: string | null; _count: number }[] = [];
 
-  // Get infrastructure counts for each road
-  const roadIds = roads.map((r) => r.id);
+  try {
+    roads = await prisma.road.findMany({
+      where: { type: { in: ["COMARCAL", "PROVINCIAL", "OTHER"] } },
+      orderBy: { id: "asc" },
+    });
 
-  const [camerasByRoad, radarsByRoad, incidentsByRoad] = await Promise.all([
-    prisma.camera.groupBy({
-      by: ["roadNumber"],
-      where: { roadNumber: { in: roadIds }, isActive: true },
-      _count: true,
-    }),
-    prisma.radar.groupBy({
-      by: ["roadNumber"],
-      where: { roadNumber: { in: roadIds }, isActive: true },
-      _count: true,
-    }),
-    prisma.trafficIncident.groupBy({
-      by: ["roadNumber"],
-      where: { roadNumber: { in: roadIds }, isActive: true },
-      _count: true,
-    }),
-  ]);
+    // Get infrastructure counts for each road
+    const roadIds = roads.map((r) => r.id);
+
+    [camerasByRoad, radarsByRoad, incidentsByRoad] = await Promise.all([
+      prisma.camera.groupBy({
+        by: ["roadNumber"],
+        where: { roadNumber: { in: roadIds }, isActive: true },
+        _count: true,
+      }),
+      prisma.radar.groupBy({
+        by: ["roadNumber"],
+        where: { roadNumber: { in: roadIds }, isActive: true },
+        _count: true,
+      }),
+      prisma.trafficIncident.groupBy({
+        by: ["roadNumber"],
+        where: { roadNumber: { in: roadIds }, isActive: true },
+        _count: true,
+      }),
+    ]);
+  } catch (error) {
+    console.error("Error fetching regionales data:", error);
+  }
 
   // Create lookup maps
   const cameraCounts = new Map(camerasByRoad.map((c) => [c.roadNumber, c._count]));
