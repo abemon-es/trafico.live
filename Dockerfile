@@ -3,8 +3,15 @@ FROM node:24-slim AS builder
 WORKDIR /app
 
 COPY . .
-RUN npm install --ignore-scripts
-RUN npx prisma generate --schema=./prisma/schema.prisma
+
+# Install all deps including devDeps for build tools
+RUN npm install --ignore-scripts --include=dev
+
+# Remove prisma.config.ts to avoid dotenv/ts-node issues during generate
+# prisma generate uses schema.prisma directly
+RUN mv prisma.config.ts prisma.config.ts.bak || true
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/db" npx prisma generate
+
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
