@@ -3,8 +3,8 @@ FROM node:24-slim AS builder
 WORKDIR /app
 
 COPY . .
-RUN npm install
-RUN npx prisma generate
+RUN npm install --ignore-scripts
+RUN npx prisma generate --schema=./prisma/schema.prisma
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
