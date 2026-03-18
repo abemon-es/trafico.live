@@ -2,10 +2,8 @@ FROM node:24-slim AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
-
 COPY . .
+RUN npm install
 RUN npx prisma generate
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
