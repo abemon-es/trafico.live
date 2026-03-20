@@ -257,10 +257,10 @@ async function main() {
     for (let i = 0; i < validStations.length; i += BATCH_SIZE) {
       const batch = validStations.slice(i, i + BATCH_SIZE);
 
-      // Build VALUES clause for bulk insert (27 parameters per station)
+      // Build VALUES clause for bulk insert (29 parameters per station)
       const values = batch.map((s, idx) => {
-        const base = idx * 27;
-        return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9}, $${base + 10}, $${base + 11}, $${base + 12}, $${base + 13}, $${base + 14}, $${base + 15}, $${base + 16}, $${base + 17}, $${base + 18}, $${base + 19}, $${base + 20}, $${base + 21}, $${base + 22}, $${base + 23}, $${base + 24}, $${base + 25}, $${base + 26}, $${base + 27})`;
+        const base = idx * 29;
+        return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9}, $${base + 10}, $${base + 11}, $${base + 12}, $${base + 13}, $${base + 14}, $${base + 15}, $${base + 16}, $${base + 17}, $${base + 18}, $${base + 19}, $${base + 20}, $${base + 21}, $${base + 22}, $${base + 23}, $${base + 24}, $${base + 25}, $${base + 26}, $${base + 27}, $${base + 28}, $${base + 29})`;
       }).join(", ");
 
       const params = batch.flatMap((s) => [
@@ -269,7 +269,8 @@ async function main() {
         s.provinceName, s.communityCode, s.priceGasoleoA, s.priceGasoleoB,
         s.priceGasoleoPremium, s.priceGasolina95E5, s.priceGasolina95E10,
         s.priceGasolina98E5, s.priceGasolina98E10, s.priceGLP, s.priceGNC,
-        s.priceGNL, s.priceHidrogeno, s.schedule, s.is24h, s.margin, s.saleType
+        s.priceGNL, s.priceHidrogeno, s.schedule, s.is24h, s.margin, s.saleType,
+        s.lastPriceUpdate, s.lastUpdated
       ]);
 
       await prisma.$executeRawUnsafe(`
@@ -279,7 +280,8 @@ async function main() {
           "provinceName", "communityCode", "priceGasoleoA", "priceGasoleoB",
           "priceGasoleoPremium", "priceGasolina95E5", "priceGasolina95E10",
           "priceGasolina98E5", "priceGasolina98E10", "priceGLP", "priceGNC",
-          "priceGNL", "priceHidrogeno", schedule, "is24h", margin, "saleType"
+          "priceGNL", "priceHidrogeno", schedule, "is24h", margin, "saleType",
+          "lastPriceUpdate", "lastUpdated"
         ) VALUES ${values}
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name,

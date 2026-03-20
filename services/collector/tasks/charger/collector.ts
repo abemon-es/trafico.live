@@ -346,7 +346,7 @@ export async function run(prisma: PrismaClient) {
           province: provinceCode,
           provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
           chargerTypes,
-          powerKw: charger.totalPowerKw,
+          powerKw: Math.min(charger.totalPowerKw, 9999.99),
           connectors: charger.connectorCount,
           operator: charger.operator || null,
           network: null, // Not available in source data
@@ -365,7 +365,7 @@ export async function run(prisma: PrismaClient) {
           province: provinceCode,
           provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
           chargerTypes,
-          powerKw: charger.totalPowerKw,
+          powerKw: Math.min(charger.totalPowerKw, 9999.99),
           connectors: charger.connectorCount,
           operator: charger.operator || null,
           isPublic: true,
