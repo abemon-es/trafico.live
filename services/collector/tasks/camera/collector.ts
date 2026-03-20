@@ -158,58 +158,48 @@ export async function run(prisma: PrismaClient) {
     });
     const existingIds = new Set(existingCameras.map(c => c.id));
 
-    // 3. Prepare upsert operations
+    // 3. Batch INSERT...ON CONFLICT upserts
     const fetchedIds = new Set<string>();
-    let created = 0;
-    let updated = 0;
+    let processed = 0;
 
-    // Chunked parallel upserts (50x parallelism per chunk)
-    const CHUNK = 50;
-    for (let i = 0; i < cameras.length; i += CHUNK) {
-      const chunk = cameras.slice(i, i + CHUNK);
-      await Promise.all(chunk.map(camera => {
-        fetchedIds.add(camera.id);
+    const BATCH = 500;
+    for (let i = 0; i < cameras.length; i += BATCH) {
+      const batch = cameras.slice(i, i + BATCH);
+      const COLS = 11;
 
-        const provinceCode = normalizeProvince(camera.province);
+      for (const c of batch) fetchedIds.add(c.id);
 
-        if (existingIds.has(camera.id)) {
-          updated++;
-        } else {
-          created++;
-        }
+      const values = batch.map((_, idx) => {
+        const b = idx * COLS;
+        return `($${b+1}, $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6}, $${b+7}, $${b+8}, $${b+9}, $${b+10}, $${b+11})`;
+      }).join(", ");
 
-        return prisma.camera.upsert({
-          where: { id: camera.id },
-          create: {
-            id: camera.id,
-            name: camera.name,
-            latitude: camera.latitude,
-            longitude: camera.longitude,
-            roadNumber: camera.road || null,
-            kmPoint: camera.kmPoint,
-            province: provinceCode,
-            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-            feedUrl: camera.imageUrl,
-            thumbnailUrl: camera.imageUrl,
-            isActive: true,
-            lastUpdated: now
-          },
-          update: {
-            name: camera.name,
-            latitude: camera.latitude,
-            longitude: camera.longitude,
-            roadNumber: camera.road || null,
-            kmPoint: camera.kmPoint,
-            province: provinceCode,
-            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-            feedUrl: camera.imageUrl,
-            thumbnailUrl: camera.imageUrl,
-            isActive: true,
-            lastUpdated: now
-          }
-        });
-      }));
+      const params = batch.flatMap(c => {
+        const provinceCode = normalizeProvince(c.province);
+        return [
+          c.id, c.name, c.latitude, c.longitude,
+          c.road || null, c.kmPoint, provinceCode,
+          provinceCode ? PROVINCES[provinceCode] || null : null,
+          c.imageUrl, c.imageUrl, now
+        ];
+      });
+
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "Camera" (id, name, latitude, longitude, "roadNumber", "kmPoint", province, "provinceName", "feedUrl", "thumbnailUrl", "lastUpdated")
+        VALUES ${values}
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
+          "roadNumber" = EXCLUDED."roadNumber", "kmPoint" = EXCLUDED."kmPoint",
+          province = EXCLUDED.province, "provinceName" = EXCLUDED."provinceName",
+          "feedUrl" = EXCLUDED."feedUrl", "thumbnailUrl" = EXCLUDED."thumbnailUrl",
+          "isActive" = true, "lastUpdated" = EXCLUDED."lastUpdated"
+      `, ...params);
+
+      processed += batch.length;
     }
+
+    const created = cameras.filter(c => !existingIds.has(c.id)).length;
+    const updated = processed - created;
 
     console.log(`[camera-collector] Created: ${created}, Updated: ${updated}`);
 

@@ -313,77 +313,59 @@ export async function run(prisma: PrismaClient) {
     });
     const existingIds = new Set(existingChargers.map(c => c.id));
 
-    // 3. Prepare upsert operations
+    // 3. Batch upsert via raw SQL INSERT ... ON CONFLICT
     const fetchedIds = new Set<string>();
     let created = 0;
     let updated = 0;
 
-    const CHUNK = 50;
-    for (let i = 0; i < chargers.length; i += CHUNK) {
-      const chunk = chargers.slice(i, i + CHUNK);
-      await Promise.all(chunk.map(async (charger) => {
-        fetchedIds.add(charger.id);
+    const BATCH = 500;
+    const COLS = 16;
 
+    for (let i = 0; i < chargers.length; i += BATCH) {
+      const batch = chargers.slice(i, i + BATCH);
+
+      const values = batch.map((_, idx) => {
+        const b = idx * COLS;
+        return `($${b+1}, $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6}, $${b+7}, $${b+8}, $${b+9}, $${b+10}::"ChargerType"[], $${b+11}, $${b+12}, $${b+13}, $${b+14}, $${b+15}::text[], $${b+16})`;
+      }).join(", ");
+
+      const params = batch.flatMap(charger => {
         const provinceCode = normalizeProvince(charger.province || "");
-
-        // Map connector types to Prisma enum
-        const chargerTypes: ChargerType[] = [...new Set(
-          charger.connectors.map(c => mapConnectorType(c.type))
-        )];
-
-        // Map payment methods from auth methods
-        const paymentMethods: string[] = charger.authMethods.filter(m =>
+        const chargerTypes = [...new Set(charger.connectors.map(c => mapConnectorType(c.type)))];
+        const paymentMethods = charger.authMethods.filter(m =>
           m.includes("payment") || m.includes("card") || m.includes("app") || m.includes("rfid")
         );
 
-        await prisma.eVCharger.upsert({
-          where: { id: charger.id },
-          create: {
-            id: charger.id,
-            name: charger.name,
-            latitude: charger.latitude,
-            longitude: charger.longitude,
-            address: charger.address || null,
-            city: charger.city || null,
-            postalCode: charger.postalCode || null,
-            province: provinceCode,
-            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-            chargerTypes,
-            powerKw: Math.min(charger.totalPowerKw, 9999.99),
-            connectors: charger.connectorCount,
-            operator: charger.operator || null,
-            network: null, // Not available in source data
-            isPublic: true,
-            is24h: charger.is24h,
-            paymentMethods,
-            lastUpdated: now
-          },
-          update: {
-            name: charger.name,
-            latitude: charger.latitude,
-            longitude: charger.longitude,
-            address: charger.address || null,
-            city: charger.city || null,
-            postalCode: charger.postalCode || null,
-            province: provinceCode,
-            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-            chargerTypes,
-            powerKw: Math.min(charger.totalPowerKw, 9999.99),
-            connectors: charger.connectorCount,
-            operator: charger.operator || null,
-            isPublic: true,
-            is24h: charger.is24h,
-            paymentMethods,
-            lastUpdated: now
-          }
-        });
+        fetchedIds.add(charger.id);
+        if (existingIds.has(charger.id)) updated++; else created++;
 
-        if (existingIds.has(charger.id)) {
-          updated++;
-        } else {
-          created++;
-        }
-      }));
+        return [
+          charger.id, charger.name, charger.latitude, charger.longitude,
+          charger.address || null, charger.city || null, charger.postalCode || null,
+          provinceCode, provinceCode ? PROVINCES[provinceCode] || null : null,
+          chargerTypes, // ChargerType[] — cast in SQL
+          Math.min(charger.totalPowerKw, 9999.99), charger.connectorCount,
+          charger.operator || null, charger.is24h,
+          paymentMethods, // String[] — cast in SQL
+          now
+        ];
+      });
+
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "EVCharger" (
+          id, name, latitude, longitude, address, city, "postalCode",
+          province, "provinceName", "chargerTypes", "powerKw", connectors,
+          operator, "is24h", "paymentMethods", "lastUpdated"
+        ) VALUES ${values}
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
+          address = EXCLUDED.address, city = EXCLUDED.city, "postalCode" = EXCLUDED."postalCode",
+          province = EXCLUDED.province, "provinceName" = EXCLUDED."provinceName",
+          "chargerTypes" = EXCLUDED."chargerTypes", "powerKw" = EXCLUDED."powerKw",
+          connectors = EXCLUDED.connectors, operator = EXCLUDED.operator,
+          "is24h" = EXCLUDED."is24h", "paymentMethods" = EXCLUDED."paymentMethods",
+          "lastUpdated" = EXCLUDED."lastUpdated"
+      `, ...params);
     }
 
     console.log(`[charger-collector] Created: ${created}, Updated: ${updated}`);

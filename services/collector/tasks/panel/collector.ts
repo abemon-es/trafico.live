@@ -289,83 +289,125 @@ export async function run(prisma: PrismaClient) {
     });
     const existingIds = new Set(existingPanels.map(p => p.panelId));
 
-    // 3. Merge and upsert
+    // 3. Batch upsert via raw SQL INSERT ... ON CONFLICT
     const fetchedIds = new Set<string>();
     let created = 0;
     let updated = 0;
     let withMessage = 0;
-
     let skipped = 0;
+
     const locationEntries = [...locations.entries()];
-    const CHUNK = 50;
-    for (let i = 0; i < locationEntries.length; i += CHUNK) {
-      const chunk = locationEntries.slice(i, i + CHUNK);
-      await Promise.all(chunk.map(async ([panelId, location]) => {
+    const BATCH = 500;
+    const COLS = 15;
+
+    for (let i = 0; i < locationEntries.length; i += BATCH) {
+      const batch = locationEntries.slice(i, i + BATCH);
+
+      // Filter out invalid coordinates
+      const validBatch = batch.filter(([_, loc]) =>
+        Math.abs(loc.latitude) <= 90 && Math.abs(loc.longitude) <= 180
+      );
+      skipped += batch.length - validBatch.length;
+
+      if (validBatch.length === 0) continue;
+
+      const values = validBatch.map((_, idx) => {
+        const b = idx * COLS;
+        return `(gen_random_uuid()::text, $${b+1}, $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6}, $${b+7}::"Direction", $${b+8}, $${b+9}, $${b+10}, $${b+11}::"PanelMessageType", $${b+12}, $${b+13}, $${b+14}, $${b+15})`;
+      }).join(", ");
+
+      const params = validBatch.flatMap(([panelId, location]) => {
         fetchedIds.add(panelId);
-
-        // Validate coordinates fit Decimal(9,6) range
-        if (Math.abs(location.latitude) > 90 || Math.abs(location.longitude) > 180) {
-          skipped++;
-          return;
-        }
-
-        // Find message for this panel
         const msg = messages.get(panelId);
-        const hasMessage = !!(msg?.message || (msg?.pictograms && msg.pictograms.length > 0));
-        if (hasMessage) withMessage++;
+        const hasMsg = !!(msg?.message || (msg?.pictograms && msg.pictograms.length > 0));
+        if (hasMsg) withMessage++;
+        if (existingIds.has(panelId)) updated++; else created++;
 
-        try {
-          await prisma.variablePanel.upsert({
-            where: { panelId },
-            create: {
-              panelId,
-              name: location.name,
-              latitude: location.latitude,
-              longitude: location.longitude,
-              roadNumber: location.roadNumber || null,
-              kmPoint: location.kmPoint,
-              direction: location.direction,
-              province: location.provinceCode,
-              provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
-              message: msg?.message || null,
-              messageType: msg?.messageType || null,
-              messageCode: msg?.pictograms?.join(",") || null,
-              messageStartAt: msg?.startedAt || null,
-              fetchedAt: now,
-              lastUpdated: now,
-              isActive: true,
-              hasMessage,
-            },
-            update: {
-              name: location.name,
-              latitude: location.latitude,
-              longitude: location.longitude,
-              roadNumber: location.roadNumber || null,
-              kmPoint: location.kmPoint,
-              direction: location.direction,
-              province: location.provinceCode,
-              provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
-              message: msg?.message || null,
-              messageType: msg?.messageType || null,
-              messageCode: msg?.pictograms?.join(",") || null,
-              messageStartAt: msg?.startedAt || null,
-              fetchedAt: now,
-              lastUpdated: now,
-              isActive: true,
-              hasMessage,
-            }
-          });
+        return [
+          panelId, location.name, location.latitude, location.longitude,
+          location.roadNumber || null, location.kmPoint,
+          location.direction, // Direction enum — cast in SQL
+          location.provinceCode, location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
+          msg?.message || null,
+          msg?.messageType || null, // PanelMessageType enum — cast in SQL
+          msg?.pictograms?.join(",") || null,
+          msg?.startedAt || null,
+          now,
+          hasMsg
+        ];
+      });
 
-          if (existingIds.has(panelId)) {
-            updated++;
-          } else {
-            created++;
+      try {
+        await prisma.$executeRawUnsafe(`
+          INSERT INTO "VariablePanel" (
+            id, "panelId", name, latitude, longitude, "roadNumber", "kmPoint",
+            direction, province, "provinceName", message, "messageType",
+            "messageCode", "messageStartAt", "fetchedAt", "hasMessage"
+          ) VALUES ${values}
+          ON CONFLICT ("panelId") DO UPDATE SET
+            name = EXCLUDED.name, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
+            "roadNumber" = EXCLUDED."roadNumber", "kmPoint" = EXCLUDED."kmPoint",
+            direction = EXCLUDED.direction, province = EXCLUDED.province,
+            "provinceName" = EXCLUDED."provinceName", message = EXCLUDED.message,
+            "messageType" = EXCLUDED."messageType", "messageCode" = EXCLUDED."messageCode",
+            "messageStartAt" = EXCLUDED."messageStartAt",
+            "fetchedAt" = EXCLUDED."fetchedAt", "lastUpdated" = NOW(),
+            "isActive" = true, "hasMessage" = EXCLUDED."hasMessage"
+        `, ...params);
+      } catch (err) {
+        // If batch fails (e.g., one bad record), fall back to individual upserts for this batch
+        console.warn(`[panel-collector] Batch ${i} failed, falling back to individual: ${(err as Error).message.slice(0, 60)}`);
+        for (const [panelId, location] of validBatch) {
+          fetchedIds.add(panelId);
+          const msg = messages.get(panelId);
+          const hasMessage = !!(msg?.message || (msg?.pictograms && msg.pictograms.length > 0));
+          try {
+            await prisma.variablePanel.upsert({
+              where: { panelId },
+              create: {
+                panelId,
+                name: location.name,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                roadNumber: location.roadNumber || null,
+                kmPoint: location.kmPoint,
+                direction: location.direction,
+                province: location.provinceCode,
+                provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
+                message: msg?.message || null,
+                messageType: msg?.messageType || null,
+                messageCode: msg?.pictograms?.join(",") || null,
+                messageStartAt: msg?.startedAt || null,
+                fetchedAt: now,
+                lastUpdated: now,
+                isActive: true,
+                hasMessage,
+              },
+              update: {
+                name: location.name,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                roadNumber: location.roadNumber || null,
+                kmPoint: location.kmPoint,
+                direction: location.direction,
+                province: location.provinceCode,
+                provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
+                message: msg?.message || null,
+                messageType: msg?.messageType || null,
+                messageCode: msg?.pictograms?.join(",") || null,
+                messageStartAt: msg?.startedAt || null,
+                fetchedAt: now,
+                lastUpdated: now,
+                isActive: true,
+                hasMessage,
+              }
+            });
+          } catch (e) {
+            skipped++;
+            if (skipped <= 3) console.warn(`[panel-collector] Skipped ${panelId}: ${(e as Error).message?.slice(0, 80)}`);
           }
-        } catch (err) {
-          skipped++;
-          if (skipped <= 3) console.warn(`[panel-collector] Skipped ${panelId}: ${(err as Error).message?.slice(0, 80)}`);
         }
-      }));
+      }
     }
 
     console.log(`[panel-collector] Created: ${created}, Updated: ${updated}, Skipped: ${skipped}`);

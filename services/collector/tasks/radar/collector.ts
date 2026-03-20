@@ -266,65 +266,52 @@ export async function run(prisma: PrismaClient) {
     });
     const existingIds = new Set(existingRadars.map(r => r.radarId));
 
-    // 3. Prepare upsert operations
+    // 3. Batch INSERT...ON CONFLICT upserts
     const fetchedIds = new Set<string>();
-    let created = 0;
-    let updated = 0;
     let fixedCount = 0;
     let sectionCount = 0;
 
-    // Chunked parallel upserts (50x parallelism per chunk)
-    const CHUNK = 50;
-    for (let i = 0; i < radars.length; i += CHUNK) {
-      const chunk = radars.slice(i, i + CHUNK);
-      await Promise.all(chunk.map(radar => {
-        fetchedIds.add(radar.radarId);
-
-        if (radar.type === "FIXED") {
-          fixedCount++;
-        } else if (radar.type === "SECTION") {
-          sectionCount++;
-        }
-
-        if (existingIds.has(radar.radarId)) {
-          updated++;
-        } else {
-          created++;
-        }
-
-        return prisma.radar.upsert({
-          where: { radarId: radar.radarId },
-          create: {
-            radarId: radar.radarId,
-            latitude: radar.latitude,
-            longitude: radar.longitude,
-            roadNumber: radar.roadNumber,
-            kmPoint: radar.kmPoint,
-            direction: radar.direction,
-            province: radar.province,
-            provinceName: radar.province ? PROVINCES[radar.province] || null : null,
-            type: radar.type,
-            speedLimit: null, // Not available in DGT data
-            avgSpeedPartner: radar.avgSpeedPartner,
-            isActive: true,
-            lastUpdated: now
-          },
-          update: {
-            latitude: radar.latitude,
-            longitude: radar.longitude,
-            roadNumber: radar.roadNumber,
-            kmPoint: radar.kmPoint,
-            direction: radar.direction,
-            province: radar.province,
-            provinceName: radar.province ? PROVINCES[radar.province] || null : null,
-            type: radar.type,
-            avgSpeedPartner: radar.avgSpeedPartner,
-            isActive: true,
-            lastUpdated: now
-          }
-        });
-      }));
+    for (const r of radars) {
+      if (r.type === "FIXED") fixedCount++;
+      else if (r.type === "SECTION") sectionCount++;
     }
+
+    const BATCH = 500;
+    for (let i = 0; i < radars.length; i += BATCH) {
+      const batch = radars.slice(i, i + BATCH);
+      const COLS = 12;
+
+      for (const r of batch) fetchedIds.add(r.radarId);
+
+      const values = batch.map((_, idx) => {
+        const b = idx * COLS;
+        return `(gen_random_uuid()::text, $${b+1}, $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6}::"Direction", $${b+7}, $${b+8}, $${b+9}::"RadarType", $${b+10}, $${b+11}, $${b+12})`;
+      }).join(", ");
+
+      const params = batch.flatMap(r => [
+        r.radarId, r.latitude, r.longitude, r.roadNumber, r.kmPoint,
+        r.direction, // Direction enum — pass as string, cast in SQL
+        r.province, r.province ? PROVINCES[r.province] || null : null,
+        r.type, // RadarType enum
+        null, // speedLimit — not available in DGT data
+        r.avgSpeedPartner, now
+      ]);
+
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "Radar" (id, "radarId", latitude, longitude, "roadNumber", "kmPoint", direction, province, "provinceName", type, "speedLimit", "avgSpeedPartner", "lastUpdated")
+        VALUES ${values}
+        ON CONFLICT ("radarId") DO UPDATE SET
+          latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
+          "roadNumber" = EXCLUDED."roadNumber", "kmPoint" = EXCLUDED."kmPoint",
+          direction = EXCLUDED.direction, province = EXCLUDED.province,
+          "provinceName" = EXCLUDED."provinceName", type = EXCLUDED.type,
+          "avgSpeedPartner" = EXCLUDED."avgSpeedPartner",
+          "isActive" = true, "lastUpdated" = EXCLUDED."lastUpdated"
+      `, ...params);
+    }
+
+    const created = radars.filter(r => !existingIds.has(r.radarId)).length;
+    const updated = radars.length - created;
 
     console.log(`[radar-collector] Created: ${created}, Updated: ${updated}`);
     console.log(`[radar-collector] Fixed radars: ${fixedCount}, Section radars: ${sectionCount}`);
