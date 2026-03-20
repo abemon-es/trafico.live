@@ -1,534 +1,316 @@
 /**
  * Speed Limit Collector Service
  *
- * Fetches speed limit data from DGT NAP ROSATTE format
- * and stores them in PostgreSQL for fast API access.
+ * Fetches speed limit data from MITMA TN-ITS feed (ROSATTE XML).
+ * The data covers Spain's national road network (Red de Carreteras del Estado).
  *
- * Run weekly via Railway cron (speed limits rarely change).
+ * Run weekly via cron (speed limits rarely change).
  *
- * Data sources:
- * - https://nap.dgt.es/datex2/v3/dgt/ROSATTE/limites_velocidad.xml
+ * Data source:
+ * - https://infocar.dgt.es/tnits/limitesVelocidad.xml
+ * - Schema: TN-ITS / ROSATTE (rst:ROSATTESafetyFeatureDataset)
+ * - Coordinates: ETRS89 / UTM Zone 30N (EPSG:25830)
+ * - Feed type: Delta (Add/Modify/Remove operations)
  *
- * ROSATTE (ROad Safety ATTributes Exchange) is a European standard
- * for exchanging road safety attributes including speed limits.
+ * Publisher: Dirección General de Carreteras, MITMA (not DGT)
  */
 
-import { PrismaClient, Direction, RoadType, SpeedLimitType, VehicleCategory, LaneType } from "@prisma/client";
+import { PrismaClient, Direction, RoadType, SpeedLimitType } from "@prisma/client";
 import { PROVINCES } from "../../shared/provinces.js";
-import { ensureArray } from "../../shared/utils.js";
-import { createXMLParser } from "../../shared/xml.js";
 
-const DGT_SPEED_LIMITS_URL =
-  "https://nap.dgt.es/datex2/v3/dgt/ROSATTE/limites_velocidad.xml";
+const TNITS_URL = "https://infocar.dgt.es/tnits/limitesVelocidad.xml";
 
-// Alternative URLs to try if main URL fails
-const ALTERNATIVE_URLS = [
-  "https://infocar.dgt.es/datex2/v3/dgt/ROSATTE/limites_velocidad.xml",
-  "https://nap.dgt.es/datex2/dgt/ROSATTE/limites_velocidad.xml",
-];
+const TAG = "[speedlimit]";
 
-interface SpeedLimitData {
-  id: string;
-  roadNumber: string;
-  roadType: RoadType | null;
-  kmStart: number;
-  kmEnd: number;
-  startLat?: number;
-  startLng?: number;
-  endLat?: number;
-  endLng?: number;
-  speedLimit: number;
-  speedLimitType: SpeedLimitType;
-  vehicleType?: VehicleCategory;
-  laneType?: LaneType;
-  direction?: Direction;
-  isConditional: boolean;
-  conditionType?: string;
-  timeStart?: string;
-  timeEnd?: string;
-  weatherType?: string;
-  province?: string;
+// ── UTM Zone 30N → WGS84 conversion ──────────────────────────────────
+
+function utmToLatLng(easting: number, northing: number): { lat: number; lng: number } | null {
+  // Sanity check: UTM Zone 30N bounds for Spain
+  if (northing < 3_500_000 || northing > 5_000_000) return null;
+  if (easting < 100_000 || easting > 900_000) return null;
+
+  const k0 = 0.9996;
+  const a = 6378137.0;
+  const e = 0.081819191;
+  const e2 = e * e;
+  const ep2 = e2 / (1 - e2);
+
+  const x = easting - 500000;
+  const y = northing;
+
+  const M = y / k0;
+  const mu = M / (a * (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 * e2 * e2 / 256));
+
+  const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+  const phi1 = mu
+    + (3 * e1 / 2 - 27 * e1 * e1 * e1 / 32) * Math.sin(2 * mu)
+    + (21 * e1 * e1 / 16 - 55 * e1 * e1 * e1 * e1 / 32) * Math.sin(4 * mu)
+    + (151 * e1 * e1 * e1 / 96) * Math.sin(6 * mu);
+
+  const sinPhi = Math.sin(phi1);
+  const cosPhi = Math.cos(phi1);
+  const tanPhi = sinPhi / cosPhi;
+
+  const N1 = a / Math.sqrt(1 - e2 * sinPhi * sinPhi);
+  const T1 = tanPhi * tanPhi;
+  const C1 = ep2 * cosPhi * cosPhi;
+  const R1 = a * (1 - e2) / Math.pow(1 - e2 * sinPhi * sinPhi, 1.5);
+  const D = x / (N1 * k0);
+
+  const lat = phi1
+    - (N1 * tanPhi / R1) * (
+      D * D / 2
+      - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * D * D * D * D / 24
+      + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * D * D * D * D * D * D / 720
+    );
+
+  // Zone 30 central meridian = -3° = (30-1)*6 - 180 + 3
+  const lng = (-3 * Math.PI / 180)
+    + (D
+      - (1 + 2 * T1 + C1) * D * D * D / 6
+      + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * D * D * D * D * D / 120
+    ) / cosPhi;
+
+  const latDeg = lat * 180 / Math.PI;
+  const lngDeg = lng * 180 / Math.PI;
+
+  // Sanity: Spain mainland + islands
+  if (latDeg < 27 || latDeg > 44 || lngDeg < -19 || lngDeg > 5) return null;
+
+  return {
+    lat: Math.round(latDeg * 1e6) / 1e6,
+    lng: Math.round(lngDeg * 1e6) / 1e6,
+  };
 }
 
-// XML Parser
-const parser = createXMLParser({
-  isArray: (name) =>
-    [
-      "speedLimit",
-      "roadSegment",
-      "linearElement",
-      "gmlLineString",
-      "gmlPos",
-      "pos",
-      "applicableForVehicles",
-      "validityTimeSpecification",
-    ].includes(name),
-});
+// ── XML regex parsing (no dependency on fast-xml-parser for namespaced XML) ──
 
-function classifyRoadType(roadNumber: string): RoadType | null {
-  if (!roadNumber) return null;
-  const road = roadNumber.toUpperCase().trim();
+interface TnItsRecord {
+  gmlId: string;
+  uuid: string;
+  operation: "Add" | "Modify" | "Remove";
+  road: string;
+  kmStart: number;
+  kmEnd: number;
+  direction: string;
+  roadCharacter: string; // Tronco, Enlace
+  speedLimit: number;
+  lat?: number;
+  lng?: number;
+}
 
-  if (road.startsWith("AP-") || road.startsWith("AP ")) return "AUTOPISTA";
-  if (road.startsWith("A-") || road.startsWith("A ")) return "AUTOVIA";
-  if (road.startsWith("N-") || road.startsWith("N ")) return "NACIONAL";
-  if (road.startsWith("C-") || road.startsWith("C ")) return "COMARCAL";
+function getTag(xml: string, tag: string): string {
+  const match = xml.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`));
+  return match ? match[1].trim() : "";
+}
+
+function parseRecords(xml: string): TnItsRecord[] {
+  const records: TnItsRecord[] = [];
+  const featureRegex = /<rst:GenericSafetyFeature[^>]*gml:id="(\d+)">([\s\S]*?)<\/rst:GenericSafetyFeature>/g;
+
+  let match;
+  while ((match = featureRegex.exec(xml)) !== null) {
+    const gmlId = match[1];
+    const block = match[2];
+
+    // UUID
+    const uuidMatch = block.match(/<rst:id>([^<]+)<\/rst:id>/);
+    // There are two rst:id tags (parent wrapper + actual id). Get the one inside SafetyFeatureId
+    const idBlock = block.match(/<rst:SafetyFeatureId>([\s\S]*?)<\/rst:SafetyFeatureId>/);
+    const uuid = idBlock ? getTag(idBlock[1], "rst:id") : (uuidMatch?.[1] || gmlId);
+
+    // Operation type
+    const opMatch = block.match(/<rst:UpdateInfo>[\s\S]*?<rst:type>(\w+)<\/rst:type>/);
+    const operation = (opMatch?.[1] || "Add") as "Add" | "Modify" | "Remove";
+
+    // Location reference
+    const linearRef = block.match(/<net:SimpleLinearReference>([\s\S]*?)<\/net:SimpleLinearReference>/);
+    const road = linearRef ? getTag(linearRef[1], "net:road") : "";
+    const fromPos = linearRef ? parseFloat(getTag(linearRef[1], "net:fromPosition")) : 0;
+    const toPos = linearRef ? parseFloat(getTag(linearRef[1], "net:toPosition") || "0") : 0;
+    const direction = linearRef ? getTag(linearRef[1], "net:applicableDirection") : "";
+    const roadCharacter = linearRef ? getTag(linearRef[1], "net:caracter") : "";
+
+    // Speed limit value
+    const measureMatch = block.match(/<gml:measure[^>]*>(\d+)<\/gml:measure>/);
+    const speedLimit = measureMatch ? parseInt(measureMatch[1], 10) : 0;
+
+    // Coordinates (ETRS89 / UTM Zone 30N)
+    const posListMatch = block.match(/<gml:posList>([^<]+)<\/gml:posList>/);
+    let lat: number | undefined;
+    let lng: number | undefined;
+
+    if (posListMatch) {
+      // Format: "northing ,easting" (comma-space separated, dot decimal)
+      const parts = posListMatch[1].split(",").map(s => parseFloat(s.trim()));
+      if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        const coords = utmToLatLng(parts[1], parts[0]); // easting, northing
+        if (coords) {
+          lat = coords.lat;
+          lng = coords.lng;
+        }
+      }
+    }
+
+    if (!road || speedLimit <= 0 || speedLimit > 150) continue;
+
+    records.push({
+      gmlId,
+      uuid,
+      operation,
+      road: road.toUpperCase(),
+      kmStart: isNaN(fromPos) ? 0 : fromPos,
+      kmEnd: isNaN(toPos) || toPos === 0 ? (isNaN(fromPos) ? 0 : fromPos) : toPos,
+      direction,
+      roadCharacter,
+      speedLimit,
+      lat,
+      lng,
+    });
+  }
+
+  return records;
+}
+
+// ── Mapping helpers ──
+
+function classifyRoadType(road: string): RoadType | null {
+  if (!road) return null;
+  if (road.startsWith("AP-")) return "AUTOPISTA";
+  if (road.startsWith("A-")) return "AUTOVIA";
+  if (road.startsWith("N-")) return "NACIONAL";
+  if (road.startsWith("C-")) return "COMARCAL";
   if (road.match(/^[A-Z]{1,2}-\d/)) return "PROVINCIAL";
-  if (road.startsWith("M-") || road.startsWith("B-") || road.startsWith("V-")) return "URBANA";
-
   return "OTHER";
 }
 
-function parseDirection(dir: string | undefined): Direction | null {
-  if (!dir) return null;
-  const d = dir.toLowerCase();
-
-  if (d.includes("positive") || d.includes("ascending") || d.includes("forward")) {
-    return "ASCENDING";
+function mapDirection(dir: string): Direction | undefined {
+  switch (dir) {
+    case "Increasing": return "ASCENDING";
+    case "Decreasing": return "DESCENDING";
+    case "BothDirections": return "BOTH";
+    default: return undefined;
   }
-  if (d.includes("negative") || d.includes("descending") || d.includes("backward")) {
-    return "DESCENDING";
-  }
-  if (d.includes("both") || d.includes("all")) {
-    return "BOTH";
-  }
-
-  return "UNKNOWN";
 }
 
-function parseVehicleCategory(vehicle: string | undefined): VehicleCategory | null {
-  if (!vehicle) return null;
-  const v = vehicle.toLowerCase();
-
-  if (v.includes("all") || v.includes("any")) return "ALL";
-  if (v.includes("car") || v.includes("passenger")) return "CAR";
-  if (v.includes("motorcycle") || v.includes("moto")) return "MOTORCYCLE";
-  if (v.includes("truck") || v.includes("lorry") || v.includes("hgv") || v.includes("goods")) return "TRUCK";
-  if (v.includes("bus") || v.includes("coach")) return "BUS";
-  if (v.includes("trailer") || v.includes("caravan")) return "TRAILER";
-  if (v.includes("dangerous") || v.includes("hazard") || v.includes("adr")) return "DANGEROUS_GOODS";
-
-  return null;
-}
-
-function parseLaneType(lane: string | undefined): LaneType | null {
-  if (!lane) return null;
-  const l = lane.toLowerCase();
-
-  if (l.includes("all") || l.includes("any")) return "ALL";
-  if (l.includes("right")) return "RIGHT";
-  if (l.includes("left") || l.includes("fast")) return "LEFT";
-  if (l.includes("middle") || l.includes("center")) return "MIDDLE";
-  if (l.includes("bus")) return "BUS_LANE";
-  if (l.includes("hov") || l.includes("high occupancy")) return "HOV";
-
-  return null;
-}
-
-function parseSpeedLimitType(type: string | undefined, context: Record<string, unknown>): SpeedLimitType {
-  if (!type) {
-    // Infer from context
-    if (context.urban) return "URBAN";
-    if (context.tunnel) return "TUNNEL";
-    if (context.bridge) return "BRIDGE";
-    if (context.workZone) return "WORK_ZONE";
-    if (context.school) return "SCHOOL";
-    if (context.residential) return "RESIDENTIAL";
-    if (context.weather) return "WEATHER";
-    if (context.variable) return "VARIABLE";
-    return "GENERAL";
-  }
-
-  const t = type.toLowerCase();
-
-  if (t.includes("urban") || t.includes("built-up")) return "URBAN";
-  if (t.includes("residential") || t.includes("30zone")) return "RESIDENTIAL";
-  if (t.includes("school")) return "SCHOOL";
-  if (t.includes("work") || t.includes("construction") || t.includes("roadwork")) return "WORK_ZONE";
-  if (t.includes("weather") || t.includes("conditional")) return "WEATHER";
-  if (t.includes("variable") || t.includes("vms") || t.includes("dynamic")) return "VARIABLE";
-  if (t.includes("tunnel")) return "TUNNEL";
-  if (t.includes("bridge")) return "BRIDGE";
-
+function inferSpeedLimitType(speed: number, character: string): SpeedLimitType {
+  if (character === "Enlace") return "GENERAL"; // ramp/junction
+  if (speed <= 30) return "RESIDENTIAL";
+  if (speed <= 50) return "URBAN";
   return "GENERAL";
 }
 
-function extractCoordinates(element: Record<string, unknown>): {
-  startLat?: number;
-  startLng?: number;
-  endLat?: number;
-  endLng?: number;
-} {
-  const result: {
-    startLat?: number;
-    startLng?: number;
-    endLat?: number;
-    endLng?: number;
-  } = {};
-
-  // Try to find coordinates in various ROSATTE/DATEX2 formats
-  const linearLocation = element.linearLocation as Record<string, unknown> | undefined;
-  const gmlLineString = linearLocation?.gmlLineString as Record<string, unknown> | undefined;
-
-  if (gmlLineString) {
-    const positions = ensureArray(gmlLineString.pos || gmlLineString.gmlPos);
-
-    if (positions.length >= 1) {
-      const startPos = String(positions[0]).trim().split(/\s+/);
-      if (startPos.length >= 2) {
-        result.startLat = parseFloat(startPos[0]);
-        result.startLng = parseFloat(startPos[1]);
-      }
-    }
-
-    if (positions.length >= 2) {
-      const endPos = String(positions[positions.length - 1]).trim().split(/\s+/);
-      if (endPos.length >= 2) {
-        result.endLat = parseFloat(endPos[0]);
-        result.endLng = parseFloat(endPos[1]);
-      }
-    }
-  }
-
-  // Alternative: pointByCoordinates
-  const startPoint = element.startPoint as Record<string, unknown> | undefined;
-  const endPoint = element.endPoint as Record<string, unknown> | undefined;
-
-  if (startPoint?.latitude && startPoint?.longitude) {
-    result.startLat = parseFloat(String(startPoint.latitude));
-    result.startLng = parseFloat(String(startPoint.longitude));
-  }
-
-  if (endPoint?.latitude && endPoint?.longitude) {
-    result.endLat = parseFloat(String(endPoint.latitude));
-    result.endLng = parseFloat(String(endPoint.longitude));
-  }
-
-  return result;
+function inferProvinceFromRoad(road: string): string | undefined {
+  // Some road prefixes map to provinces
+  const prefixMap: Record<string, string> = {
+    "M": "28", "B": "08", "V": "46", "Z": "50",
+    "SE": "41", "MA": "29", "MU": "30", "GR": "18",
+    "BI": "48", "SS": "20", "GI": "17",
+  };
+  const match = road.match(/^([A-Z]{1,2})-/);
+  return match ? prefixMap[match[1]] : undefined;
 }
 
-function parseSpeedLimitRecord(record: Record<string, unknown>): SpeedLimitData | null {
-  try {
-    const id = String(record["@_id"] || record.id || "");
-
-    // Extract road number
-    const roadInfo = record.roadInformation as Record<string, unknown> | undefined;
-    const roadNumber = String(
-      roadInfo?.roadNumber ||
-      roadInfo?.roadName ||
-      record.roadNumber ||
-      record.roadName ||
-      ""
-    ).trim();
-
-    if (!roadNumber) return null;
-
-    // Extract km points
-    const linearElement = record.linearElement as Record<string, unknown> | undefined;
-    const kmStart = parseFloat(String(
-      linearElement?.startDistance ||
-      record.startKilometerPoint ||
-      record.kmStart ||
-      0
-    ));
-    const kmEnd = parseFloat(String(
-      linearElement?.endDistance ||
-      record.endKilometerPoint ||
-      record.kmEnd ||
-      kmStart
-    ));
-
-    // Extract speed limit value
-    const speedValue = parseFloat(String(
-      record.speedLimit ||
-      record.maxSpeed ||
-      record.speedLimitValue ||
-      (record.speedLimitCharacteristics as Record<string, unknown>)?.speedLimitValue ||
-      0
-    ));
-
-    if (!speedValue || speedValue <= 0 || speedValue > 150) return null;
-
-    // Extract coordinates
-    const coords = extractCoordinates(record);
-
-    // Extract direction
-    const direction = parseDirection(String(
-      record.direction ||
-      record.applicableDirection ||
-      linearElement?.direction ||
-      ""
-    ));
-
-    // Extract vehicle restrictions
-    const vehicleTypes = ensureArray(record.applicableForVehicles);
-    const vehicleType = vehicleTypes.length > 0
-      ? parseVehicleCategory(String(vehicleTypes[0]))
-      : null;
-
-    // Extract lane restrictions
-    const laneType = parseLaneType(String(record.applicableLane || ""));
-
-    // Determine speed limit type
-    const speedLimitType = parseSpeedLimitType(
-      String(record.speedLimitType || ""),
-      {
-        urban: roadNumber.match(/^[A-Z]-\d{1,3}$/), // Short road codes often urban
-        tunnel: String(record.infrastructure || "").toLowerCase().includes("tunnel"),
-        bridge: String(record.infrastructure || "").toLowerCase().includes("bridge"),
-        workZone: String(record.reason || "").toLowerCase().includes("work"),
-        school: String(record.reason || "").toLowerCase().includes("school"),
-        residential: speedValue === 30,
-        weather: record.weatherCondition !== undefined,
-        variable: String(record.speedLimitType || "").toLowerCase().includes("variable"),
-      }
-    );
-
-    // Check for conditional limits
-    const validity = record.validity as Record<string, unknown> | undefined;
-    const isConditional = !!(
-      validity?.validityTimeSpecification ||
-      record.weatherCondition ||
-      record.timeRestriction
-    );
-
-    let conditionType: string | undefined;
-    let timeStart: string | undefined;
-    let timeEnd: string | undefined;
-    let weatherType: string | undefined;
-
-    if (isConditional) {
-      if (record.weatherCondition) {
-        conditionType = "weather";
-        weatherType = String(record.weatherCondition);
-      } else if (validity?.validityTimeSpecification) {
-        conditionType = "time";
-        const timeSpec = validity.validityTimeSpecification as Record<string, unknown>;
-        timeStart = String(timeSpec.overallStartTime || timeSpec.startTime || "").slice(11, 16);
-        timeEnd = String(timeSpec.overallEndTime || timeSpec.endTime || "").slice(11, 16);
-      }
-    }
-
-    // Extract province from extension or road number
-    const extension = record._speedLimitExtension as Record<string, unknown> | undefined;
-    let province = String(extension?.province || record.province || "");
-
-    // Try to infer province from road number if not found
-    if (!province && roadNumber) {
-      // Some road numbers include province codes
-      const match = roadNumber.match(/^([A-Z]{1,2})-/);
-      if (match) {
-        const prefix = match[1];
-        // Map common prefixes to provinces
-        const prefixMap: Record<string, string> = {
-          "M": "28", // Madrid
-          "B": "08", // Barcelona
-          "V": "46", // Valencia
-          "Z": "50", // Zaragoza
-          "SE": "41", // Sevilla
-          "MA": "29", // Málaga
-          "MU": "30", // Murcia
-        };
-        province = prefixMap[prefix] || "";
-      }
-    }
-
-    return {
-      id,
-      roadNumber: roadNumber.toUpperCase(),
-      roadType: classifyRoadType(roadNumber),
-      kmStart,
-      kmEnd: kmEnd > kmStart ? kmEnd : kmStart + 1,
-      ...coords,
-      speedLimit: Math.round(speedValue),
-      speedLimitType,
-      vehicleType: vehicleType || undefined,
-      laneType: laneType || undefined,
-      direction: direction || undefined,
-      isConditional,
-      conditionType,
-      timeStart,
-      timeEnd,
-      weatherType,
-      province: province || undefined,
-    };
-  } catch (error) {
-    console.error("[speedlimit-collector] Error parsing record:", error);
-    return null;
-  }
-}
-
-function parseSpeedLimits(xml: string): SpeedLimitData[] {
-  const speedLimits: SpeedLimitData[] = [];
-
-  try {
-    const result = parser.parse(xml);
-
-    // Try various ROSATTE/DATEX2 structures
-    const publication =
-      result?.payload ||
-      result?.d2LogicalModel?.payloadPublication ||
-      result?.RosatteData ||
-      result?.GenericPublication ||
-      result;
-
-    if (!publication) {
-      console.warn("[speedlimit-collector] No payload found in response");
-      return [];
-    }
-
-    // Find speed limit records
-    const records = ensureArray(
-      publication.speedLimit ||
-      publication.speedLimits?.speedLimit ||
-      publication.roadSegment ||
-      publication.genericPublicationExtension?.speedLimitTable?.speedLimit
-    );
-
-    console.log(`[speedlimit-collector] Found ${records.length} raw records`);
-
-    for (const record of records) {
-      const speedLimit = parseSpeedLimitRecord(record as Record<string, unknown>);
-      if (speedLimit) {
-        speedLimits.push(speedLimit);
-      }
-    }
-  } catch (error) {
-    console.error("[speedlimit-collector] Error parsing XML:", error);
-  }
-
-  return speedLimits;
-}
-
-async function fetchWithRetry(urls: string[]): Promise<{ xml: string; url: string }> {
-  for (const url of urls) {
-    try {
-      console.log(`[speedlimit-collector] Trying ${url}`);
-      const response = await fetch(url, {
-        headers: {
-          Accept: "application/xml",
-          "User-Agent": "TraficoEspana/1.0 (speedlimit-collector)"
-        },
-        signal: AbortSignal.timeout(120000)
-      });
-
-      if (response.ok) {
-        const xml = await response.text();
-        return { xml, url };
-      }
-
-      console.warn(`[speedlimit-collector] ${url} returned ${response.status}`);
-    } catch (error) {
-      console.warn(`[speedlimit-collector] Failed to fetch ${url}:`, error);
-    }
-  }
-
-  throw new Error("All URLs failed");
-}
+// ── Main ──
 
 export async function run(prisma: PrismaClient) {
   const now = new Date();
+  console.log(`${TAG} Starting at ${now.toISOString()}`);
+  console.log(`${TAG} Source: ${TNITS_URL}`);
 
-  console.log(`[speedlimit-collector] Starting at ${now.toISOString()}`);
+  // 1. FETCH
+  const response = await fetch(TNITS_URL, {
+    headers: {
+      Accept: "application/xml",
+      "User-Agent": "TraficoEspana/1.0 (speedlimit-collector)",
+    },
+    signal: AbortSignal.timeout(120000),
+  });
 
-  try {
-    // 1. FETCH from DGT API with retry
-    const { xml, url } = await fetchWithRetry([DGT_SPEED_LIMITS_URL, ...ALTERNATIVE_URLS]);
-    console.log(`[speedlimit-collector] Successfully fetched from ${url}`);
-
-    const speedLimits = parseSpeedLimits(xml);
-
-    console.log(`[speedlimit-collector] Parsed ${speedLimits.length} speed limits`);
-
-    if (speedLimits.length === 0) {
-      console.log("[speedlimit-collector] No speed limits found in API response");
-      console.log("[speedlimit-collector] This may be expected if the ROSATTE feed is not yet available");
-      console.log("[speedlimit-collector] Check https://nap.dgt.es for data availability");
-      return;
-    }
-
-    // 2. Clear existing speed limits (full refresh strategy)
-    const deleted = await prisma.speedLimit.deleteMany({});
-    console.log(`[speedlimit-collector] Cleared ${deleted.count} existing speed limits`);
-
-    // 3. Insert new speed limits in batches
-    const BATCH_SIZE = 100;
-    let inserted = 0;
-
-    for (let i = 0; i < speedLimits.length; i += BATCH_SIZE) {
-      const batch = speedLimits.slice(i, i + BATCH_SIZE);
-
-      await prisma.speedLimit.createMany({
-        data: batch.map((sl) => ({
-          roadNumber: sl.roadNumber,
-          roadType: sl.roadType,
-          kmStart: sl.kmStart,
-          kmEnd: sl.kmEnd,
-          startLat: sl.startLat,
-          startLng: sl.startLng,
-          endLat: sl.endLat,
-          endLng: sl.endLng,
-          speedLimit: sl.speedLimit,
-          speedLimitType: sl.speedLimitType,
-          vehicleType: sl.vehicleType,
-          laneType: sl.laneType,
-          direction: sl.direction,
-          isConditional: sl.isConditional,
-          conditionType: sl.conditionType,
-          timeStart: sl.timeStart,
-          timeEnd: sl.timeEnd,
-          weatherType: sl.weatherType,
-          province: sl.province,
-          provinceName: sl.province ? PROVINCES[sl.province] || null : null,
-          sourceId: sl.id || null,
-          lastUpdated: now,
-        })),
-        skipDuplicates: true,
-      });
-
-      inserted += batch.length;
-      console.log(`[speedlimit-collector] Inserted ${inserted}/${speedLimits.length}`);
-    }
-
-    // 4. Summary statistics
-    const stats = await prisma.speedLimit.groupBy({
-      by: ["speedLimit"],
-      _count: true,
-      orderBy: { speedLimit: "asc" }
-    });
-
-    console.log(`[speedlimit-collector] Speed limits by value:`);
-    for (const stat of stats) {
-      console.log(`  ${stat.speedLimit} km/h: ${stat._count} segments`);
-    }
-
-    const typeStats = await prisma.speedLimit.groupBy({
-      by: ["speedLimitType"],
-      _count: true
-    });
-
-    console.log(`[speedlimit-collector] Speed limits by type:`);
-    for (const stat of typeStats) {
-      console.log(`  ${stat.speedLimitType}: ${stat._count}`);
-    }
-
-    const roadStats = await prisma.speedLimit.groupBy({
-      by: ["roadType"],
-      _count: true
-    });
-
-    console.log(`[speedlimit-collector] Speed limits by road type:`);
-    for (const stat of roadStats) {
-      console.log(`  ${stat.roadType || "UNKNOWN"}: ${stat._count}`);
-    }
-
-    const totalLimits = await prisma.speedLimit.count();
-    console.log(`[speedlimit-collector] Total speed limits: ${totalLimits}`);
-
-    console.log("[speedlimit-collector] Collection completed successfully");
-
-  } catch (error) {
-    console.error("[speedlimit-collector] Fatal error:", error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(`TN-ITS API error: ${response.status} ${response.statusText}`);
   }
+
+  const xml = await response.text();
+  console.log(`${TAG} Fetched ${(xml.length / 1024).toFixed(0)}KB`);
+
+  // 2. PARSE
+  const records = parseRecords(xml);
+  const adds = records.filter(r => r.operation === "Add" || r.operation === "Modify");
+  const removes = records.filter(r => r.operation === "Remove");
+  console.log(`${TAG} Parsed ${records.length} records: ${adds.length} add/modify, ${removes.length} remove`);
+
+  if (adds.length === 0 && removes.length === 0) {
+    console.log(`${TAG} No records to process`);
+    return;
+  }
+
+  // 3. CLEAR + INSERT (full refresh — the TN-ITS feed contains the complete current state)
+  const deleted = await prisma.speedLimit.deleteMany({});
+  console.log(`${TAG} Cleared ${deleted.count} existing speed limits`);
+
+  // 4. BATCH INSERT add/modify records
+  const BATCH_SIZE = 100;
+  let inserted = 0;
+  let skipped = 0;
+
+  for (let i = 0; i < adds.length; i += BATCH_SIZE) {
+    const batch = adds.slice(i, i + BATCH_SIZE);
+
+    const data = batch.map(r => {
+      const province = inferProvinceFromRoad(r.road);
+      return {
+        roadNumber: r.road,
+        roadType: classifyRoadType(r.road),
+        kmStart: Math.min(r.kmStart, 99999.99),
+        kmEnd: Math.min(r.kmEnd, 99999.99),
+        startLat: r.lat,
+        startLng: r.lng,
+        endLat: r.lat, // TN-ITS provides single point per segment
+        endLng: r.lng,
+        speedLimit: r.speedLimit,
+        speedLimitType: inferSpeedLimitType(r.speedLimit, r.roadCharacter),
+        direction: mapDirection(r.direction),
+        isConditional: false,
+        province,
+        provinceName: province ? PROVINCES[province] || null : null,
+        sourceId: r.uuid,
+        lastUpdated: now,
+      };
+    }).filter(d => {
+      if (d.speedLimit <= 0 || d.speedLimit > 150) { skipped++; return false; }
+      return true;
+    });
+
+    await prisma.speedLimit.createMany({ data, skipDuplicates: true });
+    inserted += data.length;
+  }
+
+  console.log(`${TAG} Inserted ${inserted} speed limits (${skipped} skipped)`);
+
+  // 5. SUMMARY
+  const bySpeed = await prisma.speedLimit.groupBy({
+    by: ["speedLimit"],
+    _count: true,
+    orderBy: { speedLimit: "asc" },
+  });
+
+  console.log(`${TAG} Speed limits by value:`);
+  for (const s of bySpeed) {
+    console.log(`  ${s.speedLimit} km/h: ${s._count} segments`);
+  }
+
+  const byRoad = await prisma.speedLimit.groupBy({
+    by: ["roadType"],
+    _count: true,
+  });
+
+  console.log(`${TAG} By road type:`);
+  for (const r of byRoad) {
+    console.log(`  ${r.roadType || "UNKNOWN"}: ${r._count}`);
+  }
+
+  const total = await prisma.speedLimit.count();
+  console.log(`${TAG} Total: ${total} speed limits`);
+  console.log(`${TAG} Collection completed successfully`);
 }
