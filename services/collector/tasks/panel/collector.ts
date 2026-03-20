@@ -143,8 +143,9 @@ async function fetchPanelLocations(): Promise<Map<string, PanelLocation>> {
       const id = String(loc["@_id"] || "");
       if (!id) continue;
 
-      // Extract coordinates
-      const innerLocation = loc.predefinedLocation;
+      // Extract coordinates (inner predefinedLocation may be array due to isArray config)
+      const innerLoc = loc.predefinedLocation;
+      const innerLocation = Array.isArray(innerLoc) ? innerLoc[0] : innerLoc;
       if (!innerLocation) continue;
 
       const tpegPoint = innerLocation.tpegpointLocation;
