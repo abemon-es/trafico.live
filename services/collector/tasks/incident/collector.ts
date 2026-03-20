@@ -15,14 +15,17 @@ import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
 import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
+import { fetchValenciaIncidents, ValenciaIncident } from "./valencia-parser.js";
 
 // Community codes
 const COMMUNITY_CATALUNA = "09";
 const COMMUNITY_PAIS_VASCO = "16";
 const COMMUNITY_MADRID = "13";
+const COMMUNITY_VALENCIA = "10";
 
 // Province codes
 const PROVINCE_MADRID = "28";
+const PROVINCE_VALENCIA = "46";
 
 // Community names
 const COMMUNITIES: Record<string, string> = {
@@ -140,11 +143,12 @@ export async function run(prisma: PrismaClient) {
 
   try {
     // Fetch incidents from all sources in parallel
-    const [sctResult, euskadiResult, dgtResult, madridResult] = await Promise.allSettled([
+    const [sctResult, euskadiResult, dgtResult, madridResult, valenciaResult] = await Promise.allSettled([
       fetchSCTIncidents(),
       fetchEuskadiIncidents(),
       fetchDGTIncidents(),
       fetchMadridIncidents(),
+      fetchValenciaIncidents(),
     ]);
 
     const allIncidents: NormalizedIncident[] = [];
@@ -187,6 +191,31 @@ export async function run(prisma: PrismaClient) {
       }
     } else {
       console.error("[collector] Madrid fetch failed:", madridResult.reason);
+    }
+
+    // Process Valencia incidents (Comunitat Valenciana)
+    if (valenciaResult.status === "fulfilled") {
+      console.log(`[collector] Valencia returned ${valenciaResult.value.length} incidents`);
+      for (const incident of valenciaResult.value) {
+        allIncidents.push({
+          situationId: incident.situationId,
+          type: incident.type,
+          startedAt: incident.startedAt,
+          latitude: incident.latitude,
+          longitude: incident.longitude,
+          roadNumber: incident.roadNumber,
+          roadType: inferRoadType(incident.roadNumber),
+          province: PROVINCE_VALENCIA,
+          provinceName: "Valencia",
+          community: COMMUNITY_VALENCIA,
+          communityName: "Comunitat Valenciana",
+          description: incident.description,
+          severity: incident.severity,
+          source: "VALENCIA",
+        });
+      }
+    } else {
+      console.error("[collector] Valencia fetch failed:", valenciaResult.reason);
     }
 
     console.log(`[collector] Total incidents to process: ${allIncidents.length}`);
@@ -302,7 +331,7 @@ export async function run(prisma: PrismaClient) {
     // Find incidents to deactivate
     const staleIncidents = await prisma.trafficIncident.findMany({
       where: {
-        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID"] },
+        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID", "VALENCIA"] },
         isActive: true,
         fetchedAt: { lt: oneHourAgo },
       },
@@ -320,7 +349,7 @@ export async function run(prisma: PrismaClient) {
         SET "isActive" = false,
             "durationSecs" = EXTRACT(EPOCH FROM ("lastSeenAt" - "firstSeenAt"))::int
         WHERE "isActive" = true
-          AND "source" IN ('DGT', 'SCT', 'EUSKADI', 'MADRID')
+          AND "source" IN ('DGT', 'SCT', 'EUSKADI', 'MADRID', 'VALENCIA')
           AND "fetchedAt" < ${oneHourAgo}
       `;
       console.log(`[collector] Deactivated ${staleIncidents.length} stale incidents with duration tracking`);
@@ -331,7 +360,7 @@ export async function run(prisma: PrismaClient) {
       by: ["source", "isActive"],
       _count: true,
       where: {
-        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID"] },
+        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID", "VALENCIA"] },
       },
     });
 
