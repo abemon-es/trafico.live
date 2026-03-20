@@ -11,9 +11,9 @@
  */
 
 import { PrismaClient, ChargerType } from "@prisma/client";
-import { PROVINCES, normalizeProvince } from "../shared/provinces.js";
-import { ensureArray } from "../shared/utils.js";
-import { createXMLParser } from "../shared/xml.js";
+import { PROVINCES, normalizeProvince } from "../../shared/provinces.js";
+import { ensureArray } from "../../shared/utils.js";
+import { createXMLParser } from "../../shared/xml.js";
 
 const DGT_CHARGERS_URL =
   "https://infocar.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml";

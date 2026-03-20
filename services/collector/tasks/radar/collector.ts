@@ -14,9 +14,9 @@
  */
 
 import { PrismaClient, RadarType, Direction } from "@prisma/client";
-import { PROVINCES } from "../shared/provinces.js";
-import { ensureArray } from "../shared/utils.js";
-import { createXMLParser } from "../shared/xml.js";
+import { PROVINCES } from "../../shared/provinces.js";
+import { ensureArray } from "../../shared/utils.js";
+import { createXMLParser } from "../../shared/xml.js";
 
 const DGT_RADARS_URL =
   "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/radares/content.xml";

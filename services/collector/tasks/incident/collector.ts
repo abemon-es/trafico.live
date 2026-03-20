@@ -10,7 +10,7 @@
  */
 
 import { PrismaClient, IncidentType, Severity, RoadType, Direction } from "@prisma/client";
-import { inferRoadType } from "../shared/utils.js";
+import { inferRoadType } from "../../shared/utils.js";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";

@@ -14,9 +14,9 @@
  */
 
 import { PrismaClient, Direction, RoadType, SpeedLimitType, VehicleCategory, LaneType } from "@prisma/client";
-import { PROVINCES } from "../shared/provinces.js";
-import { ensureArray } from "../shared/utils.js";
-import { createXMLParser } from "../shared/xml.js";
+import { PROVINCES } from "../../shared/provinces.js";
+import { ensureArray } from "../../shared/utils.js";
+import { createXMLParser } from "../../shared/xml.js";
 
 const DGT_SPEED_LIMITS_URL =
   "https://nap.dgt.es/datex2/v3/dgt/ROSATTE/limites_velocidad.xml";

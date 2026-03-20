@@ -8,9 +8,9 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { PROVINCES, PROVINCE_NAME_TO_CODE, normalizeProvince } from "../shared/provinces.js";
-import { ensureArray } from "../shared/utils.js";
-import { createXMLParser } from "../shared/xml.js";
+import { PROVINCES, PROVINCE_NAME_TO_CODE, normalizeProvince } from "../../shared/provinces.js";
+import { ensureArray } from "../../shared/utils.js";
+import { createXMLParser } from "../../shared/xml.js";
 
 const DGT_CAMERAS_URL =
   "https://nap.dgt.es/datex2/v3/dgt/DevicePublication/camaras_datex2_v36.xml";

@@ -6,9 +6,9 @@
  */
 
 import { PrismaClient, Direction, Severity, MobilityType, RoadType } from "@prisma/client";
-import { PROVINCES, PROVINCE_TO_COMMUNITY, COMMUNITIES } from "../shared/provinces.js";
-import { ensureArray, parseDateTime } from "../shared/utils.js";
-import { createXMLParser } from "../shared/xml.js";
+import { PROVINCES, PROVINCE_TO_COMMUNITY, COMMUNITIES } from "../../shared/provinces.js";
+import { ensureArray, parseDateTime } from "../../shared/utils.js";
+import { createXMLParser } from "../../shared/xml.js";
 import { aggregateStats } from "./aggregator.js";
 
 const DGT_URL = process.env.DGT_DATEX_URL ||

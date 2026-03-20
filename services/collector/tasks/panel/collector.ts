@@ -12,9 +12,9 @@
  */
 
 import { PrismaClient, PanelMessageType, Direction } from "@prisma/client";
-import { PROVINCES } from "../shared/provinces.js";
-import { ensureArray } from "../shared/utils.js";
-import { createXMLParser } from "../shared/xml.js";
+import { PROVINCES } from "../../shared/provinces.js";
+import { ensureArray } from "../../shared/utils.js";
+import { createXMLParser } from "../../shared/xml.js";
 
 const DGT_PANELS_LOCATIONS_URL =
   "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/paneles/content.xml";
