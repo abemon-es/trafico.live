@@ -295,14 +295,22 @@ export async function run(prisma: PrismaClient) {
     let updated = 0;
     let withMessage = 0;
 
+    let skipped = 0;
     for (const [panelId, location] of locations) {
       fetchedIds.add(panelId);
+
+      // Validate coordinates fit Decimal(9,6) range
+      if (Math.abs(location.latitude) > 90 || Math.abs(location.longitude) > 180) {
+        skipped++;
+        continue;
+      }
 
       // Find message for this panel
       const msg = messages.get(panelId);
       const hasMessage = !!(msg?.message || (msg?.pictograms && msg.pictograms.length > 0));
       if (hasMessage) withMessage++;
 
+      try {
       await prisma.variablePanel.upsert({
         where: { panelId },
         create: {
@@ -349,9 +357,13 @@ export async function run(prisma: PrismaClient) {
       } else {
         created++;
       }
+      } catch (err) {
+        skipped++;
+        if (skipped <= 3) console.warn(`[panel-collector] Skipped ${panelId}: ${(err as Error).message?.slice(0, 80)}`);
+      }
     }
 
-    console.log(`[panel-collector] Created: ${created}, Updated: ${updated}`);
+    console.log(`[panel-collector] Created: ${created}, Updated: ${updated}, Skipped: ${skipped}`);
     console.log(`[panel-collector] Panels with active messages: ${withMessage}`);
 
     // 4. Mark panels not in API response as inactive
