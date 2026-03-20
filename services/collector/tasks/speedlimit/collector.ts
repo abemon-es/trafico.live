@@ -245,48 +245,58 @@ export async function run(prisma: PrismaClient) {
     return;
   }
 
-  // 3. CLEAR + INSERT (full refresh — the TN-ITS feed contains the complete current state)
-  const deleted = await prisma.speedLimit.deleteMany({});
-  console.log(`${TAG} Cleared ${deleted.count} existing speed limits`);
-
-  // 4. BATCH INSERT add/modify records
-  const BATCH_SIZE = 100;
-  let inserted = 0;
-  let skipped = 0;
-
-  for (let i = 0; i < adds.length; i += BATCH_SIZE) {
-    const batch = adds.slice(i, i + BATCH_SIZE);
-
-    const data = batch.map(r => {
-      const province = inferProvinceFromRoad(r.road);
-      return {
-        roadNumber: r.road,
-        roadType: classifyRoadType(r.road),
-        kmStart: Math.min(r.kmStart, 99999.99),
-        kmEnd: Math.min(r.kmEnd, 99999.99),
-        startLat: r.lat,
-        startLng: r.lng,
-        endLat: r.lat, // TN-ITS provides single point per segment
-        endLng: r.lng,
-        speedLimit: r.speedLimit,
-        speedLimitType: inferSpeedLimitType(r.speedLimit, r.roadCharacter),
-        direction: mapDirection(r.direction),
-        isConditional: false,
-        province,
-        provinceName: province ? PROVINCES[province] || null : null,
-        sourceId: r.uuid,
-        lastUpdated: now,
-      };
-    }).filter(d => {
-      if (d.speedLimit <= 0 || d.speedLimit > 150) { skipped++; return false; }
-      return true;
+  // 3. REMOVE records marked for deletion by sourceId
+  if (removes.length > 0) {
+    const removeUuids = removes.map(r => r.uuid);
+    const removed = await prisma.speedLimit.deleteMany({
+      where: { sourceId: { in: removeUuids } },
     });
-
-    await prisma.speedLimit.createMany({ data, skipDuplicates: true });
-    inserted += data.length;
+    console.log(`${TAG} Removed ${removed.count} speed limits (${removeUuids.length} requested)`);
   }
 
-  console.log(`${TAG} Inserted ${inserted} speed limits (${skipped} skipped)`);
+  // 4. UPSERT add/modify records
+  let upserted = 0;
+  let skipped = 0;
+
+  for (const r of adds) {
+    if (r.speedLimit <= 0 || r.speedLimit > 150) { skipped++; continue; }
+
+    const province = inferProvinceFromRoad(r.road);
+    const data = {
+      roadNumber: r.road,
+      roadType: classifyRoadType(r.road),
+      kmStart: Math.min(r.kmStart, 99999.99),
+      kmEnd: Math.min(r.kmEnd, 99999.99),
+      startLat: r.lat,
+      startLng: r.lng,
+      endLat: r.lat,
+      endLng: r.lng,
+      speedLimit: r.speedLimit,
+      speedLimitType: inferSpeedLimitType(r.speedLimit, r.roadCharacter),
+      direction: mapDirection(r.direction),
+      isConditional: false,
+      province,
+      provinceName: province ? PROVINCES[province] || null : null,
+      sourceId: r.uuid,
+      lastUpdated: now,
+    };
+
+    try {
+      // Try to find existing by sourceId, else create new
+      const existing = await prisma.speedLimit.findFirst({ where: { sourceId: r.uuid } });
+      if (existing) {
+        await prisma.speedLimit.update({ where: { id: existing.id }, data });
+      } else {
+        await prisma.speedLimit.create({ data });
+      }
+      upserted++;
+    } catch (err) {
+      skipped++;
+      if (skipped <= 3) console.warn(`${TAG} Skip ${r.road} km${r.kmStart}: ${(err as Error).message?.slice(0, 60)}`);
+    }
+  }
+
+  console.log(`${TAG} Upserted ${upserted} speed limits (${skipped} skipped)`);
 
   // 5. SUMMARY
   const bySpeed = await prisma.speedLimit.groupBy({
