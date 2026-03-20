@@ -318,68 +318,72 @@ export async function run(prisma: PrismaClient) {
     let created = 0;
     let updated = 0;
 
-    for (const charger of chargers) {
-      fetchedIds.add(charger.id);
+    const CHUNK = 50;
+    for (let i = 0; i < chargers.length; i += CHUNK) {
+      const chunk = chargers.slice(i, i + CHUNK);
+      await Promise.all(chunk.map(async (charger) => {
+        fetchedIds.add(charger.id);
 
-      const provinceCode = normalizeProvince(charger.province || "");
+        const provinceCode = normalizeProvince(charger.province || "");
 
-      // Map connector types to Prisma enum
-      const chargerTypes: ChargerType[] = [...new Set(
-        charger.connectors.map(c => mapConnectorType(c.type))
-      )];
+        // Map connector types to Prisma enum
+        const chargerTypes: ChargerType[] = [...new Set(
+          charger.connectors.map(c => mapConnectorType(c.type))
+        )];
 
-      // Map payment methods from auth methods
-      const paymentMethods: string[] = charger.authMethods.filter(m =>
-        m.includes("payment") || m.includes("card") || m.includes("app") || m.includes("rfid")
-      );
+        // Map payment methods from auth methods
+        const paymentMethods: string[] = charger.authMethods.filter(m =>
+          m.includes("payment") || m.includes("card") || m.includes("app") || m.includes("rfid")
+        );
 
-      await prisma.eVCharger.upsert({
-        where: { id: charger.id },
-        create: {
-          id: charger.id,
-          name: charger.name,
-          latitude: charger.latitude,
-          longitude: charger.longitude,
-          address: charger.address || null,
-          city: charger.city || null,
-          postalCode: charger.postalCode || null,
-          province: provinceCode,
-          provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-          chargerTypes,
-          powerKw: Math.min(charger.totalPowerKw, 9999.99),
-          connectors: charger.connectorCount,
-          operator: charger.operator || null,
-          network: null, // Not available in source data
-          isPublic: true,
-          is24h: charger.is24h,
-          paymentMethods,
-          lastUpdated: now
-        },
-        update: {
-          name: charger.name,
-          latitude: charger.latitude,
-          longitude: charger.longitude,
-          address: charger.address || null,
-          city: charger.city || null,
-          postalCode: charger.postalCode || null,
-          province: provinceCode,
-          provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-          chargerTypes,
-          powerKw: Math.min(charger.totalPowerKw, 9999.99),
-          connectors: charger.connectorCount,
-          operator: charger.operator || null,
-          isPublic: true,
-          is24h: charger.is24h,
-          paymentMethods,
-          lastUpdated: now
+        await prisma.eVCharger.upsert({
+          where: { id: charger.id },
+          create: {
+            id: charger.id,
+            name: charger.name,
+            latitude: charger.latitude,
+            longitude: charger.longitude,
+            address: charger.address || null,
+            city: charger.city || null,
+            postalCode: charger.postalCode || null,
+            province: provinceCode,
+            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
+            chargerTypes,
+            powerKw: Math.min(charger.totalPowerKw, 9999.99),
+            connectors: charger.connectorCount,
+            operator: charger.operator || null,
+            network: null, // Not available in source data
+            isPublic: true,
+            is24h: charger.is24h,
+            paymentMethods,
+            lastUpdated: now
+          },
+          update: {
+            name: charger.name,
+            latitude: charger.latitude,
+            longitude: charger.longitude,
+            address: charger.address || null,
+            city: charger.city || null,
+            postalCode: charger.postalCode || null,
+            province: provinceCode,
+            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
+            chargerTypes,
+            powerKw: Math.min(charger.totalPowerKw, 9999.99),
+            connectors: charger.connectorCount,
+            operator: charger.operator || null,
+            isPublic: true,
+            is24h: charger.is24h,
+            paymentMethods,
+            lastUpdated: now
+          }
+        });
+
+        if (existingIds.has(charger.id)) {
+          updated++;
+        } else {
+          created++;
         }
-      });
-
-      if (existingIds.has(charger.id)) {
-        updated++;
-      } else {
-        created++;
-      }
+      }));
     }
 
     console.log(`[charger-collector] Created: ${created}, Updated: ${updated}`);
@@ -411,23 +415,6 @@ export async function run(prisma: PrismaClient) {
 
     const totalChargers = stats.reduce((sum, s) => sum + s._count, 0);
     console.log(`[charger-collector] Total chargers: ${totalChargers}`);
-
-    // Charger type breakdown
-    const typeStats = await prisma.eVCharger.findMany({
-      select: { chargerTypes: true }
-    });
-
-    const typeCount: Record<string, number> = {};
-    for (const charger of typeStats) {
-      for (const type of charger.chargerTypes) {
-        typeCount[type] = (typeCount[type] || 0) + 1;
-      }
-    }
-
-    console.log(`[charger-collector] Charger types:`);
-    for (const [type, count] of Object.entries(typeCount).sort((a, b) => b[1] - a[1])) {
-      console.log(`  ${type}: ${count}`);
-    }
 
     // 24h availability
     const availability = await prisma.eVCharger.groupBy({

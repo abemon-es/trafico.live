@@ -296,71 +296,76 @@ export async function run(prisma: PrismaClient) {
     let withMessage = 0;
 
     let skipped = 0;
-    for (const [panelId, location] of locations) {
-      fetchedIds.add(panelId);
+    const locationEntries = [...locations.entries()];
+    const CHUNK = 50;
+    for (let i = 0; i < locationEntries.length; i += CHUNK) {
+      const chunk = locationEntries.slice(i, i + CHUNK);
+      await Promise.all(chunk.map(async ([panelId, location]) => {
+        fetchedIds.add(panelId);
 
-      // Validate coordinates fit Decimal(9,6) range
-      if (Math.abs(location.latitude) > 90 || Math.abs(location.longitude) > 180) {
-        skipped++;
-        continue;
-      }
-
-      // Find message for this panel
-      const msg = messages.get(panelId);
-      const hasMessage = !!(msg?.message || (msg?.pictograms && msg.pictograms.length > 0));
-      if (hasMessage) withMessage++;
-
-      try {
-      await prisma.variablePanel.upsert({
-        where: { panelId },
-        create: {
-          panelId,
-          name: location.name,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          roadNumber: location.roadNumber || null,
-          kmPoint: location.kmPoint,
-          direction: location.direction,
-          province: location.provinceCode,
-          provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
-          message: msg?.message || null,
-          messageType: msg?.messageType || null,
-          messageCode: msg?.pictograms?.join(",") || null,
-          messageStartAt: msg?.startedAt || null,
-          fetchedAt: now,
-          lastUpdated: now,
-          isActive: true,
-          hasMessage,
-        },
-        update: {
-          name: location.name,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          roadNumber: location.roadNumber || null,
-          kmPoint: location.kmPoint,
-          direction: location.direction,
-          province: location.provinceCode,
-          provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
-          message: msg?.message || null,
-          messageType: msg?.messageType || null,
-          messageCode: msg?.pictograms?.join(",") || null,
-          messageStartAt: msg?.startedAt || null,
-          fetchedAt: now,
-          lastUpdated: now,
-          isActive: true,
-          hasMessage,
+        // Validate coordinates fit Decimal(9,6) range
+        if (Math.abs(location.latitude) > 90 || Math.abs(location.longitude) > 180) {
+          skipped++;
+          return;
         }
-      });
 
-      if (existingIds.has(panelId)) {
-        updated++;
-      } else {
-        created++;
-      }
-      } catch (err) {
-        skipped++;
-        if (skipped <= 3) console.warn(`[panel-collector] Skipped ${panelId}: ${(err as Error).message?.slice(0, 80)}`);
-      }
+        // Find message for this panel
+        const msg = messages.get(panelId);
+        const hasMessage = !!(msg?.message || (msg?.pictograms && msg.pictograms.length > 0));
+        if (hasMessage) withMessage++;
+
+        try {
+          await prisma.variablePanel.upsert({
+            where: { panelId },
+            create: {
+              panelId,
+              name: location.name,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              roadNumber: location.roadNumber || null,
+              kmPoint: location.kmPoint,
+              direction: location.direction,
+              province: location.provinceCode,
+              provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
+              message: msg?.message || null,
+              messageType: msg?.messageType || null,
+              messageCode: msg?.pictograms?.join(",") || null,
+              messageStartAt: msg?.startedAt || null,
+              fetchedAt: now,
+              lastUpdated: now,
+              isActive: true,
+              hasMessage,
+            },
+            update: {
+              name: location.name,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              roadNumber: location.roadNumber || null,
+              kmPoint: location.kmPoint,
+              direction: location.direction,
+              province: location.provinceCode,
+              provinceName: location.provinceCode ? PROVINCES[location.provinceCode] || null : null,
+              message: msg?.message || null,
+              messageType: msg?.messageType || null,
+              messageCode: msg?.pictograms?.join(",") || null,
+              messageStartAt: msg?.startedAt || null,
+              fetchedAt: now,
+              lastUpdated: now,
+              isActive: true,
+              hasMessage,
+            }
+          });
+
+          if (existingIds.has(panelId)) {
+            updated++;
+          } else {
+            created++;
+          }
+        } catch (err) {
+          skipped++;
+          if (skipped <= 3) console.warn(`[panel-collector] Skipped ${panelId}: ${(err as Error).message?.slice(0, 80)}`);
+        }
+      }));
     }
 
     console.log(`[panel-collector] Created: ${created}, Updated: ${updated}, Skipped: ${skipped}`);

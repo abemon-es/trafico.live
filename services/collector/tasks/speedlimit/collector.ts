@@ -258,42 +258,46 @@ export async function run(prisma: PrismaClient) {
   let upserted = 0;
   let skipped = 0;
 
-  for (const r of adds) {
-    if (r.speedLimit <= 0 || r.speedLimit > 150) { skipped++; continue; }
+  const CHUNK = 50;
+  for (let i = 0; i < adds.length; i += CHUNK) {
+    const chunk = adds.slice(i, i + CHUNK);
+    await Promise.all(chunk.map(async (r) => {
+      if (r.speedLimit <= 0 || r.speedLimit > 150) { skipped++; return; }
 
-    const province = inferProvinceFromRoad(r.road);
-    const data = {
-      roadNumber: r.road,
-      roadType: classifyRoadType(r.road),
-      kmStart: Math.min(r.kmStart, 99999.99),
-      kmEnd: Math.min(r.kmEnd, 99999.99),
-      startLat: r.lat,
-      startLng: r.lng,
-      endLat: r.lat,
-      endLng: r.lng,
-      speedLimit: r.speedLimit,
-      speedLimitType: inferSpeedLimitType(r.speedLimit, r.roadCharacter),
-      direction: mapDirection(r.direction),
-      isConditional: false,
-      province,
-      provinceName: province ? PROVINCES[province] || null : null,
-      sourceId: r.uuid,
-      lastUpdated: now,
-    };
+      const province = inferProvinceFromRoad(r.road);
+      const data = {
+        roadNumber: r.road,
+        roadType: classifyRoadType(r.road),
+        kmStart: Math.min(r.kmStart, 99999.99),
+        kmEnd: Math.min(r.kmEnd, 99999.99),
+        startLat: r.lat,
+        startLng: r.lng,
+        endLat: r.lat,
+        endLng: r.lng,
+        speedLimit: r.speedLimit,
+        speedLimitType: inferSpeedLimitType(r.speedLimit, r.roadCharacter),
+        direction: mapDirection(r.direction),
+        isConditional: false,
+        province,
+        provinceName: province ? PROVINCES[province] || null : null,
+        sourceId: r.uuid,
+        lastUpdated: now,
+      };
 
-    try {
-      // Try to find existing by sourceId, else create new
-      const existing = await prisma.speedLimit.findFirst({ where: { sourceId: r.uuid } });
-      if (existing) {
-        await prisma.speedLimit.update({ where: { id: existing.id }, data });
-      } else {
-        await prisma.speedLimit.create({ data });
+      try {
+        // Try to find existing by sourceId, else create new
+        const existing = await prisma.speedLimit.findFirst({ where: { sourceId: r.uuid } });
+        if (existing) {
+          await prisma.speedLimit.update({ where: { id: existing.id }, data });
+        } else {
+          await prisma.speedLimit.create({ data });
+        }
+        upserted++;
+      } catch (err) {
+        skipped++;
+        if (skipped <= 3) console.warn(`${TAG} Skip ${r.road} km${r.kmStart}: ${(err as Error).message?.slice(0, 60)}`);
       }
-      upserted++;
-    } catch (err) {
-      skipped++;
-      if (skipped <= 3) console.warn(`${TAG} Skip ${r.road} km${r.kmStart}: ${(err as Error).message?.slice(0, 60)}`);
-    }
+    }));
   }
 
   console.log(`${TAG} Upserted ${upserted} speed limits (${skipped} skipped)`);

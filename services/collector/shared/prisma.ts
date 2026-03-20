@@ -13,7 +13,12 @@ export function getPrisma(): PrismaClient {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  _pool = new Pool({ connectionString });
+  _pool = new Pool({
+    connectionString,
+    max: 5,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  });
   const adapter = new PrismaPg(_pool);
   _prisma = new PrismaClient({ adapter });
   return _prisma;

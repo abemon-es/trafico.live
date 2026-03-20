@@ -273,52 +273,57 @@ export async function run(prisma: PrismaClient) {
     let fixedCount = 0;
     let sectionCount = 0;
 
-    for (const radar of radars) {
-      fetchedIds.add(radar.radarId);
+    // Chunked parallel upserts (50x parallelism per chunk)
+    const CHUNK = 50;
+    for (let i = 0; i < radars.length; i += CHUNK) {
+      const chunk = radars.slice(i, i + CHUNK);
+      await Promise.all(chunk.map(radar => {
+        fetchedIds.add(radar.radarId);
 
-      if (radar.type === "FIXED") {
-        fixedCount++;
-      } else if (radar.type === "SECTION") {
-        sectionCount++;
-      }
-
-      await prisma.radar.upsert({
-        where: { radarId: radar.radarId },
-        create: {
-          radarId: radar.radarId,
-          latitude: radar.latitude,
-          longitude: radar.longitude,
-          roadNumber: radar.roadNumber,
-          kmPoint: radar.kmPoint,
-          direction: radar.direction,
-          province: radar.province,
-          provinceName: radar.province ? PROVINCES[radar.province] || null : null,
-          type: radar.type,
-          speedLimit: null, // Not available in DGT data
-          avgSpeedPartner: radar.avgSpeedPartner,
-          isActive: true,
-          lastUpdated: now
-        },
-        update: {
-          latitude: radar.latitude,
-          longitude: radar.longitude,
-          roadNumber: radar.roadNumber,
-          kmPoint: radar.kmPoint,
-          direction: radar.direction,
-          province: radar.province,
-          provinceName: radar.province ? PROVINCES[radar.province] || null : null,
-          type: radar.type,
-          avgSpeedPartner: radar.avgSpeedPartner,
-          isActive: true,
-          lastUpdated: now
+        if (radar.type === "FIXED") {
+          fixedCount++;
+        } else if (radar.type === "SECTION") {
+          sectionCount++;
         }
-      });
 
-      if (existingIds.has(radar.radarId)) {
-        updated++;
-      } else {
-        created++;
-      }
+        if (existingIds.has(radar.radarId)) {
+          updated++;
+        } else {
+          created++;
+        }
+
+        return prisma.radar.upsert({
+          where: { radarId: radar.radarId },
+          create: {
+            radarId: radar.radarId,
+            latitude: radar.latitude,
+            longitude: radar.longitude,
+            roadNumber: radar.roadNumber,
+            kmPoint: radar.kmPoint,
+            direction: radar.direction,
+            province: radar.province,
+            provinceName: radar.province ? PROVINCES[radar.province] || null : null,
+            type: radar.type,
+            speedLimit: null, // Not available in DGT data
+            avgSpeedPartner: radar.avgSpeedPartner,
+            isActive: true,
+            lastUpdated: now
+          },
+          update: {
+            latitude: radar.latitude,
+            longitude: radar.longitude,
+            roadNumber: radar.roadNumber,
+            kmPoint: radar.kmPoint,
+            direction: radar.direction,
+            province: radar.province,
+            provinceName: radar.province ? PROVINCES[radar.province] || null : null,
+            type: radar.type,
+            avgSpeedPartner: radar.avgSpeedPartner,
+            isActive: true,
+            lastUpdated: now
+          }
+        });
+      }));
     }
 
     console.log(`[radar-collector] Created: ${created}, Updated: ${updated}`);

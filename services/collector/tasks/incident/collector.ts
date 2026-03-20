@@ -200,16 +200,30 @@ export async function run(prisma: PrismaClient) {
     let created = 0;
     let updated = 0;
     let skipped = 0;
+    let processed = 0;
 
-    for (const incident of allIncidents) {
-      try {
-        // Skip incidents with invalid coordinates (0,0) unless they have road info
-        if (incident.latitude === 0 && incident.longitude === 0 && !incident.roadNumber) {
-          skipped++;
-          continue;
-        }
+    // Pre-filter valid incidents
+    const validIncidents = allIncidents.filter(incident => {
+      if (incident.latitude === 0 && incident.longitude === 0 && !incident.roadNumber) {
+        skipped++;
+        return false;
+      }
+      return true;
+    });
 
-        const result = await prisma.trafficIncident.upsert({
+    // Get existing IDs to track creates vs updates
+    const existingIncidents = await prisma.trafficIncident.findMany({
+      where: { situationId: { in: validIncidents.map(i => i.situationId) } },
+      select: { situationId: true },
+    });
+    const existingIds = new Set(existingIncidents.map(i => i.situationId));
+
+    // Chunked parallel upserts (50x parallelism per chunk)
+    const CHUNK = 50;
+    for (let i = 0; i < validIncidents.length; i += CHUNK) {
+      const chunk = validIncidents.slice(i, i + CHUNK);
+      const results = await Promise.allSettled(chunk.map(incident =>
+        prisma.trafficIncident.upsert({
           where: { situationId: incident.situationId },
           create: {
             situationId: incident.situationId,
@@ -259,19 +273,24 @@ export async function run(prisma: PrismaClient) {
             managementType: incident.managementType,
             isActive: true,
           },
-        });
+        })
+      ));
 
-        // Check if this was a create or update based on fetchedAt
-        if (result.fetchedAt.getTime() === now.getTime() && result.startedAt.getTime() === incident.startedAt.getTime()) {
-          // This is a rough heuristic - if the startedAt matches, it might be new or updated
-          created++;
+      for (let j = 0; j < results.length; j++) {
+        const result = results[j];
+        if (result.status === "fulfilled") {
+          if (existingIds.has(chunk[j].situationId)) {
+            updated++;
+          } else {
+            created++;
+          }
         } else {
-          updated++;
+          console.error(`[collector] Error processing incident ${chunk[j].situationId}:`, result.reason);
+          skipped++;
         }
-      } catch (error) {
-        console.error(`[collector] Error processing incident ${incident.situationId}:`, error);
-        skipped++;
       }
+
+      processed += chunk.length;
     }
 
     console.log(`[collector] Processing complete: ${created} created, ${updated} updated, ${skipped} skipped`);
@@ -295,19 +314,15 @@ export async function run(prisma: PrismaClient) {
     });
 
     if (staleIncidents.length > 0) {
-      // Deactivate each incident and calculate duration
-      for (const incident of staleIncidents) {
-        const durationSecs = Math.round(
-          (incident.lastSeenAt.getTime() - incident.firstSeenAt.getTime()) / 1000
-        );
-        await prisma.trafficIncident.update({
-          where: { id: incident.id },
-          data: {
-            isActive: false,
-            durationSecs,
-          },
-        });
-      }
+      // Deactivate all stale incidents in a single raw SQL update
+      await prisma.$executeRaw`
+        UPDATE "TrafficIncident"
+        SET "isActive" = false,
+            "durationSecs" = EXTRACT(EPOCH FROM ("lastSeenAt" - "firstSeenAt"))::int
+        WHERE "isActive" = true
+          AND "source" IN ('DGT', 'SCT', 'EUSKADI', 'MADRID')
+          AND "fetchedAt" < ${oneHourAgo}
+      `;
       console.log(`[collector] Deactivated ${staleIncidents.length} stale incidents with duration tracking`);
     }
 

@@ -163,47 +163,52 @@ export async function run(prisma: PrismaClient) {
     let created = 0;
     let updated = 0;
 
-    for (const camera of cameras) {
-      fetchedIds.add(camera.id);
+    // Chunked parallel upserts (50x parallelism per chunk)
+    const CHUNK = 50;
+    for (let i = 0; i < cameras.length; i += CHUNK) {
+      const chunk = cameras.slice(i, i + CHUNK);
+      await Promise.all(chunk.map(camera => {
+        fetchedIds.add(camera.id);
 
-      const provinceCode = normalizeProvince(camera.province);
+        const provinceCode = normalizeProvince(camera.province);
 
-      await prisma.camera.upsert({
-        where: { id: camera.id },
-        create: {
-          id: camera.id,
-          name: camera.name,
-          latitude: camera.latitude,
-          longitude: camera.longitude,
-          roadNumber: camera.road || null,
-          kmPoint: camera.kmPoint,
-          province: provinceCode,
-          provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-          feedUrl: camera.imageUrl,
-          thumbnailUrl: camera.imageUrl,
-          isActive: true,
-          lastUpdated: now
-        },
-        update: {
-          name: camera.name,
-          latitude: camera.latitude,
-          longitude: camera.longitude,
-          roadNumber: camera.road || null,
-          kmPoint: camera.kmPoint,
-          province: provinceCode,
-          provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
-          feedUrl: camera.imageUrl,
-          thumbnailUrl: camera.imageUrl,
-          isActive: true,
-          lastUpdated: now
+        if (existingIds.has(camera.id)) {
+          updated++;
+        } else {
+          created++;
         }
-      });
 
-      if (existingIds.has(camera.id)) {
-        updated++;
-      } else {
-        created++;
-      }
+        return prisma.camera.upsert({
+          where: { id: camera.id },
+          create: {
+            id: camera.id,
+            name: camera.name,
+            latitude: camera.latitude,
+            longitude: camera.longitude,
+            roadNumber: camera.road || null,
+            kmPoint: camera.kmPoint,
+            province: provinceCode,
+            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
+            feedUrl: camera.imageUrl,
+            thumbnailUrl: camera.imageUrl,
+            isActive: true,
+            lastUpdated: now
+          },
+          update: {
+            name: camera.name,
+            latitude: camera.latitude,
+            longitude: camera.longitude,
+            roadNumber: camera.road || null,
+            kmPoint: camera.kmPoint,
+            province: provinceCode,
+            provinceName: provinceCode ? PROVINCES[provinceCode] || null : null,
+            feedUrl: camera.imageUrl,
+            thumbnailUrl: camera.imageUrl,
+            isActive: true,
+            lastUpdated: now
+          }
+        });
+      }));
     }
 
     console.log(`[camera-collector] Created: ${created}, Updated: ${updated}`);
