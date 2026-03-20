@@ -162,9 +162,10 @@ async function fetchPanelLocations(): Promise<Map<string, PanelLocation>> {
       const roadNumber = String(refPoint?.roadNumber || "");
       const direction = parseDirection(String(refPoint?.directionRelative || ""));
 
-      // km point is in meters, convert to km
+      // km point is in meters, convert to km (clamp to Decimal(7,2) max)
       const distanceMeters = parseFloat(String(refPoint?.referencePointDistance || 0));
-      const kmPoint = distanceMeters > 0 ? Math.round(distanceMeters / 100) / 10 : null;
+      const kmRaw = distanceMeters > 0 ? Math.round(distanceMeters / 100) / 10 : null;
+      const kmPoint = kmRaw !== null && kmRaw <= 99999.99 ? kmRaw : null;
 
       // Province from extension
       const extension = refPoint?.referencePointExtension?.ExtendedReferencePoint;
