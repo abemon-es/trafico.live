@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -110,20 +109,20 @@ export function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/logo-logistics.png"
-              alt="Logistics Express"
-              width={120}
-              height={40}
-              className="h-10 w-auto"
-            />
-            <div className="border-l border-gray-300 pl-3">
-              <span className="text-lg font-bold text-gray-900">
-                Tráfico España
+          <Link href="/" className="flex items-center gap-2">
+            <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8" aria-hidden="true">
+              <path d="M8 36L20 12h6L14 36H8z" fill="#2563eb"/>
+              <path d="M18 36L30 12h6L24 36h-6z" fill="#2563eb" opacity="0.7"/>
+              <path d="M28 36L40 12h6L34 36h-6z" fill="#2563eb" opacity="0.4"/>
+              <circle cx="40" cy="12" r="6" fill="#f59e0b"/>
+            </svg>
+            <div>
+              <span className="text-lg font-bold text-tl-900">
+                trafico
               </span>
+              <span className="text-lg font-bold text-amber-500">.live</span>
               <span className="hidden sm:block text-xs text-gray-500">
-                Inteligencia Vial en Tiempo Real
+                Tráfico España en Tiempo Real
               </span>
             </div>
           </Link>
@@ -142,7 +141,7 @@ export function Header() {
                     flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                     ${
                       isActive
-                        ? "bg-[#e8f5e9] text-[#006633]"
+                        ? "bg-tl-50 text-tl-700"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     }
                   `}
@@ -161,7 +160,7 @@ export function Header() {
                   flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                   ${
                     isMegaMenuActive || megaMenuOpen
-                      ? "bg-[#e8f5e9] text-[#006633]"
+                      ? "bg-tl-50 text-tl-700"
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   }
                 `}
@@ -191,7 +190,7 @@ export function Header() {
                                     flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
                                     ${
                                       isActive
-                                        ? "bg-[#e8f5e9] text-[#006633]"
+                                        ? "bg-tl-50 text-tl-700"
                                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                                     }
                                   `}
@@ -243,7 +242,7 @@ export function Header() {
                       flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                       ${
                         isActive
-                          ? "bg-[#e8f5e9] text-[#006633]"
+                          ? "bg-tl-50 text-tl-700"
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                       }
                     `}
@@ -274,7 +273,7 @@ export function Header() {
                           flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                           ${
                             isActive
-                              ? "bg-[#e8f5e9] text-[#006633]"
+                              ? "bg-tl-50 text-tl-700"
                               : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                           }
                         `}

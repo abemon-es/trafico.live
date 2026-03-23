@@ -4,7 +4,7 @@ import prisma from "@/lib/db";
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.logisticsexpress.es";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // Major cities for city pages
 const CITIES = [

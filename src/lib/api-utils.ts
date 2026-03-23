@@ -98,10 +98,9 @@ export async function withRateLimitHeaders(
  * Allowed origins for CORS
  */
 const ALLOWED_ORIGINS = [
+  "https://trafico.live",
   "https://trafico.logisticsexpress.es",
   "https://trafico.abemon.es",
-  "https://logisticsexpress.es",
-  "https://abemon.es",
   "http://localhost:3000",
   "http://localhost:3001",
 ];
@@ -125,7 +124,7 @@ export function getCORSOrigin(requestOrigin: string | null): string {
  * CORS headers for API responses
  */
 export const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "https://trafico.logisticsexpress.es",
+  "Access-Control-Allow-Origin": "https://trafico.live",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
   "Access-Control-Max-Age": "86400",

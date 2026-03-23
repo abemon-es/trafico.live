@@ -2,20 +2,22 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
 
-  /* Logistics Express Brand Colors */
-  --le-green-dark: #006633;
-  --le-green-light: #39a935;
-  --le-green-secondary-1: #174a16;
-  --le-green-secondary-2: #01582c;
+  /* trafico.live Brand Colors */
+  --tl-blue: #2563eb;
+  --tl-blue-dark: #1e40af;
+  --tl-blue-light: #60a5fa;
+  --tl-amber: #f59e0b;
+  --tl-amber-dark: #d97706;
 
   /* Semantic colors */
-  --le-primary: var(--le-green-dark);
-  --le-primary-light: var(--le-green-light);
-  --le-primary-hover: var(--le-green-secondary-2);
-  --le-primary-bg: #e8f5e9;
-  --le-primary-bg-hover: #c8e6c9;
+  --tl-primary: var(--tl-blue);
+  --tl-primary-hover: var(--tl-blue-dark);
+  --tl-primary-bg: #eff6ff;
+  --tl-primary-bg-hover: #dbeafe;
+  --tl-accent: var(--tl-amber);
+  --tl-accent-hover: var(--tl-amber-dark);
 }
 
 @theme inline {
@@ -24,17 +26,29 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Logistics Express green palette for Tailwind */
-  --color-le-50: #e8f5e9;
-  --color-le-100: #c8e6c9;
-  --color-le-200: #a5d6a7;
-  --color-le-300: #81c784;
-  --color-le-400: #66bb6a;
-  --color-le-500: #39a935;
-  --color-le-600: #006633;
-  --color-le-700: #01582c;
-  --color-le-800: #174a16;
-  --color-le-900: #0d3310;
+  /* Blue palette */
+  --color-tl-50: #eff6ff;
+  --color-tl-100: #dbeafe;
+  --color-tl-200: #bfdbfe;
+  --color-tl-300: #93c5fd;
+  --color-tl-400: #60a5fa;
+  --color-tl-500: #3b82f6;
+  --color-tl-600: #2563eb;
+  --color-tl-700: #1d4ed8;
+  --color-tl-800: #1e40af;
+  --color-tl-900: #1e3a8a;
+
+  /* Amber accent */
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+  --color-amber-800: #92400e;
+  --color-amber-900: #78350f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,5 +61,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }

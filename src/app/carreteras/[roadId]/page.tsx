@@ -169,7 +169,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
   const typeLabel = ROAD_TYPE_LABELS[road.type] || "Carretera";
   const provinceNames = road.provinces.map((p) => PROVINCE_NAMES[p] || p);
 
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.logisticsexpress.es";
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
   const roadSchema = generateRoadSchema({
     id: road.id,

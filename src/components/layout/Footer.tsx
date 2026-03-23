@@ -8,10 +8,19 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Brand Section */}
         <div className="mb-8 pb-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Tráfico España</h2>
+          <div className="flex items-center gap-2 mb-2">
+            <svg viewBox="0 0 48 48" fill="none" className="h-6 w-6" aria-hidden="true">
+              <path d="M8 36L20 12h6L14 36H8z" fill="#2563eb"/>
+              <path d="M18 36L30 12h6L24 36h-6z" fill="#2563eb" opacity="0.7"/>
+              <path d="M28 36L40 12h6L34 36h-6z" fill="#2563eb" opacity="0.4"/>
+              <circle cx="40" cy="12" r="6" fill="#f59e0b"/>
+            </svg>
+            <span className="text-xl font-bold text-tl-900">trafico</span>
+            <span className="text-xl font-bold text-amber-500">.live</span>
+          </div>
           <p className="text-sm text-gray-600 max-w-xl">
-            Inteligencia vial en tiempo real con datos oficiales de la DGT. Monitorización del tráfico español,
-            precios de combustible, cargadores eléctricos y zonas de bajas emisiones.
+            Inteligencia vial en tiempo real con datos oficiales de la DGT. Incidencias, cámaras,
+            radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones.
           </p>
         </div>
 
@@ -171,16 +180,6 @@ export function Footer() {
                   Mapa del sitio
                 </Link>
               </li>
-              <li>
-                <a
-                  href="https://www.logisticsexpress.es"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Logistics Express
-                </a>
-              </li>
             </ul>
           </div>
         </div>
@@ -193,32 +192,20 @@ export function Footer() {
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-500">
               <span>
-                Engineered by{" "}
+                Desarrollado por{" "}
                 <a
                   href="https://abemon.es"
-                  className="font-semibold text-[#006633] hover:underline"
+                  className="font-semibold text-tl-600 hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  abemonFLOW
-                </a>
-              </span>
-              <span className="hidden md:inline">|</span>
-              <span>
-                Operado por{" "}
-                <a
-                  href="https://www.logisticsexpress.es"
-                  className="font-semibold text-[#006633] hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Logistics Express
+                  abemon
                 </a>
               </span>
             </div>
           </div>
           <p className="text-center text-xs text-gray-400 mt-4">
-            © {currentYear} Tráfico España. Todos los derechos reservados.
+            &copy; {currentYear} trafico.live. Todos los derechos reservados.
           </p>
         </div>
       </div>

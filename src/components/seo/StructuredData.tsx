@@ -113,8 +113,8 @@ export function generateWebPageSchema({
       ...(dateModified && { dateModified: dateModified.toISOString() }),
       publisher: {
         "@type": "Organization",
-        name: "Tráfico España",
-        url: "https://trafico.logisticsexpress.es",
+        name: "trafico.live",
+        url: "https://trafico.live",
       },
     },
   ];
@@ -189,8 +189,8 @@ export function generateDatasetSchema({
     ...(temporalCoverage && { temporalCoverage }),
     creator: {
       "@type": "Organization",
-      name: "Tráfico España",
-      url: "https://trafico.logisticsexpress.es",
+      name: "trafico.live",
+      url: "https://trafico.live",
     },
     license: "https://creativecommons.org/licenses/by/4.0/",
   };

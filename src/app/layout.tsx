@@ -8,6 +8,8 @@ import "./globals.css";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -20,38 +22,40 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Tráfico España - Inteligencia Vial en Tiempo Real",
-    template: "%s | Tráfico España",
+    default: "trafico.live — Tráfico España en Tiempo Real",
+    template: "%s | trafico.live",
   },
   description:
-    "Monitorización en tiempo real del tráfico español: balizas V16, incidencias, cámaras, cargadores eléctricos y zonas de bajas emisiones. Datos oficiales de la DGT. Un servicio de Logistics Express.",
+    "Tráfico en tiempo real en España: incidencias, cámaras DGT, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones. Datos oficiales actualizados cada 60 segundos.",
   keywords: [
     "tráfico",
+    "tráfico en tiempo real",
     "DGT",
+    "incidencias tráfico",
+    "cámaras tráfico",
+    "radares DGT",
+    "precio gasolina",
+    "precio diesel",
+    "gasolineras baratas",
+    "cargadores eléctricos",
+    "zonas bajas emisiones",
+    "carreteras España",
     "V16",
-    "balizas",
-    "accidentes",
-    "España",
-    "carreteras",
-    "incidencias",
-    "tiempo real",
-    "logistics express",
-    "transporte",
   ],
-  authors: [{ name: "Logistics Express", url: "https://logisticsexpress.es" }],
+  authors: [{ name: "trafico.live" }],
   openGraph: {
-    title: "Tráfico España - Inteligencia Vial en Tiempo Real",
+    title: "trafico.live — Tráfico España en Tiempo Real",
     description:
-      "Datos en tiempo real del tráfico español: V16, incidencias, cámaras y más. Un servicio de Logistics Express.",
-    url: "https://trafico.logisticsexpress.es",
-    siteName: "Tráfico España by Logistics Express",
+      "Incidencias, cámaras, radares, combustible y cargadores eléctricos en toda España. Datos oficiales DGT actualizados cada 60 segundos.",
+    url: BASE_URL,
+    siteName: "trafico.live",
     locale: "es_ES",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tráfico España by Logistics Express",
-    description: "Inteligencia vial en tiempo real",
+    title: "trafico.live — Tráfico España en Tiempo Real",
+    description: "Inteligencia vial en tiempo real para toda España",
   },
   robots: {
     index: true,
@@ -60,10 +64,10 @@ export const metadata: Metadata = {
 };
 
 const organizationSchema = generateOrganizationSchema({
-  name: "Tráfico España by Logistics Express",
-  url: "https://trafico.logisticsexpress.es",
-  description: "Plataforma de monitorización del tráfico español en tiempo real. Datos oficiales de la DGT incluyendo balizas V16, incidencias, cámaras, radares y estadísticas de carreteras.",
-  logo: "https://trafico.logisticsexpress.es/logo.png",
+  name: "trafico.live",
+  url: BASE_URL,
+  description: "Plataforma de inteligencia vial en tiempo real para España. Datos oficiales de la DGT incluyendo incidencias, cámaras, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones.",
+  logo: `${BASE_URL}/icon.svg`,
 });
 
 export default function RootLayout({

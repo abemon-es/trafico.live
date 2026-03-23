@@ -820,7 +820,7 @@ export async function fetchDGTCameras(): Promise<CameraData[]> {
   const response = await fetch(url, {
     headers: {
       Accept: "application/xml",
-      "User-Agent": "TraficoEspana/1.0 (https://trafico.logisticsexpress.es)",
+      "User-Agent": "TraficoLive/1.0 (https://trafico.live)",
     },
     next: { revalidate: 300 }, // Cache for 5 minutes
   });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_HOSTS = [
+  "trafico.live",
   "trafico.logisticsexpress.es",
   "localhost:3000",
   "localhost:3001",

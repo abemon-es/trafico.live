@@ -205,7 +205,7 @@ export default function SobrePage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Tecnología</h3>
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#006633] to-[#39a935] rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-tl-600 to-tl-400 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-xl">A</span>
                 </div>
                 <div>
@@ -220,30 +220,22 @@ export default function SobrePage() {
                 href="https://abemon.es"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#006633] hover:text-[#39a935] flex items-center gap-1 text-sm font-medium"
+                className="text-tl-600 hover:text-tl-400 flex items-center gap-1 text-sm font-medium"
               >
                 abemon.es <ExternalLink className="w-4 h-4" />
               </a>
             </div>
 
-            {/* Operator */}
+            {/* Independent */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Operado por</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Proyecto independiente</h3>
               <div className="mb-4">
-                <p className="font-semibold text-gray-900 text-lg">Logistics Express</p>
-                <p className="text-sm text-gray-500">Transporte y Aduanas Internacionales</p>
+                <p className="font-semibold text-gray-900 text-lg">trafico.live</p>
+                <p className="text-sm text-gray-500">Inteligencia vial en tiempo real</p>
               </div>
               <p className="text-gray-600 text-sm mb-4">
-                Empresa líder en transporte internacional y gestión aduanera con más de 100 años de experiencia.
+                Plataforma independiente dedicada a ofrecer la información de tráfico más completa de España, combinando múltiples fuentes oficiales en un único punto de acceso.
               </p>
-              <a
-                href="https://www.logisticsexpress.es"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#006633] hover:text-[#39a935] flex items-center gap-1 text-sm font-medium"
-              >
-                www.logisticsexpress.es <ExternalLink className="w-4 h-4" />
-              </a>
             </div>
           </div>
         </section>
@@ -258,25 +250,17 @@ export default function SobrePage() {
             <div className="space-y-2 text-gray-700">
               <p>
                 <span className="font-medium">Email:</span>{" "}
-                <a href="mailto:info@logisticsexpress.es" className="text-[#006633] hover:underline">
-                  info@logisticsexpress.es
-                </a>
-              </p>
-              <p>
-                <span className="font-medium">Teléfono:</span>{" "}
-                <a href="tel:+34951650500" className="text-[#006633] hover:underline">
-                  +34 951 650 500
+                <a href="mailto:hola@trafico.live" className="text-tl-600 hover:underline">
+                  hola@trafico.live
                 </a>
               </p>
               <p>
                 <span className="font-medium">Web:</span>{" "}
                 <a
-                  href="https://www.logisticsexpress.es"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#006633] hover:underline"
+                  href="https://trafico.live"
+                  className="text-tl-600 hover:underline"
                 >
-                  www.logisticsexpress.es
+                  trafico.live
                 </a>
               </p>
             </div>
