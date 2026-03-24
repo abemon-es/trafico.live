@@ -69,6 +69,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    canonical: BASE_URL,
+  },
 };
 
 const organizationSchema = generateOrganizationSchema({

@@ -6,6 +6,9 @@ import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock } from "lu
 export const metadata: Metadata = {
   title: "Gasolineras y Precios de Combustible | Tráfico España",
   description: "Consulta los precios de combustible actualizados en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti.",
+  alternates: {
+    canonical: "/gasolineras",
+  },
 };
 
 // Force dynamic rendering - database not accessible during build

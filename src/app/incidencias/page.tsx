@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Incidencias de Tráfico",
   description:
     "Mapa en tiempo real de incidencias en las carreteras españolas. Cortes de carretera, obras, accidentes y condiciones meteorológicas adversas.",
+  alternates: {
+    canonical: "/incidencias",
+  },
 };
 
 function IncidenciasLoading() {
