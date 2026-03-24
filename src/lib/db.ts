@@ -6,18 +6,30 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function createPrismaClient() {
+function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    throw new Error("DATABASE_URL environment variable is not set");
+    // During build time, DATABASE_URL may not be available.
+    // Return a proxy that throws on actual DB access but allows
+    // module-level imports without crashing the build.
+    console.warn("[db] DATABASE_URL not set — DB queries will fail at runtime");
+    return new Proxy({} as PrismaClient, {
+      get(_target, prop) {
+        if (prop === "then" || prop === Symbol.toPrimitive || prop === Symbol.toStringTag) return undefined;
+        return new Proxy(() => {}, {
+          get() { return () => Promise.reject(new Error("DATABASE_URL not configured")); },
+          apply() { return Promise.reject(new Error("DATABASE_URL not configured")); },
+        });
+      },
+    }) as PrismaClient;
   }
 
   const pool = new Pool({
     connectionString,
-    max: 20, // Maximum number of connections in pool
-    idleTimeoutMillis: 30000, // Close idle connections after 30s
-    connectionTimeoutMillis: 10000, // Fail if connection takes >10s
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
   });
   const adapter = new PrismaPg(pool);
 
