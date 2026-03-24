@@ -215,6 +215,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    // Black spots / accident concentration zones (high SEO value)
+    {
+      url: `${BASE_URL}/puntos-negros`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
     // Seasonal SEO pages
     {
       url: `${BASE_URL}/operaciones`,
