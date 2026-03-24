@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
+import { ARTICLES } from "@/app/blog/articles";
 
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
@@ -255,6 +256,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    // Blog index
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
   ];
 
   // City pages (NEW)
@@ -285,6 +293,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: "daily" as const,
     priority: 0.8,
+  }));
+
+  // Blog article pages (static, from ARTICLES registry)
+  const blogArticlePages: MetadataRoute.Sitemap = ARTICLES.map((article) => ({
+    url: `${BASE_URL}/blog/${article.slug}`,
+    lastModified: new Date(article.date),
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
   }));
 
   // Get all roads for dynamic pages
@@ -397,6 +413,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages,
+    ...blogArticlePages,
     ...cityPages,
     ...evCityPages,
     ...camarasCityPages,

@@ -73,6 +73,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
+  manifest: "/manifest.json",
+  themeColor: "#2563eb",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "trafico.live",
+  },
 };
 
 const organizationSchema = generateOrganizationSchema({
