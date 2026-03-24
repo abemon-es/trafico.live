@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { fetchDGTChargers } from "@/lib/parsers/chargers";
 import { applyRateLimit } from "@/lib/api-utils";
 
 // Cache the response for 60 seconds
@@ -103,10 +102,8 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // EV charger count from DGT API
-      fetchDGTChargers()
-        .then((chargers) => chargers.length)
-        .catch(() => 0),
+      // EV charger count from database (populated by charger-collector)
+      prisma.eVCharger.count(),
     ]);
 
     // Build severity breakdown
@@ -206,7 +203,7 @@ export async function GET(request: NextRequest) {
       incidents: incidentCount,
       incidentsChange,
       cameras: 512, // Static - would come from camera API
-      chargers: chargerCount, // Dynamic - from DGT API
+      chargers: chargerCount, // Dynamic - from database
       zbeZones: 156, // Static - would come from ZBE API
       lastUpdated: lastUpdated.toISOString(),
       source: "database",
