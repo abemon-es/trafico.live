@@ -7,6 +7,12 @@ export const dynamic = 'force-dynamic';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
+// Per-city live traffic pages ("tráfico [city] hoy" — 5-30K searches/mo each)
+const TRAFFIC_CITY_SLUGS = [
+  "madrid", "barcelona", "valencia", "sevilla", "malaga",
+  "zaragoza", "bilbao", "alicante", "murcia", "granada",
+];
+
 // ZBE cities with dedicated pages
 const ZBE_CITY_SLUGS = [
   "madrid", "barcelona", "granada", "malaga", "zaragoza",
@@ -254,6 +260,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    // EV charging cost calculator (high SEO value — "cuánto cuesta cargar coche eléctrico")
+    {
+      url: `${BASE_URL}/cuanto-cuesta-cargar`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
     // Best travel hour analysis (SEO — "mejor hora para viajar", "horas punta tráfico")
     {
       url: `${BASE_URL}/mejor-hora`,
@@ -336,6 +349,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
   ];
+
+  // Per-city live traffic pages (high SEO value — "tráfico madrid hoy", etc.)
+  const trafficCityPages: MetadataRoute.Sitemap = TRAFFIC_CITY_SLUGS.map((city) => ({
+    url: `${BASE_URL}/trafico/${city}`,
+    lastModified: now,
+    changeFrequency: "hourly" as const,
+    priority: 0.9,
+  }));
 
   // ZBE city pages (high SEO value — "ZBE Madrid", "zona bajas emisiones Barcelona", etc.)
   const zbeCityPages: MetadataRoute.Sitemap = ZBE_CITY_SLUGS.map((city) => ({
@@ -516,6 +537,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPages,
     ...blogArticlePages,
+    ...trafficCityPages,
     ...zbeCityPages,
     ...cityPages,
     ...evCityPages,
