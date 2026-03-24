@@ -1,5 +1,6 @@
 "use client";
 
+import useSWR from "swr";
 import {
   BarChart,
   Bar,
@@ -10,6 +11,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Color palette for charts
 const COLORS = [
@@ -124,11 +127,24 @@ function EmptyChart({ title, message }: { title: string; message: string }) {
 }
 
 export function BreakdownCharts({
-  communityData,
-  roadTypeData,
-  provinceData,
-  isLoading = false,
+  communityData: communityDataProp,
+  roadTypeData: roadTypeDataProp,
+  provinceData: provinceDataProp,
+  isLoading: isLoadingProp = false,
 }: BreakdownChartsProps) {
+  // Self-fetch when no props provided (e.g. homepage)
+  const needsFetch = !communityDataProp && !roadTypeDataProp && !provinceDataProp && !isLoadingProp;
+  const { data: apiData, isLoading: apiLoading } = useSWR(
+    needsFetch ? "/api/historico/provinces?days=30" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const provinceData = provinceDataProp ?? apiData?.data?.provinceRanking?.map((p: { name: string; count: number }) => ({ name: p.name, value: p.count })) ?? [];
+  const roadTypeData = roadTypeDataProp ?? apiData?.data?.roadTypeBreakdown?.map((r: { type: string; count: number }) => ({ name: r.type, value: r.count })) ?? [];
+  const communityData = communityDataProp ?? apiData?.data?.communityRanking?.map((c: { name: string; count: number }) => ({ name: c.name, value: c.count })) ?? [];
+  const isLoading = isLoadingProp || apiLoading;
+
   if (isLoading) {
     return (
       <>
