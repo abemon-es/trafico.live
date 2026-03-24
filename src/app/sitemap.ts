@@ -216,6 +216,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    // Route cost calculator (high SEO value — "calculadora ruta", "coste viaje coche")
+    {
+      url: `${BASE_URL}/calculadora`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     // Black spots / accident concentration zones (high SEO value)
     {
       url: `${BASE_URL}/puntos-negros`,
@@ -247,6 +254,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/explorar/infraestructura`,
       lastModified: now,
       changeFrequency: "daily",
+      priority: 0.7,
+    },
+    // API documentation
+    {
+      url: `${BASE_URL}/api-docs`,
+      lastModified: now,
+      changeFrequency: "monthly",
       priority: 0.7,
     },
     // About
