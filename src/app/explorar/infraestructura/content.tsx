@@ -53,12 +53,17 @@ interface ChargerData {
 interface ZBEData {
   id: string;
   name: string;
-  city: string;
-  province: string | null;
-  status: string;
-  startDate: string | null;
-  vehicleRestrictions: string[];
-  description: string | null;
+  cityName: string;
+  polygon: unknown;
+  centroid: unknown;
+  restrictions: Record<string, unknown>;
+  schedule: Record<string, unknown>;
+  activeAllYear: boolean;
+  fineAmount: number;
+  effectiveFrom: string | null;
+  effectiveUntil: string | null;
+  sourceUrl: string | null;
+  lastUpdated: string | null;
 }
 
 interface CamerasResponse {
@@ -84,8 +89,9 @@ interface ChargersResponse {
 
 interface ZBEResponse {
   success: boolean;
-  count: number;
-  zones: ZBEData[];
+  data: {
+    zones: ZBEData[];
+  };
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -175,7 +181,7 @@ export default function InfraestructuraContent() {
       case "cargadores":
         return [...new Set(chargersData?.chargers.map((c) => c.province).filter(Boolean))] as string[];
       case "zbe":
-        return [...new Set(zbeData?.zones.map((z) => z.province).filter(Boolean))] as string[];
+        return [...new Set(zbeData?.data?.zones.map((z) => z.cityName).filter(Boolean))] as string[];
       default:
         return [];
     }
@@ -448,12 +454,11 @@ export default function InfraestructuraContent() {
       {activeTab === "zbe" && !isLoading && zbeData && (
         <div>
           <p className="text-sm text-gray-500 mb-4">
-            {zbeData.count} zonas de bajas emisiones
+            {zbeData.data.zones.length} zonas de bajas emisiones
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {zbeData.zones
-              .filter((z) => filterBySearch(z.name) || filterBySearch(z.city))
-              .filter((z) => filterByProvince(z.province))
+            {zbeData.data.zones
+              .filter((z) => filterBySearch(z.name) || filterBySearch(z.cityName))
               .map((zone) => (
                 <div
                   key={zone.id}
@@ -462,38 +467,22 @@ export default function InfraestructuraContent() {
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-medium text-gray-900">{zone.name}</h3>
                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${
-                      ZBE_STATUS[zone.status]?.color || "bg-gray-100 text-gray-700"
+                      zone.activeAllYear ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
                     }`}>
-                      {ZBE_STATUS[zone.status]?.label || zone.status}
+                      {zone.activeAllYear ? "Activa" : "Temporal"}
                     </span>
                   </div>
                   <div className="space-y-1 text-sm">
                     <p className="text-gray-600">
-                      {zone.city}
-                      {zone.province && `, ${zone.province}`}
+                      {zone.cityName}
                     </p>
-                    {zone.startDate && (
+                    {zone.effectiveFrom && (
                       <p className="text-gray-500">
-                        Desde: {new Date(zone.startDate).toLocaleDateString("es-ES")}
+                        Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES")}
                       </p>
                     )}
-                    {zone.description && (
-                      <p className="text-gray-500 text-sm mt-2">{zone.description}</p>
-                    )}
-                    {zone.vehicleRestrictions.length > 0 && (
-                      <div className="mt-3">
-                        <p className="text-xs text-gray-500 mb-1">Restricciones:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {zone.vehicleRestrictions.map((restriction) => (
-                            <span
-                              key={restriction}
-                              className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded"
-                            >
-                              {restriction}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                    {zone.fineAmount > 0 && (
+                      <p className="text-gray-500 text-sm mt-1">Multa: {zone.fineAmount}€</p>
                     )}
                   </div>
                 </div>

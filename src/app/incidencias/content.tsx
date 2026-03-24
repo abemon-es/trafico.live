@@ -347,8 +347,8 @@ export function IncidenciasContent() {
           {/* Map container - always rendered to avoid race condition */}
           <div
             ref={mapContainer}
-            className={`w-full h-[600px] ${viewMode !== "map" || isLoading || error ? "hidden" : ""}`}
-            style={{ backgroundColor: "#f5f5f5" }}
+            className={`w-full h-[600px] relative ${viewMode !== "map" || isLoading || error ? "hidden" : ""}`}
+            style={{ backgroundColor: "#f5f5f5", overflow: "hidden" }}
           />
 
           {/* List view */}
