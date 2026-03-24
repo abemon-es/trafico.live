@@ -229,10 +229,10 @@ export default function InfraestructuraContent() {
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                 isActive ? "bg-blue-200 text-blue-800" : "bg-gray-100 text-gray-500"
               }`}>
-                {tab.id === "camaras" && (camerasData?.count || 0)}
-                {tab.id === "radares" && (radarsData?.count || 0)}
-                {tab.id === "cargadores" && (chargersData?.count || 0)}
-                {tab.id === "zbe" && (zbeData?.count || 0)}
+                {tab.id === "camaras" && (camerasData?.count ?? "...")}
+                {tab.id === "radares" && (radarsData?.count ?? "...")}
+                {tab.id === "cargadores" && (chargersData?.count ?? "...")}
+                {tab.id === "zbe" && (zbeData?.data?.zones?.length ?? "...")}
               </span>
             </button>
           );
