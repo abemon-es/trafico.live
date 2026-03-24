@@ -396,31 +396,52 @@ export default async function RoadDetailPage({ params }: PageProps) {
             {speedLimits.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-gray-600" />
-                  Límites de Velocidad
+                  <TrendingUp className="w-5 h-5 text-gray-600" />
+                  Límites de velocidad ({speedLimits.length})
                 </h2>
-                <div className="space-y-2">
-                  {speedLimits.slice(0, 10).map((sl, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm text-gray-700">
-                        km {Number(sl.kmStart).toFixed(1)} - km {Number(sl.kmEnd).toFixed(1)}
-                      </span>
-                      <span className="font-bold text-gray-900">{sl.speedLimit} km/h</span>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 text-gray-600">Km inicio</th>
+                        <th className="text-left py-2 text-gray-600">Km fin</th>
+                        <th className="text-left py-2 text-gray-600">Velocidad (km/h)</th>
+                        <th className="text-left py-2 text-gray-600">Dirección</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {speedLimits.slice(0, 20).map((sl) => {
+                        const speed = sl.speedLimit;
+                        const speedBadge =
+                          speed <= 60
+                            ? "bg-red-100 text-red-800"
+                            : speed <= 80
+                            ? "bg-amber-100 text-amber-800"
+                            : speed <= 100
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800";
+                        return (
+                          <tr key={sl.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-2">{Number(sl.kmStart).toFixed(1)}</td>
+                            <td className="py-2">{Number(sl.kmEnd).toFixed(1)}</td>
+                            <td className="py-2">
+                              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${speedBadge}`}>
+                                {speed}
+                              </span>
+                            </td>
+                            <td className="py-2 text-gray-500 text-xs">
+                              {sl.direction ?? "-"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                {speedLimits.length > 10 && (
-                  <div className="mt-3 flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
-                      Y {speedLimits.length - 10} tramos más...
-                    </p>
-                    <Link
-                      href={`/carreteras/${road.id}/estadisticas`}
-                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
-                    >
-                      Ver estadísticas <ExternalLink className="w-3 h-3" />
-                    </Link>
-                  </div>
+                {speedLimits.length > 20 && (
+                  <p className="text-sm text-gray-500 mt-3">
+                    Y {speedLimits.length - 20} tramos más...
+                  </p>
                 )}
               </div>
             )}

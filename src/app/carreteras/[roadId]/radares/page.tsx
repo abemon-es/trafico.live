@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
-import { Radar, ArrowLeft, MapPin, AlertCircle, Gauge } from "lucide-react";
+import { Radar, ArrowLeft, MapPin, AlertCircle, Gauge, TrendingUp } from "lucide-react";
 
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
@@ -78,15 +78,21 @@ export default async function RoadRadarsPage({ params }: PageProps) {
     notFound();
   }
 
-  const radars = await prisma.radar.findMany({
-    where: { roadNumber: road.id, isActive: true },
-    orderBy: { kmPoint: "asc" },
-  });
+  const [radars, speedLimits] = await Promise.all([
+    prisma.radar.findMany({
+      where: { roadNumber: road.id, isActive: true },
+      orderBy: { kmPoint: "asc" },
+    }),
+    prisma.speedLimit.findMany({
+      where: { roadNumber: road.id },
+      orderBy: { kmStart: "asc" },
+    }),
+  ]);
 
   // Stats
   const fixedRadars = radars.filter(r => r.type === "FIXED");
   const sectionRadars = radars.filter(r => r.type === "SECTION");
-  const speedLimits = [...new Set(radars.map(r => r.speedLimit).filter(Boolean))].sort((a, b) => (a || 0) - (b || 0));
+  const radarSpeedValues = [...new Set(radars.map(r => r.speedLimit).filter(Boolean))].sort((a, b) => (a || 0) - (b || 0));
 
   // Group by province
   const radarsByProvince = radars.reduce((acc, radar) => {
@@ -153,7 +159,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="text-2xl font-bold text-blue-600">
-              {speedLimits.length > 0 ? `${speedLimits[0]}-${speedLimits[speedLimits.length - 1]}` : "-"}
+              {radarSpeedValues.length > 0 ? `${radarSpeedValues[0]}-${radarSpeedValues[radarSpeedValues.length - 1]}` : "-"}
             </div>
             <div className="text-sm text-gray-600">Límites (km/h)</div>
           </div>
@@ -243,6 +249,56 @@ export default async function RoadRadarsPage({ params }: PageProps) {
           </div>
         )}
 
+        {/* Speed Limits */}
+        {speedLimits.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-gray-600" />
+              <h2 className="font-semibold text-gray-900">Límites de velocidad</h2>
+              <span className="text-gray-500 font-normal">({speedLimits.length} tramos)</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Km inicio</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Km fin</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Velocidad (km/h)</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 hidden md:table-cell">Dirección</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {speedLimits.map((sl) => {
+                    const speed = sl.speedLimit;
+                    const speedBadge =
+                      speed <= 60
+                        ? "bg-red-100 text-red-800"
+                        : speed <= 80
+                        ? "bg-amber-100 text-amber-800"
+                        : speed <= 100
+                        ? "bg-green-100 text-green-800"
+                        : "bg-blue-100 text-blue-800";
+                    return (
+                      <tr key={sl.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4">{Number(sl.kmStart).toFixed(1)}</td>
+                        <td className="py-3 px-4">{Number(sl.kmEnd).toFixed(1)}</td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${speedBadge}`}>
+                            {speed} km/h
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-500 hidden md:table-cell">
+                          {sl.direction ?? "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* SEO Content */}
         <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -269,7 +325,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
             <h3>Límites de velocidad</h3>
             <p>
               Los límites de velocidad en la {road.id} varían según el tramo, pudiendo oscilar entre
-              {speedLimits.length > 0 ? ` ${speedLimits[0]} y ${speedLimits[speedLimits.length - 1]} km/h` : " diferentes valores"}.
+              {radarSpeedValues.length > 0 ? ` ${radarSpeedValues[0]} y ${radarSpeedValues[radarSpeedValues.length - 1]} km/h` : " diferentes valores"}.
               Es importante respetar la señalización vertical de cada tramo, ya que puede haber
               restricciones adicionales por obras, condiciones meteorológicas o características de la vía.
             </p>

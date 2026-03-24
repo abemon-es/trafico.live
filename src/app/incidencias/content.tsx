@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import Link from "next/link";
 import {
   AlertTriangle,
   Loader2,
@@ -13,6 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   RefreshCw,
+  BarChart2,
 } from "lucide-react";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { IncidentFilters } from "@/components/incidents/IncidentFilters";
@@ -208,14 +210,23 @@ export function IncidenciasContent() {
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <AlertTriangle className="w-8 h-8 text-red-600" />
-            Incidencias de Tráfico
-          </h1>
-          <p className="mt-1 text-gray-600">
-            Mapa en tiempo real de incidencias en las carreteras españolas.
-          </p>
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-red-600" />
+              Incidencias de Tráfico
+            </h1>
+            <p className="mt-1 text-gray-600">
+              Mapa en tiempo real de incidencias en las carreteras españolas.
+            </p>
+          </div>
+          <Link
+            href="/incidencias/analytics"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-sm font-medium border border-blue-200 whitespace-nowrap self-start"
+          >
+            <BarChart2 className="w-4 h-4" />
+            Ver análisis histórico
+          </Link>
         </div>
 
         {/* Stats bar */}

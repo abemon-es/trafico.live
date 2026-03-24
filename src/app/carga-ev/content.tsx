@@ -14,6 +14,7 @@ import {
   Navigation,
   Gauge,
   Building2,
+  X,
 } from "lucide-react";
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 
@@ -23,28 +24,74 @@ interface ChargerData {
   address: string | null;
   city: string | null;
   province: string | null;
-  powerKw: number | null;
+  provinceName: string | null;
+  totalPowerKw: number;
   connectorTypes: string[];
-  operatorName: string | null;
-  isPublic: boolean;
-  latitude: number;
-  longitude: number;
+  operator: string | null;
+  is24h: boolean;
+  lat: number;
+  lng: number;
 }
 
 interface ChargersResponse {
-  success: boolean;
   count: number;
   chargers: ChargerData[];
+  provinces: string[];
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Power level categories
+// Power level categories — aligned with the task spec 4-band split
 const POWER_LEVELS = [
-  { id: "slow", label: "Lenta (<22 kW)", min: 0, max: 22, color: "bg-blue-100 text-blue-700" },
-  { id: "fast", label: "Rápida (22-50 kW)", min: 22, max: 50, color: "bg-amber-100 text-amber-700" },
-  { id: "ultra", label: "Ultra-rápida (>50 kW)", min: 50, max: 9999, color: "bg-green-100 text-green-700" },
+  {
+    id: "slow",
+    label: "Lenta",
+    sublabel: "<22 kW",
+    min: 0,
+    max: 22,
+    color: "bg-blue-100 text-blue-700",
+    activeColor: "bg-blue-100 text-blue-700 ring-2 ring-blue-500",
+  },
+  {
+    id: "semi",
+    label: "Semi-rápida",
+    sublabel: "22–50 kW",
+    min: 22,
+    max: 50,
+    color: "bg-amber-100 text-amber-700",
+    activeColor: "bg-amber-100 text-amber-700 ring-2 ring-amber-500",
+  },
+  {
+    id: "fast",
+    label: "Rápida",
+    sublabel: "50–150 kW",
+    min: 50,
+    max: 150,
+    color: "bg-orange-100 text-orange-700",
+    activeColor: "bg-orange-100 text-orange-700 ring-2 ring-orange-500",
+  },
+  {
+    id: "ultra",
+    label: "Ultra-rápida",
+    sublabel: ">150 kW",
+    min: 150,
+    max: 99999,
+    color: "bg-green-100 text-green-700",
+    activeColor: "bg-green-100 text-green-700 ring-2 ring-green-500",
+  },
 ];
+
+// Human-readable labels for ChargerType enum values
+const CONNECTOR_LABELS: Record<string, string> = {
+  AC_TYPE1: "Type 1 (AC)",
+  AC_TYPE2: "Type 2 (AC)",
+  DC_CHADEMO: "CHAdeMO",
+  DC_CCS: "CCS",
+  DC_CCS2: "CCS2",
+  TESLA: "Tesla",
+  SCHUKO: "Schuko",
+  OTHER: "Otro",
+};
 
 // Popular cities for quick access
 const POPULAR_CITIES = [
@@ -63,6 +110,8 @@ export default function CargaEVContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [provinceFilter, setProvinceFilter] = useState("");
   const [powerFilter, setPowerFilter] = useState("");
+  const [connectorFilter, setConnectorFilter] = useState<string[]>([]);
+  const [operatorFilter, setOperatorFilter] = useState("");
 
   // Debounce search
   useEffect(() => {
@@ -76,21 +125,51 @@ export default function CargaEVContent() {
     { revalidateOnFocus: false }
   );
 
-  // Get unique provinces
-  const provinces = data?.chargers
-    ? [...new Set(data.chargers.map((c) => c.province).filter(Boolean))].sort()
+  // Get unique province names (API already returns provinces array)
+  const provinces = data?.provinces ?? [];
+
+  // Get distinct connector types present in the data
+  const availableConnectors = data?.chargers
+    ? [...new Set(data.chargers.flatMap((c) => c.connectorTypes))].sort()
     : [];
 
-  // Stats
+  // Get distinct operators (sorted, non-empty)
+  const operators = data?.chargers
+    ? [...new Set(data.chargers.map((c) => c.operator).filter(Boolean))].sort() as string[]
+    : [];
+
+  // Stats per power band
   const stats = data?.chargers
     ? {
         total: data.count,
-        slow: data.chargers.filter((c) => (c.powerKw || 0) < 22).length,
-        fast: data.chargers.filter((c) => (c.powerKw || 0) >= 22 && (c.powerKw || 0) < 50).length,
-        ultra: data.chargers.filter((c) => (c.powerKw || 0) >= 50).length,
-        operators: [...new Set(data.chargers.map((c) => c.operatorName).filter(Boolean))].length,
+        byBand: POWER_LEVELS.map((level) => ({
+          ...level,
+          count: data.chargers.filter(
+            (c) => c.totalPowerKw >= level.min && c.totalPowerKw < level.max
+          ).length,
+        })),
+        operators: operators.length,
       }
     : null;
+
+  // Toggle a connector type in the multi-select
+  const toggleConnector = (type: string) => {
+    setConnectorFilter((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const hasActiveFilters =
+    searchTerm || provinceFilter || powerFilter || connectorFilter.length > 0 || operatorFilter;
+
+  const clearAllFilters = () => {
+    setSearchInput("");
+    setSearchTerm("");
+    setProvinceFilter("");
+    setPowerFilter("");
+    setConnectorFilter([]);
+    setOperatorFilter("");
+  };
 
   // Filter chargers
   const filteredChargers = data?.chargers?.filter((charger) => {
@@ -100,21 +179,31 @@ export default function CargaEVContent() {
       const matches =
         charger.name?.toLowerCase().includes(search) ||
         charger.city?.toLowerCase().includes(search) ||
-        charger.address?.toLowerCase().includes(search);
+        charger.address?.toLowerCase().includes(search) ||
+        charger.operator?.toLowerCase().includes(search);
       if (!matches) return false;
     }
 
-    // Province filter
-    if (provinceFilter && charger.province !== provinceFilter) return false;
+    // Province filter (by provinceName)
+    if (provinceFilter && charger.provinceName !== provinceFilter) return false;
 
     // Power filter
     if (powerFilter) {
       const level = POWER_LEVELS.find((l) => l.id === powerFilter);
       if (level) {
-        const power = charger.powerKw || 0;
+        const power = charger.totalPowerKw;
         if (power < level.min || power >= level.max) return false;
       }
     }
+
+    // Connector type filter (charger must have ALL selected types)
+    if (connectorFilter.length > 0) {
+      const hasAll = connectorFilter.every((type) => charger.connectorTypes.includes(type));
+      if (!hasAll) return false;
+    }
+
+    // Operator filter
+    if (operatorFilter && charger.operator !== operatorFilter) return false;
 
     return true;
   });
@@ -153,7 +242,9 @@ export default function CargaEVContent() {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <Gauge className="w-6 h-6 text-green-600 mb-2" />
             <h3 className="font-medium text-gray-900">Carga rápida</h3>
-            <p className="text-xs text-gray-500 mt-1">{stats?.ultra || 0} puntos +50kW</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {stats?.byBand.find((b) => b.id === "fast")?.count ?? 0} puntos 50–150 kW
+            </p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -169,27 +260,24 @@ export default function CargaEVContent() {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Power Band Stats — clickable to filter */}
         {stats && (
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            {POWER_LEVELS.map((level) => {
-              const count =
-                level.id === "slow" ? stats.slow : level.id === "fast" ? stats.fast : stats.ultra;
-              return (
-                <button
-                  key={level.id}
-                  onClick={() => setPowerFilter(powerFilter === level.id ? "" : level.id)}
-                  className={`rounded-lg p-4 text-left transition-all ${
-                    powerFilter === level.id
-                      ? "ring-2 ring-green-500 " + level.color
-                      : "bg-white border border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <p className="text-2xl font-bold text-gray-900">{count}</p>
-                  <p className="text-sm text-gray-600">{level.label}</p>
-                </button>
-              );
-            })}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            {stats.byBand.map((band) => (
+              <button
+                key={band.id}
+                onClick={() => setPowerFilter(powerFilter === band.id ? "" : band.id)}
+                className={`rounded-lg p-4 text-left transition-all ${
+                  powerFilter === band.id
+                    ? band.activeColor
+                    : "bg-white border border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <p className="text-2xl font-bold text-gray-900">{band.count}</p>
+                <p className="text-sm font-medium text-gray-700">{band.label}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{band.sublabel}</p>
+              </button>
+            ))}
           </div>
         )}
 
@@ -210,48 +298,93 @@ export default function CargaEVContent() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="relative flex-1 min-w-[200px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, ciudad o dirección..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 space-y-4">
+          {/* Row 1: search + province + operator */}
+          <div className="flex flex-wrap gap-3 items-center">
+            {/* Search */}
+            <div className="relative flex-1 min-w-[180px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Nombre, ciudad, operador..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
 
-          {provinces.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+            {/* Province */}
+            {provinces.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
+                <select
+                  value={provinceFilter}
+                  onChange={(e) => setProvinceFilter(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Todas las provincias</option>
+                  {provinces.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Operator */}
+            {operators.length > 0 && (
               <select
-                value={provinceFilter}
-                onChange={(e) => setProvinceFilter(e.target.value)}
+                value={operatorFilter}
+                onChange={(e) => setOperatorFilter(e.target.value)}
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                <option value="">Todas las provincias</option>
-                {(provinces as string[]).map((p) => (
-                  <option key={p} value={p}>
-                    {p}
+                <option value="">Todos los operadores</option>
+                {operators.map((op) => (
+                  <option key={op} value={op}>
+                    {op}
                   </option>
                 ))}
               </select>
-            </div>
-          )}
+            )}
 
-          {(searchTerm || provinceFilter || powerFilter) && (
-            <button
-              onClick={() => {
-                setSearchInput("");
-                setSearchTerm("");
-                setProvinceFilter("");
-                setPowerFilter("");
-              }}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Limpiar filtros
-            </button>
+            {/* Clear */}
+            {hasActiveFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 ml-auto"
+              >
+                <X className="w-3.5 h-3.5" />
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+
+          {/* Row 2: Connector type multi-select */}
+          {availableConnectors.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                Tipo de conector
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {availableConnectors.map((type) => {
+                  const active = connectorFilter.includes(type);
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => toggleConnector(type)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${
+                        active
+                          ? "bg-green-600 text-white border-green-600"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-green-400 hover:text-green-700"
+                      }`}
+                    >
+                      {CONNECTOR_LABELS[type] ?? type}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 
@@ -259,7 +392,7 @@ export default function CargaEVContent() {
         {!isLoading && filteredChargers && (
           <p className="text-sm text-gray-500 mb-4">
             {filteredChargers.length} puntos de carga
-            {(searchTerm || provinceFilter || powerFilter) && " (filtrados)"}
+            {hasActiveFilters && " (filtrados)"}
           </p>
         )}
 
@@ -285,17 +418,19 @@ export default function CargaEVContent() {
                   <h3 className="font-medium text-gray-900 text-sm flex-1 pr-2">
                     {charger.name}
                   </h3>
-                  {charger.powerKw && (
+                  {charger.totalPowerKw > 0 && (
                     <span
-                      className={`text-sm font-bold px-2 py-0.5 rounded ${
-                        charger.powerKw >= 50
+                      className={`text-sm font-bold px-2 py-0.5 rounded shrink-0 ${
+                        charger.totalPowerKw >= 150
                           ? "bg-green-100 text-green-700"
-                          : charger.powerKw >= 22
+                          : charger.totalPowerKw >= 50
+                          ? "bg-orange-100 text-orange-700"
+                          : charger.totalPowerKw >= 22
                           ? "bg-amber-100 text-amber-700"
                           : "bg-blue-100 text-blue-700"
                       }`}
                     >
-                      {charger.powerKw} kW
+                      {charger.totalPowerKw} kW
                     </span>
                   )}
                 </div>
@@ -306,10 +441,12 @@ export default function CargaEVContent() {
                   )}
                   <p className="text-gray-500">
                     {charger.city}
-                    {charger.province && `, ${charger.province}`}
+                    {charger.provinceName && `, ${charger.provinceName}`}
                   </p>
-                  {charger.operatorName && (
-                    <p className="text-gray-400">Operador: {charger.operatorName}</p>
+                  {charger.operator && (
+                    <p className="text-gray-400 truncate">
+                      <span className="font-medium">Operador:</span> {charger.operator}
+                    </p>
                   )}
                 </div>
 
@@ -318,16 +455,20 @@ export default function CargaEVContent() {
                     {charger.connectorTypes.map((type) => (
                       <span
                         key={type}
-                        className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded"
+                        className={`text-xs px-2 py-0.5 rounded transition-colors ${
+                          connectorFilter.includes(type)
+                            ? "bg-green-600 text-white"
+                            : "bg-green-50 text-green-600"
+                        }`}
                       >
-                        {type}
+                        {CONNECTOR_LABELS[type] ?? type}
                       </span>
                     ))}
                   </div>
                 )}
 
                 <a
-                  href={`https://www.google.com/maps?q=${charger.latitude},${charger.longitude}`}
+                  href={`https://www.google.com/maps?q=${charger.lat},${charger.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-3 flex items-center gap-1 text-xs text-green-600 hover:underline"
