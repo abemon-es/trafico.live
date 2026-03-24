@@ -7,12 +7,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { TrendingUp, TrendingDown, Minus, MapPin, Clock, Fuel, ChevronRight, Camera, Radar, Truck, Route } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
-import nextDynamic from "next/dynamic";
-
-const FuelPriceChart = nextDynamic(
-  () => import("@/components/charts/FuelPriceChart").then((m) => m.FuelPriceChart),
-  { ssr: false }
-);
+import { FuelPriceChart } from "@/components/charts/FuelPriceChart";
 
 export const dynamic = "force-dynamic";
 
