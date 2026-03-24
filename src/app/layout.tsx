@@ -51,6 +51,14 @@ export const metadata: Metadata = {
     siteName: "trafico.live",
     locale: "es_ES",
     type: "website",
+    images: [
+      {
+        url: `${BASE_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "trafico.live — Tráfico España en Tiempo Real",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
