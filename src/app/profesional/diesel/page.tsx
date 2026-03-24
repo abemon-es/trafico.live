@@ -14,6 +14,7 @@ import {
   TrendingDown,
   Truck,
 } from "lucide-react";
+import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 
 interface GasStation {
   id: string;
@@ -322,6 +323,9 @@ export default function DieselPage() {
             <p className="text-gray-500">Prueba a cambiar los filtros de búsqueda</p>
           </div>
         )}
+
+        {/* Affiliate Widget */}
+        <AffiliateWidget type="fuel-card" className="mt-8" />
       </div>
     </div>
   );

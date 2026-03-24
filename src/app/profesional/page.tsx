@@ -11,6 +11,7 @@ import {
   Clock,
   Shield,
 } from "lucide-react";
+import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 
 export const metadata: Metadata = {
   title: "Portal Profesional - Transportistas",
@@ -151,6 +152,12 @@ export default function ProfesionalPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* Affiliate Widgets */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <AffiliateWidget type="insurance" />
+          <AffiliateWidget type="fuel-card" />
         </div>
 
         {/* Related Links */}

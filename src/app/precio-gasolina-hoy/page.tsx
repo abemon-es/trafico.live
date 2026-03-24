@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { TrendingUp, TrendingDown, Minus, MapPin, Clock, Fuel, ChevronRight, Camera, Radar, Truck, Route } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 
 export const dynamic = "force-dynamic";
 
@@ -622,6 +623,8 @@ export default async function PrecioGasolinaHoyPage() {
             </div>
           </div>
         </div>
+
+        <AffiliateWidget type="insurance" className="mb-8" />
 
         <RelatedLinks
           links={[

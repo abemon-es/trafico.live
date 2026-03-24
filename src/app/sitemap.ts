@@ -364,6 +364,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // ---------------------------------------------------------------------------
+  // GAS STATION DETAIL PAGES — 11,742+ individual station URLs
+  // ---------------------------------------------------------------------------
+  // Each station has a URL at /gasolineras/terrestres/[id] with full SEO
+  // metadata (JSON-LD GasStation+LocalBusiness schema, canonical, OG tags)
+  // and a "5 alternativas más baratas" section for internal linking depth.
+  //
+  // WHY NOT INCLUDED HERE:
+  // A single sitemap.xml file must stay under 50,000 URLs and 50 MB (Google
+  // limit). With 11,742+ stations, plus roads, cameras, and other pages, the
+  // total exceeds the per-file limit. Including all stations here would also
+  // bloat this sitemap to the point that crawl budget is wasted on it.
+  //
+  // NEXT ITERATION — Sitemap Index:
+  // Implement a sitemap index at /sitemap-index.xml that references:
+  //   - /sitemap/core.xml        → static + road + city pages (this file)
+  //   - /sitemap/gasolineras-1.xml → stations 1–10,000 (by lastPriceUpdate)
+  //   - /sitemap/gasolineras-2.xml → stations 10,001–end
+  //
+  // Each per-station sitemap entry will use:
+  //   url: `${BASE_URL}/gasolineras/terrestres/${station.id}`
+  //   lastModified: station.lastPriceUpdate   ← daily price updates = fresh signal
+  //   changeFrequency: "daily"
+  //   priority: 0.65
+  //
+  // The sitemap index route should live at:
+  //   /src/app/sitemap-index.xml/route.ts
+  // and the per-shard sitemaps at:
+  //   /src/app/sitemap/gasolineras-[shard]/route.ts
+  // ---------------------------------------------------------------------------
+
   return [
     ...staticPages,
     ...cityPages,

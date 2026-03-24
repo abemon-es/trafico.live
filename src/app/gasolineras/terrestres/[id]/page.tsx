@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus, ChevronRight, Tag } from "lucide-react";
 import { PriceHistoryChart, StationLocationMap, PriceComparisonCard, StationRanking } from "@/components/gas-stations";
 
 // Force dynamic rendering - database not accessible during build
@@ -12,6 +12,8 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const station = await prisma.gasStation.findUnique({ where: { id } });
@@ -20,9 +22,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Gasolinera no encontrada" };
   }
 
+  const brandName = station.name.split(" ")[0];
+  const locality = station.locality || station.municipality || station.provinceName || "España";
+  const province = station.provinceName || "";
+  const dieselPrice = station.priceGasoleoA ? `${Number(station.priceGasoleoA).toFixed(3)}€/L` : "N/D";
+  const gas95Price = station.priceGasolina95E5 ? `${Number(station.priceGasolina95E5).toFixed(3)}€/L` : "N/D";
+  const schedule = station.is24h ? "Abierta 24h" : station.schedule || "Consultar horario";
+  const canonicalUrl = `${BASE_URL}/gasolineras/terrestres/${id}`;
+
+  // Pick the most relevant fuel and price for the title
+  const leadFuelLabel = station.priceGasoleoA ? "Gasóleo A" : station.priceGasolina95E5 ? "Gasolina 95" : "Combustible";
+  const leadFuelPrice = station.priceGasoleoA
+    ? `${Number(station.priceGasoleoA).toFixed(3)}`
+    : station.priceGasolina95E5
+    ? `${Number(station.priceGasolina95E5).toFixed(3)}`
+    : null;
+
+  const title = leadFuelPrice
+    ? `Gasolinera ${brandName} en ${locality} — Precio ${leadFuelLabel} ${leadFuelPrice}€/L Hoy | trafico.live`
+    : `Gasolinera ${brandName} en ${locality} — Precios Combustible Hoy | trafico.live`;
+
+  const description = `Precios actualizados de la gasolinera ${station.name} en ${locality}${province && province !== locality ? `, ${province}` : ""}. Gasóleo A: ${dieselPrice}. Gasolina 95: ${gas95Price}. Horario: ${schedule}. Las 5 alternativas más baratas cerca.`;
+
   return {
-    title: `${station.name} - Precios Combustible | Trafico Espana`,
-    description: `Precios de combustible en ${station.name}, ${station.locality}. Gasoleo A: ${station.priceGasoleoA?.toFixed(3) || "N/D"}, Gasolina 95: ${station.priceGasolina95E5?.toFixed(3) || "N/D"}`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "website",
+      locale: "es_ES",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
   };
 }
 
@@ -41,6 +80,28 @@ export default async function StationDetailPage({ params }: Props) {
   if (!station) {
     notFound();
   }
+
+  // 5 cheaper alternatives in same province, ordered by lowest diesel price
+  const cheaperAlternatives = await prisma.gasStation.findMany({
+    where: {
+      id: { not: station.id },
+      province: station.province ?? undefined,
+      priceGasoleoA: station.priceGasoleoA
+        ? { lt: station.priceGasoleoA }
+        : undefined,
+    },
+    orderBy: { priceGasoleoA: "asc" },
+    take: 5,
+    select: {
+      id: true,
+      name: true,
+      locality: true,
+      provinceName: true,
+      priceGasoleoA: true,
+      priceGasolina95E5: true,
+      is24h: true,
+    },
+  });
 
   const formatPrice = (price: unknown) => {
     if (price == null) return "N/D";
@@ -79,6 +140,68 @@ export default async function StationDetailPage({ params }: Props) {
   // Get brand from name (usually first word or recognizable brand)
   const brandName = station.name.split(" ")[0].toUpperCase();
 
+  // Build JSON-LD structured data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": ["GasStation", "LocalBusiness"],
+    name: station.name,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: station.address || undefined,
+      postalCode: station.postalCode || undefined,
+      addressLocality: station.locality || station.municipality || undefined,
+      addressRegion: station.provinceName || undefined,
+      addressCountry: "ES",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: Number(station.latitude),
+      longitude: Number(station.longitude),
+    },
+    ...(station.schedule ? { openingHours: station.schedule } : {}),
+    ...(station.is24h ? { openingHours: "Mo-Su 00:00-24:00" } : {}),
+    priceRange: "€",
+    url: `${BASE_URL}/gasolineras/terrestres/${station.id}`,
+    ...(station.priceGasoleoA || station.priceGasolina95E5
+      ? {
+          offers: [
+            ...(station.priceGasoleoA
+              ? [
+                  {
+                    "@type": "Offer",
+                    name: "Gasóleo A",
+                    price: Number(station.priceGasoleoA).toFixed(3),
+                    priceCurrency: "EUR",
+                    priceSpecification: {
+                      "@type": "UnitPriceSpecification",
+                      price: Number(station.priceGasoleoA).toFixed(3),
+                      priceCurrency: "EUR",
+                      unitCode: "LTR",
+                    },
+                  },
+                ]
+              : []),
+            ...(station.priceGasolina95E5
+              ? [
+                  {
+                    "@type": "Offer",
+                    name: "Gasolina 95 E5",
+                    price: Number(station.priceGasolina95E5).toFixed(3),
+                    priceCurrency: "EUR",
+                    priceSpecification: {
+                      "@type": "UnitPriceSpecification",
+                      price: Number(station.priceGasolina95E5).toFixed(3),
+                      priceCurrency: "EUR",
+                      unitCode: "LTR",
+                    },
+                  },
+                ]
+              : []),
+          ],
+        }
+      : {}),
+  };
+
   // All fuel prices for display
   const mainFuels = [
     { key: "gasoleoA", label: "Gasoleo A", price: station.priceGasoleoA, color: "amber", trend: dieselTrend },
@@ -106,14 +229,30 @@ export default async function StationDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href="/gasolineras" className="hover:text-gray-700">Gasolineras</Link>
-        <span>/</span>
-        <Link href="/gasolineras/terrestres" className="hover:text-gray-700">Terrestres</Link>
-        <span>/</span>
-        <span className="text-gray-900 truncate max-w-[200px]">{station.name}</span>
-      </div>
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Breadcrumb — Inicio > Combustible > Terrestres > {name} */}
+      <nav aria-label="Breadcrumb" className="mb-4">
+        <ol className="flex items-center gap-1 text-sm text-gray-500 flex-wrap">
+          <li>
+            <Link href="/" className="hover:text-gray-700 transition-colors">Inicio</Link>
+          </li>
+          <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
+          <li>
+            <Link href="/gasolineras" className="hover:text-gray-700 transition-colors">Combustible</Link>
+          </li>
+          <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
+          <li>
+            <Link href="/gasolineras/terrestres" className="hover:text-gray-700 transition-colors">Terrestres</Link>
+          </li>
+          <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
+          <li className="text-gray-900 font-medium truncate max-w-[200px]" aria-current="page">{station.name}</li>
+        </ol>
+      </nav>
 
       {/* Back button */}
       <Link
@@ -306,6 +445,68 @@ export default async function StationDetailPage({ params }: Props) {
           defaultFuel={station.priceGasoleoA ? "gasoleoA" : "gasolina95"}
         />
       </div>
+
+      {/* 5 alternativas más baratas */}
+      {cheaperAlternatives.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Tag className="w-4 h-4 text-green-600" />
+            <h2 className="text-lg font-semibold text-gray-900">
+              {cheaperAlternatives.length === 1
+                ? "1 alternativa más barata en la provincia"
+                : `${cheaperAlternatives.length} alternativas más baratas en la provincia`}
+            </h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {cheaperAlternatives.map((alt, index) => {
+              const altDiesel = alt.priceGasoleoA ? Number(alt.priceGasoleoA) : null;
+              const altGas95 = alt.priceGasolina95E5 ? Number(alt.priceGasolina95E5) : null;
+              const currentDiesel = station.priceGasoleoA ? Number(station.priceGasoleoA) : null;
+              const saving = altDiesel && currentDiesel ? currentDiesel - altDiesel : null;
+
+              return (
+                <Link
+                  key={alt.id}
+                  href={`/gasolineras/terrestres/${alt.id}`}
+                  className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-6 h-6 bg-green-100 text-green-700 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 truncate">{alt.name}</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {alt.locality || alt.provinceName}
+                        {alt.is24h && " · 24h"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                    <div className="text-right">
+                      {altDiesel && (
+                        <p className="font-bold text-amber-700">{altDiesel.toFixed(3)} €</p>
+                      )}
+                      {altGas95 && !altDiesel && (
+                        <p className="font-bold text-blue-700">{altGas95.toFixed(3)} €</p>
+                      )}
+                      {saving && saving > 0 && (
+                        <p className="text-xs text-green-600 font-medium">
+                          -{saving.toFixed(3)} €/L
+                        </p>
+                      )}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <p className="text-xs text-gray-400 mt-3">
+            Precios Gasóleo A. Gasolineras en la misma provincia ordenadas de menor a mayor precio.
+          </p>
+        </div>
+      )}
 
       {/* Price History Chart */}
       {chartData.length > 1 && (

@@ -15,6 +15,7 @@ import {
   Gauge,
   Building2,
 } from "lucide-react";
+import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 
 interface ChargerData {
   id: string;
@@ -370,6 +371,9 @@ export default function CargaEVContent() {
             </p>
           </div>
         )}
+
+        {/* Affiliate Widget */}
+        <AffiliateWidget type="ev-charger" className="mt-8" />
       </div>
     </div>
   );
