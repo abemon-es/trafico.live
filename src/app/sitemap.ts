@@ -215,6 +215,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    // Seasonal SEO pages
+    {
+      url: `${BASE_URL}/operaciones`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/restricciones`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
     // Explore
     {
       url: `${BASE_URL}/explorar`,
