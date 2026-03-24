@@ -17,8 +17,9 @@ export async function GET(request: NextRequest) {
     startDate.setDate(startDate.getDate() - days);
 
     // Aggregate V16 events by province
+    // Note: province stores the name directly, provinceName is often null
     const byProvince = await prisma.v16BeaconEvent.groupBy({
-      by: ["province", "provinceName"],
+      by: ["province"],
       where: {
         firstSeenAt: { gte: startDate },
         province: { not: null },
@@ -29,18 +30,18 @@ export async function GET(request: NextRequest) {
 
     // Sort by count descending
     const provinceRanking = byProvince
-      .filter((p) => p.province && p.provinceName)
+      .filter((p) => p.province)
       .map((p) => ({
         code: p.province as string,
-        name: p.provinceName as string,
+        name: p.province as string,
         count: p._count.id,
         avgDurationSecs: p._avg.durationSecs ? Math.round(p._avg.durationSecs) : null,
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Aggregate by community
+    // Aggregate by community (use community field, fallback to communityName)
     const byCommunity = await prisma.v16BeaconEvent.groupBy({
-      by: ["community", "communityName"],
+      by: ["community"],
       where: {
         firstSeenAt: { gte: startDate },
         community: { not: null },
@@ -49,10 +50,10 @@ export async function GET(request: NextRequest) {
     });
 
     const communityRanking = byCommunity
-      .filter((c) => c.community && c.communityName)
+      .filter((c) => c.community)
       .map((c) => ({
         code: c.community as string,
-        name: c.communityName as string,
+        name: c.community as string,
         count: c._count.id,
       }))
       .sort((a, b) => b.count - a.count);
