@@ -7,6 +7,10 @@ import {
   getProvincesForCommunity,
   PROVINCE_TO_COMMUNITY,
 } from "@/lib/geo/province-mapping";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:cameras";
+const CACHE_TTL = 3600; // 1 hour — cameras rarely change
 
 // Cache the response for 5 minutes
 export const revalidate = 300;
@@ -40,6 +44,15 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const filterProvince = searchParams.get("province");
     const filterCommunity = searchParams.get("community");
+
+    // Build a deterministic cache key from query params
+    const paramStr = new URLSearchParams(
+      [...searchParams.entries()].sort(([a], [b]) => a.localeCompare(b))
+    ).toString();
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+
+    const cached = await getFromCache<CamerasResponse>(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // Try to fetch from database first
     let cameras: CameraResponseItem[] = [];
@@ -141,6 +154,7 @@ export async function GET(request: NextRequest) {
       source,
     };
 
+    await setInCache(cacheKey, response, CACHE_TTL);
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching cameras:", error);

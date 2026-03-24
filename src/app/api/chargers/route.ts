@@ -4,6 +4,10 @@ import {
   getProvincesForCommunity,
   PROVINCE_TO_COMMUNITY,
 } from "@/lib/geo/province-mapping";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:chargers";
+const CACHE_TTL = 3600; // 1 hour — charger locations rarely change
 
 // Cache the response for 5 minutes
 export const revalidate = 300;
@@ -42,6 +46,16 @@ interface ChargersResponse {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
+
+    // Build a deterministic cache key from query params
+    const paramStr = new URLSearchParams(
+      [...searchParams.entries()].sort(([a], [b]) => a.localeCompare(b))
+    ).toString();
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+
+    const cached = await getFromCache<ChargersResponse>(cacheKey);
+    if (cached) return NextResponse.json(cached);
+
     const filterProvince = searchParams.get("province");
     const filterCommunity = searchParams.get("community");
     const filterCity = searchParams.get("city");
@@ -160,6 +174,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    await setInCache(cacheKey, response, CACHE_TTL);
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching chargers:", error);

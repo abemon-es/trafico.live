@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:gas-stations:cheapest";
+const CACHE_TTL = 300; // 5 minutes
 
 // Cache for 5 minutes
 export const revalidate = 300;
@@ -11,6 +15,15 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams;
+
+    // Build a deterministic cache key from query params
+    const paramStr = new URLSearchParams(
+      [...searchParams.entries()].sort(([a], [b]) => a.localeCompare(b))
+    ).toString();
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // Filters
     const province = searchParams.get("province");
@@ -95,7 +108,7 @@ export async function GET(request: NextRequest) {
         is24h: s.is24h,
       }));
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       cheapest: {
         gasoleoA: transform(cheapestDiesel),
@@ -103,7 +116,10 @@ export async function GET(request: NextRequest) {
         gasolina98E5: transform(cheapestGas98),
         glp: transform(cheapestGLP),
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error fetching cheapest gas stations:", error);
     return NextResponse.json(

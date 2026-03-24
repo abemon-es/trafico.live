@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { IncidentType, TrafficIncident } from "@prisma/client";
 import { applyRateLimit, addSecurityHeaders } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:incidents";
+const CACHE_TTL = 60; // 1 minute
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
@@ -79,6 +83,15 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams;
+
+    // Build a deterministic cache key from query params
+    const paramStr = new URLSearchParams(
+      [...searchParams.entries()].sort(([a], [b]) => a.localeCompare(b))
+    ).toString();
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // Filter params (comma-separated values) with validation
     const effectFilter = searchParams.get("effect")
@@ -203,7 +216,7 @@ export async function GET(request: NextRequest) {
         )
       : new Date();
 
-    return NextResponse.json({
+    const responseData = {
       count: incidents.length,
       totalCount,
       lastUpdated: latestFetch.toISOString(),
@@ -234,7 +247,10 @@ export async function GET(request: NextRequest) {
         description: i.description,
         source: i.source,
       })),
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error fetching incidents from database:", error);
     return NextResponse.json(

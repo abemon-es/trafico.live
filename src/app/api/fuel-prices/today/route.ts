@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY = "api:fuel-prices:today";
+const CACHE_TTL = 300; // 5 minutes
 
 // Cache for 10 minutes
 export const revalidate = 600;
 
 export async function GET(request: NextRequest) {
   try {
+    const cached = await getFromCache(CACHE_KEY);
+    if (cached) return NextResponse.json(cached);
+
     // Get today's date (start of day)
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -85,7 +92,7 @@ export async function GET(request: NextRequest) {
       "17": "La Rioja", "18": "Ceuta", "19": "Melilla",
     };
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       date: today.toISOString().split("T")[0],
       national: nationalStats
@@ -140,7 +147,10 @@ export async function GET(request: NextRequest) {
           stationCount: s.stationCount,
         };
       }),
-    });
+    };
+
+    await setInCache(CACHE_KEY, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error fetching fuel prices:", error);
     return NextResponse.json(

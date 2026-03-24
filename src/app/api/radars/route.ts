@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:radars";
+const CACHE_TTL = 3600; // 1 hour — radars are semi-static
 
 // Cache the response for 1 hour (radars are semi-static)
 export const revalidate = 3600;
@@ -35,6 +39,15 @@ export async function GET(request: NextRequest) {
     const filterProvince = searchParams.get("province");
     const filterRoad = searchParams.get("road");
     const filterType = searchParams.get("type");
+
+    // Build a deterministic cache key from query params
+    const paramStr = new URLSearchParams(
+      [...searchParams.entries()].sort(([a], [b]) => a.localeCompare(b))
+    ).toString();
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+
+    const cached = await getFromCache<RadarsResponse>(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // Build where clause
     const whereClause: Record<string, unknown> = { isActive: true };
@@ -112,6 +125,7 @@ export async function GET(request: NextRequest) {
       source: "database",
     };
 
+    await setInCache(cacheKey, response, CACHE_TTL);
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching radars:", error);
