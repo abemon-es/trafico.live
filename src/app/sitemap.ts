@@ -82,6 +82,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 0.8,
     },
+    // Radares (high-value SEO page)
+    {
+      url: `${BASE_URL}/radares`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
     // Statistics
     {
       url: `${BASE_URL}/estadisticas`,
@@ -246,6 +253,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // Camera city pages — high SEO value ("cámaras tráfico madrid", etc.)
+  const camarasCitySlugsList = [
+    "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
+    "malaga", "murcia", "bilbao", "alicante", "cordoba",
+    "valladolid", "granada", "oviedo", "santander", "pamplona",
+    "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
+  ];
+  const camarasCityPages: MetadataRoute.Sitemap = camarasCitySlugsList.map((city) => ({
+    url: `${BASE_URL}/camaras/${city}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }));
+
   // Get all roads for dynamic pages
   const roads = await prisma.road.findMany({
     select: { id: true, type: true },
@@ -327,6 +348,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...cityPages,
     ...evCityPages,
+    ...camarasCityPages,
     ...roadPages,
     ...provincePages,
     ...communityPages
