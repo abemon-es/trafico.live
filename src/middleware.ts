@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { authenticateRequest } from "./lib/auth";
 
 const CANONICAL_DOMAIN = "trafico.live";
+const CANONICAL_ORIGIN = "https://trafico.live";
 const LEGACY_DOMAINS = [
   "trafico.logisticsexpress.es",
   "trafico.abemon.es",
@@ -11,24 +12,19 @@ const LEGACY_DOMAINS = [
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host")?.replace(/:\d+$/, "") || "";
   const pathname = request.nextUrl.pathname;
+  const search = request.nextUrl.search;
 
   // Redirect legacy domains → trafico.live
   const isLegacy = LEGACY_DOMAINS.some(
     (d) => hostname === d || hostname === `www.${d}`
   );
   if (isLegacy) {
-    const url = request.nextUrl.clone();
-    url.host = CANONICAL_DOMAIN;
-    url.protocol = "https";
-    return NextResponse.redirect(url, 301);
+    return NextResponse.redirect(`${CANONICAL_ORIGIN}${pathname}${search}`, 301);
   }
 
   // Redirect www → apex
   if (hostname === `www.${CANONICAL_DOMAIN}`) {
-    const url = request.nextUrl.clone();
-    url.host = CANONICAL_DOMAIN;
-    url.protocol = "https";
-    return NextResponse.redirect(url, 301);
+    return NextResponse.redirect(`${CANONICAL_ORIGIN}${pathname}${search}`, 301);
   }
 
   // API authentication (only for /api/* routes)
