@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { StructuredData, generateOrganizationSchema } from "@/components/seo/StructuredData";
 import "./globals.css";
 
@@ -94,6 +95,7 @@ export default function RootLayout({
         <StructuredData data={organizationSchema} />
         <Header />
         {children}
+        <StickyFooterAd />
         <Footer />
       </body>
       {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}

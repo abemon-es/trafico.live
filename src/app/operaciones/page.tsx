@@ -11,8 +11,13 @@ import {
   Lightbulb,
   Activity,
   Zap,
+  Radar,
+  Camera,
+  Ban,
 } from "lucide-react";
 import prisma from "@/lib/db";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const dynamic = "force-dynamic";
 
@@ -169,14 +174,12 @@ export default async function OperacionesPage() {
       />
       <div className="min-h-screen bg-gray-50">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Breadcrumb */}
-          <nav className="text-sm text-gray-500 mb-4" aria-label="Ruta de navegación">
-            <Link href="/" className="hover:text-gray-700">
-              Inicio
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900">Operaciones Especiales</span>
-          </nav>
+          <Breadcrumbs
+            items={[
+              { name: "Inicio", href: "/" },
+              { name: "Operaciones Especiales", href: "/operaciones" },
+            ]}
+          />
 
           {/* Header */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -328,31 +331,35 @@ export default async function OperacionesPage() {
             </div>
           </div>
 
-          {/* Quick links */}
-          <section className="mb-8" aria-labelledby="heading-links">
-            <h2 id="heading-links" className="text-xl font-bold text-gray-900 mb-4">
-              Herramientas de tráfico en tiempo real
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { href: "/incidencias", label: "Incidencias", desc: "Cortes y alertas" },
-                { href: "/camaras", label: "Cámaras DGT", desc: "En directo" },
-                { href: "/radares", label: "Radares", desc: "Mapa completo" },
-                { href: "/carreteras", label: "Carreteras", desc: "Estado por vía" },
-              ].map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="bg-white rounded-lg border border-gray-200 p-4 hover:border-tl-300 hover:shadow-sm transition-all group"
-                >
-                  <p className="font-semibold text-gray-900 group-hover:text-tl-600 transition-colors">
-                    {link.label}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{link.desc}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <RelatedLinks
+            title="Herramientas de tráfico en tiempo real"
+            links={[
+              {
+                title: "Incidencias",
+                description: "Cortes, retenciones y alertas activas",
+                href: "/incidencias",
+                icon: <AlertTriangle className="w-5 h-5" />,
+              },
+              {
+                title: "Restricciones",
+                description: "Camiones, ZBE y circulación en festivos",
+                href: "/restricciones",
+                icon: <Ban className="w-5 h-5" />,
+              },
+              {
+                title: "Radares DGT",
+                description: "Mapa completo de radares de velocidad",
+                href: "/radares",
+                icon: <Radar className="w-5 h-5" />,
+              },
+              {
+                title: "Cámaras de Tráfico",
+                description: "Imágenes en directo de la DGT",
+                href: "/camaras",
+                icon: <Camera className="w-5 h-5" />,
+              },
+            ]}
+          />
 
           {/* FAQ */}
           <section aria-labelledby="heading-faq">

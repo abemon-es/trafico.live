@@ -1,7 +1,10 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Radar, MapPin, AlertCircle, ChevronRight } from "lucide-react";
+import { Radar, MapPin, AlertCircle, ChevronRight, Camera, AlertTriangle, Shield, Route } from "lucide-react";
 import prisma from "@/lib/db";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const dynamic = "force-dynamic";
 
@@ -123,14 +126,15 @@ export default async function RadaresPage() {
       />
       <div className="min-h-screen bg-gray-50">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Breadcrumb */}
-          <nav className="text-sm text-gray-500 mb-4" aria-label="Ruta de navegación">
-            <Link href="/" className="hover:text-gray-700">
-              Inicio
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900">Radares DGT</span>
-          </nav>
+          <Breadcrumbs
+            items={[
+              { name: "Inicio", href: "/" },
+              { name: "Infraestructura", href: "/carreteras" },
+              { name: "Radares", href: "/radares" },
+            ]}
+          />
+
+          <AdSlot id="radares-top" format="banner" className="mb-6" />
 
           {/* Header */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -206,6 +210,8 @@ export default async function RadaresPage() {
               })}
             </div>
           </section>
+
+          <AdSlot id="radares-mid" format="inline" className="mb-8" />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Top roads */}
@@ -321,6 +327,35 @@ export default async function RadaresPage() {
               ))}
             </div>
           </section>
+
+          <RelatedLinks
+            links={[
+              {
+                title: "Cámaras de Tráfico",
+                description: "Imágenes en directo de la DGT en toda España",
+                href: "/camaras",
+                icon: <Camera className="w-5 h-5" />,
+              },
+              {
+                title: "Carreteras",
+                description: "Estado de la red viaria nacional",
+                href: "/carreteras",
+                icon: <Route className="w-5 h-5" />,
+              },
+              {
+                title: "Puntos Negros",
+                description: "Tramos de concentración de accidentes (TCA)",
+                href: "/puntos-negros",
+                icon: <AlertTriangle className="w-5 h-5" />,
+              },
+              {
+                title: "Operaciones Especiales",
+                description: "Calendario DGT 2026: Semana Santa, verano...",
+                href: "/operaciones",
+                icon: <Shield className="w-5 h-5" />,
+              },
+            ]}
+          />
 
           {/* SEO copy */}
           <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6 prose prose-gray max-w-none">

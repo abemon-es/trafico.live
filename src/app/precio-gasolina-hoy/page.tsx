@@ -2,7 +2,10 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
-import { TrendingUp, TrendingDown, Minus, MapPin, Clock, Fuel, ChevronRight } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { TrendingUp, TrendingDown, Minus, MapPin, Clock, Fuel, ChevronRight, Camera, Radar, Truck, Route } from "lucide-react";
+import { AdSlot } from "@/components/ads/AdSlot";
 
 export const dynamic = "force-dynamic";
 
@@ -267,18 +270,15 @@ export default async function PrecioGasolinaHoyPage() {
       <StructuredData data={faqSchema} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-tl-600 transition-colors">
-            Inicio
-          </Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/gasolineras" className="hover:text-tl-600 transition-colors">
-            Gasolineras
-          </Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900">Precio Gasolina Hoy</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { name: "Inicio", href: "/" },
+            { name: "Combustible", href: "/gasolineras" },
+            { name: "Precio Gasolina Hoy", href: "/precio-gasolina-hoy" },
+          ]}
+        />
+
+        <AdSlot id="fuel-gasolina-top" format="banner" className="mb-6" />
 
         {/* Header */}
         <div className="mb-8">
@@ -380,6 +380,8 @@ export default async function PrecioGasolinaHoyPage() {
             </div>
           </div>
         )}
+
+        <AdSlot id="fuel-gasolina-mid" format="inline" className="mb-8" />
 
         {/* Top 10 cheapest stations */}
         {cheapestStations.length > 0 && (
@@ -621,44 +623,34 @@ export default async function PrecioGasolinaHoyPage() {
           </div>
         </div>
 
-        {/* Internal links */}
-        <div className="bg-tl-50 rounded-2xl border border-tl-100 p-6">
-          <h2 className="text-lg font-bold text-tl-900 mb-4">
-            Más información sobre combustible en España
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            <Link
-              href="/gasolineras"
-              className="flex items-center gap-3 bg-white rounded-xl p-4 border border-tl-200 hover:border-tl-400 hover:shadow-sm transition-all"
-            >
-              <Fuel className="w-5 h-5 text-tl-600 flex-shrink-0" />
-              <div>
-                <div className="font-semibold text-gray-900 text-sm">Todas las Gasolineras</div>
-                <div className="text-xs text-gray-500">+12.000 estaciones en España</div>
-              </div>
-            </Link>
-            <Link
-              href="/gasolineras/mapa"
-              className="flex items-center gap-3 bg-white rounded-xl p-4 border border-tl-200 hover:border-tl-400 hover:shadow-sm transition-all"
-            >
-              <MapPin className="w-5 h-5 text-tl-600 flex-shrink-0" />
-              <div>
-                <div className="font-semibold text-gray-900 text-sm">Mapa de Gasolineras</div>
-                <div className="text-xs text-gray-500">Encuentra la más cercana a ti</div>
-              </div>
-            </Link>
-            <Link
-              href="/precio-diesel-hoy"
-              className="flex items-center gap-3 bg-white rounded-xl p-4 border border-amber-200 hover:border-amber-400 hover:shadow-sm transition-all"
-            >
-              <Fuel className="w-5 h-5 text-amber-500 flex-shrink-0" />
-              <div>
-                <div className="font-semibold text-gray-900 text-sm">Precio Diésel Hoy</div>
-                <div className="text-xs text-gray-500">Gasóleo A en España</div>
-              </div>
-            </Link>
-          </div>
-        </div>
+        <RelatedLinks
+          links={[
+            {
+              title: "Precio Diésel Hoy",
+              description: "Gasóleo A — precio medio nacional y por provincia",
+              href: "/precio-diesel-hoy",
+              icon: <Fuel className="w-5 h-5" />,
+            },
+            {
+              title: "Mapa de Gasolineras",
+              description: "Encuentra la gasolinera más barata cerca de ti",
+              href: "/gasolineras/mapa",
+              icon: <MapPin className="w-5 h-5" />,
+            },
+            {
+              title: "Gasolineras por Provincia",
+              description: "Precios y ranking por cada provincia de España",
+              href: "/gasolineras",
+              icon: <Route className="w-5 h-5" />,
+            },
+            {
+              title: "Diésel Profesional",
+              description: "Datos para flotas y transporte de mercancías",
+              href: "/profesional/diesel",
+              icon: <Truck className="w-5 h-5" />,
+            },
+          ]}
+        />
 
         {/* Data source note */}
         <div className="mt-6 flex items-start gap-3 text-xs text-gray-400">

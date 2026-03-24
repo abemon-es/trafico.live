@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock } from "lucide-react";
+import { AdSlot } from "@/components/ads/AdSlot";
 
 export const metadata: Metadata = {
   title: "Gasolineras y Precios de Combustible | Tráfico España",
@@ -157,6 +158,8 @@ export default async function GasolinerasPage() {
           y {stats.maritimeCount.toLocaleString("es-ES")} estaciones marítimas en toda España.
         </p>
       </div>
+
+      <AdSlot id="gasolineras-top" format="banner" className="mb-8" />
 
       {/* Quick Navigation */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
