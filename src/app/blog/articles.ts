@@ -39,6 +39,36 @@ export const ARTICLES: Article[] = [
     category: "combustible",
     keywords: ["ahorrar gasolina", "conducción eficiente", "gasolineras baratas"],
   },
+  {
+    slug: "diesel-o-gasolina-2026",
+    title: "¿Diesel o Gasolina en 2026? Guía Completa para Elegir",
+    excerpt:
+      "Comparativa actualizada: precios, consumo, fiscalidad, restricciones ZBE y tabla de decisión para saber qué motorización te conviene en 2026.",
+    date: "2026-03-24",
+    readTime: "7 min",
+    category: "combustible",
+    keywords: ["diesel o gasolina", "gasolina vs diesel 2026", "etiqueta ambiental", "ZBE", "precio combustible"],
+  },
+  {
+    slug: "nuevos-radares-dgt-2026",
+    title: "33 Nuevos Radares DGT en 2026: Ubicaciones y Tipos",
+    excerpt:
+      "La DGT instala 33 nuevos cinemómetros en 2026. Descubre qué tipos de radar hay, las carreteras afectadas y cómo funciona el radar de tramo.",
+    date: "2026-03-24",
+    readTime: "6 min",
+    category: "seguridad",
+    keywords: ["nuevos radares DGT 2026", "radares tramo", "cinemómetros", "multa velocidad DGT"],
+  },
+  {
+    slug: "etiqueta-ambiental-dgt-como-saber",
+    title: "Etiqueta Ambiental DGT: Cómo Saber la Tuya y Qué Significa",
+    excerpt:
+      "Guía completa sobre las 5 etiquetas ambientales DGT: qué vehículos las tienen, cómo consultar la tuya en miDGT, qué permite circular en las ZBE y las multas vigentes.",
+    date: "2026-03-24",
+    readTime: "8 min",
+    category: "guía",
+    keywords: ["etiqueta ambiental DGT", "cómo saber etiqueta coche", "distintivo ambiental", "ZBE restricciones", "miDGT"],
+  },
 ];
 
 export function getArticleBySlug(slug: string): Article | undefined {

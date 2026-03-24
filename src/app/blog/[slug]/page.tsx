@@ -15,6 +15,9 @@ import {
 import { BalizaV16Article } from "./content/BalizaV16Article";
 import { ZBEArticle } from "./content/ZBEArticle";
 import { AhorrarGasolinaArticle } from "./content/AhorrarGasolinaArticle";
+import { DieselOGasolinaArticle } from "./content/DieselOGasolinaArticle";
+import { NuevosRadaresDGTArticle } from "./content/NuevosRadaresDGTArticle";
+import { EtiquetaAmbientalArticle } from "./content/EtiquetaAmbientalArticle";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -30,6 +33,9 @@ const SLUG_AFFILIATE: Record<string, "insurance" | "fuel-card" | "ev-charger" | 
   "zonas-bajas-emisiones-guia-completa": "ev-charger",
   "como-ahorrar-gasolina-consejos": "fuel-card",
   "que-es-baliza-v16-como-funciona": "itv",
+  "diesel-o-gasolina-2026": "fuel-card",
+  "nuevos-radares-dgt-2026": "insurance",
+  "etiqueta-ambiental-dgt-como-saber": "ev-charger",
 };
 
 export async function generateStaticParams() {
@@ -93,6 +99,12 @@ function ArticleContent({ slug }: { slug: string }) {
       return <ZBEArticle />;
     case "como-ahorrar-gasolina-consejos":
       return <AhorrarGasolinaArticle />;
+    case "diesel-o-gasolina-2026":
+      return <DieselOGasolinaArticle />;
+    case "nuevos-radares-dgt-2026":
+      return <NuevosRadaresDGTArticle />;
+    case "etiqueta-ambiental-dgt-como-saber":
+      return <EtiquetaAmbientalArticle />;
     default:
       return null;
   }

@@ -7,6 +7,12 @@ export const dynamic = 'force-dynamic';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
+// ZBE cities with dedicated pages
+const ZBE_CITY_SLUGS = [
+  "madrid", "barcelona", "granada", "malaga", "zaragoza",
+  "sabadell", "vitoria", "valladolid", "sevilla", "valencia",
+];
+
 // Major cities for city pages
 const CITIES = [
   "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
@@ -288,6 +294,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.85,
     },
+    // Gasolineras 24 horas (high SEO value — "gasolineras 24 horas", "gasolineras abiertas")
+    {
+      url: `${BASE_URL}/gasolineras-24-horas`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
     // Explore
     {
       url: `${BASE_URL}/explorar`,
@@ -323,6 +336,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
   ];
+
+  // ZBE city pages (high SEO value — "ZBE Madrid", "zona bajas emisiones Barcelona", etc.)
+  const zbeCityPages: MetadataRoute.Sitemap = ZBE_CITY_SLUGS.map((city) => ({
+    url: `${BASE_URL}/zbe/${city}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.88,
+  }));
 
   // City pages (NEW)
   const cityPages: MetadataRoute.Sitemap = CITIES.map((city) => ({
@@ -495,6 +516,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPages,
     ...blogArticlePages,
+    ...zbeCityPages,
     ...cityPages,
     ...evCityPages,
     ...baratosIndexPage,
