@@ -103,6 +103,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    // Per-road radar pages (3-8K searches/mo each — "radares AP-7", "radares A-1", etc.)
+    ...([
+      "AP-7", "AP-68", "AP-1", "AP-2", "AP-4", "AP-6", "AP-9",
+      "A-1", "A-2", "A-3", "A-4", "A-5", "A-6", "A-7", "A-8",
+      "A-23", "A-31", "A-42", "A-44", "A-52", "A-62", "A-66", "A-92",
+      "N-I", "N-II", "N-III", "N-IV", "N-V", "N-VI", "N-340",
+    ].map((road) => ({
+      url: `${BASE_URL}/radares/${encodeURIComponent(road)}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    }))),
     // Statistics
     {
       url: `${BASE_URL}/estadisticas`,
@@ -259,6 +271,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     // Seasonal SEO pages
     {
+      url: `${BASE_URL}/semana-santa-2026`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 1.0,
+    },
+    {
       url: `${BASE_URL}/operaciones`,
       lastModified: now,
       changeFrequency: "weekly",
@@ -320,6 +338,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: "daily" as const,
     priority: 0.7,
+  }));
+
+  // Cheapest gas station city pages — high SEO value ("gasolineras baratas madrid", etc.)
+  const baratosCitySlugs = [
+    "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
+    "malaga", "murcia", "bilbao", "alicante", "cordoba",
+    "valladolid", "granada", "oviedo", "santander", "pamplona",
+    "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
+  ];
+  const baratosIndexPage: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE_URL}/gasolineras/baratas`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    },
+  ];
+  const baratosCityPages: MetadataRoute.Sitemap = baratosCitySlugs.map((city) => ({
+    url: `${BASE_URL}/gasolineras/baratas/${city}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.9,
   }));
 
   // Camera city pages — high SEO value ("cámaras tráfico madrid", etc.)
@@ -457,6 +497,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogArticlePages,
     ...cityPages,
     ...evCityPages,
+    ...baratosIndexPage,
+    ...baratosCityPages,
     ...camarasCityPages,
     ...roadPages,
     ...provincePages,
