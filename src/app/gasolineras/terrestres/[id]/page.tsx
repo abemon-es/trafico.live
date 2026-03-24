@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus, ChevronRight, Tag } from "lucide-react";
 import { PriceHistoryChart, StationLocationMap, PriceComparisonCard, StationRanking } from "@/components/gas-stations";
+import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
@@ -80,6 +81,22 @@ export default async function StationDetailPage({ params }: Props) {
   if (!station) {
     notFound();
   }
+
+  // Provincial average for comparison badges
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const provincialStats = station.province
+    ? await prisma.fuelPriceDailyStats.findFirst({
+        where: {
+          date: today,
+          scope: `province:${station.province}`,
+        },
+        select: {
+          avgGasoleoA: true,
+          avgGasolina95: true,
+        },
+      })
+    : null;
 
   // 5 cheaper alternatives in same province, ordered by lowest diesel price
   const cheaperAlternatives = await prisma.gasStation.findMany({
@@ -395,6 +412,16 @@ export default async function StationDetailPage({ params }: Props) {
             };
             const colors = colorClasses[fuel.color] || colorClasses.amber;
 
+            // Provincial average comparison badge
+            const provincialAvg =
+              fuel.key === "gasoleoA" && provincialStats?.avgGasoleoA
+                ? Number(provincialStats.avgGasoleoA)
+                : fuel.key === "gasolina95" && provincialStats?.avgGasolina95
+                ? Number(provincialStats.avgGasolina95)
+                : null;
+            const fuelNum = fuel.price != null ? Number(fuel.price) : null;
+            const diff = fuelNum != null && provincialAvg != null ? fuelNum - provincialAvg : null;
+
             return (
               <div key={fuel.key} className={`${colors.bg} rounded-lg p-4`}>
                 <div className={`text-sm ${colors.text} mb-1`}>{fuel.label}</div>
@@ -408,6 +435,19 @@ export default async function StationDetailPage({ params }: Props) {
                      fuel.trend.direction === "down" ? <TrendingDown className="w-4 h-4" /> :
                      <Minus className="w-4 h-4" />}
                     {fuel.trend.direction === "up" ? "+" : ""}{fuel.trend.change}
+                  </div>
+                )}
+                {diff != null && Math.abs(diff) >= 0.001 && (
+                  <div className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                    diff < 0
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}>
+                    {diff < 0 ? (
+                      <>{Math.abs(diff).toFixed(3)}€ por debajo de la media</>
+                    ) : (
+                      <>{diff.toFixed(3)}€ por encima de la media</>
+                    )}
                   </div>
                 )}
               </div>
@@ -444,6 +484,11 @@ export default async function StationDetailPage({ params }: Props) {
           stationType="terrestrial"
           defaultFuel={station.priceGasoleoA ? "gasoleoA" : "gasolina95"}
         />
+      </div>
+
+      {/* Station Price History (client-side chart) */}
+      <div className="mb-6">
+        <StationPriceHistory stationId={station.id} />
       </div>
 
       {/* 5 alternativas más baratas */}

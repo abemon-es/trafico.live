@@ -236,6 +236,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    // Best travel hour analysis (SEO — "mejor hora para viajar", "horas punta tráfico")
+    {
+      url: `${BASE_URL}/mejor-hora`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     // Black spots / accident concentration zones (high SEO value)
     {
       url: `${BASE_URL}/puntos-negros`,
