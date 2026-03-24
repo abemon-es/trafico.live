@@ -120,6 +120,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.8,
     },
+    // High-value fuel price landing pages
+    {
+      url: `${BASE_URL}/precio-gasolina-hoy`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.95,
+    },
+    {
+      url: `${BASE_URL}/precio-diesel-hoy`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.95,
+    },
     // Gas stations (with alias)
     {
       url: `${BASE_URL}/gasolineras`,
