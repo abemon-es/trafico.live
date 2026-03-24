@@ -4,7 +4,8 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Radar, ArrowLeft, MapPin, AlertCircle, Gauge } from "lucide-react";
 
-export const revalidate = 3600;
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ roadId: string }>;

@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import prisma from "@/lib/db";
 import CommunityContent from "./content";
 
-export const revalidate = 3600;
+// Force dynamic rendering - database not accessible during build
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ community: string }>;
