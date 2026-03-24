@@ -83,6 +83,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 0.8,
     },
+    // Variable message panels (PMV)
+    {
+      url: `${BASE_URL}/paneles`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.8,
+    },
     // Radares (high-value SEO page)
     {
       url: `${BASE_URL}/radares`,
@@ -228,6 +235,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/puntos-negros`,
       lastModified: now,
       changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    // Weather alerts (AEMET)
+    {
+      url: `${BASE_URL}/alertas-meteo`,
+      lastModified: now,
+      changeFrequency: "hourly",
       priority: 0.85,
     },
     // Seasonal SEO pages

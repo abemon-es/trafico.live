@@ -7,6 +7,12 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { TrendingUp, TrendingDown, Minus, MapPin, Clock, Fuel, ChevronRight, Truck, Radar, Ban } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
+import nextDynamic from "next/dynamic";
+
+const FuelPriceChart = nextDynamic(
+  () => import("@/components/charts/FuelPriceChart").then((m) => m.FuelPriceChart),
+  { ssr: false }
+);
 
 export const dynamic = "force-dynamic";
 
@@ -412,6 +418,12 @@ export default async function PrecioDieselHoyPage() {
             </Link>
           </div>
         </div>
+
+        {/* Price evolution chart */}
+        <FuelPriceChart
+          initialLines={{ diesel: true, gasolina95: false, gasolina98: false }}
+          initialDays={30}
+        />
 
         <AdSlot id="fuel-diesel-mid" format="inline" className="mb-8" />
 

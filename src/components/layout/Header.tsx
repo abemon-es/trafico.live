@@ -23,6 +23,8 @@ import {
   MapPinned,
   Search,
   Truck,
+  MonitorSmartphone,
+  Cloud,
 } from "lucide-react";
 import { SearchOverlay, useSearchOverlay } from "@/components/search/SearchOverlay";
 
@@ -42,6 +44,7 @@ const megaMenuCategories = [
     items: [
       { name: "Cámaras de tráfico", href: "/camaras", icon: Camera },
       { name: "Mapa en vivo", href: "/", icon: Map },
+      { name: "Alertas meteo", href: "/alertas-meteo", icon: Cloud },
     ],
   },
   {
@@ -49,6 +52,7 @@ const megaMenuCategories = [
     items: [
       { name: "Cargadores eléctricos", href: "/carga-ev", icon: Zap },
       { name: "Radares", href: "/explorar/infraestructura", icon: Radar },
+      { name: "Paneles PMV", href: "/paneles", icon: MonitorSmartphone },
       { name: "Zonas bajas emisiones", href: "/explorar/infraestructura", icon: Ban },
     ],
   },

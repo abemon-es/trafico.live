@@ -1,33 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getFromCache, setInCache } from "@/lib/redis";
 
-// Cache the response for 2 minutes (panels update every 5 min)
-export const revalidate = 120;
+const CACHE_KEY_PREFIX = "api:panels";
+const CACHE_TTL = 300; // 5 minutes — panels update every ~5 min
 
-interface PanelResponseItem {
+export interface PanelResponseItem {
   id: string;
-  panelId: string;
-  name: string;
-  lat: number;
-  lng: number;
-  road: string;
-  direction: string | null;
+  roadNumber: string;
   kmPoint: number | null;
+  direction: string | null;
   province: string;
   provinceName: string;
   message: string | null;
-  messageType: string | null;
   hasMessage: boolean;
+  latitude: number;
+  longitude: number;
   lastUpdated: string;
 }
 
-interface PanelsResponse {
+export interface PanelsResponse {
   count: number;
   withMessages: number;
+  withoutMessages: number;
   panels: PanelResponseItem[];
-  provinces: string[];
-  messageTypes: string[];
-  source: "database";
+  provinces: { code: string; name: string }[];
+  roads: string[];
+  source: "database" | "cache";
 }
 
 export async function GET(request: NextRequest) {
@@ -36,6 +35,17 @@ export async function GET(request: NextRequest) {
     const filterProvince = searchParams.get("province");
     const filterRoad = searchParams.get("road");
     const filterHasMessage = searchParams.get("hasMessage");
+
+    // Build a deterministic cache key from query params
+    const paramStr = new URLSearchParams(
+      [...searchParams.entries()].sort(([a], [b]) => a.localeCompare(b))
+    ).toString();
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+
+    const cached = await getFromCache<PanelsResponse>(cacheKey);
+    if (cached) {
+      return NextResponse.json({ ...cached, source: "cache" });
+    }
 
     // Build where clause
     const whereClause: Record<string, unknown> = { isActive: true };
@@ -55,46 +65,65 @@ export async function GET(request: NextRequest) {
     const dbPanels = await prisma.variablePanel.findMany({
       where: whereClause,
       orderBy: [{ hasMessage: "desc" }, { roadNumber: "asc" }],
+      select: {
+        id: true,
+        roadNumber: true,
+        kmPoint: true,
+        direction: true,
+        province: true,
+        provinceName: true,
+        message: true,
+        hasMessage: true,
+        latitude: true,
+        longitude: true,
+        lastUpdated: true,
+      },
     });
 
     const panels: PanelResponseItem[] = dbPanels.map((panel) => ({
       id: panel.id,
-      panelId: panel.panelId,
-      name: panel.name || `Panel ${panel.panelId}`,
-      lat: Number(panel.latitude),
-      lng: Number(panel.longitude),
-      road: panel.roadNumber || "",
-      direction: panel.direction,
+      roadNumber: panel.roadNumber || "",
       kmPoint: panel.kmPoint ? Number(panel.kmPoint) : null,
+      direction: panel.direction,
       province: panel.province || "",
       provinceName: panel.provinceName || "",
       message: panel.message,
-      messageType: panel.messageType,
       hasMessage: panel.hasMessage,
+      latitude: Number(panel.latitude),
+      longitude: Number(panel.longitude),
       lastUpdated: panel.lastUpdated.toISOString(),
     }));
 
-    // Extract unique provinces and message types for filtering
-    const provinces = [
-      ...new Set(panels.map((p) => p.provinceName).filter(Boolean)),
-    ].sort();
-
-    const messageTypes = [
-      ...new Set(
-        panels.map((p) => p.messageType).filter(Boolean) as string[]
-      ),
-    ].sort();
-
     const withMessages = panels.filter((p) => p.hasMessage).length;
+    const withoutMessages = panels.length - withMessages;
+
+    // Extract unique provinces for filtering
+    const provinceMap = new Map<string, string>();
+    for (const p of panels) {
+      if (p.province && p.provinceName) {
+        provinceMap.set(p.province, p.provinceName);
+      }
+    }
+    const provinces = [...provinceMap.entries()]
+      .map(([code, name]) => ({ code, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, "es"));
+
+    // Extract unique roads for filtering
+    const roads = [
+      ...new Set(panels.map((p) => p.roadNumber).filter(Boolean)),
+    ].sort((a, b) => a.localeCompare(b, "es", { numeric: true }));
 
     const response: PanelsResponse = {
       count: panels.length,
       withMessages,
+      withoutMessages,
       panels,
       provinces,
-      messageTypes,
+      roads,
       source: "database",
     };
+
+    await setInCache(cacheKey, response, CACHE_TTL);
 
     return NextResponse.json(response);
   } catch (error) {
@@ -104,9 +133,10 @@ export async function GET(request: NextRequest) {
         error: "Failed to fetch panel data",
         count: 0,
         withMessages: 0,
+        withoutMessages: 0,
         panels: [],
         provinces: [],
-        messageTypes: [],
+        roads: [],
         source: "database" as const,
       },
       { status: 500 }
