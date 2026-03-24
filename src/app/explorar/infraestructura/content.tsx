@@ -496,7 +496,7 @@ export default function InfraestructuraContent() {
         ((activeTab === "camaras" && camerasData?.count === 0) ||
           (activeTab === "radares" && radarsData?.count === 0) ||
           (activeTab === "cargadores" && chargersData?.count === 0) ||
-          (activeTab === "zbe" && zbeData?.count === 0)) && (
+          (activeTab === "zbe" && zbeData?.data?.zones?.length === 0)) && (
           <div className="text-center py-20">
             <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               {activeTab === "camaras" && <Camera className="w-6 h-6 text-gray-400" />}
