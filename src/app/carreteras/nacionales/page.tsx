@@ -1,14 +1,10 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { connection } from "next/server";
-import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { MapPin, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Carreteras Nacionales de España (N) | Tráfico y Radares",
@@ -37,9 +33,6 @@ const PROVINCE_NAMES: Record<string, string> = {
 };
 
 export default async function NacionalesPage() {
-  noStore();
-  await connection();
-
   // Get all nacionales - wrapped in try-catch for build phase
   let roads: { id: string; name: string | null; provinces: string[] }[] = [];
   let camerasByRoad: { roadNumber: string | null; _count: number }[] = [];

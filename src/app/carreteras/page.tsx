@@ -1,12 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { Route, Car, Construction, MapPin } from "lucide-react";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Carreteras de España | Tráfico en Tiempo Real",
@@ -58,8 +55,6 @@ const ROAD_TYPE_CONFIG = {
 };
 
 export default async function CarreterasPage() {
-  noStore();
-
   // Get roads grouped by type with counts
   const roadsByType = await prisma.road.groupBy({
     by: ["type"],

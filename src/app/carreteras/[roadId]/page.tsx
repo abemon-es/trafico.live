@@ -17,8 +17,7 @@ import {
 } from "lucide-react";
 import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ roadId: string }>;
