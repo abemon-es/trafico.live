@@ -212,6 +212,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${BASE_URL}/gasolineras/cerca`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
       url: `${BASE_URL}/gasolineras/precios`,
       lastModified: now,
       changeFrequency: "hourly",
@@ -222,6 +228,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/gasolineras/marcas`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
     },
     // EV Chargers section (NEW)
     {
