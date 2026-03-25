@@ -1,7 +1,9 @@
 /**
  * trafico.live — Brand Tokens
- * OKLCH-generated palettes for programmatic use
+ * OKLCH-generated palettes + icon geometry + typography
  */
+
+// === COLOR PALETTES ===
 
 export const tl = {
   50: "#f0f5ff",
@@ -32,10 +34,46 @@ export const tlAmber = {
 } as const;
 
 export const signal = {
-  green: "#059669",
-  amber: "#d97706",
   red: "#dc2626",
+  amber: "#d97706",
+  green: "#059669",
 } as const;
+
+export const signalDark = {
+  red: "#f87171",
+  amber: "#fbbf24",
+  green: "#34d399",
+} as const;
+
+export const signalPastel = {
+  red: "#fca5a5",
+  amber: "#fde68a",
+  green: "#6ee7b7",
+} as const;
+
+// === ICON GEOMETRY ===
+
+export const icon = {
+  /** 3 Puntos: red/amber/green vertically stacked */
+  colors: [signal.red, signal.amber, signal.green] as const,
+  colorsDark: [signalDark.red, signalDark.amber, signalDark.green] as const,
+  colorsPastel: [signalPastel.red, signalPastel.amber, signalPastel.green] as const,
+  /** At base size (96px total height) */
+  geometry: {
+    dotDiameter: 24,
+    gap: 12,
+    centerToCenter: 36,
+    totalHeight: 96,
+  },
+  /** App icon: dots on blue background */
+  appIcon: {
+    background: tl[600],
+    cornerRadius: "22%",
+    padding: "8%",
+  },
+} as const;
+
+// === TYPOGRAPHY ===
 
 export const fonts = {
   heading: "Exo 2",
@@ -43,13 +81,35 @@ export const fonts = {
   mono: "JetBrains Mono",
 } as const;
 
+// === BADGE (.LIVE) ===
+
+export const badge = {
+  background: tl[600],
+  backgroundDark: tl[500],
+  text: ".LIVE",
+  textColor: "#ffffff",
+  dotColor: "#ffffff",
+  dotOpacity: 0.85,
+  borderRadius: 7,
+  letterSpacing: "1.5px",
+  fontSize: 15,
+  fontWeight: 700,
+} as const;
+
+// === BRAND ===
+
 export const brand = {
   name: "trafico.live",
+  wordmark: "trafico",
   tagline: "Inteligencia vial en tiempo real",
-  themeColor: "#1b4bd5",
+  themeColor: tl[600],
   primary: tl,
   accent: tlAmber,
   signal,
+  signalDark,
+  signalPastel,
+  icon,
+  badge,
   fonts,
 } as const;
 
