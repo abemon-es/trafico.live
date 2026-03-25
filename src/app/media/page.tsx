@@ -41,35 +41,43 @@ const COLORS = {
   ],
 };
 
+const MEDIA_CDN = "https://media.trafico.live";
+
 const ASSETS = [
   {
     name: "Icon — 3 Puntos",
-    file: "/brand-kit/assets/icon-3puntos.svg",
+    file: `${MEDIA_CDN}/assets/icon-3puntos.svg`,
+    local: "/brand-kit/assets/icon-3puntos.svg",
     desc: "Primary icon, transparent background",
   },
   {
     name: "Icon — Dark mode",
-    file: "/brand-kit/assets/icon-3puntos-dark.svg",
+    file: `${MEDIA_CDN}/assets/icon-3puntos-dark.svg`,
+    local: "/brand-kit/assets/icon-3puntos-dark.svg",
     desc: "Elevated colors for dark backgrounds",
   },
   {
     name: "App Icon",
-    file: "/brand-kit/assets/app-icon.svg",
+    file: `${MEDIA_CDN}/assets/app-icon.svg`,
+    local: "/brand-kit/assets/app-icon.svg",
     desc: "Pastel dots on blue rounded rectangle",
   },
   {
     name: "Icon on Blue",
-    file: "/brand-kit/assets/icon-on-blue.svg",
+    file: `${MEDIA_CDN}/assets/icon-on-blue.svg`,
+    local: "/brand-kit/assets/icon-on-blue.svg",
     desc: "For brand blue backgrounds",
   },
   {
     name: "CSS Tokens",
-    file: "/brand-kit/tokens.css",
+    file: `${MEDIA_CDN}/tokens.css`,
+    local: "/brand-kit/tokens.css",
     desc: "Complete design token system",
   },
   {
     name: "Brand Guide",
-    file: "/brand-kit/brand-guide.html",
+    file: `${MEDIA_CDN}/brand-guide.html`,
+    local: "/brand-kit/brand-guide.html",
     desc: "Interactive visual brand guide",
   },
 ];
@@ -301,6 +309,43 @@ export default function MediaPage() {
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Embed Codes */}
+        <section className="mb-16" aria-labelledby="embed">
+          <h2 id="embed" className="text-xl font-bold text-gray-900 mb-6">
+            C&oacute;digos para incrustar
+          </h2>
+
+          <div className="space-y-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Icono SVG (HTML)</h3>
+              <pre className="font-data text-xs text-gray-600 bg-white border border-gray-200 rounded p-3 overflow-x-auto">
+{`<img src="${MEDIA_CDN}/assets/icon-3puntos.svg" alt="trafico.live" width="24" height="64" />`}
+              </pre>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">App Icon (HTML)</h3>
+              <pre className="font-data text-xs text-gray-600 bg-white border border-gray-200 rounded p-3 overflow-x-auto">
+{`<img src="${MEDIA_CDN}/assets/app-icon.svg" alt="trafico.live" width="64" height="64" />`}
+              </pre>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">CSS Tokens (importar)</h3>
+              <pre className="font-data text-xs text-gray-600 bg-white border border-gray-200 rounded p-3 overflow-x-auto">
+{`<link rel="stylesheet" href="${MEDIA_CDN}/tokens.css" />`}
+              </pre>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">CDN base URL</h3>
+              <pre className="font-data text-xs text-tl-600 bg-white border border-gray-200 rounded p-3">
+{MEDIA_CDN}
+              </pre>
+            </div>
           </div>
         </section>
 
