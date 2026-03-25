@@ -55,13 +55,13 @@
 
 ---
 
-## Phase 1: SEO Foundation ⏳ IN PROGRESS
+## Phase 1: SEO Foundation ✅ COMPLETE (2026-03-25)
 
-### 1.1 — Technical SEO Fixes (partially done)
+### 1.1 — Technical SEO Fixes ✅
 - [x] Convert homepage from pure CSR → hybrid SSR (hero + stats SSR, map CSR)
-- [~] Add `<link rel="canonical">` on all pages (~32 pages done, ~20 pages missing)
-- [ ] Switch `force-dynamic` pages to ISR (`revalidate = 3600`) where data is slow-changing
-- [ ] Improve Core Web Vitals: lazy-load below-fold, optimize LCP
+- [x] Add `<link rel="canonical">` on all pages (45+ pages updated)
+- [x] Switch `force-dynamic` → ISR (`revalidate = 120-3600`) on 35+ pages
+- [x] Lazy-load heavy components (recharts, maplibre-gl) via next/dynamic
 
 ### 1.2 — High-Volume Landing Pages ✅ COMPLETE
 - [x] `/precio-gasolina-hoy` — daily prices, province breakdown, 30d chart, FAQ schema
@@ -75,15 +75,15 @@
 - [x] `/operaciones` — Operaciones especiales + seasonal campaign pages
 - [x] `/restricciones` — Heavy vehicle + seasonal circulation restrictions
 - [x] `/puntos-negros` — Accident black spots with FAQ schema + province breakdown
-- [ ] `/ciclistas` — Safe cycling routes from DGT data
+- [x] `/ciclistas` — Cyclist safety page with risk zones, regulations, FAQ schema
 
-### 1.4 — Internal Linking & Structured Data (mostly done)
+### 1.4 — Internal Linking & Structured Data ✅
 - [x] Build internal link mesh: RelatedLinks component on 16+ pages
 - [x] Add breadcrumbs on ~30 pages via Breadcrumbs component
 - [x] FAQ sections with `FAQPage` schema on 10+ high-value pages
 - [x] `GasStation` + `LocalBusiness` schema on station pages
-- [ ] `Place` + `amenityFeature` on EV charger pages
-- [ ] `City`/`Place` with `geo` on city pages (partial: ZBE has it, others don't)
+- [x] `Place` + `amenityFeature` on EV charger pages (electrolineras/[city])
+- [x] `City`/`Place` with `geo` on city pages (ciudad/[slug], trafico/[city], zbe/[city])
 
 ---
 
