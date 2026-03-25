@@ -20,23 +20,30 @@ interface GasStation {
   id: string;
   name: string;
   address: string | null;
+  postalCode: string | null;
   locality: string | null;
+  municipality: string | null;
   province: string | null;
+  provinceName: string | null;
   latitude: number | null;
   longitude: number | null;
-  dieselA: number | null;
-  dieselAPremium: number | null;
+  priceGasoleoA: number | null;
+  priceGasolina95E5: number | null;
+  priceGasolina98E5: number | null;
+  priceGLP: number | null;
   schedule: string | null;
-  brand: string | null;
+  is24h: boolean;
+  lastPriceUpdate: string;
 }
 
 interface GasStationsResponse {
   success: boolean;
-  count: number;
-  stations: GasStation[];
-  meta?: {
-    cheapestDiesel?: number;
-    averageDiesel?: number;
+  data: GasStation[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
   };
 }
 
@@ -54,20 +61,20 @@ export default function DieselContent() {
   }, [searchInput]);
 
   const { data, isLoading } = useSWR<GasStationsResponse>(
-    "/api/gas-stations?fuel=diesel&limit=500&sortBy=price&order=asc",
+    "/api/gas-stations?fuel=gasoleoA&limit=500&sort=price&order=asc",
     fetcher,
     { revalidateOnFocus: false }
   );
 
   // Get unique provinces
-  const provinces = data?.stations
-    ? [...new Set(data.stations.map((s) => s.province).filter(Boolean))].sort()
+  const provinces = data?.data
+    ? [...new Set(data.data.map((s) => s.provinceName).filter(Boolean))].sort()
     : [];
 
   // Filter stations
-  const filteredStations = data?.stations?.filter((station) => {
+  const filteredStations = data?.data?.filter((station) => {
     // Must have diesel price
-    if (!station.dieselA) return false;
+    if (!station.priceGasoleoA) return false;
 
     // Search filter
     if (searchTerm) {
@@ -80,15 +87,15 @@ export default function DieselContent() {
     }
 
     // Province filter
-    if (provinceFilter && station.province !== provinceFilter) return false;
+    if (provinceFilter && station.provinceName !== provinceFilter) return false;
 
     return true;
   });
 
   // Stats
-  const cheapestPrice = filteredStations?.[0]?.dieselA;
+  const cheapestPrice = filteredStations?.[0]?.priceGasoleoA;
   const avgPrice = filteredStations?.length
-    ? filteredStations.reduce((sum, s) => sum + (s.dieselA || 0), 0) / filteredStations.length
+    ? filteredStations.reduce((sum, s) => sum + (s.priceGasoleoA || 0), 0) / filteredStations.length
     : null;
 
   return (
@@ -248,13 +255,10 @@ export default function DieselContent() {
                       <div className="flex items-start justify-between gap-4 mb-1">
                         <div>
                           <h3 className="font-medium text-gray-900">{station.name}</h3>
-                          {station.brand && (
-                            <span className="text-xs text-gray-400">{station.brand}</span>
-                          )}
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="text-xl font-bold text-green-700">
-                            {station.dieselA?.toFixed(3)} €
+                            {station.priceGasoleoA?.toFixed(3)} €
                           </p>
                           <p className="text-xs text-gray-400">Diésel A</p>
                         </div>
@@ -264,21 +268,12 @@ export default function DieselContent() {
                         {station.address && <p>{station.address}</p>}
                         <p className="text-gray-500">
                           {station.locality}
-                          {station.province && `, ${station.province}`}
+                          {station.provinceName && `, ${station.provinceName}`}
                         </p>
                         {station.schedule && (
                           <p className="text-xs text-gray-400">{station.schedule}</p>
                         )}
                       </div>
-
-                      {/* Premium diesel badge */}
-                      {station.dieselAPremium && (
-                        <div className="mt-2">
-                          <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded">
-                            Diésel Premium: {station.dieselAPremium.toFixed(3)} €
-                          </span>
-                        </div>
-                      )}
 
                       {station.latitude && station.longitude && (
                         <a

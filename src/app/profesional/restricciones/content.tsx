@@ -15,30 +15,44 @@ import {
   Ruler,
 } from "lucide-react";
 
-interface ZBEData {
+interface ZBEZone {
   id: string;
   name: string;
-  city: string;
-  province: string | null;
-  status: string;
-  startDate: string | null;
-  vehicleRestrictions: string[];
-  description: string | null;
+  cityName: string;
+  centroid: { lat: number; lng: number } | null;
+  restrictions: Record<string, string>;
+  schedule: Record<string, string | null> | null;
+  activeAllYear: boolean;
+  fineAmount: number | null;
+  effectiveFrom: string;
+  effectiveUntil: string | null;
+  sourceUrl: string | null;
+  lastUpdated: string;
 }
 
 interface ZBEResponse {
   success: boolean;
-  count: number;
-  zones: ZBEData[];
+  data?: {
+    zones: ZBEZone[];
+    summary: {
+      totalZones: number;
+      activeZones: number;
+      cities: string[];
+    };
+  };
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const ZBE_STATUS: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: "Activa", color: "bg-red-100 text-red-700" },
-  PLANNED: { label: "Planificada", color: "bg-amber-100 text-amber-700" },
-  SUSPENDED: { label: "Suspendida", color: "bg-gray-100 text-gray-700" },
-};
+function getZBEStatus(zone: ZBEZone): { label: string; color: string } {
+  const now = new Date();
+  const from = new Date(zone.effectiveFrom);
+  const until = zone.effectiveUntil ? new Date(zone.effectiveUntil) : null;
+
+  if (from > now) return { label: "Planificada", color: "bg-amber-100 text-amber-700" };
+  if (until && until < now) return { label: "Expirada", color: "bg-gray-100 text-gray-700" };
+  return { label: "Activa", color: "bg-red-100 text-red-700" };
+}
 
 // Sample tunnel/road restrictions
 const ROAD_RESTRICTIONS = [
@@ -155,63 +169,66 @@ export default function RestriccionesContent() {
             )}
 
             {/* ZBE List */}
-            {!zbeLoading && zbeData && (
+            {!zbeLoading && zbeData?.data && (
               <>
                 <p className="text-sm text-gray-500 mb-4">
-                  {zbeData.count} zonas de bajas emisiones registradas
+                  {zbeData.data.summary.totalZones} zonas de bajas emisiones registradas
+                  ({zbeData.data.summary.activeZones} activas)
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {zbeData.zones.map((zone) => (
-                    <div
-                      key={zone.id}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-medium text-gray-900">{zone.name}</h3>
-                        <span
-                          className={`px-2 py-0.5 text-xs font-medium rounded ${
-                            ZBE_STATUS[zone.status]?.color || "bg-gray-100 text-gray-700"
-                          }`}
-                        >
-                          {ZBE_STATUS[zone.status]?.label || zone.status}
-                        </span>
-                      </div>
+                  {zbeData.data.zones.map((zone) => {
+                    const status = getZBEStatus(zone);
+                    const restrictionEntries = Object.entries(zone.restrictions || {});
 
-                      <div className="space-y-1 text-sm">
-                        <p className="text-gray-600 flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          {zone.city}
-                          {zone.province && `, ${zone.province}`}
-                        </p>
-                        {zone.startDate && (
-                          <p className="text-gray-500 flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-gray-400" />
-                            Desde: {new Date(zone.startDate).toLocaleDateString("es-ES")}
-                          </p>
-                        )}
-                        {zone.description && (
-                          <p className="text-gray-500 mt-2">{zone.description}</p>
-                        )}
-                      </div>
-
-                      {zone.vehicleRestrictions.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-xs text-gray-500 mb-1">Vehículos afectados:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {zone.vehicleRestrictions.map((restriction) => (
-                              <span
-                                key={restriction}
-                                className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded"
-                              >
-                                {restriction}
-                              </span>
-                            ))}
-                          </div>
+                    return (
+                      <div
+                        key={zone.id}
+                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-medium text-gray-900">{zone.name}</h3>
+                          <span
+                            className={`px-2 py-0.5 text-xs font-medium rounded ${status.color}`}
+                          >
+                            {status.label}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        <div className="space-y-1 text-sm">
+                          <p className="text-gray-600 flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-gray-400" />
+                            {zone.cityName}
+                          </p>
+                          {zone.effectiveFrom && (
+                            <p className="text-gray-500 flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES")}
+                            </p>
+                          )}
+                          {zone.activeAllYear && (
+                            <p className="text-xs text-red-600 mt-1">Activa todo el año</p>
+                          )}
+                        </div>
+
+                        {restrictionEntries.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-xs text-gray-500 mb-1">Restricciones:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {restrictionEntries.map(([key, value]) => (
+                                <span
+                                  key={key}
+                                  className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded"
+                                >
+                                  {value || key}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </>
             )}
