@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { SearchOverlay, useSearchOverlay } from "@/components/search/SearchOverlay";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { Logo } from "@/components/brand/Logo";
 
 // Primary navigation - main sections (visible in navbar)
 const navigation = [
@@ -116,23 +117,7 @@ export function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8" aria-hidden="true">
-              <path d="M8 36L20 12h6L14 36H8z" fill="#2563eb"/>
-              <path d="M18 36L30 12h6L24 36h-6z" fill="#2563eb" opacity="0.7"/>
-              <path d="M28 36L40 12h6L34 36h-6z" fill="#2563eb" opacity="0.4"/>
-              <circle cx="40" cy="12" r="6" fill="#f59e0b"/>
-            </svg>
-            <div>
-              <span className="text-lg font-bold text-tl-900">
-                trafico
-              </span>
-              <span className="text-lg font-bold text-amber-500">.live</span>
-              <span className="hidden sm:block text-xs text-gray-500">
-                Tráfico España en Tiempo Real
-              </span>
-            </div>
-          </Link>
+          <Logo variant="inline" size="sm" />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">

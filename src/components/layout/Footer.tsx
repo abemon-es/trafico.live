@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CookieSettingsButton } from "@/components/legal/CookieConsent";
+import { Logo } from "@/components/brand/Logo";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -9,15 +10,8 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Brand Section */}
         <div className="mb-8 pb-6 border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-2">
-            <svg viewBox="0 0 48 48" fill="none" className="h-6 w-6" aria-hidden="true">
-              <path d="M8 36L20 12h6L14 36H8z" fill="#2563eb"/>
-              <path d="M18 36L30 12h6L24 36h-6z" fill="#2563eb" opacity="0.7"/>
-              <path d="M28 36L40 12h6L34 36h-6z" fill="#2563eb" opacity="0.4"/>
-              <circle cx="40" cy="12" r="6" fill="#f59e0b"/>
-            </svg>
-            <span className="text-xl font-bold text-tl-900">trafico</span>
-            <span className="text-xl font-bold text-amber-500">.live</span>
+          <div className="mb-2">
+            <Logo variant="inline" size="sm" href={undefined} />
           </div>
           <p className="text-sm text-gray-600 max-w-xl">
             Inteligencia vial en tiempo real con datos oficiales de la DGT. Incidencias, cámaras,
