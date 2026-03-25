@@ -7,6 +7,19 @@
 **Domain:** Real-time traffic intelligence for Spain
 **Audience:** Personal travelers and professional transporters
 
+### Icon — 3 Puntos (Traffic Signal)
+Three vertically stacked dots: red (#dc2626), amber (#d97706), green (#059669). No background, no housing — just the lights. Universal traffic symbol, scales from 512px to 16px.
+
+### Wordmark — Stacked
+"trafico" in Exo 2 800 + ".LIVE" badge (blue rounded rect with white dot + text) below. For inline use: icon + wordmark + badge horizontally.
+
+### Logo Construction
+- **Primary lockup:** Icon (3 dots) + "trafico" + .LIVE badge — horizontal
+- **Stacked:** Icon above wordmark, centered
+- **Inline:** Compact horizontal for nav headers
+- **Icon only:** 3 dots for favicon, app icon, avatar
+- **App icon:** 3 dots on blue (#1b4bd5) rounded rect background
+
 ## Voice
 
 ### Personality
