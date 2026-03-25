@@ -3,12 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus, ChevronRight, Tag } from "lucide-react";
-import dynamic from "next/dynamic";
-import { PriceComparisonCard, StationRanking } from "@/components/gas-stations";
-
-const StationLocationMap = dynamic(() => import("@/components/gas-stations").then(m => m.StationLocationMap), { ssr: false });
-const PriceHistoryChart = dynamic(() => import("@/components/gas-stations").then(m => m.PriceHistoryChart), { ssr: false });
-const StationPriceHistory = dynamic(() => import("@/components/charts/StationPriceHistory").then(m => m.StationPriceHistory), { ssr: false });
+import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
+import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
 export const revalidate = 3600;
 

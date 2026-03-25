@@ -4,11 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { Anchor, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import dynamic from "next/dynamic";
-import { PriceComparisonCard, StationRanking } from "@/components/gas-stations";
-
-const StationLocationMap = dynamic(() => import("@/components/gas-stations").then(m => m.StationLocationMap), { ssr: false });
-const PriceHistoryChart = dynamic(() => import("@/components/gas-stations").then(m => m.PriceHistoryChart), { ssr: false });
+import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
 
 export const revalidate = 3600;
 
