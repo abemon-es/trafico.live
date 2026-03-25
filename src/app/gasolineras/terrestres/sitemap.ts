@@ -6,9 +6,13 @@ export const dynamic = "force-dynamic";
 // Next.js splits sitemaps automatically when generateSitemaps() is used.
 // Each sitemap gets its own URL: /gasolineras/terrestres/sitemap/0.xml, /1.xml, etc.
 export async function generateSitemaps() {
-  const count = await prisma.gasStation.count();
-  const numSitemaps = Math.ceil(count / 5000);
-  return Array.from({ length: numSitemaps }, (_, i) => ({ id: i }));
+  try {
+    const count = await prisma.gasStation.count();
+    const numSitemaps = Math.ceil(count / 5000);
+    return Array.from({ length: numSitemaps }, (_, i) => ({ id: i }));
+  } catch {
+    return [{ id: 0 }];
+  }
 }
 
 export default async function sitemap({
