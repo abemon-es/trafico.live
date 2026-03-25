@@ -30,13 +30,13 @@ function StatCard({ title, value, change, icon, color, loading }: StatCardProps)
   const isNegative = change && change < 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
         <div className={`p-2 rounded-lg ${color}`}>{icon}</div>
         {change !== undefined && change !== null && (
           <div
             className={`flex items-center gap-1 text-sm font-medium ${
-              isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-500"
+              isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-500 dark:text-gray-400"
             }`}
           >
             {isPositive ? (
@@ -51,15 +51,15 @@ function StatCard({ title, value, change, icon, color, loading }: StatCardProps)
       <div className="mt-3">
         {loading ? (
           <div className="flex items-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-            <span className="text-gray-400">Cargando...</span>
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500" />
+            <span className="text-gray-400 dark:text-gray-500">Cargando...</span>
           </div>
         ) : (
           <>
-            <p className="text-2xl font-bold text-gray-900 font-data">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
               {typeof value === "number" ? value.toLocaleString("es-ES") : value}
             </p>
-            <p className="text-sm text-gray-500">{title}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
           </>
         )}
       </div>

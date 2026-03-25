@@ -124,7 +124,7 @@ function StatCard({
   const isNegative = change && change < 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
         <div className={`p-2 rounded-lg ${color}`}>{icon}</div>
         {sparklineData && sparklineData.length > 0 && (
@@ -133,7 +133,7 @@ function StatCard({
         {!sparklineData && change !== undefined && change !== null && (
           <div
             className={`flex items-center gap-1 text-sm font-medium ${
-              isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-500"
+              isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-500 dark:text-gray-400"
             }`}
           >
             {isPositive ? (
@@ -148,17 +148,17 @@ function StatCard({
       <div className="mt-3">
         {loading ? (
           <div className="flex items-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-            <span className="text-gray-400">Cargando...</span>
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500" />
+            <span className="text-gray-400 dark:text-gray-500">Cargando...</span>
           </div>
         ) : (
           <>
-            <p className="text-2xl font-bold text-gray-900 font-data">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
               {typeof value === "number" ? value.toLocaleString("es-ES") : value}
             </p>
-            <p className="text-sm text-gray-500">{title}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
             {comparison && (
-              <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
+              <div className="mt-2 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                 <span>
                   Ayer: <span className="font-data">{comparison.yesterday}</span>
                   {comparison.changeVsYesterday !== null && (
@@ -189,19 +189,19 @@ function WeatherAlertBadge({ count }: { count: number }) {
   if (count === 0) return null;
 
   return (
-    <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-3 flex items-center gap-3">
-      <div className="p-2 bg-tl-amber-100 rounded-lg">
-        <CloudRain className="w-5 h-5 text-tl-amber-600" />
+    <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800/50 rounded-lg p-3 flex items-center gap-3">
+      <div className="p-2 bg-tl-amber-100 dark:bg-tl-amber-900/30 rounded-lg">
+        <CloudRain className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
       </div>
       <div className="flex-1">
-        <p className="text-sm font-medium text-tl-amber-800">
+        <p className="text-sm font-medium text-tl-amber-800 dark:text-tl-amber-300">
           <span className="font-data">{count}</span> {count === 1 ? "alerta meteorológica activa" : "alertas meteorológicas activas"}
         </p>
-        <p className="text-xs text-tl-amber-600">Puede afectar al tráfico</p>
+        <p className="text-xs text-tl-amber-600 dark:text-tl-amber-400">Puede afectar al tráfico</p>
       </div>
       <a
         href="/estadisticas?tab=clima"
-        className="text-tl-amber-700 hover:text-tl-amber-900 flex items-center gap-1 text-sm"
+        className="text-tl-amber-700 dark:text-tl-amber-400 hover:text-tl-amber-900 dark:hover:text-tl-amber-200 flex items-center gap-1 text-sm"
       >
         Ver <ArrowRight className="w-4 h-4" />
       </a>
@@ -226,20 +226,20 @@ function PeakHourBadge({
     <div
       className={`rounded-lg p-3 flex items-center gap-3 ${
         isAboveAverage
-          ? "bg-red-50 border border-red-200"
-          : "bg-tl-50 border border-tl-200"
+          ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50"
+          : "bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800/50"
       }`}
     >
-      <div className={`p-2 rounded-lg ${isAboveAverage ? "bg-red-100" : "bg-tl-100"}`}>
-        <Clock className={`w-5 h-5 ${isAboveAverage ? "text-red-600" : "text-tl-600"}`} />
+      <div className={`p-2 rounded-lg ${isAboveAverage ? "bg-red-100 dark:bg-red-900/30" : "bg-tl-100 dark:bg-tl-900/30"}`}>
+        <Clock className={`w-5 h-5 ${isAboveAverage ? "text-red-600 dark:text-red-400" : "text-tl-600 dark:text-tl-400"}`} />
       </div>
       <div className="flex-1">
-        <p className={`text-sm font-medium ${isAboveAverage ? "text-red-800" : "text-tl-800"}`}>
+        <p className={`text-sm font-medium ${isAboveAverage ? "text-red-800 dark:text-red-300" : "text-tl-800 dark:text-tl-300"}`}>
           {isAboveAverage
             ? "Actividad superior a la media"
             : `Hora punta (${formatHour(currentHour)})`}
         </p>
-        <p className={`text-xs ${isAboveAverage ? "text-red-600" : "text-tl-600"}`}>
+        <p className={`text-xs ${isAboveAverage ? "text-red-600 dark:text-red-400" : "text-tl-600 dark:text-tl-400"}`}>
           {isAboveAverage
             ? "Se recomienda precaución en carretera"
             : "Mayor concentración de tráfico habitual"}

@@ -113,7 +113,7 @@ export function Header() {
   const isMegaMenuActive = allMegaMenuItems.some((item) => isActiveRoute(item.href));
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 dark:backdrop-blur-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -133,8 +133,8 @@ export function Header() {
                     flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                     ${
                       isActive
-                        ? "bg-tl-50 text-tl-700"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                     }
                   `}
                 >
@@ -152,8 +152,8 @@ export function Header() {
                   flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                   ${
                     isMegaMenuActive || megaMenuOpen
-                      ? "bg-tl-50 text-tl-700"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                   }
                 `}
               >
@@ -162,11 +162,11 @@ export function Header() {
               </button>
 
               {megaMenuOpen && (
-                <div className="absolute right-0 mt-2 w-[500px] bg-white rounded-lg shadow-xl border border-gray-200 py-4 px-4 z-50">
+                <div className="absolute right-0 mt-2 w-[500px] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 py-4 px-4 z-50">
                   <div className="grid grid-cols-2 gap-6">
                     {megaMenuCategories.map((category) => (
                       <div key={category.title}>
-                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                        <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
                           {category.title}
                         </h3>
                         <ul className="space-y-1">
@@ -182,8 +182,8 @@ export function Header() {
                                     flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
                                     ${
                                       isActive
-                                        ? "bg-tl-50 text-tl-700"
-                                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                        ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                                     }
                                   `}
                                 >
@@ -209,11 +209,11 @@ export function Header() {
               type="button"
               onClick={search.open}
               aria-label="Abrir búsqueda (Cmd+K)"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors border border-gray-200 bg-gray-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline text-xs">Buscar</span>
-              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px] font-medium text-gray-400 leading-none">
+              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none">
                 ⌘K
               </kbd>
             </button>
@@ -224,7 +224,7 @@ export function Header() {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -237,7 +237,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 max-h-[80vh] overflow-y-auto">
+          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-800 max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col gap-1">
               {/* Main navigation */}
               {navigation.map((item) => {
@@ -253,8 +253,8 @@ export function Header() {
                       flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                       ${
                         isActive
-                          ? "bg-tl-50 text-tl-700"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                       }
                     `}
                   >
@@ -267,8 +267,8 @@ export function Header() {
               {/* Mega menu categories in mobile */}
               {megaMenuCategories.map((category) => (
                 <div key={category.title}>
-                  <div className="my-2 border-t border-gray-200" />
-                  <p className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <div className="my-2 border-t border-gray-200 dark:border-gray-800" />
+                  <p className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                     {category.title}
                   </p>
                   {category.items.map((item) => {
@@ -284,8 +284,8 @@ export function Header() {
                           flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                           ${
                             isActive
-                              ? "bg-tl-50 text-tl-700"
-                              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                              ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                              : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                           }
                         `}
                       >
