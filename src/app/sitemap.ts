@@ -13,6 +13,14 @@ const TRAFFIC_CITY_SLUGS = [
   "zaragoza", "bilbao", "alicante", "murcia", "granada",
 ];
 
+// Electrolineras city pages ("electrolineras [city]" — 2-6K searches/mo each)
+const ELECTROLINERAS_CITY_SLUGS = [
+  "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
+  "malaga", "murcia", "palma", "bilbao", "alicante",
+  "cordoba", "valladolid", "vigo", "gijon", "vitoria",
+  "granada", "oviedo", "santander", "san-sebastian", "pamplona",
+];
+
 // ZBE cities with dedicated pages
 const ZBE_CITY_SLUGS = [
   "madrid", "barcelona", "granada", "malaga", "zaragoza",
@@ -296,6 +304,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
+      url: `${BASE_URL}/puente-mayo-2026`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.95,
+    },
+    {
       url: `${BASE_URL}/operaciones`,
       lastModified: now,
       changeFrequency: "weekly",
@@ -313,6 +327,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.9,
+    },
+    // High-SEO live traffic landing pages
+    {
+      url: `${BASE_URL}/atascos`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.95,
+    },
+    {
+      url: `${BASE_URL}/cortes-trafico`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
+    // Etiqueta ambiental guide ("etiqueta ambiental DGT" 25-50K/mo, "cómo saber etiqueta coche" 20-40K/mo)
+    {
+      url: `${BASE_URL}/etiqueta-ambiental`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.95,
     },
     // Explore
     {
@@ -380,6 +414,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: "daily" as const,
     priority: 0.7,
+  }));
+
+  // Electrolineras city pages — "electrolineras [city]" (2-6K/mo each)
+  const electrolinerasCityPages: MetadataRoute.Sitemap = ELECTROLINERAS_CITY_SLUGS.map((city) => ({
+    url: `${BASE_URL}/electrolineras/${city}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.8,
   }));
 
   // Cheapest gas station city pages — high SEO value ("gasolineras baratas madrid", etc.)
@@ -543,6 +585,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...zbeCityPages,
     ...cityPages,
     ...evCityPages,
+    ...electrolinerasCityPages,
     ...baratosIndexPage,
     ...baratosCityPages,
     ...camarasCityPages,
