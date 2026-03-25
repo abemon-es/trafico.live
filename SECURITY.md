@@ -11,7 +11,7 @@ Only the latest version deployed at [trafico.live](https://trafico.live) receive
 
 ## Reporting a Vulnerability
 
-Send an email to **hola@trafico.live** with the subject line:
+Send an email to **security@trafico.live** with the subject line:
 
 ```
 Security: [brief description]

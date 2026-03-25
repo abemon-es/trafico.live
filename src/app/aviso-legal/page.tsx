@@ -27,7 +27,22 @@ export default function AvisoLegalPage() {
             </h2>
             <ul className="list-none pl-0 space-y-1">
               <li>
-                <strong>Denominación:</strong> Abemon Soluciones Digitales S.L.
+                <strong>Denominación social:</strong> Certus SPV, SLU
+              </li>
+              <li>
+                <strong>CIF:</strong> B13852223
+              </li>
+              <li>
+                <strong>Domicilio social:</strong> C/ Castello 36, Planta 1a,
+                28001 Madrid, España
+              </li>
+              <li>
+                <strong>Registro Mercantil:</strong> Registro Mercantil de
+                Madrid, Tomo 45325, Folio 1, Sección 8, Hoja M-797340
+              </li>
+              <li>
+                <strong>Administrador único:</strong> Dirk Manuel Martens
+                Jiménez
               </li>
               <li>
                 <strong>Dominio:</strong> trafico.live
@@ -35,10 +50,10 @@ export default function AvisoLegalPage() {
               <li>
                 <strong>Contacto:</strong>{" "}
                 <a
-                  href="mailto:hola@trafico.live"
+                  href="mailto:legal@trafico.live"
                   className="text-tl-600 hover:underline"
                 >
-                  hola@trafico.live
+                  legal@trafico.live
                 </a>
               </li>
             </ul>
@@ -81,8 +96,8 @@ export default function AvisoLegalPage() {
             </h2>
             <p>
               Todos los contenidos del Sitio (textos, diseño, código fuente,
-              logotipos, gráficos, imágenes y software) son propiedad de Abemon
-              Soluciones Digitales S.L. o se utilizan bajo licencia, y están
+              logotipos, gráficos, imágenes y software) son propiedad de Certus
+              SPV, SLU o se utilizan bajo licencia, y están
               protegidos por la legislación española e internacional sobre
               propiedad intelectual e industrial.
             </p>
@@ -167,7 +182,7 @@ export default function AvisoLegalPage() {
               Este aviso legal se rige por la legislación española. Para la
               resolución de cualquier controversia derivada del acceso o uso del
               Sitio, las partes se someten a los Juzgados y Tribunales de
-              Murcia, salvo que la ley disponga otra cosa.
+              Madrid, salvo que la ley disponga otra cosa.
             </p>
           </section>
         </div>

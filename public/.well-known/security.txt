@@ -1,4 +1,4 @@
-Contact: mailto:hola@trafico.live
+Contact: mailto:security@trafico.live
 Preferred-Languages: es, en
 Canonical: https://trafico.live/.well-known/security.txt
 Expires: 2027-03-25T00:00:00.000Z

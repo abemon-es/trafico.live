@@ -264,10 +264,10 @@ export default function PoliticaCookiesPage() {
             <p>
               Si tienes dudas sobre las cookies, escríbenos a{" "}
               <a
-                href="mailto:hola@trafico.live"
+                href="mailto:legal@trafico.live"
                 className="text-tl-600 hover:underline"
               >
-                hola@trafico.live
+                legal@trafico.live
               </a>
               .
             </p>

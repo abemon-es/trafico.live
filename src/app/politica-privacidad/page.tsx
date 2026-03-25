@@ -29,15 +29,32 @@ export default function PoliticaPrivacidadPage() {
             </h2>
             <ul className="list-none pl-0 space-y-1">
               <li>
-                <strong>Responsable:</strong> Abemon Soluciones Digitales S.L.
+                <strong>Responsable:</strong> Certus SPV, SLU (CIF: B13852223)
+              </li>
+              <li>
+                <strong>Domicilio:</strong> C/ Castello 36, Planta 1a, 28001
+                Madrid
               </li>
               <li>
                 <strong>Contacto:</strong>{" "}
                 <a
-                  href="mailto:hola@trafico.live"
+                  href="mailto:legal@trafico.live"
                   className="text-tl-600 hover:underline"
                 >
-                  hola@trafico.live
+                  legal@trafico.live
+                </a>
+              </li>
+              <li>
+                <strong>Delegado de Protección de Datos (DPO):</strong> Bárbara
+                Botía Sainz de Baranda — ICAM Málaga, colegiada n.° 11.233
+              </li>
+              <li>
+                <strong>Contacto DPO:</strong>{" "}
+                <a
+                  href="mailto:dpo@trafico.live"
+                  className="text-tl-600 hover:underline"
+                >
+                  dpo@trafico.live
                 </a>
               </li>
               <li>
@@ -80,7 +97,7 @@ export default function PoliticaPrivacidadPage() {
               2.2 Datos de contacto
             </h3>
             <p>
-              Si nos contactas por email (hola@trafico.live), trataremos tu
+              Si nos contactas por email (legal@trafico.live), trataremos tu
               dirección de correo y el contenido del mensaje para atender tu
               consulta.
             </p>
@@ -187,12 +204,12 @@ export default function PoliticaPrivacidadPage() {
               </li>
             </ul>
             <p>
-              Para ejercer cualquier derecho, escríbenos a{" "}
+              Para ejercer cualquier derecho, escríbenos al DPO:{" "}
               <a
-                href="mailto:hola@trafico.live"
+                href="mailto:dpo@trafico.live"
                 className="text-tl-600 hover:underline"
               >
-                hola@trafico.live
+                dpo@trafico.live
               </a>{" "}
               indicando &quot;Derechos RGPD&quot; en el asunto. Responderemos en un
               plazo máximo de 30 días.
