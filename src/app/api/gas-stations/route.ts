@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Sorting
-    const sort = searchParams.get("sort") || "price";
+    const sort = searchParams.get("sort") || "name";
     const order = searchParams.get("order") || "asc";
 
     // Build where clause
