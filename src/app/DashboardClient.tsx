@@ -34,6 +34,11 @@ const InfrastructureStatus = dynamic(
   { ssr: false }
 );
 
+const StaleDataBanner = dynamic(
+  () => import("@/components/ui/StaleDataBanner").then((m) => m.StaleDataBanner),
+  { ssr: false }
+);
+
 function CardsSkeleton() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -64,6 +69,10 @@ function ChartSkeleton() {
 export function DashboardClient() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <Suspense fallback={null}>
+        <StaleDataBanner />
+      </Suspense>
+
       <Suspense fallback={<CardsSkeleton />}>
         <EnhancedStatsCards />
       </Suspense>
