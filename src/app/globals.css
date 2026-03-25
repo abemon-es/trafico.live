@@ -6,60 +6,92 @@
   --background: #ffffff;
   --foreground: #111827;
 
-  /* trafico.live Brand Colors */
-  --tl-blue: #2563eb;
-  --tl-blue-dark: #1e40af;
-  --tl-blue-light: #60a5fa;
-  --tl-amber: #f59e0b;
-  --tl-amber-dark: #d97706;
+  /* trafico.live Brand Colors — OKLCH-generated */
+  --tl-primary: #1b4bd5;
+  --tl-primary-hover: #092ea8;
+  --tl-primary-bg: #f0f5ff;
+  --tl-primary-bg-hover: #dde8ff;
+  --tl-accent: #b56200;
+  --tl-accent-hover: #8c4a00;
 
-  /* Semantic colors */
-  --tl-primary: var(--tl-blue);
-  --tl-primary-hover: var(--tl-blue-dark);
-  --tl-primary-bg: #eff6ff;
-  --tl-primary-bg-hover: #dbeafe;
-  --tl-accent: var(--tl-amber);
-  --tl-accent-hover: var(--tl-amber-dark);
+  /* Signal colors (semantic) */
+  --tl-success: #059669;
+  --tl-warning: #d48139;
+  --tl-danger: #dc2626;
+  --tl-info: #366cf8;
+}
+
+.dark {
+  --background: #0b0f1a;
+  --foreground: #e2e8f0;
+
+  --tl-primary: #6393ff;
+  --tl-primary-hover: #94b6ff;
+  --tl-primary-bg: rgba(27, 75, 213, 0.15);
+  --tl-primary-bg-hover: rgba(27, 75, 213, 0.25);
+  --tl-accent: #d48139;
+  --tl-accent-hover: #eca66e;
+
+  --tl-success: #34d399;
+  --tl-warning: #eca66e;
+  --tl-danger: #f87171;
+  --tl-info: #6393ff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 
-  /* Blue palette */
-  --color-tl-50: #eff6ff;
-  --color-tl-100: #dbeafe;
-  --color-tl-200: #bfdbfe;
-  --color-tl-300: #93c5fd;
-  --color-tl-400: #60a5fa;
-  --color-tl-500: #3b82f6;
-  --color-tl-600: #2563eb;
-  --color-tl-700: #1d4ed8;
-  --color-tl-800: #1e40af;
-  --color-tl-900: #1e3a8a;
+  /* Typography */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 
-  /* Amber accent */
-  --color-amber-50: #fffbeb;
-  --color-amber-100: #fef3c7;
-  --color-amber-200: #fde68a;
-  --color-amber-300: #fcd34d;
-  --color-amber-400: #fbbf24;
-  --color-amber-500: #f59e0b;
-  --color-amber-600: #d97706;
-  --color-amber-700: #b45309;
-  --color-amber-800: #92400e;
-  --color-amber-900: #78350f;
-}
+  /* Primary blue — OKLCH-generated from #1d4ed8 */
+  --color-tl-50: #f0f5ff;
+  --color-tl-100: #dde8ff;
+  --color-tl-200: #c0d5ff;
+  --color-tl-300: #94b6ff;
+  --color-tl-400: #6393ff;
+  --color-tl-500: #366cf8;
+  --color-tl-600: #1b4bd5;
+  --color-tl-700: #092ea8;
+  --color-tl-800: #011577;
+  --color-tl-900: #000245;
+  --color-tl-950: #000025;
 
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  /* Amber accent — OKLCH-generated from #d97706 */
+  --color-tl-amber-50: #fff3ea;
+  --color-tl-amber-100: #ffe2cc;
+  --color-tl-amber-200: #fcc8a1;
+  --color-tl-amber-300: #eca66e;
+  --color-tl-amber-400: #d48139;
+  --color-tl-amber-500: #b56200;
+  --color-tl-amber-600: #8c4a00;
+  --color-tl-amber-700: #653400;
+  --color-tl-amber-800: #401f00;
+  --color-tl-amber-900: #1f0c00;
+  --color-tl-amber-950: #0d0400;
+
+  /* Signal colors (always fixed, not theme-dependent) */
+  --color-signal-green: #059669;
+  --color-signal-amber: #d97706;
+  --color-signal-red: #dc2626;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+}
+
+/* Heading typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), system-ui, sans-serif;
+}
+
+/* Monospace for data displays */
+.font-data {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
