@@ -916,6 +916,23 @@ model FuelPriceDailyStats {
   @@index([scope])
 }
 
+// Price alert subscriptions for fuel price notifications
+model PriceAlert {
+  id            String   @id @default(cuid())
+  email         String
+  fuelType      String   // "gasoleoA" or "gasolina95"
+  targetPrice   Decimal  @db.Decimal(5,3)  // e.g. 1.300
+  province      String?  // optional province filter (INE code)
+  provinceName  String?
+  isActive      Boolean  @default(true)
+  lastNotified  DateTime?
+  createdAt     DateTime @default(now())
+  unsubscribeToken String @unique @default(cuid())
+
+  @@index([email])
+  @@index([isActive, fuelType])
+}
+
 // Historic daily rankings for trend analysis
 model StationDailyRanking {
   id         String     @id @default(cuid())

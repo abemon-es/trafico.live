@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 
 export const metadata: Metadata = {
   title: "Gasolineras y Precios de Combustible | Tráfico España",
@@ -446,6 +447,11 @@ export default async function GasolinerasPage() {
           </div>
         </div>
       )}
+
+      {/* Price alert subscription */}
+      <div className="mb-8">
+        <PriceAlertForm accent="amber" />
+      </div>
 
       {/* Info Box */}
       <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
