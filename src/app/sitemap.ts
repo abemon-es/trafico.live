@@ -448,24 +448,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Add sub-pages only for main roads
     if (isMainRoad) {
+      // Round to 1 decimal to avoid IEEE-754 artifacts (e.g. 0.85 - 0.1 = 0.7500000000000001)
+      const subPriority = Number((priority - 0.1).toFixed(1));
       pages.push(
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/camaras`,
           lastModified: now,
           changeFrequency: "daily",
-          priority: priority - 0.1,
+          priority: subPriority,
         },
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/radares`,
           lastModified: now,
           changeFrequency: "weekly",
-          priority: priority - 0.1,
+          priority: subPriority,
         },
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/estadisticas`,
           lastModified: now,
           changeFrequency: "daily",
-          priority: priority - 0.1,
+          priority: subPriority,
         }
       );
     }
@@ -482,7 +484,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const provincePages: MetadataRoute.Sitemap = provinces
     .filter((p) => p.province)
     .map((p) => ({
-      url: `${BASE_URL}/provincias/${p.province}`,
+      url: `${BASE_URL}/provincias/${encodeURIComponent(p.province!)}`,
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.75,

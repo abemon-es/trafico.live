@@ -30,6 +30,34 @@ const CITY_PROVINCES: Record<string, { name: string; code: string }> = {
   "santa-cruz": { name: "S.C. Tenerife", code: "38" },
 };
 
+// Province INE codes whose cameras are managed by regional bodies (not DGT)
+// Catalonia: SCT (Servei Català de Trànsit) — provinces 08, 17, 25, 43
+const NON_DGT_CAMERA_PROVINCES: Record<
+  string,
+  { name: string; url: string; urlLabel: string }
+> = {
+  "08": {
+    name: "Servei Català de Trànsit (SCT)",
+    url: "https://transit.gencat.cat/ca/el_transit/cameras-de-transit/",
+    urlLabel: "Cámaras SCT",
+  },
+  "17": {
+    name: "Servei Català de Trànsit (SCT)",
+    url: "https://transit.gencat.cat/ca/el_transit/cameras-de-transit/",
+    urlLabel: "Cámaras SCT",
+  },
+  "25": {
+    name: "Servei Català de Trànsit (SCT)",
+    url: "https://transit.gencat.cat/ca/el_transit/cameras-de-transit/",
+    urlLabel: "Cámaras SCT",
+  },
+  "43": {
+    name: "Servei Català de Trànsit (SCT)",
+    url: "https://transit.gencat.cat/ca/el_transit/cameras-de-transit/",
+    urlLabel: "Cámaras SCT",
+  },
+};
+
 // Nearby city suggestions for empty-state (sorted alphabetically by slug)
 const NEARBY_CITIES = [
   "madrid",
@@ -260,46 +288,70 @@ export default async function CamarasCityPage({ params }: Props) {
           </>
         ) : (
           /* Empty state */
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-10 text-center">
-            <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Camera className="w-7 h-7 text-gray-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Sin cámaras disponibles en {cityData.name}
-            </h2>
-            <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
-              No hay cámaras de tráfico de la DGT registradas para la provincia de{" "}
-              {cityData.name} en este momento. Las cámaras pueden estar sin datos o pendientes
-              de actualización.
-            </p>
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-3">
-                Consulta cámaras en otras ciudades:
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {NEARBY_CITIES.filter((c) => c !== city).map((slug) => {
-                  const nearbyData = CITY_PROVINCES[slug];
-                  if (!nearbyData) return null;
-                  return (
-                    <Link
-                      key={slug}
-                      href={`/camaras/${slug}`}
-                      className="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+          (() => {
+            const regionalBody = NON_DGT_CAMERA_PROVINCES[cityData.code];
+            return (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-10 text-center">
+                <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Camera className="w-7 h-7 text-gray-400" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  Sin cámaras DGT disponibles en {cityData.name}
+                </h2>
+                {regionalBody ? (
+                  <div className="max-w-lg mx-auto mb-6">
+                    <p className="text-gray-500 text-sm mb-3">
+                      Las cámaras de tráfico en esta provincia son gestionadas por{" "}
+                      <strong>{regionalBody.name}</strong>, no por la DGT directamente. Por este
+                      motivo no aparecen en el directorio nacional.
+                    </p>
+                    <a
+                      href={regionalBody.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
-                      {nearbyData.name}
+                      {regionalBody.urlLabel}
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
+                    No hay cámaras de tráfico de la DGT registradas para la provincia de{" "}
+                    {cityData.name} en este momento. Las cámaras pueden estar sin datos o pendientes
+                    de actualización.
+                  </p>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-3">
+                    Consulta cámaras en otras ciudades:
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {NEARBY_CITIES.filter((c) => c !== city).map((slug) => {
+                      const nearbyData = CITY_PROVINCES[slug];
+                      if (!nearbyData) return null;
+                      return (
+                        <Link
+                          key={slug}
+                          href={`/camaras/${slug}`}
+                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                        >
+                          {nearbyData.name}
+                        </Link>
+                      );
+                    })}
+                    <Link
+                      href="/camaras"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Ver todas las cámaras
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
-                  );
-                })}
-                <Link
-                  href="/camaras"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Ver todas las cámaras
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })()
         )}
 
         {/* SEO content */}
@@ -307,21 +359,52 @@ export default async function CamarasCityPage({ params }: Props) {
           <h2 className="text-lg font-bold text-gray-900 mb-3">
             Cámaras DGT en {cityData.name}
           </h2>
-          <p className="text-gray-600 text-sm leading-relaxed">
-            La Dirección General de Tráfico (DGT) dispone de una red de cámaras de vigilancia
-            en las principales carreteras de España. En la provincia de {cityData.name} estas
-            cámaras permiten monitorizar el estado del tráfico en tiempo real, detectar
-            incidencias y gestionar la circulación en los accesos a la ciudad.
-          </p>
-          <p className="text-gray-600 text-sm leading-relaxed mt-2">
-            Las imágenes se actualizan automáticamente cada pocos minutos y son accesibles a
-            través de trafico.live sin necesidad de registrarse. Para ver incidencias activas en
-            {" "}{cityData.name}, consulta la sección de{" "}
-            <Link href="/incidencias" className="text-blue-600 hover:underline">
-              incidencias de tráfico
-            </Link>
-            .
-          </p>
+          {NON_DGT_CAMERA_PROVINCES[cityData.code] ? (
+            <>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                La provincia de {cityData.name} pertenece a Cataluña, comunidad autónoma que
+                dispone de su propio sistema de gestión del tráfico gestionado por el{" "}
+                <strong>Servei Català de Trànsit (SCT)</strong>. Las cámaras de la red viaria
+                catalana no forman parte del sistema de la DGT y por tanto no están disponibles
+                en este directorio.
+              </p>
+              <p className="text-gray-600 text-sm leading-relaxed mt-2">
+                Para consultar las cámaras de tráfico en carreteras catalanas, accede al portal
+                oficial del SCT:{" "}
+                <a
+                  href={NON_DGT_CAMERA_PROVINCES[cityData.code]!.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  transit.gencat.cat
+                </a>
+                . Para ver incidencias activas en {cityData.name}, consulta la sección de{" "}
+                <Link href="/incidencias" className="text-blue-600 hover:underline">
+                  incidencias de tráfico
+                </Link>
+                .
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                La Dirección General de Tráfico (DGT) dispone de una red de cámaras de vigilancia
+                en las principales carreteras de España. En la provincia de {cityData.name} estas
+                cámaras permiten monitorizar el estado del tráfico en tiempo real, detectar
+                incidencias y gestionar la circulación en los accesos a la ciudad.
+              </p>
+              <p className="text-gray-600 text-sm leading-relaxed mt-2">
+                Las imágenes se actualizan automáticamente cada pocos minutos y son accesibles a
+                través de trafico.live sin necesidad de registrarse. Para ver incidencias activas en
+                {" "}{cityData.name}, consulta la sección de{" "}
+                <Link href="/incidencias" className="text-blue-600 hover:underline">
+                  incidencias de tráfico
+                </Link>
+                .
+              </p>
+            </>
+          )}
         </div>
       </main>
     </div>

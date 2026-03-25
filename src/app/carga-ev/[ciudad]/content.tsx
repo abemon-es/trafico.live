@@ -20,18 +20,19 @@ interface ChargerData {
   address: string | null;
   city: string | null;
   province: string | null;
-  powerKw: number | null;
+  provinceName: string | null;
+  totalPowerKw: number | null;
   connectorTypes: string[];
-  operatorName: string | null;
+  operator: string | null;
   isPublic: boolean;
-  latitude: number;
-  longitude: number;
+  lat: number;
+  lng: number;
 }
 
 interface ChargersResponse {
-  success: boolean;
   count: number;
   chargers: ChargerData[];
+  provinces: string[];
 }
 
 interface CiudadCargaEVContentProps {
@@ -66,9 +67,10 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
 
   // Filter chargers for this city/province
   const cityChargers = data?.chargers?.filter((charger) => {
-    // Match by city name or province
+    // Match by city name (against city field) or province name (against provinceName field)
+    // Note: charger.province is an INE code ("28"), not a name. Use provinceName for text comparison.
     const cityMatch = charger.city?.toLowerCase().includes(cityData.name.toLowerCase());
-    const provinceMatch = charger.province?.toLowerCase().includes(cityData.province.toLowerCase());
+    const provinceMatch = charger.provinceName?.toLowerCase().includes(cityData.province.toLowerCase());
     return cityMatch || provinceMatch;
   });
 
@@ -76,10 +78,10 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
   const stats = cityChargers
     ? {
         total: cityChargers.length,
-        slow: cityChargers.filter((c) => (c.powerKw || 0) < 22).length,
-        fast: cityChargers.filter((c) => (c.powerKw || 0) >= 22 && (c.powerKw || 0) < 50).length,
-        ultra: cityChargers.filter((c) => (c.powerKw || 0) >= 50).length,
-        operators: [...new Set(cityChargers.map((c) => c.operatorName).filter(Boolean))].length,
+        slow: cityChargers.filter((c) => (c.totalPowerKw || 0) < 22).length,
+        fast: cityChargers.filter((c) => (c.totalPowerKw || 0) >= 22 && (c.totalPowerKw || 0) < 50).length,
+        ultra: cityChargers.filter((c) => (c.totalPowerKw || 0) >= 50).length,
+        operators: [...new Set(cityChargers.map((c) => c.operator).filter(Boolean))].length,
       }
     : null;
 
@@ -98,7 +100,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
     if (powerFilter) {
       const level = POWER_LEVELS.find((l) => l.id === powerFilter);
       if (level) {
-        const power = charger.powerKw || 0;
+        const power = charger.totalPowerKw || 0;
         if (power < level.min || power >= level.max) return false;
       }
     }
@@ -246,17 +248,17 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                   <h3 className="font-medium text-gray-900 text-sm flex-1 pr-2">
                     {charger.name}
                   </h3>
-                  {charger.powerKw && (
+                  {charger.totalPowerKw != null && charger.totalPowerKw > 0 && (
                     <span
                       className={`text-sm font-bold px-2 py-0.5 rounded ${
-                        charger.powerKw >= 50
+                        charger.totalPowerKw >= 50
                           ? "bg-green-100 text-green-700"
-                          : charger.powerKw >= 22
+                          : charger.totalPowerKw >= 22
                           ? "bg-amber-100 text-amber-700"
                           : "bg-blue-100 text-blue-700"
                       }`}
                     >
-                      {charger.powerKw} kW
+                      {charger.totalPowerKw} kW
                     </span>
                   )}
                 </div>
@@ -265,8 +267,8 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                   {charger.address && (
                     <p className="text-gray-600 truncate">{charger.address}</p>
                   )}
-                  {charger.operatorName && (
-                    <p className="text-gray-400">Operador: {charger.operatorName}</p>
+                  {charger.operator && (
+                    <p className="text-gray-400">Operador: {charger.operator}</p>
                   )}
                 </div>
 
@@ -284,7 +286,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                 )}
 
                 <a
-                  href={`https://www.google.com/maps?q=${charger.latitude},${charger.longitude}`}
+                  href={`https://www.google.com/maps?q=${charger.lat},${charger.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-3 flex items-center gap-1 text-xs text-green-600 hover:underline"

@@ -46,7 +46,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cached);
     }
 
-    const intervalExpr = `${days} days`;
+    // Use a Date-based cutoff instead of raw INTERVAL interpolation.
+    // Prisma $queryRaw tagged templates bind interpolated values as positional
+    // parameters ($1, $2…). PostgreSQL's INTERVAL keyword does not accept a
+    // parameter placeholder — it requires a string literal — so passing a JS
+    // string via template interpolation always throws a syntax error at runtime.
+    // Computing the cutoff timestamp in JS and passing it as a typed Date avoids
+    // the issue entirely and is equally efficient.
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     // Raw SQL for hourly breakdown — only way to use EXTRACT with Prisma
     const hourlyRaw = await prisma.$queryRaw<
@@ -55,7 +62,7 @@ export async function GET(request: NextRequest) {
       SELECT EXTRACT(HOUR FROM "startedAt")::int AS hour,
              COUNT(*)::bigint AS count
       FROM "TrafficIncident"
-      WHERE "startedAt" > NOW() - INTERVAL ${intervalExpr}
+      WHERE "startedAt" > ${startDate}
       GROUP BY hour
       ORDER BY hour
     `;
@@ -76,7 +83,7 @@ export async function GET(request: NextRequest) {
       SELECT EXTRACT(DOW FROM "startedAt")::int AS dow,
              COUNT(*)::bigint AS count
       FROM "TrafficIncident"
-      WHERE "startedAt" > NOW() - INTERVAL ${intervalExpr}
+      WHERE "startedAt" > ${startDate}
       GROUP BY dow
       ORDER BY dow
     `;
@@ -90,9 +97,7 @@ export async function GET(request: NextRequest) {
       count: dowMap.get(dow) ?? 0,
     }));
 
-    // Parallel Prisma groupBy queries
-    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-
+    // Parallel Prisma groupBy queries (reuses startDate computed above)
     const [topRoadsRaw, topProvincesRaw, byTypeRaw, totalActive, totalHistoric] =
       await Promise.all([
         // Top 15 roads

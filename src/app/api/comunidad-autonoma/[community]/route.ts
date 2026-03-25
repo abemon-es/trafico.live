@@ -11,26 +11,43 @@ export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { community: slug } = await params;
 
-    const community = await prisma.community.findUnique({
-      where: { slug },
-      include: {
-        provinces: {
-          include: {
-            municipalities: {
-              select: {
-                code: true,
-                name: true,
-                slug: true,
-                population: true,
-              },
-              orderBy: { population: "desc" },
-              take: 5,
+    const communityInclude = {
+      provinces: {
+        include: {
+          municipalities: {
+            select: {
+              code: true,
+              name: true,
+              slug: true,
+              population: true,
             },
+            orderBy: { population: "desc" as const },
+            take: 5,
           },
-          orderBy: { population: "desc" },
         },
+        orderBy: { population: "desc" as const },
       },
+    };
+
+    // Primary lookup: exact community slug match
+    let community = await prisma.community.findUnique({
+      where: { slug },
+      include: communityInclude,
     });
+
+    // Fallback: slug might be a province slug (e.g. "madrid" → province "Madrid" → community "Comunidad de Madrid")
+    if (!community) {
+      const province = await prisma.province.findUnique({
+        where: { slug },
+        select: { communityCode: true },
+      });
+      if (province) {
+        community = await prisma.community.findUnique({
+          where: { code: province.communityCode },
+          include: communityInclude,
+        });
+      }
+    }
 
     if (!community) {
       return NextResponse.json(

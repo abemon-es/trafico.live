@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { Anchor, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { PriceHistoryChart, StationLocationMap, PriceComparisonCard, StationRanking } from "@/components/gas-stations";
@@ -8,13 +9,18 @@ import { PriceHistoryChart, StationLocationMap, PriceComparisonCard, StationRank
 // Force dynamic rendering - database not accessible during build
 export const dynamic = 'force-dynamic';
 
+// Cache the station lookup so generateMetadata and the page component share one DB query per request
+const getStation = cache(async (id: string) => {
+  return prisma.maritimeStation.findUnique({ where: { id } });
+});
+
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const station = await prisma.maritimeStation.findUnique({ where: { id } });
+  const station = await getStation(id);
 
   if (!station) {
     return { title: "Estacion maritima no encontrada" };
@@ -30,7 +36,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
   const { id } = await params;
 
   const [station, priceHistory] = await Promise.all([
-    prisma.maritimeStation.findUnique({ where: { id } }),
+    getStation(id),
     prisma.maritimePriceHistory.findMany({
       where: { stationId: id },
       orderBy: { recordedAt: "asc" },
