@@ -45,21 +45,21 @@ export default async function Dashboard() {
             combustible y balizas V16 en un solo mapa.
           </p>
           <div className="flex flex-wrap gap-3 text-sm">
-            <span className="bg-red-50 text-red-700 px-3 py-1 rounded-full font-medium">
-              {stats.incidentCount.toLocaleString("es-ES")} incidencias activas
+            <span className="bg-red-50 text-signal-red px-3 py-1 rounded-full font-medium">
+              <span className="font-data">{stats.incidentCount.toLocaleString("es-ES")}</span> incidencias activas
             </span>
-            <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium">
-              {stats.cameraCount.toLocaleString("es-ES")} cámaras de tráfico
+            <span className="bg-tl-50 text-tl-700 px-3 py-1 rounded-full font-medium">
+              <span className="font-data">{stats.cameraCount.toLocaleString("es-ES")}</span> cámaras de tráfico
             </span>
-            <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-medium">
-              {stats.radarCount.toLocaleString("es-ES")} radares
+            <span className="bg-tl-amber-50 text-tl-amber-700 px-3 py-1 rounded-full font-medium">
+              <span className="font-data">{stats.radarCount.toLocaleString("es-ES")}</span> radares
             </span>
-            <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium">
-              {stats.stationCount.toLocaleString("es-ES")} gasolineras
+            <span className="bg-green-50 text-signal-green px-3 py-1 rounded-full font-medium">
+              <span className="font-data">{stats.stationCount.toLocaleString("es-ES")}</span> gasolineras
             </span>
             {stats.v16Count > 0 && (
-              <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full font-medium">
-                {stats.v16Count.toLocaleString("es-ES")} balizas V16 activas
+              <span className="bg-tl-amber-50 text-tl-amber-700 px-3 py-1 rounded-full font-medium">
+                <span className="font-data">{stats.v16Count.toLocaleString("es-ES")}</span> balizas V16 activas
               </span>
             )}
           </div>
