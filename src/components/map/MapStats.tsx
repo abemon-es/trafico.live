@@ -41,7 +41,7 @@ export function MapStats({
 
         {incidentCount > 0 && (
           <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-            <AlertTriangle className="w-4 h-4 text-orange-500" />
+            <AlertTriangle className="w-4 h-4 text-orange-500 dark:text-orange-400" />
             <span className="font-medium">{incidentCount}</span>
             <span className="text-gray-500 dark:text-gray-400">incidencias</span>
           </div>

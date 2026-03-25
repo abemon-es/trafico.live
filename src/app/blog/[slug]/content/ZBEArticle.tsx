@@ -53,13 +53,13 @@ const STICKERS = [
   },
   {
     label: "C",
-    color: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 border-yellow-300",
     vehicles: "Gasolina Euro 4/5/6 y Diésel Euro 6.",
     access: "Acceso permitido excepto en episodios de alta contaminación (protocolo 2 y 3).",
   },
   {
     label: "B",
-    color: "bg-orange-100 text-orange-800 border-orange-300",
+    color: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 border-orange-300",
     vehicles: "Gasolina Euro 3 y Diésel Euro 4/5.",
     access: "Restricciones a partir del protocolo 1 de contaminación. No pueden circular en ZBE durante días de alta contaminación.",
   },

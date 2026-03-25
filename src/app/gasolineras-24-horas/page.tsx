@@ -196,7 +196,7 @@ export default async function Gasolineras24hPage() {
           {/* Header */}
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-orange-50 rounded-lg flex-shrink-0">
+              <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg flex-shrink-0">
                 <Clock className="w-8 h-8 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
@@ -266,7 +266,7 @@ export default async function Gasolineras24hPage() {
                       <div
                         key={row.province ?? `prov-${idx}`}
                         className={`flex items-center gap-3 px-4 py-3 ${
-                          isTop ? "bg-orange-50" : ""
+                          isTop ? "bg-orange-50 dark:bg-orange-900/20" : ""
                         }`}
                       >
                         <span className={`text-sm font-medium w-5 text-right flex-shrink-0 ${isTop ? "text-orange-700 dark:text-orange-400" : "text-gray-400"}`}>
@@ -283,7 +283,7 @@ export default async function Gasolineras24hPage() {
                           </div>
                           <div className="h-1.5 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${isTop ? "bg-orange-500" : "bg-gray-300"}`}
+                              className={`h-full rounded-full ${isTop ? "bg-orange-50 dark:bg-orange-900/200" : "bg-gray-300"}`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -327,7 +327,7 @@ export default async function Gasolineras24hPage() {
                       <span
                         className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                           idx === 0
-                            ? "bg-orange-500 text-white"
+                            ? "bg-orange-50 dark:bg-orange-900/200 text-white"
                             : idx === 1
                             ? "bg-orange-400 text-white"
                             : idx === 2
@@ -351,7 +351,7 @@ export default async function Gasolineras24hPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded font-medium">
+                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded font-medium">
                         <Clock className="w-3 h-3" />
                         24h
                       </span>
@@ -378,7 +378,7 @@ export default async function Gasolineras24hPage() {
               href="/gasolineras/mapa?horario=24h"
               className="flex items-center gap-4 p-5 bg-gradient-to-r from-orange-50 to-tl-amber-50 rounded-xl border border-orange-200 hover:border-orange-300 hover:shadow-sm transition-all group"
             >
-              <div className="p-3 bg-orange-100 rounded-lg flex-shrink-0">
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex-shrink-0">
                 <MapPin className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="flex-1">
@@ -389,7 +389,7 @@ export default async function Gasolineras24hPage() {
                   Filtra por tu ubicación y encuentra la más cercana que esté abierta ahora.
                 </p>
               </div>
-              <ChevronRight className="w-5 h-5 text-orange-500 flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0" />
             </Link>
           </div>
 

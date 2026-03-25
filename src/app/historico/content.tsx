@@ -318,7 +318,7 @@ function DailyTrendChart({
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div
-                className="w-full bg-orange-500 rounded-t hover:bg-orange-600 transition-colors"
+                className="w-full bg-orange-50 dark:bg-orange-900/200 rounded-t hover:bg-orange-600 transition-colors"
                 style={{ height: `${height}%`, minHeight: day.v16Count > 0 ? "4px" : "0" }}
                 title={`${day.date}: ${day.v16Count} balizas`}
               />
@@ -372,7 +372,7 @@ function HourlyHeatmap({
   const getColor = (value: number) => {
     const intensity = value / maxValue;
     if (intensity === 0) return "bg-gray-100 dark:bg-gray-900";
-    if (intensity < 0.25) return "bg-orange-100";
+    if (intensity < 0.25) return "bg-orange-100 dark:bg-orange-900/30";
     if (intensity < 0.5) return "bg-orange-200";
     if (intensity < 0.75) return "bg-orange-400";
     return "bg-orange-600";
@@ -711,7 +711,7 @@ export function HistoricoContent() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatCard
             icon={AlertTriangle}
-            iconBgColor="bg-orange-50"
+            iconBgColor="bg-orange-50 dark:bg-orange-900/20"
             iconColor="text-orange-600 dark:text-orange-400"
             value={
               isRealtime
@@ -762,7 +762,7 @@ export function HistoricoContent() {
           />
           <StatCard
             icon={Calendar}
-            iconBgColor="bg-purple-50"
+            iconBgColor="bg-purple-50 dark:bg-purple-900/20"
             iconColor="text-purple-600 dark:text-purple-400"
             value={
               dailyData?.data?.peak
@@ -872,7 +872,7 @@ export function HistoricoContent() {
                     const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
                     const colors: Record<string, string> = {
                       Baja: "bg-green-50 dark:bg-green-900/200",
-                      Media: "bg-orange-500",
+                      Media: "bg-orange-50 dark:bg-orange-900/200",
                       Alta: "bg-red-50 dark:bg-red-900/200",
                       "Muy Alta": "bg-red-900",
                     };

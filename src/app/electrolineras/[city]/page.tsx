@@ -64,8 +64,8 @@ const POWER_BANDS = [
     sublabel: "22–150 kW",
     minKw: 22,
     maxKw: 150,
-    color: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
-    dot: "bg-orange-500",
+    color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
+    dot: "bg-orange-50 dark:bg-orange-900/200",
   },
   {
     id: "ultra",
@@ -384,7 +384,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                             </span>
                           )}
                           {charger.is24h && (
-                            <span className="text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded flex-shrink-0">
+                            <span className="text-xs font-medium bg-teal-50 dark:bg-teal-900/20 text-teal-700 border border-teal-200 px-2 py-0.5 rounded flex-shrink-0">
                               24h
                             </span>
                           )}

@@ -15,9 +15,9 @@ const colorClasses = {
     dot: "bg-red-50 dark:bg-red-900/200",
   },
   orange: {
-    active: "bg-orange-100 border-orange-500 text-orange-700 dark:text-orange-400",
+    active: "bg-orange-100 dark:bg-orange-900/30 border-orange-500 text-orange-700 dark:text-orange-400",
     inactive: "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900",
-    dot: "bg-orange-500",
+    dot: "bg-orange-50 dark:bg-orange-900/200",
   },
   blue: {
     active: "bg-tl-100 dark:bg-tl-900/30 border-tl-500 text-tl-700 dark:text-tl-300",
@@ -30,9 +30,9 @@ const colorClasses = {
     dot: "bg-green-50 dark:bg-green-900/200",
   },
   purple: {
-    active: "bg-purple-100 border-purple-500 text-purple-700 dark:text-purple-400",
+    active: "bg-purple-100 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-400",
     inactive: "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900",
-    dot: "bg-purple-500",
+    dot: "bg-purple-50 dark:bg-purple-900/200",
   },
   gray: {
     active: "bg-gray-200 border-gray-500 text-gray-700 dark:text-gray-300",
@@ -42,12 +42,12 @@ const colorClasses = {
   cyan: {
     active: "bg-cyan-100 border-cyan-500 text-cyan-700",
     inactive: "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900",
-    dot: "bg-cyan-500",
+    dot: "bg-cyan-50 dark:bg-cyan-900/200",
   },
   yellow: {
-    active: "bg-yellow-100 border-yellow-500 text-yellow-700 dark:text-yellow-400",
+    active: "bg-yellow-100 dark:bg-yellow-900/30 border-yellow-500 text-yellow-700 dark:text-yellow-400",
     inactive: "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900",
-    dot: "bg-yellow-500",
+    dot: "bg-yellow-50 dark:bg-yellow-900/200",
   },
   amber: {
     active: "bg-tl-amber-100 border-tl-amber-500 text-tl-amber-700 dark:text-tl-amber-300",

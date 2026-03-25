@@ -138,7 +138,7 @@ export function InfrastructureStatus() {
               count={data?.radars.count || 0}
               sublabel={data?.radars.byType ? `${data.radars.byType.FIXED || 0} fijos` : undefined}
               href="/explorar/infraestructura?tab=radares"
-              color="bg-yellow-50"
+              color="bg-yellow-50 dark:bg-yellow-900/20"
               isLoading={isLoading}
             />
             <InfraCard
@@ -154,7 +154,7 @@ export function InfrastructureStatus() {
               label="Zonas ZBE"
               count={data?.zbe.count || 0}
               href="/explorar/infraestructura?tab=zbe"
-              color="bg-purple-50"
+              color="bg-purple-50 dark:bg-purple-900/20"
               isLoading={isLoading}
             />
           </div>

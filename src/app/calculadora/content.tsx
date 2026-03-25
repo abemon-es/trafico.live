@@ -51,7 +51,7 @@ const FUEL_DEFAULTS: Record<FuelType, FuelDefaults> = {
     co2Factor: 2.31,
     unit: "L",
     color: "text-purple-700 dark:text-purple-400",
-    bgColor: "bg-purple-50",
+    bgColor: "bg-purple-50 dark:bg-purple-900/20",
     borderColor: "border-purple-200",
   },
   electrico: {
@@ -188,7 +188,7 @@ function ComparisonRow({
               : fuelType === "gasolina95"
               ? "bg-tl-50 dark:bg-tl-900/200"
               : fuelType === "gasolina98"
-              ? "bg-purple-500"
+              ? "bg-purple-50 dark:bg-purple-900/200"
               : "bg-green-50 dark:bg-green-900/200"
           }`}
         />

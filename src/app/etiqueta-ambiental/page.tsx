@@ -56,11 +56,11 @@ const LABELS = [
   {
     code: "0",
     name: "Distintivo 0 Emisiones",
-    color: "bg-teal-500",
+    color: "bg-teal-50 dark:bg-teal-900/200",
     textColor: "text-teal-700",
-    bgLight: "bg-teal-50",
+    bgLight: "bg-teal-50 dark:bg-teal-900/20",
     borderColor: "border-teal-200",
-    dot: "bg-teal-500",
+    dot: "bg-teal-50 dark:bg-teal-900/200",
     description:
       "Vehículos de cero emisiones: eléctricos puros (BEV), de hidrógeno (FCEV) e híbridos enchufables (PHEV) con autonomía eléctrica superior a 40 km.",
     vehicles: [
@@ -105,7 +105,7 @@ const LABELS = [
     name: "Distintivo C",
     color: "bg-yellow-400",
     textColor: "text-yellow-700 dark:text-yellow-400",
-    bgLight: "bg-yellow-50",
+    bgLight: "bg-yellow-50 dark:bg-yellow-900/20",
     borderColor: "border-yellow-200",
     dot: "bg-yellow-400",
     description:
@@ -127,7 +127,7 @@ const LABELS = [
     name: "Distintivo B",
     color: "bg-orange-400",
     textColor: "text-orange-700 dark:text-orange-400",
-    bgLight: "bg-orange-50",
+    bgLight: "bg-orange-50 dark:bg-orange-900/20",
     borderColor: "border-orange-200",
     dot: "bg-orange-400",
     description:
@@ -242,7 +242,7 @@ function LabelBadge({ code, color }: { code: string; color: string }) {
 
 function TableLabelBadge({ label }: { label: string }) {
   const map: Record<string, string> = {
-    "0": "bg-teal-500",
+    "0": "bg-teal-50 dark:bg-teal-900/200",
     ECO: "bg-green-50 dark:bg-green-900/200",
     C: "bg-yellow-400",
     B: "bg-orange-400",

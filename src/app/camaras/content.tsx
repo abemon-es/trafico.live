@@ -131,7 +131,7 @@ export function CamarasContent() {
                   placeholder="Buscar carretera, km..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+                  className="pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-tl-500 dark:ring-tl-400 focus:border-transparent"
                 />
               </div>
 
@@ -144,7 +144,7 @@ export function CamarasContent() {
                     setSelectedCommunity(e.target.value);
                     setSelectedProvince(""); // Clear province when community changes
                   }}
-                  className="pl-9 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm appearance-none bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+                  className="pl-9 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm appearance-none bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500 dark:ring-tl-400 focus:border-transparent"
                 >
                   <option value="">Todas las comunidades</option>
                   {communities.map((community) => (
@@ -161,7 +161,7 @@ export function CamarasContent() {
                 <select
                   value={selectedProvince}
                   onChange={(e) => setSelectedProvince(e.target.value)}
-                  className="pl-9 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm appearance-none bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+                  className="pl-9 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm appearance-none bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500 dark:ring-tl-400 focus:border-transparent"
                 >
                   <option value="">Todas las provincias</option>
                   {data?.provinces.map((province) => (

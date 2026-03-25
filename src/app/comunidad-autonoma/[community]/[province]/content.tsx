@@ -197,7 +197,7 @@ export default function ProvinceContent() {
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-purple-50 rounded-lg">
+              <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function ProvinceContent() {
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-orange-50 rounded-lg">
+              <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
                 <Zap className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
@@ -333,7 +333,7 @@ export default function ProvinceContent() {
                       return (
                         <div
                           key={idx}
-                          className="flex-1 bg-orange-500 rounded-t hover:bg-orange-600"
+                          className="flex-1 bg-orange-50 dark:bg-orange-900/200 rounded-t hover:bg-orange-600"
                           style={{ height: `${height}%`, minHeight: day.count > 0 ? "2px" : "0" }}
                           title={`${day.date}: ${day.count} balizas`}
                         />

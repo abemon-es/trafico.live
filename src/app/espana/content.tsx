@@ -99,9 +99,9 @@ export default function EspanaContent() {
             <p className="text-2xl font-bold text-tl-amber-700 dark:text-tl-amber-300">{stats.activeIncidents || 0}</p>
             <p className="text-sm text-tl-amber-600 dark:text-tl-amber-400">Incidencias activas</p>
           </div>
-          <div className="bg-orange-50 rounded-lg shadow-sm border border-orange-200 p-4">
+          <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg shadow-sm border border-orange-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-orange-100 rounded-lg">
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
                 <Radio className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
@@ -128,7 +128,7 @@ export default function EspanaContent() {
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-purple-50 rounded-lg">
+              <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>

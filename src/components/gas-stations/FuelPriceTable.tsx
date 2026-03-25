@@ -183,7 +183,7 @@ export function FuelPriceTable({
                     href={`/gasolineras/terrestres/${station.id}`}
                     className="flex items-center gap-2 hover:text-tl-600 dark:text-tl-400"
                   >
-                    <Fuel className="w-4 h-4 text-orange-500" />
+                    <Fuel className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                     <span className="font-medium">{station.name}</span>
                   </Link>
                 </td>

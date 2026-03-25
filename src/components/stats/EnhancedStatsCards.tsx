@@ -320,7 +320,7 @@ export function EnhancedStatsCards() {
           value={displayStats.incidents}
           change={displayStats.incidentsChange}
           icon={<AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />}
-          color="bg-orange-50"
+          color="bg-orange-50 dark:bg-orange-900/20"
           loading={statsLoading}
           sparklineData={sparklineIncidents}
           sparklineColor="#EA580C"
@@ -351,7 +351,7 @@ export function EnhancedStatsCards() {
           title="Zonas ZBE"
           value={displayStats.zbeZones}
           icon={<Ban className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
-          color="bg-purple-50"
+          color="bg-purple-50 dark:bg-purple-900/20"
         />
       </div>
     </div>

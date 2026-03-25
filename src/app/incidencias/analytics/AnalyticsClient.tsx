@@ -122,7 +122,7 @@ function StatCard({
     blue: "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300",
     red: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400",
     green: "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400",
-    orange: "bg-orange-50 text-orange-700 dark:text-orange-400",
+    orange: "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400",
   };
 
   return (

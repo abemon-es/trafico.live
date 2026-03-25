@@ -248,7 +248,7 @@ export default function InfraestructuraContent() {
             placeholder="Buscar..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-tl-500 dark:ring-tl-400 focus:border-transparent"
           />
         </div>
 
@@ -258,7 +258,7 @@ export default function InfraestructuraContent() {
             <select
               value={provinceFilter}
               onChange={(e) => setProvinceFilter(e.target.value)}
-              className="border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500"
+              className="border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500 dark:ring-tl-400"
             >
               <option value="">Todas las provincias</option>
               {provinces.map((p) => (
@@ -334,9 +334,9 @@ export default function InfraestructuraContent() {
                   key={type}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium ${
                     type === "FIXED"
-                      ? "bg-yellow-100 text-yellow-700 dark:text-yellow-400"
+                      ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
                       : type === "SECTION"
-                      ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                      ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                       : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                   }`}
                 >
@@ -358,9 +358,9 @@ export default function InfraestructuraContent() {
                   <div className="flex items-center justify-between mb-2">
                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${
                       radar.type === "FIXED"
-                        ? "bg-yellow-100 text-yellow-700 dark:text-yellow-400"
+                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
                         : radar.type === "SECTION"
-                        ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                        ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                         : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                     }`}>
                       {RADAR_TYPES[radar.type] || radar.type}

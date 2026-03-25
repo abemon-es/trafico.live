@@ -276,7 +276,7 @@ export default async function BaratasCityPage({ params }: Props) {
 
         {/* 24h callout */}
         {total24h > 0 && (
-          <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 mb-8 text-sm">
+          <div className="flex items-center gap-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg px-4 py-3 mb-8 text-sm">
             <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
             <span className="text-orange-800">
               <strong>{total24h} gasolineras</strong> abiertas las 24 horas en la provincia de {cityData.province}.
@@ -337,7 +337,7 @@ export default async function BaratasCityPage({ params }: Props) {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                     {station.is24h && (
-                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded">
+                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded">
                         <Clock className="w-3 h-3" />
                         24h
                       </span>
@@ -407,7 +407,7 @@ export default async function BaratasCityPage({ params }: Props) {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                     {station.is24h && (
-                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded">
+                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded">
                         <Clock className="w-3 h-3" />
                         24h
                       </span>
@@ -427,7 +427,7 @@ export default async function BaratasCityPage({ params }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
           <Link
             href={`/gasolineras/mapa/provincia/${cityData.provinceCode}`}
-            className="flex items-center gap-3 p-4 bg-purple-50 rounded-xl border border-purple-200 hover:bg-purple-100 transition-colors"
+            className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/30 transition-colors"
           >
             <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0" />
             <div>

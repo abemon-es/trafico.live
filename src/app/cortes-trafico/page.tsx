@@ -267,7 +267,7 @@ export default async function CortesTráficoPage() {
               <p className="text-xs text-gray-500 dark:text-gray-400">Obras en curso</p>
             </div>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 text-center">
-              <AlertTriangle className="w-5 h-5 text-orange-500 mx-auto mb-1" />
+              <AlertTriangle className="w-5 h-5 text-orange-500 dark:text-orange-400 mx-auto mb-1" />
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {closures.filter((c) => ["HIGH", "CRITICAL"].includes(c.severity)).length}
               </p>

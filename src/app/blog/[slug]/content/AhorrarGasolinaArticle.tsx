@@ -77,7 +77,7 @@ const CATEGORY_COLOR: Record<string, string> = {
   Conducción: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   Climatización: "bg-cyan-100 text-cyan-700",
   Mantenimiento: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
-  Planificación: "bg-purple-100 text-purple-700 dark:text-purple-400",
+  Planificación: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
   Precio: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300",
 };
 

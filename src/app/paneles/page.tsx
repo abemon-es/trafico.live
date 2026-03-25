@@ -69,10 +69,10 @@ const MESSAGE_TYPE_STYLES: Record<
     badge: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
   },
   SPEED_LIMIT: {
-    bg: "bg-orange-50",
+    bg: "bg-orange-50 dark:bg-orange-900/20",
     border: "border-orange-300",
     text: "text-orange-800",
-    badge: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
+    badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
   },
   LANE_CLOSED: {
     bg: "bg-red-50 dark:bg-red-900/20",
@@ -313,7 +313,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   id="provincia"
                   name="provincia"
                   defaultValue={filterProvince}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500 bg-white dark:bg-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 dark:ring-tl-400 focus:border-tl-500 bg-white dark:bg-gray-900"
                 >
                   <option value="">Todas las provincias</option>
                   {allProvinces
@@ -340,7 +340,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   type="text"
                   defaultValue={filterRoad}
                   placeholder="Ej: A-1, M-30..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 dark:ring-tl-400 focus:border-tl-500"
                 />
               </div>
 
@@ -352,7 +352,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                     name="conMensaje"
                     value="1"
                     defaultChecked={onlyWithMessage}
-                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 dark:text-tl-400 focus:ring-tl-500"
+                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 dark:text-tl-400 focus:ring-tl-500 dark:ring-tl-400"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">Solo con mensaje</span>
                 </label>

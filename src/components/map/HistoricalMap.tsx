@@ -488,7 +488,7 @@ export function HistoricalMap({
               <span>Baja</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-orange-500" />
+              <span className="w-3 h-3 rounded-full bg-orange-50 dark:bg-orange-900/200" />
               <span>Media</span>
             </div>
             <div className="flex items-center gap-1.5">

@@ -76,14 +76,14 @@ const SEVERITY_CONFIG: Record<
   HIGH: {
     label: "Severo",
     color: "text-orange-700 dark:text-orange-400",
-    bg: "bg-orange-50",
+    bg: "bg-orange-50 dark:bg-orange-900/20",
     border: "border-orange-500",
-    badge: "bg-orange-500 text-white",
+    badge: "bg-orange-50 dark:bg-orange-900/200 text-white",
   },
   MEDIUM: {
     label: "Moderado",
     color: "text-yellow-700 dark:text-yellow-400",
-    bg: "bg-yellow-50",
+    bg: "bg-yellow-50 dark:bg-yellow-900/20",
     border: "border-yellow-500",
     badge: "bg-yellow-400 text-yellow-900",
   },

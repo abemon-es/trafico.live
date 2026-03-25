@@ -111,7 +111,7 @@ function formatNumber(n: number): string {
  */
 function heatmapColorClass(intensity: number): string {
   if (intensity < 0.2) return "bg-emerald-100 text-emerald-800";
-  if (intensity < 0.4) return "bg-yellow-100 text-yellow-800";
+  if (intensity < 0.4) return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800";
   if (intensity < 0.65) return "bg-orange-200 text-orange-900";
   return "bg-red-300 text-red-900";
 }
@@ -281,7 +281,7 @@ function HourlyHeatmap({ data }: { data: HourEntry[] }) {
         <div className="flex gap-1">
           {[
             "bg-emerald-100",
-            "bg-yellow-100",
+            "bg-yellow-100 dark:bg-yellow-900/30",
             "bg-orange-200",
             "bg-red-300",
           ].map((c) => (
@@ -449,10 +449,10 @@ export default function MejorHoraContent() {
                   </p>
                 </div>
               </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center gap-4">
-                <TrendingUp className="w-8 h-8 text-orange-500 shrink-0" />
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-xl p-4 flex items-center gap-4">
+                <TrendingUp className="w-8 h-8 text-orange-500 dark:text-orange-400 shrink-0" />
                 <div>
-                  <p className="text-xs font-semibold text-orange-500 uppercase tracking-wide">
+                  <p className="text-xs font-semibold text-orange-500 dark:text-orange-400 uppercase tracking-wide">
                     Día con más incidencias
                   </p>
                   <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-0.5">
@@ -638,7 +638,7 @@ export default function MejorHoraContent() {
                     text: "Después del pico de las 8:00, entre las 9:30 y las 11:30 el tráfico se reduce notablemente hasta el mediodía.",
                   },
                   {
-                    icon: <AlertTriangle className="w-5 h-5 text-orange-500" />,
+                    icon: <AlertTriangle className="w-5 h-5 text-orange-500 dark:text-orange-400" />,
                     title: "Evita las horas punta urbanas",
                     text: `Las franjas ${formatHourRange(
                       insights.worstHours

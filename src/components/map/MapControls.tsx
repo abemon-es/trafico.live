@@ -177,12 +177,12 @@ export function MapControls({
                 flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
                 border transition-all cursor-pointer
                 ${activeLayers.incidents
-                  ? "bg-orange-100 border-orange-500 text-orange-700 dark:text-orange-400"
+                  ? "bg-orange-100 dark:bg-orange-900/30 border-orange-500 text-orange-700 dark:text-orange-400"
                   : "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900"
                 }
               `}
             >
-              {activeLayers.incidents && <span className="w-2 h-2 rounded-full bg-orange-500" />}
+              {activeLayers.incidents && <span className="w-2 h-2 rounded-full bg-orange-50 dark:bg-orange-900/200" />}
               <AlertTriangle className="w-4 h-4" />
               <span>Incidencias{counts?.incidents ? ` (${counts.incidents})` : ""}</span>
               {activeFilterCount > 0 && (
@@ -203,7 +203,7 @@ export function MapControls({
                     onClick={() => onLayerToggle("incidents")}
                     className={`relative w-10 h-6 rounded-full transition-all ${
                       activeLayers.incidents
-                        ? "bg-orange-500 shadow-inner"
+                        ? "bg-orange-50 dark:bg-orange-900/200 shadow-inner"
                         : "bg-gray-200 ring-1 ring-inset ring-gray-300"
                     }`}
                   >

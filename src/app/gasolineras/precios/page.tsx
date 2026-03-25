@@ -191,7 +191,7 @@ export default async function PreciosPage() {
                 />
               </div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-4">
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
               <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">Gasolina 98</div>
               <div className="text-3xl font-bold text-purple-700 dark:text-purple-400">
                 {formatPrice(nationalStats.today.avgGasolina98 ? Number(nationalStats.today.avgGasolina98) : null)}
@@ -286,7 +286,7 @@ export default async function PreciosPage() {
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {mainlandProvinces.map((province, idx) => (
                 <tr key={province.code} className={idx < 3 ? "bg-green-50 dark:bg-green-900/20/50" : ""}>
                   <td className="px-4 py-3">

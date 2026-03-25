@@ -282,7 +282,7 @@ export default async function StationDetailPage({ params }: Props) {
       {/* Header with brand and badges */}
       <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
             <Fuel className="w-7 h-7 text-orange-600 dark:text-orange-400" />
           </div>
           <div className="flex-1">
@@ -298,7 +298,7 @@ export default async function StationDetailPage({ params }: Props) {
                       key={badge.label}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
                         badge.color === "orange"
-                          ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                          ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                           : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                       }`}
                     >
@@ -406,7 +406,7 @@ export default async function StationDetailPage({ params }: Props) {
             const colorClasses: Record<string, { bg: string; text: string; textDark: string }> = {
               amber: { bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20", text: "text-tl-amber-600 dark:text-tl-amber-400", textDark: "text-tl-amber-700 dark:text-tl-amber-300" },
               blue: { bg: "bg-tl-50 dark:bg-tl-900/20", text: "text-tl-600 dark:text-tl-400", textDark: "text-tl-700 dark:text-tl-300" },
-              purple: { bg: "bg-purple-50", text: "text-purple-600 dark:text-purple-400", textDark: "text-purple-700 dark:text-purple-400" },
+              purple: { bg: "bg-purple-50 dark:bg-purple-900/20", text: "text-purple-600 dark:text-purple-400", textDark: "text-purple-700 dark:text-purple-400" },
               green: { bg: "bg-green-50 dark:bg-green-900/20", text: "text-green-600 dark:text-green-400", textDark: "text-green-700 dark:text-green-400" },
             };
             const colors = colorClasses[fuel.color] || colorClasses.amber;

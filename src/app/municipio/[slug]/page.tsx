@@ -171,7 +171,7 @@ export default async function MunicipioPage({ params }: Props) {
       value: incidentCount,
       icon: <AlertTriangle className="w-5 h-5" />,
       color: incidentCount > 0 ? "text-orange-600 dark:text-orange-400" : "text-gray-400",
-      bg: incidentCount > 0 ? "bg-orange-50" : "bg-gray-50 dark:bg-gray-950",
+      bg: incidentCount > 0 ? "bg-orange-50 dark:bg-orange-900/20" : "bg-gray-50 dark:bg-gray-950",
       href: `/incidencias`,
     },
     {
@@ -187,7 +187,7 @@ export default async function MunicipioPage({ params }: Props) {
       value: "Ver info",
       icon: <MapPin className="w-5 h-5" />,
       color: "text-purple-600 dark:text-purple-400",
-      bg: "bg-purple-50",
+      bg: "bg-purple-50 dark:bg-purple-900/20",
       href: `/zbe`,
       isText: true,
     },

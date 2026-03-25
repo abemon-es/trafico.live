@@ -61,7 +61,7 @@ export default function BaratasIndexPage() {
             href={`/gasolineras/baratas/${city.slug}`}
             className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group"
           >
-            <MapPin className="w-4 h-4 text-orange-500 flex-shrink-0" />
+            <MapPin className="w-4 h-4 text-orange-500 dark:text-orange-400 flex-shrink-0" />
             <span className="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-orange-700 dark:text-orange-400 transition-colors">
               {city.name}
             </span>

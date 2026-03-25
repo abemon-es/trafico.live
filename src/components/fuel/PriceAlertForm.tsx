@@ -94,7 +94,7 @@ export function PriceAlertForm({
   const iconColor = isAmber ? "text-tl-amber-600 dark:text-tl-amber-400" : "text-tl-600 dark:text-tl-400";
   const btnClass = isAmber
     ? "bg-tl-amber-600 hover:bg-tl-amber-700 focus:ring-tl-amber-500"
-    : "bg-tl-600 hover:bg-tl-700 focus:ring-tl-500";
+    : "bg-tl-600 hover:bg-tl-700 focus:ring-tl-500 dark:ring-tl-400";
   const inputFocusClass = isAmber
     ? "focus:ring-tl-amber-400 focus:border-tl-amber-400"
     : "focus:ring-tl-400 focus:border-tl-400";

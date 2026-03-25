@@ -78,7 +78,7 @@ const CATEGORY_META: Record<
 > = {
   herramienta: {
     label: "Herramientas",
-    badgeClass: "bg-purple-100 text-purple-700 dark:text-purple-400",
+    badgeClass: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
   },
   combustible: {
     label: "Combustible",

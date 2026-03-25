@@ -27,12 +27,12 @@ export const metadata: Metadata = {
 const RADAR_TYPE_LABELS: Record<string, { label: string; color: string; description: string }> = {
   FIXED: {
     label: "Fijo",
-    color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 border-yellow-200",
     description: "Miden la velocidad instantánea en un punto fijo de la vía.",
   },
   SECTION: {
     label: "Tramo",
-    color: "bg-orange-100 text-orange-800 border-orange-200",
+    color: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 border-orange-200",
     description: "Calculan la velocidad media entre dos puntos del recorrido.",
   },
   MOBILE_ZONE: {
@@ -139,7 +139,7 @@ export default async function RadaresPage() {
           {/* Header */}
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-yellow-50 rounded-lg">
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <Radar className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div className="flex-1">
@@ -152,7 +152,7 @@ export default async function RadaresPage() {
                   tipo y límite de velocidad.
                 </p>
               </div>
-              <div className="hidden md:flex flex-col items-center bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-center">
+              <div className="hidden md:flex flex-col items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg px-5 py-3 text-center">
                 <span className="text-3xl font-bold text-yellow-700 dark:text-yellow-400 font-data">{totalCount.toLocaleString("es-ES")}</span>
                 <span className="text-sm text-yellow-600 dark:text-yellow-400 mt-0.5">radares activos</span>
               </div>
@@ -161,7 +161,7 @@ export default async function RadaresPage() {
 
           {/* Section radar alert */}
           {byType.find((t) => t.type === "SECTION") && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <div>
                 <h2 className="font-semibold text-orange-800">Atención: radares de tramo activos</h2>

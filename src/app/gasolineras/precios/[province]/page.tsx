@@ -209,7 +209,7 @@ export default async function ProvincePricesPage({ params }: Props) {
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {stations.map((station, idx) => (
                 <tr key={station.id} className={idx < 3 ? "bg-green-50 dark:bg-green-900/20/50" : ""}>
                   <td className="px-4 py-3">
@@ -227,7 +227,7 @@ export default async function ProvincePricesPage({ params }: Props) {
                         <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                           {station.name}
                           {station.is24h && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded">
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded">
                               <Clock className="w-3 h-3" />
                               24h
                             </span>

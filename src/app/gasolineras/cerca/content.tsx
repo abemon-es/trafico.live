@@ -203,7 +203,7 @@ export default function GasolinerasCercaContent() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
               <LocateFixed className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -260,7 +260,7 @@ export default function GasolinerasCercaContent() {
         {location && !locationError && (
           <>
             {/* Location badge + map link */}
-            <div className="bg-orange-50 rounded-lg border border-orange-200 p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 <div>
@@ -346,7 +346,7 @@ export default function GasolinerasCercaContent() {
                 >
                   <div className="flex items-start gap-4">
                     {/* Rank */}
-                    <div className="flex-shrink-0 w-8 h-8 bg-orange-50 rounded-full flex items-center justify-center text-sm font-bold text-orange-700 dark:text-orange-400 border border-orange-100">
+                    <div className="flex-shrink-0 w-8 h-8 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-sm font-bold text-orange-700 dark:text-orange-400 border border-orange-100">
                       {index + 1}
                     </div>
 
@@ -356,7 +356,7 @@ export default function GasolinerasCercaContent() {
                         <h2 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-1 flex-1">
                           {station.name}
                         </h2>
-                        <span className="flex-shrink-0 text-sm font-medium text-orange-600 dark:text-orange-400 bg-orange-50 px-2 py-0.5 rounded">
+                        <span className="flex-shrink-0 text-sm font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded">
                           {formatDistance(station.distance)}
                         </span>
                       </div>
@@ -444,7 +444,7 @@ export default function GasolinerasCercaContent() {
                 href={link.href}
                 className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group text-sm"
               >
-                <Fuel className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                <Fuel className="w-4 h-4 text-orange-500 dark:text-orange-400 flex-shrink-0" />
                 <span className="text-gray-700 dark:text-gray-300 group-hover:text-orange-700 dark:text-orange-400 transition-colors line-clamp-1">
                   {link.label}
                 </span>

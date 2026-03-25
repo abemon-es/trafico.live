@@ -365,7 +365,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                           </td>
                           <td className="py-2">
                             <span className={`px-2 py-0.5 rounded text-xs ${
-                              radar.type === "SECTION" ? "bg-orange-100 text-orange-800" : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                              radar.type === "SECTION" ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800" : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                             }`}>
                               {radar.type === "SECTION" ? "Tramo" : "Fijo"}
                             </span>
@@ -587,7 +587,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                 </h2>
                 <div className="space-y-2">
                   {riskZones.map((zone) => (
-                    <div key={zone.id} className="p-2 bg-orange-50 rounded text-sm">
+                    <div key={zone.id} className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded text-sm">
                       <span className="font-medium text-orange-800">{zone.type}</span>
                       {zone.kmStart && zone.kmEnd && (
                         <span className="text-orange-600 dark:text-orange-400 ml-2 font-data">

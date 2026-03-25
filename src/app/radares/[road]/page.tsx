@@ -71,13 +71,13 @@ const DEFAULT_RELATED = ["AP-7", "A-4", "A-1", "A-2", "A-7"];
 const RADAR_TYPE_CONFIG: Record<string, { label: string; color: string; badge: string }> = {
   FIXED: {
     label: "Fijo",
-    color: "bg-yellow-50 border-yellow-200",
-    badge: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    color: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200",
+    badge: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 border-yellow-200",
   },
   SECTION: {
     label: "Tramo",
-    color: "bg-orange-50 border-orange-200",
-    badge: "bg-orange-100 text-orange-800 border-orange-200",
+    color: "bg-orange-50 dark:bg-orange-900/20 border-orange-200",
+    badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 border-orange-200",
   },
   MOBILE_ZONE: {
     label: "Zona móvil",
@@ -252,7 +252,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           {/* Header */}
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-yellow-50 rounded-lg flex-shrink-0">
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg flex-shrink-0">
                 <Radar className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div className="flex-1">
@@ -267,7 +267,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                   el punto kilométrico, tipo y límite de velocidad de cada radar.
                 </p>
               </div>
-              <div className="hidden md:flex flex-col items-center bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
+              <div className="hidden md:flex flex-col items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
                 <span className="text-3xl font-bold text-yellow-700 dark:text-yellow-400 font-data">
                   {radars.length.toLocaleString("es-ES")}
                 </span>
@@ -311,7 +311,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
 
           {/* SECTION radar warning */}
           {typeCount["SECTION"] && typeCount["SECTION"] > 0 ? (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-orange-800">
@@ -348,7 +348,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                   <Link
                     key={r}
                     href={`/radares/${encodeURIComponent(r)}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm font-semibold text-yellow-800 hover:bg-yellow-100 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg text-sm font-semibold text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 transition-colors"
                   >
                     Radares {r}
                   </Link>
@@ -571,7 +571,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 <Link
                   key={r}
                   href={`/radares/${encodeURIComponent(r)}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 hover:border-yellow-300 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 dark:bg-yellow-900/20 hover:border-yellow-300 transition-colors shadow-sm"
                 >
                   <Radar className="w-3.5 h-3.5" />
                   Radares {r}

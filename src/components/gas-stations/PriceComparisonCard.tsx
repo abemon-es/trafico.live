@@ -111,7 +111,7 @@ function FuelComparisonSection({ comparison }: { comparison: PriceComparison }) 
   const fuelColors: Record<string, { bg: string; text: string; border: string }> = {
     gasoleoA: { bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20", text: "text-tl-amber-700 dark:text-tl-amber-300", border: "border-tl-amber-200 dark:border-tl-amber-800" },
     gasolina95: { bg: "bg-tl-50 dark:bg-tl-900/20", text: "text-tl-700 dark:text-tl-300", border: "border-tl-200 dark:border-tl-800" },
-    gasolina98: { bg: "bg-purple-50", text: "text-purple-700 dark:text-purple-400", border: "border-purple-200" },
+    gasolina98: { bg: "bg-purple-50 dark:bg-purple-900/20", text: "text-purple-700 dark:text-purple-400", border: "border-purple-200" },
     glp: { bg: "bg-green-50 dark:bg-green-900/20", text: "text-green-700 dark:text-green-400", border: "border-green-200" },
   };
 

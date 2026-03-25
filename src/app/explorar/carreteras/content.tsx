@@ -52,10 +52,10 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Road type categories
 const ROAD_TYPES = [
-  { prefix: "AP-", label: "Autopistas de peaje", color: "bg-purple-100 text-purple-700 dark:text-purple-400 border-purple-200" },
+  { prefix: "AP-", label: "Autopistas de peaje", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200" },
   { prefix: "A-", label: "Autovías", color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800" },
   { prefix: "N-", label: "Carreteras Nacionales", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200" },
-  { prefix: "M-", label: "Madrid (Circunvalación)", color: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200" },
+  { prefix: "M-", label: "Madrid (Circunvalación)", color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200" },
   { prefix: "B-", label: "Barcelona", color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200" },
   { prefix: "C-", label: "Comarcales", color: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800" },
 ];
@@ -228,7 +228,7 @@ export default function CarreterasContent() {
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-purple-50 rounded-lg">
+            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
           </div>

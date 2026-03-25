@@ -81,9 +81,9 @@ const CHARGING_TYPES: ChargingType[] = [
     pricePerKwh: 0.45,
     powerKw: 50,
     color: "text-orange-700 dark:text-orange-400",
-    bgColor: "bg-orange-50",
+    bgColor: "bg-orange-50 dark:bg-orange-900/20",
     borderColor: "border-orange-200",
-    activeBg: "bg-orange-100",
+    activeBg: "bg-orange-100 dark:bg-orange-900/30",
     activeBorder: "border-orange-500",
   },
   {

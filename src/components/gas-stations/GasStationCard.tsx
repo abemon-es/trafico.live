@@ -55,7 +55,7 @@ export function GasStationCard({
             <div
               className={`
                 w-8 h-8 rounded-full flex items-center justify-center
-                ${isCheapest ? "bg-green-100 dark:bg-green-900/30" : "bg-orange-100"}
+                ${isCheapest ? "bg-green-100 dark:bg-green-900/30" : "bg-orange-100 dark:bg-orange-900/30"}
               `}
             >
               <Fuel className={`w-4 h-4 ${isCheapest ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}`} />

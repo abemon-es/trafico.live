@@ -313,8 +313,8 @@ const ROUTE_COLORS: Record<string, string> = {
   "A-1": "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
   "A-2": "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
   "A-4": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  "A-31": "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
-  "A-6": "bg-purple-100 text-purple-700 dark:text-purple-400 border-purple-200",
+  "A-31": "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
+  "A-6": "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200",
   "AP-9": "bg-teal-100 text-teal-700 border-teal-200",
 };
 

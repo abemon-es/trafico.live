@@ -1568,7 +1568,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
         const formatPrice = (price: number | null) => price ? `${price.toFixed(3)}€` : "N/D";
         const is24hBadge = station.is24h
-          ? '<span class="inline-block px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded ml-1">24h</span>'
+          ? '<span class="inline-block px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded ml-1">24h</span>'
           : '';
 
         const marker = new maplibregl.Marker({ element: el })
@@ -1577,7 +1577,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             new maplibregl.Popup({ offset: 25, maxWidth: "300px" }).setHTML(`
               <div class="p-2 min-w-[220px]">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+                  <span class="w-3 h-3 rounded-full bg-orange-50 dark:bg-orange-900/200"></span>
                   <span class="font-bold text-sm flex-1">${station.name}</span>
                   ${is24hBadge}
                 </div>
@@ -1595,7 +1595,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                     </div>
                   ` : ''}
                   ${station.priceGasolina98E5 ? `
-                    <div class="bg-purple-50 p-1.5 rounded">
+                    <div class="bg-purple-50 dark:bg-purple-900/20 p-1.5 rounded">
                       <div class="text-xs text-purple-600 dark:text-purple-400">Gasolina 98</div>
                       <div class="font-bold text-purple-700 dark:text-purple-400">${formatPrice(station.priceGasolina98E5)}</div>
                     </div>

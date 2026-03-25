@@ -916,7 +916,7 @@ export default async function ZBECityPage({ params }: Props) {
                 href={`/gasolineras/mapa?ciudad=${city}`}
                 className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-purple-300 hover:shadow-sm transition-all group"
               >
-                <div className="p-2 bg-purple-50 rounded-lg flex-shrink-0">
+                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex-shrink-0">
                   <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>

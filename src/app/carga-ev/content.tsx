@@ -50,7 +50,7 @@ const POWER_LEVELS = [
     min: 0,
     max: 22,
     color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
-    activeColor: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 ring-2 ring-tl-500",
+    activeColor: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 ring-2 ring-tl-500 dark:ring-tl-400",
   },
   {
     id: "semi",
@@ -67,8 +67,8 @@ const POWER_LEVELS = [
     sublabel: "50–150 kW",
     min: 50,
     max: 150,
-    color: "bg-orange-100 text-orange-700 dark:text-orange-400",
-    activeColor: "bg-orange-100 text-orange-700 dark:text-orange-400 ring-2 ring-orange-500",
+    color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
+    activeColor: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 ring-2 ring-orange-500",
   },
   {
     id: "ultra",
@@ -424,7 +424,7 @@ export default function CargaEVContent() {
                         charger.totalPowerKw >= 150
                           ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                           : charger.totalPowerKw >= 50
-                          ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                          ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                           : charger.totalPowerKw >= 22
                           ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
                           : "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300"

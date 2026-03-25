@@ -110,7 +110,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
 
           {/* Key Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
               <Radio className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Luz visible</p>
@@ -131,7 +131,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
                 <p className="text-xs text-gray-600 dark:text-gray-400">Mínimo 30 minutos de batería</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Homologada</p>
@@ -172,35 +172,35 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
             <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   Homologación DGT con marcado V-16
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   Luz amarilla intermitente (flash)
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   Batería mínima de 30 minutos
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   Temperatura operativa: -10°C a +50°C
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   GPS para geolocalización automática
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   Transmisión a plataforma NAP de la DGT
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   Base magnética para fijar al techo
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
                   Resistente a lluvia y condiciones adversas
                 </li>
               </ul>

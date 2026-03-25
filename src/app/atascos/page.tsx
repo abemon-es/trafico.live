@@ -94,7 +94,7 @@ function getSeverityColor(severity: string): string {
     case "MEDIUM":
       return "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 dark:border-tl-amber-800 text-tl-amber-700 dark:text-tl-amber-300";
     default:
-      return "bg-yellow-50 border-yellow-200 text-yellow-700 dark:text-yellow-400";
+      return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 text-yellow-700 dark:text-yellow-400";
   }
 }
 

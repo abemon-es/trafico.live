@@ -213,7 +213,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-orange-50 rounded-lg">
+              <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
                 <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
@@ -266,8 +266,8 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                         incident.severity === "HIGH" || incident.severity === "VERY_HIGH"
                           ? "bg-red-100 dark:bg-red-900/30"
                           : incident.severity === "MEDIUM"
-                          ? "bg-orange-100"
-                          : "bg-yellow-100"
+                          ? "bg-orange-100 dark:bg-orange-900/30"
+                          : "bg-yellow-100 dark:bg-yellow-900/30"
                       }`}>
                         <AlertTriangle className={`w-4 h-4 ${
                           incident.severity === "HIGH" || incident.severity === "VERY_HIGH"

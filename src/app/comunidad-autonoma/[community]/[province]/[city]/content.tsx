@@ -126,7 +126,7 @@ export default function CityContent() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-purple-50 rounded-lg">
+              <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>

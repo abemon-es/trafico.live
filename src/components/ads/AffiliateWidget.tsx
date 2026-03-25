@@ -69,7 +69,7 @@ const WIDGET_CONFIGS: Record<AffiliateWidgetProps["type"], WidgetConfig> = {
   },
   itv: {
     icon: ClipboardCheck,
-    iconBg: "bg-purple-100",
+    iconBg: "bg-purple-100 dark:bg-purple-900/30",
     iconColor: "text-purple-600 dark:text-purple-400",
     borderColor: "border-purple-200",
     gradientFrom: "from-purple-50",

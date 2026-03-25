@@ -477,7 +477,7 @@ function HourlyHeatmap({
 
   const colorClasses = {
     red: ["bg-gray-100 dark:bg-gray-900", "bg-red-100 dark:bg-red-900/30", "bg-red-200", "bg-red-400", "bg-red-600"],
-    orange: ["bg-gray-100 dark:bg-gray-900", "bg-orange-100", "bg-orange-200", "bg-orange-400", "bg-orange-600"],
+    orange: ["bg-gray-100 dark:bg-gray-900", "bg-orange-100 dark:bg-orange-900/30", "bg-orange-200", "bg-orange-400", "bg-orange-600"],
     blue: ["bg-gray-100 dark:bg-gray-900", "bg-tl-100 dark:bg-tl-900/30", "bg-tl-200", "bg-tl-400", "bg-tl-600"],
   };
 
@@ -558,7 +558,7 @@ function DailyTrendMini({
   }
 
   const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const bgColor = color === "orange" ? "bg-orange-500" : color === "blue" ? "bg-tl-50 dark:bg-tl-900/200" : "bg-red-50 dark:bg-red-900/200";
+  const bgColor = color === "orange" ? "bg-orange-50 dark:bg-orange-900/200" : color === "blue" ? "bg-tl-50 dark:bg-tl-900/200" : "bg-red-50 dark:bg-red-900/200";
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
@@ -632,7 +632,7 @@ function V16DailyTrendChart({
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div
-                className="w-full bg-orange-500 rounded-t hover:bg-orange-600 transition-colors"
+                className="w-full bg-orange-50 dark:bg-orange-900/200 rounded-t hover:bg-orange-600 transition-colors"
                 style={{ height: `${height}%`, minHeight: day.v16Count > 0 ? "4px" : "0" }}
                 title={`${day.date}: ${day.v16Count} balizas`}
               />
@@ -687,7 +687,7 @@ function V16HourlyHeatmap({
   const getColor = (value: number) => {
     const intensity = value / maxValue;
     if (intensity === 0) return "bg-gray-100 dark:bg-gray-900";
-    if (intensity < 0.25) return "bg-orange-100";
+    if (intensity < 0.25) return "bg-orange-100 dark:bg-orange-900/30";
     if (intensity < 0.5) return "bg-orange-200";
     if (intensity < 0.75) return "bg-orange-400";
     return "bg-orange-600";
@@ -854,7 +854,7 @@ function ResumenSection({
         />
         <StatCard
           icon={Zap}
-          iconBgColor="bg-orange-50"
+          iconBgColor="bg-orange-50 dark:bg-orange-900/20"
           iconColor="text-orange-600 dark:text-orange-400"
           value={hasV16 ? v16Stats.data.totals.v16Total : "-"}
           label="Balizas V16 (30d)"
@@ -870,7 +870,7 @@ function ResumenSection({
         />
         <StatCard
           icon={Calendar}
-          iconBgColor="bg-purple-50"
+          iconBgColor="bg-purple-50 dark:bg-purple-900/20"
           iconColor="text-purple-600 dark:text-purple-400"
           value={hasIncidents ? incidentStats.data.totals.incidentsLast7d : "-"}
           label="Incidencias 7d"
@@ -954,11 +954,11 @@ function IncidenciasSection({
 
   const typeColors: Record<string, string> = {
     ACCIDENT: "bg-red-50 dark:bg-red-900/200",
-    ROADWORK: "bg-orange-500",
-    CONGESTION: "bg-yellow-500",
-    HAZARD: "bg-purple-500",
+    ROADWORK: "bg-orange-50 dark:bg-orange-900/200",
+    CONGESTION: "bg-yellow-50 dark:bg-yellow-900/200",
+    HAZARD: "bg-purple-50 dark:bg-purple-900/200",
     VEHICLE_BREAKDOWN: "bg-tl-50 dark:bg-tl-900/200",
-    WEATHER: "bg-cyan-500",
+    WEATHER: "bg-cyan-50 dark:bg-cyan-900/200",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
     OTHER: "bg-gray-400",
@@ -1011,7 +1011,7 @@ function IncidenciasSection({
         />
         <StatCard
           icon={Calendar}
-          iconBgColor="bg-purple-50"
+          iconBgColor="bg-purple-50 dark:bg-purple-900/20"
           iconColor="text-purple-600 dark:text-purple-400"
           value={hasData ? stats!.totals.incidentsLast7d : "-"}
           label="Últimos 7 días"
@@ -1019,7 +1019,7 @@ function IncidenciasSection({
         />
         <StatCard
           icon={Clock}
-          iconBgColor="bg-orange-50"
+          iconBgColor="bg-orange-50 dark:bg-orange-900/20"
           iconColor="text-orange-600 dark:text-orange-400"
           value={hasData && stats!.totals.avgDurationMins ? `${stats!.totals.avgDurationMins}m` : "-"}
           label="Duración Media"
@@ -1291,7 +1291,7 @@ function V16Section() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           icon={AlertTriangle}
-          iconBgColor="bg-orange-50"
+          iconBgColor="bg-orange-50 dark:bg-orange-900/20"
           iconColor="text-orange-600 dark:text-orange-400"
           value={
             isRealtime
@@ -1342,7 +1342,7 @@ function V16Section() {
         />
         <StatCard
           icon={Calendar}
-          iconBgColor="bg-purple-50"
+          iconBgColor="bg-purple-50 dark:bg-purple-900/20"
           iconColor="text-purple-600 dark:text-purple-400"
           value={
             dailyData?.data?.peak
@@ -1452,7 +1452,7 @@ function V16Section() {
                     const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
                     const colors: Record<string, string> = {
                       Baja: "bg-green-50 dark:bg-green-900/200",
-                      Media: "bg-orange-500",
+                      Media: "bg-orange-50 dark:bg-orange-900/200",
                       Alta: "bg-red-50 dark:bg-red-900/200",
                       "Muy Alta": "bg-red-900",
                     };
@@ -1602,7 +1602,7 @@ function HistoricoSection({
         />
         <StatCard
           icon={Car}
-          iconBgColor="bg-orange-50"
+          iconBgColor="bg-orange-50 dark:bg-orange-900/20"
           iconColor="text-orange-600 dark:text-orange-400"
           value={hasData ? historicalData!.totals.hospitalized : "-"}
           label="Heridos graves"
@@ -1661,8 +1661,8 @@ function CarreterasSection({
 
   const riskColors: Record<string, { bg: string; text: string; label: string }> = {
     CRITICAL: { bg: "bg-red-600", text: "text-red-600 dark:text-red-400", label: "Crítico" },
-    HIGH: { bg: "bg-orange-500", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
-    MEDIUM: { bg: "bg-yellow-500", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
+    HIGH: { bg: "bg-orange-50 dark:bg-orange-900/200", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
+    MEDIUM: { bg: "bg-yellow-50 dark:bg-yellow-900/200", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
     LOW: { bg: "bg-green-50 dark:bg-green-900/200", text: "text-green-600 dark:text-green-400", label: "Bajo" },
   };
 
@@ -1694,7 +1694,7 @@ function CarreterasSection({
           />
           <StatCard
             icon={AlertTriangle}
-            iconBgColor="bg-orange-50"
+            iconBgColor="bg-orange-50 dark:bg-orange-900/20"
             iconColor="text-orange-600 dark:text-orange-400"
             value={data.data.summary.highRiskRoads}
             label="Riesgo Alto"
@@ -1720,7 +1720,7 @@ function CarreterasSection({
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nivel Riesgo</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {data.data.roads.slice(0, 20).map((road, idx) => {
                   const risk = riskColors[road.riskLevel] || riskColors.LOW;
                   return (
@@ -1886,7 +1886,7 @@ function CorrelacionSection({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             icon={Zap}
-            iconBgColor="bg-orange-50"
+            iconBgColor="bg-orange-50 dark:bg-orange-900/20"
             iconColor="text-orange-600 dark:text-orange-400"
             value={data.data.summary.totalV16}
             label="Balizas V16"
@@ -1935,8 +1935,8 @@ function CorrelacionSection({
             <div className="space-y-3">
               {[
                 { label: "< 500m", value: data.data.byDistance.under500m, color: "bg-red-50 dark:bg-red-900/200" },
-                { label: "500m - 1km", value: data.data.byDistance.under1km, color: "bg-orange-500" },
-                { label: "1km - 2km", value: data.data.byDistance.under2km, color: "bg-yellow-500" },
+                { label: "500m - 1km", value: data.data.byDistance.under1km, color: "bg-orange-50 dark:bg-orange-900/200" },
+                { label: "1km - 2km", value: data.data.byDistance.under2km, color: "bg-yellow-50 dark:bg-yellow-900/200" },
                 { label: "> 2km", value: data.data.byDistance.over2km, color: "bg-green-50 dark:bg-green-900/200" },
               ].map((item) => {
                 const total = data.data.summary.totalCorrelations || 1;
@@ -1966,8 +1966,8 @@ function CorrelacionSection({
             <div className="space-y-3">
               {[
                 { label: "Durante", value: data.data.byTimeDiff.during, color: "bg-red-50 dark:bg-red-900/200" },
-                { label: "< 15 min", value: data.data.byTimeDiff.within15min, color: "bg-orange-500" },
-                { label: "15-30 min", value: data.data.byTimeDiff.within30min, color: "bg-yellow-500" },
+                { label: "< 15 min", value: data.data.byTimeDiff.within15min, color: "bg-orange-50 dark:bg-orange-900/200" },
+                { label: "15-30 min", value: data.data.byTimeDiff.within30min, color: "bg-yellow-50 dark:bg-yellow-900/200" },
                 { label: "30-60 min", value: data.data.byTimeDiff.within60min, color: "bg-green-50 dark:bg-green-900/200" },
               ].map((item) => {
                 const total = data.data.summary.totalCorrelations || 1;
@@ -2049,7 +2049,7 @@ function CorrelacionSection({
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Carretera</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {data.data.sampleCorrelations.slice(0, 10).map((corr, idx) => (
                   <tr key={idx} className="hover:bg-gray-50 dark:bg-gray-950">
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 font-data">{corr.distanceKm} km</td>
@@ -2198,7 +2198,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-purple-500 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-purple-50 dark:bg-purple-900/200 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.incidentsPer100k.toFixed(1)}</span>
                     </div>
@@ -2213,7 +2213,7 @@ function RankingsSection({
           {data.provinces.byV16Total.length > 0 && (
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-orange-500" />
+                <Zap className="w-5 h-5 text-orange-500 dark:text-orange-400" />
                 Más Balizas V16
               </h3>
               <div className="space-y-2">
@@ -2225,7 +2225,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-orange-50 dark:bg-orange-900/200 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.totalV16}</span>
                     </div>
@@ -2335,7 +2335,7 @@ function RankingsSection({
           {data.roads.byRiskScore.length > 0 && (
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-orange-500" />
+                <Shield className="w-5 h-5 text-orange-500 dark:text-orange-400" />
                 Mayor Riesgo
               </h3>
               <div className="space-y-2">
@@ -2347,7 +2347,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-20 text-sm font-bold text-tl-600 dark:text-tl-400">{r.roadName}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-orange-50 dark:bg-orange-900/200 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-12 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{r.riskScore.toFixed(1)}</span>
                     </div>

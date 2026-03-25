@@ -61,12 +61,12 @@ const EFFECT_CONFIG: Record<IncidentEffect, { label: string; icon: React.ReactNo
   SLOW_TRAFFIC: {
     label: "Tráfico lento",
     icon: <Car className="w-4 h-4" />,
-    color: "bg-orange-500",
+    color: "bg-orange-50 dark:bg-orange-900/200",
   },
   RESTRICTED: {
     label: "Circulación restringida",
     icon: <CircleSlash className="w-4 h-4" />,
-    color: "bg-yellow-500",
+    color: "bg-yellow-50 dark:bg-yellow-900/200",
   },
   DIVERSION: {
     label: "Desvíos",

@@ -72,7 +72,7 @@ interface StationTypeBadge {
 function getStationTypeBadge(name: string): StationTypeBadge | null {
   const upper = name.toUpperCase();
   if (/COOPERATIVA|COOP\b|S\.\s*COOP/.test(upper)) {
-    return { label: "Cooperativa", className: "bg-orange-100 text-orange-700 dark:text-orange-400" };
+    return { label: "Cooperativa", className: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400" };
   }
   if (/\bUTE\b|ESTACION DE AUTOBUSES/.test(upper)) {
     return { label: "Solo flotas", className: "bg-gray-200 text-gray-600 dark:text-gray-400" };
@@ -224,7 +224,7 @@ export default function TerrestresPage() {
               onClick={() => setViewMode("card")}
               className={`p-1.5 rounded transition-colors ${
                 viewMode === "card"
-                  ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                  ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                   : "text-gray-400 hover:text-gray-600 dark:text-gray-400"
               }`}
               title="Vista en tarjetas"
@@ -235,7 +235,7 @@ export default function TerrestresPage() {
               onClick={() => setViewMode("table")}
               className={`p-1.5 rounded transition-colors ${
                 viewMode === "table"
-                  ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                  ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                   : "text-gray-400 hover:text-gray-600 dark:text-gray-400"
               }`}
               title="Vista en tabla"
@@ -281,7 +281,7 @@ export default function TerrestresPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
               activeFilterCount > 0
-                ? "border-orange-400 bg-orange-50 text-orange-700 dark:text-orange-400"
+                ? "border-orange-400 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400"
                 : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-950"
             }`}
           >
@@ -325,7 +325,7 @@ export default function TerrestresPage() {
                     onClick={() => setSortBy(opt.value)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors ${
                       sortBy === opt.value
-                        ? "bg-orange-50 border-orange-400 text-orange-700 dark:text-orange-400 font-medium"
+                        ? "bg-orange-50 dark:bg-orange-900/20 border-orange-400 text-orange-700 dark:text-orange-400 font-medium"
                         : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-orange-300"
                     }`}
                   >
@@ -354,7 +354,7 @@ export default function TerrestresPage() {
                       onClick={() => setFuelFilter(opt.value)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors ${
                         fuelFilter === opt.value
-                          ? "bg-orange-50 border-orange-400 text-orange-700 dark:text-orange-400 font-medium"
+                          ? "bg-orange-50 dark:bg-orange-900/20 border-orange-400 text-orange-700 dark:text-orange-400 font-medium"
                           : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-orange-300"
                       }`}
                     >
@@ -388,7 +388,7 @@ export default function TerrestresPage() {
         {(province || is24h || fuelFilter !== "all") && (
           <div className="mt-4 flex flex-wrap gap-2">
             {province && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 dark:text-orange-400 rounded-full text-sm">
+              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm">
                 {PROVINCES[province]}
                 <button onClick={() => setProvince("")} className="hover:text-orange-900">
                   <X className="w-4 h-4" />
@@ -396,7 +396,7 @@ export default function TerrestresPage() {
               </span>
             )}
             {is24h && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 dark:text-orange-400 rounded-full text-sm">
+              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm">
                 24 horas
                 <button onClick={() => setIs24h(false)} className="hover:text-orange-900">
                   <X className="w-4 h-4" />
@@ -404,7 +404,7 @@ export default function TerrestresPage() {
               </span>
             )}
             {fuelFilter !== "all" && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 dark:text-orange-400 rounded-full text-sm">
+              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm">
                 {FUEL_FILTER_OPTIONS.find((o) => o.value === fuelFilter)?.label}
                 <button onClick={() => setFuelFilter("all")} className="hover:text-orange-900">
                   <X className="w-4 h-4" />
@@ -458,7 +458,7 @@ export default function TerrestresPage() {
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         {station.is24h && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded-full whitespace-nowrap">
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded-full whitespace-nowrap">
                             <Clock className="w-3 h-3" />
                             24h
                           </span>
@@ -489,7 +489,7 @@ export default function TerrestresPage() {
                           <div className="text-xs text-gray-400 italic">No disp.</div>
                         )}
                       </div>
-                      <div className={`rounded p-2 ${glpPrice ? "bg-purple-50" : "bg-gray-50 dark:bg-gray-950"}`}>
+                      <div className={`rounded p-2 ${glpPrice ? "bg-purple-50 dark:bg-purple-900/20" : "bg-gray-50 dark:bg-gray-950"}`}>
                         <div className="text-xs text-purple-600 dark:text-purple-400 mb-0.5">GLP</div>
                         {glpPrice ? (
                           <div className="font-bold text-purple-700 dark:text-purple-400 text-sm">{glpPrice}</div>
@@ -545,7 +545,7 @@ export default function TerrestresPage() {
                     const glpPrice = formatPrice(station.priceGLP);
 
                     return (
-                      <tr key={station.id} className="hover:bg-orange-50 transition-colors">
+                      <tr key={station.id} className="hover:bg-orange-50 dark:bg-orange-900/20 transition-colors">
                         <td className="px-4 py-3">
                           <Link
                             href={`/gasolineras/terrestres/${station.id}`}

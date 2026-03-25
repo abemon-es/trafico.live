@@ -258,8 +258,8 @@ const FAQ_ITEMS = [
 
 const CONGESTION_COLOR: Record<string, string> = {
   "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  alta: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
-  media: "bg-yellow-100 text-yellow-700 dark:text-yellow-400 border-yellow-200",
+  alta: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
+  media: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200",
 };
 
 // ---------------------------------------------------------------------------
@@ -433,7 +433,7 @@ export default async function SemanaSanta2026Page() {
               {/* Retorno */}
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-orange-200 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange-50 dark:bg-orange-900/200" />
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                     Operación Retorno
                   </h3>
@@ -705,7 +705,7 @@ export default async function SemanaSanta2026Page() {
                   label: "Radares",
                   icon: Radar,
                   color: "text-purple-600 dark:text-purple-400",
-                  bg: "bg-purple-50",
+                  bg: "bg-purple-50 dark:bg-purple-900/20",
                   border: "border-purple-100",
                 },
                 {
@@ -721,7 +721,7 @@ export default async function SemanaSanta2026Page() {
                   label: "Paneles PMV",
                   icon: BarChart3,
                   color: "text-teal-600",
-                  bg: "bg-teal-50",
+                  bg: "bg-teal-50 dark:bg-teal-900/20",
                   border: "border-teal-100",
                 },
                 {

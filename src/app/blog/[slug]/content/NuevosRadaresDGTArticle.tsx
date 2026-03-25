@@ -14,7 +14,7 @@ const RADAR_TYPES = [
     icon: "📏",
     description:
       "Calcula la velocidad media entre dos puntos separados entre 1 y 15 km. Imposible de engañar acelerando entre radar y radar.",
-    color: "bg-orange-50 border-orange-200",
+    color: "bg-orange-50 dark:bg-orange-900/20 border-orange-200",
     textColor: "text-orange-800",
   },
   {
@@ -22,7 +22,7 @@ const RADAR_TYPES = [
     icon: "🚦",
     description:
       "Instalado en intersecciones urbanas. Sanciona tanto el exceso de velocidad como saltarse el semáforo en rojo.",
-    color: "bg-yellow-50 border-yellow-200",
+    color: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200",
     textColor: "text-yellow-800",
   },
   {
@@ -30,7 +30,7 @@ const RADAR_TYPES = [
     icon: "🚐",
     description:
       "Vehículos camuflados de la Guardia Civil con radar Doppler. Pueden desplegarse en cualquier punto de la red viaria.",
-    color: "bg-purple-50 border-purple-200",
+    color: "bg-purple-50 dark:bg-purple-900/20 border-purple-200",
     textColor: "text-purple-800",
   },
 ];

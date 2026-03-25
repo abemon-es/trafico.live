@@ -58,7 +58,7 @@ export function StationLocationMap({
       <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white ${
         stationType === "maritime"
           ? "bg-tl-50 dark:bg-tl-900/200"
-          : "bg-orange-500"
+          : "bg-orange-50 dark:bg-orange-900/200"
       }">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           ${stationType === "maritime"

@@ -162,12 +162,12 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasolina98
-              ? "bg-purple-100 text-purple-700 dark:text-purple-400 border border-purple-200"
+              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200"
               : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
             }
           `}
         >
-          <span className="w-2 h-2 rounded-full bg-purple-500" />
+          <span className="w-2 h-2 rounded-full bg-purple-50 dark:bg-purple-900/200" />
           Gasolina 98
           {trends.gasolina98 && <TrendIcon direction={trends.gasolina98.direction} />}
         </button>

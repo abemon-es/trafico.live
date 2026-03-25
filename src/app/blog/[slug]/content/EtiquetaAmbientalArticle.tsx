@@ -15,8 +15,8 @@ const LABELS = [
   },
   {
     id: "ECO",
-    color: "bg-teal-50 border-teal-400 text-teal-900",
-    badge: "bg-teal-500 text-white",
+    color: "bg-teal-50 dark:bg-teal-900/20 border-teal-400 text-teal-900",
+    badge: "bg-teal-50 dark:bg-teal-900/200 text-white",
     vehicles: [
       "Híbridos enchufables (PHEV) con ≤ 40 km de autonomía eléctrica",
       "Híbridos convencionales (HEV) con homologación ≤ 80 g/km",
@@ -38,8 +38,8 @@ const LABELS = [
   },
   {
     id: "B",
-    color: "bg-yellow-50 border-yellow-400 text-yellow-900",
-    badge: "bg-yellow-500 text-white",
+    color: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-900",
+    badge: "bg-yellow-50 dark:bg-yellow-900/200 text-white",
     vehicles: [
       "Gasolina matriculados entre 2000 y 2005 (Euro 3)",
       "Diésel matriculados entre 2006 y 2013 (Euro 4, 5)",

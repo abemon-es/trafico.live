@@ -64,7 +64,7 @@ const REGION_META: Record<
 > = {
   "Mediterráneo": {
     label: "Mediterráneo",
-    color: "bg-cyan-50",
+    color: "bg-cyan-50 dark:bg-cyan-900/20",
     borderColor: "border-cyan-200",
     icon: "🌊",
     desc: "Cataluña, Valencia, Murcia, Andalucía oriental",
@@ -85,7 +85,7 @@ const REGION_META: Record<
   },
   Baleares: {
     label: "Baleares",
-    color: "bg-teal-50",
+    color: "bg-teal-50 dark:bg-teal-900/20",
     borderColor: "border-teal-200",
     icon: "🏝️",
     desc: "Islas Baleares",
@@ -483,7 +483,7 @@ export default function MaritimasPage() {
               placeholder="Buscar por nombre, puerto, localidad..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-tl-500 dark:ring-tl-400 focus:border-transparent"
             />
           </div>
           <button
@@ -503,7 +503,7 @@ export default function MaritimasPage() {
               <select
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-tl-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-tl-500 dark:ring-tl-400"
               >
                 <option value="">Todas las provincias</option>
                 {Object.entries(PROVINCES).sort((a, b) => a[1].localeCompare(b[1])).map(([code, name]) => (
@@ -701,7 +701,7 @@ function StationCard({
       </div>
 
       {station.priceGasoleoB != null && (
-        <div className="mt-2 bg-cyan-50 rounded p-2">
+        <div className="mt-2 bg-cyan-50 dark:bg-cyan-900/20 rounded p-2">
           <div className="text-xs text-cyan-600">Gasóleo B (pesca)</div>
           <div className="font-bold text-cyan-700">{formatP(station.priceGasoleoB)}</div>
         </div>

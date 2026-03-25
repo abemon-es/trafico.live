@@ -301,11 +301,11 @@ function IncidentTypeChart({
   // Colors for different incident types
   const typeColors: Record<string, string> = {
     ACCIDENT: "bg-red-50 dark:bg-red-900/200",
-    ROADWORK: "bg-orange-500",
-    CONGESTION: "bg-yellow-500",
-    HAZARD: "bg-purple-500",
+    ROADWORK: "bg-orange-50 dark:bg-orange-900/200",
+    CONGESTION: "bg-yellow-50 dark:bg-yellow-900/200",
+    HAZARD: "bg-purple-50 dark:bg-purple-900/200",
     VEHICLE_BREAKDOWN: "bg-tl-50 dark:bg-tl-900/200",
-    WEATHER: "bg-cyan-500",
+    WEATHER: "bg-cyan-50 dark:bg-cyan-900/200",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
     OTHER: "bg-gray-400",
@@ -377,8 +377,8 @@ function SeverityChart({
 
   const severityColors: Record<string, string> = {
     LOW: "bg-green-50 dark:bg-green-900/200",
-    MEDIUM: "bg-yellow-500",
-    HIGH: "bg-orange-500",
+    MEDIUM: "bg-yellow-50 dark:bg-yellow-900/200",
+    HIGH: "bg-orange-50 dark:bg-orange-900/200",
     VERY_HIGH: "bg-red-600",
   };
 
@@ -577,7 +577,7 @@ export function IncidentStatsContent() {
           />
           <StatCard
             icon={Calendar}
-            iconBgColor="bg-purple-50"
+            iconBgColor="bg-purple-50 dark:bg-purple-900/20"
             iconColor="text-purple-600 dark:text-purple-400"
             value={hasData ? data.data.totals.incidentsLast7d : "-"}
             label="Últimos 7 días"
@@ -585,7 +585,7 @@ export function IncidentStatsContent() {
           />
           <StatCard
             icon={Clock}
-            iconBgColor="bg-orange-50"
+            iconBgColor="bg-orange-50 dark:bg-orange-900/20"
             iconColor="text-orange-600 dark:text-orange-400"
             value={
               hasData && data.data.totals.avgDurationMins

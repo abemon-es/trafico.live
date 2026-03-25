@@ -62,8 +62,8 @@ const KEY_DATES = [
     date: "Jueves 30 de abril",
     role: "Inicio del puente",
     note: "Tarde-noche: primera oleada de salidas desde las grandes ciudades. Hora punta 16:00–21:00.",
-    color: "border-orange-200 bg-orange-50",
-    badgeColor: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
+    color: "border-orange-200 bg-orange-50 dark:bg-orange-900/20",
+    badgeColor: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
   },
   {
     date: "Viernes 1 de mayo",
@@ -171,8 +171,8 @@ const MAIN_ROUTES = [
 
 const CONGESTION_COLOR: Record<string, string> = {
   "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  alta: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
-  media: "bg-yellow-100 text-yellow-700 dark:text-yellow-400 border-yellow-200",
+  alta: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
+  media: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200",
 };
 
 const TIPS = [
@@ -629,7 +629,7 @@ export default async function PuenteMayo2026Page() {
                   label: "Calculadora de ruta",
                   icon: Navigation,
                   color: "text-purple-600 dark:text-purple-400",
-                  bg: "bg-purple-50",
+                  bg: "bg-purple-50 dark:bg-purple-900/20",
                   border: "border-purple-100",
                 },
               ].map(({ href, label, icon: Icon, color, bg, border }) => (

@@ -118,10 +118,10 @@ const INCIDENT_TYPE_LABELS: Record<string, string> = {
 
 const INCIDENT_TYPE_COLORS: Record<string, string> = {
   ACCIDENT: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  ROADWORK: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
+  ROADWORK: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
   CONGESTION: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
-  HAZARD: "bg-yellow-100 text-yellow-700 dark:text-yellow-400 border-yellow-200",
-  VEHICLE_BREAKDOWN: "bg-purple-100 text-purple-700 dark:text-purple-400 border-purple-200",
+  HAZARD: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200",
+  VEHICLE_BREAKDOWN: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200",
   WEATHER: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
   EVENT: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
   CLOSURE: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
@@ -452,7 +452,7 @@ export default async function TraficoCityPage({ params }: Props) {
                         {inc.type === "ACCIDENT" || inc.type === "CLOSURE" ? (
                           <AlertTriangle className="w-4 h-4 text-red-500" />
                         ) : inc.type === "ROADWORK" ? (
-                          <Construction className="w-4 h-4 text-orange-500" />
+                          <Construction className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                         ) : inc.type === "CONGESTION" ? (
                           <Activity className="w-4 h-4 text-tl-amber-500" />
                         ) : inc.type === "WEATHER" ? (
@@ -540,7 +540,7 @@ export default async function TraficoCityPage({ params }: Props) {
                 href="/radares"
                 className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group"
               >
-                <Radio className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                <Radio className="w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0" />
                 <div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-700 dark:text-orange-400">
                     Radares

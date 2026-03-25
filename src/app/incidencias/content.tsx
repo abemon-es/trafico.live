@@ -248,7 +248,7 @@ export function IncidenciasContent() {
                     <p className="text-sm text-gray-500 dark:text-gray-400">Cortes</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-orange-500">
+                    <p className="text-2xl font-bold text-orange-500 dark:text-orange-400">
                       {data.counts.byEffect.SLOW_TRAFFIC || 0}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Retenciones</p>

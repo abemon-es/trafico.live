@@ -76,7 +76,7 @@ export default function SobrePage() {
 
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-purple-50 rounded-lg">
+                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                   <Shield className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100">Cobertura nacional</h3>
@@ -91,7 +91,7 @@ export default function SobrePage() {
         {/* Data Sources */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Fuentes de datos</h2>
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 divide-y divide-gray-200">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 divide-y divide-gray-200 dark:divide-gray-800">
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>

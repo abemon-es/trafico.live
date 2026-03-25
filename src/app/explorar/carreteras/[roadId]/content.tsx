@@ -202,7 +202,7 @@ export default function RoadDetailContent() {
 
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-yellow-50 rounded-lg">
+            <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
               <Radar className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function RoadDetailContent() {
                         incident.effect === "ROAD_CLOSED"
                           ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                           : incident.effect === "SLOW_TRAFFIC"
-                          ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                          ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                           : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                       }`}>
                         {EFFECT_LABELS[incident.effect] || incident.effect}
@@ -307,9 +307,9 @@ export default function RoadDetailContent() {
                 <div className="flex items-center justify-between mb-2">
                   <span className={`px-2 py-0.5 text-xs font-medium rounded ${
                     radar.type === "FIXED"
-                      ? "bg-yellow-100 text-yellow-700 dark:text-yellow-400"
+                      ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
                       : radar.type === "SECTION"
-                      ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                      ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                       : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                   }`}>
                     {RADAR_TYPES[radar.type] || radar.type}

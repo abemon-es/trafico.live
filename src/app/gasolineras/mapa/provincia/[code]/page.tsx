@@ -135,7 +135,7 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             Volver al mapa nacional
           </Link>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
+            <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
               <Fuel className="w-8 h-8 text-orange-600 dark:text-orange-400" />
             </div>
             <div>

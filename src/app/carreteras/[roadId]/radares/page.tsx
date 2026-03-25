@@ -169,7 +169,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
 
         {/* Warning box for section radars */}
         {sectionRadars.length > 0 && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-orange-800">Radares de tramo activos</h3>
@@ -212,7 +212,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           radar.type === "SECTION"
-                            ? "bg-orange-100 text-orange-800"
+                            ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800"
                             : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                         }`}>
                           {radar.type === "SECTION" ? "Tramo" : "Fijo"}

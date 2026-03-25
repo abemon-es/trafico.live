@@ -34,7 +34,7 @@ export default function GasolinerasMapaPage() {
       </div>
 
       {/* Instructions */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg p-4 mb-6">
         <h3 className="font-medium text-orange-800 mb-2">Cómo usar el mapa</h3>
         <ul className="text-sm text-orange-700 dark:text-orange-400 space-y-1">
           <li>• Haz clic en un marcador para ver los precios y detalles</li>

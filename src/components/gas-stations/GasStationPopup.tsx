@@ -15,7 +15,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
     <div className="min-w-[240px] max-w-[300px]">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-gray-800">
-        <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center">
+        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
           <Fuel className="w-3 h-3 text-orange-600 dark:text-orange-400" />
         </div>
         <span className="font-bold text-gray-900 dark:text-gray-100 flex-1 text-sm">{station.name}</span>
@@ -46,7 +46,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
           </div>
         )}
         {station.priceGasolina98E5 != null && (
-          <div className="bg-purple-50 rounded p-2 text-center">
+          <div className="bg-purple-50 dark:bg-purple-900/20 rounded p-2 text-center">
             <div className="text-xs text-purple-700 dark:text-purple-400 font-medium">Gasolina 98</div>
             <div className="text-base font-bold text-purple-900">
               {station.priceGasolina98E5.toFixed(3)}€
