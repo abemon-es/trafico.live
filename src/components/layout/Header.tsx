@@ -27,6 +27,7 @@ import {
   Cloud,
 } from "lucide-react";
 import { SearchOverlay, useSearchOverlay } from "@/components/search/SearchOverlay";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 // Primary navigation - main sections (visible in navbar)
 const navigation = [
@@ -216,19 +217,24 @@ export function Header() {
             </div>
           </div>
 
-          {/* Search button — visible on all screen sizes */}
-          <button
-            type="button"
-            onClick={search.open}
-            aria-label="Abrir búsqueda (Cmd+K)"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors border border-gray-200 bg-gray-50"
-          >
-            <Search className="w-4 h-4" />
-            <span className="hidden sm:inline text-xs">Buscar</span>
-            <kbd className="hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px] font-medium text-gray-400 leading-none">
-              ⌘K
-            </kbd>
-          </button>
+          {/* Right-side actions */}
+          <div className="flex items-center gap-1">
+            {/* Search button — visible on all screen sizes */}
+            <button
+              type="button"
+              onClick={search.open}
+              aria-label="Abrir búsqueda (Cmd+K)"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors border border-gray-200 bg-gray-50"
+            >
+              <Search className="w-4 h-4" />
+              <span className="hidden sm:inline text-xs">Buscar</span>
+              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px] font-medium text-gray-400 leading-none">
+                ⌘K
+              </kbd>
+            </button>
+
+            <ThemeToggle />
+          </div>
 
           {/* Mobile menu button */}
           <button
