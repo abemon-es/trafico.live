@@ -25,10 +25,9 @@ function createPrismaClient(): PrismaClient {
     }) as PrismaClient;
   }
 
-  const isBuild = process.env.NEXT_PHASE === "phase-production-build";
   const pool = new Pool({
     connectionString,
-    max: isBuild ? 3 : 20,
+    max: 5,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   });
