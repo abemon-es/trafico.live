@@ -1,7 +1,16 @@
+import { Metadata } from "next";
 import prisma from "@/lib/db";
 import { DashboardClient } from "./DashboardClient";
 
-export const dynamic = "force-dynamic";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
+export const revalidate = 300;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: BASE_URL,
+  },
+};
 
 async function getHomeStats() {
   try {

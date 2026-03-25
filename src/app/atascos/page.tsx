@@ -17,7 +17,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 const CURRENT_YEAR = new Date().getFullYear();
 

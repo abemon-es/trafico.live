@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import { AlertasMeteoContent } from "./content";
 
-export const dynamic = "force-dynamic";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title: "Alertas Meteorológicas para Carreteras — AEMET | trafico.live",
@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     "aviso meteorológico DGT",
   ],
   alternates: {
-    canonical: "/alertas-meteo",
+    canonical: `${BASE_URL}/alertas-meteo`,
   },
   openGraph: {
     title: "Alertas Meteorológicas para Carreteras — AEMET | trafico.live",
     description:
       "Avisos AEMET en tiempo real para carreteras: lluvia, nieve, viento y tormentas.",
-    url: "https://trafico.live/alertas-meteo",
+    url: `${BASE_URL}/alertas-meteo`,
     type: "website",
   },
 };

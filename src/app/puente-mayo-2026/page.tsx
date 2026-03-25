@@ -18,7 +18,7 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 // ---------------------------------------------------------------------------
 // Metadata
