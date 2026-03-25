@@ -20,17 +20,21 @@ export default async function sitemap({
 }: {
   id: number;
 }): Promise<MetadataRoute.Sitemap> {
-  const stations = await prisma.gasStation.findMany({
-    skip: id * 5000,
-    take: 5000,
-    select: { id: true },
-    orderBy: { id: "asc" },
-  });
+  try {
+    const stations = await prisma.gasStation.findMany({
+      skip: id * 5000,
+      take: 5000,
+      select: { id: true },
+      orderBy: { id: "asc" },
+    });
 
-  return stations.map((station) => ({
-    url: `https://trafico.live/gasolineras/terrestres/${station.id}`,
-    lastModified: new Date(),
-    changeFrequency: "daily" as const,
-    priority: 0.6,
-  }));
+    return stations.map((station) => ({
+      url: `https://trafico.live/gasolineras/terrestres/${station.id}`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    }));
+  } catch {
+    return [];
+  }
 }
