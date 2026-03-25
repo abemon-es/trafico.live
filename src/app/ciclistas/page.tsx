@@ -317,9 +317,6 @@ export default async function CiclistasPage() {
                         Tramo (km)
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Provincia
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Riesgo
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -346,9 +343,6 @@ export default async function CiclistasPage() {
                               : zone.kmStart != null
                                 ? `km ${zone.kmStart}`
                                 : "—"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            {zone.province ?? "—"}
                           </td>
                           <td className="px-4 py-3">
                             <span
