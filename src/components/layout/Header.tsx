@@ -117,7 +117,7 @@ export function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Logo variant="inline" size="sm" />
+          <Logo variant="horizontal" size="sm" />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">

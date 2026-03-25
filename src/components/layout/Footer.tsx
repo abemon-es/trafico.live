@@ -11,7 +11,7 @@ export function Footer() {
         {/* Brand Section */}
         <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-800">
           <div className="mb-2">
-            <Logo variant="inline" size="sm" href={undefined} />
+            <Logo variant="horizontal" size="sm" href={undefined} />
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 max-w-xl">
             Inteligencia vial en tiempo real con datos oficiales de la DGT. Incidencias, cámaras,
