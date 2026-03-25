@@ -114,7 +114,7 @@ const BREADCRUMB_ITEMS = [
 
 export default function ProfesionalPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={BREADCRUMB_ITEMS} />
 
@@ -125,10 +125,10 @@ export default function ProfesionalPage() {
               <Truck className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
                 Portal Profesional
               </h1>
-              <p className="text-lg text-gray-600 mt-1">
+              <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">
                 Herramientas para flotas y transportistas
               </p>
             </div>
@@ -139,7 +139,7 @@ export default function ProfesionalPage() {
         <section aria-labelledby="herramientas-heading" className="mb-14">
           <h2
             id="herramientas-heading"
-            className="text-xl font-semibold text-gray-900 mb-6"
+            className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6"
           >
             Herramientas disponibles
           </h2>
@@ -150,10 +150,10 @@ export default function ProfesionalPage() {
                 <Link
                   key={card.href}
                   href={card.href}
-                  className={`relative bg-white rounded-xl border border-gray-200 p-6 ${card.borderHover} hover:shadow-lg transition-all group flex flex-col`}
+                  className={`relative bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 ${card.borderHover} hover:shadow-lg dark:shadow-gray-900/20 transition-all group flex flex-col`}
                 >
                   {card.badge && (
-                    <span className="absolute top-3 right-3 text-xs font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                    <span className="absolute top-3 right-3 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full">
                       {card.badge}
                     </span>
                   )}
@@ -162,10 +162,10 @@ export default function ProfesionalPage() {
                   >
                     <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-2 group-hover:text-green-700 transition-colors">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-green-700 transition-colors">
                     {card.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4 flex-1">{card.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-1">{card.description}</p>
                   <div className="flex items-center justify-between mt-auto">
                     <span className="text-xs text-gray-400">{card.stats}</span>
                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600 transition-colors" />
@@ -224,24 +224,24 @@ export default function ProfesionalPage() {
         {/* Pricing Teaser */}
         <section
           aria-labelledby="planes-heading"
-          className="bg-white rounded-xl border border-gray-200 p-8 mb-10"
+          className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-8 mb-10"
         >
           <div className="flex items-center gap-2 mb-2">
             <Star className="w-5 h-5 text-tl-amber-500" />
-            <h2 id="planes-heading" className="text-xl font-semibold text-gray-900">
+            <h2 id="planes-heading" className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Planes de acceso
             </h2>
           </div>
-          <p className="text-gray-600 text-sm mb-6">
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
             El acceso web completo es siempre gratuito. Próximamente lanzaremos un plan
             profesional con acceso a la API, alertas por webhook y soporte dedicado.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Free plan */}
-            <div className="rounded-xl border border-gray-200 p-6">
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-base font-semibold text-gray-900">Plan Gratuito</span>
-                <span className="text-2xl font-bold text-gray-900">0€</span>
+                <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Plan Gratuito</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">0€</span>
               </div>
               <ul className="space-y-2">
                 {[
@@ -250,7 +250,7 @@ export default function ProfesionalPage() {
                   "Consulta de precios de combustible",
                   "Restricciones y alertas",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-gray-700">
+                  <li key={item} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                     {item}
                   </li>
@@ -265,15 +265,15 @@ export default function ProfesionalPage() {
             </div>
 
             {/* Pro plan */}
-            <div className="rounded-xl border-2 border-gray-900 p-6 relative">
-              <span className="absolute -top-3 left-4 text-xs font-semibold bg-gray-900 text-white px-3 py-1 rounded-full">
+            <div className="rounded-xl border-2 border-gray-900 dark:border-gray-700 p-6 relative">
+              <span className="absolute -top-3 left-4 text-xs font-semibold bg-gray-900 dark:bg-gray-700 text-white px-3 py-1 rounded-full">
                 Próximamente
               </span>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-base font-semibold text-gray-900">Plan Pro</span>
+                <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Plan Pro</span>
                 <div className="text-right">
-                  <span className="text-2xl font-bold text-gray-900">19€</span>
-                  <span className="text-xs text-gray-500">/mes</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">19€</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">/mes</span>
                 </div>
               </div>
               <ul className="space-y-2">
@@ -284,7 +284,7 @@ export default function ProfesionalPage() {
                   "Alertas y webhooks",
                   "Soporte por email prioritario",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-gray-700">
+                  <li key={item} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <Zap className="w-4 h-4 text-tl-amber-500 flex-shrink-0" />
                     {item}
                   </li>
@@ -303,11 +303,11 @@ export default function ProfesionalPage() {
         {/* Normativa Section */}
         <section
           aria-labelledby="normativa-heading"
-          className="bg-white rounded-xl border border-gray-200 p-6 mb-8"
+          className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mb-8"
         >
           <h2
             id="normativa-heading"
-            className="text-lg font-semibold text-gray-900 mb-6"
+            className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6"
           >
             Normativa básica de transporte
           </h2>
@@ -316,12 +316,12 @@ export default function ProfesionalPage() {
               const Icon = card.icon;
               return (
                 <div key={card.title} className="flex gap-4">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-gray-600" />
+                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{card.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{card.description}</p>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">{card.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{card.description}</p>
                   </div>
                 </div>
               );
