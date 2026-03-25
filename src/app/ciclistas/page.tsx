@@ -222,8 +222,8 @@ export default async function CiclistasPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs
           items={[
-            { label: "Inicio", href: "/" },
-            { label: "Ciclistas", href: "/ciclistas" },
+            { name: "Inicio", href: "/" },
+            { name: "Ciclistas", href: "/ciclistas" },
           ]}
         />
 
