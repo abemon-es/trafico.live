@@ -8,9 +8,8 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
-  const skipDb = process.env.SKIP_DB === "true";
 
-  if (!connectionString || skipDb) {
+  if (!connectionString) {
     // During build time, DATABASE_URL may not be available.
     // Return a proxy that throws on actual DB access but allows
     // module-level imports without crashing the build.
