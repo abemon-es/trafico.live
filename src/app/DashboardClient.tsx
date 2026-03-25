@@ -4,6 +4,11 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { Map as MapIcon } from "lucide-react";
 
+const StaleDataBanner = dynamic(
+  () => import("@/components/ui/StaleDataBanner").then((m) => m.StaleDataBanner),
+  { ssr: false }
+);
+
 const EnhancedStatsCards = dynamic(
   () => import("@/components/stats/EnhancedStatsCards").then((m) => m.EnhancedStatsCards),
   { ssr: false }
@@ -31,11 +36,6 @@ const TimeSeriesChart = dynamic(
 
 const InfrastructureStatus = dynamic(
   () => import("@/components/stats/InfrastructureStatus").then((m) => m.InfrastructureStatus),
-  { ssr: false }
-);
-
-const StaleDataBanner = dynamic(
-  () => import("@/components/ui/StaleDataBanner").then((m) => m.StaleDataBanner),
   { ssr: false }
 );
 

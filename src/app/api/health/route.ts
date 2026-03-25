@@ -42,7 +42,7 @@ async function checkCollectors(): Promise<HealthCheck["checks"]["collectors"]> {
   const staleThreshold = {
     v16: 10 * 60 * 1000, // 10 minutes (runs every 5 min)
     incidents: 10 * 60 * 1000, // 10 minutes (runs every 5 min)
-    gasStations: 60 * 60 * 1000, // 1 hour (runs every 30 min)
+    gasStations: 10 * 60 * 60 * 1000, // 10 hours (runs 3x daily at 6:00, 13:00, 20:00 UTC)
   };
 
   const now = Date.now();

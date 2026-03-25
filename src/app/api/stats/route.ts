@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
       previousHourStats,
       historicalByYear,
       chargerCount,
+      cameraCount,
+      zbeCount,
     ] = await Promise.all([
       // Active V16 beacons count
       prisma.v16BeaconEvent.count({ where: { isActive: true } }),
@@ -104,6 +106,12 @@ export async function GET(request: NextRequest) {
 
       // EV charger count from database (populated by charger-collector)
       prisma.eVCharger.count(),
+
+      // Camera count from database (populated by camera-collector)
+      prisma.camera.count(),
+
+      // ZBE zone count from database (populated by zbe-collector)
+      prisma.zBEZone.count(),
     ]);
 
     // Build severity breakdown
@@ -202,9 +210,9 @@ export async function GET(request: NextRequest) {
       v16Change,
       incidents: incidentCount,
       incidentsChange,
-      cameras: 512, // Static - would come from camera API
-      chargers: chargerCount, // Dynamic - from database
-      zbeZones: 156, // Static - would come from ZBE API
+      cameras: cameraCount,
+      chargers: chargerCount,
+      zbeZones: zbeCount,
       lastUpdated: lastUpdated.toISOString(),
       source: "database",
       bySeverity,
@@ -222,9 +230,9 @@ export async function GET(request: NextRequest) {
         error: "Internal server error",
         v16Active: 0,
         incidents: 0,
-        cameras: 512,
+        cameras: 0,
         chargers: 0,
-        zbeZones: 156,
+        zbeZones: 0,
         lastUpdated: new Date().toISOString(),
         source: "error",
         bySeverity: { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 },
