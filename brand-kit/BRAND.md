@@ -70,12 +70,12 @@ OKLCH-generated from `#d97706`. Warm amber for alerts, warnings, fuel data, CTAs
 
 | Role | Font | Weights | Usage |
 |------|------|---------|-------|
-| Headings | **Space Grotesk** | 500, 600, 700 | h1-h6, navigation, CTAs |
+| Headings | **Exo 2** | 500, 600, 700, 800 | h1-h6, wordmark, navigation, CTAs |
 | Body | **DM Sans** | 400, 500, 600 | Paragraphs, labels, UI text |
 | Data | **JetBrains Mono** | 400, 500 | Prices, stats, coordinates, live data |
 
 **Rules:**
-- Headings always use Space Grotesk — never DM Sans for h1-h3
+- Headings always use Exo 2 — never DM Sans for h1-h3
 - Prices and numerical data always use JetBrains Mono with `tabular-nums`
 - Body text minimum 16px, never below 14px for labels
 - Use `.font-data` class for any numerical/statistical display
@@ -129,7 +129,7 @@ text-signal-red   /* Incident active */
 
 ### Design rules for agents
 - All frontend code must use `tl-*` and `tl-amber-*` color classes
-- Headings must render in Space Grotesk (applied via CSS global rule)
+- Headings must render in Exo 2 (applied via CSS global rule)
 - Data displays (prices, stats, counts) must use `.font-data` class
 - Dark mode: use semantic vars (`var(--tl-primary)`) not fixed hex
 - Cards: `rounded-lg shadow-sm border` — never `rounded-none` or heavy shadows

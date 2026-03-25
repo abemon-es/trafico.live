@@ -38,7 +38,7 @@ export const signal = {
 } as const;
 
 export const fonts = {
-  heading: "Space Grotesk",
+  heading: "Exo 2",
   body: "DM Sans",
   mono: "JetBrains Mono",
 } as const;

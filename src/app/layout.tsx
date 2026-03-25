@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Exo_2, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -11,10 +11,10 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-const spaceGrotesk = Space_Grotesk({
+const exo2 = Exo_2({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -108,7 +108,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${spaceGrotesk.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <StructuredData data={organizationSchema} />
         <Header />

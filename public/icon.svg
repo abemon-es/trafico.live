@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <!-- Road mark -->
-  <path d="M8 36L20 12h6L14 36H8z" fill="#2563eb"/>
-  <path d="M18 36L30 12h6L24 36h-6z" fill="#2563eb" opacity="0.7"/>
-  <path d="M28 36L40 12h6L34 36h-6z" fill="#2563eb" opacity="0.4"/>
-  <!-- Live pulse dot -->
-  <circle cx="40" cy="12" r="6" fill="#f59e0b"/>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="114" fill="#0b0f1a"/>
+  <circle cx="256" cy="256" r="52" fill="white"/>
+  <circle cx="256" cy="256" r="116" stroke="white" stroke-width="22" opacity="0.45"/>
+  <circle cx="256" cy="256" r="180" stroke="white" stroke-width="18" opacity="0.2"/>
+  <circle cx="384" cy="128" r="22" fill="#6393ff" opacity="0.6"/>
 </svg>
