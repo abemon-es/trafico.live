@@ -79,33 +79,33 @@ const groupedByAutonomia = provinces.reduce((acc, province) => {
 
 export default function ProvinciasPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Provincias de España</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Provincias de España</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Consulta el estado del tráfico en las 52 provincias españolas. Datos actualizados cada minuto desde la DGT.
           </p>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-3xl font-bold text-gray-900">52</p>
-            <p className="text-sm text-gray-500">Provincias</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">52</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Provincias</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-3xl font-bold text-gray-900">17</p>
-            <p className="text-sm text-gray-500">Comunidades Autónomas</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">17</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Comunidades Autónomas</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-3xl font-bold text-gray-900">2</p>
-            <p className="text-sm text-gray-500">Ciudades Autónomas</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">2</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Ciudades Autónomas</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p className="text-3xl font-bold text-red-600">-</p>
-            <p className="text-sm text-gray-500">Incidencias Activas</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <p className="text-3xl font-bold text-red-600 dark:text-red-400">-</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Incidencias Activas</p>
           </div>
         </div>
 
@@ -115,8 +115,8 @@ export default function ProvinciasPage() {
             .sort(([a], [b]) => a.localeCompare(b, "es"))
             .map(([community, communityProvinces]) => (
               <section key={community}>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-red-600" />
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-red-600 dark:text-red-400" />
                   {community}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -124,16 +124,16 @@ export default function ProvinciasPage() {
                     <Link
                       key={province.code}
                       href={`/provincias/${province.code}`}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-red-200 transition-all group"
+                      className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-red-200 transition-all group"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-gray-900 group-hover:text-red-600 transition-colors">
+                          <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-red-600 dark:text-red-400 transition-colors">
                             {province.name}
                           </h3>
-                          <p className="text-sm text-gray-500">Código INE: {province.code}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Código INE: {province.code}</p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 transition-colors" />
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 dark:text-red-400 transition-colors" />
                       </div>
                     </Link>
                   ))}

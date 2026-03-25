@@ -142,42 +142,42 @@ export default async function CamarasCityPage({ params }: Props) {
   const hasCameras = cameras.length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <nav className="text-sm text-gray-500 mb-4" aria-label="Ruta de navegación">
-          <Link href="/" className="hover:text-gray-700">
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4" aria-label="Ruta de navegación">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">
             Inicio
           </Link>
           <span className="mx-2">/</span>
-          <Link href="/camaras" className="hover:text-gray-700">
+          <Link href="/camaras" className="hover:text-gray-700 dark:text-gray-300">
             Cámaras
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">{cityData.name}</span>
+          <span className="text-gray-900 dark:text-gray-100">{cityData.name}</span>
         </nav>
 
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-tl-50 rounded-lg">
-              <Video className="w-8 h-8 text-tl-600" />
+            <div className="p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+              <Video className="w-8 h-8 text-tl-600 dark:text-tl-400" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Cámaras de Tráfico en {cityData.name}
               </h1>
-              <p className="text-gray-600 max-w-2xl">
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
                 Imágenes en tiempo real de las cámaras de vigilancia de la DGT en las carreteras
                 de la provincia de {cityData.name}. Actualización automática cada pocos minutos.
               </p>
             </div>
             {hasCameras && (
-              <div className="hidden md:flex flex-col items-center bg-tl-50 border border-tl-200 rounded-lg px-5 py-3 text-center">
-                <span className="text-3xl font-bold text-tl-700">
+              <div className="hidden md:flex flex-col items-center bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg px-5 py-3 text-center">
+                <span className="text-3xl font-bold text-tl-700 dark:text-tl-300">
                   {cameras.length.toLocaleString("es-ES")}
                 </span>
-                <span className="text-sm text-tl-600 mt-0.5">cámaras activas</span>
+                <span className="text-sm text-tl-600 dark:text-tl-400 mt-0.5">cámaras activas</span>
               </div>
             )}
           </div>
@@ -187,15 +187,15 @@ export default async function CamarasCityPage({ params }: Props) {
           <>
             {/* Stats bar */}
             <div className="flex flex-wrap gap-3 mb-6">
-              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm shadow-sm">
-                <Camera className="w-4 h-4 text-tl-600" />
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm shadow-sm">
+                <Camera className="w-4 h-4 text-tl-600 dark:text-tl-400" />
                 <span className="font-medium">{cameras.length}</span>
-                <span className="text-gray-500">cámaras</span>
+                <span className="text-gray-500 dark:text-gray-400">cámaras</span>
               </div>
-              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm shadow-sm">
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm shadow-sm">
                 <MapPin className="w-4 h-4 text-tl-amber-500" />
                 <span className="font-medium">{roadsSorted.length}</span>
-                <span className="text-gray-500">carreteras</span>
+                <span className="text-gray-500 dark:text-gray-400">carreteras</span>
               </div>
             </div>
 
@@ -209,11 +209,11 @@ export default async function CamarasCityPage({ params }: Props) {
                       <div className="flex items-center gap-2">
                         <h2
                           id={`road-${road}`}
-                          className="text-lg font-semibold text-gray-900"
+                          className="text-lg font-semibold text-gray-900 dark:text-gray-100"
                         >
                           {road}
                         </h2>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           ({roadCameras.length}{" "}
                           {roadCameras.length === 1 ? "cámara" : "cámaras"})
                         </span>
@@ -221,7 +221,7 @@ export default async function CamarasCityPage({ params }: Props) {
                       {road !== "Sin carretera" && (
                         <Link
                           href={`/carreteras/${encodeURIComponent(road)}/camaras`}
-                          className="flex items-center gap-1 text-sm text-tl-600 hover:text-tl-800 hover:underline"
+                          className="flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                         >
                           Ver carretera
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -232,10 +232,10 @@ export default async function CamarasCityPage({ params }: Props) {
                       {roadCameras.map((cam) => (
                         <div
                           key={cam.id}
-                          className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                          className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden"
                         >
                           {cam.thumbnailUrl ? (
-                            <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                            <div className="aspect-video bg-gray-100 dark:bg-gray-900 relative overflow-hidden">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={cam.thumbnailUrl}
@@ -245,20 +245,20 @@ export default async function CamarasCityPage({ params }: Props) {
                               />
                             </div>
                           ) : (
-                            <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                            <div className="aspect-video bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                               <Camera className="w-8 h-8 text-gray-300" />
                             </div>
                           )}
                           <div className="p-3">
-                            <p className="font-medium text-gray-900 text-sm truncate">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                               {cam.name}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs font-medium text-tl-600">
+                              <span className="text-xs font-medium text-tl-600 dark:text-tl-400">
                                 {cam.roadNumber}
                               </span>
                               {cam.kmPoint !== null && (
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   km {Number(cam.kmPoint).toFixed(1)}
                                 </span>
                               )}
@@ -273,8 +273,8 @@ export default async function CamarasCityPage({ params }: Props) {
             </div>
 
             {/* Link to full cameras page */}
-            <div className="mt-8 bg-tl-50 border border-tl-200 rounded-lg p-4 flex items-center justify-between gap-4">
-              <p className="text-sm text-tl-800">
+            <div className="mt-8 bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4 flex items-center justify-between gap-4">
+              <p className="text-sm text-tl-800 dark:text-tl-200">
                 ¿Quieres ver todas las cámaras de España? Accede al directorio completo.
               </p>
               <Link
@@ -291,16 +291,16 @@ export default async function CamarasCityPage({ params }: Props) {
           (() => {
             const regionalBody = NON_DGT_CAMERA_PROVINCES[cityData.code];
             return (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-10 text-center">
-                <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-10 text-center">
+                <div className="w-14 h-14 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Camera className="w-7 h-7 text-gray-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   Sin cámaras DGT disponibles en {cityData.name}
                 </h2>
                 {regionalBody ? (
                   <div className="max-w-lg mx-auto mb-6">
-                    <p className="text-gray-500 text-sm mb-3">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
                       Las cámaras de tráfico en esta provincia son gestionadas por{" "}
                       <strong>{regionalBody.name}</strong>, no por la DGT directamente. Por este
                       motivo no aparecen en el directorio nacional.
@@ -316,14 +316,14 @@ export default async function CamarasCityPage({ params }: Props) {
                     </a>
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto mb-6">
                     No hay cámaras de tráfico de la DGT registradas para la provincia de{" "}
                     {cityData.name} en este momento. Las cámaras pueden estar sin datos o pendientes
                     de actualización.
                   </p>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Consulta cámaras en otras ciudades:
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
@@ -334,7 +334,7 @@ export default async function CamarasCityPage({ params }: Props) {
                         <Link
                           key={slug}
                           href={`/camaras/${slug}`}
-                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-tl-600 hover:bg-tl-50 hover:border-tl-200 transition-colors"
+                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors"
                         >
                           {nearbyData.name}
                         </Link>
@@ -355,32 +355,32 @@ export default async function CamarasCityPage({ params }: Props) {
         )}
 
         {/* SEO content */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6 prose prose-gray max-w-none">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">
+        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 prose prose-gray max-w-none">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
             Cámaras DGT en {cityData.name}
           </h2>
           {NON_DGT_CAMERA_PROVINCES[cityData.code] ? (
             <>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                 La provincia de {cityData.name} pertenece a Cataluña, comunidad autónoma que
                 dispone de su propio sistema de gestión del tráfico gestionado por el{" "}
                 <strong>Servei Català de Trànsit (SCT)</strong>. Las cámaras de la red viaria
                 catalana no forman parte del sistema de la DGT y por tanto no están disponibles
                 en este directorio.
               </p>
-              <p className="text-gray-600 text-sm leading-relaxed mt-2">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mt-2">
                 Para consultar las cámaras de tráfico en carreteras catalanas, accede al portal
                 oficial del SCT:{" "}
                 <a
                   href={NON_DGT_CAMERA_PROVINCES[cityData.code]!.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   transit.gencat.cat
                 </a>
                 . Para ver incidencias activas en {cityData.name}, consulta la sección de{" "}
-                <Link href="/incidencias" className="text-tl-600 hover:underline">
+                <Link href="/incidencias" className="text-tl-600 dark:text-tl-400 hover:underline">
                   incidencias de tráfico
                 </Link>
                 .
@@ -388,17 +388,17 @@ export default async function CamarasCityPage({ params }: Props) {
             </>
           ) : (
             <>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                 La Dirección General de Tráfico (DGT) dispone de una red de cámaras de vigilancia
                 en las principales carreteras de España. En la provincia de {cityData.name} estas
                 cámaras permiten monitorizar el estado del tráfico en tiempo real, detectar
                 incidencias y gestionar la circulación en los accesos a la ciudad.
               </p>
-              <p className="text-gray-600 text-sm leading-relaxed mt-2">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mt-2">
                 Las imágenes se actualizan automáticamente cada pocos minutos y son accesibles a
                 través de trafico.live sin necesidad de registrarse. Para ver incidencias activas en
                 {" "}{cityData.name}, consulta la sección de{" "}
-                <Link href="/incidencias" className="text-tl-600 hover:underline">
+                <Link href="/incidencias" className="text-tl-600 dark:text-tl-400 hover:underline">
                   incidencias de tráfico
                 </Link>
                 .

@@ -195,39 +195,39 @@ export default async function RoadDetailPage({ params }: PageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <StructuredData data={[roadSchema, ...webPageSchema]} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-gray-700">Inicio</Link>
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
           <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700">Carreteras</Link>
+          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">{road.id}</span>
+          <span className="text-gray-900 dark:text-gray-100">{road.id}</span>
         </nav>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 bg-tl-100 text-tl-800 rounded-full text-sm font-medium">
+                <span className="px-3 py-1 bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200 rounded-full text-sm font-medium">
                   {typeLabel}
                 </span>
                 {incidents.length > 0 && (
-                  <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium flex items-center gap-1">
+                  <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 rounded-full text-sm font-medium flex items-center gap-1">
                     <AlertTriangle className="w-4 h-4" />
                     {incidents.length} incidencia{incidents.length !== 1 ? "s" : ""} activa{incidents.length !== 1 ? "s" : ""}
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">{road.id}</h1>
-              {road.name && <p className="text-xl text-gray-600">{road.name}</p>}
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{road.id}</h1>
+              {road.name && <p className="text-xl text-gray-600 dark:text-gray-400">{road.name}</p>}
             </div>
             <Link
               href="/carreteras"
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver
@@ -236,35 +236,35 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <Camera className="w-5 h-5 mx-auto text-tl-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900 font-data">{cameras.length}</div>
-              <div className="text-xs text-gray-600">Cámaras</div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
+              <Camera className="w-5 h-5 mx-auto text-tl-600 dark:text-tl-400 mb-1" />
+              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 font-data">{cameras.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Cámaras</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <Radar className="w-5 h-5 mx-auto text-yellow-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900 font-data">{radars.length}</div>
-              <div className="text-xs text-gray-600">Radares</div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
+              <Radar className="w-5 h-5 mx-auto text-yellow-600 dark:text-yellow-400 mb-1" />
+              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 font-data">{radars.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Radares</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <AlertTriangle className="w-5 h-5 mx-auto text-red-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900 font-data">{incidents.length}</div>
-              <div className="text-xs text-gray-600">Incidencias</div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
+              <AlertTriangle className="w-5 h-5 mx-auto text-red-600 dark:text-red-400 mb-1" />
+              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 font-data">{incidents.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Incidencias</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <Fuel className="w-5 h-5 mx-auto text-orange-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900 font-data">{gasStations.length}</div>
-              <div className="text-xs text-gray-600">Gasolineras</div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
+              <Fuel className="w-5 h-5 mx-auto text-orange-600 dark:text-orange-400 mb-1" />
+              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 font-data">{gasStations.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Gasolineras</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <Zap className="w-5 h-5 mx-auto text-green-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900 font-data">{chargers.length}</div>
-              <div className="text-xs text-gray-600">Cargadores EV</div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
+              <Zap className="w-5 h-5 mx-auto text-green-600 dark:text-green-400 mb-1" />
+              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 font-data">{chargers.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Cargadores EV</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <MapPin className="w-5 h-5 mx-auto text-purple-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900 font-data">{road.provinces.length}</div>
-              <div className="text-xs text-gray-600">Provincias</div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
+              <MapPin className="w-5 h-5 mx-auto text-purple-600 dark:text-purple-400 mb-1" />
+              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 font-data">{road.provinces.length}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Provincias</div>
             </div>
           </div>
         </div>
@@ -274,24 +274,24 @@ export default async function RoadDetailPage({ params }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             {/* Active Incidents */}
             {incidents.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-red-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                   Incidencias Activas
                 </h2>
                 <div className="space-y-3">
                   {incidents.map((incident) => (
-                    <div key={incident.id} className="p-3 bg-red-50 rounded-lg border border-red-100">
+                    <div key={incident.id} className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium text-red-800">
                           {incident.type.replace(/_/g, " ")}
                         </span>
                         {incident.kmPoint && (
-                          <span className="text-xs text-red-600 font-data">km {Number(incident.kmPoint)}</span>
+                          <span className="text-xs text-red-600 dark:text-red-400 font-data">km {Number(incident.kmPoint)}</span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-700">{incident.description}</p>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{incident.description}</p>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {new Date(incident.startedAt).toLocaleString("es-ES")}
                       </div>
                     </div>
@@ -302,18 +302,18 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
             {/* Cameras */}
             {cameras.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   Cámaras de Tráfico ({cameras.length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {cameras.slice(0, 10).map((camera) => (
-                    <div key={camera.id} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="font-medium text-gray-900 text-sm">
+                    <div key={camera.id} className="p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                         {camera.name || `Cámara ${camera.id}`}
                       </div>
-                      <div className="text-xs text-gray-600 font-data">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-data">
                         {camera.kmPoint ? `km ${camera.kmPoint}` : ""}
                         {camera.province && ` · ${PROVINCE_NAMES[camera.province] || camera.province}`}
                       </div>
@@ -322,12 +322,12 @@ export default async function RoadDetailPage({ params }: PageProps) {
                 </div>
                 {cameras.length > 10 && (
                   <div className="mt-3 flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Y {cameras.length - 10} cámaras más...
                     </p>
                     <Link
                       href={`/carreteras/${road.id}/camaras`}
-                      className="text-sm text-tl-600 hover:text-tl-800 hover:underline flex items-center gap-1"
+                      className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline flex items-center gap-1"
                     >
                       Ver todas <ExternalLink className="w-3 h-3" />
                     </Link>
@@ -338,34 +338,34 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
             {/* Radars */}
             {radars.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Radar className="w-5 h-5 text-yellow-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Radar className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                   Radares de Velocidad ({radars.length})
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-2 text-gray-600">Ubicación</th>
-                        <th className="text-left py-2 text-gray-600">Tipo</th>
-                        <th className="text-left py-2 text-gray-600">Límite</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Ubicación</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Tipo</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Límite</th>
                       </tr>
                     </thead>
                     <tbody>
                       {radars.slice(0, 15).map((radar) => (
-                        <tr key={radar.radarId} className="border-b border-gray-100">
+                        <tr key={radar.radarId} className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 font-data">
                             km {Number(radar.kmPoint)}
                             {radar.province && (
-                              <span className="text-gray-500 ml-2 font-sans">
+                              <span className="text-gray-500 dark:text-gray-400 ml-2 font-sans">
                                 ({PROVINCE_NAMES[radar.province] || radar.province})
                               </span>
                             )}
                           </td>
                           <td className="py-2">
                             <span className={`px-2 py-0.5 rounded text-xs ${
-                              radar.type === "SECTION" ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-800"
+                              radar.type === "SECTION" ? "bg-orange-100 text-orange-800" : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                             }`}>
                               {radar.type === "SECTION" ? "Tramo" : "Fijo"}
                             </span>
@@ -378,12 +378,12 @@ export default async function RoadDetailPage({ params }: PageProps) {
                 </div>
                 {radars.length > 15 && (
                   <div className="mt-3 flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Y {radars.length - 15} radares más...
                     </p>
                     <Link
                       href={`/carreteras/${road.id}/radares`}
-                      className="text-sm text-tl-600 hover:text-tl-800 hover:underline flex items-center gap-1"
+                      className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline flex items-center gap-1"
                     >
                       Ver todos <ExternalLink className="w-3 h-3" />
                     </Link>
@@ -394,19 +394,19 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
             {/* Speed Limits */}
             {speedLimits.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-gray-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   Límites de velocidad ({speedLimits.length})
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-2 text-gray-600">Km inicio</th>
-                        <th className="text-left py-2 text-gray-600">Km fin</th>
-                        <th className="text-left py-2 text-gray-600">Velocidad (km/h)</th>
-                        <th className="text-left py-2 text-gray-600">Dirección</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Km inicio</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Km fin</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Velocidad (km/h)</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Dirección</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -414,14 +414,14 @@ export default async function RoadDetailPage({ params }: PageProps) {
                         const speed = sl.speedLimit;
                         const speedBadge =
                           speed <= 60
-                            ? "bg-red-100 text-red-800"
+                            ? "bg-red-100 dark:bg-red-900/30 text-red-800"
                             : speed <= 80
                             ? "bg-tl-amber-100 text-tl-amber-800"
                             : speed <= 100
-                            ? "bg-green-100 text-green-800"
-                            : "bg-tl-100 text-tl-800";
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-800"
+                            : "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200";
                         return (
-                          <tr key={sl.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <tr key={sl.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950">
                             <td className="py-2 font-data">{Number(sl.kmStart).toFixed(1)}</td>
                             <td className="py-2 font-data">{Number(sl.kmEnd).toFixed(1)}</td>
                             <td className="py-2">
@@ -429,7 +429,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                                 {speed}
                               </span>
                             </td>
-                            <td className="py-2 text-gray-500 text-xs">
+                            <td className="py-2 text-gray-500 dark:text-gray-400 text-xs">
                               {sl.direction ?? "-"}
                             </td>
                           </tr>
@@ -439,7 +439,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                   </table>
                 </div>
                 {speedLimits.length > 20 && (
-                  <p className="text-sm text-gray-500 mt-3">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
                     Y {speedLimits.length - 20} tramos más...
                   </p>
                 )}
@@ -448,9 +448,9 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
             {/* Gas Stations */}
             {gasStations.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Fuel className="w-5 h-5 text-orange-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Fuel className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                   Gasolineras en {road.id} ({gasStations.length})
                 </h2>
 
@@ -460,15 +460,15 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     {cheapestDiesel && (
                       <Link
                         href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-                        className="p-3 bg-tl-amber-50 rounded-lg border border-tl-amber-200 hover:bg-tl-amber-100 transition-colors"
+                        className="p-3 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-800 hover:bg-tl-amber-100 transition-colors"
                       >
-                        <div className="text-xs text-tl-amber-600 mb-1">Gasóleo A más barato</div>
-                        <div className="font-semibold text-gray-900 text-sm">{cheapestDiesel.name}</div>
+                        <div className="text-xs text-tl-amber-600 dark:text-tl-amber-400 mb-1">Gasóleo A más barato</div>
+                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{cheapestDiesel.name}</div>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs text-gray-500 font-data">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 font-data">
                             {cheapestDiesel.roadKm ? `km ${Number(cheapestDiesel.roadKm)}` : ""}
                           </span>
-                          <span className="text-lg font-bold text-tl-amber-700 font-data">
+                          <span className="text-lg font-bold text-tl-amber-700 dark:text-tl-amber-300 font-data">
                             {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
                           </span>
                         </div>
@@ -477,15 +477,15 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     {cheapestGas95 && (
                       <Link
                         href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-                        className="p-3 bg-tl-50 rounded-lg border border-tl-200 hover:bg-tl-100 transition-colors"
+                        className="p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg border border-tl-200 dark:border-tl-800 hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
                       >
-                        <div className="text-xs text-tl-600 mb-1">Gasolina 95 más barata</div>
-                        <div className="font-semibold text-gray-900 text-sm">{cheapestGas95.name}</div>
+                        <div className="text-xs text-tl-600 dark:text-tl-400 mb-1">Gasolina 95 más barata</div>
+                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{cheapestGas95.name}</div>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs text-gray-500 font-data">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 font-data">
                             {cheapestGas95.roadKm ? `km ${Number(cheapestGas95.roadKm)}` : ""}
                           </span>
-                          <span className="text-lg font-bold text-tl-700 font-data">
+                          <span className="text-lg font-bold text-tl-700 dark:text-tl-300 font-data">
                             {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
                           </span>
                         </div>
@@ -499,25 +499,25 @@ export default async function RoadDetailPage({ params }: PageProps) {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-2 text-gray-600">Estación</th>
-                        <th className="text-left py-2 text-gray-600">km</th>
-                        <th className="text-right py-2 text-gray-600">Gasóleo A</th>
-                        <th className="text-right py-2 text-gray-600">Gasolina 95</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Estación</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">km</th>
+                        <th className="text-right py-2 text-gray-600 dark:text-gray-400">Gasóleo A</th>
+                        <th className="text-right py-2 text-gray-600 dark:text-gray-400">Gasolina 95</th>
                       </tr>
                     </thead>
                     <tbody>
                       {gasStations.slice(0, 10).map((station) => (
-                        <tr key={station.id} className="border-b border-gray-100">
+                        <tr key={station.id} className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2">
                             <Link
                               href={`/gasolineras/terrestres/${station.id}`}
-                              className="text-orange-600 hover:underline"
+                              className="text-orange-600 dark:text-orange-400 hover:underline"
                             >
                               {station.name}
                             </Link>
-                            <div className="text-xs text-gray-500">{station.locality}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{station.locality}</div>
                           </td>
-                          <td className="py-2 text-gray-600 font-data">
+                          <td className="py-2 text-gray-600 dark:text-gray-400 font-data">
                             {station.roadKm ? Number(station.roadKm) : "-"}
                           </td>
                           <td className="py-2 text-right font-medium font-data">
@@ -538,12 +538,12 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
                 {gasStations.length > 10 && (
                   <div className="mt-3 flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Y {gasStations.length - 10} gasolineras más...
                     </p>
                     <Link
                       href={`/gasolineras/terrestres?road=${road.id}`}
-                      className="text-sm text-orange-600 hover:text-orange-800 hover:underline flex items-center gap-1"
+                      className="text-sm text-orange-600 dark:text-orange-400 hover:text-orange-800 hover:underline flex items-center gap-1"
                     >
                       Ver todas <ExternalLink className="w-3 h-3" />
                     </Link>
@@ -556,22 +556,22 @@ export default async function RoadDetailPage({ params }: PageProps) {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Road Info */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Información</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Información</h2>
               <dl className="space-y-3">
                 <div>
-                  <dt className="text-sm text-gray-600">Tipo de vía</dt>
-                  <dd className="font-medium text-gray-900">{typeLabel}</dd>
+                  <dt className="text-sm text-gray-600 dark:text-gray-400">Tipo de vía</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100">{typeLabel}</dd>
                 </div>
                 {road.totalKm && (
                   <div>
-                    <dt className="text-sm text-gray-600">Longitud</dt>
-                    <dd className="font-medium text-gray-900 font-data">{Number(road.totalKm).toFixed(1)} km</dd>
+                    <dt className="text-sm text-gray-600 dark:text-gray-400">Longitud</dt>
+                    <dd className="font-medium text-gray-900 dark:text-gray-100 font-data">{Number(road.totalKm).toFixed(1)} km</dd>
                   </div>
                 )}
                 <div>
-                  <dt className="text-sm text-gray-600">Provincias</dt>
-                  <dd className="font-medium text-gray-900">
+                  <dt className="text-sm text-gray-600 dark:text-gray-400">Provincias</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100">
                     {provinceNames.length > 0 ? provinceNames.join(", ") : "No disponible"}
                   </dd>
                 </div>
@@ -580,9 +580,9 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
             {/* Risk Zones */}
             {riskZones.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-orange-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-orange-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-orange-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                   Zonas de Riesgo ({riskZones.length})
                 </h2>
                 <div className="space-y-2">
@@ -590,7 +590,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     <div key={zone.id} className="p-2 bg-orange-50 rounded text-sm">
                       <span className="font-medium text-orange-800">{zone.type}</span>
                       {zone.kmStart && zone.kmEnd && (
-                        <span className="text-orange-600 ml-2 font-data">
+                        <span className="text-orange-600 dark:text-orange-400 ml-2 font-data">
                           km {Number(zone.kmStart).toFixed(0)} - {Number(zone.kmEnd).toFixed(0)}
                         </span>
                       )}
@@ -601,9 +601,9 @@ export default async function RoadDetailPage({ params }: PageProps) {
             )}
 
             {/* Related Roads */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Carreteras relacionadas</h2>
-              <p className="text-sm text-gray-600">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Carreteras relacionadas</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Ver más carreteras en las provincias por las que pasa la {road.id}.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -611,7 +611,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                   <Link
                     key={prov}
                     href={`/provincias/${prov}`}
-                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700"
+                    className="px-3 py-1 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 rounded-full text-sm text-gray-700 dark:text-gray-300"
                   >
                     {PROVINCE_NAMES[prov] || prov}
                   </Link>
@@ -622,8 +622,8 @@ export default async function RoadDetailPage({ params }: PageProps) {
         </div>
 
         {/* SEO Content */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Sobre la {typeLabel} {road.id}
           </h2>
           <div className="prose prose-gray max-w-none">

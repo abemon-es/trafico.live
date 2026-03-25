@@ -14,13 +14,13 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
   return (
     <div className="min-w-[240px] max-w-[300px]">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-gray-800">
         <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center">
-          <Fuel className="w-3 h-3 text-orange-600" />
+          <Fuel className="w-3 h-3 text-orange-600 dark:text-orange-400" />
         </div>
-        <span className="font-bold text-gray-900 flex-1 text-sm">{station.name}</span>
+        <span className="font-bold text-gray-900 dark:text-gray-100 flex-1 text-sm">{station.name}</span>
         {station.is24h && (
-          <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full">
             <Clock className="w-3 h-3" />
             24h
           </span>
@@ -30,16 +30,16 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
       {/* Prices grid */}
       <div className="grid grid-cols-2 gap-2 mb-3">
         {station.priceGasoleoA != null && (
-          <div className="bg-tl-amber-50 rounded p-2 text-center">
-            <div className="text-xs text-tl-amber-700 font-medium">Gasóleo A</div>
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded p-2 text-center">
+            <div className="text-xs text-tl-amber-700 dark:text-tl-amber-300 font-medium">Gasóleo A</div>
             <div className="text-base font-bold text-tl-amber-900">
               {station.priceGasoleoA.toFixed(3)}€
             </div>
           </div>
         )}
         {station.priceGasolina95E5 != null && (
-          <div className="bg-tl-50 rounded p-2 text-center">
-            <div className="text-xs text-tl-700 font-medium">Gasolina 95</div>
+          <div className="bg-tl-50 dark:bg-tl-900/20 rounded p-2 text-center">
+            <div className="text-xs text-tl-700 dark:text-tl-300 font-medium">Gasolina 95</div>
             <div className="text-base font-bold text-tl-900">
               {station.priceGasolina95E5.toFixed(3)}€
             </div>
@@ -47,15 +47,15 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
         )}
         {station.priceGasolina98E5 != null && (
           <div className="bg-purple-50 rounded p-2 text-center">
-            <div className="text-xs text-purple-700 font-medium">Gasolina 98</div>
+            <div className="text-xs text-purple-700 dark:text-purple-400 font-medium">Gasolina 98</div>
             <div className="text-base font-bold text-purple-900">
               {station.priceGasolina98E5.toFixed(3)}€
             </div>
           </div>
         )}
         {station.priceGLP != null && (
-          <div className="bg-green-50 rounded p-2 text-center">
-            <div className="text-xs text-green-700 font-medium">GLP</div>
+          <div className="bg-green-50 dark:bg-green-900/20 rounded p-2 text-center">
+            <div className="text-xs text-green-700 dark:text-green-400 font-medium">GLP</div>
             <div className="text-base font-bold text-green-900">
               {station.priceGLP.toFixed(3)}€
             </div>
@@ -64,9 +64,9 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
       </div>
 
       {/* Address */}
-      <div className="text-xs text-gray-600 mb-2">
+      <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
         {station.address && <p>{station.address}</p>}
-        <p className="text-gray-500">
+        <p className="text-gray-500 dark:text-gray-400">
           {station.locality || station.municipality}
           {station.provinceName && `, ${station.provinceName}`}
         </p>
@@ -83,10 +83,10 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-2 border-t border-gray-100">
+      <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
         <a
           href={`/gasolineras/terrestres/${station.id}`}
-          className="flex-1 text-center text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 px-2 py-1.5 rounded transition-colors"
+          className="flex-1 text-center text-xs bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-200 px-2 py-1.5 rounded transition-colors"
         >
           Ver detalles
         </a>
@@ -94,7 +94,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
           href={directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1 flex-1 text-center text-xs bg-tl-100 text-tl-700 hover:bg-tl-200 px-2 py-1.5 rounded transition-colors"
+          className="flex items-center justify-center gap-1 flex-1 text-center text-xs bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 hover:bg-tl-200 px-2 py-1.5 rounded transition-colors"
         >
           <Navigation className="w-3 h-3" />
           Cómo llegar

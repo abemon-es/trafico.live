@@ -151,7 +151,7 @@ const RISK_LEVEL_CONFIG: Record<
 > = {
   HIGH: {
     label: "Alto",
-    badgeClass: "bg-red-100 text-red-800 border-red-200",
+    badgeClass: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",
     rowClass: "border-l-4 border-l-red-400",
   },
   VERY_HIGH: {
@@ -161,12 +161,12 @@ const RISK_LEVEL_CONFIG: Record<
   },
   MEDIUM: {
     label: "Medio",
-    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200",
+    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200 dark:border-tl-amber-800",
     rowClass: "border-l-4 border-l-tl-amber-400",
   },
   LOW: {
     label: "Bajo",
-    badgeClass: "bg-green-100 text-green-800 border-green-200",
+    badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-800 border-green-200",
     rowClass: "border-l-4 border-l-green-400",
   },
 };
@@ -213,7 +213,7 @@ export default async function CiclistasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
@@ -230,64 +230,64 @@ export default async function CiclistasPage() {
         {/* Hero */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-green-100 rounded-xl">
-              <Bike className="w-8 h-8 text-green-700" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+              <Bike className="w-8 h-8 text-green-700 dark:text-green-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Seguridad Ciclista en España
               </h1>
-              <p className="text-gray-500 mt-1">
+              <p className="text-gray-500 dark:text-gray-400 mt-1">
                 Zonas de riesgo, normativa y datos de siniestralidad para ciclistas
               </p>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
-              <p className="text-2xl font-bold text-green-700">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-green-700 dark:text-green-400">
                 {allRiskZonesCount}
               </p>
-              <p className="text-sm text-gray-500">Zonas de riesgo ciclista</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Zonas de riesgo ciclista</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
-              <p className="text-2xl font-bold text-tl-700">1,5 m</p>
-              <p className="text-sm text-gray-500">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-tl-700 dark:text-tl-300">1,5 m</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Distancia mínima adelantamiento
               </p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
-              <p className="text-2xl font-bold text-tl-amber-600">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-tl-amber-600 dark:text-tl-amber-400">
                 <Moon className="w-5 h-5 inline mr-1" />
                 Obligatorio
               </p>
-              <p className="text-sm text-gray-500">Alumbrado interurbano</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Alumbrado interurbano</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
-              <p className="text-2xl font-bold text-red-600">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                 <Shield className="w-5 h-5 inline mr-1" />
                 Obligatorio
               </p>
-              <p className="text-sm text-gray-500">Casco en interurbana</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Casco en interurbana</p>
             </div>
           </div>
         </div>
 
         {/* Normativa section */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Normativa ciclista vigente
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {REGULATION_ITEMS.map((item) => (
               <div
                 key={item.title}
-                className="bg-white rounded-xl border border-gray-200 p-5"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   {item.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                <span className="inline-block text-xs font-mono text-tl-600 bg-tl-50 px-2 py-0.5 rounded">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{item.description}</p>
+                <span className="inline-block text-xs font-mono text-tl-600 dark:text-tl-400 bg-tl-50 dark:bg-tl-900/20 px-2 py-0.5 rounded">
                   {item.reference}
                 </span>
               </div>
@@ -298,28 +298,28 @@ export default async function CiclistasPage() {
         {/* Risk zones table */}
         {cyclistRiskZones.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Zonas de riesgo para ciclistas
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Tramos de carretera identificados por la DGT con mayor concentración
               de incidentes que involucran ciclistas.
             </p>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-950">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Carretera
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Tramo (km)
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Riesgo
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Descripción
                       </th>
                     </tr>
@@ -332,12 +332,12 @@ export default async function CiclistasPage() {
                       return (
                         <tr
                           key={zone.id}
-                          className={`hover:bg-gray-50 ${config.rowClass}`}
+                          className={`hover:bg-gray-50 dark:bg-gray-950 ${config.rowClass}`}
                         >
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                             {zone.roadNumber ?? "—"}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
+                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                             {zone.kmStart != null && zone.kmEnd != null
                               ? `${zone.kmStart}–${zone.kmEnd}`
                               : zone.kmStart != null
@@ -351,7 +351,7 @@ export default async function CiclistasPage() {
                               {config.label}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
+                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">
                             {zone.description ?? "—"}
                           </td>
                         </tr>
@@ -361,7 +361,7 @@ export default async function CiclistasPage() {
                 </table>
               </div>
               {allRiskZonesCount > 50 && (
-                <div className="px-4 py-3 bg-gray-50 text-sm text-gray-500 border-t">
+                <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 text-sm text-gray-500 dark:text-gray-400 border-t">
                   Mostrando los 50 tramos con mayor riesgo de{" "}
                   {allRiskZonesCount} totales.
                 </div>
@@ -373,49 +373,49 @@ export default async function CiclistasPage() {
         {/* Historical trend */}
         {yearRows.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Evolución de la siniestralidad vial
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Datos generales de accidentalidad en carreteras españolas. Los
               ciclistas representan aproximadamente el 3-4% de las víctimas
               mortales en carretera.
             </p>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-950">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Año
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Accidentes
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Fallecidos
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Hospitalizados
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Variación
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {yearRows.map((row) => (
-                      <tr key={row.year} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      <tr key={row.year} className="hover:bg-gray-50 dark:bg-gray-950">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                           {row.year}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-gray-600">
+                        <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-400">
                           {(row._sum.accidents ?? 0).toLocaleString("es-ES")}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right font-medium text-red-700">
+                        <td className="px-4 py-3 text-sm text-right font-medium text-red-700 dark:text-red-400">
                           {(row._sum.fatalities ?? 0).toLocaleString("es-ES")}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right text-gray-600">
+                        <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-400">
                           {(row._sum.hospitalized ?? 0).toLocaleString("es-ES")}
                         </td>
                         <td className="px-4 py-3 text-sm text-right">
@@ -423,10 +423,10 @@ export default async function CiclistasPage() {
                             <span
                               className={`inline-flex items-center gap-1 ${
                                 row.delta < 0
-                                  ? "text-green-700"
+                                  ? "text-green-700 dark:text-green-400"
                                   : row.delta > 0
-                                    ? "text-red-700"
-                                    : "text-gray-500"
+                                    ? "text-red-700 dark:text-red-400"
+                                    : "text-gray-500 dark:text-gray-400"
                               }`}
                             >
                               {row.delta < 0 ? (
@@ -454,22 +454,22 @@ export default async function CiclistasPage() {
 
         {/* Safety tips */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Consejos de seguridad ciclista
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {SAFETY_TIPS.map((tip) => (
               <div
                 key={tip.title}
-                className="bg-white rounded-xl border border-gray-200 p-5"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-green-50 rounded-lg">
-                    <tip.icon className="w-5 h-5 text-green-700" />
+                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <tip.icon className="w-5 h-5 text-green-700 dark:text-green-400" />
                   </div>
-                  <h3 className="font-semibold text-gray-900">{tip.title}</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">{tip.title}</h3>
                 </div>
-                <p className="text-sm text-gray-600">{tip.text}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{tip.text}</p>
               </div>
             ))}
           </div>
@@ -477,22 +477,22 @@ export default async function CiclistasPage() {
 
         {/* FAQ */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Preguntas frecuentes
           </h2>
           <div className="space-y-4">
             {FAQ_ITEMS.map((item) => (
               <details
                 key={item.question}
-                className="group bg-white rounded-xl border border-gray-200"
+                className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
               >
                 <summary className="flex items-center justify-between px-5 py-4 cursor-pointer list-none">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
                     {item.question}
                   </span>
                   <ChevronRight className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-90" />
                 </summary>
-                <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed">
+                <div className="px-5 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   {item.answer}
                 </div>
               </details>
@@ -501,14 +501,14 @@ export default async function CiclistasPage() {
         </section>
 
         {/* Disclaimer */}
-        <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-10">
+        <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-10">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-tl-amber-600 mt-0.5 shrink-0" />
+            <Info className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 mt-0.5 shrink-0" />
             <div>
               <p className="font-medium text-tl-amber-800 mb-1">
                 Nota informativa
               </p>
-              <p className="text-sm text-tl-amber-700">
+              <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300">
                 Esta información tiene carácter orientativo y se basa en datos
                 oficiales de la DGT. No sustituye las indicaciones de las
                 autoridades de tráfico ni la señalización vial. Las zonas de

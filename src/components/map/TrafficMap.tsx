@@ -852,9 +852,9 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
               <span class="w-3 h-3 rounded-full bg-purple-600"></span>
               <span class="font-bold text-sm">${props.name}</span>
             </div>
-            <p class="text-sm text-gray-600 mb-2">${props.cityName}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">${props.cityName}</p>
             ${restrictionsList ? `<div class="text-xs"><strong>Restricciones:</strong><ul class="list-disc pl-4 mt-1">${restrictionsList}</ul></div>` : ""}
-            ${props.fineAmount ? `<p class="text-xs text-red-600 mt-2">Multa: ${props.fineAmount}€</p>` : ""}
+            ${props.fineAmount ? `<p class="text-xs text-red-600 dark:text-red-400 mt-2">Multa: ${props.fineAmount}€</p>` : ""}
           </div>
         `)
         .addTo(map.current!);
@@ -1093,7 +1093,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                   <span class="font-bold text-sm">V16 Baliza</span>
                 </div>
                 ${beacon.road ? `<p class="text-sm font-medium">${beacon.road}${beacon.km ? ` km ${beacon.km}` : ""}</p>` : ""}
-                <p class="text-xs text-gray-500">Severidad: ${beacon.severity}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Severidad: ${beacon.severity}</p>
                 ${beacon.description ? `<p class="text-xs mt-1">${beacon.description}</p>` : ""}
                 ${beacon.activatedAt ? `<p class="text-xs text-gray-400 mt-1">Desde: ${new Date(beacon.activatedAt).toLocaleString("es-ES")}</p>` : ""}
               </div>
@@ -1177,13 +1177,13 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
               <div class="p-2">
                 ${camera.imageUrl ? `
-                  <div class="mb-2 bg-gray-100 rounded overflow-hidden">
+                  <div class="mb-2 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                     <img src="${camera.imageUrl}" alt="${camera.name}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'" />
                   </div>
                 ` : ""}
                 <p class="font-bold text-sm">${camera.name}</p>
-                ${camera.province ? `<p class="text-xs text-gray-500">${camera.province}</p>` : ""}
-                <a href="/camaras?id=${camera.id}" class="inline-block mt-2 text-tl-600 text-sm hover:underline">Ver cámara →</a>
+                ${camera.province ? `<p class="text-xs text-gray-500 dark:text-gray-400">${camera.province}</p>` : ""}
+                <a href="/camaras?id=${camera.id}" class="inline-block mt-2 text-tl-600 dark:text-tl-400 text-sm hover:underline">Ver cámara →</a>
               </div>
             `)
           )
@@ -1211,7 +1211,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
           : `${Math.round(charger.totalPowerKw * 1000)} W`;
         const connectorTypesDisplay = charger.connectorTypes.join(", ");
         const is24hBadge = charger.is24h
-          ? '<span class="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded ml-1">24h</span>'
+          ? '<span class="inline-block px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded ml-1">24h</span>'
           : '';
 
         const marker = new maplibregl.Marker({ element: el })
@@ -1220,16 +1220,16 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
               <div class="p-2 min-w-[200px]">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                  <span class="w-3 h-3 rounded-full bg-green-50 dark:bg-green-900/200"></span>
                   <span class="font-bold text-sm flex-1">${charger.name}</span>
                   ${is24hBadge}
                 </div>
-                <div class="text-sm text-gray-600 space-y-1">
+                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                   <p><strong>Potencia:</strong> ${powerDisplay}</p>
                   <p><strong>Conectores:</strong> ${charger.connectorCount} (${connectorTypesDisplay})</p>
                   ${charger.operator ? `<p><strong>Operador:</strong> ${charger.operator}</p>` : ""}
                   ${charger.address ? `<p class="text-xs">${charger.address}</p>` : ""}
-                  ${charger.city ? `<p class="text-xs text-gray-500">${charger.city}, ${charger.province}</p>` : ""}
+                  ${charger.city ? `<p class="text-xs text-gray-500 dark:text-gray-400">${charger.city}, ${charger.province}</p>` : ""}
                 </div>
               </div>
             `)
@@ -1261,7 +1261,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
           ? `<p class="text-lg font-bold text-center" style="color: ${color}">${radar.speedLimit} km/h</p>`
           : "";
         const directionDisplay = radar.direction
-          ? `<span class="text-xs text-gray-500">${radar.direction === "INCREASING" ? "↑ Sentido creciente" : "↓ Sentido decreciente"}</span>`
+          ? `<span class="text-xs text-gray-500 dark:text-gray-400">${radar.direction === "INCREASING" ? "↑ Sentido creciente" : "↓ Sentido decreciente"}</span>`
           : "";
 
         const marker = new maplibregl.Marker({ element: el })
@@ -1274,11 +1274,11 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                   <span class="font-bold text-sm">${label}</span>
                 </div>
                 ${speedDisplay}
-                <div class="text-sm text-gray-600 space-y-1">
+                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                   <p><strong>Carretera:</strong> ${radar.road} km ${radar.kmPoint}</p>
                   ${directionDisplay}
-                  ${radar.provinceName ? `<p class="text-xs text-gray-500">${radar.provinceName}</p>` : ""}
-                  ${radar.avgSpeedPartner ? `<p class="text-xs text-orange-600">Radar de tramo (con ${radar.avgSpeedPartner})</p>` : ""}
+                  ${radar.provinceName ? `<p class="text-xs text-gray-500 dark:text-gray-400">${radar.provinceName}</p>` : ""}
+                  ${radar.avgSpeedPartner ? `<p class="text-xs text-orange-600 dark:text-orange-400">Radar de tramo (con ${radar.avgSpeedPartner})</p>` : ""}
                 </div>
               </div>
             `)
@@ -1344,12 +1344,12 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                   <span class="font-bold text-sm">${props.label}</span>
                   <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${props.severityColor}; color: white;">${props.severity}</span>
                 </div>
-                <div class="text-sm text-gray-600 space-y-1">
+                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                   <p><strong>Carretera:</strong> ${props.roadNumber}</p>
                   <p><strong>Tramo:</strong> km ${props.kmStart} - ${props.kmEnd}</p>
                   ${animalInfo}
                   ${incidentInfo}
-                  ${props.description ? `<p class="text-xs text-gray-500 mt-1">${props.description}</p>` : ""}
+                  ${props.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${props.description}</p>` : ""}
                 </div>
               </div>
             `)
@@ -1436,12 +1436,12 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                     <span class="font-bold text-sm">${label}</span>
                     <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${severityColor}; color: white;">${zone.severity}</span>
                   </div>
-                  <div class="text-sm text-gray-600 space-y-1">
+                  <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                     <p><strong>Carretera:</strong> ${zone.roadNumber}</p>
                     <p><strong>Tramo:</strong> km ${zone.kmStart} - ${zone.kmEnd}</p>
                     ${animalInfo}
                     ${incidentInfo}
-                    ${zone.description ? `<p class="text-xs text-gray-500 mt-1">${zone.description}</p>` : ""}
+                    ${zone.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${zone.description}</p>` : ""}
                   </div>
                 </div>
               `)
@@ -1521,13 +1521,13 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
           const alertIcon = WEATHER_ICONS[alert.type] || WEATHER_ICONS.OTHER;
           const alertLabel = WEATHER_LABELS[alert.type] || alert.type;
           return `
-            <div class="mb-2 pb-2 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+            <div class="mb-2 pb-2 border-b border-gray-100 dark:border-gray-800 last:border-0 last:mb-0 last:pb-0">
               <div class="flex items-center gap-2">
                 <span style="color: ${alertColor}">${alertIcon}</span>
                 <span class="font-medium text-sm">${alertLabel}</span>
                 <span class="text-xs px-1.5 py-0.5 rounded" style="background: ${alertColor}20; color: ${alertColor}">${alert.severity}</span>
               </div>
-              ${alert.description ? `<p class="text-xs text-gray-600 mt-1">${alert.description}</p>` : ""}
+              ${alert.description ? `<p class="text-xs text-gray-600 dark:text-gray-400 mt-1">${alert.description}</p>` : ""}
               <p class="text-xs text-gray-400 mt-1">Desde: ${new Date(alert.startedAt).toLocaleString("es-ES")}</p>
             </div>
           `;
@@ -1568,7 +1568,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
         const formatPrice = (price: number | null) => price ? `${price.toFixed(3)}€` : "N/D";
         const is24hBadge = station.is24h
-          ? '<span class="inline-block px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded ml-1">24h</span>'
+          ? '<span class="inline-block px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded ml-1">24h</span>'
           : '';
 
         const marker = new maplibregl.Marker({ element: el })
@@ -1583,38 +1583,38 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-2">
                   ${station.priceGasoleoA ? `
-                    <div class="bg-tl-amber-50 p-1.5 rounded">
-                      <div class="text-xs text-tl-amber-600">Gasóleo A</div>
-                      <div class="font-bold text-tl-amber-700">${formatPrice(station.priceGasoleoA)}</div>
+                    <div class="bg-tl-amber-50 dark:bg-tl-amber-900/20 p-1.5 rounded">
+                      <div class="text-xs text-tl-amber-600 dark:text-tl-amber-400">Gasóleo A</div>
+                      <div class="font-bold text-tl-amber-700 dark:text-tl-amber-300">${formatPrice(station.priceGasoleoA)}</div>
                     </div>
                   ` : ''}
                   ${station.priceGasolina95E5 ? `
-                    <div class="bg-tl-50 p-1.5 rounded">
-                      <div class="text-xs text-tl-600">Gasolina 95</div>
-                      <div class="font-bold text-tl-700">${formatPrice(station.priceGasolina95E5)}</div>
+                    <div class="bg-tl-50 dark:bg-tl-900/20 p-1.5 rounded">
+                      <div class="text-xs text-tl-600 dark:text-tl-400">Gasolina 95</div>
+                      <div class="font-bold text-tl-700 dark:text-tl-300">${formatPrice(station.priceGasolina95E5)}</div>
                     </div>
                   ` : ''}
                   ${station.priceGasolina98E5 ? `
                     <div class="bg-purple-50 p-1.5 rounded">
-                      <div class="text-xs text-purple-600">Gasolina 98</div>
-                      <div class="font-bold text-purple-700">${formatPrice(station.priceGasolina98E5)}</div>
+                      <div class="text-xs text-purple-600 dark:text-purple-400">Gasolina 98</div>
+                      <div class="font-bold text-purple-700 dark:text-purple-400">${formatPrice(station.priceGasolina98E5)}</div>
                     </div>
                   ` : ''}
                   ${station.priceGLP ? `
-                    <div class="bg-green-50 p-1.5 rounded">
-                      <div class="text-xs text-green-600">GLP</div>
-                      <div class="font-bold text-green-700">${formatPrice(station.priceGLP)}</div>
+                    <div class="bg-green-50 dark:bg-green-900/20 p-1.5 rounded">
+                      <div class="text-xs text-green-600 dark:text-green-400">GLP</div>
+                      <div class="font-bold text-green-700 dark:text-green-400">${formatPrice(station.priceGLP)}</div>
                     </div>
                   ` : ''}
                 </div>
-                <div class="text-xs text-gray-600 space-y-1">
+                <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                   ${station.address ? `<p>${station.address}</p>` : ''}
                   ${station.locality ? `<p>${station.locality}${station.provinceName ? `, ${station.provinceName}` : ''}</p>` : ''}
                   ${station.schedule ? `<p class="text-gray-400">${station.schedule}</p>` : ''}
                 </div>
-                <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
+                <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
                   <span class="text-xs text-gray-400">${station.latitude.toFixed(5)}, ${station.longitude.toFixed(5)}</span>
-                  <a href="/gasolineras/terrestres/${station.id}" class="text-orange-600 text-xs hover:underline">Ver detalles →</a>
+                  <a href="/gasolineras/terrestres/${station.id}" class="text-orange-600 dark:text-orange-400 text-xs hover:underline">Ver detalles →</a>
                 </div>
               </div>
             `)
@@ -1641,7 +1641,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
         const formatPrice = (price: number | null) => price ? `${price.toFixed(3)}€` : "N/D";
         const is24hBadge = station.is24h
-          ? '<span class="inline-block px-1.5 py-0.5 bg-tl-100 text-tl-700 text-xs rounded ml-1">24h</span>'
+          ? '<span class="inline-block px-1.5 py-0.5 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 text-xs rounded ml-1">24h</span>'
           : '';
 
         const marker = new maplibregl.Marker({ element: el })
@@ -1650,32 +1650,32 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
               <div class="p-2 min-w-[200px]">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="w-3 h-3 rounded-full bg-tl-500"></span>
+                  <span class="w-3 h-3 rounded-full bg-tl-50 dark:bg-tl-900/200"></span>
                   <span class="font-bold text-sm flex-1">${station.name}</span>
                   ${is24hBadge}
                 </div>
-                ${station.port ? `<p class="text-sm text-tl-600 mb-2">Puerto: ${station.port}</p>` : ''}
+                ${station.port ? `<p class="text-sm text-tl-600 dark:text-tl-400 mb-2">Puerto: ${station.port}</p>` : ''}
                 <div class="grid grid-cols-2 gap-2 mb-2">
                   ${station.priceGasoleoA ? `
-                    <div class="bg-tl-amber-50 p-1.5 rounded">
-                      <div class="text-xs text-tl-amber-600">Gasóleo A</div>
-                      <div class="font-bold text-tl-amber-700">${formatPrice(station.priceGasoleoA)}</div>
+                    <div class="bg-tl-amber-50 dark:bg-tl-amber-900/20 p-1.5 rounded">
+                      <div class="text-xs text-tl-amber-600 dark:text-tl-amber-400">Gasóleo A</div>
+                      <div class="font-bold text-tl-amber-700 dark:text-tl-amber-300">${formatPrice(station.priceGasoleoA)}</div>
                     </div>
                   ` : ''}
                   ${station.priceGasolina95E5 ? `
-                    <div class="bg-tl-50 p-1.5 rounded">
-                      <div class="text-xs text-tl-600">Gasolina 95</div>
-                      <div class="font-bold text-tl-700">${formatPrice(station.priceGasolina95E5)}</div>
+                    <div class="bg-tl-50 dark:bg-tl-900/20 p-1.5 rounded">
+                      <div class="text-xs text-tl-600 dark:text-tl-400">Gasolina 95</div>
+                      <div class="font-bold text-tl-700 dark:text-tl-300">${formatPrice(station.priceGasolina95E5)}</div>
                     </div>
                   ` : ''}
                 </div>
-                <div class="text-xs text-gray-600 space-y-1">
+                <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                   ${station.locality ? `<p>${station.locality}${station.provinceName ? `, ${station.provinceName}` : ''}</p>` : ''}
                   ${station.schedule ? `<p class="text-gray-400">${station.schedule}</p>` : ''}
                 </div>
-                <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
+                <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
                   <span class="text-xs text-gray-400">${station.latitude.toFixed(5)}, ${station.longitude.toFixed(5)}</span>
-                  <a href="/gasolineras/maritimas/${station.id}" class="text-tl-600 text-xs hover:underline">Ver detalles →</a>
+                  <a href="/gasolineras/maritimas/${station.id}" class="text-tl-600 dark:text-tl-400 text-xs hover:underline">Ver detalles →</a>
                 </div>
               </div>
             `)

@@ -113,7 +113,7 @@ function TrendBadge({ current, previous }: { current: number | null; previous: n
 
   if (change > 0.001) {
     return (
-      <span className="flex items-center gap-1 text-red-600 text-sm">
+      <span className="flex items-center gap-1 text-red-600 dark:text-red-400 text-sm">
         <TrendingUp className="w-4 h-4" />
         +{change.toFixed(3)}€ ({percent}%)
       </span>
@@ -121,7 +121,7 @@ function TrendBadge({ current, previous }: { current: number | null; previous: n
   }
   if (change < -0.001) {
     return (
-      <span className="flex items-center gap-1 text-green-600 text-sm">
+      <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm">
         <TrendingDown className="w-4 h-4" />
         {change.toFixed(3)}€ ({percent}%)
       </span>
@@ -167,7 +167,7 @@ export default async function GasolinerasPage() {
           href="/gasolineras/terrestres"
           className="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
         >
-          <Fuel className="w-8 h-8 text-orange-600" />
+          <Fuel className="w-8 h-8 text-orange-600 dark:text-orange-400" />
           <div>
             <div className="font-semibold text-orange-900 dark:text-orange-300">Terrestres</div>
             <div className="text-sm text-orange-700 dark:text-orange-400 font-data">{stats.terrestrialCount.toLocaleString("es-ES")} estaciones</div>
@@ -187,7 +187,7 @@ export default async function GasolinerasPage() {
           href="/gasolineras/precios"
           className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/50 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
         >
-          <TrendingUp className="w-8 h-8 text-green-600" />
+          <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
           <div>
             <div className="font-semibold text-green-900 dark:text-green-300">Precios</div>
             <div className="text-sm text-green-700 dark:text-green-400">Hoy por provincia</div>
@@ -197,7 +197,7 @@ export default async function GasolinerasPage() {
           href="/gasolineras/mapa"
           className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800/50 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
         >
-          <MapPin className="w-8 h-8 text-purple-600" />
+          <MapPin className="w-8 h-8 text-purple-600 dark:text-purple-400" />
           <div>
             <div className="font-semibold text-purple-900 dark:text-purple-300">Mapa</div>
             <div className="text-sm text-purple-700 dark:text-purple-400">Ver en mapa</div>
@@ -356,7 +356,7 @@ export default async function GasolinerasPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-tl-amber-500"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-amber-50 dark:bg-tl-amber-900/200"></span>
             Gasóleo A Más Barato
             <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(Península)</span>
           </h2>
@@ -386,7 +386,7 @@ export default async function GasolinerasPage() {
 
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-tl-500"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-50 dark:bg-tl-900/200"></span>
             Gasolina 95 Más Barata
             <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(Península)</span>
           </h2>

@@ -25,9 +25,9 @@ interface WidgetConfig {
 const WIDGET_CONFIGS: Record<AffiliateWidgetProps["type"], WidgetConfig> = {
   insurance: {
     icon: Shield,
-    iconBg: "bg-tl-100",
-    iconColor: "text-tl-600",
-    borderColor: "border-tl-200",
+    iconBg: "bg-tl-100 dark:bg-tl-900/30",
+    iconColor: "text-tl-600 dark:text-tl-400",
+    borderColor: "border-tl-200 dark:border-tl-800",
     gradientFrom: "from-tl-50",
     gradientTo: "to-white",
     ctaColor: "bg-tl-600",
@@ -41,8 +41,8 @@ const WIDGET_CONFIGS: Record<AffiliateWidgetProps["type"], WidgetConfig> = {
   "fuel-card": {
     icon: CreditCard,
     iconBg: "bg-tl-amber-100",
-    iconColor: "text-tl-amber-600",
-    borderColor: "border-tl-amber-200",
+    iconColor: "text-tl-amber-600 dark:text-tl-amber-400",
+    borderColor: "border-tl-amber-200 dark:border-tl-amber-800",
     gradientFrom: "from-tl-amber-50",
     gradientTo: "to-white",
     ctaColor: "bg-tl-amber-600",
@@ -55,8 +55,8 @@ const WIDGET_CONFIGS: Record<AffiliateWidgetProps["type"], WidgetConfig> = {
   },
   "ev-charger": {
     icon: Zap,
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
+    iconBg: "bg-green-100 dark:bg-green-900/30",
+    iconColor: "text-green-600 dark:text-green-400",
     borderColor: "border-green-200",
     gradientFrom: "from-green-50",
     gradientTo: "to-white",
@@ -70,7 +70,7 @@ const WIDGET_CONFIGS: Record<AffiliateWidgetProps["type"], WidgetConfig> = {
   itv: {
     icon: ClipboardCheck,
     iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
+    iconColor: "text-purple-600 dark:text-purple-400",
     borderColor: "border-purple-200",
     gradientFrom: "from-purple-50",
     gradientTo: "to-white",
@@ -101,10 +101,10 @@ export function AffiliateWidget({ type, className = "" }: AffiliateWidgetProps) 
 
         {/* Text + CTA */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-0.5">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-snug mb-0.5">
             {config.heading}
           </h3>
-          <p className="text-xs text-gray-600 leading-relaxed mb-3">{config.description}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-3">{config.description}</p>
           <a
             href={config.href}
             rel="noopener noreferrer sponsored"

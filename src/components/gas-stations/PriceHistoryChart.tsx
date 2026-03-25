@@ -99,13 +99,13 @@ export function PriceHistoryChart({
   const formatPrice = (value: number) => `${value.toFixed(3)}€`;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
 
         {/* Time range selector */}
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-900 rounded-lg p-1">
           {(["7d", "30d", "90d", "365d"] as TimeRange[]).map((range) => (
             <button
               key={range}
@@ -113,8 +113,8 @@ export function PriceHistoryChart({
               className={`
                 px-3 py-1 text-xs font-medium rounded-md transition-colors
                 ${timeRange === range
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
                 }
               `}
             >
@@ -134,12 +134,12 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasoleoA
-              ? "bg-tl-amber-100 text-tl-amber-700 border border-tl-amber-200"
-              : "bg-gray-100 text-gray-500 border border-gray-200"
+              ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800"
+              : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
             }
           `}
         >
-          <span className="w-2 h-2 rounded-full bg-tl-amber-500" />
+          <span className="w-2 h-2 rounded-full bg-tl-amber-50 dark:bg-tl-amber-900/200" />
           Gasóleo A
           {trends.gasoleoA && <TrendIcon direction={trends.gasoleoA.direction} />}
         </button>
@@ -148,12 +148,12 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasolina95
-              ? "bg-tl-100 text-tl-700 border border-tl-200"
-              : "bg-gray-100 text-gray-500 border border-gray-200"
+              ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800"
+              : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
             }
           `}
         >
-          <span className="w-2 h-2 rounded-full bg-tl-500" />
+          <span className="w-2 h-2 rounded-full bg-tl-50 dark:bg-tl-900/200" />
           Gasolina 95
           {trends.gasolina95 && <TrendIcon direction={trends.gasolina95.direction} />}
         </button>
@@ -162,8 +162,8 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasolina98
-              ? "bg-purple-100 text-purple-700 border border-purple-200"
-              : "bg-gray-100 text-gray-500 border border-gray-200"
+              ? "bg-purple-100 text-purple-700 dark:text-purple-400 border border-purple-200"
+              : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
             }
           `}
         >
@@ -263,24 +263,24 @@ export function PriceHistoryChart({
           </LineChart>
         </ResponsiveContainer>
       ) : (
-        <div className="flex items-center justify-center h-[300px] text-gray-500">
+        <div className="flex items-center justify-center h-[300px] text-gray-500 dark:text-gray-400">
           No hay datos disponibles para el período seleccionado
         </div>
       )}
 
       {/* Trend summary */}
       {filteredData.length > 1 && (
-        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           {selectedFuels.gasoleoA && trends.gasoleoA && (
             <div className="text-center">
-              <div className="text-xs text-gray-500 mb-1">Gasóleo A</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gasóleo A</div>
               <div
                 className={`text-sm font-medium ${
                   trends.gasoleoA.direction === "up"
-                    ? "text-red-600"
+                    ? "text-red-600 dark:text-red-400"
                     : trends.gasoleoA.direction === "down"
-                    ? "text-green-600"
-                    : "text-gray-600"
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-gray-600 dark:text-gray-400"
                 }`}
               >
                 {trends.gasoleoA.direction === "up" ? "+" : ""}
@@ -290,14 +290,14 @@ export function PriceHistoryChart({
           )}
           {selectedFuels.gasolina95 && trends.gasolina95 && (
             <div className="text-center">
-              <div className="text-xs text-gray-500 mb-1">Gasolina 95</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gasolina 95</div>
               <div
                 className={`text-sm font-medium ${
                   trends.gasolina95.direction === "up"
-                    ? "text-red-600"
+                    ? "text-red-600 dark:text-red-400"
                     : trends.gasolina95.direction === "down"
-                    ? "text-green-600"
-                    : "text-gray-600"
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-gray-600 dark:text-gray-400"
                 }`}
               >
                 {trends.gasolina95.direction === "up" ? "+" : ""}
@@ -307,14 +307,14 @@ export function PriceHistoryChart({
           )}
           {selectedFuels.gasolina98 && trends.gasolina98 && (
             <div className="text-center">
-              <div className="text-xs text-gray-500 mb-1">Gasolina 98</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gasolina 98</div>
               <div
                 className={`text-sm font-medium ${
                   trends.gasolina98.direction === "up"
-                    ? "text-red-600"
+                    ? "text-red-600 dark:text-red-400"
                     : trends.gasolina98.direction === "down"
-                    ? "text-green-600"
-                    : "text-gray-600"
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-gray-600 dark:text-gray-400"
                 }`}
               >
                 {trends.gasolina98.direction === "up" ? "+" : ""}

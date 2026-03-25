@@ -30,9 +30,9 @@ const FUEL_DEFAULTS: Record<FuelType, FuelDefaults> = {
     precio: 1.35,
     co2Factor: 2.65,
     unit: "L",
-    color: "text-tl-amber-700",
-    bgColor: "bg-tl-amber-50",
-    borderColor: "border-tl-amber-200",
+    color: "text-tl-amber-700 dark:text-tl-amber-300",
+    bgColor: "bg-tl-amber-50 dark:bg-tl-amber-900/20",
+    borderColor: "border-tl-amber-200 dark:border-tl-amber-800",
   },
   gasolina95: {
     label: "Gasolina 95",
@@ -40,9 +40,9 @@ const FUEL_DEFAULTS: Record<FuelType, FuelDefaults> = {
     precio: 1.55,
     co2Factor: 2.35,
     unit: "L",
-    color: "text-tl-700",
-    bgColor: "bg-tl-50",
-    borderColor: "border-tl-200",
+    color: "text-tl-700 dark:text-tl-300",
+    bgColor: "bg-tl-50 dark:bg-tl-900/20",
+    borderColor: "border-tl-200 dark:border-tl-800",
   },
   gasolina98: {
     label: "Gasolina 98",
@@ -50,7 +50,7 @@ const FUEL_DEFAULTS: Record<FuelType, FuelDefaults> = {
     precio: 1.70,
     co2Factor: 2.31,
     unit: "L",
-    color: "text-purple-700",
+    color: "text-purple-700 dark:text-purple-400",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
   },
@@ -60,8 +60,8 @@ const FUEL_DEFAULTS: Record<FuelType, FuelDefaults> = {
     precio: 0.22,
     co2Factor: 0,
     unit: "kWh",
-    color: "text-green-700",
-    bgColor: "bg-green-50",
+    color: "text-green-700 dark:text-green-400",
+    bgColor: "bg-green-50 dark:bg-green-900/20",
     borderColor: "border-green-200",
   },
 };
@@ -126,18 +126,18 @@ function ResultCard({
       className={`rounded-xl p-4 flex flex-col gap-1 ${
         highlight
           ? "bg-tl-600 text-white"
-          : "bg-white border border-gray-200"
+          : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
       }`}
     >
       <div
         className={`flex items-center gap-1.5 text-xs font-medium ${
-          highlight ? "text-tl-100" : "text-gray-500"
+          highlight ? "text-tl-100" : "text-gray-500 dark:text-gray-400"
         }`}
       >
         {icon}
         {label}
       </div>
-      <div className={`text-2xl font-extrabold ${highlight ? "text-white" : "text-gray-900"}`}>
+      <div className={`text-2xl font-extrabold ${highlight ? "text-white" : "text-gray-900 dark:text-gray-100"}`}>
         {value}
         <span className={`text-sm font-normal ml-1 ${highlight ? "text-tl-200" : "text-gray-400"}`}>
           {unit}
@@ -177,7 +177,7 @@ function ComparisonRow({
       className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
         isActive
           ? `${defaults.bgColor} ${defaults.borderColor} shadow-sm`
-          : "bg-white border-gray-100"
+          : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -186,14 +186,14 @@ function ComparisonRow({
             fuelType === "diesel"
               ? "bg-tl-amber-400"
               : fuelType === "gasolina95"
-              ? "bg-tl-500"
+              ? "bg-tl-50 dark:bg-tl-900/200"
               : fuelType === "gasolina98"
               ? "bg-purple-500"
-              : "bg-green-500"
+              : "bg-green-50 dark:bg-green-900/200"
           }`}
         />
         <div>
-          <div className={`font-semibold text-sm ${isActive ? defaults.color : "text-gray-700"}`}>
+          <div className={`font-semibold text-sm ${isActive ? defaults.color : "text-gray-700 dark:text-gray-300"}`}>
             {defaults.label}
           </div>
           <div className="text-xs text-gray-400">
@@ -202,7 +202,7 @@ function ComparisonRow({
         </div>
       </div>
       <div className="text-right">
-        <div className={`text-lg font-extrabold ${isActive ? defaults.color : "text-gray-800"}`}>
+        <div className={`text-lg font-extrabold ${isActive ? defaults.color : "text-gray-800 dark:text-gray-200"}`}>
           {fmt(result.total)} €
         </div>
         <div className="text-xs text-gray-400">{fmt(result.porPersona)} €/persona</div>
@@ -256,9 +256,9 @@ export default function CalculadoraContent() {
   }, []);
 
   const inputClass =
-    "w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-tl-400 focus:ring-2 focus:ring-tl-100 outline-none transition-all placeholder:text-gray-400";
+    "w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:border-tl-400 focus:ring-2 focus:ring-tl-100 outline-none transition-all placeholder:text-gray-400";
 
-  const labelClass = "block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide";
+  const labelClass = "block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide";
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -272,14 +272,14 @@ export default function CalculadoraContent() {
 
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 text-tl-600 text-sm font-medium mb-2">
+        <div className="flex items-center gap-2 text-tl-600 dark:text-tl-400 text-sm font-medium mb-2">
           <Calculator className="w-4 h-4" />
           <span>Herramienta gratuita</span>
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
           Calculadora de Coste de Ruta
         </h1>
-        <p className="text-gray-600 text-lg max-w-2xl">
+        <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl">
           Calcula el coste real de tu viaje en coche: combustible, peajes y emisiones de CO
           <sub>2</sub>. Compara los distintos tipos de combustible al instante.
         </p>
@@ -289,9 +289,9 @@ export default function CalculadoraContent() {
         {/* ----------------------------------------------------------------- */}
         {/* FORM — left / top                                                  */}
         {/* ----------------------------------------------------------------- */}
-        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-tl-600" />
+        <div className="lg:col-span-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+          <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-5 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-tl-600 dark:text-tl-400" />
             Datos del viaje
           </h2>
 
@@ -357,7 +357,7 @@ export default function CalculadoraContent() {
                     className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-all text-left ${
                       isSelected
                         ? `${d.bgColor} ${d.borderColor} ${d.color} shadow-sm`
-                        : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-950"
                     }`}
                   >
                     {d.label}
@@ -429,7 +429,7 @@ export default function CalculadoraContent() {
                     className={`w-9 h-9 rounded-lg border text-sm font-bold transition-all ${
                       pasajeros === n
                         ? "bg-tl-600 border-tl-600 text-white shadow-sm"
-                        : "border-gray-200 text-gray-600 hover:border-tl-300 hover:bg-tl-50"
+                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:bg-tl-50 dark:bg-tl-900/20"
                     }`}
                   >
                     {n}
@@ -446,7 +446,7 @@ export default function CalculadoraContent() {
         <div className="lg:col-span-2 flex flex-col gap-4">
           {/* Route summary pill */}
           {origen && destino && (
-            <div className="bg-tl-50 border border-tl-100 rounded-xl px-4 py-3 flex items-center gap-2 text-sm font-medium text-tl-700">
+            <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-100 rounded-xl px-4 py-3 flex items-center gap-2 text-sm font-medium text-tl-700 dark:text-tl-300">
               <MapPin className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">
                 {origen} → {destino}
@@ -492,8 +492,8 @@ export default function CalculadoraContent() {
           <div
             className={`rounded-xl border p-4 flex items-center gap-3 ${
               fuelType === "electrico"
-                ? "bg-green-50 border-green-200"
-                : "bg-gray-50 border-gray-200"
+                ? "bg-green-50 dark:bg-green-900/20 border-green-200"
+                : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800"
             }`}
           >
             <Leaf
@@ -502,18 +502,18 @@ export default function CalculadoraContent() {
               }`}
             />
             <div>
-              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                 Emisiones CO<sub>2</sub>
               </div>
               {fuelType === "electrico" ? (
-                <div className="text-lg font-extrabold text-green-700">
+                <div className="text-lg font-extrabold text-green-700 dark:text-green-400">
                   0 kg{" "}
-                  <span className="text-xs font-normal text-green-600">en circulación</span>
+                  <span className="text-xs font-normal text-green-600 dark:text-green-400">en circulación</span>
                 </div>
               ) : (
-                <div className="text-lg font-extrabold text-gray-800">
+                <div className="text-lg font-extrabold text-gray-800 dark:text-gray-200">
                   {fmt(result.co2)} kg{" "}
-                  <span className="text-xs font-normal text-gray-500">
+                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
                     · {fmt(result.co2 / Math.max(1, distancia / 100), 2)} kg/100km
                   </span>
                 </div>
@@ -525,14 +525,14 @@ export default function CalculadoraContent() {
           <div className="flex flex-wrap gap-2 text-xs">
             <Link
               href="/precio-gasolina-hoy"
-              className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-tl-300 hover:text-tl-600 transition-colors"
+              className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:text-tl-600 dark:text-tl-400 transition-colors"
             >
               <Fuel className="w-3 h-3" />
               Precio gasolina hoy
             </Link>
             <Link
               href="/precio-diesel-hoy"
-              className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-tl-300 hover:text-tl-600 transition-colors"
+              className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:text-tl-600 dark:text-tl-400 transition-colors"
             >
               <Fuel className="w-3 h-3" />
               Precio diésel hoy
@@ -544,9 +544,9 @@ export default function CalculadoraContent() {
       {/* ------------------------------------------------------------------- */}
       {/* COMPARISON TABLE                                                     */}
       {/* ------------------------------------------------------------------- */}
-      <div className="mt-8 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-        <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-tl-600" />
+      <div className="mt-8 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+        <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Calculator className="w-4 h-4 text-tl-600 dark:text-tl-400" />
           Comparativa por tipo de combustible
           {origen && destino && (
             <span className="text-xs font-normal text-gray-400 ml-1">
@@ -574,26 +574,26 @@ export default function CalculadoraContent() {
       {/* ------------------------------------------------------------------- */}
       {/* FAQ                                                                  */}
       {/* ------------------------------------------------------------------- */}
-      <div className="mt-8 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">
+      <div className="mt-8 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Preguntas frecuentes sobre el coste de un viaje en coche
         </h2>
         <div className="space-y-6">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
               ¿Cómo se calcula el coste de combustible de una ruta?
             </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
               La fórmula es sencilla: <strong>coste = (distancia ÷ 100) × consumo × precio por litro</strong>.
               Por ejemplo, para 600 km con un coche que consume 7 L/100km y gasolina a 1,55 €/L:
               (600 ÷ 100) × 7 × 1,55 = <strong>65,10 €</strong>. A eso hay que sumarle los peajes de la ruta.
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
               ¿Cuánto cuesta el peaje de Madrid a Barcelona?
             </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
               El trayecto Madrid–Barcelona por la AP-2 y AP-7 tiene un coste de peaje de entre{" "}
               <strong>45 € y 55 €</strong> para turismos, dependiendo del punto de origen/destino
               exacto. Puedes consultar el importe exacto en la web de cada concesionaria o en las
@@ -602,10 +602,10 @@ export default function CalculadoraContent() {
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
               ¿Vale la pena ir en coche eléctrico frente a uno de gasolina?
             </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
               En un viaje de 600 km, un eléctrico con 18 kWh/100km y electricidad a 0,22 €/kWh
               costaría unos <strong>23,76 €</strong> frente a los{" "}
               <strong>~69 €</strong> de un gasolina (7,5 L/100km a 1,55 €/L). El ahorro es

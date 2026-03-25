@@ -60,8 +60,8 @@ export function StationPriceHistory({ stationId }: StationPriceHistoryProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Historial de precios</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Historial de precios</h3>
         <div className="flex items-center justify-center py-10">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
@@ -71,9 +71,9 @@ export function StationPriceHistory({ stationId }: StationPriceHistoryProps) {
 
   if (error || data.length < 2) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-2">Historial de precios</h3>
-        <p className="text-sm text-gray-500">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Historial de precios</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Historial de precios disponible próximamente
         </p>
       </div>
@@ -84,23 +84,23 @@ export function StationPriceHistory({ stationId }: StationPriceHistoryProps) {
   const hasGas95 = data.some((d) => d.avgGasolina95 != null);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Historial de precios</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Historial de precios</h3>
         <span className="text-xs text-gray-400">Últimos 30 días</span>
       </div>
 
       {/* Legend */}
       <div className="flex gap-4 mb-4">
         {hasDiesel && (
-          <span className="flex items-center gap-1.5 text-xs text-gray-600">
-            <span className="w-3 h-0.5 bg-tl-amber-500 inline-block" />
+          <span className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+            <span className="w-3 h-0.5 bg-tl-amber-50 dark:bg-tl-amber-900/200 inline-block" />
             Gasóleo A
           </span>
         )}
         {hasGas95 && (
-          <span className="flex items-center gap-1.5 text-xs text-gray-600">
-            <span className="w-3 h-0.5 bg-tl-500 inline-block" />
+          <span className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+            <span className="w-3 h-0.5 bg-tl-50 dark:bg-tl-900/200 inline-block" />
             Gasolina 95
           </span>
         )}

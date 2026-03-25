@@ -45,14 +45,14 @@ export default function ExplorarLayout({
   const activeTab = getActiveTab();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header with tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page title */}
           <div className="py-6">
-            <h1 className="text-2xl font-bold text-gray-900">Explorar</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Explorar</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Explora el tráfico en España por territorios, carreteras e infraestructura
             </p>
           </div>
@@ -70,12 +70,12 @@ export default function ExplorarLayout({
                   className={`
                     group flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors
                     ${isActive
-                      ? "border-tl-500 text-tl-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? "border-tl-500 text-tl-600 dark:text-tl-400"
+                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:border-gray-700"
                     }
                   `}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-tl-500" : "text-gray-400 group-hover:text-gray-500"}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-tl-500" : "text-gray-400 group-hover:text-gray-500 dark:text-gray-400"}`} />
                   <span>{tab.label}</span>
                 </Link>
               );

@@ -55,8 +55,8 @@ export default function CityContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex items-center gap-3 text-gray-500">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Cargando datos del municipio...</span>
         </div>
@@ -66,14 +66,14 @@ export default function CityContent() {
 
   if (error || !data?.success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {data?.success === false ? "Municipio no encontrado" : "Error al cargar datos"}
           </h2>
-          <p className="text-gray-500">No se pudieron cargar los datos del municipio</p>
-          <Link href="/espana" className="mt-4 inline-block text-tl-600 hover:underline">
+          <p className="text-gray-500 dark:text-gray-400">No se pudieron cargar los datos del municipio</p>
+          <Link href="/espana" className="mt-4 inline-block text-tl-600 dark:text-tl-400 hover:underline">
             ← Volver a todas las comunidades
           </Link>
         </div>
@@ -84,39 +84,39 @@ export default function CityContent() {
   const { municipality } = data.data;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-          <Link href="/" className="hover:text-tl-600">
+        <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6 flex-wrap">
+          <Link href="/" className="hover:text-tl-600 dark:text-tl-400">
             <Home className="w-4 h-4" />
           </Link>
           <span>/</span>
-          <Link href="/espana" className="hover:text-tl-600">
+          <Link href="/espana" className="hover:text-tl-600 dark:text-tl-400">
             España
           </Link>
           <span>/</span>
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}`}
-            className="hover:text-tl-600"
+            className="hover:text-tl-600 dark:text-tl-400"
           >
             {municipality.province.community.name}
           </Link>
           <span>/</span>
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}/${municipality.province.slug}`}
-            className="hover:text-tl-600"
+            className="hover:text-tl-600 dark:text-tl-400"
           >
             {municipality.province.name}
           </Link>
           <span>/</span>
-          <span className="text-gray-900">{municipality.name}</span>
+          <span className="text-gray-900 dark:text-gray-100">{municipality.name}</span>
         </nav>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{municipality.name}</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{municipality.name}</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Municipio de la provincia de {municipality.province.name},{" "}
             {municipality.province.community.name}.
           </p>
@@ -124,54 +124,54 @@ export default function CityContent() {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-purple-50 rounded-lg">
-                <Users className="w-5 h-5 text-purple-600" />
+                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {municipality.population
                 ? municipality.population.toLocaleString("es-ES")
                 : "-"}
             </p>
-            <p className="text-sm text-gray-500">Habitantes</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Habitantes</p>
           </div>
           {municipality.area && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <MapPin className="w-5 h-5 text-green-600" />
+                <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {Number(municipality.area).toLocaleString("es-ES")}
               </p>
-              <p className="text-sm text-gray-500">km²</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">km²</p>
             </div>
           )}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-tl-50 rounded-lg">
-                <Building2 className="w-5 h-5 text-tl-600" />
+              <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+                <Building2 className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{municipality.code}</p>
-            <p className="text-sm text-gray-500">Código INE</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{municipality.code}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Código INE</p>
           </div>
         </div>
 
         {/* Location Info */}
         {municipality.latitude && municipality.longitude && (
-          <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h2 className="font-semibold text-gray-900 mb-2">Ubicación</h2>
-            <p className="text-sm text-gray-600">
+          <div className="mb-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Ubicación</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Coordenadas: {Number(municipality.latitude).toFixed(4)}°N,{" "}
               {Number(municipality.longitude).toFixed(4)}°O
             </p>
             <Link
               href={`/mapa?lat=${municipality.latitude}&lng=${municipality.longitude}&zoom=12`}
-              className="mt-2 inline-block text-tl-600 hover:text-tl-700 text-sm"
+              className="mt-2 inline-block text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 text-sm"
             >
               Ver en el mapa →
             </Link>
@@ -179,9 +179,9 @@ export default function CityContent() {
         )}
 
         {/* Placeholder for future features */}
-        <div className="mb-8 bg-gray-50 rounded-lg border border-gray-200 p-6 text-center">
+        <div className="mb-8 bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-gray-800 p-6 text-center">
           <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-400">
             Datos de tráfico en tiempo real para este municipio próximamente.
           </p>
           <p className="text-sm text-gray-400 mt-2">
@@ -194,19 +194,19 @@ export default function CityContent() {
         <div className="mt-8 flex flex-wrap gap-4">
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}/${municipality.province.slug}`}
-            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
           >
             ← Volver a {municipality.province.name}
           </Link>
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}`}
-            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
           >
             ← {municipality.province.community.name}
           </Link>
           <Link
             href="/espana"
-            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
           >
             ← Todas las comunidades
           </Link>

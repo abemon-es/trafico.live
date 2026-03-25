@@ -111,9 +111,9 @@ const RADAR_TYPES: Record<string, string> = {
 };
 
 const ZBE_STATUS: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: "Activa", color: "bg-green-100 text-green-700" },
-  PLANNED: { label: "Planificada", color: "bg-tl-amber-100 text-tl-amber-700" },
-  SUSPENDED: { label: "Suspendida", color: "bg-gray-100 text-gray-700" },
+  ACTIVE: { label: "Activa", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" },
+  PLANNED: { label: "Planificada", color: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300" },
+  SUSPENDED: { label: "Suspendida", color: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300" },
 };
 
 export default function InfraestructuraContent() {
@@ -219,15 +219,15 @@ export default function InfraestructuraContent() {
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
                 ${isActive
-                  ? "bg-tl-100 text-tl-700 border border-tl-200"
-                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                  ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
                 }
               `}
             >
               <Icon className="w-4 h-4" />
               {tab.label}
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                isActive ? "bg-tl-200 text-tl-800" : "bg-gray-100 text-gray-500"
+                isActive ? "bg-tl-200 text-tl-800 dark:text-tl-200" : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400"
               }`}>
                 {tab.id === "camaras" && (camerasData?.count ?? "...")}
                 {tab.id === "radares" && (radarsData?.count ?? "...")}
@@ -248,7 +248,7 @@ export default function InfraestructuraContent() {
             placeholder="Buscar..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
           />
         </div>
 
@@ -258,7 +258,7 @@ export default function InfraestructuraContent() {
             <select
               value={provinceFilter}
               onChange={(e) => setProvinceFilter(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-tl-500"
+              className="border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500"
             >
               <option value="">Todas las provincias</option>
               {provinces.map((p) => (
@@ -272,7 +272,7 @@ export default function InfraestructuraContent() {
       {/* Loading state */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <div className="flex items-center gap-3 text-gray-500">
+          <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
             <Loader2 className="w-6 h-6 animate-spin" />
             <span>Cargando datos...</span>
           </div>
@@ -282,7 +282,7 @@ export default function InfraestructuraContent() {
       {/* Cameras Tab */}
       {activeTab === "camaras" && !isLoading && camerasData && (
         <div>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {camerasData.count} cámaras de tráfico disponibles
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -292,10 +292,10 @@ export default function InfraestructuraContent() {
               .map((camera) => (
                 <div
                   key={camera.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden"
                 >
                   {camera.imageUrl && (
-                    <div className="aspect-video bg-gray-100 relative">
+                    <div className="aspect-video bg-gray-100 dark:bg-gray-900 relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={camera.imageUrl}
@@ -306,11 +306,11 @@ export default function InfraestructuraContent() {
                     </div>
                   )}
                   <div className="p-3">
-                    <h3 className="font-medium text-gray-900 text-sm truncate">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                       {camera.name}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                      <span className="font-medium text-tl-600">{camera.road}</span>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <span className="font-medium text-tl-600 dark:text-tl-400">{camera.road}</span>
                       {camera.km && <span>km {camera.km}</span>}
                     </div>
                     {camera.province && (
@@ -334,10 +334,10 @@ export default function InfraestructuraContent() {
                   key={type}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium ${
                     type === "FIXED"
-                      ? "bg-yellow-100 text-yellow-700"
+                      ? "bg-yellow-100 text-yellow-700 dark:text-yellow-400"
                       : type === "SECTION"
-                      ? "bg-orange-100 text-orange-700"
-                      : "bg-gray-100 text-gray-700"
+                      ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                      : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {RADAR_TYPES[type] || type}: {count}
@@ -353,27 +353,27 @@ export default function InfraestructuraContent() {
               .map((radar) => (
                 <div
                   key={radar.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${
                       radar.type === "FIXED"
-                        ? "bg-yellow-100 text-yellow-700"
+                        ? "bg-yellow-100 text-yellow-700 dark:text-yellow-400"
                         : radar.type === "SECTION"
-                        ? "bg-orange-100 text-orange-700"
-                        : "bg-gray-100 text-gray-700"
+                        ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                        : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                     }`}>
                       {RADAR_TYPES[radar.type] || radar.type}
                     </span>
-                    <span className="text-xl font-bold text-gray-900">
+                    <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
                       {radar.speedLimit} km/h
                     </span>
                   </div>
                   <div className="space-y-1 text-sm">
-                    <p className="font-medium text-tl-600">{radar.road}</p>
-                    <p className="text-gray-600">km {radar.km}</p>
+                    <p className="font-medium text-tl-600 dark:text-tl-400">{radar.road}</p>
+                    <p className="text-gray-600 dark:text-gray-400">km {radar.km}</p>
                     {radar.direction && (
-                      <p className="text-gray-500">Sentido: {radar.direction}</p>
+                      <p className="text-gray-500 dark:text-gray-400">Sentido: {radar.direction}</p>
                     )}
                     {radar.province && (
                       <p className="text-gray-400">{radar.province}</p>
@@ -388,7 +388,7 @@ export default function InfraestructuraContent() {
       {/* Chargers Tab */}
       {activeTab === "cargadores" && !isLoading && chargersData && (
         <div>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {chargersData.count} puntos de carga disponibles
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -398,23 +398,23 @@ export default function InfraestructuraContent() {
               .map((charger) => (
                 <div
                   key={charger.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-medium text-gray-900 text-sm flex-1">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm flex-1">
                       {charger.name}
                     </h3>
                     {charger.powerKw && (
-                      <span className="text-sm font-bold text-green-600">
+                      <span className="text-sm font-bold text-green-600 dark:text-green-400">
                         {charger.powerKw} kW
                       </span>
                     )}
                   </div>
                   <div className="space-y-1 text-sm">
                     {charger.address && (
-                      <p className="text-gray-600">{charger.address}</p>
+                      <p className="text-gray-600 dark:text-gray-400">{charger.address}</p>
                     )}
-                    <p className="text-gray-500">
+                    <p className="text-gray-500 dark:text-gray-400">
                       {charger.city}
                       {charger.province && `, ${charger.province}`}
                     </p>
@@ -426,7 +426,7 @@ export default function InfraestructuraContent() {
                         {charger.connectorTypes.map((type) => (
                           <span
                             key={type}
-                            className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded"
+                            className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded"
                           >
                             {type}
                           </span>
@@ -438,7 +438,7 @@ export default function InfraestructuraContent() {
                     href={`https://www.google.com/maps?q=${charger.latitude},${charger.longitude}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 flex items-center gap-1 text-xs text-tl-600 hover:underline"
+                    className="mt-3 flex items-center gap-1 text-xs text-tl-600 dark:text-tl-400 hover:underline"
                   >
                     <MapPin className="w-3 h-3" />
                     Ver en mapa
@@ -453,7 +453,7 @@ export default function InfraestructuraContent() {
       {/* ZBE Tab */}
       {activeTab === "zbe" && !isLoading && zbeData && (
         <div>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {zbeData.data.zones.length} zonas de bajas emisiones
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -462,27 +462,27 @@ export default function InfraestructuraContent() {
               .map((zone) => (
                 <div
                   key={zone.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-medium text-gray-900">{zone.name}</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">{zone.name}</h3>
                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${
-                      zone.activeAllYear ? "bg-green-100 text-green-700" : "bg-tl-amber-100 text-tl-amber-700"
+                      zone.activeAllYear ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
                     }`}>
                       {zone.activeAllYear ? "Activa" : "Temporal"}
                     </span>
                   </div>
                   <div className="space-y-1 text-sm">
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       {zone.cityName}
                     </p>
                     {zone.effectiveFrom && (
-                      <p className="text-gray-500">
+                      <p className="text-gray-500 dark:text-gray-400">
                         Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES")}
                       </p>
                     )}
                     {zone.fineAmount > 0 && (
-                      <p className="text-gray-500 text-sm mt-1">Multa: {zone.fineAmount}€</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Multa: {zone.fineAmount}€</p>
                     )}
                   </div>
                 </div>
@@ -498,14 +498,14 @@ export default function InfraestructuraContent() {
           (activeTab === "cargadores" && chargersData?.count === 0) ||
           (activeTab === "zbe" && zbeData?.data?.zones?.length === 0)) && (
           <div className="text-center py-20">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
               {activeTab === "camaras" && <Camera className="w-6 h-6 text-gray-400" />}
               {activeTab === "radares" && <Radar className="w-6 h-6 text-gray-400" />}
               {activeTab === "cargadores" && <Zap className="w-6 h-6 text-gray-400" />}
               {activeTab === "zbe" && <Ban className="w-6 h-6 text-gray-400" />}
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Sin datos disponibles</h3>
-            <p className="text-gray-500">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Sin datos disponibles</h3>
+            <p className="text-gray-500 dark:text-gray-400">
               No hay información disponible en este momento.
             </p>
           </div>

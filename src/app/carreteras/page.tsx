@@ -23,7 +23,7 @@ const ROAD_TYPE_CONFIG = {
     label: "Autopistas",
     description: "Vías de alta capacidad con peaje",
     icon: Car,
-    color: "text-purple-600",
+    color: "text-purple-600 dark:text-purple-400",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
     href: "/carreteras/autopistas",
@@ -32,17 +32,17 @@ const ROAD_TYPE_CONFIG = {
     label: "Autovías",
     description: "Vías de alta capacidad sin peaje",
     icon: Route,
-    color: "text-tl-600",
-    bgColor: "bg-tl-50",
-    borderColor: "border-tl-200",
+    color: "text-tl-600 dark:text-tl-400",
+    bgColor: "bg-tl-50 dark:bg-tl-900/20",
+    borderColor: "border-tl-200 dark:border-tl-800",
     href: "/carreteras/autovias",
   },
   NACIONAL: {
     label: "Nacionales",
     description: "Red de carreteras nacionales",
     icon: MapPin,
-    color: "text-red-600",
-    bgColor: "bg-red-50",
+    color: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-50 dark:bg-red-900/20",
     borderColor: "border-red-200",
     href: "/carreteras/nacionales",
   },
@@ -50,7 +50,7 @@ const ROAD_TYPE_CONFIG = {
     label: "Comarcales",
     description: "Carreteras de ámbito regional",
     icon: Construction,
-    color: "text-orange-600",
+    color: "text-orange-600 dark:text-orange-400",
     bgColor: "bg-orange-50",
     borderColor: "border-orange-200",
     href: "/carreteras/regionales",
@@ -88,19 +88,19 @@ export default async function CarreterasPage() {
   const totalRoads = roadsByType.reduce((acc, r) => acc + r._count, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <nav className="text-sm text-gray-500 mb-4">
-            <Link href="/" className="hover:text-gray-700">
+          <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <Link href="/" className="hover:text-gray-700 dark:text-gray-300">
               Inicio
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-900">Carreteras</span>
+            <span className="text-gray-900 dark:text-gray-100">Carreteras</span>
           </nav>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Carreteras de España</h1>
-          <p className="text-gray-600 max-w-3xl">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Carreteras de España</h1>
+          <p className="text-gray-600 dark:text-gray-400 max-w-3xl">
             Información completa de {totalRoads} carreteras españolas. Estado del tráfico en tiempo
             real, cámaras, radares, límites de velocidad y estadísticas de accidentes.
           </p>
@@ -108,21 +108,21 @@ export default async function CarreterasPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-900">{totalRoads}</div>
-            <div className="text-sm text-gray-600">Carreteras</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalRoads}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Carreteras</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-tl-600">{cameraCount.toLocaleString()}</div>
-            <div className="text-sm text-gray-600">Cámaras</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-tl-600 dark:text-tl-400">{cameraCount.toLocaleString()}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Cámaras</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-yellow-600">{radarCount}</div>
-            <div className="text-sm text-gray-600">Radares</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{radarCount}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Radares</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-red-600">{incidentCount.toLocaleString()}</div>
-            <div className="text-sm text-gray-600">Incidencias activas</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{incidentCount.toLocaleString()}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Incidencias activas</div>
           </div>
         </div>
 
@@ -136,15 +136,15 @@ export default async function CarreterasPage() {
             return (
               <div
                 key={type}
-                className={`bg-white rounded-lg shadow-sm border ${config.borderColor} overflow-hidden`}
+                className={`bg-white dark:bg-gray-900 rounded-lg shadow-sm border ${config.borderColor} overflow-hidden`}
               >
                 <div className={`${config.bgColor} px-6 py-4 border-b ${config.borderColor}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Icon className={`w-6 h-6 ${config.color}`} />
                       <div>
-                        <h2 className="text-lg font-semibold text-gray-900">{config.label}</h2>
-                        <p className="text-sm text-gray-600">{config.description}</p>
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{config.label}</h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{config.description}</p>
                       </div>
                     </div>
                     <div className={`text-2xl font-bold ${config.color}`}>
@@ -158,7 +158,7 @@ export default async function CarreterasPage() {
                       <Link
                         key={road.id}
                         href={`/carreteras/${road.id}`}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium text-gray-700 transition-colors"
+                        className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
                       >
                         {road.id}
                       </Link>
@@ -178,8 +178,8 @@ export default async function CarreterasPage() {
         </div>
 
         {/* SEO Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Red de Carreteras del Estado
           </h2>
           <div className="prose prose-gray max-w-none">

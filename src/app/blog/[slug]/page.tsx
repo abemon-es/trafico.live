@@ -169,7 +169,7 @@ export default async function ArticlePage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
@@ -239,7 +239,7 @@ export default async function ArticlePage({
           {/* Main content */}
           <div className="flex-1 min-w-0">
             {/* Excerpt */}
-            <p className="text-lg text-gray-600 leading-relaxed mb-6 p-4 bg-white rounded-xl border border-gray-100">
+            <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-6 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800">
               {article.excerpt}
             </p>
 
@@ -247,7 +247,7 @@ export default async function ArticlePage({
             <AdSlot id="blog-article-top" format="banner" className="mb-6" />
 
             {/* Article body */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8">
               <ArticleContent slug={article.slug} />
             </div>
 
@@ -257,7 +257,7 @@ export default async function ArticlePage({
               {article.keywords.map((kw) => (
                 <span
                   key={kw}
-                  className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200"
+                  className="text-xs bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 px-2.5 py-1 rounded-full border border-gray-200 dark:border-gray-800"
                 >
                   {kw}
                 </span>
@@ -270,7 +270,7 @@ export default async function ArticlePage({
             {/* Related articles */}
             {related.length > 0 && (
               <section className="mt-10">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                   Artículos relacionados
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -278,7 +278,7 @@ export default async function ArticlePage({
                     <Link
                       key={rel.slug}
                       href={`/blog/${rel.slug}`}
-                      className="group flex gap-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-tl-300 transition-all duration-200"
+                      className="group flex gap-4 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-tl-300 transition-all duration-200"
                     >
                       <div
                         className={`flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br ${CATEGORY_GRADIENT[rel.category]} flex items-center justify-center text-2xl`}
@@ -293,7 +293,7 @@ export default async function ArticlePage({
                         >
                           {CATEGORY_LABELS[rel.category]}
                         </span>
-                        <h3 className="text-sm font-bold text-gray-900 mt-1 group-hover:text-tl-600 transition-colors line-clamp-2">
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-1 group-hover:text-tl-600 dark:text-tl-400 transition-colors line-clamp-2">
                           {rel.title}
                         </h3>
                         <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
@@ -318,15 +318,15 @@ export default async function ArticlePage({
               <AffiliateWidget type={affiliateType} />
 
               {/* Quick links */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                   Herramientas trafico.live
                 </h3>
                 <ul className="space-y-2">
                   <li>
                     <Link
                       href="/"
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-tl-600 transition-colors"
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:text-tl-400 transition-colors"
                     >
                       <ChevronRight className="w-3.5 h-3.5 text-tl-400" />
                       Tráfico en tiempo real
@@ -335,7 +335,7 @@ export default async function ArticlePage({
                   <li>
                     <Link
                       href="/precio-gasolina-hoy"
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-tl-600 transition-colors"
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:text-tl-400 transition-colors"
                     >
                       <ChevronRight className="w-3.5 h-3.5 text-tl-400" />
                       Precio gasolina hoy
@@ -344,7 +344,7 @@ export default async function ArticlePage({
                   <li>
                     <Link
                       href="/precio-diesel-hoy"
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-tl-600 transition-colors"
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:text-tl-400 transition-colors"
                     >
                       <ChevronRight className="w-3.5 h-3.5 text-tl-400" />
                       Precio diesel hoy
@@ -353,7 +353,7 @@ export default async function ArticlePage({
                   <li>
                     <Link
                       href="/radares"
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-tl-600 transition-colors"
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:text-tl-400 transition-colors"
                     >
                       <ChevronRight className="w-3.5 h-3.5 text-tl-400" />
                       Radares DGT
@@ -362,7 +362,7 @@ export default async function ArticlePage({
                   <li>
                     <Link
                       href="/restricciones"
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-tl-600 transition-colors"
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:text-tl-400 transition-colors"
                     >
                       <ChevronRight className="w-3.5 h-3.5 text-tl-400" />
                       Restricciones de tráfico
@@ -371,7 +371,7 @@ export default async function ArticlePage({
                   <li>
                     <Link
                       href="/carga-ev"
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-tl-600 transition-colors"
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:text-tl-400 transition-colors"
                     >
                       <ChevronRight className="w-3.5 h-3.5 text-tl-400" />
                       Cargadores eléctricos
@@ -381,8 +381,8 @@ export default async function ArticlePage({
               </div>
 
               {/* All articles */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                   Todos los artículos
                 </h3>
                 <ul className="space-y-2">
@@ -392,8 +392,8 @@ export default async function ArticlePage({
                         href={`/blog/${a.slug}`}
                         className={`flex items-start gap-2 text-sm transition-colors ${
                           a.slug === article.slug
-                            ? "text-tl-600 font-semibold"
-                            : "text-gray-600 hover:text-tl-600"
+                            ? "text-tl-600 dark:text-tl-400 font-semibold"
+                            : "text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:text-tl-400"
                         }`}
                       >
                         <ChevronRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-tl-400" />
@@ -404,7 +404,7 @@ export default async function ArticlePage({
                 </ul>
                 <Link
                   href="/blog"
-                  className="mt-4 flex items-center gap-1 text-xs font-semibold text-tl-600 hover:text-tl-700 transition-colors"
+                  className="mt-4 flex items-center gap-1 text-xs font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 transition-colors"
                 >
                   Ver todos
                   <ChevronRight className="w-3.5 h-3.5" />

@@ -52,9 +52,9 @@ const RISK_LEVEL_CONFIG: Record<
 > = {
   HIGH: {
     label: "Alto",
-    badgeClass: "bg-red-100 text-red-800 border-red-200",
+    badgeClass: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",
     rowClass: "border-l-4 border-l-red-400",
-    dotClass: "bg-red-500",
+    dotClass: "bg-red-50 dark:bg-red-900/200",
   },
   VERY_HIGH: {
     label: "Muy alto",
@@ -64,15 +64,15 @@ const RISK_LEVEL_CONFIG: Record<
   },
   MEDIUM: {
     label: "Medio",
-    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200",
+    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200 dark:border-tl-amber-800",
     rowClass: "border-l-4 border-l-tl-amber-400",
-    dotClass: "bg-tl-amber-500",
+    dotClass: "bg-tl-amber-50 dark:bg-tl-amber-900/200",
   },
   LOW: {
     label: "Bajo",
-    badgeClass: "bg-green-100 text-green-800 border-green-200",
+    badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-800 border-green-200",
     rowClass: "border-l-4 border-l-green-400",
-    dotClass: "bg-green-500",
+    dotClass: "bg-green-50 dark:bg-green-900/200",
   },
 };
 
@@ -222,7 +222,7 @@ export default async function PuntosNegrosPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -233,16 +233,16 @@ export default async function PuntosNegrosPage() {
           />
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-red-50 rounded-lg flex-shrink-0">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg flex-shrink-0">
+                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Puntos Negros en Carreteras de España
                 </h1>
-                <p className="text-gray-600 max-w-2xl leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
                   Los <strong>puntos negros</strong> — oficialmente denominados{" "}
                   <strong>Tramos de Concentración de Accidentes (TCA)</strong> — son tramos de
                   carretera donde la siniestralidad supera estadísticamente la media para ese tipo
@@ -251,11 +251,11 @@ export default async function PuntosNegrosPage() {
                 </p>
               </div>
               {totalAccidentsLatest > 0 && (
-                <div className="hidden md:flex flex-col items-center bg-red-50 border border-red-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
-                  <span className="text-3xl font-bold text-red-700 font-data">
+                <div className="hidden md:flex flex-col items-center bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
+                  <span className="text-3xl font-bold text-red-700 dark:text-red-400 font-data">
                     {totalAccidentsLatest.toLocaleString("es-ES")}
                   </span>
-                  <span className="text-sm text-red-600 mt-0.5">
+                  <span className="text-sm text-red-600 dark:text-red-400 mt-0.5">
                     accidentes en {latestYear?.year ?? CURRENT_YEAR - 1}
                   </span>
                 </div>
@@ -264,13 +264,13 @@ export default async function PuntosNegrosPage() {
           </div>
 
           {/* Alert banner */}
-          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <Info className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <Info className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <h2 className="font-semibold text-tl-amber-800">
                 ¿Qué es un Tramo de Concentración de Accidentes?
               </h2>
-              <p className="text-sm text-tl-amber-700 mt-0.5">
+              <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-0.5">
                 Un TCA es un tramo de carretera de al menos{" "}
                 <strong>500 metros de longitud</strong> donde se han producido{" "}
                 <strong>3 o más accidentes con víctimas en un período de 3 años</strong> consecutivos.
@@ -283,25 +283,25 @@ export default async function PuntosNegrosPage() {
           {/* Key stats */}
           {totalAccidentsLatest > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <p className="text-2xl font-bold text-gray-900 font-data">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                   {totalAccidentsLatest.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500">accidentes registrados</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">accidentes registrados</p>
                 <p className="text-xs text-gray-400 mt-0.5 font-data">{latestYear?.year}</p>
               </div>
-              <div className="bg-white rounded-lg border border-red-100 p-4">
-                <p className="text-2xl font-bold text-red-700 font-data">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-red-100 p-4">
+                <p className="text-2xl font-bold text-red-700 dark:text-red-400 font-data">
                   {totalFatalitiesLatest.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500">fallecidos en carretera</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">fallecidos en carretera</p>
                 <p className="text-xs text-gray-400 mt-0.5 font-data">{latestYear?.year}</p>
               </div>
-              <div className="bg-white rounded-lg border border-tl-100 p-4 col-span-2 sm:col-span-1">
-                <p className="text-2xl font-bold text-tl-700 font-data">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 p-4 col-span-2 sm:col-span-1">
+                <p className="text-2xl font-bold text-tl-700 dark:text-tl-300 font-data">
                   {riskZones.length.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500">zonas de riesgo catalogadas</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">zonas de riesgo catalogadas</p>
                 <p className="text-xs text-gray-400 mt-0.5">en base de datos</p>
               </div>
             </div>
@@ -310,27 +310,27 @@ export default async function PuntosNegrosPage() {
           {/* Risk zones table */}
           {riskZones.length > 0 && (
             <section className="mb-8" aria-labelledby="heading-risk-zones">
-              <h2 id="heading-risk-zones" className="text-xl font-bold text-gray-900 mb-4">
+              <h2 id="heading-risk-zones" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Zonas de riesgo por carretera
               </h2>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                      <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Carretera
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Tramo (km)
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">
                           Tipo de riesgo
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Nivel
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700 hidden md:table-cell">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 hidden md:table-cell">
                           Descripción
                         </th>
                       </tr>
@@ -342,23 +342,23 @@ export default async function PuntosNegrosPage() {
                         return (
                           <tr
                             key={zone.id}
-                            className={`hover:bg-gray-50 transition-colors ${cfg.rowClass}`}
+                            className={`hover:bg-gray-50 dark:bg-gray-950 transition-colors ${cfg.rowClass}`}
                           >
                             <td className="px-4 py-3">
                               <Link
                                 href={`/carreteras/${encodeURIComponent(zone.roadNumber)}`}
-                                className="font-semibold text-tl-600 hover:text-tl-800 hover:underline"
+                                className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                               >
                                 {zone.roadNumber}
                               </Link>
                             </td>
-                            <td className="px-4 py-3 text-gray-600 font-data">
+                            <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-data">
                               {Number(zone.kmStart).toFixed(1)}
                               {" — "}
                               {Number(zone.kmEnd).toFixed(1)}
                             </td>
                             <td className="px-4 py-3 hidden sm:table-cell">
-                              <span className="text-gray-600">
+                              <span className="text-gray-600 dark:text-gray-400">
                                 {RISK_TYPE_LABELS[zone.type] ?? zone.type}
                               </span>
                             </td>
@@ -370,7 +370,7 @@ export default async function PuntosNegrosPage() {
                                 {cfg.label}
                               </span>
                             </td>
-                            <td className="px-4 py-3 hidden md:table-cell text-gray-500 max-w-xs truncate">
+                            <td className="px-4 py-3 hidden md:table-cell text-gray-500 dark:text-gray-400 max-w-xs truncate">
                               {zone.description ?? "—"}
                             </td>
                           </tr>
@@ -386,40 +386,40 @@ export default async function PuntosNegrosPage() {
           {/* Historical trends */}
           {yearRows.length > 0 && (
             <section className="mb-8" aria-labelledby="heading-historical">
-              <h2 id="heading-historical" className="text-xl font-bold text-gray-900 mb-4">
+              <h2 id="heading-historical" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Evolución histórica de accidentes
               </h2>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Año</th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-700">
+                      <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">Año</th>
+                        <th className="text-right px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Accidentes
                         </th>
-                        <th className="text-right px-4 py-3 font-semibold text-red-700">
+                        <th className="text-right px-4 py-3 font-semibold text-red-700 dark:text-red-400">
                           Fallecidos
                         </th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">
+                        <th className="text-right px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">
                           Hospitalizados
                         </th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-700">
+                        <th className="text-right px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Var. anual
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {yearRows.map((row) => (
-                        <tr key={row.year} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-3 font-semibold text-gray-900 font-data">{row.year}</td>
-                          <td className="px-4 py-3 text-right text-gray-900 font-data">
+                        <tr key={row.year} className="hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                          <td className="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100 font-data">{row.year}</td>
+                          <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-data">
                             {(row._sum.accidents ?? 0).toLocaleString("es-ES")}
                           </td>
-                          <td className="px-4 py-3 text-right font-semibold text-red-700 font-data">
+                          <td className="px-4 py-3 text-right font-semibold text-red-700 dark:text-red-400 font-data">
                             {(row._sum.fatalities ?? 0).toLocaleString("es-ES")}
                           </td>
-                          <td className="px-4 py-3 text-right text-gray-600 hidden sm:table-cell font-data">
+                          <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">
                             {(row._sum.hospitalized ?? 0).toLocaleString("es-ES")}
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -429,17 +429,17 @@ export default async function PuntosNegrosPage() {
                                 <span>—</span>
                               </span>
                             ) : row.delta < 0 ? (
-                              <span className="text-green-700 font-medium flex items-center justify-end gap-1 font-data">
+                              <span className="text-green-700 dark:text-green-400 font-medium flex items-center justify-end gap-1 font-data">
                                 <TrendingDown className="w-3.5 h-3.5" />
                                 {Math.abs(row.delta)}%
                               </span>
                             ) : row.delta > 0 ? (
-                              <span className="text-red-700 font-medium flex items-center justify-end gap-1 font-data">
+                              <span className="text-red-700 dark:text-red-400 font-medium flex items-center justify-end gap-1 font-data">
                                 <TrendingUp className="w-3.5 h-3.5" />
                                 +{row.delta}%
                               </span>
                             ) : (
-                              <span className="text-gray-500 flex items-center justify-end gap-1 font-data">
+                              <span className="text-gray-500 dark:text-gray-400 flex items-center justify-end gap-1 font-data">
                                 <Minus className="w-3.5 h-3.5" />
                                 0%
                               </span>
@@ -458,10 +458,10 @@ export default async function PuntosNegrosPage() {
             {/* By province */}
             {historicalByProvince.length > 0 && (
               <section aria-labelledby="heading-by-province">
-                <h2 id="heading-by-province" className="text-xl font-bold text-gray-900 mb-4">
+                <h2 id="heading-by-province" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                   Accidentes por provincia
                 </h2>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                   {historicalByProvince.map((item, idx) => {
                     const accidents = item._sum.accidents ?? 0;
                     const barWidth = Math.round((accidents / maxProvinceAccidents) * 100);
@@ -470,7 +470,7 @@ export default async function PuntosNegrosPage() {
                     return (
                       <div
                         key={item.province}
-                        className="px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+                        className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2 min-w-0">
@@ -479,21 +479,21 @@ export default async function PuntosNegrosPage() {
                             </span>
                             <Link
                               href={`/provincias/${item.province}`}
-                              className="text-sm font-medium text-tl-600 hover:text-tl-800 hover:underline truncate"
+                              className="text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline truncate"
                             >
                               {name}
                             </Link>
                           </div>
                           <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                            <span className="text-sm font-semibold text-gray-900 font-data">
+                            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 font-data">
                               {accidents.toLocaleString("es-ES")}
                             </span>
-                            <span className="text-xs text-red-600 font-medium font-data">
+                            <span className="text-xs text-red-600 dark:text-red-400 font-medium font-data">
                               {(item._sum.fatalities ?? 0).toLocaleString("es-ES")} fallecidos
                             </span>
                           </div>
                         </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-tl-400 rounded-full transition-all"
                             style={{ width: `${barWidth}%` }}
@@ -509,10 +509,10 @@ export default async function PuntosNegrosPage() {
             {/* By road type */}
             {historicalByRoadType.length > 0 && (
               <section aria-labelledby="heading-by-road-type">
-                <h2 id="heading-by-road-type" className="text-xl font-bold text-gray-900 mb-4">
+                <h2 id="heading-by-road-type" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                   Accidentes por tipo de vía
                 </h2>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                   {historicalByRoadType.map((item) => {
                     const accidents = item._sum.accidents ?? 0;
                     const fatalities = item._sum.fatalities ?? 0;
@@ -525,20 +525,20 @@ export default async function PuntosNegrosPage() {
                     return (
                       <div
                         key={item.roadType ?? "null"}
-                        className="px-4 py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+                        className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium text-gray-900">{label}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">
+                            <p className="font-medium text-gray-900 dark:text-gray-100">{label}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                               Tasa mortalidad: <span className="font-data">{mortalityRate}%</span>
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-bold text-gray-900 font-data">
+                            <p className="text-lg font-bold text-gray-900 dark:text-gray-100 font-data">
                               {accidents.toLocaleString("es-ES")}
                             </p>
-                            <p className="text-xs text-red-600 font-medium font-data">
+                            <p className="text-xs text-red-600 dark:text-red-400 font-medium font-data">
                               {fatalities.toLocaleString("es-ES")} fallecidos
                             </p>
                           </div>
@@ -549,10 +549,10 @@ export default async function PuntosNegrosPage() {
                 </div>
 
                 {/* Insight box */}
-                <div className="mt-4 bg-tl-50 border border-tl-100 rounded-lg p-4">
+                <div className="mt-4 bg-tl-50 dark:bg-tl-900/20 border border-tl-100 rounded-lg p-4">
                   <div className="flex items-start gap-2">
-                    <BarChart3 className="w-4 h-4 text-tl-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-tl-800">
+                    <BarChart3 className="w-4 h-4 text-tl-600 dark:text-tl-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-tl-800 dark:text-tl-200">
                       Las carreteras convencionales (nacionales y comarcales) concentran la mayor
                       proporción de accidentes mortales pese a tener menor tráfico que autopistas y
                       autovías, debido a la ausencia de mediana separadora y mayor frecuencia de
@@ -566,7 +566,7 @@ export default async function PuntosNegrosPage() {
 
           {/* Safety tips */}
           <section className="mb-8" aria-labelledby="heading-safety">
-            <h2 id="heading-safety" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-safety" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Recomendaciones de seguridad vial
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -575,15 +575,15 @@ export default async function PuntosNegrosPage() {
                 return (
                   <div
                     key={tip.title}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                        <Icon className="w-5 h-5 text-tl-600" />
+                      <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                        <Icon className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1 text-sm">{tip.title}</h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">{tip.text}</p>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 text-sm">{tip.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{tip.text}</p>
                       </div>
                     </div>
                   </div>
@@ -624,28 +624,28 @@ export default async function PuntosNegrosPage() {
 
           {/* FAQ */}
           <section aria-labelledby="heading-faq" className="mb-8">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre puntos negros
             </h2>
             <div className="space-y-4">
               {FAQ_ITEMS.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{item.answer}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{item.question}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.answer}</p>
                 </div>
               ))}
             </div>
           </section>
 
           {/* SEO copy */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 prose prose-gray max-w-none">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 prose prose-gray max-w-none">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
               Puntos negros y siniestralidad vial en España {CURRENT_YEAR}
             </h2>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
               La Dirección General de Tráfico (DGT) publica anualmente el mapa de Tramos de
               Concentración de Accidentes (TCA) de la red de carreteras del Estado. Este análisis
               se realiza a partir de los datos de los partes de accidente registrados por los agentes
@@ -653,16 +653,16 @@ export default async function PuntosNegrosPage() {
               priorizar las inversiones en seguridad vial e informar a los conductores de los tramos
               más peligrosos.
             </p>
-            <p className="text-gray-600 text-sm leading-relaxed mt-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mt-2">
               trafico.live agrega la información oficial de siniestralidad para ofrecerte una visión
               completa del estado de la seguridad en las carreteras españolas. Para conocer el
               estado del tráfico en tiempo real o consultar el histórico de incidencias de una vía
               concreta, accede a la sección{" "}
-              <Link href="/carreteras" className="text-tl-600 hover:underline">
+              <Link href="/carreteras" className="text-tl-600 dark:text-tl-400 hover:underline">
                 carreteras
               </Link>
               {" "}o al{" "}
-              <Link href="/mapa" className="text-tl-600 hover:underline">
+              <Link href="/mapa" className="text-tl-600 dark:text-tl-400 hover:underline">
                 mapa de tráfico
               </Link>
               .

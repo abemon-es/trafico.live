@@ -84,65 +84,65 @@ export default async function AutopistasPage() {
   const totalIncidents = incidentsByRoad.reduce((acc, i) => acc + i._count, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-gray-700">Inicio</Link>
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
           <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700">Carreteras</Link>
+          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">Autopistas</span>
+          <span className="text-gray-900 dark:text-gray-100">Autopistas</span>
         </nav>
 
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 mb-6 border border-purple-200">
           <div className="flex items-center gap-3 mb-4">
-            <Car className="w-8 h-8 text-purple-600" />
+            <Car className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Autopistas de España</h1>
-              <p className="text-gray-600">Vías de alta capacidad con peaje (AP)</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Autopistas de España</h1>
+              <p className="text-gray-600 dark:text-gray-400">Vías de alta capacidad con peaje (AP)</p>
             </div>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-purple-600">{roads.length}</div>
-              <div className="text-sm text-gray-600">Autopistas</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{roads.length}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Autopistas</div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-tl-600">{totalCameras}</div>
-              <div className="text-sm text-gray-600">Cámaras</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-tl-600 dark:text-tl-400">{totalCameras}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Cámaras</div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-yellow-600">{totalRadars}</div>
-              <div className="text-sm text-gray-600">Radares</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{totalRadars}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Radares</div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-red-600">{totalIncidents}</div>
-              <div className="text-sm text-gray-600">Incidencias activas</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{totalIncidents}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Incidencias activas</div>
             </div>
           </div>
         </div>
 
         {/* Roads List */}
         {roads.length > 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gray-50 dark:bg-gray-950 border-b">
                   <tr>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Autopista</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden md:table-cell">Nombre</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden lg:table-cell">Provincias</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Autopista</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300 hidden md:table-cell">Nombre</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300 hidden lg:table-cell">Provincias</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                       <Camera className="w-4 h-4 inline" />
                     </th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                       <Radar className="w-4 h-4 inline" />
                     </th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                       <AlertTriangle className="w-4 h-4 inline" />
                     </th>
                   </tr>
@@ -157,35 +157,35 @@ export default async function AutopistasPage() {
                       .map((p) => PROVINCE_NAMES[p] || p);
 
                     return (
-                      <tr key={road.id} className="border-b hover:bg-gray-50">
+                      <tr key={road.id} className="border-b hover:bg-gray-50 dark:bg-gray-950">
                         <td className="py-3 px-4">
                           <Link
                             href={`/carreteras/${road.id}`}
-                            className="font-semibold text-purple-600 hover:text-purple-800"
+                            className="font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-800"
                           >
                             {road.id}
                           </Link>
                         </td>
-                        <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
+                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400 hidden md:table-cell">
                           {road.name || "-"}
                         </td>
-                        <td className="py-3 px-4 text-gray-500 text-sm hidden lg:table-cell">
+                        <td className="py-3 px-4 text-gray-500 dark:text-gray-400 text-sm hidden lg:table-cell">
                           {provinceNames.join(", ")}
                           {road.provinces.length > 3 && ` +${road.provinces.length - 3}`}
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <span className={cameras > 0 ? "font-medium text-tl-600" : "text-gray-400"}>
+                          <span className={cameras > 0 ? "font-medium text-tl-600 dark:text-tl-400" : "text-gray-400"}>
                             {cameras}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <span className={radars > 0 ? "font-medium text-yellow-600" : "text-gray-400"}>
+                          <span className={radars > 0 ? "font-medium text-yellow-600 dark:text-yellow-400" : "text-gray-400"}>
                             {radars}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
                           {incidents > 0 ? (
-                            <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                            <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-medium">
                               {incidents}
                             </span>
                           ) : (
@@ -209,8 +209,8 @@ export default async function AutopistasPage() {
         )}
 
         {/* SEO Content */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Red de Autopistas de España
           </h2>
           <div className="prose prose-gray max-w-none">

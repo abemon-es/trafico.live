@@ -123,7 +123,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden"
+        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with effect color */}
@@ -133,7 +133,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
         >
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">
+              <div className="p-2 bg-white dark:bg-gray-900/20 rounded-lg">
                 {EFFECT_ICONS[incident.effect]}
               </div>
               <div>
@@ -151,7 +151,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="p-2 hover:bg-white dark:bg-gray-900/20 rounded-full transition-colors"
               title="Cerrar"
             >
               <X className="w-5 h-5" />
@@ -170,7 +170,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
               {CAUSE_ICONS[incident.cause]}
               {CAUSE_LABELS[incident.cause]}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               Severidad: {incident.severity}
             </span>
           </div>
@@ -178,39 +178,39 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
           {/* Description */}
           {incident.description && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
                 Descripción
               </h3>
-              <p className="text-gray-800">{incident.description}</p>
+              <p className="text-gray-800 dark:text-gray-200">{incident.description}</p>
             </div>
           )}
 
           {/* Location */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
               Ubicación
             </h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               {incident.province && (
                 <div>
-                  <span className="text-gray-500">Provincia</span>
+                  <span className="text-gray-500 dark:text-gray-400">Provincia</span>
                   <p className="font-medium">{incident.province}</p>
                 </div>
               )}
               {incident.community && (
                 <div>
-                  <span className="text-gray-500">Comunidad</span>
+                  <span className="text-gray-500 dark:text-gray-400">Comunidad</span>
                   <p className="font-medium">{incident.community}</p>
                 </div>
               )}
               {incident.direction && (
                 <div>
-                  <span className="text-gray-500">Dirección</span>
+                  <span className="text-gray-500 dark:text-gray-400">Dirección</span>
                   <p className="font-medium">{incident.direction}</p>
                 </div>
               )}
               <div>
-                <span className="text-gray-500">Coordenadas</span>
+                <span className="text-gray-500 dark:text-gray-400">Coordenadas</span>
                 <p className="font-mono text-xs">
                   {lat.toFixed(5)}, {lng.toFixed(5)}
                 </p>
@@ -220,13 +220,13 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
 
           {/* Timeline */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
               Tiempo
             </h3>
             <div className="flex items-center gap-3 text-sm">
               <Clock className="w-4 h-4 text-gray-400" />
               <div>
-                <span className="text-gray-500">Desde: </span>
+                <span className="text-gray-500 dark:text-gray-400">Desde: </span>
                 <span className="font-medium">
                   {startDate.toLocaleString("es-ES", {
                     weekday: "short",
@@ -239,7 +239,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
               </div>
               {endDate && (
                 <div>
-                  <span className="text-gray-500">Hasta: </span>
+                  <span className="text-gray-500 dark:text-gray-400">Hasta: </span>
                   <span className="font-medium">
                     {endDate.toLocaleString("es-ES", {
                       day: "numeric",
@@ -256,16 +256,16 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
           {/* Lane info */}
           {incident.laneInfo && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
                 Carriles afectados
               </h3>
-              <p className="text-gray-800">{incident.laneInfo}</p>
+              <p className="text-gray-800 dark:text-gray-200">{incident.laneInfo}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+        <div className="px-5 py-3 bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
           <span className="text-xs text-gray-400">
             Fuente: {incident.source} · ID: {incident.situationId.slice(0, 12)}...
           </span>
@@ -273,7 +273,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm text-tl-600 hover:text-tl-700 hover:underline"
+            className="flex items-center gap-1.5 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
           >
             <MapPin className="w-4 h-4" />
             Ver en Google Maps

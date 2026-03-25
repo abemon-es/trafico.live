@@ -46,34 +46,34 @@ const CITIES = [
 
 export default function CiudadesPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-tl-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-tl-600" />
+            <div className="w-10 h-10 bg-tl-100 dark:bg-tl-900/30 rounded-lg flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Tráfico por ciudades
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Selecciona una ciudad para ver información de tráfico en tiempo real
           </p>
         </div>
 
         {/* Search hint */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-8">
-          <div className="flex items-center gap-3 text-gray-600">
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 mb-8">
+          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
             <Search className="w-5 h-5" />
             <p className="text-sm">
               ¿No encuentras tu ciudad? Prueba a buscar por{" "}
-              <Link href="/espana" className="text-tl-600 hover:underline">
+              <Link href="/espana" className="text-tl-600 dark:text-tl-400 hover:underline">
                 provincia
               </Link>{" "}
               o{" "}
-              <Link href="/comunidad-autonoma" className="text-tl-600 hover:underline">
+              <Link href="/comunidad-autonoma" className="text-tl-600 dark:text-tl-400 hover:underline">
                 comunidad autónoma
               </Link>
             </p>
@@ -86,16 +86,16 @@ export default function CiudadesPage() {
             <Link
               key={city.slug}
               href={`/ciudad/${city.slug}`}
-              className="bg-white rounded-lg border border-gray-200 p-4 hover:border-tl-300 hover:shadow-md transition-all group"
+              className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-tl-300 hover:shadow-md transition-all group"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="font-semibold text-gray-900 group-hover:text-tl-700 transition-colors">
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-700 dark:text-tl-300 transition-colors">
                     {city.name}
                   </h2>
-                  <p className="text-sm text-gray-500">{city.province}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{city.province}</p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-600 transition-colors" />
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-600 dark:text-tl-400 transition-colors" />
               </div>
               <p className="text-xs text-gray-400 mt-2">{city.population} habitantes</p>
             </Link>
@@ -103,10 +103,10 @@ export default function CiudadesPage() {
         </div>
 
         {/* More cities note */}
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           <p>
             Más ciudades disponibles a través de{" "}
-            <Link href="/espana" className="text-tl-600 hover:underline">
+            <Link href="/espana" className="text-tl-600 dark:text-tl-400 hover:underline">
               navegación por provincias
             </Link>
           </p>

@@ -118,23 +118,23 @@ export default async function ProvincePricesPage({ params }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href="/gasolineras" className="hover:text-gray-700">Gasolineras</Link>
+      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>
         <span>/</span>
-        <Link href="/gasolineras/precios" className="hover:text-gray-700">Precios</Link>
+        <Link href="/gasolineras/precios" className="hover:text-gray-700 dark:text-gray-300">Precios</Link>
         <span>/</span>
-        <span className="text-gray-900">{provinceData.name}</span>
+        <span className="text-gray-900 dark:text-gray-100">{provinceData.name}</span>
       </div>
 
       <Link
         href="/gasolineras/precios"
-        className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-6"
+        className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a precios nacionales
       </Link>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
         Precios de Combustible en {provinceData.name}
       </h1>
 
@@ -143,67 +143,67 @@ export default async function ProvincePricesPage({ params }: Props) {
         {cheapestDiesel && (
           <Link
             href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-            className="bg-green-50 rounded-lg border border-green-200 p-4 hover:bg-green-100 transition-colors"
+            className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4 hover:bg-green-100 dark:bg-green-900/30 transition-colors"
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-50 dark:bg-green-900/200 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
-                <div className="text-sm text-green-600">Gasóleo A más barato</div>
+                <div className="text-sm text-green-600 dark:text-green-400">Gasóleo A más barato</div>
                 <div className="font-semibold text-green-800">{cheapestDiesel.name}</div>
               </div>
             </div>
-            <div className="text-2xl font-bold text-green-700 mb-1">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-400 mb-1">
               {formatPrice(cheapestDiesel.priceGasoleoA)}
             </div>
-            <div className="text-sm text-green-600">{cheapestDiesel.locality}</div>
+            <div className="text-sm text-green-600 dark:text-green-400">{cheapestDiesel.locality}</div>
           </Link>
         )}
         {cheapestGas95 && (
           <Link
             href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-            className="bg-green-50 rounded-lg border border-green-200 p-4 hover:bg-green-100 transition-colors"
+            className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4 hover:bg-green-100 dark:bg-green-900/30 transition-colors"
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-50 dark:bg-green-900/200 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
-                <div className="text-sm text-green-600">Gasolina 95 más barata</div>
+                <div className="text-sm text-green-600 dark:text-green-400">Gasolina 95 más barata</div>
                 <div className="font-semibold text-green-800">{cheapestGas95.name}</div>
               </div>
             </div>
-            <div className="text-2xl font-bold text-green-700 mb-1">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-400 mb-1">
               {formatPrice(cheapestGas95.priceGasolina95E5)}
             </div>
-            <div className="text-sm text-green-600">{cheapestGas95.locality}</div>
+            <div className="text-sm text-green-600 dark:text-green-400">{cheapestGas95.locality}</div>
           </Link>
         )}
       </div>
 
       {/* Station List */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Gasolineras en {provinceData.name}
           </h2>
-          <p className="text-sm text-gray-500">{stations.length} estaciones (ordenadas por Gasóleo A)</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{stations.length} estaciones (ordenadas por Gasóleo A)</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-950">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Gasolinera
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Gasóleo A
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Gasolina 95
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Gasolina 98
                 </th>
                 <th className="px-4 py-3"></th>
@@ -211,12 +211,12 @@ export default async function ProvincePricesPage({ params }: Props) {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {stations.map((station, idx) => (
-                <tr key={station.id} className={idx < 3 ? "bg-green-50/50" : ""}>
+                <tr key={station.id} className={idx < 3 ? "bg-green-50 dark:bg-green-900/20/50" : ""}>
                   <td className="px-4 py-3">
                     <div className="flex items-start gap-2">
                       {idx < 3 && (
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                          idx === 0 ? "bg-green-500 text-white" :
+                          idx === 0 ? "bg-green-50 dark:bg-green-900/200 text-white" :
                           idx === 1 ? "bg-green-400 text-white" :
                           "bg-green-300 text-white"
                         }`}>
@@ -224,34 +224,34 @@ export default async function ProvincePricesPage({ params }: Props) {
                         </span>
                       )}
                       <div>
-                        <div className="font-medium text-gray-900 flex items-center gap-2">
+                        <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                           {station.name}
                           {station.is24h && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded">
                               <Clock className="w-3 h-3" />
                               24h
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500">{station.locality}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{station.locality}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`font-mono ${idx < 3 ? "text-green-700 font-bold" : "text-tl-amber-700"}`}>
+                    <span className={`font-mono ${idx < 3 ? "text-green-700 dark:text-green-400 font-bold" : "text-tl-amber-700 dark:text-tl-amber-300"}`}>
                       {formatPrice(station.priceGasoleoA)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-tl-700">{formatPrice(station.priceGasolina95E5)}</span>
+                    <span className="font-mono text-tl-700 dark:text-tl-300">{formatPrice(station.priceGasolina95E5)}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-purple-700">{formatPrice(station.priceGasolina98E5)}</span>
+                    <span className="font-mono text-purple-700 dark:text-purple-400">{formatPrice(station.priceGasolina98E5)}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/gasolineras/terrestres/${station.id}`}
-                      className="text-orange-600 hover:text-orange-700"
+                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400"
                     >
                       <MapPin className="w-4 h-4" />
                     </Link>
@@ -264,7 +264,7 @@ export default async function ProvincePricesPage({ params }: Props) {
       </div>
 
       {stations.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           No se encontraron gasolineras en {provinceData.name}
         </div>
       )}

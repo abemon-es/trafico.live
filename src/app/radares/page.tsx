@@ -37,12 +37,12 @@ const RADAR_TYPE_LABELS: Record<string, { label: string; color: string; descript
   },
   MOBILE_ZONE: {
     label: "Zona móvil",
-    color: "bg-gray-100 text-gray-800 border-gray-200",
+    color: "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-800",
     description: "Zonas habilitadas para el despliegue de radares móviles.",
   },
   TRAFFIC_LIGHT: {
     label: "Semafórico",
-    color: "bg-red-100 text-red-800 border-red-200",
+    color: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",
     description: "Detectan el paso en rojo en intersecciones semafóricas.",
   },
 };
@@ -124,7 +124,7 @@ export default async function RadaresPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -137,24 +137,24 @@ export default async function RadaresPage() {
           <AdSlot id="radares-top" format="banner" className="mb-6" />
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-yellow-50 rounded-lg">
-                <Radar className="w-8 h-8 text-yellow-600" />
+                <Radar className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Radares de la DGT en España
                 </h1>
-                <p className="text-gray-600 max-w-2xl">
+                <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
                   Directorio completo de radares de velocidad en las carreteras españolas,
                   gestionados por la Dirección General de Tráfico. Consulta su ubicación exacta,
                   tipo y límite de velocidad.
                 </p>
               </div>
               <div className="hidden md:flex flex-col items-center bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-center">
-                <span className="text-3xl font-bold text-yellow-700 font-data">{totalCount.toLocaleString("es-ES")}</span>
-                <span className="text-sm text-yellow-600 mt-0.5">radares activos</span>
+                <span className="text-3xl font-bold text-yellow-700 dark:text-yellow-400 font-data">{totalCount.toLocaleString("es-ES")}</span>
+                <span className="text-sm text-yellow-600 dark:text-yellow-400 mt-0.5">radares activos</span>
               </div>
             </div>
           </div>
@@ -162,10 +162,10 @@ export default async function RadaresPage() {
           {/* Section radar alert */}
           {byType.find((t) => t.type === "SECTION") && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <div>
                 <h2 className="font-semibold text-orange-800">Atención: radares de tramo activos</h2>
-                <p className="text-sm text-orange-700 mt-0.5">
+                <p className="text-sm text-orange-700 dark:text-orange-400 mt-0.5">
                   Hay{" "}
                   <strong className="font-data">
                     {byType.find((t) => t.type === "SECTION")?._count.toLocaleString("es-ES")}
@@ -179,20 +179,20 @@ export default async function RadaresPage() {
 
           {/* By type */}
           <section className="mb-8" aria-labelledby="heading-by-type">
-            <h2 id="heading-by-type" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-by-type" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Radares por tipo
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {byType.map((item) => {
                 const info = RADAR_TYPE_LABELS[item.type] ?? {
                   label: item.type,
-                  color: "bg-gray-100 text-gray-800 border-gray-200",
+                  color: "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-800",
                   description: "",
                 };
                 return (
                   <div
                     key={item.type}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span
@@ -200,11 +200,11 @@ export default async function RadaresPage() {
                       >
                         {info.label}
                       </span>
-                      <span className="text-2xl font-bold text-gray-900 font-data">
+                      <span className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                         {item._count.toLocaleString("es-ES")}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500">{info.description}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{info.description}</p>
                   </div>
                 );
               })}
@@ -216,29 +216,29 @@ export default async function RadaresPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Top roads */}
             <section aria-labelledby="heading-by-road">
-              <h2 id="heading-by-road" className="text-xl font-bold text-gray-900 mb-4">
+              <h2 id="heading-by-road" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Carreteras con más radares
               </h2>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                 {byRoad.map((item, idx) => (
                   <div
                     key={item.roadNumber}
-                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-gray-400 w-5 text-right">{idx + 1}</span>
                       <Link
                         href={`/carreteras/${encodeURIComponent(item.roadNumber)}/radares`}
-                        className="font-semibold text-tl-600 hover:text-tl-800 hover:underline"
+                        className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                       >
                         {item.roadNumber}
                       </Link>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900 font-data">
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 font-data">
                         {item._count.toLocaleString("es-ES")}
                       </span>
-                      <span className="text-xs text-gray-500">radares</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">radares</span>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </div>
                   </div>
@@ -248,10 +248,10 @@ export default async function RadaresPage() {
 
             {/* By province */}
             <section aria-labelledby="heading-by-province">
-              <h2 id="heading-by-province" className="text-xl font-bold text-gray-900 mb-4">
+              <h2 id="heading-by-province" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Radares por provincia
               </h2>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden max-h-[420px] overflow-y-auto">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden max-h-[420px] overflow-y-auto">
                 {byProvince
                   .filter((item) => item.province)
                   .map((item) => {
@@ -260,18 +260,18 @@ export default async function RadaresPage() {
                     return (
                       <div
                         key={item.province}
-                        className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+                        className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                           <Link
                             href={`/provincias/${item.province}`}
-                            className="text-sm text-tl-600 hover:text-tl-800 hover:underline"
+                            className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                           >
                             {provinceName}
                           </Link>
                         </div>
-                        <span className="text-sm font-medium text-gray-900 font-data">
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 font-data">
                           {item._count.toLocaleString("es-ES")}
                         </span>
                       </div>
@@ -293,7 +293,7 @@ export default async function RadaresPage() {
 
           {/* Links to road radar pages */}
           <section className="mb-8" aria-labelledby="heading-road-links">
-            <h2 id="heading-road-links" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-road-links" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Explorar radares por carretera
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -301,7 +301,7 @@ export default async function RadaresPage() {
                 <Link
                   key={item.roadNumber}
                   href={`/carreteras/${encodeURIComponent(item.roadNumber)}/radares`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-tl-600 hover:bg-tl-50 hover:border-tl-200 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
                 >
                   {item.roadNumber}
                   <span className="text-xs text-gray-400 font-data">({item._count})</span>
@@ -312,17 +312,17 @@ export default async function RadaresPage() {
 
           {/* FAQ */}
           <section aria-labelledby="heading-faq">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre radares
             </h2>
             <div className="space-y-4">
               {FAQ_ITEMS.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{item.answer}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{item.question}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.answer}</p>
                 </div>
               ))}
             </div>
@@ -358,26 +358,26 @@ export default async function RadaresPage() {
           />
 
           {/* SEO copy */}
-          <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6 prose prose-gray max-w-none">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">
+          <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 prose prose-gray max-w-none">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
               Radares de velocidad en España {CURRENT_YEAR}
             </h2>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
               La Dirección General de Tráfico (DGT) gestiona una red de radares de velocidad en
               las principales carreteras españolas. Estos dispositivos forman parte del programa de
               control de velocidad y contribuyen a reducir la siniestralidad vial. Los radares fijos
               son los más habituales en autopistas (AP) y autovías (A), mientras que los radares de
               tramo se instalan en tramos con alta accidentalidad o en zonas de obras.
             </p>
-            <p className="text-gray-600 text-sm leading-relaxed mt-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mt-2">
               trafico.live actualiza periódicamente la base de datos con la información oficial de la
               DGT. Para consultar el mapa interactivo de radares, accede a la sección{" "}
-              <Link href="/mapa" className="text-tl-600 hover:underline">
+              <Link href="/mapa" className="text-tl-600 dark:text-tl-400 hover:underline">
                 mapa de tráfico
               </Link>
               . Para ver los radares de una carretera concreta, navega a la página de esa vía
               dentro del apartado{" "}
-              <Link href="/carreteras" className="text-tl-600 hover:underline">
+              <Link href="/carreteras" className="text-tl-600 dark:text-tl-400 hover:underline">
                 carreteras
               </Link>
               .

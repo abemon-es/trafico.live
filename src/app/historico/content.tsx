@@ -23,11 +23,11 @@ const HistoricalMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <div className="h-6 w-48 bg-gray-200 animate-pulse rounded" />
         </div>
-        <div className="h-[400px] bg-gray-100 animate-pulse" />
+        <div className="h-[400px] bg-gray-100 dark:bg-gray-900 animate-pulse" />
       </div>
     ),
   }
@@ -249,7 +249,7 @@ function StatCard({
   isLoading?: boolean;
 }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center gap-2 mb-2">
         <div className={`p-2 ${iconBgColor} rounded-lg`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
@@ -258,11 +258,11 @@ function StatCard({
       {isLoading ? (
         <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
       ) : (
-        <p className="text-2xl font-bold text-gray-900 font-data">
+        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
           {typeof value === "number" ? value.toLocaleString("es-ES") : value}
         </p>
       )}
-      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
       {subLabel && <p className="text-xs text-gray-400 mt-1">{subLabel}</p>}
     </div>
   );
@@ -277,21 +277,21 @@ function DailyTrendChart({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-64 bg-gray-100 animate-pulse rounded" />
+        <div className="h-64 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-tl-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-tl-600 dark:text-tl-400" />
           Tendencia Diaria
         </h2>
-        <div className="h-64 flex items-center justify-center text-gray-500">
+        <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>No hay datos disponibles aún</p>
@@ -305,9 +305,9 @@ function DailyTrendChart({
   const maxCount = Math.max(...data.map((d) => d.v16Count));
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-tl-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <TrendingUp className="w-5 h-5 text-tl-600 dark:text-tl-400" />
         Tendencia Diaria de Balizas V16
       </h2>
       <div className="h-64 flex items-end gap-1">
@@ -322,7 +322,7 @@ function DailyTrendChart({
                 style={{ height: `${height}%`, minHeight: day.v16Count > 0 ? "4px" : "0" }}
                 title={`${day.date}: ${day.v16Count} balizas`}
               />
-              <span className="text-xs text-gray-500 mt-1 truncate w-full text-center">
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate w-full text-center">
                 {dayLabel}
               </span>
             </div>
@@ -342,21 +342,21 @@ function HourlyHeatmap({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-48 bg-gray-100 animate-pulse rounded" />
+        <div className="h-48 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || !data.heatmapData || data.heatmapData.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           Patrón Horario
         </h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>Sin datos de patrones horarios</p>
@@ -371,7 +371,7 @@ function HourlyHeatmap({
 
   const getColor = (value: number) => {
     const intensity = value / maxValue;
-    if (intensity === 0) return "bg-gray-100";
+    if (intensity === 0) return "bg-gray-100 dark:bg-gray-900";
     if (intensity < 0.25) return "bg-orange-100";
     if (intensity < 0.5) return "bg-orange-200";
     if (intensity < 0.75) return "bg-orange-400";
@@ -379,9 +379,9 @@ function HourlyHeatmap({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Activity className="w-5 h-5 text-purple-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         Patrón Hora × Día de la Semana
       </h2>
       <div className="overflow-x-auto">
@@ -390,7 +390,7 @@ function HourlyHeatmap({
           <div className="flex mb-1">
             <div className="w-12" />
             {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
-              <div key={h} className="flex-1 text-xs text-gray-500 text-center">
+              <div key={h} className="flex-1 text-xs text-gray-500 dark:text-gray-400 text-center">
                 {h}:00
               </div>
             ))}
@@ -398,7 +398,7 @@ function HourlyHeatmap({
           {/* Grid */}
           {[1, 2, 3, 4, 5, 6, 0].map((day) => (
             <div key={day} className="flex items-center mb-1">
-              <div className="w-12 text-xs text-gray-500">{dayNames[day]}</div>
+              <div className="w-12 text-xs text-gray-500 dark:text-gray-400">{dayNames[day]}</div>
               <div className="flex-1 flex gap-0.5">
                 {Array.from({ length: 24 }, (_, hour) => {
                   const cell = data.heatmapData.find((d) => d.hour === hour && d.day === day);
@@ -417,7 +417,7 @@ function HourlyHeatmap({
         </div>
       </div>
       {data.peaks && (
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
           <p>
             <span className="font-medium">Hora pico:</span> <span className="font-data">{data.peaks.hour.hour}:00</span> (promedio{" "}
             <span className="font-data">{data.peaks.hour.avgCount}</span> balizas)
@@ -441,21 +441,21 @@ function DurationDistribution({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-48 bg-gray-100 animate-pulse rounded" />
+        <div className="h-48 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || !data.stats || data.distribution.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-green-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
           Duración de Balizas
         </h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>{data?.message || "Sin datos de duración disponibles"}</p>
@@ -468,33 +468,33 @@ function DurationDistribution({
   const maxPercentage = Math.max(...data.distribution.map((d) => d.percentage), 1);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Clock className="w-5 h-5 text-green-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
         Distribución de Duración
       </h2>
       <div className="space-y-3">
         {data.distribution.map((bucket, idx) => (
           <div key={idx} className="flex items-center gap-3">
-            <div className="w-24 text-sm text-gray-600">{bucket.label}</div>
-            <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+            <div className="w-24 text-sm text-gray-600 dark:text-gray-400">{bucket.label}</div>
+            <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
               <div
-                className="h-full bg-green-500 rounded"
+                className="h-full bg-green-50 dark:bg-green-900/200 rounded"
                 style={{ width: `${(bucket.percentage / maxPercentage) * 100}%` }}
               />
             </div>
-            <div className="w-16 text-sm text-gray-600 text-right font-data">{bucket.percentage}%</div>
+            <div className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{bucket.percentage}%</div>
           </div>
         ))}
       </div>
       {data.stats && (
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Media:</span>{" "}
+            <span className="text-gray-500 dark:text-gray-400">Media:</span>{" "}
             <span className="font-medium font-data">{data.stats.avgMinutes} min</span>
           </div>
           <div>
-            <span className="text-gray-500">Mediana:</span>{" "}
+            <span className="text-gray-500 dark:text-gray-400">Mediana:</span>{" "}
             <span className="font-medium font-data">{data.stats.medianMinutes} min</span>
           </div>
         </div>
@@ -629,27 +629,27 @@ export function HistoricoContent() {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Balizas V16</h1>
-            <p className="mt-2 text-gray-600">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Balizas V16</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               {isRealtime
                 ? "Balizas V16 activas en tiempo real en carreteras españolas."
                 : "Análisis histórico de emergencias señalizadas con baliza V16."}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="period" className="text-sm text-gray-600">
+            <label htmlFor="period" className="text-sm text-gray-600 dark:text-gray-400">
               Período:
             </label>
             <select
               id="period"
               value={period}
               onChange={(e) => setPeriod(e.target.value as PeriodValue)}
-              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="border border-gray-300 dark:border-gray-700 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             >
               {PERIOD_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -662,7 +662,7 @@ export function HistoricoContent() {
 
         {/* Data start date indicator */}
         {period === "todo" && dataStartDate && (
-          <div className="mb-4 text-sm text-gray-500">
+          <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             Mostrando datos desde:{" "}
             <span className="font-medium">
               {new Date(dataStartDate).toLocaleDateString("es-ES", {
@@ -679,9 +679,9 @@ export function HistoricoContent() {
           <div className="mb-4 flex items-center gap-2 text-sm">
             <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-50 dark:bg-green-900/200"></span>
             </span>
-            <span className="text-green-700 font-medium">
+            <span className="text-green-700 dark:text-green-400 font-medium">
               Tiempo real - <span className="font-data">{realtimeData?.count || 0}</span> balizas activas
             </span>
             {realtimeData?.lastUpdated && (
@@ -712,7 +712,7 @@ export function HistoricoContent() {
           <StatCard
             icon={AlertTriangle}
             iconBgColor="bg-orange-50"
-            iconColor="text-orange-600"
+            iconColor="text-orange-600 dark:text-orange-400"
             value={
               isRealtime
                 ? realtimeData?.count || 0
@@ -732,8 +732,8 @@ export function HistoricoContent() {
           />
           <StatCard
             icon={Clock}
-            iconBgColor="bg-green-50"
-            iconColor="text-green-600"
+            iconBgColor="bg-green-50 dark:bg-green-900/20"
+            iconColor="text-green-600 dark:text-green-400"
             value={
               durationData?.data?.stats?.avgMinutes
                 ? `${durationData.data.stats.avgMinutes} min`
@@ -749,8 +749,8 @@ export function HistoricoContent() {
           />
           <StatCard
             icon={MapPin}
-            iconBgColor="bg-tl-50"
-            iconColor="text-tl-600"
+            iconBgColor="bg-tl-50 dark:bg-tl-900/20"
+            iconColor="text-tl-600 dark:text-tl-400"
             value={provincesData?.data?.totals?.totalBeacons || "-"}
             label="Por Ubicación"
             subLabel={
@@ -763,7 +763,7 @@ export function HistoricoContent() {
           <StatCard
             icon={Calendar}
             iconBgColor="bg-purple-50"
-            iconColor="text-purple-600"
+            iconColor="text-purple-600 dark:text-purple-400"
             value={
               dailyData?.data?.peak
                 ? new Date(dailyData.data.peak.date).toLocaleDateString("es-ES", {
@@ -782,8 +782,8 @@ export function HistoricoContent() {
 
         {/* Charts Grid - Only show for historical data, not realtime */}
         {isRealtime ? (
-          <div className="bg-tl-50 border border-tl-200 rounded-lg p-6 mb-8">
-            <p className="text-tl-800 text-center">
+          <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-6 mb-8">
+            <p className="text-tl-800 dark:text-tl-200 text-center">
               <span className="font-medium">Modo tiempo real activo.</span> Selecciona un período
               histórico para ver estadísticas y análisis detallados.
             </p>
@@ -812,12 +812,12 @@ export function HistoricoContent() {
                 labelWidth={110}
               />
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-gray-500" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Ranking por Provincia
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {provincesLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (
@@ -838,12 +838,12 @@ export function HistoricoContent() {
                 labelWidth={90}
               />
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-gray-500" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Por Tipo de Vía
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {provincesLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (
@@ -861,9 +861,9 @@ export function HistoricoContent() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Severity Distribution */}
             {severityChartData.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-red-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <PieChart className="w-5 h-5 text-red-600 dark:text-red-400" />
                   Distribución por Severidad
                 </h2>
                 <div className="space-y-3">
@@ -871,39 +871,39 @@ export function HistoricoContent() {
                     const total = severityChartData.reduce((sum, i) => sum + i.value, 0);
                     const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
                     const colors: Record<string, string> = {
-                      Baja: "bg-green-500",
+                      Baja: "bg-green-50 dark:bg-green-900/200",
                       Media: "bg-orange-500",
-                      Alta: "bg-red-500",
+                      Alta: "bg-red-50 dark:bg-red-900/200",
                       "Muy Alta": "bg-red-900",
                     };
-                    const bgColor = colors[item.name] || "bg-gray-500";
+                    const bgColor = colors[item.name] || "bg-gray-50 dark:bg-gray-9500";
                     return (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="w-20 text-sm text-gray-600">{item.name}</div>
-                        <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                        <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.name}</div>
+                        <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                           <div
                             className={`h-full ${bgColor} rounded`}
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-16 text-sm text-gray-600 text-right font-data">
+                        <div className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">
                           {item.value} ({percentage}%)
                         </div>
                       </div>
                     );
                   })}
                 </div>
-                <p className="text-xs text-gray-500 mt-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
                   Clasificación según nivel de urgencia de la emergencia
                 </p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-red-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <PieChart className="w-5 h-5 text-red-600 dark:text-red-400" />
                   Distribución por Severidad
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {mapLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (
@@ -918,9 +918,9 @@ export function HistoricoContent() {
 
             {/* Top Roads */}
             {topRoadsChartData.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   Top {topRoadsChartData.length} Carreteras
                 </h2>
                 <div className="space-y-3">
@@ -929,32 +929,32 @@ export function HistoricoContent() {
                     const percentage = maxValue > 0 ? Math.round((road.value / maxValue) * 100) : 0;
                     return (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="w-16 text-sm font-medium text-gray-900">{road.name}</div>
-                        <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                        <div className="w-16 text-sm font-medium text-gray-900 dark:text-gray-100">{road.name}</div>
+                        <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                           <div
-                            className="h-full bg-tl-500 rounded"
+                            className="h-full bg-tl-50 dark:bg-tl-900/200 rounded"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-10 text-sm text-gray-600 text-right font-data">{road.value}</div>
+                        <div className="w-10 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{road.value}</div>
                       </div>
                     );
                   })}
                 </div>
                 {roadsData?.data?.totals && (
-                  <p className="text-xs text-gray-500 mt-4">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
                     <span className="font-data">{roadsData.data.totals.totalBeacons}</span> balizas en{" "}
                     <span className="font-data">{roadsData.data.totals.uniqueRoads}</span> carreteras diferentes
                   </p>
                 )}
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   Carreteras con más balizas
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {roadsLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (

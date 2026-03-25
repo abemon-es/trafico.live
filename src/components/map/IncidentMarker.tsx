@@ -241,23 +241,23 @@ export function getIncidentPopupHTML(incident: {
 
       <!-- Location info -->
       ${incident.roadNumber ? `
-        <p class="text-sm font-medium text-gray-800">
+        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
           ${incident.roadNumber}${incident.kmPoint ? ` · km ${incident.kmPoint}` : ""}
         </p>
       ` : ""}
 
       ${incident.province ? `
-        <p class="text-xs text-gray-500">${incident.province}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">${incident.province}</p>
       ` : ""}
 
       <!-- Description -->
       ${incident.description ? `
-        <p class="text-sm text-gray-700 mt-2 line-clamp-3">${incident.description}</p>
+        <p class="text-sm text-gray-700 dark:text-gray-300 mt-2 line-clamp-3">${incident.description}</p>
       ` : ""}
 
       <!-- Additional info -->
       ${incident.laneInfo ? `
-        <p class="text-xs text-gray-500 mt-1">Carriles: ${incident.laneInfo}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Carriles: ${incident.laneInfo}</p>
       ` : ""}
 
       ${incident.startedAt ? `
@@ -299,12 +299,12 @@ export function IncidentLegend() {
   const causes: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 text-sm">
-      <h4 className="font-semibold text-gray-800 mb-3">Leyenda</h4>
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-sm">
+      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Leyenda</h4>
 
       <div className="space-y-3">
         <div>
-          <h5 className="text-xs font-medium text-gray-500 uppercase mb-2">Afecciones</h5>
+          <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Afecciones</h5>
           <div className="space-y-1">
             {effects.map((effect) => (
               <div key={effect} className="flex items-center gap-2">
@@ -312,14 +312,14 @@ export function IncidentLegend() {
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: EFFECT_COLORS[effect] }}
                 />
-                <span className="text-gray-700">{EFFECT_LABELS[effect]}</span>
+                <span className="text-gray-700 dark:text-gray-300">{EFFECT_LABELS[effect]}</span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="border-t pt-3">
-          <h5 className="text-xs font-medium text-gray-500 uppercase mb-2">Causas</h5>
+          <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Causas</h5>
           <div className="space-y-1">
             {causes.map((cause) => (
               <div key={cause} className="flex items-center gap-2">
@@ -327,7 +327,7 @@ export function IncidentLegend() {
                   className="w-3 h-3 rounded flex-shrink-0"
                   style={{ backgroundColor: CAUSE_COLORS[cause] }}
                 />
-                <span className="text-gray-700">{CAUSE_LABELS[cause]}</span>
+                <span className="text-gray-700 dark:text-gray-300">{CAUSE_LABELS[cause]}</span>
               </div>
             ))}
           </div>

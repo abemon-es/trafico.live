@@ -257,9 +257,9 @@ const FAQ_ITEMS = [
 ];
 
 const CONGESTION_COLOR: Record<string, string> = {
-  "muy alta": "bg-red-100 text-red-700 border-red-200",
-  alta: "bg-orange-100 text-orange-700 border-orange-200",
-  media: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+  alta: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
+  media: "bg-yellow-100 text-yellow-700 dark:text-yellow-400 border-yellow-200",
 };
 
 // ---------------------------------------------------------------------------
@@ -320,7 +320,7 @@ export default async function SemanaSanta2026Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -333,24 +333,24 @@ export default async function SemanaSanta2026Page() {
           {/* ------------------------------------------------------------------ */}
           {/* HERO / H1                                                          */}
           {/* ------------------------------------------------------------------ */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-tl-50 rounded-lg flex-shrink-0">
-                <CalendarDays className="w-8 h-8 text-tl-600" />
+              <div className="p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                <CalendarDays className="w-8 h-8 text-tl-600 dark:text-tl-400" />
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold bg-red-100 text-red-700 border border-red-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                     Operación activa
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     27 mar – 6 abr 2026
                   </span>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                   Tráfico Semana Santa 2026
                 </h1>
-                <p className="text-gray-600 max-w-3xl leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
                   Toda la información para planificar tus desplazamientos en
                   Semana Santa 2026: estado del tráfico en tiempo real,
                   previsiones oficiales de la DGT, operación salida y retorno,
@@ -365,34 +365,34 @@ export default async function SemanaSanta2026Page() {
           {/* LIVE STATS STRIP                                                   */}
           {/* ------------------------------------------------------------------ */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-tl-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                <Activity className="w-5 h-5 text-tl-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                <Activity className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {incidents.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                   incidencias activas ahora
                 </p>
               </div>
               <Link
                 href="/incidencias"
-                className="ml-auto text-xs font-medium text-tl-600 hover:text-tl-700 flex items-center gap-1 flex-shrink-0"
+                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 flex-shrink-0"
               >
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="bg-white rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-tl-amber-50 rounded-lg flex-shrink-0">
-                <Zap className="w-5 h-5 text-tl-amber-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg flex-shrink-0">
+                <Zap className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {v16.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                   balizas V16 activas
                 </p>
               </div>
@@ -405,24 +405,24 @@ export default async function SemanaSanta2026Page() {
           <section className="mb-8" aria-labelledby="heading-dates">
             <h2
               id="heading-dates"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Fechas clave: operación salida y retorno 2026
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Salida */}
-              <div className="bg-white rounded-lg border border-tl-200 p-5">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-200 dark:border-tl-800 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-tl-500" />
-                  <h3 className="font-semibold text-gray-900">
+                  <div className="w-2.5 h-2.5 rounded-full bg-tl-50 dark:bg-tl-900/200" />
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                     Operación Salida
                   </h3>
                 </div>
-                <p className="text-tl-700 font-medium text-sm mb-2">
+                <p className="text-tl-700 dark:text-tl-300 font-medium text-sm mb-2">
                   Viernes 27 marzo (15:00) → Domingo 29 marzo
                 </p>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   El dispositivo arranca el viernes a las 15:00 h y se
                   prolonga durante el fin de semana de Ramos. Los viernes y
                   sábados por la mañana son los momentos más críticos. La DGT
@@ -431,17 +431,17 @@ export default async function SemanaSanta2026Page() {
               </div>
 
               {/* Retorno */}
-              <div className="bg-white rounded-lg border border-orange-200 p-5">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-orange-200 p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                     Operación Retorno
                   </h3>
                 </div>
-                <p className="text-orange-700 font-medium text-sm mb-2">
+                <p className="text-orange-700 dark:text-orange-400 font-medium text-sm mb-2">
                   Domingo 5 abril → Lunes 6 abril (24:00)
                 </p>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   El Domingo de Resurrección (5 de abril) y el Lunes de
                   Pascua (6 de abril) concentran el grueso del retorno.
                   El tramo 16:00-22:00 del domingo es el más congestionado
@@ -451,15 +451,15 @@ export default async function SemanaSanta2026Page() {
             </div>
 
             {/* Global figure */}
-            <div className="bg-tl-50 border border-tl-200 rounded-lg p-4 flex items-center gap-4">
-              <div className="p-3 bg-tl-100 rounded-lg flex-shrink-0">
-                <BarChart3 className="w-6 h-6 text-tl-700" />
+            <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4 flex items-center gap-4">
+              <div className="p-3 bg-tl-100 dark:bg-tl-900/30 rounded-lg flex-shrink-0">
+                <BarChart3 className="w-6 h-6 text-tl-700 dark:text-tl-300" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-tl-800">
+                <p className="text-2xl font-bold text-tl-800 dark:text-tl-200">
                   16 millones
                 </p>
-                <p className="text-sm text-tl-700">
+                <p className="text-sm text-tl-700 dark:text-tl-300">
                   de desplazamientos previstos por la DGT durante la Semana
                   Santa 2026 — un 3% más que en 2025
                 </p>
@@ -473,7 +473,7 @@ export default async function SemanaSanta2026Page() {
           <section className="mb-8" aria-labelledby="heading-hours">
             <h2
               id="heading-hours"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Mejores y peores horas para viajar en Semana Santa 2026
             </h2>
@@ -482,8 +482,8 @@ export default async function SemanaSanta2026Page() {
               {/* Avoid */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Ban className="w-5 h-5 text-red-600" />
-                  <h3 className="font-semibold text-red-700">
+                  <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  <h3 className="font-semibold text-red-700 dark:text-red-400">
                     Franjas a evitar
                   </h3>
                 </div>
@@ -491,17 +491,17 @@ export default async function SemanaSanta2026Page() {
                   {AVOID_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white border border-red-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-red-100 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
-                        <span className="font-medium text-gray-900 text-sm">
+                        <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full border border-red-200">
+                        <span className="text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-200">
                           {slot.hours}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                         {slot.reason}
                       </p>
                     </div>
@@ -512,8 +512,8 @@ export default async function SemanaSanta2026Page() {
               {/* Recommended */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  <h3 className="font-semibold text-green-700">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <h3 className="font-semibold text-green-700 dark:text-green-400">
                     Franjas recomendadas
                   </h3>
                 </div>
@@ -521,17 +521,17 @@ export default async function SemanaSanta2026Page() {
                   {RECOMMENDED_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white border border-green-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-green-100 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
-                        <span className="font-medium text-gray-900 text-sm">
+                        <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">
+                        <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full border border-green-200">
                           {slot.hours}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                         {slot.reason}
                       </p>
                     </div>
@@ -541,7 +541,7 @@ export default async function SemanaSanta2026Page() {
                 {/* CTA to mejor-hora */}
                 <Link
                   href="/mejor-hora"
-                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 hover:text-tl-700 transition-colors"
+                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 transition-colors"
                 >
                   <Clock className="w-4 h-4" />
                   Calculadora: mejor hora para viajar por carretera
@@ -557,11 +557,11 @@ export default async function SemanaSanta2026Page() {
           <section className="mb-8" aria-labelledby="heading-routes">
             <h2
               id="heading-routes"
-              className="text-xl font-bold text-gray-900 mb-1"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1"
             >
               Carreteras más afectadas en Semana Santa 2026
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Principales ejes con congestión prevista según histórico DGT.
               Consulta el estado en tiempo real en cada carretera.
             </p>
@@ -571,12 +571,12 @@ export default async function SemanaSanta2026Page() {
                 <Link
                   key={route.id}
                   href={`/carreteras/${route.id}`}
-                  className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-tl-500 flex-shrink-0 group-hover:text-tl-700" />
-                      <span className="font-semibold text-gray-900 text-sm group-hover:text-tl-700 transition-colors">
+                      <MapPin className="w-4 h-4 text-tl-500 flex-shrink-0 group-hover:text-tl-700 dark:text-tl-300" />
+                      <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:text-tl-300 transition-colors">
                         {route.name}
                       </span>
                     </div>
@@ -588,7 +588,7 @@ export default async function SemanaSanta2026Page() {
                       {route.congestion}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                     {route.description}
                   </p>
                 </Link>
@@ -602,7 +602,7 @@ export default async function SemanaSanta2026Page() {
           <section className="mb-8" aria-labelledby="heading-tips">
             <h2
               id="heading-tips"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               8 consejos para conducir en Semana Santa 2026
             </h2>
@@ -612,18 +612,18 @@ export default async function SemanaSanta2026Page() {
                 return (
                   <div
                     key={tip.title}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                        <Icon className="w-5 h-5 text-tl-600" />
+                      <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                        <Icon className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1 text-sm">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 text-sm">
                           <span className="text-tl-400 mr-1">{i + 1}.</span>
                           {tip.title}
                         </h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                           {tip.text}
                         </p>
                       </div>
@@ -637,10 +637,10 @@ export default async function SemanaSanta2026Page() {
           {/* ------------------------------------------------------------------ */}
           {/* FUEL CALLOUT                                                       */}
           {/* ------------------------------------------------------------------ */}
-          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-8">
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-8">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-tl-amber-100 rounded-lg flex-shrink-0">
-                <Fuel className="w-6 h-6 text-tl-amber-700" />
+                <Fuel className="w-6 h-6 text-tl-amber-700 dark:text-tl-amber-300" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-tl-amber-900 mb-1">
@@ -662,7 +662,7 @@ export default async function SemanaSanta2026Page() {
                   </Link>
                   <Link
                     href="/precio-diesel-hoy"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white text-tl-amber-700 border border-tl-amber-300 px-3 py-1.5 rounded-lg hover:bg-tl-amber-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white dark:bg-gray-900 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-300 px-3 py-1.5 rounded-lg hover:bg-tl-amber-50 dark:bg-tl-amber-900/20 transition-colors"
                   >
                     Precio diésel hoy
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -678,7 +678,7 @@ export default async function SemanaSanta2026Page() {
           <section className="mb-8" aria-labelledby="heading-quicklinks">
             <h2
               id="heading-quicklinks"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Herramientas en tiempo real para Semana Santa
             </h2>
@@ -688,23 +688,23 @@ export default async function SemanaSanta2026Page() {
                   href: "/incidencias",
                   label: "Incidencias en vivo",
                   icon: AlertTriangle,
-                  color: "text-red-600",
-                  bg: "bg-red-50",
+                  color: "text-red-600 dark:text-red-400",
+                  bg: "bg-red-50 dark:bg-red-900/20",
                   border: "border-red-100",
                 },
                 {
                   href: "/camaras",
                   label: "Cámaras DGT",
                   icon: Camera,
-                  color: "text-tl-600",
-                  bg: "bg-tl-50",
+                  color: "text-tl-600 dark:text-tl-400",
+                  bg: "bg-tl-50 dark:bg-tl-900/20",
                   border: "border-tl-100",
                 },
                 {
                   href: "/radares",
                   label: "Radares",
                   icon: Radar,
-                  color: "text-purple-600",
+                  color: "text-purple-600 dark:text-purple-400",
                   bg: "bg-purple-50",
                   border: "border-purple-100",
                 },
@@ -728,20 +728,20 @@ export default async function SemanaSanta2026Page() {
                   href: "/mejor-hora",
                   label: "Mejor hora para viajar",
                   icon: Clock,
-                  color: "text-green-600",
-                  bg: "bg-green-50",
+                  color: "text-green-600 dark:text-green-400",
+                  bg: "bg-green-50 dark:bg-green-900/20",
                   border: "border-green-100",
                 },
               ].map(({ href, label, icon: Icon, color, bg, border }) => (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex flex-col items-center gap-2 bg-white border ${border} rounded-xl p-4 text-center hover:shadow-md transition-all group`}
+                  className={`flex flex-col items-center gap-2 bg-white dark:bg-gray-900 border ${border} rounded-xl p-4 text-center hover:shadow-md transition-all group`}
                 >
                   <div className={`p-2.5 ${bg} rounded-lg`}>
                     <Icon className={`w-5 h-5 ${color}`} />
                   </div>
-                  <span className="text-xs font-medium text-gray-700 leading-snug group-hover:text-gray-900 transition-colors">
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-snug group-hover:text-gray-900 dark:text-gray-100 transition-colors">
                     {label}
                   </span>
                 </Link>
@@ -755,7 +755,7 @@ export default async function SemanaSanta2026Page() {
           <section className="mb-8" aria-labelledby="heading-faq">
             <h2
               id="heading-faq"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Preguntas frecuentes — Tráfico Semana Santa 2026
             </h2>
@@ -763,12 +763,12 @@ export default async function SemanaSanta2026Page() {
               {FAQ_ITEMS.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                     {item.question}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                     {item.answer}
                   </p>
                 </div>

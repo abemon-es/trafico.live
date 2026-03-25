@@ -47,7 +47,7 @@ function LiveBadge({
   fontSize: number;
   theme: "light" | "dark";
 }) {
-  const bg = theme === "dark" ? "bg-tl-500" : "bg-tl-600";
+  const bg = theme === "dark" ? "bg-tl-50 dark:bg-tl-900/200" : "bg-tl-600";
   const dotSize = Math.max(2, fontSize * 0.35);
   const py = Math.max(1, fontSize * 0.2);
   const px = Math.max(4, fontSize * 0.6);
@@ -63,7 +63,7 @@ function LiveBadge({
       }}
     >
       <span
-        className="block rounded-full bg-white"
+        className="block rounded-full bg-white dark:bg-gray-900"
         style={{
           width: `${dotSize}px`,
           height: `${dotSize}px`,
@@ -103,7 +103,7 @@ export function Logo({
   const resolvedTheme = theme === "auto" ? "light" : theme;
 
   const textColor =
-    resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900";
+    resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900 dark:text-gray-100";
 
   const content = (() => {
     switch (variant) {

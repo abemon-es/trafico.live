@@ -48,37 +48,37 @@ const CATEGORY_ICON: Record<string, string> = {
 
 export default function BlogPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav aria-label="Ruta de navegación" className="mb-6">
-          <ol className="flex items-center gap-1.5 text-sm text-gray-500">
+          <ol className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
             <li>
-              <Link href="/" className="hover:text-tl-600 transition-colors">
+              <Link href="/" className="hover:text-tl-600 dark:text-tl-400 transition-colors">
                 Inicio
               </Link>
             </li>
             <li>
               <ChevronRight className="w-3.5 h-3.5" />
             </li>
-            <li className="text-gray-900 font-medium">Blog</li>
+            <li className="text-gray-900 dark:text-gray-100 font-medium">Blog</li>
           </ol>
         </nav>
 
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-tl-100 rounded-lg">
-              <BookOpen className="w-6 h-6 text-tl-600" />
+            <div className="p-2 bg-tl-100 dark:bg-tl-900/30 rounded-lg">
+              <BookOpen className="w-6 h-6 text-tl-600 dark:text-tl-400" />
             </div>
-            <span className="text-sm font-medium text-tl-600 uppercase tracking-wider">
+            <span className="text-sm font-medium text-tl-600 dark:text-tl-400 uppercase tracking-wider">
               Blog
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
             Blog de Tráfico
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
             Guías prácticas, noticias y consejos sobre circulación, normativa vial
             y combustible en España.
           </p>
@@ -90,7 +90,7 @@ export default function BlogPage() {
             <Link
               key={article.slug}
               href={`/blog/${article.slug}`}
-              className="group flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-tl-300 transition-all duration-200 overflow-hidden"
+              className="group flex flex-col bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-tl-300 transition-all duration-200 overflow-hidden"
             >
               {/* Image placeholder */}
               <div
@@ -111,17 +111,17 @@ export default function BlogPage() {
                 </span>
 
                 {/* Title */}
-                <h2 className="text-base font-bold text-gray-900 leading-snug mb-2 group-hover:text-tl-600 transition-colors line-clamp-2">
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 leading-snug mb-2 group-hover:text-tl-600 dark:text-tl-400 transition-colors line-clamp-2">
                   {article.title}
                 </h2>
 
                 {/* Excerpt */}
-                <p className="text-sm text-gray-600 leading-relaxed flex-1 line-clamp-3 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed flex-1 line-clamp-3 mb-4">
                   {article.excerpt}
                 </p>
 
                 {/* Meta */}
-                <div className="flex items-center gap-4 text-xs text-gray-400 mt-auto pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-4 text-xs text-gray-400 mt-auto pt-3 border-t border-gray-100 dark:border-gray-800">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
                     {formatDate(article.date)}
@@ -137,11 +137,11 @@ export default function BlogPage() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-12 bg-tl-50 border border-tl-200 rounded-xl p-6 text-center">
-          <p className="text-gray-700 font-medium mb-1">
+        <div className="mt-12 bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-6 text-center">
+          <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">
             ¿Quieres el tráfico en tiempo real?
           </p>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Consulta incidencias, cámaras DGT y precios de combustible actualizados
             cada minuto.
           </p>

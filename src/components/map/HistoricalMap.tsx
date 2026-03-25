@@ -334,9 +334,9 @@ export function HistoricalMap({
               <span class="font-bold text-sm">V16 Baliza</span>
             </div>
             ${props?.road ? `<p class="text-sm font-medium">${props.road}</p>` : ""}
-            ${props?.province ? `<p class="text-xs text-gray-500">${props.province}</p>` : ""}
-            <p class="text-xs text-gray-500">Severidad: ${props?.severity}</p>
-            ${props?.durationMins ? `<p class="text-xs text-gray-500">Duración: ${props.durationMins} min</p>` : ""}
+            ${props?.province ? `<p class="text-xs text-gray-500 dark:text-gray-400">${props.province}</p>` : ""}
+            <p class="text-xs text-gray-500 dark:text-gray-400">Severidad: ${props?.severity}</p>
+            ${props?.durationMins ? `<p class="text-xs text-gray-500 dark:text-gray-400">Duración: ${props.durationMins} min</p>` : ""}
             ${props?.activatedAt ? `<p class="text-xs text-gray-400 mt-1">${new Date(props.activatedAt).toLocaleString("es-ES")}</p>` : ""}
           </div>
         `;
@@ -373,9 +373,9 @@ export function HistoricalMap({
                   <span class="font-bold text-sm">V16 Baliza</span>
                 </div>
                 ${beacon.road ? `<p class="text-sm font-medium">${beacon.road}</p>` : ""}
-                ${beacon.province ? `<p class="text-xs text-gray-500">${beacon.province}</p>` : ""}
-                <p class="text-xs text-gray-500">Severidad: ${beacon.severity}</p>
-                <p class="text-xs text-gray-500">Duración: ${durationDisplay}</p>
+                ${beacon.province ? `<p class="text-xs text-gray-500 dark:text-gray-400">${beacon.province}</p>` : ""}
+                <p class="text-xs text-gray-500 dark:text-gray-400">Severidad: ${beacon.severity}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Duración: ${durationDisplay}</p>
                 <p class="text-xs text-gray-400 mt-1">${new Date(beacon.activatedAt).toLocaleString("es-ES")}</p>
               </div>
             `)
@@ -405,20 +405,20 @@ export function HistoricalMap({
   }, [beacons, isMapLoaded, viewMode]);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
       {/* Header with view mode toggle */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-orange-600" />
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           Mapa de Balizas V16
         </h2>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-900 rounded-lg p-1">
           <button
             onClick={() => setViewMode("heatmap")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
               viewMode === "heatmap"
-                ? "bg-white text-orange-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
             }`}
             title="Mapa de calor"
           >
@@ -429,8 +429,8 @@ export function HistoricalMap({
             onClick={() => setViewMode("clusters")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
               viewMode === "clusters"
-                ? "bg-white text-orange-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
             }`}
             title="Clusters"
           >
@@ -441,8 +441,8 @@ export function HistoricalMap({
             onClick={() => setViewMode("points")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
               viewMode === "points"
-                ? "bg-white text-orange-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
             }`}
             title="Puntos individuales"
           >
@@ -455,19 +455,19 @@ export function HistoricalMap({
       {/* Map container */}
       <div className="relative" style={{ height }}>
         {isLoading && (
-          <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 flex items-center justify-center z-10">
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
-              <span className="text-sm text-gray-500">Cargando datos...</span>
+              <Loader2 className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-spin" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">Cargando datos...</span>
             </div>
           </div>
         )}
 
         {!isLoading && beacons.length === 0 && (
-          <div className="absolute inset-0 bg-gray-50 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-gray-50 dark:bg-gray-950 flex items-center justify-center z-10">
             <div className="text-center">
               <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500 font-medium">Sin datos de ubicación</p>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">Sin datos de ubicación</p>
               <p className="text-sm text-gray-400 mt-1">
                 No hay balizas registradas para este período
               </p>
@@ -480,11 +480,11 @@ export function HistoricalMap({
 
       {/* Legend */}
       {beacons.length > 0 && (
-        <div className="p-3 border-t border-gray-200 bg-gray-50">
-          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+        <div className="p-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
             <span className="font-medium">Severidad:</span>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-green-500" />
+              <span className="w-3 h-3 rounded-full bg-green-50 dark:bg-green-900/200" />
               <span>Baja</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -492,7 +492,7 @@ export function HistoricalMap({
               <span>Media</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-red-500" />
+              <span className="w-3 h-3 rounded-full bg-red-50 dark:bg-red-900/200" />
               <span>Alta</span>
             </div>
             <div className="flex items-center gap-1.5">

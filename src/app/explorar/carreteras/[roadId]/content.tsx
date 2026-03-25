@@ -140,7 +140,7 @@ export default function RoadDetailContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-3 text-gray-500">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Cargando datos de {roadId}...</span>
         </div>
@@ -159,25 +159,25 @@ export default function RoadDetailContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-tl-600">
+      <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <Link href="/" className="hover:text-tl-600 dark:text-tl-400">
           <Home className="w-4 h-4" />
         </Link>
         <span>/</span>
-        <Link href="/explorar/carreteras" className="hover:text-tl-600">
+        <Link href="/explorar/carreteras" className="hover:text-tl-600 dark:text-tl-400">
           Carreteras
         </Link>
         <span>/</span>
-        <span className="text-gray-900">{roadId}</span>
+        <span className="text-gray-900 dark:text-gray-100">{roadId}</span>
       </nav>
 
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <Route className="w-8 h-8 text-tl-600" />
-          <h1 className="text-3xl font-bold text-gray-900">{roadId}</h1>
+          <Route className="w-8 h-8 text-tl-600 dark:text-tl-400" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{roadId}</h1>
         </div>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Estado del tráfico en tiempo real en la carretera {roadId}.
         </p>
       </div>
@@ -185,58 +185,58 @@ export default function RoadDetailContent() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className={`rounded-lg shadow-sm border p-4 ${
-          incidents.length > 0 ? "bg-tl-amber-50 border-tl-amber-200" : "bg-white border-gray-200"
+          incidents.length > 0 ? "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 dark:border-tl-amber-800" : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
         }`}>
           <div className="flex items-center gap-2 mb-2">
-            <div className={`p-2 rounded-lg ${incidents.length > 0 ? "bg-tl-amber-100" : "bg-gray-50"}`}>
-              <AlertTriangle className={`w-5 h-5 ${incidents.length > 0 ? "text-tl-amber-600" : "text-gray-400"}`} />
+            <div className={`p-2 rounded-lg ${incidents.length > 0 ? "bg-tl-amber-100" : "bg-gray-50 dark:bg-gray-950"}`}>
+              <AlertTriangle className={`w-5 h-5 ${incidents.length > 0 ? "text-tl-amber-600 dark:text-tl-amber-400" : "text-gray-400"}`} />
             </div>
           </div>
-          <p className={`text-2xl font-bold ${incidents.length > 0 ? "text-tl-amber-700" : "text-gray-900"}`}>
+          <p className={`text-2xl font-bold ${incidents.length > 0 ? "text-tl-amber-700 dark:text-tl-amber-300" : "text-gray-900 dark:text-gray-100"}`}>
             {incidents.length}
           </p>
-          <p className={`text-sm ${incidents.length > 0 ? "text-tl-amber-600" : "text-gray-500"}`}>
+          <p className={`text-sm ${incidents.length > 0 ? "text-tl-amber-600 dark:text-tl-amber-400" : "text-gray-500 dark:text-gray-400"}`}>
             Incidencias activas
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-yellow-50 rounded-lg">
-              <Radar className="w-5 h-5 text-yellow-600" />
+              <Radar className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{radars.length}</p>
-          <p className="text-sm text-gray-500">Radares</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{radars.length}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Radares</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-tl-50 rounded-lg">
-              <Camera className="w-5 h-5 text-tl-600" />
+            <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+              <Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{cameras.length}</p>
-          <p className="text-sm text-gray-500">Cámaras</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{cameras.length}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Cámaras</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-green-50 rounded-lg">
-              <Car className="w-5 h-5 text-green-600" />
+            <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <Car className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {avgIMD > 0 ? (avgIMD / 1000).toFixed(0) + "k" : "-"}
           </p>
-          <p className="text-sm text-gray-500">IMD medio</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">IMD medio</p>
         </div>
       </div>
 
       {/* Active Incidents */}
       {incidents.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-tl-amber-500" />
             Incidencias activas
           </h2>
@@ -244,26 +244,26 @@ export default function RoadDetailContent() {
             {incidents.map((incident) => (
               <div
                 key={incident.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span className={`px-2 py-0.5 text-xs font-medium rounded ${
                         incident.effect === "ROAD_CLOSED"
-                          ? "bg-red-100 text-red-700"
+                          ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                           : incident.effect === "SLOW_TRAFFIC"
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-gray-100 text-gray-700"
+                          ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                          : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                       }`}>
                         {EFFECT_LABELS[incident.effect] || incident.effect}
                       </span>
-                      <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                      <span className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 rounded">
                         {CAUSE_LABELS[incident.cause] || incident.cause}
                       </span>
                     </div>
-                    <p className="text-gray-900">{incident.description}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <p className="text-gray-900 dark:text-gray-100">{incident.description}</p>
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                       {incident.km && (
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
@@ -294,7 +294,7 @@ export default function RoadDetailContent() {
       {/* Radars */}
       {radars.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
             <Radar className="w-5 h-5 text-yellow-500" />
             Radares ({radars.length})
           </h2>
@@ -302,21 +302,21 @@ export default function RoadDetailContent() {
             {radars.map((radar) => (
               <div
                 key={radar.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className={`px-2 py-0.5 text-xs font-medium rounded ${
                     radar.type === "FIXED"
-                      ? "bg-yellow-100 text-yellow-700"
+                      ? "bg-yellow-100 text-yellow-700 dark:text-yellow-400"
                       : radar.type === "SECTION"
-                      ? "bg-orange-100 text-orange-700"
-                      : "bg-gray-100 text-gray-700"
+                      ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                      : "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                   }`}>
                     {RADAR_TYPES[radar.type] || radar.type}
                   </span>
-                  <span className="text-lg font-bold text-gray-900">{radar.speedLimit} km/h</span>
+                  <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{radar.speedLimit} km/h</span>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   <p>km {radar.km}</p>
                   {radar.direction && <p>Sentido: {radar.direction}</p>}
                   {radar.province && <p>{radar.province}</p>}
@@ -330,7 +330,7 @@ export default function RoadDetailContent() {
       {/* Cameras */}
       {cameras.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
             <Camera className="w-5 h-5 text-tl-500" />
             Cámaras ({cameras.length})
           </h2>
@@ -339,10 +339,10 @@ export default function RoadDetailContent() {
               <Link
                 key={camera.id}
                 href={`/camaras?id=${camera.id}`}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-tl-300 transition-all group"
+                className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-md hover:border-tl-300 transition-all group"
               >
                 {camera.imageUrl && (
-                  <div className="aspect-video bg-gray-100 relative">
+                  <div className="aspect-video bg-gray-100 dark:bg-gray-900 relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={camera.imageUrl}
@@ -352,10 +352,10 @@ export default function RoadDetailContent() {
                   </div>
                 )}
                 <div className="p-3">
-                  <h3 className="font-medium text-gray-900 text-sm group-hover:text-tl-600 truncate">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-600 dark:text-tl-400 truncate">
                     {camera.name}
                   </h3>
-                  <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {camera.km && <span>km {camera.km}</span>}
                     {camera.province && <span>{camera.province}</span>}
                   </div>
@@ -366,7 +366,7 @@ export default function RoadDetailContent() {
           {cameras.length > 8 && (
             <Link
               href={`/explorar/infraestructura?tab=camaras&road=${encodeURIComponent(roadId)}`}
-              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 hover:underline"
+              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
             >
               Ver todas las {cameras.length} cámaras
               <ChevronRight className="w-4 h-4" />
@@ -378,43 +378,43 @@ export default function RoadDetailContent() {
       {/* IMD Data */}
       {imdFlows.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-green-500" />
             Intensidad Media Diaria (IMD)
           </h2>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <p className="text-sm text-gray-500">IMD medio</p>
-                <p className="text-xl font-bold text-gray-900">{avgIMD.toLocaleString("es-ES")}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">IMD medio</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{avgIMD.toLocaleString("es-ES")}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">IMD máximo</p>
-                <p className="text-xl font-bold text-gray-900">{maxIMD.toLocaleString("es-ES")}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">IMD máximo</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{maxIMD.toLocaleString("es-ES")}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Puntos de aforo</p>
-                <p className="text-xl font-bold text-gray-900">{imdFlows.length}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Puntos de aforo</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{imdFlows.length}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Año de datos</p>
-                <p className="text-xl font-bold text-gray-900">{imdFlows[0]?.year || "-"}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Año de datos</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{imdFlows[0]?.year || "-"}</p>
               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 px-3 font-medium text-gray-700">km</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-700">Provincia</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-700">IMD</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-700">% Pesados</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                    <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">km</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Provincia</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">IMD</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">% Pesados</th>
                   </tr>
                 </thead>
                 <tbody>
                   {imdFlows.slice(0, 10).map((flow, idx) => (
-                    <tr key={idx} className="border-b border-gray-100">
+                    <tr key={idx} className="border-b border-gray-100 dark:border-gray-800">
                       <td className="py-2 px-3">{flow.km}</td>
                       <td className="py-2 px-3">{flow.province || "-"}</td>
                       <td className="py-2 px-3 text-right font-medium">
@@ -430,7 +430,7 @@ export default function RoadDetailContent() {
                 </tbody>
               </table>
               {imdFlows.length > 10 && (
-                <p className="text-sm text-gray-500 mt-2 px-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 px-3">
                   Mostrando 10 de {imdFlows.length} puntos de aforo
                 </p>
               )}
@@ -441,10 +441,10 @@ export default function RoadDetailContent() {
 
       {/* No data message */}
       {incidents.length === 0 && radars.length === 0 && cameras.length === 0 && imdFlows.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+        <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
           <Route className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Sin datos disponibles</h3>
-          <p className="text-gray-500">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Sin datos disponibles</h3>
+          <p className="text-gray-500 dark:text-gray-400">
             No hay información disponible para la carretera {roadId} en este momento.
           </p>
         </div>
@@ -454,7 +454,7 @@ export default function RoadDetailContent() {
       <div className="mt-8">
         <Link
           href="/explorar/carreteras"
-          className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
+          className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
         >
           Volver al índice de carreteras
         </Link>

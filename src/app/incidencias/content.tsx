@@ -207,22 +207,22 @@ export function IncidenciasContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
               Incidencias de Tráfico
             </h1>
-            <p className="mt-1 text-gray-600">
+            <p className="mt-1 text-gray-600 dark:text-gray-400">
               Mapa en tiempo real de incidencias en las carreteras españolas.
             </p>
           </div>
           <Link
             href="/incidencias/analytics"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-50 text-tl-700 hover:bg-tl-100 transition-colors text-sm font-medium border border-tl-200 whitespace-nowrap self-start"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 hover:bg-tl-100 dark:bg-tl-900/30 transition-colors text-sm font-medium border border-tl-200 dark:border-tl-800 whitespace-nowrap self-start"
           >
             <BarChart2 className="w-4 h-4" />
             Ver análisis histórico
@@ -230,28 +230,28 @@ export function IncidenciasContent() {
         </div>
 
         {/* Stats bar */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 mb-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {isLoading ? "-" : data?.count || 0}
                 </p>
-                <p className="text-sm text-gray-500">Incidencias activas</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Incidencias activas</p>
               </div>
               {data?.counts?.byEffect && (
                 <>
                   <div>
-                    <p className="text-2xl font-bold text-red-600">
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                       {data.counts.byEffect.ROAD_CLOSED || 0}
                     </p>
-                    <p className="text-sm text-gray-500">Cortes</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Cortes</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-orange-500">
                       {data.counts.byEffect.SLOW_TRAFFIC || 0}
                     </p>
-                    <p className="text-sm text-gray-500">Retenciones</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Retenciones</p>
                   </div>
                 </>
               )}
@@ -267,18 +267,18 @@ export function IncidenciasContent() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => mutate()}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors"
                 title="Actualizar"
               >
                 <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
               </button>
-              <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="flex rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <button
                   onClick={() => setViewMode("map")}
                   className={`px-3 py-2 flex items-center gap-1.5 text-sm ${
                     viewMode === "map"
-                      ? "bg-tl-50 text-tl-700"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
+                      ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+                      : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
                   }`}
                 >
                   <MapIcon className="w-4 h-4" />
@@ -288,8 +288,8 @@ export function IncidenciasContent() {
                   onClick={() => setViewMode("list")}
                   className={`px-3 py-2 flex items-center gap-1.5 text-sm ${
                     viewMode === "list"
-                      ? "bg-tl-50 text-tl-700"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
+                      ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+                      : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -301,15 +301,15 @@ export function IncidenciasContent() {
         </div>
 
         {/* Filters panel */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 mb-4">
           <button
             onClick={() => setFiltersExpanded(!filtersExpanded)}
-            className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
           >
             <span className="flex items-center gap-2">
               Filtros
               {(activeEffects.length > 0 || activeCauses.length > 0) && (
-                <span className="bg-tl-100 text-tl-700 px-2 py-0.5 rounded-full text-xs">
+                <span className="bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 px-2 py-0.5 rounded-full text-xs">
                   {activeEffects.length + activeCauses.length} activos
                 </span>
               )}
@@ -335,21 +335,21 @@ export function IncidenciasContent() {
         </div>
 
         {/* Main content area */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
           {/* Loading state */}
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 text-tl-600 animate-spin mb-4" />
-              <p className="text-gray-600">Cargando incidencias...</p>
+              <Loader2 className="w-8 h-8 text-tl-600 dark:text-tl-400 animate-spin mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">Cargando incidencias...</p>
             </div>
           )}
 
           {/* Error state */}
           {error && (
-            <div className="flex flex-col items-center justify-center py-20 text-red-600">
+            <div className="flex flex-col items-center justify-center py-20 text-red-600 dark:text-red-400">
               <AlertTriangle className="w-8 h-8 mb-4" />
               <p>Error al cargar las incidencias</p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Por favor, inténtalo de nuevo más tarde
               </p>
             </div>
@@ -366,7 +366,7 @@ export function IncidenciasContent() {
           {!isLoading && !error && viewMode === "list" && (
             <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
               {data?.geojson?.features.length === 0 && (
-                <div className="py-16 text-center text-gray-500">
+                <div className="py-16 text-center text-gray-500 dark:text-gray-400">
                   <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p className="text-lg font-medium">No hay incidencias</p>
                   <p className="text-sm mt-1">
@@ -390,8 +390,8 @@ export function IncidenciasContent() {
 
         {/* Legend (only in map view) */}
         {viewMode === "map" && !isLoading && !error && (
-          <div className="mt-4 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Leyenda</h3>
+          <div className="mt-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Leyenda</h3>
             <div className="flex flex-wrap gap-4">
               {(Object.keys(EFFECT_COLORS) as IncidentEffect[]).map((effect) => (
                 <div key={effect} className="flex items-center gap-2">
@@ -399,7 +399,7 @@ export function IncidenciasContent() {
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: EFFECT_COLORS[effect] }}
                   />
-                  <span className="text-sm text-gray-600">{EFFECT_LABELS[effect]}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{EFFECT_LABELS[effect]}</span>
                 </div>
               ))}
             </div>
@@ -456,8 +456,8 @@ function IncidentListItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-        isSelected ? "bg-tl-50" : ""
+      className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:bg-gray-950 transition-colors ${
+        isSelected ? "bg-tl-50 dark:bg-tl-900/20" : ""
       }`}
     >
       <div className="flex items-start gap-3">
@@ -471,15 +471,15 @@ function IncidentListItem({
           {/* Road and effect */}
           <div className="flex items-center gap-2 flex-wrap">
             {roadNumber && (
-              <span className="font-semibold text-gray-900">{roadNumber}</span>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">{roadNumber}</span>
             )}
-            {kmPoint && <span className="text-gray-500">km {kmPoint}</span>}
-            <span className="text-sm text-gray-600">{EFFECT_LABELS[effect]}</span>
+            {kmPoint && <span className="text-gray-500 dark:text-gray-400">km {kmPoint}</span>}
+            <span className="text-sm text-gray-600 dark:text-gray-400">{EFFECT_LABELS[effect]}</span>
           </div>
 
           {/* Description */}
           {description && (
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{description}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{description}</p>
           )}
 
           {/* Meta info */}

@@ -72,13 +72,13 @@ interface StationTypeBadge {
 function getStationTypeBadge(name: string): StationTypeBadge | null {
   const upper = name.toUpperCase();
   if (/COOPERATIVA|COOP\b|S\.\s*COOP/.test(upper)) {
-    return { label: "Cooperativa", className: "bg-orange-100 text-orange-700" };
+    return { label: "Cooperativa", className: "bg-orange-100 text-orange-700 dark:text-orange-400" };
   }
   if (/\bUTE\b|ESTACION DE AUTOBUSES/.test(upper)) {
-    return { label: "Solo flotas", className: "bg-gray-200 text-gray-600" };
+    return { label: "Solo flotas", className: "bg-gray-200 text-gray-600 dark:text-gray-400" };
   }
   if (/CARREFOUR|ALCAMPO|EROSKI|E\.LECLERC|LECLERC/.test(upper)) {
-    return { label: "Hipermercado", className: "bg-green-100 text-green-700" };
+    return { label: "Hipermercado", className: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" };
   }
   return null;
 }
@@ -103,12 +103,12 @@ function FuelDot({ available, label }: FuelDotProps) {
       title={label}
       className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded ${
         available
-          ? "bg-green-50 text-green-700"
-          : "bg-gray-100 text-gray-400"
+          ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+          : "bg-gray-100 dark:bg-gray-900 text-gray-400"
       }`}
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full ${available ? "bg-green-500" : "bg-gray-300"}`}
+        className={`w-1.5 h-1.5 rounded-full ${available ? "bg-green-50 dark:bg-green-900/200" : "bg-gray-300"}`}
       />
       {label}
     </span>
@@ -202,30 +202,30 @@ export default function TerrestresPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Link href="/gasolineras" className="hover:text-gray-700">Gasolineras</Link>
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>
           <span>/</span>
-          <span className="text-gray-900">Terrestres</span>
+          <span className="text-gray-900 dark:text-gray-100">Terrestres</span>
         </div>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <Fuel className="w-8 h-8 text-orange-600" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+              <Fuel className="w-8 h-8 text-orange-600 dark:text-orange-400" />
               Gasolineras Terrestres
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               {data?.pagination.total.toLocaleString("es-ES") || "..."} estaciones en toda España
             </p>
           </div>
 
           {/* View toggle */}
-          <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-0.5 bg-white mt-1">
+          <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-800 rounded-lg p-0.5 bg-white dark:bg-gray-900 mt-1">
             <button
               onClick={() => setViewMode("card")}
               className={`p-1.5 rounded transition-colors ${
                 viewMode === "card"
-                  ? "bg-orange-100 text-orange-700"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                  : "text-gray-400 hover:text-gray-600 dark:text-gray-400"
               }`}
               title="Vista en tarjetas"
             >
@@ -235,8 +235,8 @@ export default function TerrestresPage() {
               onClick={() => setViewMode("table")}
               className={`p-1.5 rounded transition-colors ${
                 viewMode === "table"
-                  ? "bg-orange-100 text-orange-700"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                  : "text-gray-400 hover:text-gray-600 dark:text-gray-400"
               }`}
               title="Vista en tabla"
             >
@@ -247,7 +247,7 @@ export default function TerrestresPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -256,7 +256,7 @@ export default function TerrestresPage() {
               placeholder="Buscar por nombre, localidad..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
 
@@ -269,7 +269,7 @@ export default function TerrestresPage() {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                   fuelFilter === opt.value
                     ? "bg-orange-600 text-white border-orange-600"
-                    : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-600"
+                    : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700 hover:border-orange-400 hover:text-orange-600 dark:text-orange-400"
                 }`}
               >
                 {opt.value === "all" ? "Todos" : opt.label.replace("Solo con ", "")}
@@ -281,8 +281,8 @@ export default function TerrestresPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
               activeFilterCount > 0
-                ? "border-orange-400 bg-orange-50 text-orange-700"
-                : "border-gray-300 hover:bg-gray-50"
+                ? "border-orange-400 bg-orange-50 text-orange-700 dark:text-orange-400"
+                : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-950"
             }`}
           >
             <Filter className="w-5 h-5" />
@@ -299,13 +299,13 @@ export default function TerrestresPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Provincia</label>
               <select
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500"
               >
                 <option value="">Todas las provincias</option>
                 {Object.entries(PROVINCES)
@@ -317,7 +317,7 @@ export default function TerrestresPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ordenar por</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ordenar por</label>
               <div className="flex flex-col gap-1">
                 {SORT_OPTIONS.map((opt) => (
                   <button
@@ -325,15 +325,15 @@ export default function TerrestresPage() {
                     onClick={() => setSortBy(opt.value)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors ${
                       sortBy === opt.value
-                        ? "bg-orange-50 border-orange-400 text-orange-700 font-medium"
-                        : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
+                        ? "bg-orange-50 border-orange-400 text-orange-700 dark:text-orange-400 font-medium"
+                        : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-orange-300"
                     }`}
                   >
                     <span
                       className={`w-2.5 h-2.5 rounded-full border-2 ${
                         sortBy === opt.value
                           ? "border-orange-600 bg-orange-600"
-                          : "border-gray-300"
+                          : "border-gray-300 dark:border-gray-700"
                       }`}
                     />
                     {opt.label}
@@ -344,7 +344,7 @@ export default function TerrestresPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Combustible disponible
                 </label>
                 <div className="flex flex-col gap-1 md:hidden">
@@ -354,15 +354,15 @@ export default function TerrestresPage() {
                       onClick={() => setFuelFilter(opt.value)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors ${
                         fuelFilter === opt.value
-                          ? "bg-orange-50 border-orange-400 text-orange-700 font-medium"
-                          : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
+                          ? "bg-orange-50 border-orange-400 text-orange-700 dark:text-orange-400 font-medium"
+                          : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-orange-300"
                       }`}
                     >
                       <span
                         className={`w-2.5 h-2.5 rounded-full border-2 ${
                           fuelFilter === opt.value
                             ? "border-orange-600 bg-orange-600"
-                            : "border-gray-300"
+                            : "border-gray-300 dark:border-gray-700"
                         }`}
                       />
                       {opt.label}
@@ -376,9 +376,9 @@ export default function TerrestresPage() {
                   type="checkbox"
                   checked={is24h}
                   onChange={(e) => setIs24h(e.target.checked)}
-                  className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
+                  className="w-4 h-4 text-orange-600 dark:text-orange-400 rounded focus:ring-orange-500"
                 />
-                <span className="text-sm text-gray-700">Solo 24 horas</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Solo 24 horas</span>
               </label>
             </div>
           </div>
@@ -388,7 +388,7 @@ export default function TerrestresPage() {
         {(province || is24h || fuelFilter !== "all") && (
           <div className="mt-4 flex flex-wrap gap-2">
             {province && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 dark:text-orange-400 rounded-full text-sm">
                 {PROVINCES[province]}
                 <button onClick={() => setProvince("")} className="hover:text-orange-900">
                   <X className="w-4 h-4" />
@@ -396,7 +396,7 @@ export default function TerrestresPage() {
               </span>
             )}
             {is24h && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 dark:text-orange-400 rounded-full text-sm">
                 24 horas
                 <button onClick={() => setIs24h(false)} className="hover:text-orange-900">
                   <X className="w-4 h-4" />
@@ -404,7 +404,7 @@ export default function TerrestresPage() {
               </span>
             )}
             {fuelFilter !== "all" && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+              <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 dark:text-orange-400 rounded-full text-sm">
                 {FUEL_FILTER_OPTIONS.find((o) => o.value === fuelFilter)?.label}
                 <button onClick={() => setFuelFilter("all")} className="hover:text-orange-900">
                   <X className="w-4 h-4" />
@@ -421,7 +421,7 @@ export default function TerrestresPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
         </div>
       ) : error ? (
-        <div className="text-center py-12 text-red-600">
+        <div className="text-center py-12 text-red-600 dark:text-red-400">
           Error al cargar las gasolineras
         </div>
       ) : (
@@ -439,26 +439,26 @@ export default function TerrestresPage() {
                   <Link
                     key={station.id}
                     href={`/gasolineras/terrestres/${station.id}`}
-                    className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex flex-col gap-3"
+                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow flex flex-col gap-3"
                   >
                     {/* Station header */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         {/* Brand pill */}
-                        <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded uppercase tracking-wide mb-1">
+                        <span className="inline-block px-2 py-0.5 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs font-semibold rounded uppercase tracking-wide mb-1">
                           {brand}
                         </span>
-                        <h3 className="font-semibold text-gray-900 text-sm line-clamp-1 leading-snug">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm line-clamp-1 leading-snug">
                           {station.name}
                         </h3>
-                        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
                           {station.locality}
                           {station.provinceName ? `, ${station.provinceName}` : ""}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         {station.is24h && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full whitespace-nowrap">
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded-full whitespace-nowrap">
                             <Clock className="w-3 h-3" />
                             24h
                           </span>
@@ -473,26 +473,26 @@ export default function TerrestresPage() {
 
                     {/* Fuel prices */}
                     <div className="grid grid-cols-3 gap-1.5">
-                      <div className={`rounded p-2 ${gasoleoAPrice ? "bg-tl-amber-50" : "bg-gray-50"}`}>
-                        <div className="text-xs text-tl-amber-600 mb-0.5">Gasóleo A</div>
+                      <div className={`rounded p-2 ${gasoleoAPrice ? "bg-tl-amber-50 dark:bg-tl-amber-900/20" : "bg-gray-50 dark:bg-gray-950"}`}>
+                        <div className="text-xs text-tl-amber-600 dark:text-tl-amber-400 mb-0.5">Gasóleo A</div>
                         {gasoleoAPrice ? (
-                          <div className="font-bold text-tl-amber-700 text-sm">{gasoleoAPrice}</div>
+                          <div className="font-bold text-tl-amber-700 dark:text-tl-amber-300 text-sm">{gasoleoAPrice}</div>
                         ) : (
                           <div className="text-xs text-gray-400 italic">No disp.</div>
                         )}
                       </div>
-                      <div className={`rounded p-2 ${gasolina95Price ? "bg-tl-50" : "bg-gray-50"}`}>
-                        <div className="text-xs text-tl-600 mb-0.5">G. 95</div>
+                      <div className={`rounded p-2 ${gasolina95Price ? "bg-tl-50 dark:bg-tl-900/20" : "bg-gray-50 dark:bg-gray-950"}`}>
+                        <div className="text-xs text-tl-600 dark:text-tl-400 mb-0.5">G. 95</div>
                         {gasolina95Price ? (
-                          <div className="font-bold text-tl-700 text-sm">{gasolina95Price}</div>
+                          <div className="font-bold text-tl-700 dark:text-tl-300 text-sm">{gasolina95Price}</div>
                         ) : (
                           <div className="text-xs text-gray-400 italic">No disp.</div>
                         )}
                       </div>
-                      <div className={`rounded p-2 ${glpPrice ? "bg-purple-50" : "bg-gray-50"}`}>
-                        <div className="text-xs text-purple-600 mb-0.5">GLP</div>
+                      <div className={`rounded p-2 ${glpPrice ? "bg-purple-50" : "bg-gray-50 dark:bg-gray-950"}`}>
+                        <div className="text-xs text-purple-600 dark:text-purple-400 mb-0.5">GLP</div>
                         {glpPrice ? (
-                          <div className="font-bold text-purple-700 text-sm">{glpPrice}</div>
+                          <div className="font-bold text-purple-700 dark:text-purple-400 text-sm">{glpPrice}</div>
                         ) : (
                           <div className="text-xs text-gray-400 italic">No disp.</div>
                         )}
@@ -508,7 +508,7 @@ export default function TerrestresPage() {
                     </div>
 
                     {/* Footer: location + last update */}
-                    <div className="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100">
+                    <div className="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
                       <span className="flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
                         {station.locality || `${station.latitude.toFixed(3)}, ${station.longitude.toFixed(3)}`}
@@ -524,10 +524,10 @@ export default function TerrestresPage() {
             </div>
           ) : (
             /* Table view */
-            <div className="bg-white rounded-lg border border-gray-200 mb-6 overflow-x-auto">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 mb-6 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     <th className="px-4 py-3">Estación</th>
                     <th className="px-4 py-3">Localidad</th>
                     <th className="px-4 py-3 text-right">Gasóleo A</th>
@@ -549,27 +549,27 @@ export default function TerrestresPage() {
                         <td className="px-4 py-3">
                           <Link
                             href={`/gasolineras/terrestres/${station.id}`}
-                            className="font-medium text-gray-900 hover:text-orange-700 line-clamp-1 block max-w-[200px]"
+                            className="font-medium text-gray-900 dark:text-gray-100 hover:text-orange-700 dark:text-orange-400 line-clamp-1 block max-w-[200px]"
                           >
                             {station.name}
                           </Link>
                           {station.is24h && (
-                            <span className="text-xs text-orange-600 font-medium">24h</span>
+                            <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">24h</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                           {station.locality}
                           {station.provinceName ? (
                             <span className="text-gray-400"> · {station.provinceName}</span>
                           ) : null}
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-tl-amber-700">
+                        <td className="px-4 py-3 text-right font-semibold text-tl-amber-700 dark:text-tl-amber-300">
                           {gasoleoAPrice ?? <span className="text-xs text-gray-400 font-normal">N/D</span>}
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-tl-700">
+                        <td className="px-4 py-3 text-right font-semibold text-tl-700 dark:text-tl-300">
                           {gasolina95Price ?? <span className="text-xs text-gray-400 font-normal">N/D</span>}
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-purple-700">
+                        <td className="px-4 py-3 text-right font-semibold text-purple-700 dark:text-purple-400">
                           {glpPrice ?? <span className="text-xs text-gray-400 font-normal">N/D</span>}
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -598,17 +598,17 @@ export default function TerrestresPage() {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
               >
                 Anterior
               </button>
-              <span className="px-4 py-2 text-sm text-gray-600">
+              <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
                 Página {page} de {data.pagination.totalPages}
               </span>
               <button
                 onClick={() => setPage(Math.min(data.pagination.totalPages, page + 1))}
                 disabled={page === data.pagination.totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
               >
                 Siguiente
               </button>

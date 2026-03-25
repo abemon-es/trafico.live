@@ -114,12 +114,12 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back link */}
         <Link
           href="/ciudad"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver a ciudades
@@ -128,14 +128,14 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-tl-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-6 h-6 text-tl-600" />
+            <div className="w-12 h-12 bg-tl-100 dark:bg-tl-900/30 rounded-lg flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-tl-600 dark:text-tl-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Tráfico en {cityData.name}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 {cityData.province} · {cityData.community}
               </p>
             </div>
@@ -144,50 +144,50 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
             <AlertTriangle className="w-6 h-6 text-tl-amber-500 mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {incidentsLoading ? "-" : incidentsData?.count || 0}
             </p>
-            <p className="text-sm text-gray-500">Incidencias activas</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Incidencias activas</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
             <Camera className="w-6 h-6 text-tl-500 mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {camerasLoading ? "-" : camerasData?.count || 0}
             </p>
-            <p className="text-sm text-gray-500">Cámaras disponibles</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Cámaras disponibles</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
             <Zap className="w-6 h-6 text-green-500 mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {chargersLoading ? "-" : cityChargers?.length || 0}
             </p>
-            <p className="text-sm text-gray-500">Cargadores EV</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Cargadores EV</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
             <Ban className="w-6 h-6 text-red-500 mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {zbeLoading ? "-" : cityZBE?.length || 0}
             </p>
-            <p className="text-sm text-gray-500">Zonas ZBE</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Zonas ZBE</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Incidents Section */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-tl-amber-500" />
-                <h2 className="font-semibold text-gray-900">Incidencias activas</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">Incidencias activas</h2>
               </div>
               <Link
                 href="/incidencias"
-                className="text-sm text-tl-600 hover:underline flex items-center gap-1"
+                className="text-sm text-tl-600 dark:text-tl-400 hover:underline flex items-center gap-1"
               >
                 Ver todas
                 <ChevronRight className="w-4 h-4" />
@@ -200,17 +200,17 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                 </div>
               )}
               {!incidentsLoading && (!incidentsData?.incidents?.length) && (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">
                   No hay incidencias activas en {cityData.name}
                 </p>
               )}
               {!incidentsLoading && incidentsData?.incidents?.slice(0, 5).map((incident) => (
                 <div
                   key={incident.id}
-                  className="py-3 border-b border-gray-100 last:border-0"
+                  className="py-3 border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
-                  <p className="text-sm text-gray-900">{incident.description}</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-sm text-gray-900 dark:text-gray-100">{incident.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {incident.road && `${incident.road} · `}
                     {new Date(incident.startDate).toLocaleString("es-ES")}
                   </p>
@@ -220,15 +220,15 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
           </div>
 
           {/* Cameras Section */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Camera className="w-5 h-5 text-tl-500" />
-                <h2 className="font-semibold text-gray-900">Cámaras de tráfico</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">Cámaras de tráfico</h2>
               </div>
               <Link
                 href="/camaras"
-                className="text-sm text-tl-600 hover:underline flex items-center gap-1"
+                className="text-sm text-tl-600 dark:text-tl-400 hover:underline flex items-center gap-1"
               >
                 Ver todas
                 <ChevronRight className="w-4 h-4" />
@@ -241,7 +241,7 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                 </div>
               )}
               {!camerasLoading && (!camerasData?.cameras?.length) && (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">
                   No hay cámaras disponibles en {cityData.province}
                 </p>
               )}
@@ -250,7 +250,7 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                   {camerasData.cameras.slice(0, 4).map((camera) => (
                     <div
                       key={camera.id}
-                      className="bg-gray-100 rounded-lg overflow-hidden"
+                      className="bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden"
                     >
                       {camera.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -265,10 +265,10 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                         </div>
                       )}
                       <div className="p-2">
-                        <p className="text-xs font-medium text-gray-900 truncate">
+                        <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
                           {camera.name}
                         </p>
-                        <p className="text-xs text-gray-500">{camera.road}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{camera.road}</p>
                       </div>
                     </div>
                   ))}
@@ -278,15 +278,15 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
           </div>
 
           {/* EV Chargers Section */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-green-500" />
-                <h2 className="font-semibold text-gray-900">Cargadores eléctricos</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">Cargadores eléctricos</h2>
               </div>
               <Link
                 href={`/carga-ev/${slug}`}
-                className="text-sm text-green-600 hover:underline flex items-center gap-1"
+                className="text-sm text-green-600 dark:text-green-400 hover:underline flex items-center gap-1"
               >
                 Ver todos
                 <ChevronRight className="w-4 h-4" />
@@ -299,7 +299,7 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                 </div>
               )}
               {!chargersLoading && (!cityChargers?.length) && (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">
                   No hay cargadores registrados en {cityData.name}
                 </p>
               )}
@@ -308,20 +308,20 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                   {cityChargers.slice(0, 4).map((charger) => (
                     <div
                       key={charger.id}
-                      className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
                     >
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {charger.name}
                         </p>
-                        <p className="text-xs text-gray-500">{charger.city}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{charger.city}</p>
                       </div>
                       {charger.powerKw && (
                         <span
                           className={`text-xs font-medium px-2 py-0.5 rounded ${
                             charger.powerKw >= 50
-                              ? "bg-green-100 text-green-700"
-                              : "bg-tl-amber-100 text-tl-amber-700"
+                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                              : "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
                           }`}
                         >
                           {charger.powerKw} kW
@@ -335,15 +335,15 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
           </div>
 
           {/* ZBE Section */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Ban className="w-5 h-5 text-red-500" />
-                <h2 className="font-semibold text-gray-900">Zonas Bajas Emisiones</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">Zonas Bajas Emisiones</h2>
               </div>
               <Link
                 href="/profesional/restricciones"
-                className="text-sm text-red-600 hover:underline flex items-center gap-1"
+                className="text-sm text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
               >
                 Ver todas
                 <ChevronRight className="w-4 h-4" />
@@ -356,28 +356,28 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                 </div>
               )}
               {!zbeLoading && (!cityZBE?.length) && (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">
                   No hay ZBE activas en {cityData.name}
                 </p>
               )}
               {!zbeLoading && cityZBE?.map((zone) => (
                 <div
                   key={zone.id}
-                  className="py-3 border-b border-gray-100 last:border-0"
+                  className="py-3 border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-900">{zone.name}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{zone.name}</p>
                     <span
                       className={`text-xs px-2 py-0.5 rounded ${
                         zone.status === "ACTIVE"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-tl-amber-100 text-tl-amber-700"
+                          ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                          : "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
                       }`}
                     >
                       {zone.status === "ACTIVE" ? "Activa" : "Planificada"}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{zone.city}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{zone.city}</p>
                 </div>
               ))}
             </div>
@@ -385,38 +385,38 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
         </div>
 
         {/* Related Links */}
-        <div className="mt-8 bg-gray-100 rounded-xl p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Explorar más</h2>
+        <div className="mt-8 bg-gray-100 dark:bg-gray-900 rounded-xl p-6">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Explorar más</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link
               href="/gasolineras"
-              className="bg-white rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
             >
-              <Fuel className="w-6 h-6 text-tl-amber-600 mx-auto mb-2" />
-              <span className="text-sm text-gray-700">Gasolineras</span>
+              <Fuel className="w-6 h-6 text-tl-amber-600 dark:text-tl-amber-400 mx-auto mb-2" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Gasolineras</span>
             </Link>
             <Link
               href="/carreteras"
-              className="bg-white rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
             >
-              <MapPin className="w-6 h-6 text-tl-600 mx-auto mb-2" />
-              <span className="text-sm text-gray-700">Carreteras</span>
+              <MapPin className="w-6 h-6 text-tl-600 dark:text-tl-400 mx-auto mb-2" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Carreteras</span>
             </Link>
             <Link
               href={`/carga-ev/${slug}`}
-              className="bg-white rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
             >
-              <Zap className="w-6 h-6 text-green-600 mx-auto mb-2" />
-              <span className="text-sm text-gray-700">Cargadores EV</span>
+              <Zap className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Cargadores EV</span>
             </Link>
             <a
               href={`https://www.google.com/maps/@${cityData.lat},${cityData.lng},12z`}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
             >
-              <ExternalLink className="w-6 h-6 text-gray-600 mx-auto mb-2" />
-              <span className="text-sm text-gray-700">Ver en mapa</span>
+              <ExternalLink className="w-6 h-6 text-gray-600 dark:text-gray-400 mx-auto mb-2" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Ver en mapa</span>
             </a>
           </div>
         </div>

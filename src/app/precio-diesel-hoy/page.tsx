@@ -197,7 +197,7 @@ function TrendArrow({
 
   if (change > 0.001) {
     return (
-      <span className="inline-flex items-center gap-1 text-red-600 font-medium text-sm font-data">
+      <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 font-medium text-sm font-data">
         <TrendingUp className="w-4 h-4" />
         +{change.toFixed(3)}€{!short && " vs ayer"}
       </span>
@@ -205,14 +205,14 @@ function TrendArrow({
   }
   if (change < -0.001) {
     return (
-      <span className="inline-flex items-center gap-1 text-green-600 font-medium text-sm font-data">
+      <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400 font-medium text-sm font-data">
         <TrendingDown className="w-4 h-4" />
         {change.toFixed(3)}€{!short && " vs ayer"}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-gray-500 text-sm">
+    <span className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
       <Minus className="w-4 h-4" />
       {short ? "=" : "Sin cambios vs ayer"}
     </span>
@@ -287,16 +287,16 @@ export default async function PrecioDieselHoyPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-tl-amber-600 text-sm font-medium mb-2">
+          <div className="flex items-center gap-2 text-tl-amber-600 dark:text-tl-amber-400 text-sm font-medium mb-2">
             <Fuel className="w-4 h-4" />
             <span>Gasóleo A · Datos oficiales MITERD</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-green-600">Actualizado hoy</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-green-50 dark:bg-green-900/200 animate-pulse" />
+            <span className="text-green-600 dark:text-green-400">Actualizado hoy</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
             Precio del Diésel Hoy en España
           </h1>
-          <p className="text-gray-600 text-lg capitalize">{todayLabel}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-lg capitalize">{todayLabel}</p>
         </div>
 
         {/* Hero price cards */}
@@ -312,37 +312,37 @@ export default async function PrecioDieselHoyPage() {
               </div>
               <div className="text-tl-amber-100 text-sm mb-4">por litro · Península y Baleares</div>
               <div className="flex flex-wrap items-center gap-3">
-                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
+                <div className="bg-white dark:bg-gray-900/10 rounded-lg px-3 py-1.5 text-sm">
                   Mín: <span className="font-bold font-data">{formatPrice(nationalToday.minGasoleoA)}</span>
                 </div>
-                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
+                <div className="bg-white dark:bg-gray-900/10 rounded-lg px-3 py-1.5 text-sm">
                   Máx: <span className="font-bold font-data">{formatPrice(nationalToday.maxGasoleoA)}</span>
                 </div>
-                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm font-data">
+                <div className="bg-white dark:bg-gray-900/10 rounded-lg px-3 py-1.5 text-sm font-data">
                   {nationalToday.stationCount.toLocaleString("es-ES")} gasolineras
                 </div>
               </div>
               {avgDiesel !== null && avgDieselYesterday !== null && (
-                <div className="mt-4 bg-white/10 rounded-lg px-3 py-2 inline-flex">
+                <div className="mt-4 bg-white dark:bg-gray-900/10 rounded-lg px-3 py-2 inline-flex">
                   <TrendArrow current={avgDiesel} previous={avgDieselYesterday} />
                 </div>
               )}
             </div>
 
             {/* Comparativa con gasolina 95 */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-              <div className="text-tl-600 text-sm font-medium mb-1">Gasolina 95 hoy</div>
-              <div className="text-4xl font-extrabold text-gray-900 mb-1 font-data">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+              <div className="text-tl-600 dark:text-tl-400 text-sm font-medium mb-1">Gasolina 95 hoy</div>
+              <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-1 font-data">
                 {formatPrice(nationalToday.avgGasolina95)}
               </div>
-              <div className="text-gray-500 text-xs mb-4">precio medio · Península</div>
+              <div className="text-gray-500 dark:text-gray-400 text-xs mb-4">precio medio · Península</div>
               {avgDiesel !== null && avg95 !== null && (
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Diésel vs Gasolina 95</span>
+                    <span className="text-gray-500 dark:text-gray-400">Diésel vs Gasolina 95</span>
                     <span
                       className={`font-bold font-data ${
-                        avgDiesel < avg95 ? "text-green-600" : "text-red-600"
+                        avgDiesel < avg95 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                       }`}
                     >
                       {avgDiesel < avg95 ? "-" : "+"}
@@ -356,10 +356,10 @@ export default async function PrecioDieselHoyPage() {
                   </div>
                 </div>
               )}
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                 <Link
                   href="/precio-gasolina-hoy"
-                  className="text-tl-600 hover:text-tl-700 text-xs font-medium inline-flex items-center gap-1"
+                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 text-xs font-medium inline-flex items-center gap-1"
                 >
                   Ver precio gasolina hoy
                   <ChevronRight className="w-3 h-3" />
@@ -368,7 +368,7 @@ export default async function PrecioDieselHoyPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-6 mb-8 text-tl-amber-800">
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-6 mb-8 text-tl-amber-800">
             Los precios de hoy aún no están disponibles. Los datos se actualizan varias veces al
             día desde la API oficial del MITERD.
           </div>
@@ -376,15 +376,15 @@ export default async function PrecioDieselHoyPage() {
 
         {/* Yesterday comparison strip */}
         {nationalYesterday && nationalToday && (
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 mb-8 flex flex-wrap gap-6 items-center">
-            <div className="flex items-center gap-2 text-gray-600 text-sm">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-4 mb-8 flex flex-wrap gap-6 items-center">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
               <Clock className="w-4 h-4" />
               <span className="font-medium">Gasóleo A vs ayer:</span>
             </div>
             <div className="flex flex-wrap gap-4 text-sm">
               <span>
                 Ayer:{" "}
-                <span className="font-bold text-gray-900 font-data">
+                <span className="font-bold text-gray-900 dark:text-gray-100 font-data">
                   {formatPrice(nationalYesterday.avgGasoleoA)}
                 </span>
               </span>
@@ -394,8 +394,8 @@ export default async function PrecioDieselHoyPage() {
         )}
 
         {/* Professional transport callout */}
-        <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-8 flex items-start gap-4">
-          <Truck className="w-6 h-6 text-tl-amber-600 mt-0.5 flex-shrink-0" />
+        <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-8 flex items-start gap-4">
+          <Truck className="w-6 h-6 text-tl-amber-600 dark:text-tl-amber-400 mt-0.5 flex-shrink-0" />
           <div>
             <h2 className="font-semibold text-tl-amber-900 mb-1">
               ¿Transportista o empresa con flota?
@@ -434,13 +434,13 @@ export default async function PrecioDieselHoyPage() {
 
         {/* Top 10 cheapest stations */}
         {cheapestStations.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 mb-8 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-tl-amber-500" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-tl-amber-50 dark:bg-tl-amber-900/200" />
                 10 Gasolineras Más Baratas — Gasóleo A (Diésel)
               </h2>
-              <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full hidden sm:block">
+              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 px-3 py-1 rounded-full hidden sm:block">
                 Península · excluye fiscalidad especial
               </span>
             </div>
@@ -449,7 +449,7 @@ export default async function PrecioDieselHoyPage() {
                 <Link
                   key={station.id}
                   href={`/gasolineras/terrestres/${station.id}`}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-tl-amber-50 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-tl-amber-50 dark:bg-tl-amber-900/20 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
                     <span
@@ -457,26 +457,26 @@ export default async function PrecioDieselHoyPage() {
                         idx === 0
                           ? "bg-tl-amber-400 text-tl-amber-900"
                           : idx === 1
-                          ? "bg-gray-300 text-gray-700"
+                          ? "bg-gray-300 text-gray-700 dark:text-gray-300"
                           : idx === 2
                           ? "bg-orange-300 text-orange-800"
-                          : "bg-tl-amber-100 text-tl-amber-700"
+                          : "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
                       }`}
                     >
                       {idx + 1}
                     </span>
                     <div>
-                      <div className="font-semibold text-gray-900 text-sm group-hover:text-tl-amber-700 transition-colors">
+                      <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-amber-700 dark:text-tl-amber-300 transition-colors">
                         {station.name}
                       </div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
                         {station.locality}, {station.provinceName}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-extrabold text-tl-amber-700 font-data">
+                    <div className="text-xl font-extrabold text-tl-amber-700 dark:text-tl-amber-300 font-data">
                       {formatPrice(station.priceGasoleoA)}
                     </div>
                     {station.priceGasoleoPremium && (
@@ -488,10 +488,10 @@ export default async function PrecioDieselHoyPage() {
                 </Link>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-center">
               <Link
                 href="/gasolineras/terrestres"
-                className="text-tl-amber-600 hover:text-tl-amber-700 text-sm font-medium inline-flex items-center gap-1"
+                className="text-tl-amber-600 dark:text-tl-amber-400 hover:text-tl-amber-700 dark:text-tl-amber-300 text-sm font-medium inline-flex items-center gap-1"
               >
                 Ver todas las gasolineras
                 <ChevronRight className="w-4 h-4" />
@@ -502,25 +502,25 @@ export default async function PrecioDieselHoyPage() {
 
         {/* Province breakdown table */}
         {peninsulaProvinces.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-5">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 mb-8 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-5">
               Precio Diésel (Gasóleo A) por Provincia — Hoy
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-2 font-semibold text-gray-600">Provincia</th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600">
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                    <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Provincia</th>
+                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">
                       Media hoy
                     </th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600 hidden sm:table-cell">
+                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                       Mínimo
                     </th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600 hidden sm:table-cell">
+                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                       Máximo
                     </th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600 hidden md:table-cell">
+                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden md:table-cell">
                       Estaciones
                     </th>
                   </tr>
@@ -539,41 +539,41 @@ export default async function PrecioDieselHoyPage() {
                     return (
                       <tr
                         key={p.scope}
-                        className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                        className="border-b border-gray-50 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
                       >
                         <td className="py-3 px-2">
                           {province ? (
                             <Link
                               href={`/gasolineras/precios/${province.slug}`}
-                              className="text-tl-600 hover:text-tl-700 font-medium flex items-center gap-1 w-fit"
+                              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit"
                             >
                               {province.name}
                               <ChevronRight className="w-3 h-3 opacity-60" />
                             </Link>
                           ) : (
-                            <span className="text-gray-700 font-medium">{code}</span>
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">{code}</span>
                           )}
                         </td>
                         <td className="py-3 px-2 text-right">
                           <span
                             className={`font-bold font-data ${
                               isCheap
-                                ? "text-green-600"
+                                ? "text-green-600 dark:text-green-400"
                                 : isExpensive
-                                ? "text-red-600"
-                                : "text-gray-900"
+                                ? "text-red-600 dark:text-red-400"
+                                : "text-gray-900 dark:text-gray-100"
                             }`}
                           >
                             {formatPrice(p.avgGasoleoA)}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell font-data">
+                        <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">
                           {formatPrice(p.minGasoleoA)}
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell font-data">
+                        <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">
                           {formatPrice(p.maxGasoleoA)}
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-500 hidden md:table-cell font-data">
+                        <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-400 hidden md:table-cell font-data">
                           {p.stationCount.toLocaleString("es-ES")}
                         </td>
                       </tr>
@@ -585,8 +585,8 @@ export default async function PrecioDieselHoyPage() {
 
             {/* Tax-free provinces */}
             {taxFreeProvinces.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500 mb-3">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
                   Territorios con fiscalidad especial (precios menores por menor carga impositiva):
                 </p>
                 <div className="flex flex-wrap gap-3">
@@ -601,12 +601,12 @@ export default async function PrecioDieselHoyPage() {
                             ? `/gasolineras/precios/${province.slug}`
                             : "/gasolineras/precios"
                         }
-                        className="flex items-center gap-2 bg-tl-amber-50 border border-tl-amber-200 rounded-lg px-3 py-2 hover:bg-tl-amber-100 transition-colors"
+                        className="flex items-center gap-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg px-3 py-2 hover:bg-tl-amber-100 transition-colors"
                       >
                         <span className="text-xs font-medium text-tl-amber-800">
                           {province?.name ?? code}
                         </span>
-                        <span className="text-xs font-bold text-tl-amber-600 font-data">
+                        <span className="text-xs font-bold text-tl-amber-600 dark:text-tl-amber-400 font-data">
                           {formatPrice(p.avgGasoleoA)}
                         </span>
                       </Link>
@@ -619,26 +619,26 @@ export default async function PrecioDieselHoyPage() {
         )}
 
         {/* FAQ Section */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 mb-8 shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Preguntas Frecuentes sobre el Precio del Diésel
           </h2>
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Cuánto cuesta el diésel hoy en España?
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                 {avgDiesel
                   ? `El precio medio del gasóleo A (diésel) en España hoy es de ${avgDiesel.toFixed(3)}€ por litro (Península y Baleares, datos MITERD). El precio varía según la gasolinera y la comunidad autónoma.`
                   : "El precio medio del diésel en España varía diariamente. Consulta la cifra actualizada en la parte superior de esta página, obtenida de los datos oficiales del MITERD."}
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Es más barato el diésel o la gasolina en España?
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                 {avgDiesel !== null && avg95 !== null
                   ? `Hoy el gasóleo A (diésel) cuesta ${avgDiesel.toFixed(3)}€/L y la gasolina 95 cuesta ${avg95.toFixed(3)}€/L, por lo que el ${avgDiesel < avg95 ? "diésel es más barato" : "diésel es más caro"} en ${Math.abs(avgDiesel - avg95).toFixed(3)}€ por litro.`
                   : "Históricamente el diésel (gasóleo A) ha sido más económico que la gasolina en España, aunque la diferencia varía con el precio internacional del petróleo."}{" "}
@@ -647,10 +647,10 @@ export default async function PrecioDieselHoyPage() {
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Dónde está el diésel más barato hoy en España?
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                 Las gasolineras con diésel más barato suelen ser marcas blancas y estaciones en
                 zonas de alta competencia. En esta página actualizamos en tiempo real el ranking de
                 las 10 gasolineras más baratas de la Península. Canarias, Ceuta y Melilla tienen
@@ -658,10 +658,10 @@ export default async function PrecioDieselHoyPage() {
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Qué es el gasóleo A y en qué se diferencia del gasóleo B?
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                 El gasóleo A es el diésel de automoción estándar, disponible en todas las
                 gasolineras. El gasóleo B (gasóleo agrícola o de calefacción) está subvencionado y
                 solo puede usarse en maquinaria agrícola, embarcaciones y calefacción. Su uso en

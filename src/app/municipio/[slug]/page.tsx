@@ -146,47 +146,47 @@ export default async function MunicipioPage({ params }: Props) {
       label: "Gasolineras",
       value: gasStationCount,
       icon: <Fuel className="w-5 h-5" />,
-      color: "text-tl-amber-600",
-      bg: "bg-tl-amber-50",
+      color: "text-tl-amber-600 dark:text-tl-amber-400",
+      bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20",
       href: `/gasolineras/precios/${provinceCode}`,
     },
     {
       label: "Cámaras",
       value: cameraCount,
       icon: <Camera className="w-5 h-5" />,
-      color: "text-tl-600",
-      bg: "bg-tl-50",
+      color: "text-tl-600 dark:text-tl-400",
+      bg: "bg-tl-50 dark:bg-tl-900/20",
       href: `/camaras`,
     },
     {
       label: "Radares",
       value: radarCount,
       icon: <Radar className="w-5 h-5" />,
-      color: "text-red-600",
-      bg: "bg-red-50",
+      color: "text-red-600 dark:text-red-400",
+      bg: "bg-red-50 dark:bg-red-900/20",
       href: `/radares`,
     },
     {
       label: "Incidencias activas",
       value: incidentCount,
       icon: <AlertTriangle className="w-5 h-5" />,
-      color: incidentCount > 0 ? "text-orange-600" : "text-gray-400",
-      bg: incidentCount > 0 ? "bg-orange-50" : "bg-gray-50",
+      color: incidentCount > 0 ? "text-orange-600 dark:text-orange-400" : "text-gray-400",
+      bg: incidentCount > 0 ? "bg-orange-50" : "bg-gray-50 dark:bg-gray-950",
       href: `/incidencias`,
     },
     {
       label: "Cargadores EV",
       value: evChargerCount,
       icon: <Zap className="w-5 h-5" />,
-      color: "text-tl-600",
-      bg: "bg-tl-50",
+      color: "text-tl-600 dark:text-tl-400",
+      bg: "bg-tl-50 dark:bg-tl-900/20",
       href: `/carga-ev`,
     },
     {
       label: "ZBE",
       value: "Ver info",
       icon: <MapPin className="w-5 h-5" />,
-      color: "text-purple-600",
+      color: "text-purple-600 dark:text-purple-400",
       bg: "bg-purple-50",
       href: `/zbe`,
       isText: true,
@@ -231,7 +231,7 @@ export default async function MunicipioPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumbs */}
           <Breadcrumbs
@@ -244,7 +244,7 @@ export default async function MunicipioPage({ params }: Props) {
 
           {/* Hero */}
           <div className="mb-8">
-            <div className="flex items-center gap-1.5 text-sm text-tl-600 mb-2">
+            <div className="flex items-center gap-1.5 text-sm text-tl-600 dark:text-tl-400 mb-2">
               <MapPin className="w-4 h-4" />
               <Link
                 href={`/provincias/${provinceCode}`}
@@ -253,10 +253,10 @@ export default async function MunicipioPage({ params }: Props) {
                 {province.name}
               </Link>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
               Tráfico en {name}
             </h1>
-            <p className="mt-2 text-gray-600 max-w-2xl">
+            <p className="mt-2 text-gray-600 dark:text-gray-400 max-w-2xl">
               Información de tráfico local en {name}: incidencias activas,
               cámaras, radares, gasolineras y puntos de carga eléctrica.
             </p>
@@ -265,7 +265,7 @@ export default async function MunicipioPage({ params }: Props) {
             {(population || area) && (
               <div className="flex flex-wrap gap-4 mt-4">
                 {population && (
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                  <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                     <Users className="w-4 h-4" />
                     <span>
                       {population.toLocaleString("es-ES")} habitantes
@@ -273,7 +273,7 @@ export default async function MunicipioPage({ params }: Props) {
                   </div>
                 )}
                 {area && (
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                  <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                     <Ruler className="w-4 h-4" />
                     <span>{Number(area).toLocaleString("es-ES")} km²</span>
                   </div>
@@ -286,7 +286,7 @@ export default async function MunicipioPage({ params }: Props) {
           <section aria-labelledby="stats-heading" className="mb-8">
             <h2
               id="stats-heading"
-              className="text-lg font-semibold text-gray-900 mb-4"
+              className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
             >
               Infraestructura en la provincia de {province.name}
             </h2>
@@ -295,19 +295,19 @@ export default async function MunicipioPage({ params }: Props) {
                 <Link
                   key={stat.label}
                   href={stat.href}
-                  className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 hover:shadow-md hover:border-tl-300 transition-all group"
                 >
                   <div
                     className={`inline-flex p-2 rounded-lg ${stat.bg} mb-3`}
                   >
                     <span className={stat.color}>{stat.icon}</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {"isText" in stat && stat.isText
                       ? stat.value
                       : (stat.value as number).toLocaleString("es-ES")}
                   </p>
-                  <p className="text-sm text-gray-500 mt-0.5">{stat.label}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
                 </Link>
               ))}
             </div>
@@ -315,23 +315,23 @@ export default async function MunicipioPage({ params }: Props) {
 
           {/* Quick info card */}
           <section className="mb-8">
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Datos del municipio
               </h2>
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
                 <div className="flex justify-between sm:block">
-                  <dt className="text-gray-500">Nombre</dt>
-                  <dd className="font-medium text-gray-900 sm:mt-0.5">
+                  <dt className="text-gray-500 dark:text-gray-400">Nombre</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100 sm:mt-0.5">
                     {name}
                   </dd>
                 </div>
                 <div className="flex justify-between sm:block">
-                  <dt className="text-gray-500">Provincia</dt>
-                  <dd className="font-medium text-gray-900 sm:mt-0.5">
+                  <dt className="text-gray-500 dark:text-gray-400">Provincia</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100 sm:mt-0.5">
                     <Link
                       href={`/provincias/${provinceCode}`}
-                      className="text-tl-600 hover:underline"
+                      className="text-tl-600 dark:text-tl-400 hover:underline"
                     >
                       {province.name}
                     </Link>
@@ -339,32 +339,32 @@ export default async function MunicipioPage({ params }: Props) {
                 </div>
                 {population && (
                   <div className="flex justify-between sm:block">
-                    <dt className="text-gray-500">Población</dt>
-                    <dd className="font-medium text-gray-900 sm:mt-0.5">
+                    <dt className="text-gray-500 dark:text-gray-400">Población</dt>
+                    <dd className="font-medium text-gray-900 dark:text-gray-100 sm:mt-0.5">
                       {population.toLocaleString("es-ES")} hab.
                     </dd>
                   </div>
                 )}
                 {area && (
                   <div className="flex justify-between sm:block">
-                    <dt className="text-gray-500">Superficie</dt>
-                    <dd className="font-medium text-gray-900 sm:mt-0.5">
+                    <dt className="text-gray-500 dark:text-gray-400">Superficie</dt>
+                    <dd className="font-medium text-gray-900 dark:text-gray-100 sm:mt-0.5">
                       {Number(area).toLocaleString("es-ES")} km²
                     </dd>
                   </div>
                 )}
                 {latitude && longitude && (
                   <div className="flex justify-between sm:block">
-                    <dt className="text-gray-500">Coordenadas</dt>
-                    <dd className="font-medium text-gray-900 sm:mt-0.5">
+                    <dt className="text-gray-500 dark:text-gray-400">Coordenadas</dt>
+                    <dd className="font-medium text-gray-900 dark:text-gray-100 sm:mt-0.5">
                       {Number(latitude).toFixed(4)},{" "}
                       {Number(longitude).toFixed(4)}
                     </dd>
                   </div>
                 )}
                 <div className="flex justify-between sm:block">
-                  <dt className="text-gray-500">Código INE</dt>
-                  <dd className="font-medium text-gray-900 sm:mt-0.5 font-mono">
+                  <dt className="text-gray-500 dark:text-gray-400">Código INE</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100 sm:mt-0.5 font-mono">
                     {municipality.code}
                   </dd>
                 </div>
@@ -374,31 +374,31 @@ export default async function MunicipioPage({ params }: Props) {
 
           {/* FAQ section — also rendered for SEO visibility */}
           <section className="mb-8">
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Preguntas frecuentes
               </h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-medium text-gray-900">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
                     ¿Cuántas gasolineras hay en {name}?
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     En la provincia de {province.name} hay{" "}
                     <strong>{gasStationCount}</strong> gasolineras registradas.
                     Puedes consultar precios actualizados y encontrar la más
                     barata en nuestra sección de gasolineras.
                   </p>
                 </div>
-                <div className="border-t border-gray-100 pt-4">
-                  <h3 className="font-medium text-gray-900">
+                <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
                     ¿Hay incidencias de tráfico activas en {name}?
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {incidentCount > 0 ? (
                       <>
                         Actualmente hay{" "}
-                        <strong className="text-orange-600">
+                        <strong className="text-orange-600 dark:text-orange-400">
                           {incidentCount} incidencia
                           {incidentCount > 1 ? "s" : ""} activa
                           {incidentCount > 1 ? "s" : ""}

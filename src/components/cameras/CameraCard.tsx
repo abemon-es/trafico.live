@@ -27,10 +27,10 @@ export function CameraCard({ camera, onClick }: CameraCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md hover:border-tl-300 transition-all group"
+      className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden cursor-pointer hover:shadow-md hover:border-tl-300 transition-all group"
     >
       {/* Image container with fixed aspect ratio */}
-      <div className="relative aspect-video bg-gray-100 overflow-hidden">
+      <div className="relative aspect-video bg-gray-100 dark:bg-gray-900 overflow-hidden">
         {!imageError ? (
           <>
             {/* Loading skeleton */}
@@ -64,14 +64,14 @@ export function CameraCard({ camera, onClick }: CameraCardProps) {
 
       {/* Info */}
       <div className="p-3">
-        <h3 className="font-medium text-gray-900 text-sm truncate group-hover:text-tl-600 transition-colors">
+        <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate group-hover:text-tl-600 dark:text-tl-400 transition-colors">
           {camera.road}
           {camera.kmPoint !== null && (
-            <span className="text-gray-500 font-normal"> km {camera.kmPoint}</span>
+            <span className="text-gray-500 dark:text-gray-400 font-normal"> km {camera.kmPoint}</span>
           )}
         </h3>
         {camera.direction && (
-          <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
             <MapPin className="w-3 h-3" />
             {camera.direction}
           </p>

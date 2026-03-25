@@ -58,7 +58,7 @@ function InfraCard({
   return (
     <Link
       href={href}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+      className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -67,9 +67,9 @@ function InfraCard({
             {isLoading ? (
               <div className="h-7 w-16 bg-gray-200 animate-pulse rounded" />
             ) : (
-              <p className="text-xl font-bold text-gray-900">{count.toLocaleString("es-ES")}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{count.toLocaleString("es-ES")}</p>
             )}
-            <p className="text-sm text-gray-500">{label}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
             {sublabel && <p className="text-xs text-gray-400">{sublabel}</p>}
           </div>
         </div>
@@ -92,8 +92,8 @@ export function InfrastructureStatus() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <div className="flex items-center gap-2 text-red-700">
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
           <AlertTriangle className="w-4 h-4" />
           <span className="text-sm">Error al cargar estado de infraestructura</span>
         </div>
@@ -102,15 +102,15 @@ export function InfrastructureStatus() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Infraestructura</h2>
-          <p className="text-sm text-gray-500">Estado de los sistemas de tráfico</p>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Infraestructura</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Estado de los sistemas de tráfico</p>
         </div>
         <Link
           href="/explorar/infraestructura"
-          className="text-sm text-tl-600 hover:text-tl-700 hover:underline flex items-center gap-1"
+          className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline flex items-center gap-1"
         >
           Ver todo
           <ChevronRight className="w-4 h-4" />
@@ -125,15 +125,15 @@ export function InfrastructureStatus() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <InfraCard
-              icon={<Camera className="w-5 h-5 text-tl-600" />}
+              icon={<Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />}
               label="Cámaras"
               count={data?.cameras.count || 0}
               href="/explorar/infraestructura?tab=camaras"
-              color="bg-tl-50"
+              color="bg-tl-50 dark:bg-tl-900/20"
               isLoading={isLoading}
             />
             <InfraCard
-              icon={<Radar className="w-5 h-5 text-yellow-600" />}
+              icon={<Radar className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />}
               label="Radares"
               count={data?.radars.count || 0}
               sublabel={data?.radars.byType ? `${data.radars.byType.FIXED || 0} fijos` : undefined}
@@ -142,15 +142,15 @@ export function InfrastructureStatus() {
               isLoading={isLoading}
             />
             <InfraCard
-              icon={<Zap className="w-5 h-5 text-green-600" />}
+              icon={<Zap className="w-5 h-5 text-green-600 dark:text-green-400" />}
               label="Cargadores EV"
               count={data?.chargers.count || 0}
               href="/explorar/infraestructura?tab=cargadores"
-              color="bg-green-50"
+              color="bg-green-50 dark:bg-green-900/20"
               isLoading={isLoading}
             />
             <InfraCard
-              icon={<Ban className="w-5 h-5 text-purple-600" />}
+              icon={<Ban className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
               label="Zonas ZBE"
               count={data?.zbe.count || 0}
               href="/explorar/infraestructura?tab=zbe"

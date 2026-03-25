@@ -57,42 +57,42 @@ const MESSAGE_TYPE_STYLES: Record<
   { bg: string; border: string; text: string; badge: string }
 > = {
   DANGER: {
-    bg: "bg-red-50",
+    bg: "bg-red-50 dark:bg-red-900/20",
     border: "border-red-300",
     text: "text-red-800",
-    badge: "bg-red-100 text-red-700 border-red-200",
+    badge: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
   },
   PRECAUTION: {
-    bg: "bg-tl-amber-50",
+    bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20",
     border: "border-tl-amber-300",
     text: "text-tl-amber-800",
-    badge: "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200",
+    badge: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
   },
   SPEED_LIMIT: {
     bg: "bg-orange-50",
     border: "border-orange-300",
     text: "text-orange-800",
-    badge: "bg-orange-100 text-orange-700 border-orange-200",
+    badge: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
   },
   LANE_CLOSED: {
-    bg: "bg-red-50",
+    bg: "bg-red-50 dark:bg-red-900/20",
     border: "border-red-300",
     text: "text-red-800",
-    badge: "bg-red-100 text-red-700 border-red-200",
+    badge: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
   },
   INFO: {
-    bg: "bg-tl-50",
+    bg: "bg-tl-50 dark:bg-tl-900/20",
     border: "border-tl-300",
-    text: "text-tl-800",
-    badge: "bg-tl-100 text-tl-700 border-tl-200",
+    text: "text-tl-800 dark:text-tl-200",
+    badge: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
   },
 };
 
 const DEFAULT_MESSAGE_STYLE = {
-  bg: "bg-green-50",
+  bg: "bg-green-50 dark:bg-green-900/20",
   border: "border-green-300",
   text: "text-green-800",
-  badge: "bg-green-100 text-green-700 border-green-200",
+  badge: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
 };
 
 function formatDisplayName(roadNumber: string | null, kmPoint: number | null, direction: string | null): string {
@@ -217,7 +217,7 @@ export default async function PanelesPage({ searchParams }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -230,48 +230,48 @@ export default async function PanelesPage({ searchParams }: Props) {
           <AdSlot id="paneles-top" format="banner" className="mb-6" />
 
           {/* Page header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-tl-50 rounded-lg flex-shrink-0">
-                <MonitorSmartphone className="w-8 h-8 text-tl-600" />
+              <div className="p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                <MonitorSmartphone className="w-8 h-8 text-tl-600 dark:text-tl-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Paneles de Mensaje Variable
                 </h1>
-                <p className="text-gray-600 max-w-2xl">
+                <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
                   Estado en tiempo real de los paneles electrónicos instalados en
                   las carreteras españolas. Los PMV muestran información sobre
                   retenciones, obras, cierres y condiciones de la vía.
                 </p>
               </div>
-              <div className="hidden md:flex flex-col items-center bg-tl-50 border border-tl-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
-                <span className="text-3xl font-bold text-tl-700">
+              <div className="hidden md:flex flex-col items-center bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg px-5 py-3 text-center flex-shrink-0">
+                <span className="text-3xl font-bold text-tl-700 dark:text-tl-300">
                   {totalCount.toLocaleString("es-ES")}
                 </span>
-                <span className="text-sm text-tl-600 mt-0.5">paneles activos</span>
+                <span className="text-sm text-tl-600 dark:text-tl-400 mt-0.5">paneles activos</span>
               </div>
             </div>
           </div>
 
           {/* Stats banner */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {totalCount.toLocaleString("es-ES")}
               </div>
-              <div className="text-sm text-gray-500 mt-0.5">Total paneles</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Total paneles</div>
             </div>
-            <div className="bg-white rounded-lg border border-green-200 shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-green-200 shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-green-700 dark:text-green-400">
                 {withMessageCount.toLocaleString("es-ES")}
               </div>
-              <div className="text-sm text-green-600 mt-0.5 flex items-center justify-center gap-1">
+              <div className="text-sm text-green-600 dark:text-green-400 mt-0.5 flex items-center justify-center gap-1">
                 <MessageSquare className="w-3.5 h-3.5" />
                 Con mensaje activo
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 text-center">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-4 text-center">
               <div className="text-2xl font-bold text-gray-400">
                 {withoutMessageCount.toLocaleString("es-ES")}
               </div>
@@ -284,13 +284,13 @@ export default async function PanelesPage({ searchParams }: Props) {
 
           {/* Active message alert */}
           {withMessageCount > 0 && (
-            <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
               <div>
                 <h2 className="font-semibold text-tl-amber-800">
                   {withMessageCount.toLocaleString("es-ES")} paneles con mensaje activo
                 </h2>
-                <p className="text-sm text-tl-amber-700 mt-0.5">
+                <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-0.5">
                   Hay incidencias activas en la red. Consulta los mensajes antes de
                   iniciar tu ruta.
                 </p>
@@ -299,13 +299,13 @@ export default async function PanelesPage({ searchParams }: Props) {
           )}
 
           {/* Filters */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 mb-6">
             <form method="GET" action="/paneles" className="flex flex-wrap gap-3 items-end">
               {/* Province filter */}
               <div className="flex-1 min-w-[180px]">
                 <label
                   htmlFor="provincia"
-                  className="block text-xs font-medium text-gray-500 mb-1"
+                  className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"
                 >
                   Provincia
                 </label>
@@ -313,7 +313,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   id="provincia"
                   name="provincia"
                   defaultValue={filterProvince}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500 bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500 bg-white dark:bg-gray-900"
                 >
                   <option value="">Todas las provincias</option>
                   {allProvinces
@@ -330,7 +330,7 @@ export default async function PanelesPage({ searchParams }: Props) {
               <div className="flex-1 min-w-[140px]">
                 <label
                   htmlFor="carretera"
-                  className="block text-xs font-medium text-gray-500 mb-1"
+                  className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"
                 >
                   Carretera
                 </label>
@@ -340,7 +340,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   type="text"
                   defaultValue={filterRoad}
                   placeholder="Ej: A-1, M-30..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500"
                 />
               </div>
 
@@ -352,9 +352,9 @@ export default async function PanelesPage({ searchParams }: Props) {
                     name="conMensaje"
                     value="1"
                     defaultChecked={onlyWithMessage}
-                    className="w-4 h-4 rounded border-gray-300 text-tl-600 focus:ring-tl-500"
+                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 dark:text-tl-400 focus:ring-tl-500"
                   />
-                  <span className="text-sm text-gray-700">Solo con mensaje</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Solo con mensaje</span>
                 </label>
               </div>
 
@@ -368,7 +368,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                 {(filterProvince || filterRoad || onlyWithMessage) && (
                   <Link
                     href="/paneles"
-                    className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:bg-gray-950 transition-colors"
                   >
                     Limpiar
                   </Link>
@@ -381,15 +381,15 @@ export default async function PanelesPage({ searchParams }: Props) {
 
           {/* Panels list grouped by road */}
           {panels.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-12 text-center">
               <MonitorSmartphone className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">No se encontraron paneles</p>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">No se encontraron paneles</p>
               <p className="text-sm text-gray-400 mt-1">
                 Prueba a cambiar los filtros de búsqueda.
               </p>
               <Link
                 href="/paneles"
-                className="mt-4 inline-block text-sm text-tl-600 hover:underline"
+                className="mt-4 inline-block text-sm text-tl-600 dark:text-tl-400 hover:underline"
               >
                 Ver todos los paneles
               </Link>
@@ -407,8 +407,8 @@ export default async function PanelesPage({ searchParams }: Props) {
                       <div
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-semibold text-sm ${
                           roadHasMessage
-                            ? "bg-tl-amber-50 border-tl-amber-200 text-tl-amber-800"
-                            : "bg-gray-100 border-gray-200 text-gray-600"
+                            ? "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 dark:border-tl-amber-800 text-tl-amber-800"
+                            : "bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400"
                         }`}
                       >
                         <Route className="w-4 h-4" />
@@ -417,7 +417,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                       <span className="text-sm text-gray-400">
                         {roadPanels.length} panel{roadPanels.length !== 1 ? "es" : ""}
                         {roadWithMessage > 0 && (
-                          <span className="ml-1.5 text-tl-amber-600 font-medium">
+                          <span className="ml-1.5 text-tl-amber-600 dark:text-tl-amber-400 font-medium">
                             · {roadWithMessage} con mensaje
                           </span>
                         )}
@@ -425,7 +425,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                       {road !== "Sin carretera" && (
                         <Link
                           href={`/carreteras/${encodeURIComponent(road)}`}
-                          className="ml-auto text-xs text-tl-600 hover:underline flex items-center gap-0.5"
+                          className="ml-auto text-xs text-tl-600 dark:text-tl-400 hover:underline flex items-center gap-0.5"
                         >
                           Ver carretera <ChevronRight className="w-3 h-3" />
                         </Link>
@@ -451,7 +451,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                             className={`rounded-lg border shadow-sm overflow-hidden transition-all ${
                               panel.hasMessage
                                 ? `${style!.bg} ${style!.border}`
-                                : "bg-white border-gray-200 opacity-70"
+                                : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-70"
                             }`}
                           >
                             {/* Card header */}
@@ -459,7 +459,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                               <div>
                                 <p
                                   className={`text-sm font-semibold ${
-                                    panel.hasMessage ? style!.text : "text-gray-600"
+                                    panel.hasMessage ? style!.text : "text-gray-600 dark:text-gray-400"
                                   }`}
                                 >
                                   {displayName}
@@ -527,17 +527,17 @@ export default async function PanelesPage({ searchParams }: Props) {
           <section className="mt-10 mb-8" aria-labelledby="heading-top-roads">
             <h2
               id="heading-top-roads"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Carreteras con más paneles PMV
             </h2>
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
               {topRoads
                 .filter((r) => r.roadNumber)
                 .map((item, idx) => (
                   <div
                     key={item.roadNumber}
-                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-gray-400 w-5 text-right">
@@ -545,16 +545,16 @@ export default async function PanelesPage({ searchParams }: Props) {
                       </span>
                       <Link
                         href={`/carreteras/${encodeURIComponent(item.roadNumber!)}`}
-                        className="font-semibold text-tl-600 hover:text-tl-800 hover:underline"
+                        className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                       >
                         {item.roadNumber}
                       </Link>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {item._count.toLocaleString("es-ES")}
                       </span>
-                      <span className="text-xs text-gray-500">paneles</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">paneles</span>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </div>
                   </div>
@@ -566,7 +566,7 @@ export default async function PanelesPage({ searchParams }: Props) {
           <section className="mb-8" aria-labelledby="heading-road-chips">
             <h2
               id="heading-road-chips"
-              className="text-lg font-semibold text-gray-900 mb-3"
+              className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3"
             >
               Explorar por carretera
             </h2>
@@ -577,7 +577,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   <Link
                     key={item.roadNumber}
                     href={`/paneles?carretera=${encodeURIComponent(item.roadNumber!)}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-tl-600 hover:bg-tl-50 hover:border-tl-200 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
                   >
                     {item.roadNumber}
                     <span className="text-xs text-gray-400">
@@ -592,7 +592,7 @@ export default async function PanelesPage({ searchParams }: Props) {
           <section className="mb-8" aria-labelledby="heading-faq">
             <h2
               id="heading-faq"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Preguntas frecuentes sobre los PMV
             </h2>
@@ -613,13 +613,13 @@ export default async function PanelesPage({ searchParams }: Props) {
               ].map((item) => (
                 <div
                   key={item.q}
-                  className="bg-white rounded-lg border border-gray-200 shadow-sm p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2 flex items-start gap-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-start gap-2">
                     <Info className="w-4 h-4 text-tl-500 flex-shrink-0 mt-0.5" />
                     {item.q}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed pl-6">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed pl-6">
                     {item.a}
                   </p>
                 </div>
@@ -657,11 +657,11 @@ export default async function PanelesPage({ searchParams }: Props) {
           />
 
           {/* SEO copy */}
-          <div className="mt-8 bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">
+          <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
               Paneles de Mensaje Variable en España
             </h2>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
               Los paneles de mensaje variable (PMV) son señales electrónicas
               instaladas en las principales carreteras españolas que informan a los
               conductores sobre el estado de la vía en tiempo real. La red de la
@@ -671,16 +671,16 @@ export default async function PanelesPage({ searchParams }: Props) {
               de peligros, informar sobre cierres de carriles o desviaciones, y
               contribuyen a reducir la siniestralidad.
             </p>
-            <p className="text-gray-600 text-sm leading-relaxed mt-3">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mt-3">
               trafico.live integra los datos de los PMV de la DGT y los actualiza
               cada 5 minutos. Puedes consultar el estado de todos los paneles,
               filtrar por provincia o carretera, y ver qué tramos tienen mensajes
               activos antes de salir. Para una vista geográfica, accede al{" "}
-              <Link href="/mapa" className="text-tl-600 hover:underline">
+              <Link href="/mapa" className="text-tl-600 dark:text-tl-400 hover:underline">
                 mapa de tráfico
               </Link>{" "}
               o consulta las{" "}
-              <Link href="/incidencias" className="text-tl-600 hover:underline">
+              <Link href="/incidencias" className="text-tl-600 dark:text-tl-400 hover:underline">
                 incidencias en tiempo real
               </Link>
               .

@@ -71,8 +71,8 @@ const REGION_META: Record<
   },
   "Atlántico Sur": {
     label: "Atlántico Sur",
-    color: "bg-tl-50",
-    borderColor: "border-tl-200",
+    color: "bg-tl-50 dark:bg-tl-900/20",
+    borderColor: "border-tl-200 dark:border-tl-800",
     icon: "⚓",
     desc: "Andalucía occidental, Islas Canarias",
   },
@@ -92,8 +92,8 @@ const REGION_META: Record<
   },
   "Ceuta y Melilla": {
     label: "Ceuta y Melilla",
-    color: "bg-tl-amber-50",
-    borderColor: "border-tl-amber-200",
+    color: "bg-tl-amber-50 dark:bg-tl-amber-900/20",
+    borderColor: "border-tl-amber-200 dark:border-tl-amber-800",
     icon: "🏛️",
     desc: "Ciudades autónomas (fiscalidad especial)",
   },
@@ -112,7 +112,7 @@ const FUEL_TYPES = [
   },
   {
     name: "Gasolina 95",
-    badge: "bg-tl-100 text-tl-800",
+    badge: "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200",
     desc: "Para motores fueraborda de gasolina, equipados en embarcaciones ligeras, neumáticas y pequeñas lanchas. También utilizado en motos de agua.",
   },
 ];
@@ -180,18 +180,18 @@ function regionForProvince(code: string | null): string {
 
 function FuelTypesSection() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Fuel className="w-5 h-5 text-tl-amber-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Fuel className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
         Tipos de combustible en puertos deportivos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {FUEL_TYPES.map((ft) => (
-          <div key={ft.name} className="rounded-lg bg-gray-50 border border-gray-100 p-4">
+          <div key={ft.name} className="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800 p-4">
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ft.badge} mb-2 inline-block`}>
               {ft.name}
             </span>
-            <p className="text-sm text-gray-600 leading-relaxed">{ft.desc}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{ft.desc}</p>
           </div>
         ))}
       </div>
@@ -201,8 +201,8 @@ function FuelTypesSection() {
 
 function TaxInfoBox() {
   return (
-    <div className="bg-tl-amber-50 rounded-lg border border-tl-amber-200 p-5 mb-8 flex items-start gap-3">
-      <AlertTriangle className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
+    <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-800 p-5 mb-8 flex items-start gap-3">
+      <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
       <div>
         <h3 className="font-semibold text-tl-amber-900 mb-1">Fiscalidad especial del combustible náutico</h3>
         <p className="text-sm text-tl-amber-800 leading-relaxed">
@@ -221,25 +221,25 @@ function FAQSection() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Info className="w-5 h-5 text-tl-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Info className="w-5 h-5 text-tl-600 dark:text-tl-400" />
         Preguntas frecuentes sobre combustible marítimo
       </h2>
       <div className="space-y-3">
         {FAQS.map((faq, idx) => (
-          <div key={idx} className="border border-gray-100 rounded-lg overflow-hidden">
+          <div key={idx} className="border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
             <button
               onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
             >
               {faq.q}
               <ChevronDown
-                className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform ${openIdx === idx ? "rotate-180" : ""}`}
+                className={`w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0 transition-transform ${openIdx === idx ? "rotate-180" : ""}`}
               />
             </button>
             {openIdx === idx && (
-              <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-100">
+              <div className="px-4 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-gray-800">
                 {faq.a}
               </div>
             )}
@@ -323,21 +323,21 @@ export default function MaritimasPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumbs */}
-      <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-gray-700 transition-colors">Inicio</Link>
+      <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <Link href="/gasolineras" className="hover:text-gray-700 transition-colors">Combustible</Link>
+        <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Combustible</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-gray-900 font-medium">Marítimas</span>
+        <span className="text-gray-900 dark:text-gray-100 font-medium">Marítimas</span>
       </nav>
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-3">
-          <Anchor className="w-8 h-8 text-tl-600" />
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3 mb-3">
+          <Anchor className="w-8 h-8 text-tl-600 dark:text-tl-400" />
           Estaciones Marítimas de Combustible en España
         </h1>
-        <p className="text-gray-600 max-w-3xl">
+        <p className="text-gray-600 dark:text-gray-400 max-w-3xl">
           Directorio completo de puntos de suministro de combustible en puertos deportivos, pesqueros
           y comerciales de España. Precios de Gasóleo A, Gasóleo B (pesca) y Gasolina 95
           actualizados desde el Ministerio para la Transición Ecológica.
@@ -345,14 +345,14 @@ export default function MaritimasPage() {
       </div>
 
       {/* Who needs maritime fuel */}
-      <div className="bg-tl-50 rounded-lg border border-tl-200 p-6 mb-8">
+      <div className="bg-tl-50 dark:bg-tl-900/20 rounded-lg border border-tl-200 dark:border-tl-800 p-6 mb-8">
         <div className="flex items-start gap-4">
-          <Ship className="w-8 h-8 text-tl-600 flex-shrink-0 mt-0.5" />
+          <Ship className="w-8 h-8 text-tl-600 dark:text-tl-400 flex-shrink-0 mt-0.5" />
           <div>
             <h2 className="text-lg font-semibold text-tl-900 mb-2">
               ¿Quién necesita combustible en puerto?
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-tl-800">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-tl-800 dark:text-tl-200">
               <div>
                 <strong className="block mb-1">Náutica de recreo</strong>
                 Veleros, cruceros, motos de agua y lanchas deportivas que requieren Gasóleo A o Gasolina 95 según el motor.
@@ -373,31 +373,31 @@ export default function MaritimasPage() {
       {/* Stats row */}
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-900">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {data.pagination.total.toLocaleString("es-ES")}
             </div>
-            <div className="text-sm text-gray-500">estaciones en puertos</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">estaciones en puertos</div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-tl-amber-700">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-tl-amber-700 dark:text-tl-amber-300">
               {avgDiesel != null ? formatP(avgDiesel) : "—"}
             </div>
-            <div className="text-sm text-gray-500">precio medio Gasóleo A</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">precio medio Gasóleo A</div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-tl-700">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-tl-700 dark:text-tl-300">
               {avgGas95 != null ? formatP(avgGas95) : "—"}
             </div>
-            <div className="text-sm text-gray-500">precio medio Gasolina 95</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">precio medio Gasolina 95</div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-green-700">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-400">
               {cheapestDiesel[0]?.priceGasoleoA != null
                 ? formatP(cheapestDiesel[0].priceGasoleoA)
                 : "—"}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               mín. Gasóleo A
               {cheapestDiesel[0]?.port ? ` · ${cheapestDiesel[0].port}` : ""}
             </div>
@@ -407,9 +407,9 @@ export default function MaritimasPage() {
 
       {/* Cheapest 5 */}
       {cheapestDiesel.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-green-600" />
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <TrendingDown className="w-5 h-5 text-green-600 dark:text-green-400" />
             Las 5 estaciones marítimas con Gasóleo A más barato
           </h2>
           <div className="space-y-2">
@@ -417,19 +417,19 @@ export default function MaritimasPage() {
               <Link
                 key={s.id}
                 href={`/gasolineras/maritimas/${s.id}`}
-                className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:bg-gray-900 transition-colors"
               >
-                <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                <span className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold flex items-center justify-center flex-shrink-0">
                   {idx + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm line-clamp-1">{s.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 text-sm line-clamp-1">{s.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     {s.port ? `Puerto: ${s.port} · ` : ""}
                     {s.locality}{s.provinceName ? `, ${s.provinceName}` : ""}
                   </div>
                 </div>
-                <div className="text-lg font-bold text-green-700 flex-shrink-0">
+                <div className="text-lg font-bold text-green-700 dark:text-green-400 flex-shrink-0">
                   {formatP(s.priceGasoleoA)}
                 </div>
               </Link>
@@ -452,7 +452,7 @@ export default function MaritimasPage() {
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
               activeRegion === null
                 ? "bg-tl-600 text-white"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
             }`}
           >
             Todas las costas
@@ -464,7 +464,7 @@ export default function MaritimasPage() {
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeRegion === key
                   ? "bg-tl-600 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
               }`}
             >
               {meta.icon} {meta.label}
@@ -474,7 +474,7 @@ export default function MaritimasPage() {
       )}
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -483,12 +483,12 @@ export default function MaritimasPage() {
               placeholder="Buscar por nombre, puerto, localidad..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-tl-500 focus:border-transparent"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-950"
           >
             <Filter className="w-5 h-5" />
             Filtrar por provincia
@@ -497,13 +497,13 @@ export default function MaritimasPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
             <div className="max-w-xs">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Provincia</label>
               <select
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tl-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-tl-500"
               >
                 <option value="">Todas las provincias</option>
                 {Object.entries(PROVINCES).sort((a, b) => a[1].localeCompare(b[1])).map(([code, name]) => (
@@ -516,7 +516,7 @@ export default function MaritimasPage() {
 
         {province && (
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="flex items-center gap-1 px-2 py-1 bg-tl-100 text-tl-700 rounded-full text-sm">
+            <span className="flex items-center gap-1 px-2 py-1 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 rounded-full text-sm">
               {PROVINCES[province]}
               <button onClick={() => setProvince("")} className="hover:text-tl-900">
                 <X className="w-4 h-4" />
@@ -532,7 +532,7 @@ export default function MaritimasPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tl-600" />
         </div>
       ) : error ? (
-        <div className="text-center py-12 text-red-600">
+        <div className="text-center py-12 text-red-600 dark:text-red-400">
           Error al cargar las estaciones marítimas. Inténtalo de nuevo.
         </div>
       ) : (
@@ -551,7 +551,7 @@ export default function MaritimasPage() {
               return (
                 <div key="flat">
                   {Object.keys(byRegion).length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                       No se encontraron estaciones marítimas con ese criterio.
                     </div>
                   ) : (
@@ -573,16 +573,16 @@ export default function MaritimasPage() {
 
             return (
               <div key={region} className="mb-10">
-                <div className={`rounded-lg ${meta?.color ?? "bg-gray-50"} border ${meta?.borderColor ?? "border-gray-200"} px-5 py-3 mb-4 flex items-center justify-between`}>
+                <div className={`rounded-lg ${meta?.color ?? "bg-gray-50 dark:bg-gray-950"} border ${meta?.borderColor ?? "border-gray-200 dark:border-gray-800"} px-5 py-3 mb-4 flex items-center justify-between`}>
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                       {meta?.icon} {meta?.label ?? region}
-                      <span className="ml-2 text-sm font-normal text-gray-500">
+                      <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                         ({regionStations.length} estaciones)
                       </span>
                     </h2>
                     {meta?.desc && (
-                      <p className="text-xs text-gray-500 mt-0.5">{meta.desc}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{meta.desc}</p>
                     )}
                   </div>
                 </div>
@@ -601,17 +601,17 @@ export default function MaritimasPage() {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
               >
                 Anterior
               </button>
-              <span className="px-4 py-2 text-sm text-gray-600">
+              <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
                 Página {page} de {data.pagination.totalPages}
               </span>
               <button
                 onClick={() => setPage(Math.min(data.pagination.totalPages, page + 1))}
                 disabled={page === data.pagination.totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
               >
                 Siguiente
               </button>
@@ -626,8 +626,8 @@ export default function MaritimasPage() {
       </div>
 
       {/* Related links */}
-      <div className="mt-4 border-t border-gray-200 pt-8">
-        <h2 className="text-base font-semibold text-gray-700 mb-4">También te puede interesar</h2>
+      <div className="mt-4 border-t border-gray-200 dark:border-gray-800 pt-8">
+        <h2 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-4">También te puede interesar</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {[
             { href: "/gasolineras", label: "Gasolineras terrestres" },
@@ -640,10 +640,10 @@ export default function MaritimasPage() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-tl-300 hover:shadow-sm transition-all group text-sm"
+              className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group text-sm"
             >
               <Anchor className="w-4 h-4 text-tl-500 flex-shrink-0" />
-              <span className="text-gray-700 group-hover:text-tl-700 transition-colors line-clamp-1">
+              <span className="text-gray-700 dark:text-gray-300 group-hover:text-tl-700 dark:text-tl-300 transition-colors line-clamp-1">
                 {link.label}
               </span>
             </Link>
@@ -668,21 +668,21 @@ function StationCard({
   return (
     <Link
       href={`/gasolineras/maritimas/${station.id}`}
-      className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+      className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 line-clamp-1">{station.name}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-1">{station.name}</h3>
           {station.port && (
-            <p className="text-sm text-tl-600 font-medium truncate">Puerto: {station.port}</p>
+            <p className="text-sm text-tl-600 dark:text-tl-400 font-medium truncate">Puerto: {station.port}</p>
           )}
-          <p className="text-sm text-gray-500 line-clamp-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
             {station.locality}
             {station.provinceName ? `, ${station.provinceName}` : ""}
           </p>
         </div>
         {station.is24h && (
-          <span className="flex items-center gap-1 px-2 py-0.5 bg-tl-100 text-tl-700 text-xs rounded-full ml-2 flex-shrink-0">
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 text-xs rounded-full ml-2 flex-shrink-0">
             <Clock className="w-3 h-3" />
             24 h
           </span>
@@ -690,13 +690,13 @@ function StationCard({
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-tl-amber-50 rounded p-2">
-          <div className="text-xs text-tl-amber-600">Gasóleo A</div>
-          <div className="font-bold text-tl-amber-700">{formatP(station.priceGasoleoA)}</div>
+        <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded p-2">
+          <div className="text-xs text-tl-amber-600 dark:text-tl-amber-400">Gasóleo A</div>
+          <div className="font-bold text-tl-amber-700 dark:text-tl-amber-300">{formatP(station.priceGasoleoA)}</div>
         </div>
-        <div className="bg-tl-50 rounded p-2">
-          <div className="text-xs text-tl-600">Gasolina 95</div>
-          <div className="font-bold text-tl-700">{formatP(station.priceGasolina95E5)}</div>
+        <div className="bg-tl-50 dark:bg-tl-900/20 rounded p-2">
+          <div className="text-xs text-tl-600 dark:text-tl-400">Gasolina 95</div>
+          <div className="font-bold text-tl-700 dark:text-tl-300">{formatP(station.priceGasolina95E5)}</div>
         </div>
       </div>
 

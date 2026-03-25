@@ -194,7 +194,7 @@ function SectionCard({
 }) {
   return (
     <div
-      className={`bg-white rounded-xl border border-gray-200 shadow-sm p-5 ${className}`}
+      className={`bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5 ${className}`}
     >
       {children}
     </div>
@@ -202,7 +202,7 @@ function SectionCard({
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-lg font-semibold text-gray-800 mb-4">{children}</h2>;
+  return <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{children}</h2>;
 }
 
 function CustomBarTooltip({
@@ -219,9 +219,9 @@ function CustomBarTooltip({
   if (!active || !payload?.length) return null;
   const displayLabel = labelFormatter ? labelFormatter(label ?? "") : String(label ?? "");
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-sm">
-      <p className="font-medium text-gray-700">{displayLabel}</p>
-      <p className="text-tl-600 font-semibold">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg px-3 py-2 text-sm">
+      <p className="font-medium text-gray-700 dark:text-gray-300">{displayLabel}</p>
+      <p className="text-tl-600 dark:text-tl-400 font-semibold">
         {formatNumber(payload[0].value)} incidencias
       </p>
     </div>
@@ -245,7 +245,7 @@ function HourlyHeatmap({ data }: { data: HourEntry[] }) {
       {TIME_BLOCKS.map((block) => (
         <div key={block.label}>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-semibold text-gray-500 w-28 shrink-0">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 w-28 shrink-0">
               {block.label}
             </span>
             <span className="text-xs text-gray-400">{block.range}</span>
@@ -276,7 +276,7 @@ function HourlyHeatmap({ data }: { data: HourEntry[] }) {
       ))}
 
       {/* Legend */}
-      <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+      <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
         <span className="text-xs text-gray-400">Menos incidencias</span>
         <div className="flex gap-1">
           {[
@@ -335,7 +335,7 @@ export default function MejorHoraContent() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* FAQ Schema */}
       <script
         type="application/ld+json"
@@ -355,14 +355,14 @@ export default function MejorHoraContent() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-tl-50 rounded-xl shrink-0">
-              <Clock className="w-8 h-8 text-tl-600" />
+            <div className="p-3 bg-tl-50 dark:bg-tl-900/20 rounded-xl shrink-0">
+              <Clock className="w-8 h-8 text-tl-600 dark:text-tl-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
                 Mejor Hora para Viajar
               </h1>
-              <p className="mt-2 text-gray-600 text-base leading-relaxed max-w-2xl">
+              <p className="mt-2 text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-2xl">
                 Análisis de incidencias de los últimos 30 días para ayudarte a elegir
                 el momento óptimo para circular por las carreteras españolas. Los datos
                 se actualizan cada 5 minutos.
@@ -373,8 +373,8 @@ export default function MejorHoraContent() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-24 text-gray-500">
-            <Loader2 className="w-10 h-10 animate-spin text-tl-600 mb-4" />
+          <div className="flex flex-col items-center justify-center py-24 text-gray-500 dark:text-gray-400">
+            <Loader2 className="w-10 h-10 animate-spin text-tl-600 dark:text-tl-400 mb-4" />
             <p>Cargando análisis de tráfico...</p>
           </div>
         )}
@@ -384,7 +384,7 @@ export default function MejorHoraContent() {
           <div className="flex flex-col items-center justify-center py-20 text-red-500">
             <AlertTriangle className="w-10 h-10 mb-4" />
             <p className="font-medium">No se pudieron cargar los datos</p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Inténtalo de nuevo en unos momentos.
             </p>
           </div>
@@ -403,7 +403,7 @@ export default function MejorHoraContent() {
                   <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-1">
                     Mejor momento para salir
                   </p>
-                  <p className="font-bold text-gray-900 text-lg leading-snug">
+                  <p className="font-bold text-gray-900 dark:text-gray-100 text-lg leading-snug">
                     {formatHourRange(insights.bestHours)}
                   </p>
                   <p className="text-sm text-emerald-700 mt-1">
@@ -414,18 +414,18 @@ export default function MejorHoraContent() {
               </div>
 
               {/* Worst hours */}
-              <div className="bg-red-50 border border-red-200 rounded-xl p-5 flex gap-4">
-                <div className="p-2.5 bg-red-100 rounded-lg shrink-0 h-fit">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl p-5 flex gap-4">
+                <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-lg shrink-0 h-fit">
+                  <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-1">
                     Horas punta — evítalas
                   </p>
-                  <p className="font-bold text-gray-900 text-lg leading-snug">
+                  <p className="font-bold text-gray-900 dark:text-gray-100 text-lg leading-snug">
                     {formatHourRange(insights.worstHours)}
                   </p>
-                  <p className="text-sm text-red-600 mt-1">
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
                     Máxima concentración de accidentes, obras y atascos en estas
                     franjas horarias.
                   </p>
@@ -435,16 +435,16 @@ export default function MejorHoraContent() {
 
             {/* Day callout row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-tl-50 border border-tl-200 rounded-xl p-4 flex items-center gap-4">
-                <TrendingDown className="w-8 h-8 text-tl-600 shrink-0" />
+              <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-4 flex items-center gap-4">
+                <TrendingDown className="w-8 h-8 text-tl-600 dark:text-tl-400 shrink-0" />
                 <div>
                   <p className="text-xs font-semibold text-tl-500 uppercase tracking-wide">
                     Día con menos incidencias
                   </p>
-                  <p className="text-xl font-bold text-gray-900 mt-0.5">
+                  <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-0.5">
                     {insights.bestDay}
                   </p>
-                  <p className="text-sm text-tl-700">
+                  <p className="text-sm text-tl-700 dark:text-tl-300">
                     {formatNumber(insights.bestDayCount)} incidencias (30 días)
                   </p>
                 </div>
@@ -455,10 +455,10 @@ export default function MejorHoraContent() {
                   <p className="text-xs font-semibold text-orange-500 uppercase tracking-wide">
                     Día con más incidencias
                   </p>
-                  <p className="text-xl font-bold text-gray-900 mt-0.5">
+                  <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-0.5">
                     {insights.worstDay}
                   </p>
-                  <p className="text-sm text-orange-700">
+                  <p className="text-sm text-orange-700 dark:text-orange-400">
                     {formatNumber(insights.worstDayCount)} incidencias (30 días)
                   </p>
                 </div>
@@ -473,12 +473,12 @@ export default function MejorHoraContent() {
                   Mapa de calor por hora del día
                 </span>
               </SectionTitle>
-              <p className="text-sm text-gray-500 mb-5">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
                 Cada celda muestra el número de incidencias que comenzaron en esa
                 franja horaria durante los últimos 30 días.{" "}
                 <span className="text-emerald-700 font-medium">Verde</span> = pocas
                 incidencias ·{" "}
-                <span className="text-red-600 font-medium">Rojo</span> = muchas
+                <span className="text-red-600 dark:text-red-400 font-medium">Rojo</span> = muchas
                 incidencias.
               </p>
               <HourlyHeatmap data={data.incidentsByHour} />
@@ -488,11 +488,11 @@ export default function MejorHoraContent() {
             <SectionCard>
               <SectionTitle>
                 <span className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-gray-500" />
+                  <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Incidencias por hora del día
                 </span>
               </SectionTitle>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Distribución detallada de las{" "}
                 {formatNumber(data.totalHistoric)} incidencias registradas en los
                 últimos 30 días según la hora de inicio.
@@ -540,11 +540,11 @@ export default function MejorHoraContent() {
             <SectionCard>
               <SectionTitle>
                 <span className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-gray-500" />
+                  <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Comparativa por día de la semana
                 </span>
               </SectionTitle>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Días con mayor y menor concentración de incidencias en los
                 últimos 30 días. Los colores indican el nivel de riesgo relativo.
               </p>
@@ -666,14 +666,14 @@ export default function MejorHoraContent() {
                 ].map((tip) => (
                   <div
                     key={tip.title}
-                    className="flex gap-3 p-4 rounded-lg bg-gray-50 border border-gray-100"
+                    className="flex gap-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800"
                   >
                     <div className="shrink-0 mt-0.5">{tip.icon}</div>
                     <div>
-                      <p className="font-semibold text-gray-800 text-sm">
+                      <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
                         {tip.title}
                       </p>
-                      <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5 leading-relaxed">
                         {tip.text}
                       </p>
                     </div>
@@ -689,12 +689,12 @@ export default function MejorHoraContent() {
                 {FAQ_ITEMS.map((faq) => (
                   <details key={faq.question} className="group pt-4 first:pt-0">
                     <summary className="flex items-center justify-between cursor-pointer list-none gap-4">
-                      <span className="font-semibold text-gray-800 text-sm">
+                      <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
                         {faq.question}
                       </span>
                       <ChevronRight className="w-4 h-4 text-gray-400 shrink-0 transition-transform group-open:rotate-90" />
                     </summary>
-                    <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                       {faq.answer}
                     </p>
                   </details>

@@ -133,7 +133,7 @@ function StatCard({
         {!sparklineData && change !== undefined && change !== null && (
           <div
             className={`flex items-center gap-1 text-sm font-medium ${
-              isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-500 dark:text-gray-400"
+              isPositive ? "text-green-600 dark:text-green-400" : isNegative ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"
             }`}
           >
             {isPositive ? (
@@ -148,8 +148,8 @@ function StatCard({
       <div className="mt-3">
         {loading ? (
           <div className="flex items-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500" />
-            <span className="text-gray-400 dark:text-gray-500">Cargando...</span>
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500 dark:text-gray-400" />
+            <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400">Cargando...</span>
           </div>
         ) : (
           <>
@@ -158,7 +158,7 @@ function StatCard({
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
             {comparison && (
-              <div className="mt-2 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+              <div className="mt-2 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">
                 <span>
                   Ayer: <span className="font-data">{comparison.yesterday}</span>
                   {comparison.changeVsYesterday !== null && (
@@ -299,8 +299,8 @@ export function EnhancedStatsCards() {
           title="V16 Activas"
           value={displayStats.v16Active}
           change={displayStats.v16Change}
-          icon={<AlertTriangle className="w-5 h-5 text-red-600" />}
-          color="bg-red-50"
+          icon={<AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />}
+          color="bg-red-50 dark:bg-red-900/20"
           loading={statsLoading}
           sparklineData={sparklineV16}
           sparklineColor="#DC2626"
@@ -319,7 +319,7 @@ export function EnhancedStatsCards() {
           title="Incidencias"
           value={displayStats.incidents}
           change={displayStats.incidentsChange}
-          icon={<AlertTriangle className="w-5 h-5 text-orange-600" />}
+          icon={<AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />}
           color="bg-orange-50"
           loading={statsLoading}
           sparklineData={sparklineIncidents}
@@ -338,19 +338,19 @@ export function EnhancedStatsCards() {
         <StatCard
           title="Cámaras"
           value={displayStats.cameras}
-          icon={<Camera className="w-5 h-5 text-tl-600" />}
-          color="bg-tl-50"
+          icon={<Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />}
+          color="bg-tl-50 dark:bg-tl-900/20"
         />
         <StatCard
           title="Cargadores EV"
           value={displayStats.chargers}
-          icon={<Zap className="w-5 h-5 text-green-600" />}
-          color="bg-green-50"
+          icon={<Zap className="w-5 h-5 text-green-600 dark:text-green-400" />}
+          color="bg-green-50 dark:bg-green-900/20"
         />
         <StatCard
           title="Zonas ZBE"
           value={displayStats.zbeZones}
-          icon={<Ban className="w-5 h-5 text-purple-600" />}
+          icon={<Ban className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
           color="bg-purple-50"
         />
       </div>

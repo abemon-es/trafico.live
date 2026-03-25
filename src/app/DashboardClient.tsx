@@ -43,7 +43,7 @@ function CardsSkeleton() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="h-28 bg-white rounded-lg shadow-sm border border-gray-200 animate-pulse" />
+        <div key={i} className="h-28 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 animate-pulse" />
       ))}
     </div>
   );
@@ -51,11 +51,11 @@ function CardsSkeleton() {
 
 function MapLoading() {
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="p-4 border-b border-gray-200">
+    <div className="w-full bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <div className="h-6 w-40 bg-gray-200 animate-pulse rounded" />
       </div>
-      <div className="h-[550px] bg-gray-100 animate-pulse flex items-center justify-center">
+      <div className="h-[550px] bg-gray-100 dark:bg-gray-900 animate-pulse flex items-center justify-center">
         <MapIcon className="w-12 h-12 text-gray-400" />
       </div>
     </div>
@@ -63,7 +63,7 @@ function MapLoading() {
 }
 
 function ChartSkeleton() {
-  return <div className="h-64 bg-white rounded-lg shadow-sm border border-gray-200 animate-pulse" />;
+  return <div className="h-64 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 animate-pulse" />;
 }
 
 export function DashboardClient() {
@@ -77,7 +77,7 @@ export function DashboardClient() {
         <EnhancedStatsCards />
       </Suspense>
 
-      <Suspense fallback={<div className="h-12 bg-white rounded-lg shadow-sm border border-gray-200 animate-pulse" />}>
+      <Suspense fallback={<div className="h-12 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 animate-pulse" />}>
         <QuickActions />
       </Suspense>
 

@@ -49,7 +49,7 @@ const FEATURE_CARDS = [
       "Localiza en tiempo real las gasolineras con el precio de diésel más competitivo para optimizar el coste de tu flota.",
     href: "/profesional/diesel",
     icon: Fuel,
-    color: "bg-tl-amber-100 text-tl-amber-600",
+    color: "bg-tl-amber-100 text-tl-amber-600 dark:text-tl-amber-400",
     borderHover: "hover:border-tl-amber-300",
     stats: "Precios actualizados hoy",
     badge: null,
@@ -60,7 +60,7 @@ const FEATURE_CARDS = [
       "Encuentra áreas de servicio con parking seguro para vehículos pesados, duchas, restauración y servicios 24h.",
     href: "/profesional/areas",
     icon: MapPin,
-    color: "bg-tl-100 text-tl-600",
+    color: "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400",
     borderHover: "hover:border-tl-300",
     stats: "Con servicios 24h",
     badge: null,
@@ -71,7 +71,7 @@ const FEATURE_CARDS = [
       "Consulta las ZBE, restricciones de peso y altura en túneles, y limitaciones de circulación vigentes en toda España.",
     href: "/restricciones",
     icon: Ban,
-    color: "bg-red-100 text-red-600",
+    color: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
     borderHover: "hover:border-red-300",
     stats: "Actualizado en tiempo real",
     badge: null,
@@ -82,7 +82,7 @@ const FEATURE_CARDS = [
       "Estima el coste de combustible, peajes y tiempo de viaje para cualquier trayecto. Incluye cálculo de emisiones CO₂.",
     href: "/calculadora",
     icon: Calculator,
-    color: "bg-green-100 text-green-600",
+    color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
     borderHover: "hover:border-green-300",
     stats: "Próximamente disponible",
     badge: "Próximamente",
@@ -162,13 +162,13 @@ export default function ProfesionalPage() {
                   >
                     <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-green-700 transition-colors">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-green-700 dark:text-green-400 transition-colors">
                     {card.title}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-1">{card.description}</p>
                   <div className="flex items-center justify-between mt-auto">
                     <span className="text-xs text-gray-400">{card.stats}</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600 transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600 dark:text-green-400 transition-colors" />
                   </div>
                 </Link>
               );
@@ -184,7 +184,7 @@ export default function ProfesionalPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-white dark:bg-gray-900/10 rounded-lg flex items-center justify-center">
                   <Code2 className="w-5 h-5 text-white" />
                 </div>
                 <h2 id="api-heading" className="text-xl font-bold text-white">
@@ -201,7 +201,7 @@ export default function ProfesionalPage() {
                   (tag) => (
                     <span
                       key={tag}
-                      className="text-xs bg-white/10 text-gray-200 px-3 py-1 rounded-full"
+                      className="text-xs bg-white dark:bg-gray-900/10 text-gray-200 px-3 py-1 rounded-full"
                     >
                       {tag}
                     </span>
@@ -212,7 +212,7 @@ export default function ProfesionalPage() {
             <div className="flex-shrink-0">
               <Link
                 href="/api-docs"
-                className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+                className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 dark:bg-gray-900 transition-colors"
               >
                 Ver documentación API
                 <ArrowRight className="w-4 h-4" />
@@ -258,7 +258,7 @@ export default function ProfesionalPage() {
               </ul>
               <Link
                 href="/"
-                className="mt-5 block text-center text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg py-2 hover:bg-green-100 transition-colors"
+                className="mt-5 block text-center text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-lg py-2 hover:bg-green-100 dark:bg-green-900/30 transition-colors"
               >
                 Empezar gratis
               </Link>

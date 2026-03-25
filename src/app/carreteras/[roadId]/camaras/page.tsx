@@ -94,39 +94,39 @@ export default async function RoadCamerasPage({ params }: PageProps) {
   }, {} as Record<string, typeof cameras>);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-gray-700">Inicio</Link>
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
           <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700">Carreteras</Link>
+          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
           <span className="mx-2">/</span>
-          <Link href={`/carreteras/${road.id}`} className="hover:text-gray-700">{road.id}</Link>
+          <Link href={`/carreteras/${road.id}`} className="hover:text-gray-700 dark:text-gray-300">{road.id}</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">Cámaras</span>
+          <span className="text-gray-900 dark:text-gray-100">Cámaras</span>
         </nav>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Camera className="w-8 h-8 text-tl-600" />
+                <Camera className="w-8 h-8 text-tl-600 dark:text-tl-400" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     Cámaras de tráfico en {road.id}
                   </h1>
-                  {road.name && <p className="text-gray-600">{road.name}</p>}
+                  {road.name && <p className="text-gray-600 dark:text-gray-400">{road.name}</p>}
                 </div>
               </div>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
                 {cameras.length} cámaras de vigilancia activas en esta carretera
               </p>
             </div>
             <Link
               href={`/carreteras/${road.id}`}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver
@@ -136,52 +136,52 @@ export default async function RoadCamerasPage({ params }: PageProps) {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-tl-600">{cameras.length}</div>
-            <div className="text-sm text-gray-600">Cámaras activas</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-tl-600 dark:text-tl-400">{cameras.length}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Cámaras activas</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-900">{Object.keys(camerasByProvince).length}</div>
-            <div className="text-sm text-gray-600">Provincias</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{Object.keys(camerasByProvince).length}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Provincias</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-green-600">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               {cameras.filter(c => c.lastUpdated && new Date(c.lastUpdated) > new Date(Date.now() - 3600000)).length}
             </div>
-            <div className="text-sm text-gray-600">Actualizadas (1h)</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Actualizadas (1h)</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-purple-600">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
               {cameras.filter(c => c.thumbnailUrl || c.feedUrl).length}
             </div>
-            <div className="text-sm text-gray-600">Con imagen</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Con imagen</div>
           </div>
         </div>
 
         {/* Cameras by Province */}
         {Object.entries(camerasByProvince).map(([province, provCameras]) => (
-          <div key={province} className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-gray-600" />
-              <h2 className="font-semibold text-gray-900">
+          <div key={province} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 mb-6">
+            <div className="bg-gray-50 dark:bg-gray-950 px-4 py-3 border-b flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100">
                 {PROVINCE_NAMES[province] || province}
               </h2>
-              <span className="text-gray-500 font-normal">({provCameras.length} cámaras)</span>
+              <span className="text-gray-500 dark:text-gray-400 font-normal">({provCameras.length} cámaras)</span>
             </div>
             <div className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {provCameras.map((camera) => (
-                  <div key={camera.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                  <div key={camera.id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:bg-gray-50 dark:bg-gray-950">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="font-medium text-gray-900">{camera.name || `Cámara ${camera.id}`}</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100">{camera.name || `Cámara ${camera.id}`}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {camera.kmPoint ? `km ${Number(camera.kmPoint).toFixed(1)}` : ""}
                           {camera.provinceName && ` · ${camera.provinceName}`}
                         </p>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        camera.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                        camera.isActive ? "bg-green-100 dark:bg-green-900/30 text-green-800" : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                       }`}>
                         {camera.isActive ? "Activa" : "Inactiva"}
                       </span>
@@ -191,7 +191,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
                         href={camera.feedUrl || camera.thumbnailUrl || ""}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-tl-600 hover:text-tl-800 flex items-center gap-1"
+                        className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 flex items-center gap-1"
                       >
                         Ver imagen <ExternalLink className="w-3 h-3" />
                       </a>
@@ -209,18 +209,18 @@ export default async function RoadCamerasPage({ params }: PageProps) {
         ))}
 
         {cameras.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center">
             <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Sin cámaras disponibles</h2>
-            <p className="text-gray-600">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Sin cámaras disponibles</h2>
+            <p className="text-gray-600 dark:text-gray-400">
               No hay cámaras de tráfico activas registradas en la {road.id}.
             </p>
           </div>
         )}
 
         {/* SEO Content */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Cámaras de vigilancia de tráfico en la {road.id}
           </h2>
           <div className="prose prose-gray max-w-none">

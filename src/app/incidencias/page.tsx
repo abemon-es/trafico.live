@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 
 function IncidenciasLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="flex items-center gap-3 text-gray-500">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+      <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
         <Loader2 className="w-6 h-6 animate-spin" />
         <span>Cargando incidencias...</span>
       </div>

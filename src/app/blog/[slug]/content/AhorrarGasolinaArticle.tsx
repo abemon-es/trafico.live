@@ -74,23 +74,23 @@ const TIPS = [
 ];
 
 const CATEGORY_COLOR: Record<string, string> = {
-  Conducción: "bg-tl-100 text-tl-700",
+  Conducción: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   Climatización: "bg-cyan-100 text-cyan-700",
-  Mantenimiento: "bg-green-100 text-green-700",
-  Planificación: "bg-purple-100 text-purple-700",
-  Precio: "bg-tl-amber-100 text-tl-amber-700",
+  Mantenimiento: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+  Planificación: "bg-purple-100 text-purple-700 dark:text-purple-400",
+  Precio: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300",
 };
 
 export function AhorrarGasolinaArticle() {
   return (
     <article className="prose prose-gray max-w-none">
-      <p className="lead text-lg text-gray-600 leading-relaxed mb-8">
+      <p className="lead text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
         Con los precios del combustible en máximos históricos, reducir el consumo de tu
         vehículo es más importante que nunca. Aquí tienes 10 consejos probados que
         pueden ahorrarte entre 300 y 600 € al año.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-6">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8 mb-6">
         Los 10 consejos para consumir menos
       </h2>
 
@@ -98,7 +98,7 @@ export function AhorrarGasolinaArticle() {
         {TIPS.map((tip) => (
           <div
             key={tip.number}
-            className="flex gap-4 p-5 bg-white rounded-xl border border-gray-200 shadow-sm"
+            className="flex gap-4 p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm"
           >
             <div className="flex-shrink-0 w-10 h-10 bg-tl-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
               {tip.number}
@@ -111,53 +111,53 @@ export function AhorrarGasolinaArticle() {
                   {tip.category}
                 </span>
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-1">{tip.title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{tip.description}</p>
+              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-1">{tip.title}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{tip.description}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8 mb-4">
         ¿Cuánto puedes ahorrar realmente?
       </h2>
-      <p className="text-gray-700 leading-relaxed mb-4">
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
         Un conductor medio español recorre unos{" "}
         <strong>14.000 km anuales</strong> con un consumo de unos 7 l/100 km. Eso son
         980 litros de gasolina al año. Con precio medio de 1,65 €/litro, el coste
         anual es de <strong>1.617 €</strong>.
       </p>
-      <p className="text-gray-700 leading-relaxed mb-4">
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
         Aplicando correctamente los consejos de conducción eficiente puedes reducir el
         consumo entre un <strong>15% y un 25%</strong>. Eso equivale a un ahorro de
         entre <strong>242 y 404 € anuales</strong>, solo en combustible.
       </p>
-      <p className="text-gray-700 leading-relaxed mb-4">
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
         A ese ahorro en consumo hay que sumarle el ahorro por repostar en la gasolinera
         más barata (fácilmente <strong>100-150 € más al año</strong>).
       </p>
 
-      <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-8">
+      <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-8">
         <p className="text-tl-amber-800 text-sm font-semibold mb-1">
           Ahorro total estimado
         </p>
-        <p className="text-tl-amber-700 text-sm">
+        <p className="text-tl-amber-700 dark:text-tl-amber-300 text-sm">
           Combinando conducción eficiente + repostaje inteligente, un conductor medio
           puede ahorrar fácilmente entre{" "}
           <strong>350 € y 550 € anuales</strong> sin ningún gasto adicional.
         </p>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8 mb-4">
         Cómo encontrar la gasolinera más barata
       </h2>
-      <p className="text-gray-700 leading-relaxed mb-4">
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
         El precio de los combustibles en España lo regula el mercado, lo que crea
         diferencias significativas entre estaciones cercanas. Las gasolineras de
         <strong> supermercados</strong> (Carrefour, Alcampo, Costco) suelen ser entre
         8 y 20 céntimos más baratas que las de marca.
       </p>
-      <p className="text-gray-700 leading-relaxed mb-4">
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
         En trafico.live actualizamos los precios de más de <strong>11.000 gasolineras</strong>{" "}
         de toda España cada hora con datos oficiales del Ministerio de Industria:
       </p>
@@ -170,27 +170,27 @@ export function AhorrarGasolinaArticle() {
         </Link>
         <Link
           href="/gasolineras/mapa"
-          className="inline-flex items-center gap-2 border border-gray-300 hover:border-tl-400 text-gray-700 hover:text-tl-600 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 border border-gray-300 dark:border-gray-700 hover:border-tl-400 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:text-tl-400 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
         >
           Mapa de gasolineras baratas
         </Link>
         <Link
           href="/profesional/diesel"
-          className="inline-flex items-center gap-2 border border-gray-300 hover:border-tl-400 text-gray-700 hover:text-tl-600 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 border border-gray-300 dark:border-gray-700 hover:border-tl-400 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:text-tl-400 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
         >
           Gasoil profesional (bonificado)
         </Link>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8 mb-4">
         Gasoil vs Gasolina: ¿cuál es más económico en 2026?
       </h2>
-      <p className="text-gray-700 leading-relaxed mb-4">
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
         Con el gasoil cotizando históricamente por encima de la gasolina 95 en muchas
         épocas de 2025-2026, la ventaja tradicional del diésel en coste se ha reducido.
         La decisión entre uno y otro depende del kilometraje anual:
       </p>
-      <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-6">
+      <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300 mb-6">
         <li>
           <strong>Menos de 15.000 km/año:</strong> la gasolina suele ser más económica
           en total, teniendo en cuenta el mayor precio del vehículo diésel y el ITV.
@@ -206,14 +206,14 @@ export function AhorrarGasolinaArticle() {
         </li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8 mb-4">
         El mantenimiento que más influye en el consumo
       </h2>
-      <p className="text-gray-700 leading-relaxed mb-4">
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
         Más allá de los neumáticos y el aceite, estos componentes tienen un impacto
         directo en el consumo que muchos conductores ignoran:
       </p>
-      <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-6">
+      <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300 mb-6">
         <li>
           <strong>Filtro de aire:</strong> un filtro sucio puede aumentar el consumo
           hasta un 10%. Cámbialo cada 15.000-20.000 km o una vez al año.
@@ -233,9 +233,9 @@ export function AhorrarGasolinaArticle() {
         </li>
       </ul>
 
-      <div className="bg-green-50 border border-green-200 rounded-xl p-5 mt-8">
+      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-xl p-5 mt-8">
         <p className="text-green-800 text-sm font-semibold mb-1">Resumen ejecutivo</p>
-        <p className="text-green-700 text-sm">
+        <p className="text-green-700 dark:text-green-400 text-sm">
           Los tres cambios con mejor relación esfuerzo/ahorro son: (1) inflar bien los
           neumáticos, (2) subir de marcha antes, (3) repostar en la gasolinera más
           barata. Los tres juntos pueden suponer{" "}

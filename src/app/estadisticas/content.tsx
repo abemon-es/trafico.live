@@ -32,11 +32,11 @@ const HistoricalMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <div className="h-6 w-48 bg-gray-200 animate-pulse rounded" />
         </div>
-        <div className="h-[400px] bg-gray-100 animate-pulse" />
+        <div className="h-[400px] bg-gray-100 dark:bg-gray-900 animate-pulse" />
       </div>
     ),
   }
@@ -409,7 +409,7 @@ function StatCard({
   isLoading?: boolean;
 }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center gap-2 mb-2">
         <div className={`p-2 ${iconBgColor} rounded-lg`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
@@ -418,16 +418,16 @@ function StatCard({
       {isLoading ? (
         <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
       ) : (
-        <p className="text-2xl font-bold text-gray-900 font-data">
+        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
           {typeof value === "number" ? value.toLocaleString("es-ES") : value}
         </p>
       )}
-      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
       {subLabel && <p className="text-xs text-gray-400 mt-1">{subLabel}</p>}
       {trend && !isLoading && (
         <div
           className={`flex items-center gap-1 mt-1 text-sm ${
-            trend.isPositive ? "text-green-600" : "text-red-600"
+            trend.isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
           }`}
         >
           {trend.isPositive ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
@@ -441,8 +441,8 @@ function StatCard({
 function SectionHeader({ title, description }: { title: string; description?: string }) {
   return (
     <div className="mb-6">
-      <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-      {description && <p className="mt-1 text-gray-600">{description}</p>}
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
+      {description && <p className="mt-1 text-gray-600 dark:text-gray-400">{description}</p>}
     </div>
   );
 }
@@ -460,12 +460,12 @@ function HourlyHeatmap({
 }) {
   if (isLoading || !data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           Patrón Hora × Día
         </h3>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           {isLoading ? <div className="animate-pulse">Cargando...</div> : <p>Sin datos</p>}
         </div>
       </div>
@@ -476,9 +476,9 @@ function HourlyHeatmap({
   const maxValue = Math.max(...data.map((d) => d.value), 1);
 
   const colorClasses = {
-    red: ["bg-gray-100", "bg-red-100", "bg-red-200", "bg-red-400", "bg-red-600"],
-    orange: ["bg-gray-100", "bg-orange-100", "bg-orange-200", "bg-orange-400", "bg-orange-600"],
-    blue: ["bg-gray-100", "bg-tl-100", "bg-tl-200", "bg-tl-400", "bg-tl-600"],
+    red: ["bg-gray-100 dark:bg-gray-900", "bg-red-100 dark:bg-red-900/30", "bg-red-200", "bg-red-400", "bg-red-600"],
+    orange: ["bg-gray-100 dark:bg-gray-900", "bg-orange-100", "bg-orange-200", "bg-orange-400", "bg-orange-600"],
+    blue: ["bg-gray-100 dark:bg-gray-900", "bg-tl-100 dark:bg-tl-900/30", "bg-tl-200", "bg-tl-400", "bg-tl-600"],
   };
 
   const getColor = (value: number) => {
@@ -492,9 +492,9 @@ function HourlyHeatmap({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Activity className="w-5 h-5 text-purple-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         Patrón Hora × Día
       </h3>
       <div className="overflow-x-auto">
@@ -502,14 +502,14 @@ function HourlyHeatmap({
           <div className="flex mb-1">
             <div className="w-10" />
             {[0, 6, 12, 18].map((h) => (
-              <div key={h} className="flex-1 text-xs text-gray-500 text-center">
+              <div key={h} className="flex-1 text-xs text-gray-500 dark:text-gray-400 text-center">
                 {h}h
               </div>
             ))}
           </div>
           {[1, 2, 3, 4, 5, 6, 0].map((day) => (
             <div key={day} className="flex items-center mb-0.5">
-              <div className="w-10 text-xs text-gray-500">{dayNames[day]}</div>
+              <div className="w-10 text-xs text-gray-500 dark:text-gray-400">{dayNames[day]}</div>
               <div className="flex-1 flex gap-0.5">
                 {Array.from({ length: 24 }, (_, hour) => {
                   const cell = data.find((d) => d.hour === hour && d.day === day);
@@ -527,7 +527,7 @@ function HourlyHeatmap({
         </div>
       </div>
       {peaks && (
-        <p className="mt-3 text-sm text-gray-600">
+        <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
           Pico: <span className="font-medium font-data">{peaks.hour.hour}:00</span> ({peaks.day.dayName})
         </p>
       )}
@@ -548,9 +548,9 @@ function DailyTrendMini({
 }) {
   if (isLoading || !data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-        <div className="h-32 flex items-center justify-center text-gray-500">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
+        <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400">
           {isLoading ? <div className="animate-pulse">Cargando...</div> : <p>Sin datos</p>}
         </div>
       </div>
@@ -558,11 +558,11 @@ function DailyTrendMini({
   }
 
   const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const bgColor = color === "orange" ? "bg-orange-500" : color === "blue" ? "bg-tl-500" : "bg-red-500";
+  const bgColor = color === "orange" ? "bg-orange-500" : color === "blue" ? "bg-tl-50 dark:bg-tl-900/200" : "bg-red-50 dark:bg-red-900/200";
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
       <div className="h-32 flex items-end gap-0.5">
         {data.slice(-30).map((day, idx) => {
           const height = (day.count / maxCount) * 100;
@@ -576,7 +576,7 @@ function DailyTrendMini({
           );
         })}
       </div>
-      <p className="text-xs text-gray-500 mt-2">Últimos 30 días</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Últimos 30 días</p>
     </div>
   );
 }
@@ -591,21 +591,21 @@ function V16DailyTrendChart({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-64 bg-gray-100 animate-pulse rounded" />
+        <div className="h-64 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-tl-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-tl-600 dark:text-tl-400" />
           Tendencia Diaria
         </h2>
-        <div className="h-64 flex items-center justify-center text-gray-500">
+        <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>No hay datos disponibles aún</p>
@@ -619,9 +619,9 @@ function V16DailyTrendChart({
   const maxCount = Math.max(...data.map((d) => d.v16Count));
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-tl-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <TrendingUp className="w-5 h-5 text-tl-600 dark:text-tl-400" />
         Tendencia Diaria de Balizas V16
       </h2>
       <div className="h-64 flex items-end gap-1">
@@ -636,7 +636,7 @@ function V16DailyTrendChart({
                 style={{ height: `${height}%`, minHeight: day.v16Count > 0 ? "4px" : "0" }}
                 title={`${day.date}: ${day.v16Count} balizas`}
               />
-              <span className="text-xs text-gray-500 mt-1 truncate w-full text-center">
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate w-full text-center">
                 {dayLabel}
               </span>
             </div>
@@ -657,21 +657,21 @@ function V16HourlyHeatmap({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-48 bg-gray-100 animate-pulse rounded" />
+        <div className="h-48 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || !data.heatmapData || data.heatmapData.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           Patrón Horario
         </h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>Sin datos de patrones horarios</p>
@@ -686,7 +686,7 @@ function V16HourlyHeatmap({
 
   const getColor = (value: number) => {
     const intensity = value / maxValue;
-    if (intensity === 0) return "bg-gray-100";
+    if (intensity === 0) return "bg-gray-100 dark:bg-gray-900";
     if (intensity < 0.25) return "bg-orange-100";
     if (intensity < 0.5) return "bg-orange-200";
     if (intensity < 0.75) return "bg-orange-400";
@@ -694,9 +694,9 @@ function V16HourlyHeatmap({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Activity className="w-5 h-5 text-purple-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         Patrón Hora × Día de la Semana
       </h2>
       <div className="overflow-x-auto">
@@ -704,14 +704,14 @@ function V16HourlyHeatmap({
           <div className="flex mb-1">
             <div className="w-12" />
             {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
-              <div key={h} className="flex-1 text-xs text-gray-500 text-center">
+              <div key={h} className="flex-1 text-xs text-gray-500 dark:text-gray-400 text-center">
                 {h}:00
               </div>
             ))}
           </div>
           {[1, 2, 3, 4, 5, 6, 0].map((day) => (
             <div key={day} className="flex items-center mb-1">
-              <div className="w-12 text-xs text-gray-500">{dayNames[day]}</div>
+              <div className="w-12 text-xs text-gray-500 dark:text-gray-400">{dayNames[day]}</div>
               <div className="flex-1 flex gap-0.5">
                 {Array.from({ length: 24 }, (_, hour) => {
                   const cell = data.heatmapData.find((d) => d.hour === hour && d.day === day);
@@ -730,7 +730,7 @@ function V16HourlyHeatmap({
         </div>
       </div>
       {data.peaks && (
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
           <p>
             <span className="font-medium">Hora pico:</span> <span className="font-data">{data.peaks.hour.hour}:00</span> (promedio{" "}
             <span className="font-data">{data.peaks.hour.avgCount}</span> balizas)
@@ -755,21 +755,21 @@ function V16DurationDistribution({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-48 bg-gray-100 animate-pulse rounded" />
+        <div className="h-48 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || !data.stats || data.distribution.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-green-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
           Duración de Balizas
         </h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>{data?.message || "Sin datos de duración disponibles"}</p>
@@ -782,33 +782,33 @@ function V16DurationDistribution({
   const maxPercentage = Math.max(...data.distribution.map((d) => d.percentage), 1);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Clock className="w-5 h-5 text-green-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
         Distribución de Duración
       </h2>
       <div className="space-y-3">
         {data.distribution.map((bucket, idx) => (
           <div key={idx} className="flex items-center gap-3">
-            <div className="w-24 text-sm text-gray-600">{bucket.label}</div>
-            <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+            <div className="w-24 text-sm text-gray-600 dark:text-gray-400">{bucket.label}</div>
+            <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
               <div
-                className="h-full bg-green-500 rounded"
+                className="h-full bg-green-50 dark:bg-green-900/200 rounded"
                 style={{ width: `${(bucket.percentage / maxPercentage) * 100}%` }}
               />
             </div>
-            <div className="w-16 text-sm text-gray-600 text-right font-data">{bucket.percentage}%</div>
+            <div className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{bucket.percentage}%</div>
           </div>
         ))}
       </div>
       {data.stats && (
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Media:</span>{" "}
+            <span className="text-gray-500 dark:text-gray-400">Media:</span>{" "}
             <span className="font-medium font-data">{data.stats.avgMinutes} min</span>
           </div>
           <div>
-            <span className="text-gray-500">Mediana:</span>{" "}
+            <span className="text-gray-500 dark:text-gray-400">Mediana:</span>{" "}
             <span className="font-medium font-data">{data.stats.medianMinutes} min</span>
           </div>
         </div>
@@ -846,8 +846,8 @@ function ResumenSection({
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <StatCard
           icon={AlertTriangle}
-          iconBgColor="bg-red-50"
-          iconColor="text-red-600"
+          iconBgColor="bg-red-50 dark:bg-red-900/20"
+          iconColor="text-red-600 dark:text-red-400"
           value={hasIncidents ? incidentStats.data.totals.activeNow : "-"}
           label="Incidencias Activas"
           isLoading={incidentLoading}
@@ -855,15 +855,15 @@ function ResumenSection({
         <StatCard
           icon={Zap}
           iconBgColor="bg-orange-50"
-          iconColor="text-orange-600"
+          iconColor="text-orange-600 dark:text-orange-400"
           value={hasV16 ? v16Stats.data.totals.v16Total : "-"}
           label="Balizas V16 (30d)"
           isLoading={v16Loading}
         />
         <StatCard
           icon={Clock}
-          iconBgColor="bg-tl-50"
-          iconColor="text-tl-600"
+          iconBgColor="bg-tl-50 dark:bg-tl-900/20"
+          iconColor="text-tl-600 dark:text-tl-400"
           value={hasIncidents ? incidentStats.data.totals.incidentsLast24h : "-"}
           label="Incidencias 24h"
           isLoading={incidentLoading}
@@ -871,15 +871,15 @@ function ResumenSection({
         <StatCard
           icon={Calendar}
           iconBgColor="bg-purple-50"
-          iconColor="text-purple-600"
+          iconColor="text-purple-600 dark:text-purple-400"
           value={hasIncidents ? incidentStats.data.totals.incidentsLast7d : "-"}
           label="Incidencias 7d"
           isLoading={incidentLoading}
         />
         <StatCard
           icon={Clock}
-          iconBgColor="bg-green-50"
-          iconColor="text-green-600"
+          iconBgColor="bg-green-50 dark:bg-green-900/20"
+          iconColor="text-green-600 dark:text-green-400"
           value={
             hasIncidents && incidentStats.data.totals.avgDurationMins
               ? `${incidentStats.data.totals.avgDurationMins}m`
@@ -953,11 +953,11 @@ function IncidenciasSection({
   const stats = data?.data;
 
   const typeColors: Record<string, string> = {
-    ACCIDENT: "bg-red-500",
+    ACCIDENT: "bg-red-50 dark:bg-red-900/200",
     ROADWORK: "bg-orange-500",
     CONGESTION: "bg-yellow-500",
     HAZARD: "bg-purple-500",
-    VEHICLE_BREAKDOWN: "bg-tl-500",
+    VEHICLE_BREAKDOWN: "bg-tl-50 dark:bg-tl-900/200",
     WEATHER: "bg-cyan-500",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
@@ -974,7 +974,7 @@ function IncidenciasSection({
         <select
           value={period}
           onChange={(e) => setPeriod(parseInt(e.target.value, 10))}
-          className="border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+          className="border border-gray-300 dark:border-gray-700 rounded-md px-3 py-1.5 text-sm"
         >
           <option value={7}>7 días</option>
           <option value={14}>14 días</option>
@@ -987,24 +987,24 @@ function IncidenciasSection({
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard
           icon={AlertTriangle}
-          iconBgColor="bg-red-50"
-          iconColor="text-red-600"
+          iconBgColor="bg-red-50 dark:bg-red-900/20"
+          iconColor="text-red-600 dark:text-red-400"
           value={hasData ? stats!.totals.totalIncidents : "-"}
           label="Total Período"
           isLoading={isLoading}
         />
         <StatCard
           icon={Activity}
-          iconBgColor="bg-green-50"
-          iconColor="text-green-600"
+          iconBgColor="bg-green-50 dark:bg-green-900/20"
+          iconColor="text-green-600 dark:text-green-400"
           value={hasData ? stats!.totals.activeNow : "-"}
           label="Activas Ahora"
           isLoading={isLoading}
         />
         <StatCard
           icon={Clock}
-          iconBgColor="bg-tl-50"
-          iconColor="text-tl-600"
+          iconBgColor="bg-tl-50 dark:bg-tl-900/20"
+          iconColor="text-tl-600 dark:text-tl-400"
           value={hasData ? stats!.totals.incidentsLast24h : "-"}
           label="Últimas 24h"
           isLoading={isLoading}
@@ -1012,7 +1012,7 @@ function IncidenciasSection({
         <StatCard
           icon={Calendar}
           iconBgColor="bg-purple-50"
-          iconColor="text-purple-600"
+          iconColor="text-purple-600 dark:text-purple-400"
           value={hasData ? stats!.totals.incidentsLast7d : "-"}
           label="Últimos 7 días"
           isLoading={isLoading}
@@ -1020,7 +1020,7 @@ function IncidenciasSection({
         <StatCard
           icon={Clock}
           iconBgColor="bg-orange-50"
-          iconColor="text-orange-600"
+          iconColor="text-orange-600 dark:text-orange-400"
           value={hasData && stats!.totals.avgDurationMins ? `${stats!.totals.avgDurationMins}m` : "-"}
           label="Duración Media"
           isLoading={isLoading}
@@ -1039,22 +1039,22 @@ function IncidenciasSection({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* By Type */}
         {stats?.byType && stats.byType.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-orange-600" />
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <Layers className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               Por Tipo
             </h3>
             <div className="space-y-2">
               {stats.byType.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-2">
-                  <div className="w-24 text-sm text-gray-600 truncate">{item.label}</div>
-                  <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
+                  <div className="w-24 text-sm text-gray-600 dark:text-gray-400 truncate">{item.label}</div>
+                  <div className="flex-1 h-5 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                     <div
-                      className={`h-full ${typeColors[item.type] || "bg-gray-500"} rounded`}
+                      className={`h-full ${typeColors[item.type] || "bg-gray-50 dark:bg-gray-9500"} rounded`}
                       style={{ width: `${item.percentage}%` }}
                     />
                   </div>
-                  <div className="w-16 text-sm text-gray-600 text-right font-data">{item.percentage}%</div>
+                  <div className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{item.percentage}%</div>
                 </div>
               ))}
             </div>
@@ -1224,14 +1224,14 @@ function V16Section() {
           }
         />
         <div className="flex items-center gap-2">
-          <label htmlFor="v16-period" className="text-sm text-gray-600">
+          <label htmlFor="v16-period" className="text-sm text-gray-600 dark:text-gray-400">
             Período:
           </label>
           <select
             id="v16-period"
             value={period}
             onChange={(e) => setPeriod(e.target.value as V16PeriodValue)}
-            className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="border border-gray-300 dark:border-gray-700 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
           >
             {V16_PERIOD_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -1244,7 +1244,7 @@ function V16Section() {
 
       {/* Data start date indicator */}
       {period === "todo" && dataStartDate && (
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           Mostrando datos desde:{" "}
           <span className="font-medium">
             {new Date(dataStartDate).toLocaleDateString("es-ES", {
@@ -1261,9 +1261,9 @@ function V16Section() {
         <div className="flex items-center gap-2 text-sm">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-50 dark:bg-green-900/200"></span>
           </span>
-          <span className="text-green-700 font-medium">
+          <span className="text-green-700 dark:text-green-400 font-medium">
             Tiempo real - <span className="font-data">{realtimeData?.count || 0}</span> balizas activas
           </span>
           {realtimeData?.lastUpdated && (
@@ -1292,7 +1292,7 @@ function V16Section() {
         <StatCard
           icon={AlertTriangle}
           iconBgColor="bg-orange-50"
-          iconColor="text-orange-600"
+          iconColor="text-orange-600 dark:text-orange-400"
           value={
             isRealtime
               ? realtimeData?.count || 0
@@ -1312,8 +1312,8 @@ function V16Section() {
         />
         <StatCard
           icon={Clock}
-          iconBgColor="bg-green-50"
-          iconColor="text-green-600"
+          iconBgColor="bg-green-50 dark:bg-green-900/20"
+          iconColor="text-green-600 dark:text-green-400"
           value={
             durationData?.data?.stats?.avgMinutes
               ? `${durationData.data.stats.avgMinutes} min`
@@ -1329,8 +1329,8 @@ function V16Section() {
         />
         <StatCard
           icon={MapPin}
-          iconBgColor="bg-tl-50"
-          iconColor="text-tl-600"
+          iconBgColor="bg-tl-50 dark:bg-tl-900/20"
+          iconColor="text-tl-600 dark:text-tl-400"
           value={provincesData?.data?.totals?.totalBeacons || "-"}
           label="Por Ubicación"
           subLabel={
@@ -1343,7 +1343,7 @@ function V16Section() {
         <StatCard
           icon={Calendar}
           iconBgColor="bg-purple-50"
-          iconColor="text-purple-600"
+          iconColor="text-purple-600 dark:text-purple-400"
           value={
             dailyData?.data?.peak
               ? new Date(dailyData.data.peak.date).toLocaleDateString("es-ES", {
@@ -1362,8 +1362,8 @@ function V16Section() {
 
       {/* Charts - only show for historical data */}
       {isRealtime ? (
-        <div className="bg-tl-50 border border-tl-200 rounded-lg p-6">
-          <p className="text-tl-800 text-center">
+        <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-6">
+          <p className="text-tl-800 dark:text-tl-200 text-center">
             <span className="font-medium">Modo tiempo real activo.</span> Selecciona un período
             histórico para ver estadísticas y análisis detallados.
           </p>
@@ -1392,12 +1392,12 @@ function V16Section() {
                 labelWidth={110}
               />
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-gray-500" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Ranking por Provincia
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {provincesLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (
@@ -1418,12 +1418,12 @@ function V16Section() {
                 labelWidth={90}
               />
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-gray-500" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Por Tipo de Vía
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {provincesLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (
@@ -1441,9 +1441,9 @@ function V16Section() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Severity Distribution */}
             {severityChartData.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-red-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <PieChart className="w-5 h-5 text-red-600 dark:text-red-400" />
                   Distribución por Severidad
                 </h2>
                 <div className="space-y-3">
@@ -1451,39 +1451,39 @@ function V16Section() {
                     const total = severityChartData.reduce((sum, i) => sum + i.value, 0);
                     const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
                     const colors: Record<string, string> = {
-                      Baja: "bg-green-500",
+                      Baja: "bg-green-50 dark:bg-green-900/200",
                       Media: "bg-orange-500",
-                      Alta: "bg-red-500",
+                      Alta: "bg-red-50 dark:bg-red-900/200",
                       "Muy Alta": "bg-red-900",
                     };
-                    const bgColor = colors[item.name] || "bg-gray-500";
+                    const bgColor = colors[item.name] || "bg-gray-50 dark:bg-gray-9500";
                     return (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="w-20 text-sm text-gray-600">{item.name}</div>
-                        <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                        <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.name}</div>
+                        <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                           <div
                             className={`h-full ${bgColor} rounded`}
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-16 text-sm text-gray-600 text-right font-data">
+                        <div className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">
                           {item.value} ({percentage}%)
                         </div>
                       </div>
                     );
                   })}
                 </div>
-                <p className="text-xs text-gray-500 mt-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
                   Clasificación según nivel de urgencia de la emergencia
                 </p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-red-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <PieChart className="w-5 h-5 text-red-600 dark:text-red-400" />
                   Distribución por Severidad
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {mapLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (
@@ -1498,9 +1498,9 @@ function V16Section() {
 
             {/* Top Roads */}
             {topRoadsChartData.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   Top {topRoadsChartData.length} Carreteras
                 </h2>
                 <div className="space-y-3">
@@ -1509,32 +1509,32 @@ function V16Section() {
                     const percentage = maxValue > 0 ? Math.round((road.value / maxValue) * 100) : 0;
                     return (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="w-16 text-sm font-medium text-gray-900">{road.name}</div>
-                        <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                        <div className="w-16 text-sm font-medium text-gray-900 dark:text-gray-100">{road.name}</div>
+                        <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                           <div
-                            className="h-full bg-tl-500 rounded"
+                            className="h-full bg-tl-50 dark:bg-tl-900/200 rounded"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-10 text-sm text-gray-600 text-right font-data">{road.value}</div>
+                        <div className="w-10 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{road.value}</div>
                       </div>
                     );
                   })}
                 </div>
                 {roadsData?.data?.totals && (
-                  <p className="text-xs text-gray-500 mt-4">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
                     <span className="font-data">{roadsData.data.totals.totalBeacons}</span> balizas en{" "}
                     <span className="font-data">{roadsData.data.totals.uniqueRoads}</span> carreteras diferentes
                   </p>
                 )}
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   Carreteras con más balizas
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {roadsLoading ? (
                     <div className="animate-pulse">Cargando datos...</div>
                   ) : (
@@ -1586,16 +1586,16 @@ function HistoricoSection({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           icon={AlertTriangle}
-          iconBgColor="bg-red-50"
-          iconColor="text-red-600"
+          iconBgColor="bg-red-50 dark:bg-red-900/20"
+          iconColor="text-red-600 dark:text-red-400"
           value={hasData ? historicalData!.totals.accidents : "-"}
           label={`Accidentes (${latestYear})`}
           isLoading={isLoading}
         />
         <StatCard
           icon={Users}
-          iconBgColor="bg-gray-100"
-          iconColor="text-gray-600"
+          iconBgColor="bg-gray-100 dark:bg-gray-900"
+          iconColor="text-gray-600 dark:text-gray-400"
           value={hasData ? historicalData!.totals.fatalities : "-"}
           label={`Fallecidos (${latestYear})`}
           isLoading={isLoading}
@@ -1603,15 +1603,15 @@ function HistoricoSection({
         <StatCard
           icon={Car}
           iconBgColor="bg-orange-50"
-          iconColor="text-orange-600"
+          iconColor="text-orange-600 dark:text-orange-400"
           value={hasData ? historicalData!.totals.hospitalized : "-"}
           label="Heridos graves"
           isLoading={isLoading}
         />
         <StatCard
           icon={yoyTrend?.isPositive ? TrendingDown : TrendingUp}
-          iconBgColor={yoyTrend?.isPositive ? "bg-green-50" : "bg-red-50"}
-          iconColor={yoyTrend?.isPositive ? "text-green-600" : "text-red-600"}
+          iconBgColor={yoyTrend?.isPositive ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}
+          iconColor={yoyTrend?.isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}
           value={yoyTrend ? `${yoyTrend.isPositive ? "-" : "+"}${Math.abs(yoyTrend.value).toFixed(1)}%` : "-"}
           label="Variación anual"
           isLoading={isLoading}
@@ -1660,10 +1660,10 @@ function CarreterasSection({
   const hasData = data?.success;
 
   const riskColors: Record<string, { bg: string; text: string; label: string }> = {
-    CRITICAL: { bg: "bg-red-600", text: "text-red-600", label: "Crítico" },
-    HIGH: { bg: "bg-orange-500", text: "text-orange-600", label: "Alto" },
-    MEDIUM: { bg: "bg-yellow-500", text: "text-yellow-600", label: "Medio" },
-    LOW: { bg: "bg-green-500", text: "text-green-600", label: "Bajo" },
+    CRITICAL: { bg: "bg-red-600", text: "text-red-600 dark:text-red-400", label: "Crítico" },
+    HIGH: { bg: "bg-orange-500", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
+    MEDIUM: { bg: "bg-yellow-500", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
+    LOW: { bg: "bg-green-50 dark:bg-green-900/200", text: "text-green-600 dark:text-green-400", label: "Bajo" },
   };
 
   return (
@@ -1678,16 +1678,16 @@ function CarreterasSection({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <StatCard
             icon={Route}
-            iconBgColor="bg-tl-50"
-            iconColor="text-tl-600"
+            iconBgColor="bg-tl-50 dark:bg-tl-900/20"
+            iconColor="text-tl-600 dark:text-tl-400"
             value={data.data.summary.totalRoads}
             label="Carreteras Analizadas"
             isLoading={isLoading}
           />
           <StatCard
             icon={Shield}
-            iconBgColor="bg-red-50"
-            iconColor="text-red-600"
+            iconBgColor="bg-red-50 dark:bg-red-900/20"
+            iconColor="text-red-600 dark:text-red-400"
             value={data.data.summary.criticalRoads}
             label="Riesgo Crítico"
             isLoading={isLoading}
@@ -1695,7 +1695,7 @@ function CarreterasSection({
           <StatCard
             icon={AlertTriangle}
             iconBgColor="bg-orange-50"
-            iconColor="text-orange-600"
+            iconColor="text-orange-600 dark:text-orange-400"
             value={data.data.summary.highRiskRoads}
             label="Riesgo Alto"
             isLoading={isLoading}
@@ -1705,30 +1705,30 @@ function CarreterasSection({
 
       {/* Road List */}
       {hasData && data.data.roads.length > 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Ranking de Carreteras por Riesgo</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ranking de Carreteras por Riesgo</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-950">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Carretera</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Incidencias</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Balizas V16</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Duración Med.</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nivel Riesgo</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Carretera</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Incidencias</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Balizas V16</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Duración Med.</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nivel Riesgo</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {data.data.roads.slice(0, 20).map((road, idx) => {
                   const risk = riskColors[road.riskLevel] || riskColors.LOW;
                   return (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{road.road}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-center font-data">{road.incidentCount}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-center font-data">{road.v16Count}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-center font-data">
+                    <tr key={idx} className="hover:bg-gray-50 dark:bg-gray-950">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{road.road}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-center font-data">{road.incidentCount}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-center font-data">{road.v16Count}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-center font-data">
                         {road.avgDurationMins ? `${road.avgDurationMins}m` : "-"}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -1744,7 +1744,7 @@ function CarreterasSection({
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center text-gray-500 dark:text-gray-400">
           {isLoading ? (
             <div className="animate-pulse">Cargando datos de carreteras...</div>
           ) : (
@@ -1788,64 +1788,64 @@ function ClimaSection({
       {/* Impact Summary */}
       {hasData && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-tl-50 rounded-lg">
-                <CloudRain className="w-5 h-5 text-tl-600" />
+              <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+                <CloudRain className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">Con Alertas</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Con Alertas</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900 font-data">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
               {data.data.correlation.withAlerts.avgIncidents.toFixed(1)}
             </p>
-            <p className="text-sm text-gray-500">incidencias/día promedio</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">incidencias/día promedio</p>
             <p className="text-xs text-gray-400 mt-1"><span className="font-data">{data.data.correlation.withAlerts.days}</span> días</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <Activity className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <Activity className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">Sin Alertas</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Sin Alertas</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900 font-data">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
               {data.data.correlation.withoutAlerts.avgIncidents.toFixed(1)}
             </p>
-            <p className="text-sm text-gray-500">incidencias/día promedio</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">incidencias/día promedio</p>
             <p className="text-xs text-gray-400 mt-1"><span className="font-data">{data.data.correlation.withoutAlerts.days}</span> días</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-50 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-red-600" />
+              <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">Multiplicador</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Multiplicador</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900 font-data">×{data.data.correlation.impactMultiplier.toFixed(2)}</p>
-            <p className="text-sm text-gray-500">más incidencias con alertas</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">×{data.data.correlation.impactMultiplier.toFixed(2)}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">más incidencias con alertas</p>
           </div>
         </div>
       )}
 
       {/* By Alert Type */}
       {hasData && data.data.byAlertType.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Impacto por Tipo de Alerta</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Impacto por Tipo de Alerta</h3>
           <div className="space-y-3">
             {data.data.byAlertType.map((alert, idx) => {
               const maxAvg = Math.max(...data.data.byAlertType.map((a) => a.avgIncidents), 1);
               const width = (alert.avgIncidents / maxAvg) * 100;
               return (
                 <div key={idx} className="flex items-center gap-3">
-                  <div className="w-20 text-sm text-gray-600">
+                  <div className="w-20 text-sm text-gray-600 dark:text-gray-400">
                     {alertTypeLabels[alert.type] || alert.type}
                   </div>
-                  <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
-                    <div className="h-full bg-tl-500 rounded" style={{ width: `${width}%` }} />
+                  <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
+                    <div className="h-full bg-tl-50 dark:bg-tl-900/200 rounded" style={{ width: `${width}%` }} />
                   </div>
-                  <div className="w-24 text-sm text-gray-600 text-right font-data">
+                  <div className="w-24 text-sm text-gray-600 dark:text-gray-400 text-right font-data">
                     {alert.avgIncidents.toFixed(1)} inc/día
                   </div>
                 </div>
@@ -1856,7 +1856,7 @@ function ClimaSection({
       )}
 
       {!hasData && !isLoading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center text-gray-500 dark:text-gray-400">
           <CloudRain className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>No hay suficientes datos meteorológicos para el análisis</p>
         </div>
@@ -1887,7 +1887,7 @@ function CorrelacionSection({
           <StatCard
             icon={Zap}
             iconBgColor="bg-orange-50"
-            iconColor="text-orange-600"
+            iconColor="text-orange-600 dark:text-orange-400"
             value={data.data.summary.totalV16}
             label="Balizas V16"
             subLabel="analizadas"
@@ -1895,8 +1895,8 @@ function CorrelacionSection({
           />
           <StatCard
             icon={AlertTriangle}
-            iconBgColor="bg-red-50"
-            iconColor="text-red-600"
+            iconBgColor="bg-red-50 dark:bg-red-900/20"
+            iconColor="text-red-600 dark:text-red-400"
             value={data.data.summary.totalIncidents}
             label="Incidencias"
             subLabel="analizadas"
@@ -1904,8 +1904,8 @@ function CorrelacionSection({
           />
           <StatCard
             icon={Link2}
-            iconBgColor="bg-tl-50"
-            iconColor="text-tl-600"
+            iconBgColor="bg-tl-50 dark:bg-tl-900/20"
+            iconColor="text-tl-600 dark:text-tl-400"
             value={data.data.summary.totalCorrelations}
             label="Correlaciones"
             subLabel="encontradas"
@@ -1913,8 +1913,8 @@ function CorrelacionSection({
           />
           <StatCard
             icon={Activity}
-            iconBgColor="bg-green-50"
-            iconColor="text-green-600"
+            iconBgColor="bg-green-50 dark:bg-green-900/20"
+            iconColor="text-green-600 dark:text-green-400"
             value={`${data.data.summary.v16CorrelationRate}%`}
             label="Tasa V16"
             subLabel="con incidencia cercana"
@@ -1927,63 +1927,63 @@ function CorrelacionSection({
       {hasData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* By Distance */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-tl-600" />
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               Por Distancia
             </h3>
             <div className="space-y-3">
               {[
-                { label: "< 500m", value: data.data.byDistance.under500m, color: "bg-red-500" },
+                { label: "< 500m", value: data.data.byDistance.under500m, color: "bg-red-50 dark:bg-red-900/200" },
                 { label: "500m - 1km", value: data.data.byDistance.under1km, color: "bg-orange-500" },
                 { label: "1km - 2km", value: data.data.byDistance.under2km, color: "bg-yellow-500" },
-                { label: "> 2km", value: data.data.byDistance.over2km, color: "bg-green-500" },
+                { label: "> 2km", value: data.data.byDistance.over2km, color: "bg-green-50 dark:bg-green-900/200" },
               ].map((item) => {
                 const total = data.data.summary.totalCorrelations || 1;
                 const percentage = Math.round((item.value / total) * 100);
                 return (
                   <div key={item.label} className="flex items-center gap-3">
-                    <div className="w-20 text-sm text-gray-600">{item.label}</div>
-                    <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
+                    <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.label}</div>
+                    <div className="flex-1 h-5 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                       <div className={`h-full ${item.color} rounded`} style={{ width: `${percentage}%` }} />
                     </div>
-                    <div className="w-16 text-sm text-gray-600 text-right font-data">{item.value}</div>
+                    <div className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{item.value}</div>
                   </div>
                 );
               })}
             </div>
-            <p className="mt-4 text-xs text-gray-500">
+            <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
               Distancia entre baliza V16 e incidencia más cercana
             </p>
           </div>
 
           {/* By Time Difference */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-purple-600" />
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               Por Proximidad Temporal
             </h3>
             <div className="space-y-3">
               {[
-                { label: "Durante", value: data.data.byTimeDiff.during, color: "bg-red-500" },
+                { label: "Durante", value: data.data.byTimeDiff.during, color: "bg-red-50 dark:bg-red-900/200" },
                 { label: "< 15 min", value: data.data.byTimeDiff.within15min, color: "bg-orange-500" },
                 { label: "15-30 min", value: data.data.byTimeDiff.within30min, color: "bg-yellow-500" },
-                { label: "30-60 min", value: data.data.byTimeDiff.within60min, color: "bg-green-500" },
+                { label: "30-60 min", value: data.data.byTimeDiff.within60min, color: "bg-green-50 dark:bg-green-900/200" },
               ].map((item) => {
                 const total = data.data.summary.totalCorrelations || 1;
                 const percentage = Math.round((item.value / total) * 100);
                 return (
                   <div key={item.label} className="flex items-center gap-3">
-                    <div className="w-20 text-sm text-gray-600">{item.label}</div>
-                    <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
+                    <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.label}</div>
+                    <div className="flex-1 h-5 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                       <div className={`h-full ${item.color} rounded`} style={{ width: `${percentage}%` }} />
                     </div>
-                    <div className="w-16 text-sm text-gray-600 text-right font-data">{item.value}</div>
+                    <div className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{item.value}</div>
                   </div>
                 );
               })}
             </div>
-            <p className="mt-4 text-xs text-gray-500">
+            <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
               Diferencia de tiempo entre activación V16 e inicio de incidencia
             </p>
           </div>
@@ -2012,9 +2012,9 @@ function CorrelacionSection({
 
       {/* Interpretation */}
       {hasData && (
-        <div className="bg-tl-50 border border-tl-200 rounded-lg p-4">
+        <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4">
           <h3 className="font-medium text-tl-900 mb-2">Interpretación</h3>
-          <ul className="text-sm text-tl-800 space-y-1">
+          <ul className="text-sm text-tl-800 dark:text-tl-200 space-y-1">
             <li>
               • <strong className="font-data">{data.data.summary.v16CorrelationRate}%</strong> de las balizas V16 se activaron cerca
               de una incidencia reportada (en espacio y tiempo)
@@ -2033,37 +2033,37 @@ function CorrelacionSection({
 
       {/* Sample Correlations Table */}
       {hasData && data.data.sampleCorrelations.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Ejemplos de Correlaciones</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ejemplos de Correlaciones</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-950">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Distancia</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dif. Tiempo</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora V16</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Incid.</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provincia</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Carretera</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Distancia</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dif. Tiempo</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hora V16</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hora Incid.</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Provincia</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Carretera</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {data.data.sampleCorrelations.slice(0, 10).map((corr, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900 font-data">{corr.distanceKm} km</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 font-data">
+                  <tr key={idx} className="hover:bg-gray-50 dark:bg-gray-950">
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 font-data">{corr.distanceKm} km</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 font-data">
                       {corr.timeDiffMinutes === 0 ? "Durante" : `${corr.timeDiffMinutes} min`}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 font-data">
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 font-data">
                       {new Date(corr.v16Time).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 font-data">
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 font-data">
                       {new Date(corr.incidentTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{corr.province || "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{corr.road || "-"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{corr.province || "-"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{corr.road || "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2073,7 +2073,7 @@ function CorrelacionSection({
       )}
 
       {!hasData && !isLoading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center text-gray-500 dark:text-gray-400">
           <Link2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>No hay suficientes datos para el análisis de correlación</p>
         </div>
@@ -2114,7 +2114,7 @@ function RankingsSection({
           title="Rankings"
           description="Clasificaciones de provincias y carreteras por diferentes métricas"
         />
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center text-gray-500 dark:text-gray-400">
           <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>No hay suficientes datos para generar rankings</p>
         </div>
@@ -2134,8 +2134,8 @@ function RankingsSection({
             onClick={() => setRankingType("provinces")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               rankingType === "provinces"
-                ? "bg-tl-100 text-tl-700 border border-tl-200"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
             }`}
           >
             Provincias
@@ -2144,8 +2144,8 @@ function RankingsSection({
             onClick={() => setRankingType("roads")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               rankingType === "roads"
-                ? "bg-tl-100 text-tl-700 border border-tl-200"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
             }`}
           >
             Carreteras
@@ -2158,8 +2158,8 @@ function RankingsSection({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* By Total Incidents */}
           {data.provinces.byIncidentsTotal.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-red-500" />
                 Más Incidencias (Total)
               </h3>
@@ -2169,12 +2169,12 @@ function RankingsSection({
                   const width = (p.totalIncidents / maxVal) * 100;
                   return (
                     <div key={p.province} className="flex items-center gap-2">
-                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
-                        <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
+                      <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
+                        <div className="h-full bg-red-50 dark:bg-red-900/200 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.totalIncidents}</span>
+                      <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.totalIncidents}</span>
                     </div>
                   );
                 })}
@@ -2184,8 +2184,8 @@ function RankingsSection({
 
           {/* By Incidents per 100k */}
           {data.provinces.byIncidentsPer100k.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-500" />
                 Incidencias por 100k hab.
               </h3>
@@ -2195,24 +2195,24 @@ function RankingsSection({
                   const width = (p.incidentsPer100k / maxVal) * 100;
                   return (
                     <div key={p.province} className="flex items-center gap-2">
-                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                      <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                         <div className="h-full bg-purple-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.incidentsPer100k.toFixed(1)}</span>
+                      <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.incidentsPer100k.toFixed(1)}</span>
                     </div>
                   );
                 })}
               </div>
-              <p className="text-xs text-gray-500 mt-3">Normalizado por población provincial</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">Normalizado por población provincial</p>
             </div>
           )}
 
           {/* By V16 Total */}
           {data.provinces.byV16Total.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Zap className="w-5 h-5 text-orange-500" />
                 Más Balizas V16
               </h3>
@@ -2222,12 +2222,12 @@ function RankingsSection({
                   const width = (p.totalV16 / maxVal) * 100;
                   return (
                     <div key={p.province} className="flex items-center gap-2">
-                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                      <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                         <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.totalV16}</span>
+                      <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.totalV16}</span>
                     </div>
                   );
                 })}
@@ -2237,9 +2237,9 @@ function RankingsSection({
 
           {/* By Accidents per 100k */}
           {data.provinces.byAccidentsPer100k.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Car className="w-5 h-5 text-gray-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <Car className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 Accidentes por 100k hab.
               </h3>
               <div className="space-y-2">
@@ -2248,55 +2248,55 @@ function RankingsSection({
                   const width = (p.accidentsPer100k / maxVal) * 100;
                   return (
                     <div key={p.province} className="flex items-center gap-2">
-                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-24 text-sm font-medium text-gray-700 truncate">{p.province}</span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
-                        <div className="h-full bg-gray-500 rounded" style={{ width: `${width}%` }} />
+                      <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
+                      <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
+                      <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
+                        <div className="h-full bg-gray-50 dark:bg-gray-9500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.accidentsPer100k.toFixed(1)}</span>
+                      <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.accidentsPer100k.toFixed(1)}</span>
                     </div>
                   );
                 })}
               </div>
-              <p className="text-xs text-gray-500 mt-3">Datos históricos DGT</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">Datos históricos DGT</p>
             </div>
           )}
 
           {/* Most Improved */}
           {data.provinces.mostImproved.length > 0 && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-green-600" />
+                <TrendingDown className="w-5 h-5 text-green-600 dark:text-green-400" />
                 Mayor Mejora
               </h3>
               <div className="space-y-2">
                 {data.provinces.mostImproved.slice(0, 5).map((p, idx) => (
                   <div key={p.province} className="flex items-center justify-between">
                     <span className="font-medium text-green-800">{p.province}</span>
-                    <span className="text-green-600 font-bold font-data">{p.changePercent.toFixed(1)}%</span>
+                    <span className="text-green-600 dark:text-green-400 font-bold font-data">{p.changePercent.toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-green-700 mt-3">Variación respecto al año anterior</p>
+              <p className="text-xs text-green-700 dark:text-green-400 mt-3">Variación respecto al año anterior</p>
             </div>
           )}
 
           {/* Most Worsened */}
           {data.provinces.mostWorsened.length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-red-600" />
+                <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-400" />
                 Mayor Empeoramiento
               </h3>
               <div className="space-y-2">
                 {data.provinces.mostWorsened.slice(0, 5).map((p, idx) => (
                   <div key={p.province} className="flex items-center justify-between">
                     <span className="font-medium text-red-800">{p.province}</span>
-                    <span className="text-red-600 font-bold font-data">+{p.changePercent.toFixed(1)}%</span>
+                    <span className="text-red-600 dark:text-red-400 font-bold font-data">+{p.changePercent.toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-red-700 mt-3">Variación respecto al año anterior</p>
+              <p className="text-xs text-red-700 dark:text-red-400 mt-3">Variación respecto al año anterior</p>
             </div>
           )}
         </div>
@@ -2307,8 +2307,8 @@ function RankingsSection({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* By Total Incidents */}
           {data.roads.byIncidentsTotal.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-red-500" />
                 Más Incidencias
               </h3>
@@ -2318,12 +2318,12 @@ function RankingsSection({
                   const width = (r.totalIncidents / maxVal) * 100;
                   return (
                     <div key={r.roadName} className="flex items-center gap-2">
-                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-20 text-sm font-bold text-tl-600">{r.roadName}</span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
-                        <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
+                      <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
+                      <span className="w-20 text-sm font-bold text-tl-600 dark:text-tl-400">{r.roadName}</span>
+                      <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
+                        <div className="h-full bg-red-50 dark:bg-red-900/200 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-12 text-sm text-gray-600 text-right font-data">{r.totalIncidents}</span>
+                      <span className="w-12 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{r.totalIncidents}</span>
                     </div>
                   );
                 })}
@@ -2333,8 +2333,8 @@ function RankingsSection({
 
           {/* By Risk Score */}
           {data.roads.byRiskScore.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-orange-500" />
                 Mayor Riesgo
               </h3>
@@ -2344,12 +2344,12 @@ function RankingsSection({
                   const width = (r.riskScore / maxVal) * 100;
                   return (
                     <div key={r.roadName} className="flex items-center gap-2">
-                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-20 text-sm font-bold text-tl-600">{r.roadName}</span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                      <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
+                      <span className="w-20 text-sm font-bold text-tl-600 dark:text-tl-400">{r.roadName}</span>
+                      <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                         <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-12 text-sm text-gray-600 text-right font-data">{r.riskScore.toFixed(1)}</span>
+                      <span className="w-12 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{r.riskScore.toFixed(1)}</span>
                     </div>
                   );
                 })}
@@ -2359,8 +2359,8 @@ function RankingsSection({
 
           {/* By IMD */}
           {data.roads.byIMD.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Car className="w-5 h-5 text-green-500" />
                 Mayor Tráfico (IMD)
               </h3>
@@ -2370,39 +2370,39 @@ function RankingsSection({
                   const width = (r.avgIMD / maxVal) * 100;
                   return (
                     <div key={r.roadName} className="flex items-center gap-2">
-                      <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-20 text-sm font-bold text-tl-600">{r.roadName}</span>
-                      <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
-                        <div className="h-full bg-green-500 rounded" style={{ width: `${width}%` }} />
+                      <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
+                      <span className="w-20 text-sm font-bold text-tl-600 dark:text-tl-400">{r.roadName}</span>
+                      <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
+                        <div className="h-full bg-green-50 dark:bg-green-900/200 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right font-data">{(r.avgIMD / 1000).toFixed(0)}k</span>
+                      <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{(r.avgIMD / 1000).toFixed(0)}k</span>
                     </div>
                   );
                 })}
               </div>
-              <p className="text-xs text-gray-500 mt-3">Intensidad Media Diaria (veh/día)</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">Intensidad Media Diaria (veh/día)</p>
             </div>
           )}
 
           {/* Most Dangerous */}
           {data.roads.mostDangerous.length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 Más Peligrosas
               </h3>
               <div className="space-y-3">
                 {data.roads.mostDangerous.slice(0, 5).map((r, idx) => (
-                  <div key={r.roadName} className="flex items-center justify-between bg-white rounded px-3 py-2">
+                  <div key={r.roadName} className="flex items-center justify-between bg-white dark:bg-gray-900 rounded px-3 py-2">
                     <div>
                       <span className="font-bold text-red-800">{r.roadName}</span>
-                      <p className="text-xs text-red-600 font-data">{r.incidentsPerKm.toFixed(2)} inc/km</p>
+                      <p className="text-xs text-red-600 dark:text-red-400 font-data">{r.incidentsPerKm.toFixed(2)} inc/km</p>
                     </div>
-                    <span className="text-lg font-bold text-red-700 font-data">{r.riskScore.toFixed(1)}</span>
+                    <span className="text-lg font-bold text-red-700 dark:text-red-400 font-data">{r.riskScore.toFixed(1)}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-red-700 mt-3">Combinación de riesgo e incidencias por km</p>
+              <p className="text-xs text-red-700 dark:text-red-400 mt-3">Combinación de riesgo e incidencias por km</p>
             </div>
           )}
         </div>
@@ -2477,18 +2477,18 @@ export function EstadisticasContent({ initialTab }: EstadisticasContentProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Estadísticas de Tráfico</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Estadísticas de Tráfico</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Análisis completo del tráfico en España: incidencias, balizas V16, accidentes históricos y más.
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="mb-8 border-b border-gray-200">
+        <div className="mb-8 border-b border-gray-200 dark:border-gray-800">
           <nav className="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs">
             {TABS.map((tab) => {
               const Icon = tab.icon;
@@ -2501,8 +2501,8 @@ export function EstadisticasContent({ initialTab }: EstadisticasContentProps) {
                     flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium whitespace-nowrap transition-colors
                     ${
                       isActive
-                        ? "border-red-600 text-red-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        ? "border-red-600 text-red-600 dark:text-red-400"
+                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:border-gray-700"
                     }
                   `}
                 >
@@ -2556,30 +2556,30 @@ export function EstadisticasContent({ initialTab }: EstadisticasContentProps) {
         )}
 
         {/* Data Sources */}
-        <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Fuentes de datos</h2>
+        <div className="mt-12 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Fuentes de datos</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
-              <h3 className="font-medium text-gray-900">DGT en Cifras</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100">DGT en Cifras</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Estadísticas anuales oficiales de siniestralidad vial.
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">NAP DATEX II</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100">NAP DATEX II</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Datos en tiempo real de incidencias y balizas V16.
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">SCT / Euskadi / Madrid</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100">SCT / Euskadi / Madrid</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Fuentes regionales de tráfico complementarias.
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">AEMET</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100">AEMET</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Alertas meteorológicas para análisis de impacto.
               </p>
             </div>

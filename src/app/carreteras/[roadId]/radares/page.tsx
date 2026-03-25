@@ -105,39 +105,39 @@ export default async function RoadRadarsPage({ params }: PageProps) {
   }, {} as Record<string, typeof radars>);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-gray-700">Inicio</Link>
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
           <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700">Carreteras</Link>
+          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
           <span className="mx-2">/</span>
-          <Link href={`/carreteras/${road.id}`} className="hover:text-gray-700">{road.id}</Link>
+          <Link href={`/carreteras/${road.id}`} className="hover:text-gray-700 dark:text-gray-300">{road.id}</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">Radares</span>
+          <span className="text-gray-900 dark:text-gray-100">Radares</span>
         </nav>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Radar className="w-8 h-8 text-yellow-600" />
+                <Radar className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     Radares de velocidad en {road.id}
                   </h1>
-                  {road.name && <p className="text-gray-600">{road.name}</p>}
+                  {road.name && <p className="text-gray-600 dark:text-gray-400">{road.name}</p>}
                 </div>
               </div>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
                 {radars.length} radares activos ({fixedRadars.length} fijos, {sectionRadars.length} de tramo)
               </p>
             </div>
             <Link
               href={`/carreteras/${road.id}`}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver
@@ -147,33 +147,33 @@ export default async function RoadRadarsPage({ params }: PageProps) {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-yellow-600">{radars.length}</div>
-            <div className="text-sm text-gray-600">Total radares</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{radars.length}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Total radares</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-gray-900">{fixedRadars.length}</div>
-            <div className="text-sm text-gray-600">Radares fijos</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{fixedRadars.length}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Radares fijos</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-orange-600">{sectionRadars.length}</div>
-            <div className="text-sm text-gray-600">Radares de tramo</div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{sectionRadars.length}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Radares de tramo</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-tl-600">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-2xl font-bold text-tl-600 dark:text-tl-400">
               {radarSpeedValues.length > 0 ? `${radarSpeedValues[0]}-${radarSpeedValues[radarSpeedValues.length - 1]}` : "-"}
             </div>
-            <div className="text-sm text-gray-600">Límites (km/h)</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Límites (km/h)</div>
           </div>
         </div>
 
         {/* Warning box for section radars */}
         {sectionRadars.length > 0 && (
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-orange-800">Radares de tramo activos</h3>
-              <p className="text-sm text-orange-700">
+              <p className="text-sm text-orange-700 dark:text-orange-400">
                 Esta carretera cuenta con {sectionRadars.length} radar{sectionRadars.length !== 1 ? "es" : ""} de tramo.
                 Estos dispositivos calculan la velocidad media entre dos puntos, por lo que es importante
                 mantener una velocidad constante durante todo el recorrido.
@@ -184,28 +184,28 @@ export default async function RoadRadarsPage({ params }: PageProps) {
 
         {/* Radars by Province */}
         {Object.entries(radarsByProvince).map(([province, provRadars]) => (
-          <div key={province} className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-gray-600" />
-              <h2 className="font-semibold text-gray-900">
+          <div key={province} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 mb-6">
+            <div className="bg-gray-50 dark:bg-gray-950 px-4 py-3 border-b flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100">
                 {PROVINCE_NAMES[province] || province}
               </h2>
-              <span className="text-gray-500 font-normal">({provRadars.length} radares)</span>
+              <span className="text-gray-500 dark:text-gray-400 font-normal">({provRadars.length} radares)</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gray-50 dark:bg-gray-950 border-b">
                   <tr>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Punto km</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Tipo</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Límite</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600 hidden md:table-cell">Sentido</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600 hidden lg:table-cell">Coordenadas</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Punto km</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Tipo</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Límite</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400 hidden md:table-cell">Sentido</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400 hidden lg:table-cell">Coordenadas</th>
                   </tr>
                 </thead>
                 <tbody>
                   {provRadars.map((radar) => (
-                    <tr key={radar.radarId} className="border-b hover:bg-gray-50">
+                    <tr key={radar.radarId} className="border-b hover:bg-gray-50 dark:bg-gray-950">
                       <td className="py-3 px-4">
                         <span className="font-medium">km {Number(radar.kmPoint).toFixed(1)}</span>
                       </td>
@@ -213,7 +213,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           radar.type === "SECTION"
                             ? "bg-orange-100 text-orange-800"
-                            : "bg-gray-100 text-gray-800"
+                            : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                         }`}>
                           {radar.type === "SECTION" ? "Tramo" : "Fijo"}
                         </span>
@@ -222,13 +222,13 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                         <div className="flex items-center gap-2">
                           <Gauge className="w-4 h-4 text-gray-400" />
                           <span className="font-semibold">{radar.speedLimit || "-"}</span>
-                          <span className="text-gray-500 text-sm">km/h</span>
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">km/h</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-400 hidden md:table-cell">
                         {radar.direction || "-"}
                       </td>
-                      <td className="py-3 px-4 text-gray-500 text-sm hidden lg:table-cell">
+                      <td className="py-3 px-4 text-gray-500 dark:text-gray-400 text-sm hidden lg:table-cell">
                         {radar.latitude && radar.longitude
                           ? `${Number(radar.latitude).toFixed(4)}, ${Number(radar.longitude).toFixed(4)}`
                           : "-"}
@@ -242,10 +242,10 @@ export default async function RoadRadarsPage({ params }: PageProps) {
         ))}
 
         {radars.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center">
             <Radar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Sin radares registrados</h2>
-            <p className="text-gray-600">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Sin radares registrados</h2>
+            <p className="text-gray-600 dark:text-gray-400">
               No hay radares de velocidad activos registrados en la {road.id}.
             </p>
           </div>
@@ -253,20 +253,20 @@ export default async function RoadRadarsPage({ params }: PageProps) {
 
         {/* Speed Limits */}
         {speedLimits.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div className="bg-gray-50 px-4 py-3 border-b flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-gray-600" />
-              <h2 className="font-semibold text-gray-900">Límites de velocidad</h2>
-              <span className="text-gray-500 font-normal">({speedLimits.length} tramos)</span>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 mb-6">
+            <div className="bg-gray-50 dark:bg-gray-950 px-4 py-3 border-b flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100">Límites de velocidad</h2>
+              <span className="text-gray-500 dark:text-gray-400 font-normal">({speedLimits.length} tramos)</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gray-50 dark:bg-gray-950 border-b">
                   <tr>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Km inicio</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Km fin</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Velocidad (km/h)</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600 hidden md:table-cell">Dirección</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Km inicio</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Km fin</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400">Velocidad (km/h)</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600 dark:text-gray-400 hidden md:table-cell">Dirección</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -274,14 +274,14 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                     const speed = sl.speedLimit;
                     const speedBadge =
                       speed <= 60
-                        ? "bg-red-100 text-red-800"
+                        ? "bg-red-100 dark:bg-red-900/30 text-red-800"
                         : speed <= 80
                         ? "bg-tl-amber-100 text-tl-amber-800"
                         : speed <= 100
-                        ? "bg-green-100 text-green-800"
-                        : "bg-tl-100 text-tl-800";
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-800"
+                        : "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200";
                     return (
-                      <tr key={sl.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <tr key={sl.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950">
                         <td className="py-3 px-4">{Number(sl.kmStart).toFixed(1)}</td>
                         <td className="py-3 px-4">{Number(sl.kmEnd).toFixed(1)}</td>
                         <td className="py-3 px-4">
@@ -289,7 +289,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                             {speed} km/h
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-gray-500 hidden md:table-cell">
+                        <td className="py-3 px-4 text-gray-500 dark:text-gray-400 hidden md:table-cell">
                           {sl.direction ?? "-"}
                         </td>
                       </tr>
@@ -302,8 +302,8 @@ export default async function RoadRadarsPage({ params }: PageProps) {
         )}
 
         {/* SEO Content */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Radares de velocidad en la {road.id}
           </h2>
           <div className="prose prose-gray max-w-none">

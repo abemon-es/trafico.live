@@ -42,10 +42,10 @@ interface ChartCardProps {
 
 function ChartCard({ title, children, note }: ChartCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
       {children}
-      {note && <p className="text-xs text-gray-500 mt-2">{note}</p>}
+      {note && <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{note}</p>}
     </div>
   );
 }

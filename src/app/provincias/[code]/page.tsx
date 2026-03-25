@@ -177,12 +177,12 @@ export default async function ProvinciaDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <Link
           href="/provincias"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 mb-6"
         >
           <ChevronLeft className="w-4 h-4" />
           Todas las provincias
@@ -190,63 +190,63 @@ export default async function ProvinciaDetailPage({ params }: Props) {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-red-600 mb-2">
+          <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 mb-2">
             <MapPin className="w-4 h-4" />
             {province.community}
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">{province.name}</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{province.name}</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Estado del tráfico y estadísticas de siniestralidad vial en {province.name}.
           </p>
         </div>
 
         {/* Current Status */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-red-50 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
+              <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900 font-data">{v16Count}</p>
-            <p className="text-sm text-gray-500">V16 Activas</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">{v16Count}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">V16 Activas</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-orange-50 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-orange-600" />
+                <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900 font-data">{incidentCount}</p>
-            <p className="text-sm text-gray-500">Incidencias</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">{incidentCount}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Incidencias</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-tl-50 rounded-lg">
-                <Calendar className="w-5 h-5 text-tl-600" />
+              <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+                <Calendar className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900 font-data">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
               {historicalAccidents?.accidents.toLocaleString() ?? 0}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Accidentes ({historicalAccidents?.year ?? new Date().getFullYear()})
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className={`p-2 rounded-lg ${yearChange !== null && yearChange < 0 ? "bg-green-50" : "bg-red-50"}`}>
+              <div className={`p-2 rounded-lg ${yearChange !== null && yearChange < 0 ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}`}>
                 {yearChange !== null && yearChange < 0 ? (
-                  <TrendingDown className="w-5 h-5 text-green-600" />
+                  <TrendingDown className="w-5 h-5 text-green-600 dark:text-green-400" />
                 ) : (
-                  <TrendingUp className="w-5 h-5 text-red-600" />
+                  <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-400" />
                 )}
               </div>
             </div>
-            <p className={`text-2xl font-bold font-data ${yearChange !== null && yearChange < 0 ? "text-green-600" : "text-red-600"}`}>
+            <p className={`text-2xl font-bold font-data ${yearChange !== null && yearChange < 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
               {yearChange !== null ? `${yearChange > 0 ? "+" : ""}${yearChange.toFixed(1)}%` : "N/A"}
             </p>
-            <p className="text-sm text-gray-500">Variación anual</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Variación anual</p>
           </div>
         </div>
 
@@ -254,46 +254,46 @@ export default async function ProvinciaDetailPage({ params }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Active Incidents */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Incidencias activas en {province.name}
               </h2>
               {incidents.length > 0 ? (
                 <div className="space-y-4">
                   {incidents.map((incident) => (
-                    <div key={incident.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div key={incident.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
                       <div className={`p-2 rounded-lg ${
                         incident.severity === "HIGH" || incident.severity === "VERY_HIGH"
-                          ? "bg-red-100"
+                          ? "bg-red-100 dark:bg-red-900/30"
                           : incident.severity === "MEDIUM"
                           ? "bg-orange-100"
                           : "bg-yellow-100"
                       }`}>
                         <AlertTriangle className={`w-4 h-4 ${
                           incident.severity === "HIGH" || incident.severity === "VERY_HIGH"
-                            ? "text-red-600"
+                            ? "text-red-600 dark:text-red-400"
                             : incident.severity === "MEDIUM"
-                            ? "text-orange-600"
-                            : "text-yellow-600"
+                            ? "text-orange-600 dark:text-orange-400"
+                            : "text-yellow-600 dark:text-yellow-400"
                         }`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900">{incident.type}</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{incident.type}</span>
                           {incident.roadNumber && (
                             <Link
                               href={`/carreteras/${incident.roadNumber}`}
-                              className="text-sm text-tl-600 hover:underline"
+                              className="text-sm text-tl-600 dark:text-tl-400 hover:underline"
                             >
                               {incident.roadNumber}
                             </Link>
                           )}
                           {incident.kmPoint && (
-                            <span className="text-sm text-gray-500 font-data">km {Number(incident.kmPoint).toFixed(1)}</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400 font-data">km {Number(incident.kmPoint).toFixed(1)}</span>
                           )}
                         </div>
                         {incident.description && (
-                          <p className="text-sm text-gray-600 mt-1 truncate">{incident.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">{incident.description}</p>
                         )}
                         <p className="text-xs text-gray-400 mt-1">
                           {new Date(incident.startedAt).toLocaleString("es-ES", {
@@ -308,7 +308,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                   <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p>No hay incidencias activas</p>
                   <p className="text-sm mt-2">No se registran incidencias en {province.name} en este momento.</p>
@@ -317,8 +317,8 @@ export default async function ProvinciaDetailPage({ params }: Props) {
             </div>
 
             {/* Roads in province */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Carreteras que atraviesan {province.name}
               </h2>
               {roads.length > 0 ? (
@@ -327,14 +327,14 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                     <Link
                       key={road.id}
                       href={`/carreteras/${road.id}`}
-                      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium text-gray-700 transition-colors"
+                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
                     >
                       {road.id}
                     </Link>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   No hay carreteras registradas para {province.name}.
                 </p>
               )}
@@ -343,77 +343,77 @@ export default async function ProvinciaDetailPage({ params }: Props) {
 
           {/* Right Column - Info */}
           <div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Información
               </h2>
               <dl className="space-y-4">
                 <div>
-                  <dt className="text-sm text-gray-500">Código INE</dt>
-                  <dd className="text-gray-900 font-medium">{code}</dd>
+                  <dt className="text-sm text-gray-500 dark:text-gray-400">Código INE</dt>
+                  <dd className="text-gray-900 dark:text-gray-100 font-medium">{code}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">Comunidad Autónoma</dt>
-                  <dd className="text-gray-900 font-medium">{province.community}</dd>
+                  <dt className="text-sm text-gray-500 dark:text-gray-400">Comunidad Autónoma</dt>
+                  <dd className="text-gray-900 dark:text-gray-100 font-medium">{province.community}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">Fuente de datos</dt>
-                  <dd className="text-gray-900">DGT NAP (DATEX II v3.6)</dd>
+                  <dt className="text-sm text-gray-500 dark:text-gray-400">Fuente de datos</dt>
+                  <dd className="text-gray-900 dark:text-gray-100">DGT NAP (DATEX II v3.6)</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">Actualización</dt>
-                  <dd className="text-gray-900">Cada 60 segundos</dd>
+                  <dt className="text-sm text-gray-500 dark:text-gray-400">Actualización</dt>
+                  <dd className="text-gray-900 dark:text-gray-100">Cada 60 segundos</dd>
                 </div>
               </dl>
             </div>
 
             {/* Infrastructure */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Infraestructura
               </h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Camera className="w-4 h-4" />
                     <span>Cámaras</span>
                   </div>
-                  <span className="font-semibold text-gray-900 font-data">{cameraCount}</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{cameraCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Radar className="w-4 h-4" />
                     <span>Radares</span>
                   </div>
-                  <span className="font-semibold text-gray-900 font-data">{radarCount}</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{radarCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Route className="w-4 h-4" />
                     <span>Carreteras</span>
                   </div>
-                  <span className="font-semibold text-gray-900 font-data">{roads.length}</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{roads.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Fuel className="w-4 h-4" />
                     <span>Gasolineras</span>
                   </div>
-                  <span className="font-semibold text-gray-900 font-data">{gasStationCount}</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{gasStationCount}</span>
                 </div>
               </div>
             </div>
 
             {/* Gas Stations */}
             {gasStationCount > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Gasolineras más baratas
                   </h2>
                   <Link
                     href={`/gasolineras/terrestres?province=${code}`}
-                    className="text-sm text-orange-600 hover:text-orange-700"
+                    className="text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400"
                   >
                     Ver todas →
                   </Link>
@@ -422,15 +422,15 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                   {cheapestDiesel && (
                     <Link
                       href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-                      className="block p-3 bg-tl-amber-50 rounded-lg hover:bg-tl-amber-100 transition-colors"
+                      className="block p-3 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg hover:bg-tl-amber-100 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-xs text-tl-amber-600 mb-1">Gasóleo A más barato</div>
-                          <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestDiesel.name}</div>
-                          <div className="text-xs text-gray-500">{cheapestDiesel.locality}</div>
+                          <div className="text-xs text-tl-amber-600 dark:text-tl-amber-400 mb-1">Gasóleo A más barato</div>
+                          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm line-clamp-1">{cheapestDiesel.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{cheapestDiesel.locality}</div>
                         </div>
-                        <div className="text-xl font-bold text-tl-amber-700 font-data">
+                        <div className="text-xl font-bold text-tl-amber-700 dark:text-tl-amber-300 font-data">
                           {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
                         </div>
                       </div>
@@ -439,15 +439,15 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                   {cheapestGas95 && (
                     <Link
                       href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-                      className="block p-3 bg-tl-50 rounded-lg hover:bg-tl-100 transition-colors"
+                      className="block p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-xs text-tl-600 mb-1">Gasolina 95 más barata</div>
-                          <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestGas95.name}</div>
-                          <div className="text-xs text-gray-500">{cheapestGas95.locality}</div>
+                          <div className="text-xs text-tl-600 dark:text-tl-400 mb-1">Gasolina 95 más barata</div>
+                          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm line-clamp-1">{cheapestGas95.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{cheapestGas95.locality}</div>
                         </div>
-                        <div className="text-xl font-bold text-tl-700 font-data">
+                        <div className="text-xl font-bold text-tl-700 dark:text-tl-300 font-data">
                           {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
                         </div>
                       </div>
@@ -459,32 +459,32 @@ export default async function ProvinciaDetailPage({ params }: Props) {
 
             {/* Historical stats */}
             {historicalAccidents && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mt-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Siniestralidad {historicalAccidents.year}
                 </h2>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Accidentes</span>
-                    <span className="font-semibold text-gray-900 font-data">
+                    <span className="text-gray-600 dark:text-gray-400">Accidentes</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">
                       {historicalAccidents.accidents.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Fallecidos</span>
-                    <span className="font-semibold text-red-600 font-data">
+                    <span className="text-gray-600 dark:text-gray-400">Fallecidos</span>
+                    <span className="font-semibold text-red-600 dark:text-red-400 font-data">
                       {historicalAccidents.fatalities}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Hospitalizados</span>
-                    <span className="font-semibold text-orange-600 font-data">
+                    <span className="text-gray-600 dark:text-gray-400">Hospitalizados</span>
+                    <span className="font-semibold text-orange-600 dark:text-orange-400 font-data">
                       {historicalAccidents.hospitalized}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Heridos leves</span>
-                    <span className="font-semibold text-yellow-600 font-data">
+                    <span className="text-gray-600 dark:text-gray-400">Heridos leves</span>
+                    <span className="font-semibold text-yellow-600 dark:text-yellow-400 font-data">
                       {historicalAccidents.nonHospitalized}
                     </span>
                   </div>

@@ -172,7 +172,7 @@ export default async function OperacionesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -182,16 +182,16 @@ export default async function OperacionesPage() {
           />
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-tl-50 rounded-lg">
-                <CalendarDays className="w-8 h-8 text-tl-600" />
+              <div className="p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+                <CalendarDays className="w-8 h-8 text-tl-600 dark:text-tl-400" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Operaciones Especiales de Tráfico
                 </h1>
-                <p className="text-gray-600 max-w-2xl leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
                   La DGT activa operaciones especiales durante los períodos de mayor movilidad
                   del año: Semana Santa, verano, puentes nacionales y Navidad. Cada operación
                   implica un despliegue reforzado de agentes, tecnología avanzada de gestión del
@@ -203,48 +203,48 @@ export default async function OperacionesPage() {
 
           {/* Live data strip */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-tl-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-tl-50 rounded-lg">
-                <Activity className="w-5 h-5 text-tl-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+                <Activity className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {incidents.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500">incidencias activas ahora</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">incidencias activas ahora</p>
               </div>
               <Link
                 href="/incidencias"
-                className="ml-auto text-xs font-medium text-tl-600 hover:text-tl-700 flex items-center gap-1"
+                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1"
               >
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="bg-white rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-tl-amber-50 rounded-lg">
-                <Zap className="w-5 h-5 text-tl-amber-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg">
+                <Zap className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {v16.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500">balizas V16 activas</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">balizas V16 activas</p>
               </div>
             </div>
           </div>
 
           {/* Operations Calendar */}
           <section className="mb-8" aria-labelledby="heading-calendar">
-            <h2 id="heading-calendar" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-calendar" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Calendario de operaciones 2026
             </h2>
             <div className="space-y-3">
               {OPERATIONS_2026.map((op) => (
                 <div
                   key={op.name}
-                  className={`bg-white rounded-lg shadow-sm border p-5 flex flex-col sm:flex-row sm:items-center gap-4 ${
+                  className={`bg-white dark:bg-gray-900 rounded-lg shadow-sm border p-5 flex flex-col sm:flex-row sm:items-center gap-4 ${
                     op.status === "completed"
-                      ? "border-gray-200 opacity-70"
+                      ? "border-gray-200 dark:border-gray-800 opacity-70"
                       : "border-tl-100"
                   }`}
                 >
@@ -255,7 +255,7 @@ export default async function OperacionesPage() {
                     ) : (
                       <div
                         className={`w-3 h-3 rounded-full mt-1 ${
-                          op.type === "festivo" ? "bg-tl-500" : "bg-tl-amber-500"
+                          op.type === "festivo" ? "bg-tl-50 dark:bg-tl-900/200" : "bg-tl-amber-50 dark:bg-tl-amber-900/200"
                         }`}
                       />
                     )}
@@ -264,24 +264,24 @@ export default async function OperacionesPage() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900">{op.name}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">{op.name}</h3>
                       <span
                         className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
                           op.type === "festivo"
-                            ? "bg-tl-50 text-tl-700 border-tl-200"
-                            : "bg-tl-amber-50 text-tl-amber-700 border-tl-amber-200"
+                            ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800"
+                            : "bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800"
                         }`}
                       >
                         {op.type === "festivo" ? "Operación festiva" : "Puente"}
                       </span>
                       {op.status === "completed" && (
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                        <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-800">
                           Finalizada
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-tl-600 font-medium mb-1">{op.dates}</p>
-                    <p className="text-sm text-gray-600">{op.description}</p>
+                    <p className="text-sm text-tl-600 dark:text-tl-400 font-medium mb-1">{op.dates}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{op.description}</p>
                   </div>
                 </div>
               ))}
@@ -290,7 +290,7 @@ export default async function OperacionesPage() {
 
           {/* Recommendations */}
           <section className="mb-8" aria-labelledby="heading-recommendations">
-            <h2 id="heading-recommendations" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-recommendations" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Recomendaciones de la DGT
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -299,15 +299,15 @@ export default async function OperacionesPage() {
                 return (
                   <div
                     key={rec.title}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                        <Icon className="w-5 h-5 text-tl-600" />
+                      <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                        <Icon className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">{rec.title}</h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">{rec.text}</p>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">{rec.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{rec.text}</p>
                       </div>
                     </div>
                   </div>
@@ -317,11 +317,11 @@ export default async function OperacionesPage() {
           </section>
 
           {/* Warning banner */}
-          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-8 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-8 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-tl-amber-800">Franjas horarias punta</h3>
-              <p className="text-sm text-tl-amber-700 mt-0.5">
+              <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-0.5">
                 En operaciones de salida, los viernes de{" "}
                 <strong>15:00 a 21:00</strong> concentran el mayor volumen de tráfico.
                 En operaciones de retorno, los domingos de{" "}
@@ -363,17 +363,17 @@ export default async function OperacionesPage() {
 
           {/* FAQ */}
           <section aria-labelledby="heading-faq">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre operaciones especiales
             </h2>
             <div className="space-y-4">
               {FAQ_ITEMS.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{item.answer}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{item.question}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.answer}</p>
                 </div>
               ))}
             </div>

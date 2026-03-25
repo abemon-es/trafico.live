@@ -81,22 +81,22 @@ const RADAR_TYPE_CONFIG: Record<string, { label: string; color: string; badge: s
   },
   MOBILE_ZONE: {
     label: "Zona móvil",
-    color: "bg-gray-50 border-gray-200",
-    badge: "bg-gray-100 text-gray-700 border-gray-200",
+    color: "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800",
+    badge: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800",
   },
   TRAFFIC_LIGHT: {
     label: "Semafórico",
-    color: "bg-red-50 border-red-200",
-    badge: "bg-red-100 text-red-800 border-red-200",
+    color: "bg-red-50 dark:bg-red-900/20 border-red-200",
+    badge: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",
   },
 };
 
 function getSpeedBadgeColor(speed: number | null): string {
-  if (!speed) return "bg-gray-100 text-gray-500";
-  if (speed <= 60) return "bg-red-100 text-red-800 font-semibold";
+  if (!speed) return "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400";
+  if (speed <= 60) return "bg-red-100 dark:bg-red-900/30 text-red-800 font-semibold";
   if (speed <= 80) return "bg-tl-amber-100 text-tl-amber-800 font-semibold";
-  if (speed <= 100) return "bg-green-100 text-green-800 font-semibold";
-  return "bg-tl-100 text-tl-800 font-semibold";
+  if (speed <= 100) return "bg-green-100 dark:bg-green-900/30 text-green-800 font-semibold";
+  return "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200 font-semibold";
 }
 
 interface PageProps {
@@ -236,7 +236,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumbs */}
           <Breadcrumbs
@@ -250,28 +250,28 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           <AdSlot id={`radares-road-top`} format="banner" className="mb-6" />
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-yellow-50 rounded-lg flex-shrink-0">
-                <Radar className="w-8 h-8 text-yellow-600" />
+                <Radar className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Radares en la {roadId}
                 </h1>
                 {roadRecord?.name && (
-                  <p className="text-gray-500 text-sm mb-2">{roadRecord.name}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">{roadRecord.name}</p>
                 )}
-                <p className="text-gray-600 max-w-2xl">
+                <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
                   Lista completa de radares de velocidad de la DGT en la {roadId}. Consulta
                   el punto kilométrico, tipo y límite de velocidad de cada radar.
                 </p>
               </div>
               <div className="hidden md:flex flex-col items-center bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
-                <span className="text-3xl font-bold text-yellow-700 font-data">
+                <span className="text-3xl font-bold text-yellow-700 dark:text-yellow-400 font-data">
                   {radars.length.toLocaleString("es-ES")}
                 </span>
-                <span className="text-sm text-yellow-600 mt-0.5">
+                <span className="text-sm text-yellow-600 dark:text-yellow-400 mt-0.5">
                   {radars.length === 1 ? "radar activo" : "radares activos"}
                 </span>
               </div>
@@ -279,11 +279,11 @@ export default async function RadaresRoadPage({ params }: PageProps) {
 
             {/* Quick stats row */}
             {radars.length > 0 && (
-              <div className="mt-5 pt-5 border-t border-gray-100 flex flex-wrap gap-4">
+              <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-4">
                 {Object.entries(typeCount).map(([type, count]) => {
                   const cfg = RADAR_TYPE_CONFIG[type] ?? {
                     label: type,
-                    badge: "bg-gray-100 text-gray-700 border-gray-200",
+                    badge: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800",
                   };
                   return (
                     <div key={type} className="flex items-center gap-2">
@@ -292,16 +292,16 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                       >
                         {cfg.label}
                       </span>
-                      <span className="text-sm font-semibold text-gray-900 font-data">{count}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 font-data">{count}</span>
                     </div>
                   );
                 })}
                 {avgSpeedLimit && (
                   <div className="flex items-center gap-2 ml-auto">
                     <TrendingUp className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       Velocidad media controlada:{" "}
-                      <strong className="text-gray-900 font-data">{avgSpeedLimit} km/h</strong>
+                      <strong className="text-gray-900 dark:text-gray-100 font-data">{avgSpeedLimit} km/h</strong>
                     </span>
                   </div>
                 )}
@@ -312,12 +312,12 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           {/* SECTION radar warning */}
           {typeCount["SECTION"] && typeCount["SECTION"] > 0 ? (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-orange-800">
                   {typeCount["SECTION"]} radar{typeCount["SECTION"] !== 1 ? "es" : ""} de tramo en la {roadId}
                 </p>
-                <p className="text-sm text-orange-700 mt-0.5">
+                <p className="text-sm text-orange-700 dark:text-orange-400 mt-0.5">
                   Los radares de tramo miden la velocidad media entre dos puntos. Reducir
                   la velocidad solo antes de la cámara <strong>no evita la multa</strong> si
                   has recorrido el tramo más rápido de lo permitido.
@@ -328,19 +328,19 @@ export default async function RadaresRoadPage({ params }: PageProps) {
 
           {radars.length === 0 ? (
             /* Empty state */
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-10 mb-6 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-10 mb-6 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-900 rounded-full mb-4">
                 <Info className="w-8 h-8 text-gray-400" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 No hay radares registrados en la {roadId}
               </h2>
-              <p className="text-gray-500 max-w-md mx-auto mb-6">
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
                 No encontramos radares activos en la {roadId} en nuestra base de datos. Los
                 datos provienen de las fuentes oficiales de la DGT y se actualizan
                 periódicamente.
               </p>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                 Consulta los radares de otras carreteras cercanas:
               </p>
               <div className="flex flex-wrap justify-center gap-2">
@@ -358,27 +358,27 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           ) : (
             /* Radar table */
             <section className="mb-8" aria-labelledby="heading-radar-table">
-              <h2 id="heading-radar-table" className="text-xl font-bold text-gray-900 mb-4">
+              <h2 id="heading-radar-table" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Listado de radares en la {roadId}
               </h2>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                      <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Punto km
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Tipo
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Límite
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300">
                           Dirección
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">
                           Provincia
                         </th>
                       </tr>
@@ -387,16 +387,16 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                       {radars.map((radar, idx) => {
                         const typeCfg = RADAR_TYPE_CONFIG[radar.type] ?? {
                           label: radar.type,
-                          badge: "bg-gray-100 text-gray-700 border-gray-200",
+                          badge: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800",
                         };
                         return (
                           <tr
                             key={radar.radarId}
-                            className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                              idx % 2 === 0 ? "" : "bg-gray-50/50"
+                            className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950 transition-colors ${
+                              idx % 2 === 0 ? "" : "bg-gray-50 dark:bg-gray-950/50"
                             }`}
                           >
-                            <td className="px-4 py-3 font-mono font-semibold text-gray-900 font-data">
+                            <td className="px-4 py-3 font-mono font-semibold text-gray-900 dark:text-gray-100 font-data">
                               km {Number(radar.kmPoint).toFixed(1)}
                             </td>
                             <td className="px-4 py-3">
@@ -417,12 +417,12 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                                 <span className="text-gray-400 text-xs">—</span>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-gray-600 text-xs capitalize">
+                            <td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs capitalize">
                               {radar.direction
                                 ? radar.direction.toLowerCase().replace("_", " ")
                                 : "—"}
                             </td>
-                            <td className="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell">
+                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs hidden sm:table-cell">
                               {radar.provinceName ?? radar.province ?? "—"}
                             </td>
                           </tr>
@@ -433,7 +433,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 </div>
 
                 {/* Footer summary */}
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
+                <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <span>
                     {radars.length} radar{radars.length !== 1 ? "es" : ""} en total
                     {avgSpeedLimit ? ` · velocidad media controlada: ${avgSpeedLimit} km/h` : ""}
@@ -449,34 +449,34 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Cameras on this road */}
             <section
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5"
+              className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5"
               aria-labelledby={`heading-cameras-${roadId}`}
             >
               <h2
                 id={`heading-cameras-${roadId}`}
-                className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2"
+                className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2"
               >
-                <Camera className="w-5 h-5 text-tl-600" />
+                <Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                 Cámaras en la {roadId}
               </h2>
               {cameraCount > 0 ? (
                 <>
-                  <p className="text-gray-600 text-sm mb-3">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
                     Hay{" "}
-                    <strong className="text-gray-900 font-data">{cameraCount}</strong>{" "}
+                    <strong className="text-gray-900 dark:text-gray-100 font-data">{cameraCount}</strong>{" "}
                     cámara{cameraCount !== 1 ? "s" : ""} de tráfico activa
                     {cameraCount !== 1 ? "s" : ""} en la {roadId}.
                   </p>
                   <Link
                     href={`/carreteras/${encodeURIComponent(roadId)}/camaras`}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 hover:text-tl-800 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                   >
                     Ver todas las cámaras
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </>
               ) : (
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                   No hay cámaras de tráfico registradas en la {roadId}.
                 </p>
               )}
@@ -485,36 +485,36 @@ export default async function RadaresRoadPage({ params }: PageProps) {
             {/* Speed limits on this road */}
             {speedLimits.length > 0 && (
               <section
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-5"
+                className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 aria-labelledby={`heading-speedlimits-${roadId}`}
               >
                 <h2
                   id={`heading-speedlimits-${roadId}`}
-                  className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2"
+                  className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2"
                 >
-                  <TrendingUp className="w-5 h-5 text-gray-600" />
+                  <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   Límites de velocidad en la {roadId}
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-2 text-gray-600 font-medium">Desde km</th>
-                        <th className="text-left py-2 text-gray-600 font-medium">Hasta km</th>
-                        <th className="text-left py-2 text-gray-600 font-medium">Límite</th>
-                        <th className="text-left py-2 text-gray-600 font-medium hidden sm:table-cell">Dirección</th>
+                      <tr className="border-b border-gray-200 dark:border-gray-800">
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400 font-medium">Desde km</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400 font-medium">Hasta km</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400 font-medium">Límite</th>
+                        <th className="text-left py-2 text-gray-600 dark:text-gray-400 font-medium hidden sm:table-cell">Dirección</th>
                       </tr>
                     </thead>
                     <tbody>
                       {speedLimits.slice(0, 12).map((sl) => (
                         <tr
                           key={sl.id}
-                          className="border-b border-gray-100 hover:bg-gray-50"
+                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
                         >
-                          <td className="py-2 font-mono text-xs text-gray-700 font-data">
+                          <td className="py-2 font-mono text-xs text-gray-700 dark:text-gray-300 font-data">
                             {Number(sl.kmStart).toFixed(1)}
                           </td>
-                          <td className="py-2 font-mono text-xs text-gray-700 font-data">
+                          <td className="py-2 font-mono text-xs text-gray-700 dark:text-gray-300 font-data">
                             {Number(sl.kmEnd).toFixed(1)}
                           </td>
                           <td className="py-2">
@@ -524,7 +524,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                               {sl.speedLimit} km/h
                             </span>
                           </td>
-                          <td className="py-2 text-gray-500 text-xs hidden sm:table-cell capitalize">
+                          <td className="py-2 text-gray-500 dark:text-gray-400 text-xs hidden sm:table-cell capitalize">
                             {sl.direction?.toLowerCase().replace("_", " ") ?? "—"}
                           </td>
                         </tr>
@@ -542,12 +542,12 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           </div>
 
           {/* Link to full road page */}
-          <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
+          <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
             <div>
               <p className="font-semibold text-tl-900">
                 Ver toda la información de la {roadId}
               </p>
-              <p className="text-sm text-tl-700 mt-0.5">
+              <p className="text-sm text-tl-700 dark:text-tl-300 mt-0.5">
                 Cámaras en directo, incidencias, gasolineras, cargadores EV y más.
               </p>
             </div>
@@ -563,7 +563,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
 
           {/* Related road radar pages */}
           <section className="mb-8" aria-labelledby="heading-related-roads">
-            <h2 id="heading-related-roads" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-related-roads" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Radares en otras carreteras
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -571,7 +571,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 <Link
                   key={r}
                   href={`/radares/${encodeURIComponent(r)}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-yellow-700 hover:bg-yellow-50 hover:border-yellow-300 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 hover:border-yellow-300 transition-colors shadow-sm"
                 >
                   <Radar className="w-3.5 h-3.5" />
                   Radares {r}
@@ -579,7 +579,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
               ))}
               <Link
                 href="/radares"
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950 transition-colors shadow-sm"
               >
                 Ver todas las carreteras
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -589,17 +589,17 @@ export default async function RadaresRoadPage({ params }: PageProps) {
 
           {/* FAQ */}
           <section className="mb-8" aria-labelledby="heading-faq">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre radares en la {roadId}
             </h2>
             <div className="space-y-4">
               {faqItems.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{item.answer}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{item.question}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.answer}</p>
                 </div>
               ))}
             </div>
@@ -637,11 +637,11 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           />
 
           {/* SEO copy block */}
-          <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6 prose prose-gray max-w-none">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">
+          <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 prose prose-gray max-w-none">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
               Radares de la DGT en la {roadId} — {CURRENT_YEAR}
             </h2>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
               La {roadId} es una de las principales vías de la red viaria española. La
               Dirección General de Tráfico (DGT) mantiene en esta carretera un sistema de
               control de velocidad compuesto por radares fijos y, en algunos tramos, radares
@@ -649,19 +649,19 @@ export default async function RadaresRoadPage({ params }: PageProps) {
               cada punto de control, el límite de velocidad aplicable y el tipo de radar,
               con datos procedentes de las fuentes oficiales de la DGT.
             </p>
-            <p className="text-gray-600 text-sm leading-relaxed mt-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mt-2">
               Los límites de velocidad en la {roadId} pueden variar según el tramo, las
               condiciones meteorológicas y las obras en curso. Consulta siempre la
               señalización vertical y respeta los límites indicados. Para ver el estado
               del tráfico en tiempo real, accede a la{" "}
               <Link
                 href={`/carreteras/${encodeURIComponent(roadId)}`}
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 página de la {roadId}
               </Link>
               {" "}o al{" "}
-              <Link href="/mapa" className="text-tl-600 hover:underline">
+              <Link href="/mapa" className="text-tl-600 dark:text-tl-400 hover:underline">
                 mapa de tráfico
               </Link>
               .

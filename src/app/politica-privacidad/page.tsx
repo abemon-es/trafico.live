@@ -13,18 +13,18 @@ export const metadata: Metadata = {
 
 export default function PoliticaPrivacidadPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Política de Privacidad
         </h1>
-        <p className="text-sm text-gray-500 mb-10">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
           Última actualización: 25 de marzo de 2026
         </p>
 
-        <div className="prose prose-gray max-w-none space-y-8 text-gray-700 text-[15px] leading-relaxed">
+        <div className="prose prose-gray max-w-none space-y-8 text-gray-700 dark:text-gray-300 text-[15px] leading-relaxed">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               1. Responsable del tratamiento
             </h2>
             <ul className="list-none pl-0 space-y-1">
@@ -39,7 +39,7 @@ export default function PoliticaPrivacidadPage() {
                 <strong>Contacto:</strong>{" "}
                 <a
                   href="mailto:legal@trafico.live"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   legal@trafico.live
                 </a>
@@ -52,7 +52,7 @@ export default function PoliticaPrivacidadPage() {
                 <strong>Contacto DPO:</strong>{" "}
                 <a
                   href="mailto:dpo@trafico.live"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   dpo@trafico.live
                 </a>
@@ -64,7 +64,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               2. Datos que recogemos
             </h2>
             <p>
@@ -72,7 +72,7 @@ export default function PoliticaPrivacidadPage() {
               registro de usuarios. Los datos que podemos recoger son:
             </p>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
               2.1 Datos de navegación (analytics)
             </h3>
             <p>
@@ -93,7 +93,7 @@ export default function PoliticaPrivacidadPage() {
               no permiten identificar a personas concretas.
             </p>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
               2.2 Datos de contacto
             </h3>
             <p>
@@ -102,7 +102,7 @@ export default function PoliticaPrivacidadPage() {
               consulta.
             </p>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
               2.3 Geolocalización
             </h3>
             <p>
@@ -114,7 +114,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               3. Base legal del tratamiento
             </h2>
             <ul className="list-disc pl-5 space-y-1">
@@ -134,7 +134,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               4. Destinatarios de los datos
             </h2>
             <ul className="list-disc pl-5 space-y-1">
@@ -156,7 +156,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               5. Conservación de los datos
             </h2>
             <ul className="list-disc pl-5 space-y-1">
@@ -175,7 +175,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               6. Tus derechos (RGPD / LOPDGDD)
             </h2>
             <p>Puedes ejercer los siguientes derechos:</p>
@@ -207,7 +207,7 @@ export default function PoliticaPrivacidadPage() {
               Para ejercer cualquier derecho, escríbenos al DPO:{" "}
               <a
                 href="mailto:dpo@trafico.live"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 dpo@trafico.live
               </a>{" "}
@@ -221,7 +221,7 @@ export default function PoliticaPrivacidadPage() {
                 href="https://www.aepd.es"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 Agencia Española de Protección de Datos (AEPD)
               </a>
@@ -230,7 +230,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               7. Seguridad
             </h2>
             <p>
@@ -242,7 +242,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               8. Cookies
             </h2>
             <p>
@@ -250,7 +250,7 @@ export default function PoliticaPrivacidadPage() {
               trafico.live, consulta nuestra{" "}
               <Link
                 href="/politica-cookies"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 Política de Cookies
               </Link>
@@ -259,7 +259,7 @@ export default function PoliticaPrivacidadPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               9. Cambios en esta política
             </h2>
             <p>

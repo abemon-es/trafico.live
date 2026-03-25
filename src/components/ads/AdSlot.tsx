@@ -51,7 +51,7 @@ function AdSlotInner({ id, format, className }: AdSlotProps) {
           data-ad-slot={id}
           data-ad-format={format}
           style={{ minHeight }}
-          className="w-full flex flex-col items-center justify-center bg-gray-50 border border-gray-100 rounded"
+          className="w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded"
         >
           <span className="text-[10px] text-gray-300 select-none uppercase tracking-widest">
             Publicidad

@@ -31,7 +31,7 @@ export default function EstadisticasPage({
   searchParams: { tab?: string };
 }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Cargando...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">Cargando...</div>}>
       <EstadisticasPageContent searchParams={searchParams} />
     </Suspense>
   );

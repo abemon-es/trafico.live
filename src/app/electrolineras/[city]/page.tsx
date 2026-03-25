@@ -55,8 +55,8 @@ const POWER_BANDS = [
     label: "Carga lenta",
     sublabel: "hasta 22 kW",
     maxKw: 22,
-    color: "bg-tl-100 text-tl-700 border-tl-200",
-    dot: "bg-tl-500",
+    color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
+    dot: "bg-tl-50 dark:bg-tl-900/200",
   },
   {
     id: "fast",
@@ -64,7 +64,7 @@ const POWER_BANDS = [
     sublabel: "22–150 kW",
     minKw: 22,
     maxKw: 150,
-    color: "bg-orange-100 text-orange-700 border-orange-200",
+    color: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
     dot: "bg-orange-500",
   },
   {
@@ -72,8 +72,8 @@ const POWER_BANDS = [
     label: "Ultra-rápida",
     sublabel: "más de 150 kW",
     minKw: 150,
-    color: "bg-green-100 text-green-700 border-green-200",
-    dot: "bg-green-500",
+    color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
+    dot: "bg-green-50 dark:bg-green-900/200",
   },
 ];
 
@@ -245,7 +245,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -261,25 +261,25 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
           {/* ---------------------------------------------------------------- */}
           {/* HERO / H1                                                        */}
           {/* ---------------------------------------------------------------- */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-green-50 rounded-lg flex-shrink-0">
-                <Zap className="w-8 h-8 text-green-600" />
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg flex-shrink-0">
+                <Zap className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold bg-green-100 text-green-700 border border-green-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                     Datos en tiempo real
                   </span>
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
                     {cityData.province}
                   </span>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                   Electrolineras en {cityData.name}
                 </h1>
-                <p className="text-gray-600 max-w-3xl leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
                   Directorio completo de puntos de carga para vehículos
                   eléctricos en {cityData.name}. Filtra por potencia, operador
                   o disponibilidad 24h. Datos actualizados del Ministerio para
@@ -293,29 +293,29 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
           {/* KPI STRIP                                                        */}
           {/* ---------------------------------------------------------------- */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm text-center">
-              <p className="text-3xl font-bold text-gray-900 mb-0.5">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm text-center">
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-0.5">
                 {totalCount.toLocaleString("es-ES")}
               </p>
-              <p className="text-xs text-gray-500">cargadores totales</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">cargadores totales</p>
             </div>
-            <div className="bg-white rounded-xl border border-tl-100 p-4 shadow-sm text-center">
-              <p className="text-3xl font-bold text-tl-700 mb-0.5">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-tl-100 p-4 shadow-sm text-center">
+              <p className="text-3xl font-bold text-tl-700 dark:text-tl-300 mb-0.5">
                 {bands.slow.length.toLocaleString("es-ES")}
               </p>
-              <p className="text-xs text-gray-500">carga lenta</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">carga lenta</p>
             </div>
-            <div className="bg-white rounded-xl border border-orange-100 p-4 shadow-sm text-center">
-              <p className="text-3xl font-bold text-orange-600 mb-0.5">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-orange-100 p-4 shadow-sm text-center">
+              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-0.5">
                 {bands.fast.length.toLocaleString("es-ES")}
               </p>
-              <p className="text-xs text-gray-500">carga rápida</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">carga rápida</p>
             </div>
-            <div className="bg-white rounded-xl border border-green-100 p-4 shadow-sm text-center">
-              <p className="text-3xl font-bold text-green-600 mb-0.5">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-green-100 p-4 shadow-sm text-center">
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-0.5">
                 {bands.ultra.length.toLocaleString("es-ES")}
               </p>
-              <p className="text-xs text-gray-500">ultra-rápida</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">ultra-rápida</p>
             </div>
           </div>
 
@@ -342,10 +342,10 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                   <div className={`w-3 h-3 rounded-full ${band.dot}`} />
                   <h2
                     id={`heading-${band.id}`}
-                    className="text-lg font-semibold text-gray-900"
+                    className="text-lg font-semibold text-gray-900 dark:text-gray-100"
                   >
                     {band.label}
-                    <span className="ml-2 text-sm font-normal text-gray-500">
+                    <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                       ({band.sublabel})
                     </span>
                   </h2>
@@ -360,14 +360,14 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                   {items.slice(0, 20).map((charger) => (
                     <div
                       key={charger.id}
-                      className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-start gap-3"
+                      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-3 flex items-start gap-3"
                     >
-                      <div className="p-1.5 bg-gray-50 rounded-lg flex-shrink-0 mt-0.5">
-                        <Zap className="w-4 h-4 text-gray-500" />
+                      <div className="p-1.5 bg-gray-50 dark:bg-gray-950 rounded-lg flex-shrink-0 mt-0.5">
+                        <Zap className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                          <span className="font-medium text-gray-900 text-sm truncate">
+                          <span className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                             {charger.name}
                           </span>
                           {charger.powerKw && (
@@ -389,7 +389,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500 dark:text-gray-400">
                           {charger.address && (
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3 h-3" />
@@ -420,11 +420,11 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                   ))}
 
                   {items.length > 20 && (
-                    <p className="text-sm text-gray-500 text-center py-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
                       y {items.length - 20} más — consulta el mapa completo en{" "}
                       <Link
                         href="/carga-ev"
-                        className="text-tl-600 hover:underline font-medium"
+                        className="text-tl-600 dark:text-tl-400 hover:underline font-medium"
                       >
                         carga-ev
                       </Link>
@@ -437,17 +437,17 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
 
           {/* Empty state */}
           {totalCount === 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-10 text-center mb-8">
-              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-10 text-center mb-8">
+              <div className="w-12 h-12 bg-gray-50 dark:bg-gray-950 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Zap className="w-6 h-6 text-gray-400" />
               </div>
-              <p className="font-semibold text-gray-900 mb-1">
+              <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 Sin datos para {cityData.name}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 No hemos encontrado cargadores registrados en la provincia de{" "}
                 {cityData.province}. Consulta el mapa nacional en{" "}
-                <Link href="/carga-ev" className="text-tl-600 hover:underline">
+                <Link href="/carga-ev" className="text-tl-600 dark:text-tl-400 hover:underline">
                   carga-ev
                 </Link>
                 .
@@ -462,7 +462,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
             <section className="mb-8" aria-labelledby="heading-operators">
               <h2
                 id="heading-operators"
-                className="text-lg font-semibold text-gray-900 mb-4"
+                className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
               >
                 Principales operadores en {cityData.name}
               </h2>
@@ -470,16 +470,16 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                 {topOperators.map(([name, count]) => (
                   <div
                     key={name}
-                    className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3"
+                    className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 flex items-center gap-3"
                   >
-                    <div className="p-2 bg-gray-50 rounded-lg flex-shrink-0">
-                      <Building2 className="w-4 h-4 text-gray-500" />
+                    <div className="p-2 bg-gray-50 dark:bg-gray-950 rounded-lg flex-shrink-0">
+                      <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 text-sm truncate">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                         {name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {count} cargador{count !== 1 ? "es" : ""}
                       </p>
                     </div>
@@ -492,14 +492,14 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
           {/* ---------------------------------------------------------------- */}
           {/* RELATED LINKS                                                    */}
           {/* ---------------------------------------------------------------- */}
-          <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-8">
+          <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-5 mb-8">
             <h2 className="font-semibold text-tl-900 mb-3 text-sm">
               Más información sobre carga eléctrica
             </h2>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/carga-ev"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 bg-white border border-tl-200 px-3 py-2 rounded-lg hover:bg-tl-100 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 dark:text-tl-300 bg-white dark:bg-gray-900 border border-tl-200 dark:border-tl-800 px-3 py-2 rounded-lg hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
               >
                 <Activity className="w-4 h-4" />
                 Mapa nacional de electrolineras
@@ -507,7 +507,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
               </Link>
               <Link
                 href="/cuanto-cuesta-cargar"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 bg-white border border-tl-200 px-3 py-2 rounded-lg hover:bg-tl-100 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 dark:text-tl-300 bg-white dark:bg-gray-900 border border-tl-200 dark:border-tl-800 px-3 py-2 rounded-lg hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
               >
                 <Zap className="w-4 h-4" />
                 ¿Cuánto cuesta cargar un coche eléctrico?
@@ -520,7 +520,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
           {/* OTHER CITIES                                                     */}
           {/* ---------------------------------------------------------------- */}
           <section className="mb-8">
-            <h2 className="text-sm font-semibold text-gray-600 mb-3">
+            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
               Electrolineras en otras ciudades
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -530,7 +530,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                   <Link
                     key={slug}
                     href={`/electrolineras/${slug}`}
-                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-tl-300 hover:text-tl-700 transition-colors"
+                    className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors"
                   >
                     {data.name}
                   </Link>
@@ -544,7 +544,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
           <section className="mb-8" aria-labelledby="faq-heading">
             <h2
               id="faq-heading"
-              className="text-lg font-semibold text-gray-900 mb-3"
+              className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3"
             >
               Preguntas frecuentes — electrolineras en {cityData.name}
             </h2>
@@ -552,13 +552,13 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
               {faqItems.map((item) => (
                 <details
                   key={item.question}
-                  className="bg-white border border-gray-200 rounded-xl overflow-hidden group"
+                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group"
                 >
-                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 transition-colors select-none text-sm">
+                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none text-sm">
                     {item.question}
                     <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
                   </summary>
-                  <div className="px-5 py-4 text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                  <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                     {item.answer}
                   </div>
                 </details>
@@ -569,14 +569,14 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
           {/* ---------------------------------------------------------------- */}
           {/* DATA SOURCE NOTE                                                 */}
           {/* ---------------------------------------------------------------- */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
             <div className="flex items-start gap-3">
               <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   Fuente y actualización de datos
                 </h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                   Los datos de electrolineras proceden del Ministerio para la
                   Transición Ecológica (MITECO) y de los registros oficiales de
                   operadores de red. Esta página no usa caché y muestra los
@@ -584,7 +584,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                   carga incorrecto o desactualizado, puedes consultarlo en{" "}
                   <Link
                     href="/sobre"
-                    className="text-tl-600 hover:underline"
+                    className="text-tl-600 dark:text-tl-400 hover:underline"
                   >
                     nuestra página de contacto
                   </Link>

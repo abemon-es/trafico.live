@@ -107,9 +107,9 @@ export function TimeSeriesChart({
 
   if (effectiveLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {title || "Evolución Temporal"}
           </h3>
         </div>
@@ -123,9 +123,9 @@ export function TimeSeriesChart({
   // Yearly historical data mode
   if (isYearlyMode) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {title || "Evolución Anual"}
           </h3>
         </div>
@@ -192,9 +192,9 @@ export function TimeSeriesChart({
 
   if (hasNoData) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {title || "Evolución Temporal (Últimos 7 días)"}
           </h3>
         </div>
@@ -206,9 +206,9 @@ export function TimeSeriesChart({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           {title || "Evolución Temporal (Últimos 7 días)"}
         </h3>
         <div className="flex items-center gap-2">
@@ -217,7 +217,7 @@ export function TimeSeriesChart({
             className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
               viewMode === "hourly"
                 ? "bg-gray-900 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
             }`}
           >
             Horario
@@ -227,7 +227,7 @@ export function TimeSeriesChart({
             className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
               viewMode === "daily"
                 ? "bg-gray-900 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
             }`}
           >
             Diario

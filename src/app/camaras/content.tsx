@@ -83,41 +83,41 @@ export function CamarasContent() {
   }, [data?.cameras, search, selectedProvince, selectedCommunity]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Camera className="w-8 h-8 text-tl-600" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+            <Camera className="w-8 h-8 text-tl-600 dark:text-tl-400" />
             Cámaras de Tráfico
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Imágenes en tiempo real de las cámaras de la DGT en las carreteras
             españolas.
           </p>
         </div>
 
         {/* Stats bar */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-2xl font-bold text-gray-900 font-data">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                   {isLoading ? "-" : data?.count || 0}
                 </p>
-                <p className="text-sm text-gray-500">Cámaras totales</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Cámaras totales</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-tl-600 font-data">
+                <p className="text-2xl font-bold text-tl-600 dark:text-tl-400 font-data">
                   {filteredCameras.length}
                 </p>
-                <p className="text-sm text-gray-500">Mostrando</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Mostrando</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 font-data">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                   {data?.provinces.length || 0}
                 </p>
-                <p className="text-sm text-gray-500">Provincias</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Provincias</p>
               </div>
             </div>
 
@@ -131,7 +131,7 @@ export function CamarasContent() {
                   placeholder="Buscar carretera, km..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+                  className="pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
                 />
               </div>
 
@@ -144,7 +144,7 @@ export function CamarasContent() {
                     setSelectedCommunity(e.target.value);
                     setSelectedProvince(""); // Clear province when community changes
                   }}
-                  className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+                  className="pl-9 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm appearance-none bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
                 >
                   <option value="">Todas las comunidades</option>
                   {communities.map((community) => (
@@ -161,7 +161,7 @@ export function CamarasContent() {
                 <select
                   value={selectedProvince}
                   onChange={(e) => setSelectedProvince(e.target.value)}
-                  className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
+                  className="pl-9 pr-8 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm appearance-none bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
                 >
                   <option value="">Todas las provincias</option>
                   {data?.provinces.map((province) => (
@@ -180,7 +180,7 @@ export function CamarasContent() {
                     setSelectedProvince("");
                     setSelectedCommunity("");
                   }}
-                  className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors"
                 >
                   Limpiar filtros
                 </button>
@@ -192,17 +192,17 @@ export function CamarasContent() {
         {/* Loading state */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-tl-600 animate-spin mb-4" />
-            <p className="text-gray-600">Cargando cámaras...</p>
+            <Loader2 className="w-8 h-8 text-tl-600 dark:text-tl-400 animate-spin mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">Cargando cámaras...</p>
           </div>
         )}
 
         {/* Error state */}
         {error && (
-          <div className="flex flex-col items-center justify-center py-20 text-red-600">
+          <div className="flex flex-col items-center justify-center py-20 text-red-600 dark:text-red-400">
             <AlertTriangle className="w-8 h-8 mb-4" />
             <p>Error al cargar las cámaras</p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Por favor, inténtalo de nuevo más tarde
             </p>
           </div>
@@ -210,7 +210,7 @@ export function CamarasContent() {
 
         {/* Empty state */}
         {!isLoading && !error && filteredCameras.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+          <div className="flex flex-col items-center justify-center py-20 text-gray-500 dark:text-gray-400">
             <Camera className="w-12 h-12 mb-4 opacity-50" />
             <p className="text-lg font-medium">No se encontraron cámaras</p>
             <p className="text-sm mt-1">

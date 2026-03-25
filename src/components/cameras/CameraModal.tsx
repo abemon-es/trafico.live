@@ -58,21 +58,21 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <div>
-            <h2 className="font-semibold text-gray-900">{camera.name}</h2>
-            <p className="text-sm text-gray-500">{camera.province}</p>
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100">{camera.name}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{camera.province}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 dark:bg-gray-900 rounded-full transition-colors"
             title="Cerrar"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
 
@@ -96,20 +96,20 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
 
           {/* Auto-refresh indicator */}
           {autoRefresh && (
-            <div className="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+            <div className="absolute top-3 left-3 bg-green-50 dark:bg-green-900/200 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+              <div className="w-2 h-2 bg-white dark:bg-gray-900 rounded-full animate-pulse" />
               Auto-refresh activo
             </div>
           )}
         </div>
 
         {/* Controls */}
-        <div className="px-4 py-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {/* Manual refresh */}
             <button
               onClick={refreshImage}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 rounded-lg transition-colors text-sm"
             >
               <RefreshCw className="w-4 h-4" />
               Actualizar
@@ -120,8 +120,8 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
               onClick={() => setAutoRefresh(!autoRefresh)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                 autoRefresh
-                  ? "bg-green-100 text-green-700 hover:bg-green-200"
-                  : "bg-gray-100 hover:bg-gray-200"
+                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200"
+                  : "bg-gray-100 dark:bg-gray-900 hover:bg-gray-200"
               }`}
             >
               {autoRefresh ? (
@@ -138,7 +138,7 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
             </button>
           </div>
 
-          <div className="flex items-center gap-3 text-sm text-gray-500">
+          <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
             <span>
               Última actualización: {lastRefresh.toLocaleTimeString("es-ES")}
             </span>
@@ -148,7 +148,7 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-tl-600 hover:text-tl-700 hover:underline"
+              className="flex items-center gap-1 text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
             >
               <MapPin className="w-4 h-4" />
               Ver en mapa
@@ -158,23 +158,23 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
         </div>
 
         {/* Details */}
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Carretera</span>
+            <span className="text-gray-500 dark:text-gray-400">Carretera</span>
             <p className="font-medium">{camera.road || "-"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Punto km</span>
+            <span className="text-gray-500 dark:text-gray-400">Punto km</span>
             <p className="font-medium">
               {camera.kmPoint !== null ? camera.kmPoint : "-"}
             </p>
           </div>
           <div>
-            <span className="text-gray-500">Dirección</span>
+            <span className="text-gray-500 dark:text-gray-400">Dirección</span>
             <p className="font-medium">{camera.direction || "-"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Coordenadas</span>
+            <span className="text-gray-500 dark:text-gray-400">Coordenadas</span>
             <p className="font-medium font-mono text-xs">
               {camera.lat.toFixed(4)}, {camera.lng.toFixed(4)}
             </p>

@@ -102,44 +102,44 @@ export default async function RegionalesPage() {
     .sort((a, b) => b[1].length - a[1].length);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-gray-700">Inicio</Link>
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
           <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700">Carreteras</Link>
+          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">Regionales</span>
+          <span className="text-gray-900 dark:text-gray-100">Regionales</span>
         </nav>
 
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-6 mb-6 border border-orange-200">
           <div className="flex items-center gap-3 mb-4">
-            <Construction className="w-8 h-8 text-orange-600" />
+            <Construction className="w-8 h-8 text-orange-600 dark:text-orange-400" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Carreteras Regionales</h1>
-              <p className="text-gray-600">Vías autonómicas, comarcales y provinciales</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Carreteras Regionales</h1>
+              <p className="text-gray-600 dark:text-gray-400">Vías autonómicas, comarcales y provinciales</p>
             </div>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-orange-600">{roads.length}</div>
-              <div className="text-sm text-gray-600">Carreteras</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{roads.length}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Carreteras</div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-tl-600">{totalCameras}</div>
-              <div className="text-sm text-gray-600">Cámaras</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-tl-600 dark:text-tl-400">{totalCameras}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Cámaras</div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-yellow-600">{totalRadars}</div>
-              <div className="text-sm text-gray-600">Radares</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{totalRadars}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Radares</div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-red-600">{totalIncidents}</div>
-              <div className="text-sm text-gray-600">Incidencias activas</div>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{totalIncidents}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Incidencias activas</div>
             </div>
           </div>
         </div>
@@ -148,26 +148,26 @@ export default async function RegionalesPage() {
         {roads.length > 0 ? (
           <div className="space-y-6">
             {sortedPrefixes.map(([prefix, prefixRoads]) => (
-              <div key={prefix} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="bg-gray-50 px-4 py-3 border-b">
-                  <h2 className="font-semibold text-gray-900">
-                    Carreteras {prefix} <span className="text-gray-500 font-normal">({prefixRoads.length})</span>
+              <div key={prefix} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <div className="bg-gray-50 dark:bg-gray-950 px-4 py-3 border-b">
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+                    Carreteras {prefix} <span className="text-gray-500 dark:text-gray-400 font-normal">({prefixRoads.length})</span>
                   </h2>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50 border-b">
+                    <thead className="bg-gray-50 dark:bg-gray-950 border-b">
                       <tr>
-                        <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm">ID</th>
-                        <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden md:table-cell">Nombre</th>
-                        <th className="text-left py-2 px-4 font-medium text-gray-600 text-sm hidden lg:table-cell">Tipo</th>
-                        <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                        <th className="text-left py-2 px-4 font-medium text-gray-600 dark:text-gray-400 text-sm">ID</th>
+                        <th className="text-left py-2 px-4 font-medium text-gray-600 dark:text-gray-400 text-sm hidden md:table-cell">Nombre</th>
+                        <th className="text-left py-2 px-4 font-medium text-gray-600 dark:text-gray-400 text-sm hidden lg:table-cell">Tipo</th>
+                        <th className="text-center py-2 px-4 font-medium text-gray-600 dark:text-gray-400 text-sm">
                           <Camera className="w-3 h-3 inline" />
                         </th>
-                        <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                        <th className="text-center py-2 px-4 font-medium text-gray-600 dark:text-gray-400 text-sm">
                           <Radar className="w-3 h-3 inline" />
                         </th>
-                        <th className="text-center py-2 px-4 font-medium text-gray-600 text-sm">
+                        <th className="text-center py-2 px-4 font-medium text-gray-600 dark:text-gray-400 text-sm">
                           <AlertTriangle className="w-3 h-3 inline" />
                         </th>
                       </tr>
@@ -179,34 +179,34 @@ export default async function RegionalesPage() {
                         const incidents = incidentCounts.get(road.id) || 0;
 
                         return (
-                          <tr key={road.id} className="border-b hover:bg-gray-50">
+                          <tr key={road.id} className="border-b hover:bg-gray-50 dark:bg-gray-950">
                             <td className="py-2 px-4">
                               <Link
                                 href={`/carreteras/${road.id}`}
-                                className="font-medium text-orange-600 hover:text-orange-800"
+                                className="font-medium text-orange-600 dark:text-orange-400 hover:text-orange-800"
                               >
                                 {road.id}
                               </Link>
                             </td>
-                            <td className="py-2 px-4 text-gray-600 text-sm hidden md:table-cell">
+                            <td className="py-2 px-4 text-gray-600 dark:text-gray-400 text-sm hidden md:table-cell">
                               {road.name || "-"}
                             </td>
-                            <td className="py-2 px-4 text-gray-500 text-xs hidden lg:table-cell">
+                            <td className="py-2 px-4 text-gray-500 dark:text-gray-400 text-xs hidden lg:table-cell">
                               {TYPE_LABELS[road.type] || road.type}
                             </td>
                             <td className="py-2 px-4 text-center text-sm">
-                              <span className={cameras > 0 ? "font-medium text-tl-600" : "text-gray-400"}>
+                              <span className={cameras > 0 ? "font-medium text-tl-600 dark:text-tl-400" : "text-gray-400"}>
                                 {cameras}
                               </span>
                             </td>
                             <td className="py-2 px-4 text-center text-sm">
-                              <span className={radars > 0 ? "font-medium text-yellow-600" : "text-gray-400"}>
+                              <span className={radars > 0 ? "font-medium text-yellow-600 dark:text-yellow-400" : "text-gray-400"}>
                                 {radars}
                               </span>
                             </td>
                             <td className="py-2 px-4 text-center text-sm">
                               {incidents > 0 ? (
-                                <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+                                <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs">
                                   {incidents}
                                 </span>
                               ) : (
@@ -220,7 +220,7 @@ export default async function RegionalesPage() {
                   </table>
                 </div>
                 {prefixRoads.length > 20 && (
-                  <div className="px-4 py-2 bg-gray-50 text-sm text-gray-500 border-t">
+                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-950 text-sm text-gray-500 dark:text-gray-400 border-t">
                     Y {prefixRoads.length - 20} carreteras más con prefijo {prefix}...
                   </div>
                 )}
@@ -237,8 +237,8 @@ export default async function RegionalesPage() {
         )}
 
         {/* SEO Content */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Red de Carreteras Autonómicas y Provinciales
           </h2>
           <div className="prose prose-gray max-w-none">

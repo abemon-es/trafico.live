@@ -117,15 +117,15 @@ const INCIDENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const INCIDENT_TYPE_COLORS: Record<string, string> = {
-  ACCIDENT: "bg-red-100 text-red-700 border-red-200",
-  ROADWORK: "bg-orange-100 text-orange-700 border-orange-200",
-  CONGESTION: "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200",
-  HAZARD: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  VEHICLE_BREAKDOWN: "bg-purple-100 text-purple-700 border-purple-200",
-  WEATHER: "bg-tl-100 text-tl-700 border-tl-200",
-  EVENT: "bg-green-100 text-green-700 border-green-200",
-  CLOSURE: "bg-red-100 text-red-700 border-red-200",
-  OTHER: "bg-gray-100 text-gray-700 border-gray-200",
+  ACCIDENT: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+  ROADWORK: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
+  CONGESTION: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
+  HAZARD: "bg-yellow-100 text-yellow-700 dark:text-yellow-400 border-yellow-200",
+  VEHICLE_BREAKDOWN: "bg-purple-100 text-purple-700 dark:text-purple-400 border-purple-200",
+  WEATHER: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
+  EVENT: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
+  CLOSURE: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+  OTHER: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800",
 };
 
 // -------------------------------------------------------------------------
@@ -242,10 +242,10 @@ export default async function TraficoCityPage({ params }: Props) {
   // Derive status colour for the header badge
   const statusColor =
     incidentCount === 0
-      ? "bg-green-100 text-green-700 border-green-200"
+      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200"
       : incidentCount < 5
-      ? "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200"
-      : "bg-red-100 text-red-700 border-red-200";
+      ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800"
+      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200";
 
   const statusLabel =
     incidentCount === 0
@@ -295,36 +295,36 @@ export default async function TraficoCityPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Breadcrumbs */}
           <nav
             aria-label="Ruta de navegación"
-            className="flex items-center gap-1.5 text-sm text-gray-500 mb-5"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-5"
           >
-            <Link href="/" className="hover:text-gray-700 transition-colors">
+            <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">
               Inicio
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/incidencias" className="hover:text-gray-700 transition-colors">
+            <Link href="/incidencias" className="hover:text-gray-700 dark:text-gray-300 transition-colors">
               Tráfico
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-gray-900 font-medium">{cityData.name}</span>
+            <span className="text-gray-900 dark:text-gray-100 font-medium">{cityData.name}</span>
           </nav>
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Tráfico en {cityData.name} Hoy
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   {/* Live badge */}
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 text-green-700 rounded-full text-xs font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-50 dark:bg-green-900/200 animate-pulse" />
                     Actualizado en tiempo real
                   </span>
                   {/* Timestamp */}
@@ -346,56 +346,56 @@ export default async function TraficoCityPage({ params }: Props) {
 
           {/* KPI row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
                 <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
                 Incidencias activas
               </div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {incidentCount.toLocaleString("es-ES")}
               </div>
               <div className="text-xs text-gray-400 mt-0.5">en {cityData.province}</div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
                 <Camera className="w-3.5 h-3.5 text-tl-500" />
                 Cámaras DGT
               </div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {cameraCount.toLocaleString("es-ES")}
               </div>
               <div className="text-xs text-gray-400 mt-0.5">
                 <Link
                   href={`/camaras/${city}`}
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   Ver cámaras
                 </Link>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
                 <CloudRain className="w-3.5 h-3.5 text-sky-500" />
                 Alertas meteo
               </div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {weatherCount.toLocaleString("es-ES")}
               </div>
               <div className="text-xs text-gray-400 mt-0.5">
-                <Link href="/alertas-meteo" className="text-tl-600 hover:underline">
+                <Link href="/alertas-meteo" className="text-tl-600 dark:text-tl-400 hover:underline">
                   Ver alertas
                 </Link>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
                 <Clock className="w-3.5 h-3.5 text-gray-400" />
                 Última actualización
               </div>
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 {formatTimestamp(now)}
               </div>
               <div className="text-xs text-gray-400 mt-0.5">Fuente DGT</div>
@@ -407,14 +407,14 @@ export default async function TraficoCityPage({ params }: Props) {
             <div className="flex items-center justify-between mb-3">
               <h2
                 id="incidencias-heading"
-                className="text-lg font-semibold text-gray-900"
+                className="text-lg font-semibold text-gray-900 dark:text-gray-100"
               >
                 Incidencias activas en {cityData.name}
               </h2>
               {incidentCount > 20 && (
                 <Link
                   href="/incidencias"
-                  className="text-sm text-tl-600 hover:underline flex items-center gap-1"
+                  className="text-sm text-tl-600 dark:text-tl-400 hover:underline flex items-center gap-1"
                 >
                   Ver todas ({incidentCount})
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -423,14 +423,14 @@ export default async function TraficoCityPage({ params }: Props) {
             </div>
 
             {incidents.length === 0 ? (
-              <div className="bg-white rounded-xl border border-green-200 p-8 text-center">
-                <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-green-200 p-8 text-center">
+                <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Navigation className="w-6 h-6 text-green-500" />
                 </div>
-                <p className="font-semibold text-gray-900 mb-1">
+                <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   Sin incidencias en {cityData.name}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   No hay incidencias de tráfico activas en este momento en la provincia de{" "}
                   {cityData.province}. La circulación es fluida.
                 </p>
@@ -446,7 +446,7 @@ export default async function TraficoCityPage({ params }: Props) {
                   return (
                     <div
                       key={inc.id}
-                      className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-start gap-3"
+                      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-3 flex items-start gap-3"
                     >
                       <div className="mt-0.5 flex-shrink-0">
                         {inc.type === "ACCIDENT" || inc.type === "CLOSURE" ? (
@@ -469,7 +469,7 @@ export default async function TraficoCityPage({ params }: Props) {
                             {typeLabel}
                           </span>
                           {inc.roadNumber && (
-                            <span className="text-xs font-semibold text-tl-700 bg-tl-50 border border-tl-200 px-2 py-0.5 rounded">
+                            <span className="text-xs font-semibold text-tl-700 dark:text-tl-300 bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 px-2 py-0.5 rounded">
                               {inc.roadNumber}
                             </span>
                           )}
@@ -477,7 +477,7 @@ export default async function TraficoCityPage({ params }: Props) {
                             {formatRelativeTime(new Date(inc.startedAt))}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                           {inc.description ?? `${typeLabel} en ${inc.province ?? cityData.name}`}
                         </p>
                       </div>
@@ -492,86 +492,86 @@ export default async function TraficoCityPage({ params }: Props) {
           <section className="mb-6" aria-labelledby="enlaces-heading">
             <h2
               id="enlaces-heading"
-              className="text-lg font-semibold text-gray-900 mb-3"
+              className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3"
             >
               Recursos de tráfico en {cityData.name}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <Link
                 href="/mapa"
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-tl-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group"
               >
-                <MapPin className="w-5 h-5 text-tl-600 flex-shrink-0" />
+                <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 group-hover:text-tl-700">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-700 dark:text-tl-300">
                     Mapa en vivo
                   </div>
-                  <div className="text-xs text-gray-500">España completa</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">España completa</div>
                 </div>
               </Link>
 
               <Link
                 href="/incidencias"
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-red-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-red-300 hover:shadow-sm transition-all group"
               >
                 <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 group-hover:text-red-700">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-red-700 dark:text-red-400">
                     Incidencias
                   </div>
-                  <div className="text-xs text-gray-500">Todas las vías</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Todas las vías</div>
                 </div>
               </Link>
 
               <Link
                 href={`/camaras/${city}`}
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-indigo-300 hover:shadow-sm transition-all group"
               >
                 <Camera className="w-5 h-5 text-indigo-600 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-700">
                     Cámaras
                   </div>
-                  <div className="text-xs text-gray-500">{cityData.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{cityData.name}</div>
                 </div>
               </Link>
 
               <Link
                 href="/radares"
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group"
               >
                 <Radio className="w-5 h-5 text-orange-500 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 group-hover:text-orange-700">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-700 dark:text-orange-400">
                     Radares
                   </div>
-                  <div className="text-xs text-gray-500">DGT España</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">DGT España</div>
                 </div>
               </Link>
 
               <Link
                 href={`/gasolineras/baratas/${city}`}
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-green-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-300 hover:shadow-sm transition-all group"
               >
-                <Fuel className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <Fuel className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 group-hover:text-green-700">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:text-green-400">
                     Gasolineras baratas
                   </div>
-                  <div className="text-xs text-gray-500">{cityData.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{cityData.name}</div>
                 </div>
               </Link>
 
               <Link
                 href="/alertas-meteo"
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-sky-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-sky-300 hover:shadow-sm transition-all group"
               >
                 <CloudRain className="w-5 h-5 text-sky-500 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 group-hover:text-sky-700">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-sky-700">
                     Alertas meteo
                   </div>
-                  <div className="text-xs text-gray-500">AEMET</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">AEMET</div>
                 </div>
               </Link>
             </div>
@@ -579,7 +579,7 @@ export default async function TraficoCityPage({ params }: Props) {
 
           {/* Other cities */}
           <section className="mb-6">
-            <h2 className="text-sm font-semibold text-gray-600 mb-2">
+            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
               Tráfico en otras ciudades
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -589,7 +589,7 @@ export default async function TraficoCityPage({ params }: Props) {
                   <Link
                     key={slug}
                     href={`/trafico/${slug}`}
-                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-tl-300 hover:text-tl-700 transition-colors"
+                    className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors"
                   >
                     {data.name}
                   </Link>
@@ -601,27 +601,27 @@ export default async function TraficoCityPage({ params }: Props) {
           <section className="mb-6" aria-labelledby="faq-heading">
             <h2
               id="faq-heading"
-              className="text-lg font-semibold text-gray-900 mb-3"
+              className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3"
             >
               Preguntas frecuentes sobre el tráfico en {cityData.name}
             </h2>
             <div className="space-y-3">
-              <details className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
-                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 transition-colors select-none text-sm">
+              <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
+                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none text-sm">
                   {faq.q1}
                   <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
                 </summary>
-                <div className="px-5 py-4 text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                   {faq.a1}
                 </div>
               </details>
 
-              <details className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
-                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 transition-colors select-none text-sm">
+              <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
+                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none text-sm">
                   {faq.q2}
                   <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
                 </summary>
-                <div className="px-5 py-4 text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                   {faq.a2}
                 </div>
               </details>
@@ -629,14 +629,14 @@ export default async function TraficoCityPage({ params }: Props) {
           </section>
 
           {/* Data source note */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
             <div className="flex items-start gap-3">
               <Clock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   Fuente y actualización de datos
                 </h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                   Los datos de incidencias proceden de la Dirección General de Tráfico (DGT) y
                   fuentes autonómicas (SCT Cataluña, Tráfico Euskadi, Tráfico Madrid). Las alertas
                   meteorológicas son de AEMET. Esta página no usa caché y muestra el estado en tiempo

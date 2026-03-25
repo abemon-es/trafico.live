@@ -31,7 +31,7 @@ function FilterChip({ label, count, active, onClick, icon, color }: FilterChipPr
         transition-all duration-200 border-2
         ${active
           ? `${color} text-white border-transparent shadow-md`
-          : `bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50`
+          : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-950`
         }
       `}
     >
@@ -41,7 +41,7 @@ function FilterChip({ label, count, active, onClick, icon, color }: FilterChipPr
         <span
           className={`
             text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center
-            ${active ? "bg-white/20" : "bg-gray-100"}
+            ${active ? "bg-white dark:bg-gray-900/20" : "bg-gray-100 dark:bg-gray-900"}
           `}
         >
           {count}
@@ -71,12 +71,12 @@ const EFFECT_CONFIG: Record<IncidentEffect, { label: string; icon: React.ReactNo
   DIVERSION: {
     label: "Desvíos",
     icon: <ArrowLeftRight className="w-4 h-4" />,
-    color: "bg-tl-500",
+    color: "bg-tl-50 dark:bg-tl-900/200",
   },
   OTHER_EFFECT: {
     label: "Otras afecciones",
     icon: <HelpCircle className="w-4 h-4" />,
-    color: "bg-gray-500",
+    color: "bg-gray-50 dark:bg-gray-9500",
   },
 };
 
@@ -105,7 +105,7 @@ const CAUSE_CONFIG: Record<IncidentCause, { label: string; icon: React.ReactNode
   OTHER_CAUSE: {
     label: "Otras",
     icon: <HelpCircle className="w-4 h-4" />,
-    color: "bg-gray-500",
+    color: "bg-gray-50 dark:bg-gray-9500",
   },
 };
 
@@ -187,7 +187,7 @@ export function IncidentFilters({
         {hasActiveFilters && (
           <button
             onClick={onClearAll}
-            className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-full transition-colors"
           >
             Limpiar filtros
           </button>
@@ -200,7 +200,7 @@ export function IncidentFilters({
     <div className="space-y-4">
       {/* Effects section */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4" />
           Afecciones en la vía
         </h3>
@@ -225,7 +225,7 @@ export function IncidentFilters({
 
       {/* Causes section */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
           <Construction className="w-4 h-4" />
           Causas de afección
         </h3>
@@ -250,10 +250,10 @@ export function IncidentFilters({
 
       {/* Clear button */}
       {hasActiveFilters && (
-        <div className="pt-2 border-t border-gray-200">
+        <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
           <button
             onClick={onClearAll}
-            className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            className="w-full px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors"
           >
             Limpiar todos los filtros
           </button>

@@ -88,10 +88,10 @@ export function PriceAlertForm({
 
   const isAmber = accent === "amber" || fuelType === "gasoleoA";
 
-  const borderColor = isAmber ? "border-tl-amber-200" : "border-tl-200";
-  const bgColor = isAmber ? "bg-tl-amber-50" : "bg-tl-50";
-  const titleColor = isAmber ? "text-tl-amber-900" : "text-tl-800";
-  const iconColor = isAmber ? "text-tl-amber-600" : "text-tl-600";
+  const borderColor = isAmber ? "border-tl-amber-200 dark:border-tl-amber-800" : "border-tl-200 dark:border-tl-800";
+  const bgColor = isAmber ? "bg-tl-amber-50 dark:bg-tl-amber-900/20" : "bg-tl-50 dark:bg-tl-900/20";
+  const titleColor = isAmber ? "text-tl-amber-900" : "text-tl-800 dark:text-tl-200";
+  const iconColor = isAmber ? "text-tl-amber-600 dark:text-tl-amber-400" : "text-tl-600 dark:text-tl-400";
   const btnClass = isAmber
     ? "bg-tl-amber-600 hover:bg-tl-amber-700 focus:ring-tl-amber-500"
     : "bg-tl-600 hover:bg-tl-700 focus:ring-tl-500";
@@ -165,7 +165,7 @@ export function PriceAlertForm({
           <h3 className={`font-semibold ${titleColor} text-sm`}>
             Alerta de Precio de Combustible
           </h3>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             Recibe un aviso por email cuando el precio baje de tu objetivo
           </p>
         </div>
@@ -173,12 +173,12 @@ export function PriceAlertForm({
 
       {/* Success state */}
       {status === "success" ? (
-        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
-          <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-xl p-4">
+          <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 text-sm text-green-800">{message}</div>
           <button
             onClick={handleDismiss}
-            className="text-green-600 hover:text-green-800 flex-shrink-0"
+            className="text-green-600 dark:text-green-400 hover:text-green-800 flex-shrink-0"
             aria-label="Cerrar"
           >
             <X className="w-4 h-4" />
@@ -188,7 +188,7 @@ export function PriceAlertForm({
         <form onSubmit={handleSubmit} noValidate>
           {/* Error message */}
           {status === "error" && message && (
-            <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3 text-sm text-red-700">
+            <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg px-3 py-2 mb-3 text-sm text-red-700 dark:text-red-400">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{message}</span>
             </div>
@@ -197,7 +197,7 @@ export function PriceAlertForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Email */}
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="alert-email">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="alert-email">
                 Correo electrónico
               </label>
               <input
@@ -208,20 +208,20 @@ export function PriceAlertForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
+                className={`w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
               />
             </div>
 
             {/* Fuel type */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="alert-fuel-type">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="alert-fuel-type">
                 Combustible
               </label>
               <select
                 id="alert-fuel-type"
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value as "gasoleoA" | "gasolina95")}
-                className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
+                className={`w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
               >
                 <option value="gasolina95">Gasolina 95</option>
                 <option value="gasoleoA">Gasóleo A (Diésel)</option>
@@ -230,7 +230,7 @@ export function PriceAlertForm({
 
             {/* Target price */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="alert-target-price">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="alert-target-price">
                 Precio objetivo (€/L)
               </label>
               <input
@@ -243,13 +243,13 @@ export function PriceAlertForm({
                 value={targetPrice}
                 onChange={(e) => setTargetPrice(e.target.value)}
                 placeholder="1.450"
-                className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
+                className={`w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
               />
             </div>
 
             {/* Province (optional) */}
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="alert-province">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="alert-province">
                 Provincia{" "}
                 <span className="text-gray-400 font-normal">(opcional)</span>
               </label>
@@ -257,7 +257,7 @@ export function PriceAlertForm({
                 id="alert-province"
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
+                className={`w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 ${inputFocusClass} transition`}
               >
                 <option value="">Toda España</option>
                 {PROVINCES.map((p) => (

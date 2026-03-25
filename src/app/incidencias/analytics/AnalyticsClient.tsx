@@ -119,22 +119,22 @@ function StatCard({
   color?: "blue" | "red" | "green" | "orange";
 }) {
   const colorClasses = {
-    blue: "bg-tl-50 text-tl-700",
-    red: "bg-red-50 text-red-700",
-    green: "bg-green-50 text-green-700",
-    orange: "bg-orange-50 text-orange-700",
+    blue: "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300",
+    red: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400",
+    green: "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400",
+    orange: "bg-orange-50 text-orange-700 dark:text-orange-400",
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5 flex items-center gap-4">
       <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
         <Icon className="w-6 h-6" />
       </div>
       <div>
-        <p className="text-2xl font-bold text-gray-900">
+        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           {typeof value === "number" ? formatNumber(value) : value}
         </p>
-        <p className="text-sm text-gray-500 mt-0.5">{label}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
       </div>
     </div>
   );
@@ -142,13 +142,13 @@ function StatCard({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-lg font-semibold text-gray-800 mb-4">{children}</h2>
+    <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{children}</h2>
   );
 }
 
 function ChartCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
       {children}
     </div>
   );
@@ -171,9 +171,9 @@ function CustomTooltip({
   if (!active || !payload?.length) return null;
   const displayLabel = labelFormatter ? labelFormatter(label ?? "") : label;
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-sm">
-      <p className="font-medium text-gray-700">{displayLabel}</p>
-      <p className="text-tl-600 font-semibold">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg px-3 py-2 text-sm">
+      <p className="font-medium text-gray-700 dark:text-gray-300">{displayLabel}</p>
+      <p className="text-tl-600 dark:text-tl-400 font-semibold">
         {formatNumber(payload[0].value)} {valueLabel}
       </p>
     </div>
@@ -195,24 +195,24 @@ export function IncidenciasAnalyticsClient() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <div className="mb-6">
           <Link
             href="/incidencias"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-3 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 mb-3 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a incidencias
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <BarChart2 className="w-8 h-8 text-tl-600" />
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                <BarChart2 className="w-8 h-8 text-tl-600 dark:text-tl-400" />
                 Análisis de Incidencias de Tráfico
               </h1>
-              <p className="mt-1 text-gray-600">
+              <p className="mt-1 text-gray-600 dark:text-gray-400">
                 Patrones históricos basados en{" "}
                 {data ? formatNumber(data.totalHistoric) : "..."} incidencias
                 registradas.
@@ -220,7 +220,7 @@ export function IncidenciasAnalyticsClient() {
             </div>
 
             {/* Period selector */}
-            <div className="flex rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm">
+            <div className="flex rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
               {([7, 30, 90] as Period[]).map((p) => (
                 <button
                   key={p}
@@ -228,7 +228,7 @@ export function IncidenciasAnalyticsClient() {
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     period === p
                       ? "bg-tl-600 text-white"
-                      : "text-gray-600 hover:bg-gray-50"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
                   }`}
                 >
                   {p}d
@@ -245,8 +245,8 @@ export function IncidenciasAnalyticsClient() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-24 text-gray-500">
-            <Loader2 className="w-10 h-10 animate-spin text-tl-600 mb-4" />
+          <div className="flex flex-col items-center justify-center py-24 text-gray-500 dark:text-gray-400">
+            <Loader2 className="w-10 h-10 animate-spin text-tl-600 dark:text-tl-400 mb-4" />
             <p>Cargando análisis...</p>
           </div>
         )}
@@ -256,7 +256,7 @@ export function IncidenciasAnalyticsClient() {
           <div className="flex flex-col items-center justify-center py-24 text-red-500">
             <AlertTriangle className="w-10 h-10 mb-4" />
             <p className="font-medium">Error al cargar los datos</p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Por favor, inténtalo de nuevo más tarde.
             </p>
           </div>
@@ -310,7 +310,7 @@ export function IncidenciasAnalyticsClient() {
             {/* Hourly chart */}
             <ChartCard>
               <SectionTitle>Incidencias por hora del día</SectionTitle>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Distribución de incidencias según la hora en que comenzaron
                 durante los {PERIOD_LABELS[period].toLowerCase()}.
               </p>
@@ -347,7 +347,7 @@ export function IncidenciasAnalyticsClient() {
             {/* Day of week chart */}
             <ChartCard>
               <SectionTitle>Incidencias por día de la semana</SectionTitle>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Días con mayor concentración de incidencias de tráfico.
               </p>
               <ResponsiveContainer width="100%" height={240}>
@@ -453,7 +453,7 @@ export function IncidenciasAnalyticsClient() {
                       iconType="circle"
                       iconSize={10}
                       formatter={(value) => (
-                        <span className="text-sm text-gray-600">{value}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{value}</span>
                       )}
                     />
                   </PieChart>
@@ -465,21 +465,21 @@ export function IncidenciasAnalyticsClient() {
             <ChartCard>
               <SectionTitle>
                 <span className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-gray-500" />
+                  <MapPin className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Top 15 provincias con más incidencias
                 </span>
               </SectionTitle>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="text-left py-2 px-3 font-semibold text-gray-600 w-10">
+                    <tr className="border-b border-gray-100 dark:border-gray-800">
+                      <th className="text-left py-2 px-3 font-semibold text-gray-600 dark:text-gray-400 w-10">
                         #
                       </th>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-600">
+                      <th className="text-left py-2 px-3 font-semibold text-gray-600 dark:text-gray-400">
                         Provincia
                       </th>
-                      <th className="text-right py-2 px-3 font-semibold text-gray-600">
+                      <th className="text-right py-2 px-3 font-semibold text-gray-600 dark:text-gray-400">
                         Incidencias
                       </th>
                       <th className="py-2 px-3 w-36">
@@ -495,22 +495,22 @@ export function IncidenciasAnalyticsClient() {
                         <tr
                           key={p.province}
                           className={`border-b border-gray-50 ${
-                            idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                            idx % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-950/50"
                           }`}
                         >
                           <td className="py-2.5 px-3 text-gray-400 font-mono text-xs">
                             {idx + 1}
                           </td>
-                          <td className="py-2.5 px-3 font-medium text-gray-800">
+                          <td className="py-2.5 px-3 font-medium text-gray-800 dark:text-gray-200">
                             {p.province}
                           </td>
-                          <td className="py-2.5 px-3 text-right font-semibold text-tl-700">
+                          <td className="py-2.5 px-3 text-right font-semibold text-tl-700 dark:text-tl-300">
                             {formatNumber(p.count)}
                           </td>
                           <td className="py-2.5 px-3">
-                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-2 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-tl-500 rounded-full transition-all duration-500"
+                                className="h-full bg-tl-50 dark:bg-tl-900/200 rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>

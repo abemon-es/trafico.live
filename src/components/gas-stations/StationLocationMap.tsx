@@ -57,7 +57,7 @@ export function StationLocationMap({
     el.innerHTML = `
       <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white ${
         stationType === "maritime"
-          ? "bg-tl-500"
+          ? "bg-tl-50 dark:bg-tl-900/200"
           : "bg-orange-500"
       }">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -76,7 +76,7 @@ export function StationLocationMap({
         new maplibregl.Popup({ offset: 25 }).setHTML(`
           <div class="p-2">
             <p class="font-semibold text-sm">${name}</p>
-            <p class="text-xs text-gray-500">${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
           </div>
         `)
       )
@@ -95,14 +95,14 @@ export function StationLocationMap({
     : `/gasolineras/mapa?lat=${latitude}&lng=${longitude}&zoom=15`;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
       <div
         ref={mapContainer}
         style={{ height: `${height}px` }}
         className="w-full"
       />
-      <div className="p-3 flex items-center justify-between gap-2 border-t border-gray-100">
-        <div className="flex items-center gap-1 text-xs text-gray-500">
+      <div className="p-3 flex items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
           <MapPin className="w-3 h-3" />
           <span className="font-mono">{latitude.toFixed(5)}, {longitude.toFixed(5)}</span>
         </div>
@@ -111,14 +111,14 @@ export function StationLocationMap({
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-tl-600 hover:text-tl-700 hover:bg-tl-50 rounded transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:bg-tl-50 dark:bg-tl-900/20 rounded transition-colors"
           >
             <Navigation className="w-3 h-3" />
             Llegar
           </a>
           <Link
             href={mapPageUrl}
-            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-950 rounded transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
             Ver mapa

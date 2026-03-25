@@ -152,28 +152,28 @@ export default async function PreciosPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Link href="/gasolineras" className="hover:text-gray-700">Gasolineras</Link>
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>
           <span>/</span>
-          <span className="text-gray-900">Precios</span>
+          <span className="text-gray-900 dark:text-gray-100">Precios</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Precios de Combustible Hoy
         </h1>
-        <p className="text-gray-600 capitalize">{today}</p>
+        <p className="text-gray-600 dark:text-gray-400 capitalize">{today}</p>
       </div>
 
       {/* National Summary */}
       {nationalStats.today && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Media Nacional
-            <span className="text-sm font-normal text-gray-500 ml-2">(Península y Baleares)</span>
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">(Península y Baleares)</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-tl-amber-50 rounded-lg p-4">
-              <div className="text-sm text-tl-amber-600 mb-1">Gasóleo A</div>
-              <div className="text-3xl font-bold text-tl-amber-700">
+            <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg p-4">
+              <div className="text-sm text-tl-amber-600 dark:text-tl-amber-400 mb-1">Gasóleo A</div>
+              <div className="text-3xl font-bold text-tl-amber-700 dark:text-tl-amber-300">
                 {formatPrice(nationalStats.today.avgGasoleoA ? Number(nationalStats.today.avgGasoleoA) : null)}
                 <TrendIndicator
                   current={nationalStats.today.avgGasoleoA ? Number(nationalStats.today.avgGasoleoA) : null}
@@ -181,9 +181,9 @@ export default async function PreciosPage() {
                 />
               </div>
             </div>
-            <div className="bg-tl-50 rounded-lg p-4">
-              <div className="text-sm text-tl-600 mb-1">Gasolina 95</div>
-              <div className="text-3xl font-bold text-tl-700">
+            <div className="bg-tl-50 dark:bg-tl-900/20 rounded-lg p-4">
+              <div className="text-sm text-tl-600 dark:text-tl-400 mb-1">Gasolina 95</div>
+              <div className="text-3xl font-bold text-tl-700 dark:text-tl-300">
                 {formatPrice(nationalStats.today.avgGasolina95 ? Number(nationalStats.today.avgGasolina95) : null)}
                 <TrendIndicator
                   current={nationalStats.today.avgGasolina95 ? Number(nationalStats.today.avgGasolina95) : null}
@@ -192,8 +192,8 @@ export default async function PreciosPage() {
               </div>
             </div>
             <div className="bg-purple-50 rounded-lg p-4">
-              <div className="text-sm text-purple-600 mb-1">Gasolina 98</div>
-              <div className="text-3xl font-bold text-purple-700">
+              <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">Gasolina 98</div>
+              <div className="text-3xl font-bold text-purple-700 dark:text-purple-400">
                 {formatPrice(nationalStats.today.avgGasolina98 ? Number(nationalStats.today.avgGasolina98) : null)}
                 <TrendIndicator
                   current={nationalStats.today.avgGasolina98 ? Number(nationalStats.today.avgGasolina98) : null}
@@ -208,46 +208,46 @@ export default async function PreciosPage() {
       {/* Cheapest Provinces */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {cheapestDiesel && (
-          <div className="bg-green-50 rounded-lg border border-green-200 p-4">
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-50 dark:bg-green-900/200 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
-                <div className="text-sm text-green-600">Gasóleo A más barato</div>
+                <div className="text-sm text-green-600 dark:text-green-400">Gasóleo A más barato</div>
                 <div className="font-semibold text-green-800">{cheapestDiesel.name}</div>
               </div>
             </div>
-            <div className="text-2xl font-bold text-green-700">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-400">
               {formatPrice(cheapestDiesel.avgGasoleoA)}
-              <span className="text-sm font-normal text-green-600 ml-2">media</span>
+              <span className="text-sm font-normal text-green-600 dark:text-green-400 ml-2">media</span>
             </div>
             <Link
               href={`/gasolineras/precios/${cheapestDiesel.slug}`}
-              className="text-sm text-green-600 hover:underline mt-2 inline-block"
+              className="text-sm text-green-600 dark:text-green-400 hover:underline mt-2 inline-block"
             >
               Ver gasolineras en {cheapestDiesel.name} →
             </Link>
           </div>
         )}
         {cheapestGas95 && (
-          <div className="bg-green-50 rounded-lg border border-green-200 p-4">
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-50 dark:bg-green-900/200 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
-                <div className="text-sm text-green-600">Gasolina 95 más barata</div>
+                <div className="text-sm text-green-600 dark:text-green-400">Gasolina 95 más barata</div>
                 <div className="font-semibold text-green-800">{cheapestGas95.name}</div>
               </div>
             </div>
-            <div className="text-2xl font-bold text-green-700">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-400">
               {formatPrice(cheapestGas95.avgGasolina95)}
-              <span className="text-sm font-normal text-green-600 ml-2">media</span>
+              <span className="text-sm font-normal text-green-600 dark:text-green-400 ml-2">media</span>
             </div>
             <Link
               href={`/gasolineras/precios/${cheapestGas95.slug}`}
-              className="text-sm text-green-600 hover:underline mt-2 inline-block"
+              className="text-sm text-green-600 dark:text-green-400 hover:underline mt-2 inline-block"
             >
               Ver gasolineras en {cheapestGas95.name} →
             </Link>
@@ -256,31 +256,31 @@ export default async function PreciosPage() {
       </div>
 
       {/* Province Table - Península y Baleares */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden mb-6">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Precios por Provincia
-            <span className="text-sm font-normal text-gray-500 ml-2">(Península y Baleares)</span>
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">(Península y Baleares)</span>
           </h2>
-          <p className="text-sm text-gray-500">Ordenado por Gasóleo A (más barato primero)</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Ordenado por Gasóleo A (más barato primero)</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-950">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Provincia
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Gasóleo A
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Gasolina 95
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Gasolina 98
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Estaciones
                 </th>
                 <th className="px-4 py-3"></th>
@@ -288,37 +288,37 @@ export default async function PreciosPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {mainlandProvinces.map((province, idx) => (
-                <tr key={province.code} className={idx < 3 ? "bg-green-50/50" : ""}>
+                <tr key={province.code} className={idx < 3 ? "bg-green-50 dark:bg-green-900/20/50" : ""}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {idx < 3 && (
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                          idx === 0 ? "bg-green-500 text-white" :
+                          idx === 0 ? "bg-green-50 dark:bg-green-900/200 text-white" :
                           idx === 1 ? "bg-green-400 text-white" :
                           "bg-green-300 text-white"
                         }`}>
                           {idx + 1}
                         </span>
                       )}
-                      <span className="font-medium text-gray-900">{province.name}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{province.name}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-tl-amber-700">{formatPrice(province.avgGasoleoA)}</span>
+                    <span className="font-mono text-tl-amber-700 dark:text-tl-amber-300">{formatPrice(province.avgGasoleoA)}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-tl-700">{formatPrice(province.avgGasolina95)}</span>
+                    <span className="font-mono text-tl-700 dark:text-tl-300">{formatPrice(province.avgGasolina95)}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-purple-700">{formatPrice(province.avgGasolina98)}</span>
+                    <span className="font-mono text-purple-700 dark:text-purple-400">{formatPrice(province.avgGasolina98)}</span>
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-500">
+                  <td className="px-4 py-3 text-right text-sm text-gray-500 dark:text-gray-400">
                     {province.stationCount}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/gasolineras/precios/${province.slug}`}
-                      className="text-orange-600 hover:text-orange-700 text-sm"
+                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 text-sm"
                     >
                       <MapPin className="w-4 h-4 inline" />
                     </Link>
@@ -332,12 +332,12 @@ export default async function PreciosPage() {
 
       {/* Territorios con Fiscalidad Especial */}
       {taxFreeProvinces.length > 0 && (
-        <div className="bg-tl-amber-50 rounded-lg border border-tl-amber-200 overflow-hidden">
-          <div className="p-4 border-b border-tl-amber-200">
+        <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-800 overflow-hidden">
+          <div className="p-4 border-b border-tl-amber-200 dark:border-tl-amber-800">
             <h2 className="text-lg font-semibold text-tl-amber-900">
               Territorios con Fiscalidad Especial
             </h2>
-            <p className="text-sm text-tl-amber-700">
+            <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300">
               Sin IVA (Ceuta, Melilla con IPSI 0.5%) o con IGIC 7% (Canarias) - precios más bajos por menor carga fiscal
             </p>
           </div>
@@ -345,32 +345,32 @@ export default async function PreciosPage() {
             <table className="w-full">
               <thead className="bg-tl-amber-100/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-tl-amber-700 dark:text-tl-amber-300 uppercase tracking-wider">
                     Territorio
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-tl-amber-700 dark:text-tl-amber-300 uppercase tracking-wider">
                     Impuesto
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 dark:text-tl-amber-300 uppercase tracking-wider">
                     Gasóleo A
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 dark:text-tl-amber-300 uppercase tracking-wider">
                     Gasolina 95
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 dark:text-tl-amber-300 uppercase tracking-wider">
                     Gasolina 98
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 dark:text-tl-amber-300 uppercase tracking-wider">
                     Estaciones
                   </th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-tl-amber-200 bg-white">
+              <tbody className="divide-y divide-tl-amber-200 bg-white dark:bg-gray-900">
                 {taxFreeProvinces.map((province) => (
                   <tr key={province.code}>
                     <td className="px-4 py-3">
-                      <span className="font-medium text-gray-900">{province.name}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{province.name}</span>
                     </td>
                     <td className="px-4 py-3">
                       {province.taxInfo && (
@@ -380,21 +380,21 @@ export default async function PreciosPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="font-mono text-tl-amber-700">{formatPrice(province.avgGasoleoA)}</span>
+                      <span className="font-mono text-tl-amber-700 dark:text-tl-amber-300">{formatPrice(province.avgGasoleoA)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="font-mono text-tl-700">{formatPrice(province.avgGasolina95)}</span>
+                      <span className="font-mono text-tl-700 dark:text-tl-300">{formatPrice(province.avgGasolina95)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="font-mono text-purple-700">{formatPrice(province.avgGasolina98)}</span>
+                      <span className="font-mono text-purple-700 dark:text-purple-400">{formatPrice(province.avgGasolina98)}</span>
                     </td>
-                    <td className="px-4 py-3 text-right text-sm text-gray-500">
+                    <td className="px-4 py-3 text-right text-sm text-gray-500 dark:text-gray-400">
                       {province.stationCount}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/gasolineras/precios/${province.slug}`}
-                        className="text-orange-600 hover:text-orange-700 text-sm"
+                        className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 text-sm"
                       >
                         <MapPin className="w-4 h-4 inline" />
                       </Link>

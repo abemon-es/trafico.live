@@ -109,15 +109,15 @@ function ColorSwatch({ hex, step, label }: { hex: string; step: string; label?: 
 
 export default function MediaPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <Logo variant="stacked" size="lg" href={undefined} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Media Kit</h1>
-          <p className="text-gray-600 max-w-lg mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">Media Kit</h1>
+          <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
             Assets oficiales, gu&iacute;a de marca y recursos descargables para prensa,
             partners y desarrolladores.
           </p>
@@ -125,7 +125,7 @@ export default function MediaPage() {
 
         {/* Downloads */}
         <section className="mb-16" aria-labelledby="downloads">
-          <h2 id="downloads" className="text-xl font-bold text-gray-900 mb-6">
+          <h2 id="downloads" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Descargas
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -134,15 +134,15 @@ export default function MediaPage() {
                 key={asset.file}
                 href={asset.file}
                 download
-                className="group bg-white border border-gray-200 rounded-lg p-4 hover:border-tl-300 hover:shadow-md transition-all"
+                className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:border-tl-300 hover:shadow-md transition-all"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 text-sm group-hover:text-tl-600 transition-colors">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-600 dark:text-tl-400 transition-colors">
                     {asset.name}
                   </h3>
-                  <Download className="w-4 h-4 text-gray-400 group-hover:text-tl-600 transition-colors flex-shrink-0" />
+                  <Download className="w-4 h-4 text-gray-400 group-hover:text-tl-600 dark:text-tl-400 transition-colors flex-shrink-0" />
                 </div>
-                <p className="text-xs text-gray-500">{asset.desc}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{asset.desc}</p>
                 <span className="inline-block mt-2 text-[10px] font-data text-gray-400">
                   {asset.file.split("/").pop()}
                 </span>
@@ -153,18 +153,18 @@ export default function MediaPage() {
 
         {/* Logo Usage */}
         <section className="mb-16" aria-labelledby="logo-usage">
-          <h2 id="logo-usage" className="text-xl font-bold text-gray-900 mb-6">
+          <h2 id="logo-usage" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Logotipo
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="border border-gray-200 rounded-lg p-6 flex items-center justify-center bg-white">
+            <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 flex items-center justify-center bg-white dark:bg-gray-900">
               <Logo variant="horizontal" size="md" href={undefined} />
             </div>
-            <div className="border border-gray-200 rounded-lg p-6 flex items-center justify-center bg-white">
+            <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 flex items-center justify-center bg-white dark:bg-gray-900">
               <Logo variant="inline" size="md" href={undefined} />
             </div>
-            <div className="border border-gray-200 rounded-lg p-6 flex items-center justify-center bg-white">
+            <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 flex items-center justify-center bg-white dark:bg-gray-900">
               <Logo variant="icon" size="lg" href={undefined} />
             </div>
           </div>
@@ -182,9 +182,9 @@ export default function MediaPage() {
           </div>
 
           {/* Rules */}
-          <div className="bg-tl-50 border border-tl-200 rounded-lg p-5">
-            <h3 className="font-semibold text-tl-800 mb-3 text-sm">Reglas de uso</h3>
-            <ul className="text-sm text-tl-700 space-y-1.5">
+          <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-5">
+            <h3 className="font-semibold text-tl-800 dark:text-tl-200 mb-3 text-sm">Reglas de uso</h3>
+            <ul className="text-sm text-tl-700 dark:text-tl-300 space-y-1.5">
               <li>&bull; Siempre: rojo arriba, &aacute;mbar centro, verde abajo</li>
               <li>&bull; Nunca usar un solo color para los 3 puntos</li>
               <li>&bull; Nunca invertir el orden de los colores</li>
@@ -197,13 +197,13 @@ export default function MediaPage() {
 
         {/* Colors */}
         <section className="mb-16" aria-labelledby="colors">
-          <h2 id="colors" className="text-xl font-bold text-gray-900 mb-6">
+          <h2 id="colors" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Colores
           </h2>
 
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-gray-500 mb-2">Signal Blue — Primary</h3>
-            <div className="flex rounded-lg overflow-hidden border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Signal Blue — Primary</h3>
+            <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800">
               {COLORS.blue.map((c) => (
                 <ColorSwatch key={c.step} hex={c.hex} step={c.step} label={c.label} />
               ))}
@@ -211,8 +211,8 @@ export default function MediaPage() {
           </div>
 
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-gray-500 mb-2">Signal Amber — Accent</h3>
-            <div className="flex rounded-lg overflow-hidden border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Signal Amber — Accent</h3>
+            <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800">
               {COLORS.amber.map((c) => (
                 <ColorSwatch key={c.step} hex={c.hex} step={c.step} label={c.label} />
               ))}
@@ -220,20 +220,20 @@ export default function MediaPage() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 mb-2">Signal Colors (Icon)</h3>
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Signal Colors (Icon)</h3>
             <div className="flex gap-3">
               {COLORS.signal.map((c) => (
                 <div
                   key={c.name}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800"
                 >
                   <div
                     className="w-4 h-4 rounded-full flex-shrink-0"
                     style={{ backgroundColor: c.hex }}
                   />
                   <div>
-                    <span className="font-data text-xs text-gray-900">{c.hex}</span>
-                    <span className="text-xs text-gray-500 ml-1.5">{c.meaning}</span>
+                    <span className="font-data text-xs text-gray-900 dark:text-gray-100">{c.hex}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1.5">{c.meaning}</span>
                   </div>
                 </div>
               ))}
@@ -243,68 +243,68 @@ export default function MediaPage() {
 
         {/* Typography */}
         <section className="mb-16" aria-labelledby="typography">
-          <h2 id="typography" className="text-xl font-bold text-gray-900 mb-6">
+          <h2 id="typography" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Tipograf&iacute;a
           </h2>
 
           <div className="space-y-4">
-            <div className="border border-gray-200 rounded-lg p-5">
-              <span className="text-[10px] font-data text-tl-600 uppercase tracking-wider">Headings</span>
+            <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-5">
+              <span className="text-[10px] font-data text-tl-600 dark:text-tl-400 uppercase tracking-wider">Headings</span>
               <div className="mt-2" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "32px", letterSpacing: "-0.5px" }}>
                 Exo 2 — 800
               </div>
-              <p className="text-xs text-gray-500 mt-1">Weights: 500, 600, 700, 800</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Weights: 500, 600, 700, 800</p>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-5">
-              <span className="text-[10px] font-data text-tl-600 uppercase tracking-wider">Body</span>
+            <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-5">
+              <span className="text-[10px] font-data text-tl-600 dark:text-tl-400 uppercase tracking-wider">Body</span>
               <div className="mt-2 text-lg">DM Sans — Regular</div>
-              <p className="text-xs text-gray-500 mt-1">Weights: 400, 500, 600</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Weights: 400, 500, 600</p>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-5">
-              <span className="text-[10px] font-data text-tl-600 uppercase tracking-wider">Data</span>
-              <div className="mt-2 font-data text-2xl text-tl-600">1.284 &euro; &middot; 40.4168&deg;N</div>
-              <p className="text-xs text-gray-500 mt-1">JetBrains Mono — 400, 500 — tabular-nums</p>
+            <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-5">
+              <span className="text-[10px] font-data text-tl-600 dark:text-tl-400 uppercase tracking-wider">Data</span>
+              <div className="mt-2 font-data text-2xl text-tl-600 dark:text-tl-400">1.284 &euro; &middot; 40.4168&deg;N</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">JetBrains Mono — 400, 500 — tabular-nums</p>
             </div>
           </div>
         </section>
 
         {/* Quick Reference */}
         <section className="mb-16" aria-labelledby="reference">
-          <h2 id="reference" className="text-xl font-bold text-gray-900 mb-6">
+          <h2 id="reference" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Referencia r&aacute;pida
           </h2>
 
-          <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
             <table className="w-full text-sm">
               <tbody>
-                <tr className="border-b border-gray-200">
-                  <td className="px-4 py-3 font-semibold text-gray-700 bg-gray-50 w-40">Nombre</td>
+                <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950 w-40">Nombre</td>
                   <td className="px-4 py-3">trafico.live (siempre min&uacute;scula)</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="px-4 py-3 font-semibold text-gray-700 bg-gray-50">Tagline</td>
+                <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Tagline</td>
                   <td className="px-4 py-3">Inteligencia vial en tiempo real</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="px-4 py-3 font-semibold text-gray-700 bg-gray-50">Primary color</td>
+                <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Primary color</td>
                   <td className="px-4 py-3 font-data">#1b4bd5</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="px-4 py-3 font-semibold text-gray-700 bg-gray-50">Accent color</td>
+                <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Accent color</td>
                   <td className="px-4 py-3 font-data">#b56200</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="px-4 py-3 font-semibold text-gray-700 bg-gray-50">Heading font</td>
+                <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Heading font</td>
                   <td className="px-4 py-3">Exo 2</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="px-4 py-3 font-semibold text-gray-700 bg-gray-50">Body font</td>
+                <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Body font</td>
                   <td className="px-4 py-3">DM Sans</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-semibold text-gray-700 bg-gray-50">Data font</td>
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Data font</td>
                   <td className="px-4 py-3">JetBrains Mono</td>
                 </tr>
               </tbody>
@@ -314,35 +314,35 @@ export default function MediaPage() {
 
         {/* Embed Codes */}
         <section className="mb-16" aria-labelledby="embed">
-          <h2 id="embed" className="text-xl font-bold text-gray-900 mb-6">
+          <h2 id="embed" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             C&oacute;digos para incrustar
           </h2>
 
           <div className="space-y-4">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Icono SVG (HTML)</h3>
-              <pre className="font-data text-xs text-gray-600 bg-white border border-gray-200 rounded p-3 overflow-x-auto">
+            <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Icono SVG (HTML)</h3>
+              <pre className="font-data text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-3 overflow-x-auto">
 {`<img src="${MEDIA_CDN}/assets/icon-3puntos.svg" alt="trafico.live" width="24" height="64" />`}
               </pre>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">App Icon (HTML)</h3>
-              <pre className="font-data text-xs text-gray-600 bg-white border border-gray-200 rounded p-3 overflow-x-auto">
+            <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">App Icon (HTML)</h3>
+              <pre className="font-data text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-3 overflow-x-auto">
 {`<img src="${MEDIA_CDN}/assets/app-icon.svg" alt="trafico.live" width="64" height="64" />`}
               </pre>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">CSS Tokens (importar)</h3>
-              <pre className="font-data text-xs text-gray-600 bg-white border border-gray-200 rounded p-3 overflow-x-auto">
+            <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">CSS Tokens (importar)</h3>
+              <pre className="font-data text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-3 overflow-x-auto">
 {`<link rel="stylesheet" href="${MEDIA_CDN}/tokens.css" />`}
               </pre>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">CDN base URL</h3>
-              <pre className="font-data text-xs text-tl-600 bg-white border border-gray-200 rounded p-3">
+            <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">CDN base URL</h3>
+              <pre className="font-data text-xs text-tl-600 dark:text-tl-400 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-3">
 {MEDIA_CDN}
               </pre>
             </div>
@@ -351,12 +351,12 @@ export default function MediaPage() {
 
         {/* Contact */}
         <section className="text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             &iquest;Necesitas otros formatos o tienes dudas sobre el uso de la marca?
           </p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Contacta con nosotros en{" "}
-            <a href="mailto:media@trafico.live" className="text-tl-600 hover:underline">
+            <a href="mailto:media@trafico.live" className="text-tl-600 dark:text-tl-400 hover:underline">
               media@trafico.live
             </a>
           </p>

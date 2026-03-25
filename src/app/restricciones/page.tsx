@@ -157,7 +157,7 @@ export default async function RestriccionesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -167,16 +167,16 @@ export default async function RestriccionesPage() {
           />
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-red-50 rounded-lg">
-                <Ban className="w-8 h-8 text-red-600" />
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <Ban className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Restricciones de Circulación
                 </h1>
-                <p className="text-gray-600 max-w-2xl leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
                   En España existen varios tipos de restricciones de circulación: para{" "}
                   <strong>vehículos pesados</strong> en domingos y festivos, acceso a{" "}
                   <strong>Zonas de Bajas Emisiones</strong> (ZBE) según el distintivo ambiental,
@@ -189,17 +189,17 @@ export default async function RestriccionesPage() {
 
           {/* Heavy vehicle restrictions */}
           <section className="mb-8" aria-labelledby="heading-heavy">
-            <h2 id="heading-heavy" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-heavy" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Restricciones para vehículos pesados
             </h2>
 
             {/* Main rule */}
-            <div className="bg-white rounded-lg shadow-sm border border-red-100 p-5 mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-red-100 p-5 mb-4">
               <div className="flex items-start gap-3 mb-4">
-                <Truck className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <Truck className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Norma general</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Norma general</h3>
+                  <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                     {HEAVY_VEHICLE_RESTRICTIONS.general}
                   </p>
                 </div>
@@ -207,33 +207,33 @@ export default async function RestriccionesPage() {
 
               {/* Schedule visual */}
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-red-50 rounded-lg p-3 border border-red-100">
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-100">
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-4 h-4 text-red-600" />
+                    <Clock className="w-4 h-4 text-red-600 dark:text-red-400" />
                     <span className="text-sm font-semibold text-red-800">
                       Domingos y festivos
                     </span>
                   </div>
-                  <p className="text-sm text-red-700">08:00 – 24:00</p>
+                  <p className="text-sm text-red-700 dark:text-red-400">08:00 – 24:00</p>
                 </div>
-                <div className="bg-tl-amber-50 rounded-lg p-3 border border-tl-amber-100">
+                <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg p-3 border border-tl-amber-100">
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-4 h-4 text-tl-amber-600" />
+                    <Clock className="w-4 h-4 text-tl-amber-600 dark:text-tl-amber-400" />
                     <span className="text-sm font-semibold text-tl-amber-800">
                       Vísperas de festivo
                     </span>
                   </div>
-                  <p className="text-sm text-tl-amber-700">15:00 – 24:00</p>
+                  <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300">15:00 – 24:00</p>
                 </div>
               </div>
 
               {/* Exceptions */}
               <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Excepciones</h4>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Excepciones</h4>
                 <ul className="space-y-1">
                   {HEAVY_VEHICLE_RESTRICTIONS.exceptions.map((exc) => (
-                    <li key={exc} className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="w-1.5 h-1.5 bg-tl-500 rounded-full flex-shrink-0" />
+                    <li key={exc} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full flex-shrink-0" />
                       {exc}
                     </li>
                   ))}
@@ -246,30 +246,30 @@ export default async function RestriccionesPage() {
               {HEAVY_VEHICLE_RESTRICTIONS.specialPeriods.map((sp) => (
                 <div
                   key={sp.period}
-                  className="bg-white rounded-lg shadow-sm border border-tl-amber-100 p-4"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-tl-amber-100 p-4"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-tl-amber-600" />
-                    <h3 className="font-semibold text-gray-900">{sp.period}</h3>
+                    <AlertTriangle className="w-4 h-4 text-tl-amber-600 dark:text-tl-amber-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">{sp.period}</h3>
                   </div>
-                  <p className="text-xs text-tl-600 font-medium mb-2">{sp.dates}</p>
-                  <p className="text-sm text-gray-600">{sp.extraRestrictions}</p>
+                  <p className="text-xs text-tl-600 dark:text-tl-400 font-medium mb-2">{sp.dates}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{sp.extraRestrictions}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 text-sm text-gray-500">
+            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
               Consulta el calendario completo de restricciones en{" "}
               <Link
                 href="/operaciones"
-                className="text-tl-600 hover:text-tl-700 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
               >
                 Operaciones Especiales
               </Link>{" "}
               y las restricciones para profesionales en{" "}
               <Link
                 href="/profesional/restricciones"
-                className="text-tl-600 hover:text-tl-700 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
               >
                 portal profesional
               </Link>
@@ -279,17 +279,17 @@ export default async function RestriccionesPage() {
 
           {/* ZBE Zones */}
           <section className="mb-8" aria-labelledby="heading-zbe">
-            <h2 id="heading-zbe" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-zbe" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Zonas de Bajas Emisiones (ZBE)
             </h2>
 
-            <div className="bg-tl-50 border border-tl-200 rounded-lg p-4 mb-5 flex items-start gap-3">
-              <Leaf className="w-5 h-5 text-tl-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4 mb-5 flex items-start gap-3">
+              <Leaf className="w-5 h-5 text-tl-600 dark:text-tl-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-tl-800">
+                <h3 className="font-semibold text-tl-800 dark:text-tl-200">
                   {zbeZones.length} zonas ZBE registradas en España
                 </h3>
-                <p className="text-sm text-tl-700 mt-0.5">
+                <p className="text-sm text-tl-700 dark:text-tl-300 mt-0.5">
                   Los municipios de más de 50.000 habitantes están obligados a implantar ZBE
                   según la Ley de Cambio Climático. Verifica el distintivo ambiental de tu
                   vehículo antes de circular por áreas urbanas.
@@ -303,15 +303,15 @@ export default async function RestriccionesPage() {
                   <Link
                     key={zone.id}
                     href="/zbe"
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-tl-300 hover:shadow-md transition-all group block"
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:border-tl-300 hover:shadow-md transition-all group block"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-gray-900 group-hover:text-tl-600 transition-colors line-clamp-1">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400 transition-colors line-clamp-1">
                         {zone.name}
                       </h3>
                       <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-tl-500 transition-colors flex-shrink-0 mt-0.5" />
                     </div>
-                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                       <MapPin className="w-3.5 h-3.5 text-gray-400" />
                       <span>{zone.cityName}</span>
                     </div>
@@ -319,8 +319,8 @@ export default async function RestriccionesPage() {
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           zone.activeAllYear
-                            ? "bg-red-50 text-red-600 border border-red-100"
-                            : "bg-tl-amber-50 text-tl-amber-600 border border-tl-amber-100"
+                            ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100"
+                            : "bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-600 dark:text-tl-amber-400 border border-tl-amber-100"
                         }`}
                       >
                         {zone.activeAllYear ? "Todo el año" : "Períodos limitados"}
@@ -330,14 +330,14 @@ export default async function RestriccionesPage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-8 text-center">
                 <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                   No hay zonas ZBE cargadas en la base de datos actualmente.
                 </p>
                 <Link
                   href="/zbe"
-                  className="inline-flex items-center gap-1 mt-3 text-tl-600 text-sm hover:underline"
+                  className="inline-flex items-center gap-1 mt-3 text-tl-600 dark:text-tl-400 text-sm hover:underline"
                 >
                   Ver más sobre ZBE <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
@@ -347,25 +347,25 @@ export default async function RestriccionesPage() {
 
           {/* Tunnel restrictions */}
           <section className="mb-8" aria-labelledby="heading-tunnels">
-            <h2 id="heading-tunnels" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-tunnels" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Restricciones en túneles
             </h2>
 
             <div className="grid grid-cols-3 gap-3 mb-5">
-              <div className="bg-white rounded-lg border border-gray-200 p-3 text-center">
-                <Ruler className="w-5 h-5 text-tl-600 mx-auto mb-1.5" />
-                <p className="text-sm font-medium text-gray-900">Altura</p>
-                <p className="text-xs text-gray-500">Gálibo vertical</p>
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3 text-center">
+                <Ruler className="w-5 h-5 text-tl-600 dark:text-tl-400 mx-auto mb-1.5" />
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Altura</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Gálibo vertical</p>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 p-3 text-center">
-                <Scale className="w-5 h-5 text-tl-amber-600 mx-auto mb-1.5" />
-                <p className="text-sm font-medium text-gray-900">Peso</p>
-                <p className="text-xs text-gray-500">Tonelaje máximo</p>
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3 text-center">
+                <Scale className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 mx-auto mb-1.5" />
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Peso</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Tonelaje máximo</p>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 p-3 text-center">
-                <Ruler className="w-5 h-5 text-red-600 mx-auto mb-1.5 rotate-90" />
-                <p className="text-sm font-medium text-gray-900">Anchura</p>
-                <p className="text-xs text-gray-500">Límite lateral</p>
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3 text-center">
+                <Ruler className="w-5 h-5 text-red-600 dark:text-red-400 mx-auto mb-1.5 rotate-90" />
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Anchura</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Límite lateral</p>
               </div>
             </div>
 
@@ -373,39 +373,39 @@ export default async function RestriccionesPage() {
               {TUNNEL_RESTRICTIONS.map((t) => (
                 <div
                   key={t.name}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{t.name}</h3>
-                      <p className="text-sm text-tl-600 font-medium">{t.road}</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">{t.name}</h3>
+                      <p className="text-sm text-tl-600 dark:text-tl-400 font-medium">{t.road}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {t.height && (
-                      <span className="text-xs bg-tl-50 text-tl-700 border border-tl-100 px-2 py-1 rounded-lg font-medium">
+                      <span className="text-xs bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 border border-tl-100 px-2 py-1 rounded-lg font-medium">
                         Altura máx: {t.height}
                       </span>
                     )}
                     {t.width && (
-                      <span className="text-xs bg-tl-50 text-tl-700 border border-tl-100 px-2 py-1 rounded-lg font-medium">
+                      <span className="text-xs bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 border border-tl-100 px-2 py-1 rounded-lg font-medium">
                         Anchura máx: {t.width}
                       </span>
                     )}
                     {t.weight && (
-                      <span className="text-xs bg-tl-amber-50 text-tl-amber-700 border border-tl-amber-100 px-2 py-1 rounded-lg font-medium">
+                      <span className="text-xs bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-100 px-2 py-1 rounded-lg font-medium">
                         Tonelaje máx: {t.weight}
                       </span>
                     )}
                   </div>
                   {t.notes && (
-                    <p className="text-xs text-gray-500 mt-1">{t.notes}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.notes}</p>
                   )}
                 </div>
               ))}
             </div>
 
-            <p className="mt-4 text-xs text-gray-500">
+            <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
               Datos orientativos. Consulta siempre la información oficial del gestor de
               cada infraestructura antes de circular con vehículos especiales.
             </p>
@@ -442,17 +442,17 @@ export default async function RestriccionesPage() {
 
           {/* FAQ */}
           <section aria-labelledby="heading-faq">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre restricciones
             </h2>
             <div className="space-y-4">
               {FAQ_ITEMS.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{item.answer}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{item.question}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.answer}</p>
                 </div>
               ))}
             </div>

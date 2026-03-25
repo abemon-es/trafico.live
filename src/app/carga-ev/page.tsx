@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 function LoadingFallback() {
   return (
     <div className="flex items-center justify-center py-20">
-      <div className="flex items-center gap-3 text-gray-500">
+      <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
         <Loader2 className="w-6 h-6 animate-spin" />
         <span>Cargando puntos de carga...</span>
       </div>

@@ -13,18 +13,18 @@ export const metadata: Metadata = {
 
 export default function PoliticaCookiesPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Política de Cookies
         </h1>
-        <p className="text-sm text-gray-500 mb-10">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
           Última actualización: 25 de marzo de 2026
         </p>
 
-        <div className="prose prose-gray max-w-none space-y-8 text-gray-700 text-[15px] leading-relaxed">
+        <div className="prose prose-gray max-w-none space-y-8 text-gray-700 dark:text-gray-300 text-[15px] leading-relaxed">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               1. ¿Qué son las cookies?
             </h2>
             <p>
@@ -37,11 +37,11 @@ export default function PoliticaCookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               2. Cookies que utilizamos
             </h2>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
               2.1 Cookies técnicas (necesarias)
             </h3>
             <p>
@@ -49,16 +49,16 @@ export default function PoliticaCookiesPage() {
               consentimiento.
             </p>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
+              <table className="min-w-full text-sm border border-gray-200 dark:border-gray-800 rounded-lg">
+                <thead className="bg-gray-50 dark:bg-gray-950">
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b">
                       Cookie
                     </th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b">
                       Finalidad
                     </th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b">
                       Duración
                     </th>
                   </tr>
@@ -86,7 +86,7 @@ export default function PoliticaCookiesPage() {
               </table>
             </div>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-6">
               2.2 Cookies analíticas (requieren consentimiento)
             </h3>
             <p>
@@ -95,19 +95,19 @@ export default function PoliticaCookiesPage() {
               para mejorar el servicio.
             </p>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
+              <table className="min-w-full text-sm border border-gray-200 dark:border-gray-800 rounded-lg">
+                <thead className="bg-gray-50 dark:bg-gray-950">
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b">
                       Cookie
                     </th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b">
                       Proveedor
                     </th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b">
                       Finalidad
                     </th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">
+                    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b">
                       Duración
                     </th>
                   </tr>
@@ -147,7 +147,7 @@ export default function PoliticaCookiesPage() {
               </table>
             </div>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-6">
               2.3 Cookies publicitarias
             </h3>
             <p>
@@ -157,11 +157,11 @@ export default function PoliticaCookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               3. ¿Cómo gestionar las cookies?
             </h2>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
               En trafico.live
             </h3>
             <p>
@@ -175,7 +175,7 @@ export default function PoliticaCookiesPage() {
               &quot;Gestionar cookies&quot; en el pie de página del sitio.
             </p>
 
-            <h3 className="text-lg font-medium text-gray-900 mt-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
               En tu navegador
             </h3>
             <p>
@@ -189,7 +189,7 @@ export default function PoliticaCookiesPage() {
                   href="https://support.google.com/chrome/answer/95647"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   Google Chrome
                 </a>
@@ -199,7 +199,7 @@ export default function PoliticaCookiesPage() {
                   href="https://support.mozilla.org/es/kb/Borrar%20cookies"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   Mozilla Firefox
                 </a>
@@ -209,7 +209,7 @@ export default function PoliticaCookiesPage() {
                   href="https://support.apple.com/es-es/guide/safari/sfri11471"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   Safari
                 </a>
@@ -219,7 +219,7 @@ export default function PoliticaCookiesPage() {
                   href="https://support.microsoft.com/es-es/microsoft-edge/eliminar-cookies-en-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   Microsoft Edge
                 </a>
@@ -228,7 +228,7 @@ export default function PoliticaCookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               4. Base legal
             </h2>
             <p>
@@ -247,7 +247,7 @@ export default function PoliticaCookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               5. Más información
             </h2>
             <p>
@@ -255,7 +255,7 @@ export default function PoliticaCookiesPage() {
               nuestra{" "}
               <Link
                 href="/politica-privacidad"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 Política de Privacidad
               </Link>
@@ -265,7 +265,7 @@ export default function PoliticaCookiesPage() {
               Si tienes dudas sobre las cookies, escríbenos a{" "}
               <a
                 href="mailto:legal@trafico.live"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 legal@trafico.live
               </a>

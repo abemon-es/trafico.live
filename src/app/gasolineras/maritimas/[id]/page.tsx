@@ -110,28 +110,28 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href="/gasolineras" className="hover:text-gray-700">Gasolineras</Link>
+      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>
         <span>/</span>
-        <Link href="/gasolineras/maritimas" className="hover:text-gray-700">Maritimas</Link>
+        <Link href="/gasolineras/maritimas" className="hover:text-gray-700 dark:text-gray-300">Maritimas</Link>
         <span>/</span>
-        <span className="text-gray-900 truncate max-w-[200px]">{station.name}</span>
+        <span className="text-gray-900 dark:text-gray-100 truncate max-w-[200px]">{station.name}</span>
       </div>
 
       {/* Back button */}
       <Link
         href="/gasolineras/maritimas"
-        className="inline-flex items-center gap-2 text-tl-600 hover:text-tl-700 mb-6"
+        className="inline-flex items-center gap-2 text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver al listado
       </Link>
 
       {/* Header with brand and badges */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 bg-tl-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Anchor className="w-7 h-7 text-tl-600" />
+          <div className="w-14 h-14 bg-tl-100 dark:bg-tl-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Anchor className="w-7 h-7 text-tl-600 dark:text-tl-400" />
           </div>
           <div className="flex-1">
             <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -144,18 +144,18 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
                   {badges.map((badge) => (
                     <span
                       key={badge.label}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-tl-100 text-tl-700 rounded text-xs font-medium"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 rounded text-xs font-medium"
                     >
                       {badge.label === "24h" && <Clock className="w-3 h-3" />}
                       {badge.label}
                     </span>
                   ))}
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">{station.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{station.name}</h1>
                 {station.port && (
-                  <p className="text-lg text-tl-600 font-medium">Puerto de {station.port}</p>
+                  <p className="text-lg text-tl-600 dark:text-tl-400 font-medium">Puerto de {station.port}</p>
                 )}
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   {station.locality}
                   {station.provinceName && `, ${station.provinceName}`}
                 </p>
@@ -163,7 +163,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
             </div>
 
             {station.schedule && !station.is24h && (
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="w-4 h-4 inline mr-1" />
                 {station.schedule}
               </p>
@@ -181,7 +181,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
               </a>
               <Link
                 href={`/gasolineras/mapa?lat=${station.latitude}&lng=${station.longitude}&zoom=15&layer=maritime`}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-950 transition-colors"
               >
                 <MapPin className="w-4 h-4" />
                 Ver en mapa
@@ -204,31 +204,31 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
         />
 
         {/* Quick Stats */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Informacion</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Informacion</h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Ultima actualizacion</span>
+              <span className="text-gray-500 dark:text-gray-400">Ultima actualizacion</span>
               <span className="font-medium">{new Date(station.lastPriceUpdate).toLocaleString("es-ES")}</span>
             </div>
             {station.schedule && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Horario</span>
+                <span className="text-gray-500 dark:text-gray-400">Horario</span>
                 <span className="font-medium">{station.is24h ? "24 horas" : station.schedule}</span>
               </div>
             )}
             {station.port && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Puerto</span>
+                <span className="text-gray-500 dark:text-gray-400">Puerto</span>
                 <span className="font-medium">{station.port}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-gray-500">Localidad</span>
+              <span className="text-gray-500 dark:text-gray-400">Localidad</span>
               <span className="font-medium">{station.locality || "N/D"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Provincia</span>
+              <span className="text-gray-500 dark:text-gray-400">Provincia</span>
               <span className="font-medium">{station.provinceName || "N/D"}</span>
             </div>
           </div>
@@ -236,15 +236,15 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
       </div>
 
       {/* Current Prices */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Precios Actuales</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Precios Actuales</h2>
 
         {/* Main fuels with trends */}
         <div className="grid grid-cols-2 gap-4">
           {mainFuels.map((fuel) => {
             const colorClasses: Record<string, { bg: string; text: string; textDark: string }> = {
-              amber: { bg: "bg-tl-amber-50", text: "text-tl-amber-600", textDark: "text-tl-amber-700" },
-              blue: { bg: "bg-tl-50", text: "text-tl-600", textDark: "text-tl-700" },
+              amber: { bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20", text: "text-tl-amber-600 dark:text-tl-amber-400", textDark: "text-tl-amber-700 dark:text-tl-amber-300" },
+              blue: { bg: "bg-tl-50 dark:bg-tl-900/20", text: "text-tl-600 dark:text-tl-400", textDark: "text-tl-700 dark:text-tl-300" },
             };
             const colors = colorClasses[fuel.color] || colorClasses.amber;
 
@@ -254,8 +254,8 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
                 <div className={`text-3xl font-bold ${colors.textDark}`}>{formatPrice(fuel.price)}</div>
                 {fuel.trend && (
                   <div className={`flex items-center gap-1 text-sm mt-1 ${
-                    fuel.trend.direction === "up" ? "text-red-600" :
-                    fuel.trend.direction === "down" ? "text-green-600" : "text-gray-500"
+                    fuel.trend.direction === "up" ? "text-red-600 dark:text-red-400" :
+                    fuel.trend.direction === "down" ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"
                   }`}>
                     {fuel.trend.direction === "up" ? <TrendingUp className="w-4 h-4" /> :
                      fuel.trend.direction === "down" ? <TrendingDown className="w-4 h-4" /> :
@@ -272,9 +272,9 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
         {additionalFuels.length > 0 && (
           <div className="mt-4 grid grid-cols-2 gap-4">
             {additionalFuels.map((fuel) => (
-              <div key={fuel.key} className="bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">{fuel.label}</div>
-                <div className="text-2xl font-bold text-gray-700">{formatPrice(fuel.price)}</div>
+              <div key={fuel.key} className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{fuel.label}</div>
+                <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">{formatPrice(fuel.price)}</div>
               </div>
             ))}
           </div>
@@ -311,25 +311,25 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
       )}
 
       {/* Location Info */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ubicacion</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Ubicacion</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           {station.port && (
             <div>
-              <span className="text-gray-500">Puerto:</span>
+              <span className="text-gray-500 dark:text-gray-400">Puerto:</span>
               <p className="font-medium">{station.port}</p>
             </div>
           )}
           <div>
-            <span className="text-gray-500">Localidad:</span>
+            <span className="text-gray-500 dark:text-gray-400">Localidad:</span>
             <p className="font-medium">{station.locality || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Provincia:</span>
+            <span className="text-gray-500 dark:text-gray-400">Provincia:</span>
             <p className="font-medium">{station.provinceName || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Coordenadas:</span>
+            <span className="text-gray-500 dark:text-gray-400">Coordenadas:</span>
             <p className="font-medium font-mono text-xs">
               {Number(station.latitude).toFixed(6)}, {Number(station.longitude).toFixed(6)}
             </p>

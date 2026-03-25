@@ -460,23 +460,23 @@ function toDecimalNum(val: unknown): number | null {
 function statusBadge(status: ZBEStatus) {
   if (status === "activa") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-sm font-semibold">
-        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 rounded-full text-sm font-semibold">
+        <span className="w-2 h-2 bg-green-50 dark:bg-green-900/200 rounded-full animate-pulse" />
         Activa
       </span>
     );
   }
   if (status === "planificada") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-amber-100 text-tl-amber-700 border border-tl-amber-200 rounded-full text-sm font-semibold">
-        <span className="w-2 h-2 bg-tl-amber-500 rounded-full" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800 rounded-full text-sm font-semibold">
+        <span className="w-2 h-2 bg-tl-amber-50 dark:bg-tl-amber-900/200 rounded-full" />
         Planificada
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-100 text-tl-700 border border-tl-200 rounded-full text-sm font-semibold">
-      <span className="w-2 h-2 bg-tl-500 rounded-full" />
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800 rounded-full text-sm font-semibold">
+      <span className="w-2 h-2 bg-tl-50 dark:bg-tl-900/200 rounded-full" />
       En desarrollo
     </span>
   );
@@ -499,15 +499,15 @@ function accessLabel(value: AccessValue) {
 }
 
 function accessRowClass(value: AccessValue) {
-  if (value === "permitido") return "bg-green-50 border-green-100";
-  if (value === "restringido") return "bg-tl-amber-50 border-tl-amber-100";
-  return "bg-red-50 border-red-100";
+  if (value === "permitido") return "bg-green-50 dark:bg-green-900/20 border-green-100";
+  if (value === "restringido") return "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-100";
+  return "bg-red-50 dark:bg-red-900/20 border-red-100";
 }
 
 function accessTextClass(value: AccessValue) {
-  if (value === "permitido") return "text-green-700";
-  if (value === "restringido") return "text-tl-amber-700";
-  return "text-red-700";
+  if (value === "permitido") return "text-green-700 dark:text-green-400";
+  if (value === "restringido") return "text-tl-amber-700 dark:text-tl-amber-300";
+  return "text-red-700 dark:text-red-400";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -615,32 +615,32 @@ export default async function ZBECityPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Breadcrumbs */}
-          <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 mb-6 flex-wrap">
-            <Link href="/" className="hover:text-gray-700 transition-colors">Inicio</Link>
+          <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6 flex-wrap">
+            <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/restricciones" className="hover:text-gray-700 transition-colors">Restricciones</Link>
+            <Link href="/restricciones" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Restricciones</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/zbe" className="hover:text-gray-700 transition-colors">ZBE</Link>
+            <Link href="/zbe" className="hover:text-gray-700 dark:text-gray-300 transition-colors">ZBE</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-gray-900 font-medium">{cfg.name}</span>
+            <span className="text-gray-900 dark:text-gray-100 font-medium">{cfg.name}</span>
           </nav>
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-green-50 rounded-lg flex-shrink-0">
-                  <Leaf className="w-8 h-8 text-green-600" />
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg flex-shrink-0">
+                  <Leaf className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                     Zona de Bajas Emisiones de {cfg.name}
                   </h1>
-                  <p className="text-gray-600 text-sm leading-relaxed max-w-xl">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-xl">
                     {cfg.description}
                   </p>
                 </div>
@@ -653,20 +653,20 @@ export default async function ZBECityPage({ params }: Props) {
 
           {/* Key info card */}
           <section className="mb-8" aria-labelledby="heading-info">
-            <h2 id="heading-info" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-info" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Información clave
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
               {/* Active since */}
               {(cfg.activeSince || effectiveFrom) && (
-                <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-start gap-3">
-                  <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                    <Clock className="w-5 h-5 text-tl-600" />
+                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 flex items-start gap-3">
+                  <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                    <Clock className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">En vigor desde</p>
-                    <p className="text-gray-900 font-semibold">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-0.5">En vigor desde</p>
+                    <p className="text-gray-900 dark:text-gray-100 font-semibold">
                       {effectiveFrom
                         ? effectiveFrom.toLocaleDateString("es-ES", { month: "long", year: "numeric" })
                         : cfg.activeSince}
@@ -676,44 +676,44 @@ export default async function ZBECityPage({ params }: Props) {
               )}
 
               {/* Fine */}
-              <div className="bg-white rounded-lg border border-red-100 p-4 flex items-start gap-3">
-                <div className="p-2 bg-red-50 rounded-lg flex-shrink-0">
-                  <Euro className="w-5 h-5 text-red-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-red-100 p-4 flex items-start gap-3">
+                <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg flex-shrink-0">
+                  <Euro className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Multa por infracción</p>
-                  <p className="text-gray-900 font-semibold text-lg">{displayFine.toLocaleString("es-ES")}€</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-0.5">Multa por infracción</p>
+                  <p className="text-gray-900 dark:text-gray-100 font-semibold text-lg">{displayFine.toLocaleString("es-ES")}€</p>
                   {cfg.fineAmountRepeat && (
-                    <p className="text-xs text-red-600 mt-0.5">Reincidencia: hasta {cfg.fineAmountRepeat.toLocaleString("es-ES")}€</p>
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">Reincidencia: hasta {cfg.fineAmountRepeat.toLocaleString("es-ES")}€</p>
                   )}
                 </div>
               </div>
 
               {/* Schedule */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-start gap-3">
-                <div className="p-2 bg-tl-amber-50 rounded-lg flex-shrink-0">
-                  <Clock className="w-5 h-5 text-tl-amber-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 flex items-start gap-3">
+                <div className="p-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg flex-shrink-0">
+                  <Clock className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Horario de restricción</p>
-                  <p className="text-gray-900 font-semibold text-sm">{cfg.schedule}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-0.5">Horario de restricción</p>
+                  <p className="text-gray-900 dark:text-gray-100 font-semibold text-sm">{cfg.schedule}</p>
                   {cfg.permanentRestriction && (
-                    <p className="text-xs text-red-600 mt-0.5">Sin excepciones de horario</p>
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">Sin excepciones de horario</p>
                   )}
                 </div>
               </div>
 
               {/* Who can enter */}
-              <div className="bg-white rounded-lg border border-green-100 p-4 flex items-start gap-3">
-                <div className="p-2 bg-green-50 rounded-lg flex-shrink-0">
-                  <Car className="w-5 h-5 text-green-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-green-100 p-4 flex items-start gap-3">
+                <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg flex-shrink-0">
+                  <Car className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Quién puede entrar</p>
-                  <p className="text-gray-900 font-semibold text-sm">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-0.5">Quién puede entrar</p>
+                  <p className="text-gray-900 dark:text-gray-100 font-semibold text-sm">
                     Etiquetas 0, ECO y C (sin restricción)
                   </p>
-                  <p className="text-xs text-tl-amber-600 mt-0.5">Etiqueta B: acceso restringido</p>
+                  <p className="text-xs text-tl-amber-600 dark:text-tl-amber-400 mt-0.5">Etiqueta B: acceso restringido</p>
                 </div>
               </div>
             </div>
@@ -721,20 +721,20 @@ export default async function ZBECityPage({ params }: Props) {
 
           {/* Access matrix */}
           <section className="mb-8" aria-labelledby="heading-matrix">
-            <h2 id="heading-matrix" className="text-xl font-bold text-gray-900 mb-2">
+            <h2 id="heading-matrix" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Matriz de acceso por etiqueta ambiental
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Resumen de qué distintivos DGT pueden acceder a la ZBE de {cfg.name} durante el horario de restricción.
             </p>
 
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="grid grid-cols-[1fr_auto_auto] divide-y divide-gray-100">
                 {/* Header */}
-                <div className="col-span-3 grid grid-cols-[1fr_auto_auto] bg-gray-50 px-4 py-2.5">
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Etiqueta ambiental</span>
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide text-center w-24">Acceso</span>
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide text-center w-28">Estado</span>
+                <div className="col-span-3 grid grid-cols-[1fr_auto_auto] bg-gray-50 dark:bg-gray-950 px-4 py-2.5">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Etiqueta ambiental</span>
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide text-center w-24">Acceso</span>
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide text-center w-28">Estado</span>
                 </div>
 
                 {/* Rows */}
@@ -755,7 +755,7 @@ export default async function ZBECityPage({ params }: Props) {
                     {
                       label: "C",
                       sub: "Gasolina Euro 4+ / Diésel Euro 6",
-                      labelColor: "bg-green-500 text-white",
+                      labelColor: "bg-green-50 dark:bg-green-900/200 text-white",
                       value: cfg.access.labelC,
                     },
                     {
@@ -779,13 +779,13 @@ export default async function ZBECityPage({ params }: Props) {
                 ).map((row) => (
                   <div
                     key={row.label}
-                    className={`col-span-3 grid grid-cols-[1fr_auto_auto] items-center px-4 py-3 border-b border-gray-100 ${accessRowClass(row.value)}`}
+                    className={`col-span-3 grid grid-cols-[1fr_auto_auto] items-center px-4 py-3 border-b border-gray-100 dark:border-gray-800 ${accessRowClass(row.value)}`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className={`inline-flex items-center justify-center min-w-[2.5rem] px-2 py-1 rounded-md text-xs font-bold ${row.labelColor}`}>
                         {row.label}
                       </span>
-                      <span className="text-sm text-gray-600 truncate hidden sm:block">{row.sub}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 truncate hidden sm:block">{row.sub}</span>
                     </div>
                     <div className="flex justify-center w-24">
                       <AccessIcon value={row.value} />
@@ -798,7 +798,7 @@ export default async function ZBECityPage({ params }: Props) {
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 mt-2 flex items-start gap-1.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-start gap-1.5">
               <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
               <span>
                 &ldquo;Restringido&rdquo; puede implicar limitaciones de horario, número de accesos o zonas de aparcamiento. Consulta siempre la normativa municipal vigente.
@@ -808,20 +808,20 @@ export default async function ZBECityPage({ params }: Props) {
 
           {/* Schedule details */}
           <section className="mb-8" aria-labelledby="heading-schedule">
-            <h2 id="heading-schedule" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-schedule" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Vigencia y horario de restricciones
             </h2>
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
               <div className="flex items-start gap-3 mb-4">
-                <Clock className="w-5 h-5 text-tl-600 flex-shrink-0 mt-0.5" />
+                <Clock className="w-5 h-5 text-tl-600 dark:text-tl-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Horario habitual</h3>
-                  <p className="text-gray-700">{cfg.schedule}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Horario habitual</h3>
+                  <p className="text-gray-700 dark:text-gray-300">{cfg.schedule}</p>
                 </div>
               </div>
 
               {cfg.status === "activa" && (
-                <div className="bg-tl-amber-50 border border-tl-amber-100 rounded-lg p-3 mt-3">
+                <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-100 rounded-lg p-3 mt-3">
                   <p className="text-sm text-tl-amber-800">
                     <strong>Episodios de contaminación:</strong> En episodios de alta contaminación declarados por el Ayuntamiento, las restricciones pueden ampliarse a vehículos con etiqueta C o B. Consulta el portal municipal para alertas en tiempo real.
                   </p>
@@ -829,8 +829,8 @@ export default async function ZBECityPage({ params }: Props) {
               )}
 
               {cfg.status !== "activa" && (
-                <div className="bg-tl-50 border border-tl-100 rounded-lg p-3 mt-3">
-                  <p className="text-sm text-tl-800">
+                <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-100 rounded-lg p-3 mt-3">
+                  <p className="text-sm text-tl-800 dark:text-tl-200">
                     <strong>Nota:</strong> Esta ZBE está en fase de planificación o desarrollo. Los horarios indicados son orientativos y pueden variar cuando entre en vigor. Consulta el Ayuntamiento de {cfg.name} para la información oficial más actualizada.
                   </p>
                 </div>
@@ -840,17 +840,17 @@ export default async function ZBECityPage({ params }: Props) {
 
           {/* Check your label */}
           <section className="mb-8" aria-labelledby="heading-check">
-            <h2 id="heading-check" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-check" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Consulta el distintivo ambiental de tu vehículo
             </h2>
-            <div className="bg-tl-50 border border-tl-200 rounded-xl p-5">
+            <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-5">
               <div className="flex items-start gap-3 mb-4">
-                <Leaf className="w-5 h-5 text-tl-600 flex-shrink-0 mt-0.5" />
+                <Leaf className="w-5 h-5 text-tl-600 dark:text-tl-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-tl-800 mb-1">
+                  <h3 className="font-semibold text-tl-800 dark:text-tl-200 mb-1">
                     ¿Sabes qué etiqueta tiene tu coche?
                   </h3>
-                  <p className="text-sm text-tl-700 leading-relaxed">
+                  <p className="text-sm text-tl-700 dark:text-tl-300 leading-relaxed">
                     El distintivo ambiental DGT determina si puedes acceder a la ZBE de {cfg.name}. Puedes consultarlo de forma gratuita en la Sede Electrónica de la DGT introduciendo tu matrícula.
                   </p>
                 </div>
@@ -864,7 +864,7 @@ export default async function ZBECityPage({ params }: Props) {
                 <ExternalLink className="w-4 h-4" />
                 Consultar en Sede DGT
               </a>
-              <p className="text-xs text-tl-600 mt-3">
+              <p className="text-xs text-tl-600 dark:text-tl-400 mt-3">
                 También puedes usar la app <strong>miDGT</strong> (disponible en App Store y Google Play) para consultar tu distintivo ambiental junto con toda la documentación del vehículo.
               </p>
             </div>
@@ -872,7 +872,7 @@ export default async function ZBECityPage({ params }: Props) {
 
           {/* Alternatives */}
           <section className="mb-8" aria-labelledby="heading-alternatives">
-            <h2 id="heading-alternatives" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-alternatives" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Alternativas al coche en {cfg.name}
             </h2>
 
@@ -881,19 +881,19 @@ export default async function ZBECityPage({ params }: Props) {
               {cfg.evChargersCity && (
                 <Link
                   href={`/carga-ev/${cfg.evChargersCity}`}
-                  className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-tl-300 hover:shadow-sm transition-all group"
+                  className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group"
                 >
-                  <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                    <Zap className="w-5 h-5 text-tl-600" />
+                  <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                    <Zap className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 group-hover:text-tl-600 transition-colors text-sm">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400 transition-colors text-sm">
                       Puntos de carga eléctrica en {cfg.name}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       Si tienes vehículo eléctrico o ECO, encuentra dónde cargar cerca de la ZBE.
                     </p>
-                    <span className="inline-flex items-center gap-1 text-xs text-tl-600 mt-1.5 font-medium">
+                    <span className="inline-flex items-center gap-1 text-xs text-tl-600 dark:text-tl-400 mt-1.5 font-medium">
                       Ver cargadores <ChevronRight className="w-3 h-3" />
                     </span>
                   </div>
@@ -901,32 +901,32 @@ export default async function ZBECityPage({ params }: Props) {
               )}
 
               {/* Public transport */}
-              <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200">
-                <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                  <Bus className="w-5 h-5 text-tl-600" />
+              <div className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                  <Bus className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm">Transporte público</p>
-                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{cfg.transport}</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Transporte público</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{cfg.transport}</p>
                 </div>
               </div>
 
               {/* Map with filter */}
               <Link
                 href={`/gasolineras/mapa?ciudad=${city}`}
-                className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-sm transition-all group"
+                className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-purple-300 hover:shadow-sm transition-all group"
               >
                 <div className="p-2 bg-purple-50 rounded-lg flex-shrink-0">
-                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 group-hover:text-purple-700 transition-colors text-sm">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:text-purple-400 transition-colors text-sm">
                     Gasolineras cerca de la ZBE
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     Repostaje antes de acceder a la zona restringida.
                   </p>
-                  <span className="inline-flex items-center gap-1 text-xs text-purple-600 mt-1.5 font-medium">
+                  <span className="inline-flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 mt-1.5 font-medium">
                     Ver en mapa <ChevronRight className="w-3 h-3" />
                   </span>
                 </div>
@@ -934,13 +934,13 @@ export default async function ZBECityPage({ params }: Props) {
 
               {/* DB zone details */}
               {dbZone && (
-                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
-                  <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
-                    <Info className="w-5 h-5 text-green-700" />
+                <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200">
+                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0">
+                    <Info className="w-5 h-5 text-green-700 dark:text-green-400" />
                   </div>
                   <div>
                     <p className="font-semibold text-green-900 text-sm">{dbZone.name}</p>
-                    <p className="text-xs text-green-700 mt-0.5">
+                    <p className="text-xs text-green-700 dark:text-green-400 mt-0.5">
                       Zona registrada en nuestra base de datos oficial.
                       {dbZone.sourceUrl && (
                         <>
@@ -964,20 +964,20 @@ export default async function ZBECityPage({ params }: Props) {
 
           {/* FAQ */}
           <section aria-labelledby="heading-faq" className="mb-8">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre la ZBE de {cfg.name}
             </h2>
             <div className="space-y-3">
               {cfg.faq.map((item) => (
                 <details
                   key={item.question}
-                  className="bg-white border border-gray-200 rounded-xl overflow-hidden group"
+                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group"
                 >
-                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 transition-colors select-none">
+                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none">
                     {item.question}
                     <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2 transition-transform group-open:rotate-90" />
                   </summary>
-                  <div className="px-5 py-4 text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                  <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                     {item.answer}
                   </div>
                 </details>
@@ -986,38 +986,38 @@ export default async function ZBECityPage({ params }: Props) {
           </section>
 
           {/* Related links */}
-          <nav aria-label="Páginas relacionadas" className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">También te puede interesar</h3>
+          <nav aria-label="Páginas relacionadas" className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">También te puede interesar</h3>
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/zbe"
-                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 Todas las ZBE de España
               </Link>
               <Link
                 href="/restricciones"
-                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 Restricciones de circulación
               </Link>
               {cfg.evChargersCity && (
                 <Link
                   href={`/carga-ev/${cfg.evChargersCity}`}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
                 >
                   Carga eléctrica en {cfg.name}
                 </Link>
               )}
               <Link
                 href="/gasolineras-24-horas"
-                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 Gasolineras 24 horas
               </Link>
               <Link
                 href="/profesional/restricciones"
-                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 Restricciones para transportistas
               </Link>

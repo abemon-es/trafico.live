@@ -52,12 +52,12 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Road type categories
 const ROAD_TYPES = [
-  { prefix: "AP-", label: "Autopistas de peaje", color: "bg-purple-100 text-purple-700 border-purple-200" },
-  { prefix: "A-", label: "Autovías", color: "bg-tl-100 text-tl-700 border-tl-200" },
-  { prefix: "N-", label: "Carreteras Nacionales", color: "bg-green-100 text-green-700 border-green-200" },
-  { prefix: "M-", label: "Madrid (Circunvalación)", color: "bg-orange-100 text-orange-700 border-orange-200" },
-  { prefix: "B-", label: "Barcelona", color: "bg-red-100 text-red-700 border-red-200" },
-  { prefix: "C-", label: "Comarcales", color: "bg-gray-100 text-gray-700 border-gray-200" },
+  { prefix: "AP-", label: "Autopistas de peaje", color: "bg-purple-100 text-purple-700 dark:text-purple-400 border-purple-200" },
+  { prefix: "A-", label: "Autovías", color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800" },
+  { prefix: "N-", label: "Carreteras Nacionales", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200" },
+  { prefix: "M-", label: "Madrid (Circunvalación)", color: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200" },
+  { prefix: "B-", label: "Barcelona", color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200" },
+  { prefix: "C-", label: "Comarcales", color: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800" },
 ];
 
 function getRoadType(roadName: string): string {
@@ -73,7 +73,7 @@ function getRoadTypeInfo(prefix: string) {
   return ROAD_TYPES.find((t) => t.prefix === prefix) || {
     prefix: "OTHER",
     label: "Otras carreteras",
-    color: "bg-gray-100 text-gray-700 border-gray-200",
+    color: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800",
   };
 }
 
@@ -98,7 +98,7 @@ export default function CarreterasContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-3 text-gray-500">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Cargando datos de carreteras...</span>
         </div>
@@ -199,47 +199,47 @@ export default function CarreterasContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-tl-50 rounded-lg">
-              <Route className="w-5 h-5 text-tl-600" />
+            <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+              <Route className="w-5 h-5 text-tl-600 dark:text-tl-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{totalRoads}</p>
-          <p className="text-sm text-gray-500">Carreteras con datos</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalRoads}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Carreteras con datos</p>
         </div>
-        <div className="bg-tl-amber-50 rounded-lg shadow-sm border border-tl-amber-200 p-4">
+        <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg shadow-sm border border-tl-amber-200 dark:border-tl-amber-800 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-tl-amber-100 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-tl-amber-600" />
+              <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-tl-amber-700">{incidentsData?.count || totalIncidents}</p>
-          <p className="text-sm text-tl-amber-600">Incidencias activas</p>
+          <p className="text-2xl font-bold text-tl-amber-700 dark:text-tl-amber-300">{incidentsData?.count || totalIncidents}</p>
+          <p className="text-sm text-tl-amber-600 dark:text-tl-amber-400">Incidencias activas</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-green-50 rounded-lg">
-              <Car className="w-5 h-5 text-green-600" />
+            <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <Car className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{avgIMD.toLocaleString("es-ES")}</p>
-          <p className="text-sm text-gray-500">IMD medio (veh/día)</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{avgIMD.toLocaleString("es-ES")}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">IMD medio (veh/día)</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-purple-50 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-purple-600" />
+              <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{Object.keys(roadsByType).length}</p>
-          <p className="text-sm text-gray-500">Tipos de vía</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{Object.keys(roadsByType).length}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Tipos de vía</p>
         </div>
       </div>
 
       {/* Top Dangerous Roads */}
       {rankingsData?.data?.roads?.mostDangerous && rankingsData.data.roads.mostDangerous.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4 mb-8">
           <h3 className="text-sm font-semibold text-red-800 mb-3 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             Carreteras con mayor riesgo
@@ -249,11 +249,11 @@ export default function CarreterasContent() {
               <Link
                 key={road.roadNumber}
                 href={`/explorar/carreteras/${encodeURIComponent(road.roadNumber)}`}
-                className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full text-sm border border-red-200 hover:bg-red-100 transition-colors"
+                className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-1.5 rounded-full text-sm border border-red-200 hover:bg-red-100 dark:bg-red-900/30 transition-colors"
               >
-                <span className="font-medium text-red-700">#{idx + 1}</span>
-                <span className="font-semibold text-gray-900">{road.roadNumber}</span>
-                <span className="text-xs text-red-600">
+                <span className="font-medium text-red-700 dark:text-red-400">#{idx + 1}</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{road.roadNumber}</span>
+                <span className="text-xs text-red-600 dark:text-red-400">
                   {road.value.toFixed(2)} riesgo
                 </span>
               </Link>
@@ -266,15 +266,15 @@ export default function CarreterasContent() {
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-600">Filtrar por tipo:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Filtrar por tipo:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedType(null)}
             className={`px-3 py-1 text-sm rounded-full border transition-colors ${
               selectedType === null
-                ? "bg-tl-100 text-tl-700 border-tl-300"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-300"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
             }`}
           >
             Todas
@@ -286,7 +286,7 @@ export default function CarreterasContent() {
               className={`px-3 py-1 text-sm rounded-full border transition-colors ${
                 selectedType === type.prefix
                   ? type.color
-                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
               }`}
             >
               {type.prefix.replace("-", "")}
@@ -295,11 +295,11 @@ export default function CarreterasContent() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm text-gray-600">Ordenar por:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Ordenar por:</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white"
+            className="text-sm border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-900"
           >
             <option value="incidents">Incidencias</option>
             <option value="risk">Riesgo</option>
@@ -328,8 +328,8 @@ export default function CarreterasContent() {
                   <span className={`px-3 py-1 text-sm font-medium rounded-full border ${typeInfo.color}`}>
                     {typePrefix.replace("-", "")}
                   </span>
-                  <h2 className="text-lg font-semibold text-gray-900">{typeInfo.label}</h2>
-                  <span className="text-sm text-gray-500">({roads.length} carreteras)</span>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{typeInfo.label}</h2>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">({roads.length} carreteras)</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -337,10 +337,10 @@ export default function CarreterasContent() {
                     <Link
                       key={road.roadName}
                       href={`/explorar/carreteras/${encodeURIComponent(road.roadName)}`}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+                      className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-tl-600">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400">
                           {road.roadName}
                         </h3>
                         <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500" />
@@ -350,31 +350,31 @@ export default function CarreterasContent() {
                         {road.incidentCount > 0 && (
                           <div className="flex items-center gap-1.5">
                             <AlertTriangle className="w-4 h-4 text-tl-amber-500" />
-                            <span className="text-gray-600">{road.incidentCount} incid.</span>
+                            <span className="text-gray-600 dark:text-gray-400">{road.incidentCount} incid.</span>
                           </div>
                         )}
                         {road.avgIMD && road.avgIMD > 0 && (
                           <div className="flex items-center gap-1.5">
                             <Car className="w-4 h-4 text-green-500" />
-                            <span className="text-gray-600">{(road.avgIMD / 1000).toFixed(0)}k IMD</span>
+                            <span className="text-gray-600 dark:text-gray-400">{(road.avgIMD / 1000).toFixed(0)}k IMD</span>
                           </div>
                         )}
                         {road.riskScore && road.riskScore > 0 && (
                           <div className="flex items-center gap-1.5">
                             <TrendingUp className="w-4 h-4 text-red-500" />
-                            <span className="text-gray-600">{road.riskScore.toFixed(1)} riesgo</span>
+                            <span className="text-gray-600 dark:text-gray-400">{road.riskScore.toFixed(1)} riesgo</span>
                           </div>
                         )}
                         {road.cameraCount > 0 && (
                           <div className="flex items-center gap-1.5">
                             <Camera className="w-4 h-4 text-tl-500" />
-                            <span className="text-gray-600">{road.cameraCount} cám.</span>
+                            <span className="text-gray-600 dark:text-gray-400">{road.cameraCount} cám.</span>
                           </div>
                         )}
                         {road.radarCount > 0 && (
                           <div className="flex items-center gap-1.5">
                             <Radar className="w-4 h-4 text-yellow-500" />
-                            <span className="text-gray-600">{road.radarCount} radares</span>
+                            <span className="text-gray-600 dark:text-gray-400">{road.radarCount} radares</span>
                           </div>
                         )}
                       </div>
@@ -385,7 +385,7 @@ export default function CarreterasContent() {
                 {!selectedType && sortedRoads.length > 12 && (
                   <button
                     onClick={() => setSelectedType(typePrefix)}
-                    className="mt-4 text-sm text-tl-600 hover:text-tl-700 hover:underline"
+                    className="mt-4 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
                   >
                     Ver todas las {sortedRoads.length} carreteras {typeInfo.label.toLowerCase()}
                   </button>
@@ -398,8 +398,8 @@ export default function CarreterasContent() {
       {roadList.length === 0 && (
         <div className="text-center py-20">
           <Route className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos de carreteras</h3>
-          <p className="text-gray-500">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No hay datos de carreteras</h3>
+          <p className="text-gray-500 dark:text-gray-400">
             No se encontraron carreteras con datos de tráfico disponibles.
           </p>
         </div>

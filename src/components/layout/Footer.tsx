@@ -215,10 +215,10 @@ export function Footer() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-4">
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">
               &copy; {currentYear} trafico.live. Todos los derechos reservados.
             </p>
-            <span className="hidden sm:inline text-gray-300 dark:text-gray-700">·</span>
+            <span className="hidden sm:inline text-gray-300 dark:text-gray-700 dark:text-gray-300">·</span>
             <CookieSettingsButton />
           </div>
         </div>

@@ -253,37 +253,37 @@ export default async function StationDetailPage({ params }: Props) {
 
       {/* Breadcrumb — Inicio > Combustible > Terrestres > {name} */}
       <nav aria-label="Breadcrumb" className="mb-4">
-        <ol className="flex items-center gap-1 text-sm text-gray-500 flex-wrap">
+        <ol className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
           <li>
-            <Link href="/" className="hover:text-gray-700 transition-colors">Inicio</Link>
+            <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
           </li>
           <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
           <li>
-            <Link href="/gasolineras" className="hover:text-gray-700 transition-colors">Combustible</Link>
+            <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Combustible</Link>
           </li>
           <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
           <li>
-            <Link href="/gasolineras/terrestres" className="hover:text-gray-700 transition-colors">Terrestres</Link>
+            <Link href="/gasolineras/terrestres" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Terrestres</Link>
           </li>
           <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
-          <li className="text-gray-900 font-medium truncate max-w-[200px]" aria-current="page">{station.name}</li>
+          <li className="text-gray-900 dark:text-gray-100 font-medium truncate max-w-[200px]" aria-current="page">{station.name}</li>
         </ol>
       </nav>
 
       {/* Back button */}
       <Link
         href="/gasolineras/terrestres"
-        className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 mb-6"
+        className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver al listado
       </Link>
 
       {/* Header with brand and badges */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
         <div className="flex items-start gap-4">
           <div className="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Fuel className="w-7 h-7 text-orange-600" />
+            <Fuel className="w-7 h-7 text-orange-600 dark:text-orange-400" />
           </div>
           <div className="flex-1">
             <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -298,8 +298,8 @@ export default async function StationDetailPage({ params }: Props) {
                       key={badge.label}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
                         badge.color === "orange"
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-gray-100 text-gray-600"
+                          ? "bg-orange-100 text-orange-700 dark:text-orange-400"
+                          : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       {badge.label === "24h" && <Clock className="w-3 h-3" />}
@@ -307,8 +307,8 @@ export default async function StationDetailPage({ params }: Props) {
                     </span>
                   ))}
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">{station.name}</h1>
-                <p className="text-gray-600">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{station.name}</h1>
+                <p className="text-gray-600 dark:text-gray-400">
                   {station.address && `${station.address}, `}
                   {station.locality}
                   {station.provinceName && `, ${station.provinceName}`}
@@ -317,7 +317,7 @@ export default async function StationDetailPage({ params }: Props) {
             </div>
 
             {station.schedule && !station.is24h && (
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="w-4 h-4 inline mr-1" />
                 {station.schedule}
               </p>
@@ -335,7 +335,7 @@ export default async function StationDetailPage({ params }: Props) {
               </a>
               <Link
                 href={`/gasolineras/mapa?lat=${station.latitude}&lng=${station.longitude}&zoom=15`}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-950 transition-colors"
               >
                 <MapPin className="w-4 h-4" />
                 Ver en mapa
@@ -358,22 +358,22 @@ export default async function StationDetailPage({ params }: Props) {
         />
 
         {/* Quick Stats */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Informacion</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Informacion</h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Ultima actualizacion</span>
+              <span className="text-gray-500 dark:text-gray-400">Ultima actualizacion</span>
               <span className="font-medium">{new Date(station.lastPriceUpdate).toLocaleString("es-ES")}</span>
             </div>
             {station.schedule && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Horario</span>
+                <span className="text-gray-500 dark:text-gray-400">Horario</span>
                 <span className="font-medium">{station.is24h ? "24 horas" : station.schedule}</span>
               </div>
             )}
             {station.nearestRoad && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Carretera</span>
+                <span className="text-gray-500 dark:text-gray-400">Carretera</span>
                 <span className="font-medium">
                   {station.nearestRoad}
                   {station.roadKm && ` - km ${Number(station.roadKm).toFixed(1)}`}
@@ -381,15 +381,15 @@ export default async function StationDetailPage({ params }: Props) {
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-gray-500">Municipio</span>
+              <span className="text-gray-500 dark:text-gray-400">Municipio</span>
               <span className="font-medium">{station.municipality || station.locality || "N/D"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Provincia</span>
+              <span className="text-gray-500 dark:text-gray-400">Provincia</span>
               <span className="font-medium">{station.provinceName || "N/D"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Codigo postal</span>
+              <span className="text-gray-500 dark:text-gray-400">Codigo postal</span>
               <span className="font-medium font-mono">{station.postalCode || "N/D"}</span>
             </div>
           </div>
@@ -397,17 +397,17 @@ export default async function StationDetailPage({ params }: Props) {
       </div>
 
       {/* Current Prices - All fuels */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Precios Actuales</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Precios Actuales</h2>
 
         {/* Main fuels with trends */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {mainFuels.map((fuel) => {
             const colorClasses: Record<string, { bg: string; text: string; textDark: string }> = {
-              amber: { bg: "bg-tl-amber-50", text: "text-tl-amber-600", textDark: "text-tl-amber-700" },
-              blue: { bg: "bg-tl-50", text: "text-tl-600", textDark: "text-tl-700" },
-              purple: { bg: "bg-purple-50", text: "text-purple-600", textDark: "text-purple-700" },
-              green: { bg: "bg-green-50", text: "text-green-600", textDark: "text-green-700" },
+              amber: { bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20", text: "text-tl-amber-600 dark:text-tl-amber-400", textDark: "text-tl-amber-700 dark:text-tl-amber-300" },
+              blue: { bg: "bg-tl-50 dark:bg-tl-900/20", text: "text-tl-600 dark:text-tl-400", textDark: "text-tl-700 dark:text-tl-300" },
+              purple: { bg: "bg-purple-50", text: "text-purple-600 dark:text-purple-400", textDark: "text-purple-700 dark:text-purple-400" },
+              green: { bg: "bg-green-50 dark:bg-green-900/20", text: "text-green-600 dark:text-green-400", textDark: "text-green-700 dark:text-green-400" },
             };
             const colors = colorClasses[fuel.color] || colorClasses.amber;
 
@@ -427,8 +427,8 @@ export default async function StationDetailPage({ params }: Props) {
                 <div className={`text-2xl font-bold ${colors.textDark}`}>{formatPrice(fuel.price)}</div>
                 {fuel.trend && (
                   <div className={`flex items-center gap-1 text-sm mt-1 ${
-                    fuel.trend.direction === "up" ? "text-red-600" :
-                    fuel.trend.direction === "down" ? "text-green-600" : "text-gray-500"
+                    fuel.trend.direction === "up" ? "text-red-600 dark:text-red-400" :
+                    fuel.trend.direction === "down" ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"
                   }`}>
                     {fuel.trend.direction === "up" ? <TrendingUp className="w-4 h-4" /> :
                      fuel.trend.direction === "down" ? <TrendingDown className="w-4 h-4" /> :
@@ -439,8 +439,8 @@ export default async function StationDetailPage({ params }: Props) {
                 {diff != null && Math.abs(diff) >= 0.001 && (
                   <div className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
                     diff < 0
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                   }`}>
                     {diff < 0 ? (
                       <>{Math.abs(diff).toFixed(3)}€ por debajo de la media</>
@@ -458,8 +458,8 @@ export default async function StationDetailPage({ params }: Props) {
         {additionalFuels.length > 0 && (
           <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
             {additionalFuels.map((fuel) => (
-              <div key={fuel.key} className="bg-gray-50 rounded p-2 text-center">
-                <div className="text-gray-500 text-xs">{fuel.label}</div>
+              <div key={fuel.key} className="bg-gray-50 dark:bg-gray-950 rounded p-2 text-center">
+                <div className="text-gray-500 dark:text-gray-400 text-xs">{fuel.label}</div>
                 <div className="font-medium">{formatPrice(fuel.price)}</div>
               </div>
             ))}
@@ -492,10 +492,10 @@ export default async function StationDetailPage({ params }: Props) {
 
       {/* 5 alternativas más baratas */}
       {cheaperAlternatives.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Tag className="w-4 h-4 text-green-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
+            <Tag className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {cheaperAlternatives.length === 1
                 ? "1 alternativa más barata en la provincia"
                 : `${cheaperAlternatives.length} alternativas más baratas en la provincia`}
@@ -512,15 +512,15 @@ export default async function StationDetailPage({ params }: Props) {
                 <Link
                   key={alt.id}
                   href={`/gasolineras/terrestres/${alt.id}`}
-                  className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                  className="flex items-center justify-between py-3 hover:bg-gray-50 dark:bg-gray-950 -mx-2 px-2 rounded transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-6 h-6 bg-green-100 text-green-700 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    <span className="w-6 h-6 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">
                       {index + 1}
                     </span>
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{alt.name}</p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{alt.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {alt.locality || alt.provinceName}
                         {alt.is24h && " · 24h"}
                       </p>
@@ -529,13 +529,13 @@ export default async function StationDetailPage({ params }: Props) {
                   <div className="flex items-center gap-3 flex-shrink-0 ml-4">
                     <div className="text-right">
                       {altDiesel && (
-                        <p className="font-bold text-tl-amber-700">{altDiesel.toFixed(3)} €</p>
+                        <p className="font-bold text-tl-amber-700 dark:text-tl-amber-300">{altDiesel.toFixed(3)} €</p>
                       )}
                       {altGas95 && !altDiesel && (
-                        <p className="font-bold text-tl-700">{altGas95.toFixed(3)} €</p>
+                        <p className="font-bold text-tl-700 dark:text-tl-300">{altGas95.toFixed(3)} €</p>
                       )}
                       {saving && saving > 0 && (
-                        <p className="text-xs text-green-600 font-medium">
+                        <p className="text-xs text-green-600 dark:text-green-400 font-medium">
                           -{saving.toFixed(3)} €/L
                         </p>
                       )}
@@ -564,31 +564,31 @@ export default async function StationDetailPage({ params }: Props) {
       )}
 
       {/* Location Info */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ubicacion</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Ubicacion</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Direccion:</span>
+            <span className="text-gray-500 dark:text-gray-400">Direccion:</span>
             <p className="font-medium">{station.address || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Codigo postal:</span>
+            <span className="text-gray-500 dark:text-gray-400">Codigo postal:</span>
             <p className="font-medium">{station.postalCode || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Localidad:</span>
+            <span className="text-gray-500 dark:text-gray-400">Localidad:</span>
             <p className="font-medium">{station.locality || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Municipio:</span>
+            <span className="text-gray-500 dark:text-gray-400">Municipio:</span>
             <p className="font-medium">{station.municipality || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Provincia:</span>
+            <span className="text-gray-500 dark:text-gray-400">Provincia:</span>
             <p className="font-medium">{station.provinceName || "No disponible"}</p>
           </div>
           <div>
-            <span className="text-gray-500">Coordenadas:</span>
+            <span className="text-gray-500 dark:text-gray-400">Coordenadas:</span>
             <p className="font-medium font-mono text-xs">
               {Number(station.latitude).toFixed(6)}, {Number(station.longitude).toFixed(6)}
             </p>
@@ -596,8 +596,8 @@ export default async function StationDetailPage({ params }: Props) {
         </div>
 
         {station.nearestRoad && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <span className="text-gray-500 text-sm">Carretera mas cercana:</span>
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <span className="text-gray-500 dark:text-gray-400 text-sm">Carretera mas cercana:</span>
             <p className="font-medium">
               {station.nearestRoad}
               {station.roadKm && ` - km ${Number(station.roadKm).toFixed(1)}`}

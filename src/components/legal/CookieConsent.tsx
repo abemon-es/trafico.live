@@ -103,19 +103,19 @@ export function CookieConsent() {
       aria-label="Consentimiento de cookies"
       className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
     >
-      <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-xl shadow-2xl p-5 md:p-6">
+      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl p-5 md:p-6">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex-1">
-            <p className="text-sm text-gray-700 font-medium mb-1">
+            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium mb-1">
               Utilizamos cookies
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Usamos cookies analíticas (Google Analytics) para entender cómo se
               usa trafico.live y mejorar el servicio. No usamos cookies
               publicitarias. Puedes leer más en nuestra{" "}
               <Link
                 href="/politica-cookies"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 política de cookies
               </Link>
@@ -125,7 +125,7 @@ export function CookieConsent() {
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={handleReject}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
             >
               Rechazar
             </button>
@@ -152,7 +152,7 @@ export function CookieSettingsButton() {
   return (
     <button
       onClick={handleClick}
-      className="text-gray-500 hover:text-gray-700 text-sm underline"
+      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 text-sm underline"
     >
       Gestionar cookies
     </button>

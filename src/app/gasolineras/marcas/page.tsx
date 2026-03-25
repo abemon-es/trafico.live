@@ -184,10 +184,10 @@ export default async function MarcasPage() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Comparativa de Precios por Marca de Gasolinera
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Precios medios actualizados el {today} · Fuente: MITERD (Ministerio para la Transición Ecológica)
         </p>
       </div>
@@ -195,39 +195,39 @@ export default async function MarcasPage() {
       {/* Insight cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {cheapestDieselBrand && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium text-green-700">Marca más barata (diesel)</span>
+              <TrendingDown className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <span className="text-sm font-medium text-green-700 dark:text-green-400">Marca más barata (diesel)</span>
             </div>
             <p className="text-2xl font-bold text-green-800">{cheapestDieselBrand.brand}</p>
-            <p className="text-lg font-semibold text-green-700 mt-1">
-              {cheapestDieselBrand.avgDiesel?.toFixed(3)}€/L <span className="text-sm font-normal text-green-600">de media</span>
+            <p className="text-lg font-semibold text-green-700 dark:text-green-400 mt-1">
+              {cheapestDieselBrand.avgDiesel?.toFixed(3)}€/L <span className="text-sm font-normal text-green-600 dark:text-green-400">de media</span>
             </p>
           </div>
         )}
 
         {biggestBrand && (
-          <div className="bg-tl-50 border border-tl-200 rounded-xl p-5">
+          <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Building2 className="w-5 h-5 text-tl-600" />
-              <span className="text-sm font-medium text-tl-700">Marca con más estaciones</span>
+              <Building2 className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+              <span className="text-sm font-medium text-tl-700 dark:text-tl-300">Marca con más estaciones</span>
             </div>
-            <p className="text-2xl font-bold text-tl-800">{biggestBrand.brand}</p>
-            <p className="text-lg font-semibold text-tl-700 mt-1">
-              {biggestBrand.count.toLocaleString("es-ES")} <span className="text-sm font-normal text-tl-600">estaciones</span>
+            <p className="text-2xl font-bold text-tl-800 dark:text-tl-200">{biggestBrand.brand}</p>
+            <p className="text-lg font-semibold text-tl-700 dark:text-tl-300 mt-1">
+              {biggestBrand.count.toLocaleString("es-ES")} <span className="text-sm font-normal text-tl-600 dark:text-tl-400">estaciones</span>
             </p>
           </div>
         )}
 
         {savings50L && cheapestDieselBrand && mostExpensiveDieselBrand && (
-          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5">
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Fuel className="w-5 h-5 text-tl-amber-600" />
-              <span className="text-sm font-medium text-tl-amber-700">Ahorro repostando 50 L</span>
+              <Fuel className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
+              <span className="text-sm font-medium text-tl-amber-700 dark:text-tl-amber-300">Ahorro repostando 50 L</span>
             </div>
             <p className="text-2xl font-bold text-tl-amber-800">{savings50L}€</p>
-            <p className="text-sm text-tl-amber-700 mt-1">
+            <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-1">
               eligiendo {cheapestDieselBrand.brand} en vez de {mostExpensiveDieselBrand.brand}
             </p>
           </div>
@@ -235,32 +235,32 @@ export default async function MarcasPage() {
       </div>
 
       {/* Main ranking table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
-        <div className="p-5 border-b border-gray-100 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-gray-500" />
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden mb-8">
+        <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Ranking por Precio Medio de Diesel</h2>
-            <p className="text-sm text-gray-500">Ordenado de más barato a más caro · Gasóleo A</p>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Ranking por Precio Medio de Diesel</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Ordenado de más barato a más caro · Gasóleo A</p>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Marca</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Estaciones</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-10">#</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Marca</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Estaciones</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Diesel medio
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Diesel min.
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   G95 media
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   G95 min.
                 </th>
                 <th className="px-4 py-3"></th>
@@ -272,52 +272,52 @@ export default async function MarcasPage() {
                 const isLast = idx === brands.length - 1 && b.avgDiesel != null;
 
                 let rowClass = "";
-                if (isFirst) rowClass = "bg-green-50/60";
-                else if (isLast) rowClass = "bg-red-50/40";
+                if (isFirst) rowClass = "bg-green-50 dark:bg-green-900/20/60";
+                else if (isLast) rowClass = "bg-red-50 dark:bg-red-900/20/40";
 
                 return (
-                  <tr key={b.slug} className={`hover:bg-gray-50 transition-colors ${rowClass}`}>
+                  <tr key={b.slug} className={`hover:bg-gray-50 dark:bg-gray-950 transition-colors ${rowClass}`}>
                     <td className="px-4 py-3.5">
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                           isFirst
-                            ? "bg-green-500 text-white"
+                            ? "bg-green-50 dark:bg-green-900/200 text-white"
                             : isLast
                             ? "bg-red-400 text-white"
-                            : "bg-gray-100 text-gray-600"
+                            : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                         }`}
                       >
                         {idx + 1}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="font-semibold text-gray-900">{b.brand}</span>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">{b.brand}</span>
                     </td>
-                    <td className="px-4 py-3.5 text-right text-gray-600 tabular-nums">
+                    <td className="px-4 py-3.5 text-right text-gray-600 dark:text-gray-400 tabular-nums">
                       {b.count.toLocaleString("es-ES")}
                     </td>
                     <td className="px-4 py-3.5 text-right tabular-nums">
                       <span
                         className={`font-semibold ${
-                          isFirst ? "text-green-700" : isLast ? "text-red-600" : "text-tl-amber-700"
+                          isFirst ? "text-green-700 dark:text-green-400" : isLast ? "text-red-600 dark:text-red-400" : "text-tl-amber-700 dark:text-tl-amber-300"
                         }`}
                       >
                         {formatPrice(b.avgDiesel)}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-600">
+                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-600 dark:text-gray-400">
                       {formatPrice(b.minDiesel)}
                     </td>
                     <td className="px-4 py-3.5 text-right tabular-nums">
-                      <span className="text-tl-700 font-medium">{formatPrice(b.avgGas95)}</span>
+                      <span className="text-tl-700 dark:text-tl-300 font-medium">{formatPrice(b.avgGas95)}</span>
                     </td>
-                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-600">
+                    <td className="px-4 py-3.5 text-right tabular-nums text-gray-600 dark:text-gray-400">
                       {formatPrice(b.minGas95)}
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <Link
                         href={`/gasolineras/terrestres?marca=${b.slug}`}
-                        className="inline-flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 font-medium"
+                        className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 font-medium"
                         title={`Ver estaciones ${b.brand}`}
                       >
                         Ver
@@ -331,8 +331,8 @@ export default async function MarcasPage() {
           </table>
         </div>
 
-        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
-          <p className="text-xs text-gray-500">
+        <div className="px-5 py-3 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Los precios son medias calculadas sobre las estaciones con precio publicado en el día de hoy.
             Precios en €/litro con IVA incluido. Fuente: API MITERD.
           </p>
@@ -340,8 +340,8 @@ export default async function MarcasPage() {
       </div>
 
       {/* FAQ */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-        <h2 className="text-lg font-bold text-gray-900 mb-5">Preguntas frecuentes sobre precios por marca</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mb-8">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-5">Preguntas frecuentes sobre precios por marca</h2>
         <div className="space-y-5">
           {[
             {
@@ -359,9 +359,9 @@ export default async function MarcasPage() {
               a: "En España, todas las gasolineras deben cumplir la norma europea EN 228 (gasolinas) y EN 590 (gasóleo). La calidad base es idéntica. Las diferencias residen en los aditivos propietarios que cada marca incorpora (Repsol Activa, BP Ultimate, Cepsa Star…). Para uso diario, el combustible estándar de cualquier marca es equivalente.",
             },
           ].map(({ q, a }) => (
-            <div key={q} className="border-b border-gray-100 last:border-0 pb-5 last:pb-0">
-              <h3 className="font-semibold text-gray-900 mb-2">{q}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{a}</p>
+            <div key={q} className="border-b border-gray-100 dark:border-gray-800 last:border-0 pb-5 last:pb-0">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{q}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{a}</p>
             </div>
           ))}
         </div>

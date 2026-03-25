@@ -151,7 +151,7 @@ export function MapControls({
   };
 
   return (
-    <div className={`${isFullscreen ? "bg-white/95 backdrop-blur-sm" : "bg-white"} border-b border-gray-200`}>
+    <div className={`${isFullscreen ? "bg-white dark:bg-gray-900/95 backdrop-blur-sm" : "bg-white dark:bg-gray-900"} border-b border-gray-200 dark:border-gray-800`}>
       {/* Main toolbar */}
       <div className="px-4 py-3 flex items-center justify-between flex-wrap gap-3">
         {/* Left side: Layer toggles */}
@@ -177,8 +177,8 @@ export function MapControls({
                 flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
                 border transition-all cursor-pointer
                 ${activeLayers.incidents
-                  ? "bg-orange-100 border-orange-500 text-orange-700"
-                  : "bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-100"
+                  ? "bg-orange-100 border-orange-500 text-orange-700 dark:text-orange-400"
+                  : "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900"
                 }
               `}
             >
@@ -195,10 +195,10 @@ export function MapControls({
 
             {/* Dropdown */}
             {showIncidentDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[100] p-4 max-h-[80vh] overflow-y-auto">
+              <div className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 z-[100] p-4 max-h-[80vh] overflow-y-auto">
                 {/* Toggle incidents layer */}
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-                  <span className="text-sm font-medium text-gray-700">Mostrar incidencias</span>
+                <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100 dark:border-gray-800">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Mostrar incidencias</span>
                   <button
                     onClick={() => onLayerToggle("incidents")}
                     className={`relative w-10 h-6 rounded-full transition-all ${
@@ -208,7 +208,7 @@ export function MapControls({
                     }`}
                   >
                     <span
-                      className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      className={`absolute top-1 w-4 h-4 bg-white dark:bg-gray-900 rounded-full transition-transform ${
                         activeLayers.incidents ? "translate-x-5" : "translate-x-1"
                       }`}
                     />
@@ -217,15 +217,15 @@ export function MapControls({
 
                 {/* Visualization mode toggle */}
                 {activeLayers.incidents && onIncidentViewModeChange && (
-                  <div className="mb-3 pb-3 border-b border-gray-100">
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">Visualización</p>
-                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                  <div className="mb-3 pb-3 border-b border-gray-100 dark:border-gray-800">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Visualización</p>
+                    <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-900 rounded-lg p-1">
                       <button
                         onClick={() => onIncidentViewModeChange("heatmap")}
                         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
                           incidentViewMode === "heatmap"
-                            ? "bg-white text-orange-600 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
+                            ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
                         }`}
                         title="Mapa de calor"
                       >
@@ -236,8 +236,8 @@ export function MapControls({
                         onClick={() => onIncidentViewModeChange("clusters")}
                         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
                           incidentViewMode === "clusters"
-                            ? "bg-white text-orange-600 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
+                            ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
                         }`}
                         title="Agrupar"
                       >
@@ -248,8 +248,8 @@ export function MapControls({
                         onClick={() => onIncidentViewModeChange("points")}
                         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
                           incidentViewMode === "points"
-                            ? "bg-white text-orange-600 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
+                            ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
                         }`}
                         title="Puntos individuales"
                       >
@@ -262,7 +262,7 @@ export function MapControls({
 
                 {/* Effect filters */}
                 <div className="mb-3">
-                  <p className="text-xs font-medium text-gray-500 uppercase mb-2">Tipo de afección</p>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Tipo de afección</p>
                   <div className="flex flex-wrap gap-1.5">
                     {EFFECT_OPTIONS.map((opt) => (
                       <button
@@ -272,7 +272,7 @@ export function MapControls({
                           flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all
                           ${incidentFilters.effects.includes(opt.value)
                             ? "text-white"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
                           }
                         `}
                         style={{
@@ -291,7 +291,7 @@ export function MapControls({
 
                 {/* Cause filters */}
                 <div className="mb-3">
-                  <p className="text-xs font-medium text-gray-500 uppercase mb-2">Causa</p>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Causa</p>
                   <div className="flex flex-wrap gap-1.5">
                     {CAUSE_OPTIONS.map((opt) => (
                       <button
@@ -301,7 +301,7 @@ export function MapControls({
                           flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all
                           ${incidentFilters.causes.includes(opt.value)
                             ? "text-white"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
                           }
                         `}
                         style={{
@@ -322,7 +322,7 @@ export function MapControls({
                 {activeFilterCount > 0 && (
                   <button
                     onClick={clearAllFilters}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                    className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
                   >
                     <X className="w-3 h-3" />
                     Limpiar filtros
@@ -417,35 +417,35 @@ export function MapControls({
             <div className="relative" ref={locationDropdownRef}>
               <button
                 onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors flex items-center gap-1"
                 title="Ir a ubicación"
               >
                 <Navigation className="w-5 h-5" />
                 <ChevronDown className={`w-3 h-3 transition-transform ${showLocationDropdown ? "rotate-180" : ""}`} />
               </button>
               {showLocationDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-200 z-[100] py-1">
+                <div className="absolute top-full right-0 mt-2 w-44 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 z-[100] py-1">
                   <button
                     onClick={() => { onLocationChange("peninsula"); setShowLocationDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 flex items-center gap-2"
                   >
                     <span className="text-lg">🇪🇸</span> Península
                   </button>
                   <button
                     onClick={() => { onLocationChange("canarias"); setShowLocationDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 flex items-center gap-2"
                   >
                     <span className="text-lg">🏝️</span> Islas Canarias
                   </button>
                   <button
                     onClick={() => { onLocationChange("ceuta"); setShowLocationDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 flex items-center gap-2"
                   >
                     <span className="text-lg">🏛️</span> Ceuta
                   </button>
                   <button
                     onClick={() => { onLocationChange("melilla"); setShowLocationDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 flex items-center gap-2"
                   >
                     <span className="text-lg">🏛️</span> Melilla
                   </button>
@@ -455,13 +455,13 @@ export function MapControls({
           )}
 
           {/* View mode toggle */}
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
             <button
               onClick={() => onViewModeChange("map")}
               className={`px-2.5 py-1.5 flex items-center gap-1 text-sm ${
                 viewMode === "map"
-                  ? "bg-tl-50 text-tl-700"
-                  : "bg-white text-gray-600 hover:bg-gray-50"
+                  ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
               }`}
               title="Vista mapa"
             >
@@ -471,8 +471,8 @@ export function MapControls({
               onClick={() => onViewModeChange("list")}
               className={`px-2.5 py-1.5 flex items-center gap-1 text-sm ${
                 viewMode === "list"
-                  ? "bg-tl-50 text-tl-700"
-                  : "bg-white text-gray-600 hover:bg-gray-50"
+                  ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
               }`}
               title="Vista lista"
             >
@@ -484,7 +484,7 @@ export function MapControls({
           <button
             onClick={onRefresh}
             disabled={isLoading}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors disabled:opacity-50"
             title="Actualizar"
           >
             <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
@@ -493,7 +493,7 @@ export function MapControls({
           {/* Fullscreen toggle */}
           <button
             onClick={onFullscreenToggle}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors"
             title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
           >
             {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}

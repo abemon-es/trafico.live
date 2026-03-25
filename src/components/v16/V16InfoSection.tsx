@@ -58,12 +58,12 @@ function FAQAccordion({ item }: { item: FAQItem }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-gray-100 last:border-0">
+    <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 dark:bg-gray-950 transition-colors"
       >
-        <span className="text-sm font-medium text-gray-900 pr-4">{item.question}</span>
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 pr-4">{item.question}</span>
         {isOpen ? (
           <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
         ) : (
@@ -72,7 +72,7 @@ function FAQAccordion({ item }: { item: FAQItem }) {
       </button>
       {isOpen && (
         <div className="pb-3 pr-8">
-          <p className="text-sm text-gray-600">{item.answer}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{item.answer}</p>
         </div>
       )}
     </div>
@@ -87,7 +87,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
   return (
     <div className="mt-8 space-y-6">
       {/* Main Info Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
           <h2 className="text-xl font-bold text-white flex items-center gap-3">
@@ -99,7 +99,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
         <div className="p-6">
           {/* Introduction */}
           <div className="mb-6">
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               La <strong>baliza V16</strong> es un dispositivo luminoso de preseñalización de
               peligro que se utiliza para alertar a otros conductores cuando un vehículo queda
               inmovilizado en la vía. Emite una luz amarilla intermitente visible a más de 1
@@ -111,51 +111,51 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
           {/* Key Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
-              <Radio className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+              <Radio className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-gray-900">Luz visible</p>
-                <p className="text-xs text-gray-600">A más de 1 km de distancia</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Luz visible</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">A más de 1 km de distancia</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-tl-50 rounded-lg">
-              <MapPin className="w-5 h-5 text-tl-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+              <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-gray-900">GPS integrado</p>
-                <p className="text-xs text-gray-600">Transmite posición a la DGT</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">GPS integrado</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Transmite posición a la DGT</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-              <Clock className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <Clock className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-gray-900">Autonomía</p>
-                <p className="text-xs text-gray-600">Mínimo 30 minutos de batería</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Autonomía</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Mínimo 30 minutos de batería</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-              <ShieldCheck className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-gray-900">Homologada</p>
-                <p className="text-xs text-gray-600">Marcado V-16 de la DGT</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Homologada</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Marcado V-16 de la DGT</p>
               </div>
             </div>
           </div>
 
           {/* Legal Requirement Banner */}
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
-              <Scale className="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" />
+              <Scale className="w-6 h-6 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-bold text-red-800 mb-1">
                   OBLIGATORIA DESDE EL 1 DE JULIO DE 2021
                 </h3>
-                <p className="text-sm text-red-700 mb-2">
+                <p className="text-sm text-red-700 dark:text-red-400 mb-2">
                   Según el <strong>Real Decreto 159/2021</strong>, todos los vehículos deben llevar
                   una baliza V16 homologada. Su uso es obligatorio cuando el vehículo queda detenido
                   en la calzada (no en el arcén).
                 </p>
                 <div className="flex items-center gap-2 text-sm">
-                  <Banknote className="w-4 h-4 text-red-600" />
-                  <span className="text-red-700">
+                  <Banknote className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <span className="text-red-700 dark:text-red-400">
                     <strong>Multa por incumplimiento:</strong> 80€ - 200€
                   </span>
                 </div>
@@ -165,12 +165,12 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
 
           {/* Technical Specs */}
           <div className="mb-6">
-            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-gray-600" />
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               Especificaciones Técnicas
             </h3>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+            <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Homologación DGT con marcado V-16
@@ -209,11 +209,11 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
 
           {/* FAQs */}
           <div className="mb-6">
-            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-gray-600" />
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+              <HelpCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               Preguntas Frecuentes
             </h3>
-            <div className="border border-gray-200 rounded-lg divide-y divide-gray-100">
+            <div className="border border-gray-200 dark:border-gray-800 rounded-lg divide-y divide-gray-100">
               <div className="px-4">
                 {faqs.map((faq, idx) => (
                   <FAQAccordion key={idx} item={faq} />
@@ -223,9 +223,9 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
           </div>
 
           {/* Official Links */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <ExternalLink className="w-5 h-5 text-gray-600" />
+          <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+              <ExternalLink className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               Enlaces Oficiales
             </h3>
             <div className="flex flex-wrap gap-3">
@@ -253,16 +253,16 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
       </div>
 
       {/* Data Source Info */}
-      <div className="bg-tl-50 border border-tl-200 rounded-lg p-4">
+      <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4">
         <h3 className="font-semibold text-tl-900 mb-2">Sobre los datos mostrados</h3>
-        <p className="text-sm text-tl-800 mb-2">
+        <p className="text-sm text-tl-800 dark:text-tl-200 mb-2">
           Los datos de balizas V16 se obtienen en tiempo real de la plataforma{" "}
           <strong>NAP DATEX II</strong> de la DGT (Dirección General de Tráfico). El sistema
           recopila información cada 5 minutos sobre las balizas V16 conectadas que están activas en
           las carreteras españolas.
         </p>
         {dataStartDate && (
-          <p className="text-xs text-tl-700">
+          <p className="text-xs text-tl-700 dark:text-tl-300">
             <strong>Recopilando datos desde:</strong>{" "}
             {new Date(dataStartDate).toLocaleDateString("es-ES", {
               day: "numeric",

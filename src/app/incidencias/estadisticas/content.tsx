@@ -77,7 +77,7 @@ function StatCard({
   isLoading?: boolean;
 }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
       <div className="flex items-center gap-2 mb-2">
         <div className={`p-2 ${iconBgColor} rounded-lg`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
@@ -86,11 +86,11 @@ function StatCard({
       {isLoading ? (
         <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
       ) : (
-        <p className="text-2xl font-bold text-gray-900 font-data">
+        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
           {typeof value === "number" ? value.toLocaleString("es-ES") : value}
         </p>
       )}
-      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
       {subLabel && <p className="text-xs text-gray-400 mt-1">{subLabel}</p>}
     </div>
   );
@@ -105,21 +105,21 @@ function DailyTrendChart({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-64 bg-gray-100 animate-pulse rounded" />
+        <div className="h-64 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-tl-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-tl-600 dark:text-tl-400" />
           Tendencia Diaria
         </h2>
-        <div className="h-64 flex items-center justify-center text-gray-500">
+        <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>No hay datos disponibles</p>
@@ -132,9 +132,9 @@ function DailyTrendChart({
   const maxCount = Math.max(...data.map((d) => d.count), 1);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-tl-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <TrendingUp className="w-5 h-5 text-tl-600 dark:text-tl-400" />
         Tendencia Diaria de Incidencias
       </h2>
       <div className="h-64 flex items-end gap-1">
@@ -145,12 +145,12 @@ function DailyTrendChart({
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div
-                className="w-full bg-red-500 rounded-t hover:bg-red-600 transition-colors"
+                className="w-full bg-red-50 dark:bg-red-900/200 rounded-t hover:bg-red-600 transition-colors"
                 style={{ height: `${height}%`, minHeight: day.count > 0 ? "4px" : "0" }}
                 title={`${day.date}: ${day.count} incidencias`}
               />
               {data.length <= 31 && (
-                <span className="text-xs text-gray-500 mt-1 truncate w-full text-center">
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate w-full text-center">
                   {dayLabel}
                 </span>
               )}
@@ -173,21 +173,21 @@ function HourlyHeatmap({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-48 bg-gray-100 animate-pulse rounded" />
+        <div className="h-48 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           Patrón Horario
         </h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>Sin datos de patrones horarios</p>
@@ -202,17 +202,17 @@ function HourlyHeatmap({
 
   const getColor = (value: number) => {
     const intensity = value / maxValue;
-    if (intensity === 0) return "bg-gray-100";
-    if (intensity < 0.25) return "bg-red-100";
+    if (intensity === 0) return "bg-gray-100 dark:bg-gray-900";
+    if (intensity < 0.25) return "bg-red-100 dark:bg-red-900/30";
     if (intensity < 0.5) return "bg-red-200";
     if (intensity < 0.75) return "bg-red-400";
     return "bg-red-600";
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Activity className="w-5 h-5 text-purple-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         Patrón Hora × Día de la Semana
       </h2>
       <div className="overflow-x-auto">
@@ -221,7 +221,7 @@ function HourlyHeatmap({
           <div className="flex mb-1">
             <div className="w-12" />
             {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
-              <div key={h} className="flex-1 text-xs text-gray-500 text-center">
+              <div key={h} className="flex-1 text-xs text-gray-500 dark:text-gray-400 text-center">
                 {h}:00
               </div>
             ))}
@@ -229,7 +229,7 @@ function HourlyHeatmap({
           {/* Grid - Monday to Sunday */}
           {[1, 2, 3, 4, 5, 6, 0].map((day) => (
             <div key={day} className="flex items-center mb-1">
-              <div className="w-12 text-xs text-gray-500">{dayNames[day]}</div>
+              <div className="w-12 text-xs text-gray-500 dark:text-gray-400">{dayNames[day]}</div>
               <div className="flex-1 flex gap-0.5">
                 {Array.from({ length: 24 }, (_, hour) => {
                   const cell = data.find((d) => d.hour === hour && d.day === day);
@@ -248,7 +248,7 @@ function HourlyHeatmap({
         </div>
       </div>
       {peaks && (
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
           <p>
             <span className="font-medium">Hora pico:</span> <span className="font-data">{peaks.hour.hour}:00</span> (promedio{" "}
             <span className="font-data">{peaks.hour.avgCount}</span> incidencias)
@@ -272,21 +272,21 @@ function IncidentTypeChart({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="h-6 w-48 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="h-64 bg-gray-100 animate-pulse rounded" />
+        <div className="h-64 bg-gray-100 dark:bg-gray-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Layers className="w-5 h-5 text-orange-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Layers className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           Por Tipo de Incidencia
         </h2>
-        <div className="h-64 flex items-center justify-center text-gray-500">
+        <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <div className="text-center">
             <Layers className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>No hay datos disponibles</p>
@@ -300,11 +300,11 @@ function IncidentTypeChart({
 
   // Colors for different incident types
   const typeColors: Record<string, string> = {
-    ACCIDENT: "bg-red-500",
+    ACCIDENT: "bg-red-50 dark:bg-red-900/200",
     ROADWORK: "bg-orange-500",
     CONGESTION: "bg-yellow-500",
     HAZARD: "bg-purple-500",
-    VEHICLE_BREAKDOWN: "bg-tl-500",
+    VEHICLE_BREAKDOWN: "bg-tl-50 dark:bg-tl-900/200",
     WEATHER: "bg-cyan-500",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
@@ -312,33 +312,33 @@ function IncidentTypeChart({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Layers className="w-5 h-5 text-orange-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <Layers className="w-5 h-5 text-orange-600 dark:text-orange-400" />
         Por Tipo de Incidencia
       </h2>
       <div className="space-y-3">
         {data.map((item, idx) => {
-          const bgColor = typeColors[item.type] || "bg-gray-500";
+          const bgColor = typeColors[item.type] || "bg-gray-50 dark:bg-gray-9500";
           return (
             <div key={idx} className="flex items-center gap-3">
-              <div className="w-28 text-sm text-gray-600 truncate" title={item.label}>
+              <div className="w-28 text-sm text-gray-600 dark:text-gray-400 truncate" title={item.label}>
                 {item.label}
               </div>
-              <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+              <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                 <div
                   className={`h-full ${bgColor} rounded`}
                   style={{ width: `${item.percentage}%` }}
                 />
               </div>
-              <div className="w-20 text-sm text-gray-600 text-right font-data">
+              <div className="w-20 text-sm text-gray-600 dark:text-gray-400 text-right font-data">
                 {item.count.toLocaleString("es-ES")} ({item.percentage}%)
               </div>
             </div>
           );
         })}
       </div>
-      <p className="text-xs text-gray-500 mt-4">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
         Total: <span className="font-data">{total.toLocaleString("es-ES")}</span> incidencias
       </p>
     </div>
@@ -354,12 +354,12 @@ function SeverityChart({
 }) {
   if (isLoading || !data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <PieChart className="w-5 h-5 text-red-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <PieChart className="w-5 h-5 text-red-600 dark:text-red-400" />
           Por Severidad
         </h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           {isLoading ? (
             <div className="animate-pulse">Cargando...</div>
           ) : (
@@ -376,29 +376,29 @@ function SeverityChart({
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
   const severityColors: Record<string, string> = {
-    LOW: "bg-green-500",
+    LOW: "bg-green-50 dark:bg-green-900/200",
     MEDIUM: "bg-yellow-500",
     HIGH: "bg-orange-500",
     VERY_HIGH: "bg-red-600",
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <PieChart className="w-5 h-5 text-red-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <PieChart className="w-5 h-5 text-red-600 dark:text-red-400" />
         Por Severidad
       </h2>
       <div className="space-y-3">
         {data.map((item, idx) => {
           const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
-          const bgColor = severityColors[item.severity] || "bg-gray-500";
+          const bgColor = severityColors[item.severity] || "bg-gray-50 dark:bg-gray-9500";
           return (
             <div key={idx} className="flex items-center gap-3">
-              <div className="w-20 text-sm text-gray-600">{item.label}</div>
-              <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+              <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.label}</div>
+              <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                 <div className={`h-full ${bgColor} rounded`} style={{ width: `${percentage}%` }} />
               </div>
-              <div className="w-20 text-sm text-gray-600 text-right font-data">
+              <div className="w-20 text-sm text-gray-600 dark:text-gray-400 text-right font-data">
                 {item.count.toLocaleString("es-ES")} ({percentage}%)
               </div>
             </div>
@@ -418,12 +418,12 @@ function SourceChart({
 }) {
   if (isLoading || !data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-tl-600" />
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-tl-600 dark:text-tl-400" />
           Por Fuente de Datos
         </h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
           {isLoading ? (
             <div className="animate-pulse">Cargando...</div>
           ) : (
@@ -449,9 +449,9 @@ function SourceChart({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <BarChart3 className="w-5 h-5 text-tl-600" />
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <BarChart3 className="w-5 h-5 text-tl-600 dark:text-tl-400" />
         Por Fuente de Datos
       </h2>
       <div className="space-y-3">
@@ -462,14 +462,14 @@ function SourceChart({
           return (
             <div key={idx}>
               <div className="flex items-center gap-3">
-                <div className="w-20 text-sm font-medium text-gray-900">{source}</div>
-                <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                <div className="w-20 text-sm font-medium text-gray-900 dark:text-gray-100">{source}</div>
+                <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                   <div
-                    className="h-full bg-tl-500 rounded"
+                    className="h-full bg-tl-50 dark:bg-tl-900/200 rounded"
                     style={{ width: `${barWidth}%` }}
                   />
                 </div>
-                <div className="w-24 text-sm text-gray-600 text-right font-data">
+                <div className="w-24 text-sm text-gray-600 dark:text-gray-400 text-right font-data">
                   {item.count.toLocaleString("es-ES")} ({percentage}%)
                 </div>
               </div>
@@ -511,7 +511,7 @@ export function IncidentStatsContent() {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -519,25 +519,25 @@ export function IncidentStatsContent() {
             <div className="flex items-center gap-3 mb-2">
               <Link
                 href="/incidencias"
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <h1 className="text-3xl font-bold text-gray-900">Estadísticas de Incidencias</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Estadísticas de Incidencias</h1>
             </div>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Análisis de incidencias de tráfico registradas en carreteras españolas.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="period" className="text-sm text-gray-600">
+            <label htmlFor="period" className="text-sm text-gray-600 dark:text-gray-400">
               Período:
             </label>
             <select
               id="period"
               value={period}
               onChange={(e) => setPeriod(parseInt(e.target.value, 10))}
-              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="border border-gray-300 dark:border-gray-700 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               {PERIOD_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -552,8 +552,8 @@ export function IncidentStatsContent() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <StatCard
             icon={AlertTriangle}
-            iconBgColor="bg-red-50"
-            iconColor="text-red-600"
+            iconBgColor="bg-red-50 dark:bg-red-900/20"
+            iconColor="text-red-600 dark:text-red-400"
             value={hasData ? data.data.totals.totalIncidents : "-"}
             label="Total Período"
             subLabel={hasData ? `${data.data.periodDays} días de datos` : undefined}
@@ -561,16 +561,16 @@ export function IncidentStatsContent() {
           />
           <StatCard
             icon={Activity}
-            iconBgColor="bg-green-50"
-            iconColor="text-green-600"
+            iconBgColor="bg-green-50 dark:bg-green-900/20"
+            iconColor="text-green-600 dark:text-green-400"
             value={hasData ? data.data.totals.activeNow : "-"}
             label="Activas Ahora"
             isLoading={isLoading}
           />
           <StatCard
             icon={Clock}
-            iconBgColor="bg-tl-50"
-            iconColor="text-tl-600"
+            iconBgColor="bg-tl-50 dark:bg-tl-900/20"
+            iconColor="text-tl-600 dark:text-tl-400"
             value={hasData ? data.data.totals.incidentsLast24h : "-"}
             label="Últimas 24h"
             isLoading={isLoading}
@@ -578,7 +578,7 @@ export function IncidentStatsContent() {
           <StatCard
             icon={Calendar}
             iconBgColor="bg-purple-50"
-            iconColor="text-purple-600"
+            iconColor="text-purple-600 dark:text-purple-400"
             value={hasData ? data.data.totals.incidentsLast7d : "-"}
             label="Últimos 7 días"
             isLoading={isLoading}
@@ -586,7 +586,7 @@ export function IncidentStatsContent() {
           <StatCard
             icon={Clock}
             iconBgColor="bg-orange-50"
-            iconColor="text-orange-600"
+            iconColor="text-orange-600 dark:text-orange-400"
             value={
               hasData && data.data.totals.avgDurationMins
                 ? `${data.data.totals.avgDurationMins} min`
@@ -628,12 +628,12 @@ export function IncidentStatsContent() {
                 labelWidth={120}
               />
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-gray-500" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Ranking por Provincia
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {isLoading ? (
                     <div className="animate-pulse">Cargando...</div>
                   ) : (
@@ -654,12 +654,12 @@ export function IncidentStatsContent() {
                 labelWidth={80}
               />
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-gray-500" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <Route className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   Top Carreteras
                 </h2>
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   {isLoading ? (
                     <div className="animate-pulse">Cargando...</div>
                   ) : (
@@ -675,9 +675,9 @@ export function IncidentStatsContent() {
         </div>
 
         {/* Data Source Note */}
-        <div className="mt-8 bg-tl-50 border border-tl-200 rounded-lg p-4">
+        <div className="mt-8 bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4">
           <h3 className="font-semibold text-tl-900 mb-2">Sobre estos datos</h3>
-          <p className="text-sm text-tl-800">
+          <p className="text-sm text-tl-800 dark:text-tl-200">
             Los datos de incidencias se obtienen en tiempo real de múltiples fuentes oficiales: DGT
             (Dirección General de Tráfico), SCT (Servei Català de Trànsit), Tráfico País Vasco, y
             DGT Madrid. Las incidencias incluyen accidentes, obras, congestiones, cortes de
@@ -689,7 +689,7 @@ export function IncidentStatsContent() {
         <div className="mt-4">
           <Link
             href="/incidencias"
-            className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 font-medium"
+            className="inline-flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:text-red-400 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Ver mapa de incidencias en tiempo real

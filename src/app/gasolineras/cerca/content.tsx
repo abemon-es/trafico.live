@@ -185,32 +185,32 @@ export default function GasolinerasCercaContent() {
     : "/gasolineras/mapa";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Breadcrumbs */}
-        <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-gray-700 transition-colors">
+        <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">
             Inicio
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <Link href="/gasolineras" className="hover:text-gray-700 transition-colors">
+          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">
             Combustible
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-gray-900 font-medium">Cerca de mí</span>
+          <span className="text-gray-900 dark:text-gray-100 font-medium">Cerca de mí</span>
         </nav>
 
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <LocateFixed className="w-5 h-5 text-orange-600" />
+              <LocateFixed className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Gasolineras Baratas Cerca de Mí
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Las {stations.length > 0 ? `${stations.length} ` : ""}gasolineras más cercanas a tu
             ubicación con precios de Gasóleo A y Gasolina 95 en tiempo real.
           </p>
@@ -218,10 +218,10 @@ export default function GasolinerasCercaContent() {
 
         {/* Location acquiring */}
         {isLocating && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center mb-6">
-            <Loader2 className="w-10 h-10 text-orange-600 animate-spin mx-auto mb-4" />
-            <h2 className="font-semibold text-gray-900 mb-1">Obteniendo tu ubicación...</h2>
-            <p className="text-sm text-gray-500">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-8 text-center mb-6">
+            <Loader2 className="w-10 h-10 text-orange-600 dark:text-orange-400 animate-spin mx-auto mb-4" />
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Obteniendo tu ubicación...</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Permite el acceso a la ubicación para ver las gasolineras más cercanas.
             </p>
           </div>
@@ -229,14 +229,14 @@ export default function GasolinerasCercaContent() {
 
         {/* Permission denied / error */}
         {locationError && (
-          <div className="bg-red-50 rounded-lg border border-red-200 p-6 mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 p-6 mb-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-red-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <h2 className="font-semibold text-red-800 mb-1">
                   Permite la ubicación para ver las gasolineras más cercanas
                 </h2>
-                <p className="text-sm text-red-700 mb-4">{locationError}</p>
+                <p className="text-sm text-red-700 dark:text-red-400 mb-4">{locationError}</p>
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => window.location.reload()}
@@ -246,7 +246,7 @@ export default function GasolinerasCercaContent() {
                   </button>
                   <Link
                     href="/gasolineras/baratas"
-                    className="px-4 py-2 bg-white text-red-700 border border-red-300 rounded-lg text-sm hover:bg-red-50 transition-colors"
+                    className="px-4 py-2 bg-white dark:bg-gray-900 text-red-700 dark:text-red-400 border border-red-300 rounded-lg text-sm hover:bg-red-50 dark:bg-red-900/20 transition-colors"
                   >
                     Buscar por ciudad
                   </Link>
@@ -262,17 +262,17 @@ export default function GasolinerasCercaContent() {
             {/* Location badge + map link */}
             <div className="bg-orange-50 rounded-lg border border-orange-200 p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-orange-600" />
+                <MapPin className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 <div>
                   <p className="text-sm font-medium text-orange-900">Ubicación detectada</p>
-                  <p className="text-xs text-orange-600">
+                  <p className="text-xs text-orange-600 dark:text-orange-400">
                     {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                   </p>
                 </div>
               </div>
               <Link
                 href={mapUrl}
-                className="inline-flex items-center gap-1.5 text-sm text-orange-700 hover:text-orange-900 font-medium"
+                className="inline-flex items-center gap-1.5 text-sm text-orange-700 dark:text-orange-400 hover:text-orange-900 font-medium"
               >
                 <Navigation className="w-4 h-4" />
                 Ver en mapa
@@ -281,11 +281,11 @@ export default function GasolinerasCercaContent() {
             </div>
 
             {/* Radius + sort controls */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 flex flex-wrap items-center gap-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 mb-6 flex flex-wrap items-center gap-4">
               {/* Radius toggle */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 font-medium">Radio:</span>
-                <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">Radio:</span>
+                <div className="flex rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
                   {RADIUS_OPTIONS.map((r) => (
                     <button
                       key={r}
@@ -293,7 +293,7 @@ export default function GasolinerasCercaContent() {
                       className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                         radius === r
                           ? "bg-orange-600 text-white"
-                          : "text-gray-600 hover:bg-gray-50"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
                       }`}
                     >
                       {r} km
@@ -304,11 +304,11 @@ export default function GasolinerasCercaContent() {
 
               {/* Sort */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 font-medium">Ordenar por:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">Ordenar por:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="text-sm border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="distance">Distancia</option>
                   <option value="diesel">Gasóleo A más barato</option>
@@ -322,7 +322,7 @@ export default function GasolinerasCercaContent() {
         {/* Loading stations */}
         {location && isLoading && (
           <div className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-3 text-gray-500">
+            <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
               <Loader2 className="w-6 h-6 animate-spin" />
               <span>Buscando gasolineras cercanas...</span>
             </div>
@@ -332,7 +332,7 @@ export default function GasolinerasCercaContent() {
         {/* Results */}
         {location && !isLoading && stations.length > 0 && (
           <>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {stations.length} gasolinera{stations.length !== 1 ? "s" : ""} encontrada
               {stations.length !== 1 ? "s" : ""} en un radio de {radius} km
             </p>
@@ -342,27 +342,27 @@ export default function GasolinerasCercaContent() {
                 <Link
                   key={station.id}
                   href={`/gasolineras/terrestres/${station.id}`}
-                  className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                  className="block bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-4">
                     {/* Rank */}
-                    <div className="flex-shrink-0 w-8 h-8 bg-orange-50 rounded-full flex items-center justify-center text-sm font-bold text-orange-700 border border-orange-100">
+                    <div className="flex-shrink-0 w-8 h-8 bg-orange-50 rounded-full flex items-center justify-center text-sm font-bold text-orange-700 dark:text-orange-400 border border-orange-100">
                       {index + 1}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       {/* Station name + distance */}
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h2 className="font-semibold text-gray-900 line-clamp-1 flex-1">
+                        <h2 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-1 flex-1">
                           {station.name}
                         </h2>
-                        <span className="flex-shrink-0 text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">
+                        <span className="flex-shrink-0 text-sm font-medium text-orange-600 dark:text-orange-400 bg-orange-50 px-2 py-0.5 rounded">
                           {formatDistance(station.distance)}
                         </span>
                       </div>
 
                       {/* Address */}
-                      <p className="text-sm text-gray-500 mb-3 line-clamp-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-1">
                         {[station.address, station.locality, station.provinceName]
                           .filter(Boolean)
                           .join(", ")}
@@ -370,15 +370,15 @@ export default function GasolinerasCercaContent() {
 
                       {/* Prices */}
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-tl-amber-50 rounded-lg p-2">
-                          <div className="text-xs text-tl-amber-600 mb-0.5">Gasóleo A</div>
-                          <div className="text-base font-bold text-tl-amber-700">
+                        <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg p-2">
+                          <div className="text-xs text-tl-amber-600 dark:text-tl-amber-400 mb-0.5">Gasóleo A</div>
+                          <div className="text-base font-bold text-tl-amber-700 dark:text-tl-amber-300">
                             {formatPrice(station.priceGasoleoA)}
                           </div>
                         </div>
-                        <div className="bg-tl-50 rounded-lg p-2">
-                          <div className="text-xs text-tl-600 mb-0.5">Gasolina 95</div>
-                          <div className="text-base font-bold text-tl-700">
+                        <div className="bg-tl-50 dark:bg-tl-900/20 rounded-lg p-2">
+                          <div className="text-xs text-tl-600 dark:text-tl-400 mb-0.5">Gasolina 95</div>
+                          <div className="text-base font-bold text-tl-700 dark:text-tl-300">
                             {formatPrice(station.priceGasolina95E5)}
                           </div>
                         </div>
@@ -387,7 +387,7 @@ export default function GasolinerasCercaContent() {
                       {/* Extra meta */}
                       <div className="flex items-center gap-3 mt-2">
                         {station.is24h && (
-                          <span className="flex items-center gap-1 text-xs text-green-600">
+                          <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                             <Clock className="w-3 h-3" />
                             Abierta 24 h
                           </span>
@@ -397,7 +397,7 @@ export default function GasolinerasCercaContent() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="flex items-center gap-1 text-xs text-gray-500 hover:text-orange-600 transition-colors"
+                          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:text-orange-400 transition-colors"
                         >
                           <Navigation className="w-3 h-3" />
                           Cómo llegar
@@ -414,13 +414,13 @@ export default function GasolinerasCercaContent() {
         {/* No results */}
         {location && !isLoading && stations.length === 0 && data && (
           <div className="text-center py-16">
-            <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <Fuel className="w-7 h-7 text-gray-400" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               No se encontraron gasolineras
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               No hay estaciones con precio registrado en un radio de {radius} km.
             </p>
             <button
@@ -433,8 +433,8 @@ export default function GasolinerasCercaContent() {
         )}
 
         {/* Related links */}
-        <div className="mt-12 border-t border-gray-200 pt-8">
-          <h2 className="text-base font-semibold text-gray-700 mb-4">
+        <div className="mt-12 border-t border-gray-200 dark:border-gray-800 pt-8">
+          <h2 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-4">
             Buscar combustible en España
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -442,10 +442,10 @@ export default function GasolinerasCercaContent() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all group text-sm"
+                className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group text-sm"
               >
                 <Fuel className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                <span className="text-gray-700 group-hover:text-orange-700 transition-colors line-clamp-1">
+                <span className="text-gray-700 dark:text-gray-300 group-hover:text-orange-700 dark:text-orange-400 transition-colors line-clamp-1">
                   {link.label}
                 </span>
               </Link>

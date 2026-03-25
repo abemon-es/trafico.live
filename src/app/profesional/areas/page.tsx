@@ -298,40 +298,40 @@ const AREAS_BY_ROUTE: { route: string; label: string; areas: RestArea[] }[] = [
 ];
 
 const SERVICE_ICONS: Record<string, { icon: React.ElementType; label: string; color: string }> = {
-  parking: { icon: Truck, label: "Parking camiones", color: "text-tl-600" },
-  fuel: { icon: Fuel, label: "Combustible", color: "text-tl-amber-600" },
-  restaurant: { icon: Utensils, label: "Restaurante", color: "text-green-600" },
-  coffee: { icon: Coffee, label: "Cafetería", color: "text-orange-600" },
+  parking: { icon: Truck, label: "Parking camiones", color: "text-tl-600 dark:text-tl-400" },
+  fuel: { icon: Fuel, label: "Combustible", color: "text-tl-amber-600 dark:text-tl-amber-400" },
+  restaurant: { icon: Utensils, label: "Restaurante", color: "text-green-600 dark:text-green-400" },
+  coffee: { icon: Coffee, label: "Cafetería", color: "text-orange-600 dark:text-orange-400" },
   shower: { icon: ShowerHead, label: "Duchas", color: "text-cyan-600" },
-  rest: { icon: Bed, label: "Área descanso", color: "text-purple-600" },
-  wifi: { icon: Wifi, label: "WiFi", color: "text-gray-600" },
-  logistics: { icon: Package, label: "Logística", color: "text-red-600" },
+  rest: { icon: Bed, label: "Área descanso", color: "text-purple-600 dark:text-purple-400" },
+  wifi: { icon: Wifi, label: "WiFi", color: "text-gray-600 dark:text-gray-400" },
+  logistics: { icon: Package, label: "Logística", color: "text-red-600 dark:text-red-400" },
 };
 
 const ROUTE_COLORS: Record<string, string> = {
-  "AP-7": "bg-tl-100 text-tl-700 border-tl-200",
-  "A-1": "bg-green-100 text-green-700 border-green-200",
-  "A-2": "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200",
-  "A-4": "bg-red-100 text-red-700 border-red-200",
-  "A-31": "bg-orange-100 text-orange-700 border-orange-200",
-  "A-6": "bg-purple-100 text-purple-700 border-purple-200",
+  "AP-7": "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
+  "A-1": "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
+  "A-2": "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
+  "A-4": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+  "A-31": "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
+  "A-6": "bg-purple-100 text-purple-700 dark:text-purple-400 border-purple-200",
   "AP-9": "bg-teal-100 text-teal-700 border-teal-200",
 };
 
 function getRouteColor(road: string) {
-  return ROUTE_COLORS[road] || "bg-gray-100 text-gray-700 border-gray-200";
+  return ROUTE_COLORS[road] || "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800";
 }
 
 export default function AreasPage() {
   const totalAreas = AREAS_BY_ROUTE.reduce((sum, g) => sum + g.areas.length, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back link */}
         <Link
           href="/profesional"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al portal profesional
@@ -340,14 +340,14 @@ export default function AreasPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-tl-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-tl-600" />
+            <div className="w-10 h-10 bg-tl-100 dark:bg-tl-900/30 rounded-lg flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Áreas de servicio para transportistas
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 {totalAreas} áreas en las principales autopistas y autovías de España
               </p>
             </div>
@@ -356,25 +356,25 @@ export default function AreasPage() {
 
         {/* Stats bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900 font-data">{totalAreas}</p>
-            <p className="text-xs text-gray-500 mt-1">Áreas registradas</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 text-center">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">{totalAreas}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Áreas registradas</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900 font-data">{AREAS_BY_ROUTE.length}</p>
-            <p className="text-xs text-gray-500 mt-1">Rutas cubiertas</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 text-center">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">{AREAS_BY_ROUTE.length}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Rutas cubiertas</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900 font-data">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 text-center">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
               {AREAS_BY_ROUTE.reduce(
                 (sum, g) => sum + g.areas.filter((a) => a.schedule === "24h").length,
                 0
               )}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Abiertas 24h</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Abiertas 24h</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900 font-data">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 text-center">
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
               {AREAS_BY_ROUTE.reduce(
                 (sum, g) =>
                   sum +
@@ -382,16 +382,16 @@ export default function AreasPage() {
                 0
               )}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Plazas camión aprox.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Plazas camión aprox.</p>
           </div>
         </div>
 
         {/* Service Legend */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-8">
-          <h2 className="font-medium text-gray-900 mb-3 text-sm">Leyenda de servicios</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 mb-8">
+          <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3 text-sm">Leyenda de servicios</h2>
           <div className="flex flex-wrap gap-4">
             {Object.entries(SERVICE_ICONS).map(([key, { icon: Icon, label, color }]) => (
-              <div key={key} className="flex items-center gap-2 text-sm text-gray-600">
+              <div key={key} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <Icon className={`w-4 h-4 ${color}`} />
                 <span>{label}</span>
               </div>
@@ -409,7 +409,7 @@ export default function AreasPage() {
                 >
                   {group.route}
                 </span>
-                <h2 className="text-lg font-semibold text-gray-900">{group.label}</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{group.label}</h2>
                 <span className="text-sm text-gray-400">
                   {group.areas.length} área{group.areas.length !== 1 ? "s" : ""}
                 </span>
@@ -419,12 +419,12 @@ export default function AreasPage() {
                 {group.areas.map((area) => (
                   <div
                     key={area.name}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-1">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 leading-snug">{area.name}</h3>
-                        <p className="text-sm text-gray-500 mt-0.5">
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100 leading-snug">{area.name}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                           <span
                             className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium mr-1 ${getRouteColor(area.road)}`}
                           >
@@ -433,21 +433,21 @@ export default function AreasPage() {
                           <span className="font-data">km {area.km}</span> &middot; {area.province}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 ml-3 flex-shrink-0">
+                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 ml-3 flex-shrink-0">
                         <Clock className="w-3.5 h-3.5" />
                         {area.schedule}
                       </div>
                     </div>
 
                     {area.truckParking && (
-                      <p className="text-xs text-tl-600 mt-1">
+                      <p className="text-xs text-tl-600 dark:text-tl-400 mt-1">
                         <Truck className="w-3 h-3 inline mr-1" />
                         ~<span className="font-data">{area.truckParking}</span> plazas para camiones
                       </p>
                     )}
 
                     {area.notes && (
-                      <p className="text-xs text-tl-amber-700 bg-tl-amber-50 rounded px-2 py-1 mt-2">
+                      <p className="text-xs text-tl-amber-700 dark:text-tl-amber-300 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded px-2 py-1 mt-2">
                         {area.notes}
                       </p>
                     )}
@@ -460,7 +460,7 @@ export default function AreasPage() {
                         return (
                           <span
                             key={service}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-600"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-900 rounded text-xs text-gray-600 dark:text-gray-400"
                           >
                             <Icon className={`w-3 h-3 ${serviceInfo.color}`} />
                             {serviceInfo.label}
@@ -476,25 +476,25 @@ export default function AreasPage() {
         </div>
 
         {/* Legal note */}
-        <div className="mt-10 bg-gray-100 rounded-xl p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-3">
+        <div className="mt-10 bg-gray-100 dark:bg-gray-900 rounded-xl p-6">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
             Consejos para el descanso reglamentario
           </h2>
-          <ul className="space-y-2 text-sm text-gray-600">
+          <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
               El reglamento CE 561/2006 exige una pausa de 45 min tras 4,5 h de conducción continua.
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
               El descanso diario mínimo es de 11 horas consecutivas (o reducido a 9 h máximo 3 veces por semana).
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
               Planifica las paradas con antelación en rutas con alto tráfico pesado (AP-7 en verano, A-2 permanente).
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
               Los datos de plazas son orientativos. Confirma disponibilidad contactando con el área o usando apps de parking.
             </li>
           </ul>

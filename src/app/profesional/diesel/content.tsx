@@ -99,12 +99,12 @@ export default function DieselContent() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back link */}
         <Link
           href="/profesional"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al portal profesional
@@ -114,13 +114,13 @@ export default function DieselContent() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-tl-amber-100 rounded-lg flex items-center justify-center">
-              <Fuel className="w-5 h-5 text-tl-amber-600" />
+              <Fuel className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Diésel más barato
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Gasolineras ordenadas por precio de diésel A
               </p>
             </div>
@@ -130,38 +130,38 @@ export default function DieselContent() {
         {/* Stats Cards */}
         {!isLoading && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <TrendingDown className="w-6 h-6 text-green-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900 font-data">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+              <TrendingDown className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                 {cheapestPrice ? `${cheapestPrice.toFixed(3)} €` : "-"}
               </p>
-              <p className="text-sm text-gray-500">Precio más bajo</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Precio más bajo</p>
             </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <Fuel className="w-6 h-6 text-tl-amber-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900 font-data">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+              <Fuel className="w-6 h-6 text-tl-amber-600 dark:text-tl-amber-400 mb-2" />
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                 {avgPrice ? `${avgPrice.toFixed(3)} €` : "-"}
               </p>
-              <p className="text-sm text-gray-500">Precio medio</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Precio medio</p>
             </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <MapPin className="w-6 h-6 text-tl-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900 font-data">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+              <MapPin className="w-6 h-6 text-tl-600 dark:text-tl-400 mb-2" />
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                 {filteredStations?.length || 0}
               </p>
-              <p className="text-sm text-gray-500">Gasolineras</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Gasolineras</p>
             </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <Truck className="w-6 h-6 text-gray-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900 font-data">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+              <Truck className="w-6 h-6 text-gray-600 dark:text-gray-400 mb-2" />
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
                 {cheapestPrice && avgPrice
                   ? `${((avgPrice - cheapestPrice) * 1000).toFixed(0)} €`
                   : "-"}
               </p>
-              <p className="text-sm text-gray-500">Ahorro/1000L</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Ahorro/1000L</p>
             </div>
           </div>
         )}
@@ -175,7 +175,7 @@ export default function DieselContent() {
               placeholder="Buscar por nombre o localidad..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-tl-amber-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-tl-amber-500 focus:border-transparent"
             />
           </div>
 
@@ -185,7 +185,7 @@ export default function DieselContent() {
               <select
                 value={provinceFilter}
                 onChange={(e) => setProvinceFilter(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-tl-amber-500"
+                className="border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-tl-amber-500"
               >
                 <option value="">Todas las provincias</option>
                 {(provinces as string[]).map((p) => (
@@ -204,7 +204,7 @@ export default function DieselContent() {
                 setSearchTerm("");
                 setProvinceFilter("");
               }}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
             >
               Limpiar filtros
             </button>
@@ -214,7 +214,7 @@ export default function DieselContent() {
         {/* Loading */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <div className="flex items-center gap-3 text-gray-500">
+            <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
               <Loader2 className="w-6 h-6 animate-spin" />
               <span>Buscando mejores precios...</span>
             </div>
@@ -224,7 +224,7 @@ export default function DieselContent() {
         {/* Results */}
         {!isLoading && filteredStations && (
           <>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {filteredStations.length} gasolineras ordenadas por precio
             </p>
 
@@ -232,19 +232,19 @@ export default function DieselContent() {
               {filteredStations.slice(0, 50).map((station, index) => (
                 <div
                   key={station.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-4">
                     {/* Rank badge */}
                     <div
                       className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-data ${
                         index === 0
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                           : index < 3
-                          ? "bg-green-50 text-green-600"
+                          ? "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400"
                           : index < 10
-                          ? "bg-tl-amber-50 text-tl-amber-600"
-                          : "bg-gray-100 text-gray-600"
+                          ? "bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-600 dark:text-tl-amber-400"
+                          : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       {index + 1}
@@ -254,19 +254,19 @@ export default function DieselContent() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4 mb-1">
                         <div>
-                          <h3 className="font-medium text-gray-900">{station.name}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-gray-100">{station.name}</h3>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-xl font-bold text-green-700 font-data">
+                          <p className="text-xl font-bold text-green-700 dark:text-green-400 font-data">
                             {station.priceGasoleoA?.toFixed(3)} €
                           </p>
                           <p className="text-xs text-gray-400">Diésel A</p>
                         </div>
                       </div>
 
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                         {station.address && <p>{station.address}</p>}
-                        <p className="text-gray-500">
+                        <p className="text-gray-500 dark:text-gray-400">
                           {station.locality}
                           {station.provinceName && `, ${station.provinceName}`}
                         </p>
@@ -280,7 +280,7 @@ export default function DieselContent() {
                           href={`https://www.google.com/maps?q=${station.latitude},${station.longitude}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-2 inline-flex items-center gap-1 text-xs text-tl-amber-600 hover:underline"
+                          className="mt-2 inline-flex items-center gap-1 text-xs text-tl-amber-600 dark:text-tl-amber-400 hover:underline"
                         >
                           <MapPin className="w-3 h-3" />
                           Ver en mapa
@@ -295,9 +295,9 @@ export default function DieselContent() {
 
             {filteredStations.length > 50 && (
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Mostrando 50 de {filteredStations.length} gasolineras.{" "}
-                  <Link href="/gasolineras" className="text-tl-amber-600 hover:underline">
+                  <Link href="/gasolineras" className="text-tl-amber-600 dark:text-tl-amber-400 hover:underline">
                     Ver todas
                   </Link>
                 </p>
@@ -309,13 +309,13 @@ export default function DieselContent() {
         {/* Empty state */}
         {!isLoading && filteredStations?.length === 0 && (
           <div className="text-center py-20">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <Fuel className="w-6 h-6 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               No se encontraron gasolineras
             </h3>
-            <p className="text-gray-500">Prueba a cambiar los filtros de búsqueda</p>
+            <p className="text-gray-500 dark:text-gray-400">Prueba a cambiar los filtros de búsqueda</p>
           </div>
         )}
 

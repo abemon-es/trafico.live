@@ -133,7 +133,7 @@ export function Header() {
                     flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                     ${
                       isActive
-                        ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                        ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                     }
                   `}
@@ -152,7 +152,7 @@ export function Header() {
                   flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                   ${
                     isMegaMenuActive || megaMenuOpen
-                      ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                      ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
                       : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                   }
                 `}
@@ -166,7 +166,7 @@ export function Header() {
                   <div className="grid grid-cols-2 gap-6">
                     {megaMenuCategories.map((category) => (
                       <div key={category.title}>
-                        <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
+                        <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           {category.title}
                         </h3>
                         <ul className="space-y-1">
@@ -182,7 +182,7 @@ export function Header() {
                                     flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
                                     ${
                                       isActive
-                                        ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                                        ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
                                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                                     }
                                   `}
@@ -213,7 +213,7 @@ export function Header() {
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline text-xs">Buscar</span>
-              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none">
+              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 dark:text-gray-400 leading-none">
                 ⌘K
               </kbd>
             </button>
@@ -253,7 +253,7 @@ export function Header() {
                       flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                       ${
                         isActive
-                          ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                          ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
                           : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                       }
                     `}
@@ -268,7 +268,7 @@ export function Header() {
               {megaMenuCategories.map((category) => (
                 <div key={category.title}>
                   <div className="my-2 border-t border-gray-200 dark:border-gray-800" />
-                  <p className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                  <p className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {category.title}
                   </p>
                   {category.items.map((item) => {
@@ -284,7 +284,7 @@ export function Header() {
                           flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                           ${
                             isActive
-                              ? "bg-tl-50 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
+                              ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:bg-tl-900/20 dark:text-tl-300"
                               : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                           }
                         `}

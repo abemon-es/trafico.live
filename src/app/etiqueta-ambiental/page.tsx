@@ -79,11 +79,11 @@ const LABELS = [
   {
     code: "ECO",
     name: "Distintivo ECO",
-    color: "bg-green-500",
-    textColor: "text-green-700",
-    bgLight: "bg-green-50",
+    color: "bg-green-50 dark:bg-green-900/200",
+    textColor: "text-green-700 dark:text-green-400",
+    bgLight: "bg-green-50 dark:bg-green-900/20",
     borderColor: "border-green-200",
-    dot: "bg-green-500",
+    dot: "bg-green-50 dark:bg-green-900/200",
     description:
       "Híbridos no enchufables, gas natural (GNC/GNL) y GLP. Menos contaminantes que los vehículos de combustión convencional.",
     vehicles: [
@@ -104,7 +104,7 @@ const LABELS = [
     code: "C",
     name: "Distintivo C",
     color: "bg-yellow-400",
-    textColor: "text-yellow-700",
+    textColor: "text-yellow-700 dark:text-yellow-400",
     bgLight: "bg-yellow-50",
     borderColor: "border-yellow-200",
     dot: "bg-yellow-400",
@@ -126,7 +126,7 @@ const LABELS = [
     code: "B",
     name: "Distintivo B",
     color: "bg-orange-400",
-    textColor: "text-orange-700",
+    textColor: "text-orange-700 dark:text-orange-400",
     bgLight: "bg-orange-50",
     borderColor: "border-orange-200",
     dot: "bg-orange-400",
@@ -147,9 +147,9 @@ const LABELS = [
     code: "Sin etiqueta",
     name: "Sin distintivo ambiental",
     color: "bg-gray-400",
-    textColor: "text-gray-700",
-    bgLight: "bg-gray-50",
-    borderColor: "border-gray-200",
+    textColor: "text-gray-700 dark:text-gray-300",
+    bgLight: "bg-gray-50 dark:bg-gray-950",
+    borderColor: "border-gray-200 dark:border-gray-800",
     dot: "bg-gray-400",
     description:
       "Vehículos más antiguos o más contaminantes. No cumplen los umbrales mínimos para obtener un distintivo.",
@@ -243,7 +243,7 @@ function LabelBadge({ code, color }: { code: string; color: string }) {
 function TableLabelBadge({ label }: { label: string }) {
   const map: Record<string, string> = {
     "0": "bg-teal-500",
-    ECO: "bg-green-500",
+    ECO: "bg-green-50 dark:bg-green-900/200",
     C: "bg-yellow-400",
     B: "bg-orange-400",
     "Sin etiqueta": "bg-gray-400",
@@ -298,7 +298,7 @@ export default function EtiquetaAmbientalPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -308,16 +308,16 @@ export default function EtiquetaAmbientalPage() {
           />
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="p-3 bg-green-50 rounded-lg flex-shrink-0">
-                <Leaf className="w-8 h-8 text-green-600" />
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg flex-shrink-0">
+                <Leaf className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Etiqueta Ambiental DGT: Consulta y Guía Completa {CURRENT_YEAR}
                 </h1>
-                <p className="text-gray-600 max-w-3xl leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
                   La <strong>etiqueta ambiental de la DGT</strong> (también llamada distintivo
                   ambiental) clasifica los vehículos según sus emisiones contaminantes. Determina si
                   tu vehículo puede circular por <strong>Zonas de Bajas Emisiones (ZBE)</strong> y
@@ -331,16 +331,16 @@ export default function EtiquetaAmbientalPage() {
 
           {/* How to check — 3 methods */}
           <section className="mb-8" aria-labelledby="heading-consulta">
-            <h2 id="heading-consulta" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-consulta" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Cómo consultar tu etiqueta ambiental
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white rounded-lg border border-tl-200 p-5">
-                <div className="p-2.5 bg-tl-50 rounded-lg w-fit mb-3">
-                  <FileText className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-200 dark:border-tl-800 p-5">
+                <div className="p-2.5 bg-tl-50 dark:bg-tl-900/20 rounded-lg w-fit mb-3">
+                  <FileText className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">1. Sede electrónica DGT</h3>
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">1. Sede electrónica DGT</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
                   Accede a{" "}
                   <strong>sede.dgt.gob.es</strong> e introduce tu matrícula en el apartado de
                   consulta de distintivo ambiental. Necesitarás identificarte con DNI electrónico o
@@ -350,19 +350,19 @@ export default function EtiquetaAmbientalPage() {
                   href="https://sede.dgt.gob.es/es/tramites-y-multas/vehiculos/distintivo-ambiental/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-tl-600 text-sm font-medium hover:underline"
+                  className="inline-flex items-center gap-1 text-tl-600 dark:text-tl-400 text-sm font-medium hover:underline"
                 >
                   Ir a la Sede DGT
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
 
-              <div className="bg-white rounded-lg border border-tl-200 p-5">
-                <div className="p-2.5 bg-tl-50 rounded-lg w-fit mb-3">
-                  <Smartphone className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-200 dark:border-tl-800 p-5">
+                <div className="p-2.5 bg-tl-50 dark:bg-tl-900/20 rounded-lg w-fit mb-3">
+                  <Smartphone className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">2. App miDGT</h3>
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">2. App miDGT</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
                   La app oficial <strong>miDGT</strong> (iOS y Android) te permite ver el distintivo
                   ambiental de tu vehículo, junto con el permiso de circulación digital y el
                   historial de ITV. Descárgala desde las tiendas oficiales de Apple o Google.
@@ -372,12 +372,12 @@ export default function EtiquetaAmbientalPage() {
                 </p>
               </div>
 
-              <div className="bg-white rounded-lg border border-tl-200 p-5">
-                <div className="p-2.5 bg-tl-50 rounded-lg w-fit mb-3">
-                  <Car className="w-5 h-5 text-tl-600" />
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-200 dark:border-tl-800 p-5">
+                <div className="p-2.5 bg-tl-50 dark:bg-tl-900/20 rounded-lg w-fit mb-3">
+                  <Car className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">3. Pegatina en el vehículo</h3>
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">3. Pegatina en el vehículo</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
                   Si tu vehículo ya tiene la pegatina en el parabrisas, el color y la letra te
                   indican directamente tu distintivo. La pegatina no es obligatoria pero sí
                   recomendable para facilitar controles visuales.
@@ -391,14 +391,14 @@ export default function EtiquetaAmbientalPage() {
 
           {/* The 5 labels explained */}
           <section className="mb-8" aria-labelledby="heading-labels">
-            <h2 id="heading-labels" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-labels" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Los 5 distintivos ambientales DGT
             </h2>
             <div className="space-y-4">
               {LABELS.map((label) => (
                 <div
                   key={label.code}
-                  className={`bg-white rounded-xl border ${label.borderColor} p-5`}
+                  className={`bg-white dark:bg-gray-900 rounded-xl border ${label.borderColor} p-5`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {/* Badge */}
@@ -410,19 +410,19 @@ export default function EtiquetaAmbientalPage() {
                       <h3 className={`font-bold text-lg mb-1 ${label.textColor}`}>
                         {label.name}
                       </h3>
-                      <p className="text-gray-700 text-sm mb-3 leading-relaxed">
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mb-3 leading-relaxed">
                         {label.description}
                       </p>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Vehicles */}
                         <div>
-                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                             Vehículos incluidos
                           </h4>
                           <ul className="space-y-1">
                             {label.vehicles.map((v) => (
-                              <li key={v} className="flex items-start gap-2 text-sm text-gray-700">
+                              <li key={v} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                                 <CheckCircle2
                                   className={`w-4 h-4 flex-shrink-0 mt-0.5 ${label.textColor}`}
                                 />
@@ -434,7 +434,7 @@ export default function EtiquetaAmbientalPage() {
 
                         {/* ZBE access + perks */}
                         <div>
-                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                             Acceso a ZBE
                           </h4>
                           <p className={`text-sm mb-3 font-medium ${label.textColor}`}>
@@ -442,12 +442,12 @@ export default function EtiquetaAmbientalPage() {
                           </p>
                           {label.perks.length > 0 && (
                             <>
-                              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                                 Ventajas adicionales
                               </h4>
                               <ul className="space-y-1">
                                 {label.perks.map((perk) => (
-                                  <li key={perk} className="flex items-start gap-2 text-sm text-gray-600">
+                                  <li key={perk} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
                                     <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${label.dot}`} />
                                     {perk}
                                   </li>
@@ -456,7 +456,7 @@ export default function EtiquetaAmbientalPage() {
                             </>
                           )}
                           {label.code === "Sin etiqueta" && (
-                            <div className="flex items-start gap-2 text-sm text-red-600">
+                            <div className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
                               <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                               <span>Sin acceso a ZBE ni ventajas asociadas</span>
                             </div>
@@ -472,34 +472,34 @@ export default function EtiquetaAmbientalPage() {
 
           {/* Classification table */}
           <section className="mb-8" aria-labelledby="heading-table">
-            <h2 id="heading-table" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-table" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Tabla: qué etiqueta corresponde según combustible y año
             </h2>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                         Combustible / tipo
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                         Norma Euro
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                         Años orientativos
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                         Etiqueta
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {VEHICLE_TABLE.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                        <td className="py-2.5 px-4 text-gray-800 font-medium">{row.fuel}</td>
-                        <td className="py-2.5 px-4 text-gray-600">{row.norm}</td>
-                        <td className="py-2.5 px-4 text-gray-600">{row.years}</td>
+                      <tr key={idx} className="hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                        <td className="py-2.5 px-4 text-gray-800 dark:text-gray-200 font-medium">{row.fuel}</td>
+                        <td className="py-2.5 px-4 text-gray-600 dark:text-gray-400">{row.norm}</td>
+                        <td className="py-2.5 px-4 text-gray-600 dark:text-gray-400">{row.years}</td>
                         <td className="py-2.5 px-4">
                           <TableLabelBadge label={row.label} />
                         </td>
@@ -508,7 +508,7 @@ export default function EtiquetaAmbientalPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="px-4 py-3 text-xs text-gray-400 border-t border-gray-100 bg-gray-50">
+              <p className="px-4 py-3 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
                 Los años son orientativos. La norma Euro exacta de tu vehículo consta en el permiso
                 de circulación (campo D.5). En caso de duda, consulta la Sede Electrónica de la DGT.
               </p>
@@ -517,13 +517,13 @@ export default function EtiquetaAmbientalPage() {
 
           {/* What each label allows/restricts in ZBE */}
           <section className="mb-8" aria-labelledby="heading-zbe-rules">
-            <h2 id="heading-zbe-rules" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-zbe-rules" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Qué permite y qué restringe cada etiqueta en las ZBE
             </h2>
 
-            <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-5 flex items-start gap-3">
-              <Info className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-tl-amber-700 leading-relaxed">
+            <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-5 flex items-start gap-3">
+              <Info className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 leading-relaxed">
                 Las ZBE se implementan de forma progresiva en España. Cada municipio establece sus
                 propias reglas dentro del marco de la{" "}
                 <strong>Ley de Cambio Climático y Transición Energética (Ley 7/2021)</strong>. Los
@@ -532,21 +532,21 @@ export default function EtiquetaAmbientalPage() {
               </p>
             </div>
 
-            <div className="overflow-x-auto bg-white rounded-xl border border-gray-200">
+            <div className="overflow-x-auto bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Etiqueta</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                  <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Etiqueta</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                       Sin contaminación
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                       Episodio leve
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                       Episodio alto
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                       Episodio muy alto
                     </th>
                   </tr>
@@ -561,40 +561,40 @@ export default function EtiquetaAmbientalPage() {
                     },
                     {
                       label: "ECO",
-                      color: "text-green-600 font-bold",
+                      color: "text-green-600 dark:text-green-400 font-bold",
                       cols: ["Libre", "Libre", "Restringido", "Restringido"],
                       icons: ["check", "check", "warn", "warn"],
                     },
                     {
                       label: "C",
-                      color: "text-yellow-600 font-bold",
+                      color: "text-yellow-600 dark:text-yellow-400 font-bold",
                       cols: ["Libre", "Libre", "Restringido", "Restringido"],
                       icons: ["check", "check", "warn", "warn"],
                     },
                     {
                       label: "B",
-                      color: "text-orange-600 font-bold",
+                      color: "text-orange-600 dark:text-orange-400 font-bold",
                       cols: ["Libre*", "Restringido", "No acceso", "No acceso"],
                       icons: ["check", "warn", "x", "x"],
                     },
                     {
                       label: "Sin etiqueta",
-                      color: "text-gray-600 font-bold",
+                      color: "text-gray-600 dark:text-gray-400 font-bold",
                       cols: ["No acceso", "No acceso", "No acceso", "No acceso"],
                       icons: ["x", "x", "x", "x"],
                     },
                   ].map((row) => (
-                    <tr key={row.label} className="hover:bg-gray-50 transition-colors">
+                    <tr key={row.label} className="hover:bg-gray-50 dark:bg-gray-950 transition-colors">
                       <td className={`py-3 px-4 ${row.color}`}>{row.label}</td>
                       {row.cols.map((col, i) => (
                         <td key={i} className="py-3 px-4">
                           <span
                             className={`inline-flex items-center gap-1 text-xs font-medium ${
                               row.icons[i] === "check"
-                                ? "text-green-700"
+                                ? "text-green-700 dark:text-green-400"
                                 : row.icons[i] === "warn"
-                                  ? "text-tl-amber-600"
-                                  : "text-red-600"
+                                  ? "text-tl-amber-600 dark:text-tl-amber-400"
+                                  : "text-red-600 dark:text-red-400"
                             }`}
                           >
                             {row.icons[i] === "check" ? (
@@ -612,7 +612,7 @@ export default function EtiquetaAmbientalPage() {
                   ))}
                 </tbody>
               </table>
-              <p className="px-4 py-3 text-xs text-gray-400 border-t border-gray-100 bg-gray-50">
+              <p className="px-4 py-3 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
                 * Libre en acceso pero con posibles restricciones de estacionamiento o velocidad.
                 Cada municipio determina su protocolo exacto.
               </p>
@@ -621,17 +621,17 @@ export default function EtiquetaAmbientalPage() {
 
           {/* Fines by city */}
           <section className="mb-8" aria-labelledby="heading-fines">
-            <h2 id="heading-fines" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-fines" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Multas por circular sin etiqueta en zonas restringidas
             </h2>
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-5 flex items-start gap-3">
-              <Ban className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4 mb-5 flex items-start gap-3">
+              <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-red-800 font-semibold mb-0.5">
                   Sanción base: 200 € (infracción leve)
                 </p>
-                <p className="text-sm text-red-700 leading-relaxed">
+                <p className="text-sm text-red-700 dark:text-red-400 leading-relaxed">
                   Reducción del 50 % (100 €) si se paga en los 20 días hábiles siguientes. No
                   conlleva retirada de puntos del carné de conducir.
                 </p>
@@ -642,13 +642,13 @@ export default function EtiquetaAmbientalPage() {
               {CITY_FINES.map((cf) => (
                 <div
                   key={cf.city}
-                  className="bg-white rounded-lg border border-gray-200 p-4 flex items-start gap-3"
+                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 flex items-start gap-3"
                 >
                   <MapPin className="w-4 h-4 text-tl-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{cf.city}</p>
-                    <p className="text-lg font-bold text-red-600">{cf.amount}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{cf.notes}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{cf.city}</p>
+                    <p className="text-lg font-bold text-red-600 dark:text-red-400">{cf.amount}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{cf.notes}</p>
                   </div>
                 </div>
               ))}
@@ -688,7 +688,7 @@ export default function EtiquetaAmbientalPage() {
 
           {/* ZBE city quick links */}
           <section className="mt-8 mb-8" aria-labelledby="heading-zbe-cities">
-            <h2 id="heading-zbe-cities" className="text-lg font-bold text-gray-900 mb-3">
+            <h2 id="heading-zbe-cities" className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
               Zonas de Bajas Emisiones por ciudad
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -707,7 +707,7 @@ export default function EtiquetaAmbientalPage() {
                 <Link
                   key={city.slug}
                   href={`/zbe/${city.slug}`}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-tl-300 hover:text-tl-600 hover:shadow-sm transition-all"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-600 dark:text-tl-400 hover:shadow-sm transition-all"
                 >
                   <Leaf className="w-3.5 h-3.5 text-green-500" />
                   ZBE {city.name}
@@ -719,17 +719,17 @@ export default function EtiquetaAmbientalPage() {
 
           {/* FAQ */}
           <section aria-labelledby="heading-faq" className="mt-2">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre la etiqueta ambiental DGT
             </h2>
             <div className="space-y-4">
               {FAQ_ITEMS.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{item.answer}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{item.question}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.answer}</p>
                 </div>
               ))}
             </div>

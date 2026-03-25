@@ -148,39 +148,39 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
   const provinceNames = road.provinces.map((p) => PROVINCE_NAMES[p] || p);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-gray-700">Inicio</Link>
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
           <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700">Carreteras</Link>
+          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
           <span className="mx-2">/</span>
-          <Link href={`/carreteras/${road.id}`} className="hover:text-gray-700">{road.id}</Link>
+          <Link href={`/carreteras/${road.id}`} className="hover:text-gray-700 dark:text-gray-300">{road.id}</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">Estadísticas</span>
+          <span className="text-gray-900 dark:text-gray-100">Estadísticas</span>
         </nav>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <TrendingUp className="w-8 h-8 text-green-600" />
+                <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     Estadísticas de {road.id}
                   </h1>
-                  {road.name && <p className="text-gray-600">{road.name}</p>}
+                  {road.name && <p className="text-gray-600 dark:text-gray-400">{road.name}</p>}
                 </div>
               </div>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
                 {typeLabel} que discurre por {provinceNames.join(", ")}
               </p>
             </div>
             <Link
               href={`/carreteras/${road.id}`}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver
@@ -190,78 +190,78 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
 
         {/* Main Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Camera className="w-5 h-5 text-tl-600" />
-              <span className="text-sm text-gray-600">Cámaras</span>
+              <Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Cámaras</span>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{cameras}</div>
-            <Link href={`/carreteras/${road.id}/camaras`} className="text-sm text-tl-600 hover:underline">
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{cameras}</div>
+            <Link href={`/carreteras/${road.id}/camaras`} className="text-sm text-tl-600 dark:text-tl-400 hover:underline">
               Ver todas →
             </Link>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Radar className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm text-gray-600">Radares</span>
+              <Radar className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Radares</span>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{radars}</div>
-            <Link href={`/carreteras/${road.id}/radares`} className="text-sm text-yellow-600 hover:underline">
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{radars}</div>
+            <Link href={`/carreteras/${road.id}/radares`} className="text-sm text-yellow-600 dark:text-yellow-400 hover:underline">
               Ver todos →
             </Link>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
-              <span className="text-sm text-gray-600">Incidencias activas</span>
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Incidencias activas</span>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{activeIncidents}</div>
-            <span className="text-sm text-gray-500">{totalIncidents} histórico total</span>
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{activeIncidents}</div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{totalIncidents} histórico total</span>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-5 h-5 text-orange-600" />
-              <span className="text-sm text-gray-600">Balizas V16 (30d)</span>
+              <Activity className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Balizas V16 (30d)</span>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{v16Events}</div>
-            <span className="text-sm text-gray-500">Emergencias recientes</span>
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{v16Events}</div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Emergencias recientes</span>
           </div>
         </div>
 
         {/* Secondary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-5 h-5 text-orange-600" />
-              <span className="text-sm text-gray-600">Zonas de riesgo</span>
+              <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Zonas de riesgo</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{riskZones}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{riskZones}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-5 h-5 text-green-600" />
-              <span className="text-sm text-gray-600">Cargadores EV cercanos</span>
+              <Zap className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Cargadores EV cercanos</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{chargers}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{chargers}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-purple-600" />
-              <span className="text-sm text-gray-600">Provincias</span>
+              <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Provincias</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{road.provinces.length}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{road.provinces.length}</div>
           </div>
         </div>
 
         {/* Radar Breakdown */}
         {radarBreakdown.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Tipos de radares</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Tipos de radares</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {radarBreakdown.map((item) => (
-                <div key={item.type} className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900">{item._count}</div>
-                  <div className="text-sm text-gray-600">
+                <div key={item.type} className="text-center p-4 bg-gray-50 dark:bg-gray-950 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{item._count}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     {item.type === "SECTION" ? "Tramo" : item.type === "FIXED" ? "Fijo" : item.type}
                   </div>
                 </div>
@@ -272,20 +272,20 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
 
         {/* Incident Types */}
         {incidentTypes.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Tipos de incidencias (histórico)</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Tipos de incidencias (histórico)</h2>
             <div className="space-y-3">
               {incidentTypes.map((item) => {
                 const percentage = totalIncidents > 0 ? (item._count / totalIncidents) * 100 : 0;
                 return (
                   <div key={item.type}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-700">{item.type.replace(/_/g, " ")}</span>
-                      <span className="text-sm font-medium text-gray-900">{item._count}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{item.type.replace(/_/g, " ")}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item._count}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-red-500 h-2 rounded-full"
+                        className="bg-red-50 dark:bg-red-900/200 h-2 rounded-full"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -298,36 +298,36 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
 
         {/* Recent Incidents */}
         {recentIncidents.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Incidencias recientes</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Incidencias recientes</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gray-50 dark:bg-gray-950 border-b">
                   <tr>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600">Fecha</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600">Tipo</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600 hidden md:table-cell">Ubicación</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-600">Estado</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Fecha</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Tipo</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400 hidden md:table-cell">Ubicación</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentIncidents.map((incident) => (
-                    <tr key={incident.id} className="border-b hover:bg-gray-50">
-                      <td className="py-2 px-3 text-gray-600">
+                    <tr key={incident.id} className="border-b hover:bg-gray-50 dark:bg-gray-950">
+                      <td className="py-2 px-3 text-gray-600 dark:text-gray-400">
                         {new Date(incident.startedAt).toLocaleDateString("es-ES")}
                       </td>
-                      <td className="py-2 px-3 text-gray-900">
+                      <td className="py-2 px-3 text-gray-900 dark:text-gray-100">
                         {incident.type.replace(/_/g, " ")}
                       </td>
-                      <td className="py-2 px-3 text-gray-600 hidden md:table-cell">
+                      <td className="py-2 px-3 text-gray-600 dark:text-gray-400 hidden md:table-cell">
                         {incident.kmPoint ? `km ${Number(incident.kmPoint).toFixed(0)}` : ""}
                         {incident.province && ` (${PROVINCE_NAMES[incident.province] || incident.province})`}
                       </td>
                       <td className="py-2 px-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                           incident.isActive
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-600"
+                            ? "bg-red-100 dark:bg-red-900/30 text-red-800"
+                            : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                         }`}>
                           {incident.isActive ? "Activa" : "Resuelta"}
                         </span>
@@ -341,8 +341,8 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
         )}
 
         {/* SEO Content */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Análisis de datos de la {road.id}
           </h2>
           <div className="prose prose-gray max-w-none">

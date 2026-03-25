@@ -57,30 +57,30 @@ function ComparisonBar({
   // Color based on percentile (lower = better/cheaper)
   const getBarColor = () => {
     if (percentile === null) return "bg-gray-200";
-    if (percentile <= 25) return "bg-green-500";
+    if (percentile <= 25) return "bg-green-50 dark:bg-green-900/200";
     if (percentile <= 50) return "bg-green-300";
     if (percentile <= 75) return "bg-yellow-400";
     return "bg-red-400";
   };
 
   const getTextColor = () => {
-    if (isBelow) return "text-green-600";
-    if (isAbove) return "text-red-600";
-    return "text-gray-600";
+    if (isBelow) return "text-green-600 dark:text-green-400";
+    if (isAbove) return "text-red-600 dark:text-red-400";
+    return "text-gray-600 dark:text-gray-400";
   };
 
   return (
     <div className="flex items-center gap-3">
-      <div className="w-24 text-xs text-gray-500 truncate">{label}</div>
+      <div className="w-24 text-xs text-gray-500 dark:text-gray-400 truncate">{label}</div>
       <div className="flex-1 flex items-center gap-2">
-        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
           <div
             className={`h-full ${getBarColor()} transition-all`}
             style={{ width: `${Math.min(100, 100 - (percentile || 50))}%` }}
           />
         </div>
         <div className="w-14 text-right">
-          <span className="text-xs font-medium text-gray-700 font-data">
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 font-data">
             {avgPrice.toFixed(3)}
           </span>
         </div>
@@ -109,10 +109,10 @@ function ComparisonBar({
 
 function FuelComparisonSection({ comparison }: { comparison: PriceComparison }) {
   const fuelColors: Record<string, { bg: string; text: string; border: string }> = {
-    gasoleoA: { bg: "bg-tl-amber-50", text: "text-tl-amber-700", border: "border-tl-amber-200" },
-    gasolina95: { bg: "bg-tl-50", text: "text-tl-700", border: "border-tl-200" },
-    gasolina98: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
-    glp: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
+    gasoleoA: { bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20", text: "text-tl-amber-700 dark:text-tl-amber-300", border: "border-tl-amber-200 dark:border-tl-amber-800" },
+    gasolina95: { bg: "bg-tl-50 dark:bg-tl-900/20", text: "text-tl-700 dark:text-tl-300", border: "border-tl-200 dark:border-tl-800" },
+    gasolina98: { bg: "bg-purple-50", text: "text-purple-700 dark:text-purple-400", border: "border-purple-200" },
+    glp: { bg: "bg-green-50 dark:bg-green-900/20", text: "text-green-700 dark:text-green-400", border: "border-green-200" },
   };
 
   const colors = fuelColors[comparison.fuelType] || fuelColors.gasoleoA;
@@ -153,14 +153,14 @@ function FuelComparisonSection({ comparison }: { comparison: PriceComparison }) 
       </div>
 
       {/* Percentile summary */}
-      <div className="mt-3 pt-3 border-t border-gray-200/50">
+      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800/50">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500">Posicion nacional:</span>
+          <span className="text-gray-500 dark:text-gray-400">Posicion nacional:</span>
           <span className={`font-medium font-data ${
-            comparison.nationalPercentile <= 25 ? "text-green-600" :
+            comparison.nationalPercentile <= 25 ? "text-green-600 dark:text-green-400" :
             comparison.nationalPercentile <= 50 ? "text-green-500" :
-            comparison.nationalPercentile <= 75 ? "text-yellow-600" :
-            "text-red-600"
+            comparison.nationalPercentile <= 75 ? "text-yellow-600 dark:text-yellow-400" :
+            "text-red-600 dark:text-red-400"
           }`}>
             Top {comparison.nationalPercentile}%
             {comparison.nationalPercentile <= 10 && " "}
@@ -207,8 +207,8 @@ export function PriceComparisonCard({ stationId, stationType = "terrestrial" }: 
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Comparativa de Precios</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Comparativa de Precios</h3>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
@@ -221,9 +221,9 @@ export function PriceComparisonCard({ stationId, stationType = "terrestrial" }: 
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="font-semibold text-gray-900 mb-4">Comparativa de Precios</h3>
-      <p className="text-sm text-gray-500 mb-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+      <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Comparativa de Precios</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
         Comparacion con la media del municipio, provincia y nacional.
         La barra indica tu posicion (mas llena = mas barato).
       </p>

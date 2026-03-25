@@ -63,28 +63,28 @@ const KEY_DATES = [
     role: "Inicio del puente",
     note: "Tarde-noche: primera oleada de salidas desde las grandes ciudades. Hora punta 16:00–21:00.",
     color: "border-orange-200 bg-orange-50",
-    badgeColor: "bg-orange-100 text-orange-700 border-orange-200",
+    badgeColor: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
   },
   {
     date: "Viernes 1 de mayo",
     role: "Festivo nacional",
     note: "Día del Trabajador. Jornada completa de desplazamientos. Mayor densidad en carreteras de costa.",
-    color: "border-red-200 bg-red-50",
-    badgeColor: "bg-red-100 text-red-700 border-red-200",
+    color: "border-red-200 bg-red-50 dark:bg-red-900/20",
+    badgeColor: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
   },
   {
     date: "Sábado 2 de mayo",
     role: "Puente largo",
     note: "Segundo día festivo en Madrid (Comunidad de Madrid). Doble festivo eleva el tráfico regional.",
-    color: "border-tl-amber-200 bg-tl-amber-50",
-    badgeColor: "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200",
+    color: "border-tl-amber-200 dark:border-tl-amber-800 bg-tl-amber-50 dark:bg-tl-amber-900/20",
+    badgeColor: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
   },
   {
     date: "Domingo 3 de mayo",
     role: "Operación retorno",
     note: "Retorno masivo. Pico esperado 16:00–22:00 en todos los ejes de acceso a las grandes ciudades.",
-    color: "border-tl-200 bg-tl-50",
-    badgeColor: "bg-tl-100 text-tl-700 border-tl-200",
+    color: "border-tl-200 dark:border-tl-800 bg-tl-50 dark:bg-tl-900/20",
+    badgeColor: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
   },
 ];
 
@@ -170,9 +170,9 @@ const MAIN_ROUTES = [
 ];
 
 const CONGESTION_COLOR: Record<string, string> = {
-  "muy alta": "bg-red-100 text-red-700 border-red-200",
-  alta: "bg-orange-100 text-orange-700 border-orange-200",
-  media: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+  alta: "bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-200",
+  media: "bg-yellow-100 text-yellow-700 dark:text-yellow-400 border-yellow-200",
 };
 
 const TIPS = [
@@ -274,7 +274,7 @@ export default async function PuenteMayo2026Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs
             items={[
@@ -287,24 +287,24 @@ export default async function PuenteMayo2026Page() {
           {/* ---------------------------------------------------------------- */}
           {/* HERO / H1                                                        */}
           {/* ---------------------------------------------------------------- */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-tl-50 rounded-lg flex-shrink-0">
-                <CalendarDays className="w-8 h-8 text-tl-600" />
+              <div className="p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                <CalendarDays className="w-8 h-8 text-tl-600 dark:text-tl-400" />
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold bg-tl-amber-100 text-tl-amber-700 border border-tl-amber-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="text-xs font-semibold bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                     Operación especial
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     30 abr – 3 may 2026
                   </span>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                   Tráfico Puente de Mayo 2026
                 </h1>
-                <p className="text-gray-600 max-w-3xl leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
                   Todo lo que necesitas saber para circular con seguridad en el
                   Puente del 1 de Mayo 2026: incidencias en tiempo real, fechas
                   clave, mejores y peores horas para viajar, rutas afectadas y
@@ -318,34 +318,34 @@ export default async function PuenteMayo2026Page() {
           {/* LIVE STATS STRIP                                                 */}
           {/* ---------------------------------------------------------------- */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-tl-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                <Activity className="w-5 h-5 text-tl-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                <Activity className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {incidents.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                   incidencias activas ahora
                 </p>
               </div>
               <Link
                 href="/incidencias"
-                className="ml-auto text-xs font-medium text-tl-600 hover:text-tl-700 flex items-center gap-1 flex-shrink-0"
+                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 flex-shrink-0"
               >
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="bg-white rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-tl-amber-50 rounded-lg flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-tl-amber-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {v16.toLocaleString("es-ES")}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                   balizas V16 activas
                 </p>
               </div>
@@ -358,7 +358,7 @@ export default async function PuenteMayo2026Page() {
           <section className="mb-8" aria-labelledby="heading-dates">
             <h2
               id="heading-dates"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Fechas clave: Puente del 1 de Mayo 2026
             </h2>
@@ -369,7 +369,7 @@ export default async function PuenteMayo2026Page() {
                   className={`rounded-lg border p-5 ${d.color}`}
                 >
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="font-semibold text-gray-900 text-sm">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
                       {d.date}
                     </span>
                     <span
@@ -378,7 +378,7 @@ export default async function PuenteMayo2026Page() {
                       {d.role}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     {d.note}
                   </p>
                 </div>
@@ -392,7 +392,7 @@ export default async function PuenteMayo2026Page() {
           <section className="mb-8" aria-labelledby="heading-hours">
             <h2
               id="heading-hours"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Mejores y peores horas para viajar en el Puente de Mayo 2026
             </h2>
@@ -401,8 +401,8 @@ export default async function PuenteMayo2026Page() {
               {/* Avoid */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Ban className="w-5 h-5 text-red-600" />
-                  <h3 className="font-semibold text-red-700">
+                  <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  <h3 className="font-semibold text-red-700 dark:text-red-400">
                     Franjas a evitar
                   </h3>
                 </div>
@@ -410,17 +410,17 @@ export default async function PuenteMayo2026Page() {
                   {AVOID_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white border border-red-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-red-100 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
-                        <span className="font-medium text-gray-900 text-sm">
+                        <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full border border-red-200">
+                        <span className="text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-200">
                           {slot.hours}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                         {slot.reason}
                       </p>
                     </div>
@@ -431,8 +431,8 @@ export default async function PuenteMayo2026Page() {
               {/* Recommended */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  <h3 className="font-semibold text-green-700">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <h3 className="font-semibold text-green-700 dark:text-green-400">
                     Franjas recomendadas
                   </h3>
                 </div>
@@ -440,17 +440,17 @@ export default async function PuenteMayo2026Page() {
                   {RECOMMENDED_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white border border-green-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-green-100 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
-                        <span className="font-medium text-gray-900 text-sm">
+                        <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">
+                        <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full border border-green-200">
                           {slot.hours}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                         {slot.reason}
                       </p>
                     </div>
@@ -459,7 +459,7 @@ export default async function PuenteMayo2026Page() {
 
                 <Link
                   href="/mejor-hora"
-                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 hover:text-tl-700 transition-colors"
+                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 transition-colors"
                 >
                   <Clock className="w-4 h-4" />
                   Calculadora: mejor hora para viajar
@@ -475,11 +475,11 @@ export default async function PuenteMayo2026Page() {
           <section className="mb-8" aria-labelledby="heading-routes">
             <h2
               id="heading-routes"
-              className="text-xl font-bold text-gray-900 mb-1"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1"
             >
               Rutas más afectadas en el Puente de Mayo 2026
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Principales ejes con mayor previsión de congestión. Consulta el
               estado en tiempo real antes de salir.
             </p>
@@ -488,12 +488,12 @@ export default async function PuenteMayo2026Page() {
                 <Link
                   key={route.id}
                   href={`/carreteras/${route.id}`}
-                  className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-tl-500 flex-shrink-0 group-hover:text-tl-700" />
-                      <span className="font-semibold text-gray-900 text-sm group-hover:text-tl-700 transition-colors">
+                      <MapPin className="w-4 h-4 text-tl-500 flex-shrink-0 group-hover:text-tl-700 dark:text-tl-300" />
+                      <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:text-tl-300 transition-colors">
                         {route.name}
                       </span>
                     </div>
@@ -505,7 +505,7 @@ export default async function PuenteMayo2026Page() {
                       {route.congestion}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                     {route.description}
                   </p>
                 </Link>
@@ -519,7 +519,7 @@ export default async function PuenteMayo2026Page() {
           <section className="mb-8" aria-labelledby="heading-tips">
             <h2
               id="heading-tips"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               4 consejos para el Puente de Mayo 2026
             </h2>
@@ -529,18 +529,18 @@ export default async function PuenteMayo2026Page() {
                 return (
                   <div
                     key={tip.title}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
-                        <Icon className="w-5 h-5 text-tl-600" />
+                      <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
+                        <Icon className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1 text-sm">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 text-sm">
                           <span className="text-tl-400 mr-1">{i + 1}.</span>
                           {tip.title}
                         </h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                           {tip.text}
                         </p>
                       </div>
@@ -554,10 +554,10 @@ export default async function PuenteMayo2026Page() {
           {/* ---------------------------------------------------------------- */}
           {/* FUEL CALLOUT                                                     */}
           {/* ---------------------------------------------------------------- */}
-          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-8">
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-8">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-tl-amber-100 rounded-lg flex-shrink-0">
-                <Fuel className="w-6 h-6 text-tl-amber-700" />
+                <Fuel className="w-6 h-6 text-tl-amber-700 dark:text-tl-amber-300" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-tl-amber-900 mb-1">
@@ -578,7 +578,7 @@ export default async function PuenteMayo2026Page() {
                   </Link>
                   <Link
                     href="/precio-diesel-hoy"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white text-tl-amber-700 border border-tl-amber-300 px-3 py-1.5 rounded-lg hover:bg-tl-amber-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white dark:bg-gray-900 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-300 px-3 py-1.5 rounded-lg hover:bg-tl-amber-50 dark:bg-tl-amber-900/20 transition-colors"
                   >
                     Precio diésel hoy
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -594,7 +594,7 @@ export default async function PuenteMayo2026Page() {
           <section className="mb-8" aria-labelledby="heading-quicklinks">
             <h2
               id="heading-quicklinks"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Herramientas en tiempo real para el puente
             </h2>
@@ -604,31 +604,31 @@ export default async function PuenteMayo2026Page() {
                   href: "/incidencias",
                   label: "Incidencias en vivo",
                   icon: AlertTriangle,
-                  color: "text-red-600",
-                  bg: "bg-red-50",
+                  color: "text-red-600 dark:text-red-400",
+                  bg: "bg-red-50 dark:bg-red-900/20",
                   border: "border-red-100",
                 },
                 {
                   href: "/camaras",
                   label: "Cámaras DGT",
                   icon: Camera,
-                  color: "text-tl-600",
-                  bg: "bg-tl-50",
+                  color: "text-tl-600 dark:text-tl-400",
+                  bg: "bg-tl-50 dark:bg-tl-900/20",
                   border: "border-tl-100",
                 },
                 {
                   href: "/mejor-hora",
                   label: "Mejor hora para viajar",
                   icon: Clock,
-                  color: "text-green-600",
-                  bg: "bg-green-50",
+                  color: "text-green-600 dark:text-green-400",
+                  bg: "bg-green-50 dark:bg-green-900/20",
                   border: "border-green-100",
                 },
                 {
                   href: "/calculadora",
                   label: "Calculadora de ruta",
                   icon: Navigation,
-                  color: "text-purple-600",
+                  color: "text-purple-600 dark:text-purple-400",
                   bg: "bg-purple-50",
                   border: "border-purple-100",
                 },
@@ -636,12 +636,12 @@ export default async function PuenteMayo2026Page() {
                 <Link
                   key={href}
                   href={href}
-                  className={`flex flex-col items-center gap-2 bg-white border ${border} rounded-xl p-4 text-center hover:shadow-md transition-all group`}
+                  className={`flex flex-col items-center gap-2 bg-white dark:bg-gray-900 border ${border} rounded-xl p-4 text-center hover:shadow-md transition-all group`}
                 >
                   <div className={`p-2.5 ${bg} rounded-lg`}>
                     <Icon className={`w-5 h-5 ${color}`} />
                   </div>
-                  <span className="text-xs font-medium text-gray-700 leading-snug group-hover:text-gray-900 transition-colors">
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-snug group-hover:text-gray-900 dark:text-gray-100 transition-colors">
                     {label}
                   </span>
                 </Link>
@@ -655,7 +655,7 @@ export default async function PuenteMayo2026Page() {
           <section className="mb-8" aria-labelledby="heading-faq">
             <h2
               id="heading-faq"
-              className="text-xl font-bold text-gray-900 mb-4"
+              className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4"
             >
               Preguntas frecuentes — Tráfico Puente de Mayo 2026
             </h2>
@@ -663,12 +663,12 @@ export default async function PuenteMayo2026Page() {
               {FAQ_ITEMS.map((item) => (
                 <div
                   key={item.question}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5"
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                     {item.question}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                     {item.answer}
                   </p>
                 </div>
@@ -679,28 +679,28 @@ export default async function PuenteMayo2026Page() {
           {/* ---------------------------------------------------------------- */}
           {/* RELATED LINKS                                                    */}
           {/* ---------------------------------------------------------------- */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-3 text-sm">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 text-sm">
               Otras operaciones especiales DGT 2026
             </h3>
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/semana-santa-2026"
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-tl-300 hover:text-tl-700 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors flex items-center gap-1.5"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 Semana Santa 2026
               </Link>
               <Link
                 href="/operaciones"
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-tl-300 hover:text-tl-700 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors flex items-center gap-1.5"
               >
                 <Lightbulb className="w-3.5 h-3.5" />
                 Todas las operaciones DGT
               </Link>
               <Link
                 href="/incidencias"
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-tl-300 hover:text-tl-700 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors flex items-center gap-1.5"
               >
                 <Activity className="w-3.5 h-3.5" />
                 Incidencias ahora

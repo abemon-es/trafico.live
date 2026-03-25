@@ -79,7 +79,7 @@ export default function TerritoryDetailContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-3 text-gray-500">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Cargando datos del territorio...</span>
         </div>
@@ -92,11 +92,11 @@ export default function TerritoryDetailContent() {
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {data?.success === false ? "Territorio no encontrado" : "Error al cargar datos"}
           </h2>
-          <p className="text-gray-500">No se pudieron cargar los datos del territorio</p>
-          <Link href="/explorar/territorios" className="mt-4 inline-block text-tl-600 hover:underline">
+          <p className="text-gray-500 dark:text-gray-400">No se pudieron cargar los datos del territorio</p>
+          <Link href="/explorar/territorios" className="mt-4 inline-block text-tl-600 dark:text-tl-400 hover:underline">
             Volver a territorios
           </Link>
         </div>
@@ -110,25 +110,25 @@ export default function TerritoryDetailContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-tl-600">
+      <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <Link href="/" className="hover:text-tl-600 dark:text-tl-400">
           <Home className="w-4 h-4" />
         </Link>
         <span>/</span>
-        <Link href="/explorar/territorios" className="hover:text-tl-600">
+        <Link href="/explorar/territorios" className="hover:text-tl-600 dark:text-tl-400">
           Territorios
         </Link>
         <span>/</span>
-        <span className="text-gray-900">{community.name}</span>
+        <span className="text-gray-900 dark:text-gray-100">{community.name}</span>
       </nav>
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{community.name}</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{community.name}</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
           Estado del tráfico en tiempo real en {community.name}.
           {community.isExcluded && (
-            <span className="ml-2 text-tl-amber-600">
+            <span className="ml-2 text-tl-amber-600 dark:text-tl-amber-400">
               (Esta comunidad tiene sistema de tráfico propio)
             </span>
           )}
@@ -137,7 +137,7 @@ export default function TerritoryDetailContent() {
 
       {/* Excluded Warning */}
       {community.isExcluded && community.excludedReason && (
-        <div className="mb-6 bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4">
+        <div className="mb-6 bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4">
           <p className="text-tl-amber-800">
             <strong>Nota:</strong> {community.excludedReason}
           </p>
@@ -147,72 +147,72 @@ export default function TerritoryDetailContent() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {/* Real-time incidents */}
-        <div className="bg-tl-amber-50 rounded-lg shadow-sm border border-tl-amber-200 p-4">
+        <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg shadow-sm border border-tl-amber-200 dark:border-tl-amber-800 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-tl-amber-100 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-tl-amber-600" />
+              <AlertCircle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-tl-amber-700">
+          <p className="text-2xl font-bold text-tl-amber-700 dark:text-tl-amber-300">
             {stats.activeIncidents || 0}
           </p>
-          <p className="text-sm text-tl-amber-600">Incidencias activas</p>
+          <p className="text-sm text-tl-amber-600 dark:text-tl-amber-400">Incidencias activas</p>
         </div>
         {/* V16 beacons */}
         <div className="bg-orange-50 rounded-lg shadow-sm border border-orange-200 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-orange-100 rounded-lg">
-              <Radio className="w-5 h-5 text-orange-600" />
+              <Radio className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-orange-700">
+          <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">
             {stats.activeV16 || 0}
           </p>
-          <p className="text-sm text-orange-600">Balizas V16</p>
+          <p className="text-sm text-orange-600 dark:text-orange-400">Balizas V16</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-tl-50 rounded-lg">
-              <MapPin className="w-5 h-5 text-tl-600" />
+            <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+              <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{community.provinces.length}</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{community.provinces.length}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Provincia{community.provinces.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-purple-50 rounded-lg">
-              <Users className="w-5 h-5 text-purple-600" />
+              <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {(totalPopulation / 1000000).toFixed(1)}M
           </p>
-          <p className="text-sm text-gray-500">Población</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Población</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-tl-50 rounded-lg">
-              <Camera className="w-5 h-5 text-tl-600" />
+            <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
+              <Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {camerasData?.count || "-"}
           </p>
-          <p className="text-sm text-gray-500">Cámaras</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Cámaras</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-red-50 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
+            <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {stats.totalAccidents.toLocaleString("es-ES")}
           </p>
-          <p className="text-sm text-gray-500">Accidentes (2023)</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Accidentes (2023)</p>
         </div>
       </div>
 
@@ -229,7 +229,7 @@ export default function TerritoryDetailContent() {
 
       {/* Provinces List */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
           Provincias de {community.name}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -237,14 +237,14 @@ export default function TerritoryDetailContent() {
             <Link
               key={province.code}
               href={`/explorar/territorios/${community.slug}/${province.slug}`}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+              className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-tl-600">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400">
                     {province.name}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {province.population
                       ? `${(province.population / 1000).toFixed(0)}k habitantes`
                       : "Sin datos de población"}
@@ -259,7 +259,7 @@ export default function TerritoryDetailContent() {
                     {province.municipalities.slice(0, 3).map((m) => (
                       <span
                         key={m.code}
-                        className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                        className="text-xs bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded"
                       >
                         {m.name}
                       </span>
@@ -276,7 +276,7 @@ export default function TerritoryDetailContent() {
       <div className="mt-8">
         <Link
           href="/explorar/territorios"
-          className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
+          className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
         >
           Volver a territorios
         </Link>

@@ -181,29 +181,29 @@ export default async function Gasolineras24hPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Breadcrumbs */}
-          <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 mb-6 flex-wrap">
-            <Link href="/" className="hover:text-gray-700 transition-colors">Inicio</Link>
+          <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6 flex-wrap">
+            <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/gasolineras" className="hover:text-gray-700 transition-colors">Combustible</Link>
+            <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Combustible</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-gray-900 font-medium">Gasolineras 24 horas</span>
+            <span className="text-gray-900 dark:text-gray-100 font-medium">Gasolineras 24 horas</span>
           </nav>
 
           {/* Header */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-orange-50 rounded-lg flex-shrink-0">
-                <Clock className="w-8 h-8 text-orange-600" />
+                <Clock className="w-8 h-8 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Gasolineras Abiertas 24 Horas en España
                 </h1>
-                <p className="text-gray-600 leading-relaxed max-w-xl">
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed max-w-xl">
                   Directorio de estaciones de servicio con horario ininterrumpido en España.
                   Descubre cuántas hay por provincia y cuáles ofrecen el gasóleo más barato.
                 </p>
@@ -213,47 +213,47 @@ export default async function Gasolineras24hPage() {
 
           {/* Total counter */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-xl border border-orange-200 p-5 text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-1">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-orange-200 p-5 text-center">
+              <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 mb-1">
                 {total24h.toLocaleString("es-ES")}
               </div>
-              <p className="text-sm text-gray-600">gasolineras 24h en España</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">gasolineras 24h en España</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
-              <div className="text-4xl font-bold text-gray-700 mb-1">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 text-center">
+              <div className="text-4xl font-bold text-gray-700 dark:text-gray-300 mb-1">
                 {byProvince.length}
               </div>
-              <p className="text-sm text-gray-600">provincias con cobertura</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">provincias con cobertura</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
-              <div className="text-4xl font-bold text-gray-700 mb-1">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 text-center">
+              <div className="text-4xl font-bold text-gray-700 dark:text-gray-300 mb-1">
                 {cheapest24h[0]
                   ? formatPrice(cheapest24h[0].priceGasoleoA)
                   : "N/D"}
               </div>
-              <p className="text-sm text-gray-600">gasóleo más barato (24h)</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">gasóleo más barato (24h)</p>
             </div>
           </div>
 
           {/* Province breakdown */}
           <section className="mb-8" aria-labelledby="heading-provincias">
             <div className="flex items-center justify-between mb-4">
-              <h2 id="heading-provincias" className="text-xl font-bold text-gray-900">
+              <h2 id="heading-provincias" className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 Gasolineras 24h por provincia
               </h2>
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                 <BarChart3 className="w-3.5 h-3.5" />
                 <span>Ordenadas por número</span>
               </div>
             </div>
 
             {byProvince.length === 0 ? (
-              <div className="flex items-center gap-2 text-gray-500 p-6 bg-white rounded-xl border border-gray-200">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm">No se encontraron datos por provincia en este momento.</span>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                 {/* Top 10 with visual bars */}
                 <div className="divide-y divide-gray-100">
                   {byProvince.slice(0, 52).map((row, idx) => {
@@ -269,19 +269,19 @@ export default async function Gasolineras24hPage() {
                           isTop ? "bg-orange-50" : ""
                         }`}
                       >
-                        <span className={`text-sm font-medium w-5 text-right flex-shrink-0 ${isTop ? "text-orange-700" : "text-gray-400"}`}>
+                        <span className={`text-sm font-medium w-5 text-right flex-shrink-0 ${isTop ? "text-orange-700 dark:text-orange-400" : "text-gray-400"}`}>
                           {idx + 1}
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-medium text-gray-900 truncate">
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                               {row.provinceName ?? row.province ?? "Desconocida"}
                             </span>
-                            <span className={`text-sm font-bold ml-2 flex-shrink-0 ${isTop ? "text-orange-700" : "text-gray-700"}`}>
+                            <span className={`text-sm font-bold ml-2 flex-shrink-0 ${isTop ? "text-orange-700 dark:text-orange-400" : "text-gray-700 dark:text-gray-300"}`}>
                               {count.toLocaleString("es-ES")}
                             </span>
                           </div>
-                          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${isTop ? "bg-orange-500" : "bg-gray-300"}`}
                               style={{ width: `${pct}%` }}
@@ -293,7 +293,7 @@ export default async function Gasolineras24hPage() {
                   })}
                 </div>
                 {byProvince.length > 52 && (
-                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 text-center">
+                  <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400 text-center">
                     Mostrando las {Math.min(byProvince.length, 52)} provincias con datos disponibles
                   </div>
                 )}
@@ -303,15 +303,15 @@ export default async function Gasolineras24hPage() {
 
           {/* Top 10 cheapest 24h (diesel) */}
           <section className="mb-8" aria-labelledby="heading-cheapest">
-            <h2 id="heading-cheapest" className="text-xl font-bold text-gray-900 mb-1">
+            <h2 id="heading-cheapest" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
               Las 10 gasolineras 24h más baratas en gasóleo A
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Ranking en tiempo real — actualizado el {now.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}.
             </p>
 
             {cheapest24h.length === 0 ? (
-              <div className="flex items-center gap-2 text-gray-500 p-6 bg-white rounded-xl border border-gray-200">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm">No se encontraron datos de precios para gasolineras 24h en este momento.</span>
               </div>
@@ -321,7 +321,7 @@ export default async function Gasolineras24hPage() {
                   <Link
                     key={station.id}
                     href={`/gasolineras/terrestres/${station.id}`}
-                    className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all group"
+                    className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span
@@ -332,16 +332,16 @@ export default async function Gasolineras24hPage() {
                             ? "bg-orange-400 text-white"
                             : idx === 2
                             ? "bg-orange-300 text-white"
-                            : "bg-gray-100 text-gray-600"
+                            : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                         }`}
                       >
                         {idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <div className="font-semibold text-gray-900 text-sm group-hover:text-orange-700 transition-colors truncate">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-orange-700 dark:text-orange-400 transition-colors truncate">
                           {station.name}
                         </div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 truncate">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5 truncate">
                           <MapPin className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">
                             {station.locality ?? station.provinceName ?? "España"}
@@ -351,16 +351,16 @@ export default async function Gasolineras24hPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded font-medium">
+                      <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 text-xs rounded font-medium">
                         <Clock className="w-3 h-3" />
                         24h
                       </span>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-orange-700 font-mono">
+                        <div className="text-lg font-bold text-orange-700 dark:text-orange-400 font-mono">
                           {formatPrice(station.priceGasoleoA)}
                         </div>
                         {station.priceGasolina95E5 && (
-                          <div className="text-xs text-gray-500 font-mono">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                             95: {formatPrice(station.priceGasolina95E5)}
                           </div>
                         )}
@@ -379,13 +379,13 @@ export default async function Gasolineras24hPage() {
               className="flex items-center gap-4 p-5 bg-gradient-to-r from-orange-50 to-tl-amber-50 rounded-xl border border-orange-200 hover:border-orange-300 hover:shadow-sm transition-all group"
             >
               <div className="p-3 bg-orange-100 rounded-lg flex-shrink-0">
-                <MapPin className="w-6 h-6 text-orange-600" />
+                <MapPin className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 group-hover:text-orange-700 transition-colors">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-700 dark:text-orange-400 transition-colors">
                   Ver todas las gasolineras 24h en el mapa
                 </h3>
-                <p className="text-sm text-gray-600 mt-0.5">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
                   Filtra por tu ubicación y encuentra la más cercana que esté abierta ahora.
                 </p>
               </div>
@@ -394,12 +394,12 @@ export default async function Gasolineras24hPage() {
           </div>
 
           {/* Informative section */}
-          <section className="mb-8 bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Info className="w-5 h-5 text-tl-600" />
+          <section className="mb-8 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+              <Info className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               ¿Qué gasolineras abren 24 horas?
             </h2>
-            <div className="prose prose-sm text-gray-600 max-w-none space-y-3">
+            <div className="prose prose-sm text-gray-600 dark:text-gray-400 max-w-none space-y-3">
               <p>
                 Las gasolineras con horario 24 horas son aquellas que permanecen abiertas todos los días del año, incluyendo festivos nacionales, domingos y Navidad. En España, suelen ser estaciones de grandes redes como <strong>Repsol, Cepsa, BP, Galp o Shell</strong> ubicadas en autopistas, circunvalaciones o áreas de servicio de alta afluencia.
               </p>
@@ -414,38 +414,38 @@ export default async function Gasolineras24hPage() {
 
           {/* FAQ */}
           <section className="mb-8" aria-labelledby="heading-faq">
-            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 mb-4">
+            <h2 id="heading-faq" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Preguntas frecuentes sobre gasolineras 24 horas
             </h2>
             <div className="space-y-3">
-              <details className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
-                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 transition-colors select-none">
+              <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
+                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none">
                   ¿Cuántas gasolineras hay abiertas 24 horas en España?
                   <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2 transition-transform group-open:rotate-90" />
                 </summary>
-                <div className="px-5 py-4 text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                   Actualmente hay <strong>{total24h.toLocaleString("es-ES")} gasolineras con horario 24 horas</strong> registradas en España según los datos oficiales del Ministerio para la Transición Ecológica. La provincia con mayor número de gasolineras 24h es{" "}
                   {byProvince[0]?.provinceName ?? byProvince[0]?.province ?? "datos no disponibles"}, con{" "}
                   {byProvince[0]?._count.province.toLocaleString("es-ES") ?? "–"} estaciones. La cifra varía a lo largo del año ya que algunas estaciones modifican sus horarios de forma estacional.
                 </div>
               </details>
 
-              <details className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
-                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 transition-colors select-none">
+              <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
+                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none">
                   ¿Cómo sé si una gasolinera concreta está abierta las 24 horas?
                   <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2 transition-transform group-open:rotate-90" />
                 </summary>
-                <div className="px-5 py-4 text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                   En trafico.live puedes consultar el horario de cada gasolinera en su ficha individual (accesible desde el mapa o desde las listas). Las estaciones con horario 24h aparecen identificadas con la etiqueta naranja &ldquo;24h&rdquo;. Los datos provienen de la API oficial del Ministerio de Transición Ecológica y se actualizan regularmente. También puedes usar el filtro del mapa para mostrar solo gasolineras 24h.
                 </div>
               </details>
 
-              <details className="bg-white border border-gray-200 rounded-xl overflow-hidden group">
-                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50 transition-colors select-none">
+              <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
+                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none">
                   ¿Las gasolineras 24 horas son más caras que las de horario normal?
                   <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2 transition-transform group-open:rotate-90" />
                 </summary>
-                <div className="px-5 py-4 text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+                <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                   No necesariamente. Aunque las gasolineras 24h suelen pertenecer a grandes cadenas que en ocasiones tienen precios algo superiores a las estaciones independientes, el ranking de las más baratas con horario 24h demuestra que también existen estaciones con precios muy competitivos entre las que abren todo el día. Te recomendamos comparar siempre el precio antes de repostar, especialmente si el trayecto pasa cerca de varias opciones.
                   {cheapest24h[0] && (
                     <>
@@ -460,47 +460,47 @@ export default async function Gasolineras24hPage() {
           </section>
 
           {/* Related links */}
-          <nav aria-label="Páginas relacionadas" className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">También te puede interesar</h3>
+          <nav aria-label="Páginas relacionadas" className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 mb-6">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">También te puede interesar</h3>
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/precio-diesel-hoy"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 <Fuel className="w-3.5 h-3.5" />
                 Precio diesel hoy
               </Link>
               <Link
                 href="/precio-gasolina-hoy"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 <Fuel className="w-3.5 h-3.5" />
                 Precio gasolina hoy
               </Link>
               <Link
                 href="/gasolineras/baratas"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
                 Gasolineras baratas
               </Link>
               <Link
                 href="/gasolineras/mapa"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 <MapPin className="w-3.5 h-3.5" />
                 Mapa gasolineras
               </Link>
               <Link
                 href="/carga-ev"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 Carga eléctrica EV
               </Link>
               <Link
                 href="/calculadora"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
                 Calculadora de viaje
@@ -509,18 +509,18 @@ export default async function Gasolineras24hPage() {
           </nav>
 
           {/* Data source */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="font-medium text-gray-900 mb-1 text-sm">Fuente de datos</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1 text-sm">Fuente de datos</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   Los datos de horarios y precios de gasolineras se actualizan regularmente desde la API oficial del{" "}
                   <a
                     href="https://geoportalgasolineras.es/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-tl-600 hover:underline inline-flex items-center gap-0.5"
+                    className="text-tl-600 dark:text-tl-400 hover:underline inline-flex items-center gap-0.5"
                   >
                     Geoportal Gasolineras
                     <ExternalLink className="w-3 h-3" />

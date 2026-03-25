@@ -78,20 +78,20 @@ const CATEGORY_META: Record<
 > = {
   herramienta: {
     label: "Herramientas",
-    badgeClass: "bg-purple-100 text-purple-700",
+    badgeClass: "bg-purple-100 text-purple-700 dark:text-purple-400",
   },
   combustible: {
     label: "Combustible",
-    badgeClass: "bg-tl-amber-100 text-tl-amber-700",
+    badgeClass: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300",
   },
-  ciudad: { label: "Ciudades", badgeClass: "bg-green-100 text-green-700" },
+  ciudad: { label: "Ciudades", badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" },
   provincia: {
     label: "Provincias",
-    badgeClass: "bg-tl-100 text-tl-700",
+    badgeClass: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   },
   carretera: {
     label: "Carreteras",
-    badgeClass: "bg-tl-100 text-tl-700",
+    badgeClass: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   },
 };
 
@@ -1136,12 +1136,12 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
       {/* Panel */}
       <div
-        className={`relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 ${
+        className={`relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 ${
           mounted ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
         }`}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <Search className="w-5 h-5 text-gray-400 shrink-0" />
           <input
             ref={inputRef}
@@ -1149,7 +1149,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar carreteras, ciudades, herramientas..."
-            className="flex-1 text-base text-gray-900 placeholder-gray-400 bg-transparent outline-none"
+            className="flex-1 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-transparent outline-none"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -1161,13 +1161,13 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 setQuery("");
                 inputRef.current?.focus();
               }}
-              className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900 transition-colors"
               aria-label="Borrar búsqueda"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-500">
+          <kbd className="hidden sm:inline-flex items-center gap-1 rounded border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 px-1.5 py-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
             Esc
           </kbd>
         </div>
@@ -1179,7 +1179,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
           role="listbox"
         >
           {flatResults.length === 0 ? (
-            <div className="py-12 text-center text-gray-500 text-sm">
+            <div className="py-12 text-center text-gray-500 dark:text-gray-400 text-sm">
               <Search className="w-8 h-8 mx-auto mb-3 text-gray-300" />
               <p>Sin resultados para &ldquo;{debouncedQuery}&rdquo;</p>
             </div>
@@ -1190,8 +1190,8 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 return (
                   <div key={category}>
                     {/* Category header */}
-                    <div className="px-4 py-1.5 bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-10">
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         {meta.label}
                       </span>
                     </div>
@@ -1211,16 +1211,16 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                           onMouseEnter={() => setActiveIndex(idx)}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                             isActive
-                              ? "bg-tl-50 text-tl-700"
-                              : "text-gray-700 hover:bg-gray-50"
+                              ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-950"
                           }`}
                         >
                           {/* Icon */}
                           <span
                             className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${
                               isActive
-                                ? "bg-tl-100 text-tl-600"
-                                : "bg-gray-100 text-gray-500"
+                                ? "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400"
+                                : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400"
                             }`}
                           >
                             <ResultIcon
@@ -1233,13 +1233,13 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                           <div className="flex-1 min-w-0">
                             <p
                               className={`text-sm font-medium truncate ${
-                                isActive ? "text-tl-700" : "text-gray-900"
+                                isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"
                               }`}
                             >
                               {result.title}
                             </p>
                             {result.subtitle && (
-                              <p className="text-xs text-gray-500 truncate">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                 {result.subtitle}
                               </p>
                             )}
@@ -1262,21 +1262,21 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 border-t border-gray-100 bg-gray-50 flex items-center gap-4 text-xs text-gray-400">
+        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 flex items-center gap-4 text-xs text-gray-400">
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-gray-200 bg-white px-1 py-0.5 font-mono text-[10px]">
+            <kbd className="rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-1 py-0.5 font-mono text-[10px]">
               ↑↓
             </kbd>
             navegar
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-gray-200 bg-white px-1 py-0.5 font-mono text-[10px]">
+            <kbd className="rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-1 py-0.5 font-mono text-[10px]">
               ↵
             </kbd>
             abrir
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-gray-200 bg-white px-1 py-0.5 font-mono text-[10px]">
+            <kbd className="rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-1 py-0.5 font-mono text-[10px]">
               Esc
             </kbd>
             cerrar

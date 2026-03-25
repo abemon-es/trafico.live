@@ -47,7 +47,7 @@ function RankBadge({ rank, total, percentile }: { rank: number; total: number; p
   }
   if (rank === 2) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-full text-xs font-semibold">
         <Medal className="w-3 h-3" />
         #2
       </span>
@@ -55,7 +55,7 @@ function RankBadge({ rank, total, percentile }: { rank: number; total: number; p
   }
   if (rank === 3) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 dark:text-orange-400 rounded-full text-xs font-semibold">
         <Award className="w-3 h-3" />
         #3
       </span>
@@ -65,7 +65,7 @@ function RankBadge({ rank, total, percentile }: { rank: number; total: number; p
   // Top 10% badge
   if (percentile <= 10) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 rounded-full text-xs font-semibold">
         <Trophy className="w-3 h-3" />
         Top 10%
       </span>
@@ -86,16 +86,16 @@ function RankingRow({ ranking }: { ranking: RankingData }) {
   const savingsPercent = ((savingsVsAvg / ranking.avgPrice) * 100).toFixed(1);
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-          <ScopeIcon className="w-4 h-4 text-gray-600" />
+        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+          <ScopeIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
         </div>
         <div>
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {scopeLabel}: {ranking.scopeName}
           </div>
-          <div className="text-xs text-gray-500 font-data">
+          <div className="text-xs text-gray-500 dark:text-gray-400 font-data">
             #{ranking.rank.toLocaleString("es-ES")} de {ranking.total.toLocaleString("es-ES")} gasolineras
           </div>
         </div>
@@ -103,17 +103,17 @@ function RankingRow({ ranking }: { ranking: RankingData }) {
 
       <div className="flex items-center gap-3">
         {savingsVsAvg > 0.005 && (
-          <div className="text-xs text-green-600 font-data">
+          <div className="text-xs text-green-600 dark:text-green-400 font-data">
             -{savingsPercent}% vs media
           </div>
         )}
         <RankBadge rank={ranking.rank} total={ranking.total} percentile={ranking.percentile} />
         {!RankBadge({ rank: ranking.rank, total: ranking.total, percentile: ranking.percentile }) && (
           <span className={`text-sm font-medium font-data ${
-            ranking.percentile <= 25 ? "text-green-600" :
+            ranking.percentile <= 25 ? "text-green-600 dark:text-green-400" :
             ranking.percentile <= 50 ? "text-green-500" :
-            ranking.percentile <= 75 ? "text-yellow-600" :
-            "text-red-600"
+            ranking.percentile <= 75 ? "text-yellow-600 dark:text-yellow-400" :
+            "text-red-600 dark:text-red-400"
           }`}>
             Top {ranking.percentile}%
           </span>
@@ -164,12 +164,12 @@ export function StationRanking({ stationId, stationType = "terrestrial", default
     : FUEL_OPTIONS;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Ranking de Precios</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Ranking de Precios</h3>
 
         {/* Fuel selector */}
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-900 rounded-lg p-1">
           {availableFuels.map((fuel) => (
             <button
               key={fuel.value}
@@ -177,8 +177,8 @@ export function StationRanking({ stationId, stationType = "terrestrial", default
               className={`
                 px-3 py-1 text-xs font-medium rounded-md transition-colors
                 ${selectedFuel === fuel.value
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
                 }
               `}
             >
@@ -193,16 +193,16 @@ export function StationRanking({ stationId, stationType = "terrestrial", default
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
       ) : error || !data ? (
-        <div className="text-center py-8 text-gray-500 text-sm">
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
           No hay datos de ranking disponibles para este combustible.
         </div>
       ) : (
         <div>
           {/* Current price highlight */}
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-950 rounded-lg">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">{data.fuelLabel}</span>
-              <span className="text-xl font-bold text-gray-900 font-data">
+              <span className="text-sm text-gray-600 dark:text-gray-400">{data.fuelLabel}</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-gray-100 font-data">
                 {data.rankings[0]?.price.toFixed(3)}
               </span>
             </div>
@@ -216,7 +216,7 @@ export function StationRanking({ stationId, stationType = "terrestrial", default
           </div>
 
           {/* Future: Historic ranking toggle */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
             <p className="text-xs text-gray-400 text-center">
               Ranking basado en precios actuales
             </p>

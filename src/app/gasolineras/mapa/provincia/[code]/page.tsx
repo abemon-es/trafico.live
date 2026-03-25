@@ -106,43 +106,43 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-gray-700">
+        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">
             Inicio
           </Link>
           <span className="mx-2">/</span>
-          <Link href="/gasolineras" className="hover:text-gray-700">
+          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">
             Gasolineras
           </Link>
           <span className="mx-2">/</span>
-          <Link href="/gasolineras/mapa" className="hover:text-gray-700">
+          <Link href="/gasolineras/mapa" className="hover:text-gray-700 dark:text-gray-300">
             Mapa
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">{provinceName}</span>
+          <span className="text-gray-900 dark:text-gray-100">{provinceName}</span>
         </nav>
 
         {/* Header */}
         <div className="mb-6">
           <Link
             href="/gasolineras/mapa"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-2"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-2"
           >
             <ChevronLeft className="w-4 h-4" />
             Volver al mapa nacional
           </Link>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
-              <Fuel className="w-8 h-8 text-orange-600" />
+              <Fuel className="w-8 h-8 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Gasolineras en {provinceName}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 {stationCount.toLocaleString("es-ES")} estaciones de servicio
               </p>
             </div>
@@ -151,27 +151,27 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Estaciones</div>
-            <div className="text-2xl font-bold text-orange-600">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Estaciones</div>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
               {stationCount.toLocaleString("es-ES")}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Gasóleo A (media)</div>
-            <div className="text-2xl font-bold text-tl-amber-600">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Gasóleo A (media)</div>
+            <div className="text-2xl font-bold text-tl-amber-600 dark:text-tl-amber-400">
               {avgDiesel ? `${avgDiesel.toFixed(3)}€` : "-"}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Gasolina 95 (media)</div>
-            <div className="text-2xl font-bold text-tl-600">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Gasolina 95 (media)</div>
+            <div className="text-2xl font-bold text-tl-600 dark:text-tl-400">
               {avgGas95 ? `${avgGas95.toFixed(3)}€` : "-"}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Más barata</div>
-            <div className="text-lg font-bold text-green-600">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Más barata</div>
+            <div className="text-lg font-bold text-green-600 dark:text-green-400">
               {cheapestDiesel ? `${cheapestDiesel.price.toFixed(3)}€` : "-"}
             </div>
           </div>
@@ -183,11 +183,11 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             {cheapestDiesel && (
               <Link
                 href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-                className="bg-tl-amber-50 rounded-lg border border-tl-amber-200 p-4 hover:bg-tl-amber-100 transition-colors"
+                className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-800 p-4 hover:bg-tl-amber-100 transition-colors"
               >
-                <div className="text-sm text-tl-amber-600 mb-1">Gasóleo A más barato</div>
-                <div className="font-semibold text-gray-900">{cheapestDiesel.name}</div>
-                <div className="text-xl font-bold text-tl-amber-700 mt-1">
+                <div className="text-sm text-tl-amber-600 dark:text-tl-amber-400 mb-1">Gasóleo A más barato</div>
+                <div className="font-semibold text-gray-900 dark:text-gray-100">{cheapestDiesel.name}</div>
+                <div className="text-xl font-bold text-tl-amber-700 dark:text-tl-amber-300 mt-1">
                   {cheapestDiesel.price.toFixed(3)}€
                 </div>
               </Link>
@@ -195,11 +195,11 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             {cheapestGas95 && (
               <Link
                 href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-                className="bg-tl-50 rounded-lg border border-tl-200 p-4 hover:bg-tl-100 transition-colors"
+                className="bg-tl-50 dark:bg-tl-900/20 rounded-lg border border-tl-200 dark:border-tl-800 p-4 hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
               >
-                <div className="text-sm text-tl-600 mb-1">Gasolina 95 más barata</div>
-                <div className="font-semibold text-gray-900">{cheapestGas95.name}</div>
-                <div className="text-xl font-bold text-tl-700 mt-1">
+                <div className="text-sm text-tl-600 dark:text-tl-400 mb-1">Gasolina 95 más barata</div>
+                <div className="font-semibold text-gray-900 dark:text-gray-100">{cheapestGas95.name}</div>
+                <div className="text-xl font-bold text-tl-700 dark:text-tl-300 mt-1">
                   {cheapestGas95.price.toFixed(3)}€
                 </div>
               </Link>
@@ -208,11 +208,11 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
         )}
 
         {/* Map */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden mb-6">
           <Suspense
             fallback={
-              <div className="h-[500px] bg-gray-100 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
+              <div className="h-[500px] bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-spin" />
               </div>
             }
           >
@@ -232,34 +232,34 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href={`/gasolineras/terrestres?province=${paddedCode}`}
-            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
           >
-            <List className="w-6 h-6 text-orange-600" />
+            <List className="w-6 h-6 text-orange-600 dark:text-orange-400" />
             <div>
-              <h3 className="font-semibold text-gray-900">Ver listado</h3>
-              <p className="text-sm text-gray-500">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Ver listado</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Todas las gasolineras de {provinceName}
               </p>
             </div>
           </Link>
           <Link
             href={`/gasolineras/precios/${paddedCode}`}
-            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
           >
-            <BarChart3 className="w-6 h-6 text-tl-600" />
+            <BarChart3 className="w-6 h-6 text-tl-600 dark:text-tl-400" />
             <div>
-              <h3 className="font-semibold text-gray-900">Precios</h3>
-              <p className="text-sm text-gray-500">Comparativa de precios en {provinceName}</p>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Precios</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Comparativa de precios en {provinceName}</p>
             </div>
           </Link>
           <Link
             href={`/provincias/${paddedCode}`}
-            className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+            className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
           >
-            <MapPin className="w-6 h-6 text-purple-600" />
+            <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             <div>
-              <h3 className="font-semibold text-gray-900">Provincia</h3>
-              <p className="text-sm text-gray-500">Tráfico y carreteras en {provinceName}</p>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Provincia</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Tráfico y carreteras en {provinceName}</p>
             </div>
           </Link>
         </div>

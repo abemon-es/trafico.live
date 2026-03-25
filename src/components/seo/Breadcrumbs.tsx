@@ -32,7 +32,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <nav aria-label="Breadcrumb" className="mb-4">
-        <ol className="flex flex-wrap items-center gap-1 text-sm text-gray-500">
+        <ol className="flex flex-wrap items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
           {items.map((item, index) => {
             const isLast = index === items.length - 1;
             return (
@@ -41,11 +41,11 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                   <ChevronRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                 )}
                 {isLast ? (
-                  <span className="font-semibold text-gray-900">{item.name}</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{item.name}</span>
                 ) : (
                   <Link
                     href={item.href}
-                    className="text-tl-600 hover:underline hover:text-tl-700 transition-colors"
+                    className="text-tl-600 dark:text-tl-400 hover:underline hover:text-tl-700 dark:text-tl-300 transition-colors"
                   >
                     {item.name}
                   </Link>

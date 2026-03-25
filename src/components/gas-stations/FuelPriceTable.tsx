@@ -112,9 +112,9 @@ export function FuelPriceTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-gray-50 border-b border-gray-200">
+          <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
             <th
-              className="px-4 py-3 text-left font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+              className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
               onClick={() => handleSort("name")}
             >
               <div className="flex items-center gap-1">
@@ -123,10 +123,10 @@ export function FuelPriceTable({
               </div>
             </th>
             {showRoad && (
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Carretera</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400">Carretera</th>
             )}
             <th
-              className="px-4 py-3 text-left font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+              className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
               onClick={() => handleSort("locality")}
             >
               <div className="flex items-center gap-1">
@@ -135,7 +135,7 @@ export function FuelPriceTable({
               </div>
             </th>
             <th
-              className="px-4 py-3 text-right font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
               onClick={() => handleSort("priceGasoleoA")}
             >
               <div className="flex items-center justify-end gap-1">
@@ -144,7 +144,7 @@ export function FuelPriceTable({
               </div>
             </th>
             <th
-              className="px-4 py-3 text-right font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
               onClick={() => handleSort("priceGasolina95E5")}
             >
               <div className="flex items-center justify-end gap-1">
@@ -153,7 +153,7 @@ export function FuelPriceTable({
               </div>
             </th>
             <th
-              className="px-4 py-3 text-right font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
               onClick={() => handleSort("priceGasolina98E5")}
             >
               <div className="flex items-center justify-end gap-1">
@@ -161,7 +161,7 @@ export function FuelPriceTable({
                 <SortIcon field="priceGasolina98E5" />
               </div>
             </th>
-            <th className="px-4 py-3 text-center font-medium text-gray-600">24h</th>
+            <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-400">24h</th>
           </tr>
         </thead>
         <tbody>
@@ -174,34 +174,34 @@ export function FuelPriceTable({
               <tr
                 key={station.id}
                 className={`
-                  border-b border-gray-100 hover:bg-gray-50
-                  ${isHighlighted ? "bg-green-50" : ""}
+                  border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950
+                  ${isHighlighted ? "bg-green-50 dark:bg-green-900/20" : ""}
                 `}
               >
                 <td className="px-4 py-3">
                   <Link
                     href={`/gasolineras/terrestres/${station.id}`}
-                    className="flex items-center gap-2 hover:text-tl-600"
+                    className="flex items-center gap-2 hover:text-tl-600 dark:text-tl-400"
                   >
                     <Fuel className="w-4 h-4 text-orange-500" />
                     <span className="font-medium">{station.name}</span>
                   </Link>
                 </td>
                 {showRoad && (
-                  <td className="px-4 py-3 text-tl-600">
+                  <td className="px-4 py-3 text-tl-600 dark:text-tl-400">
                     {station.nearestRoad}
                     {station.roadKm && (
                       <span className="text-gray-400 ml-1 font-data">km {station.roadKm}</span>
                     )}
                   </td>
                 )}
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                   {station.locality || station.municipality}
                 </td>
                 <td className="px-4 py-3 text-right">
                   {station.priceGasoleoA ? (
                     <span
-                      className={`font-data ${isCheapestDiesel ? "font-bold text-green-700" : ""}`}
+                      className={`font-data ${isCheapestDiesel ? "font-bold text-green-700 dark:text-green-400" : ""}`}
                     >
                       {station.priceGasoleoA.toFixed(3)}€
                     </span>
@@ -212,7 +212,7 @@ export function FuelPriceTable({
                 <td className="px-4 py-3 text-right">
                   {station.priceGasolina95E5 ? (
                     <span
-                      className={`font-data ${isCheapestGas95 ? "font-bold text-green-700" : ""}`}
+                      className={`font-data ${isCheapestGas95 ? "font-bold text-green-700 dark:text-green-400" : ""}`}
                     >
                       {station.priceGasolina95E5.toFixed(3)}€
                     </span>
@@ -229,7 +229,7 @@ export function FuelPriceTable({
                 </td>
                 <td className="px-4 py-3 text-center">
                   {station.is24h ? (
-                    <span className="inline-block w-5 h-5 bg-green-100 text-green-600 rounded-full text-xs leading-5">
+                    <span className="inline-block w-5 h-5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-xs leading-5">
                       ✓
                     </span>
                   ) : (
@@ -243,7 +243,7 @@ export function FuelPriceTable({
       </table>
 
       {sortedStations.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           No hay gasolineras disponibles
         </div>
       )}

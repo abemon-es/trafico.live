@@ -373,7 +373,7 @@ const BREADCRUMB_ITEMS = [
 
 export default function ApiDocsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Structured data */}
       <script
         type="application/ld+json"
@@ -394,15 +394,15 @@ export default function ApiDocsPage() {
               <Code2 className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
                 API de Datos de Tráfico
               </h1>
-              <p className="text-lg text-gray-600 mt-1">
+              <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">
                 Accede a datos de tráfico, combustible y más vía REST API
               </p>
             </div>
           </div>
-          <p className="text-gray-600 max-w-2xl leading-relaxed">
+          <p className="text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
             Integra en tus aplicaciones datos en tiempo real sobre incidencias, cámaras DGT,
             radares, precios de combustible, puntos de carga eléctrica, balizas V16 y zonas
             de bajas emisiones. Fuentes oficiales, actualizaciones continuas.
@@ -417,7 +417,7 @@ export default function ApiDocsPage() {
             </a>
             <Link
               href="/profesional"
-              className="inline-flex items-center gap-2 text-gray-700 border border-gray-300 font-medium px-5 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
+              className="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 font-medium px-5 py-2.5 rounded-lg hover:bg-gray-100 dark:bg-gray-900 transition-colors"
             >
               Ver portal profesional
               <ArrowRight className="w-4 h-4" />
@@ -435,10 +435,10 @@ export default function ApiDocsPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-white rounded-xl border border-gray-200 p-4 text-center"
+              className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-center"
             >
-              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-              <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -447,15 +447,15 @@ export default function ApiDocsPage() {
         <section aria-labelledby="auth-heading" className="mb-12">
           <h2
             id="auth-heading"
-            className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2"
+            className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
           >
-            <Shield className="w-5 h-5 text-gray-600" />
+            <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             Autenticación
           </h2>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-gray-700 text-sm mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+            <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
               Añade el header{" "}
-              <code className="bg-gray-100 text-gray-900 px-1.5 py-0.5 rounded text-xs font-mono">
+              <code className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">
                 X-API-Key
               </code>{" "}
               a cada petición con tu clave personal. Todas las peticiones deben realizarse
@@ -465,8 +465,8 @@ export default function ApiDocsPage() {
               <pre>{`curl -H "X-API-Key: tu-clave-aqui" \\
      https://trafico.live/api/incidents`}</pre>
             </div>
-            <div className="mt-4 flex items-start gap-3 bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4">
-              <Zap className="w-4 h-4 text-tl-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="mt-4 flex items-start gap-3 bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4">
+              <Zap className="w-4 h-4 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-tl-amber-800">
                 Las peticiones sin API key están limitadas a{" "}
                 <strong>10 peticiones por hora</strong> por IP. Para uso en producción,
@@ -480,20 +480,20 @@ export default function ApiDocsPage() {
         <section aria-labelledby="limits-heading" className="mb-12">
           <h2
             id="limits-heading"
-            className="text-xl font-semibold text-gray-900 mb-4"
+            className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4"
           >
             Límites de uso
           </h2>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-3 font-semibold text-gray-700">Plan</th>
-                  <th className="text-left px-6 py-3 font-semibold text-gray-700">
+                <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+                  <th className="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">Plan</th>
+                  <th className="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">
                     Peticiones
                   </th>
-                  <th className="text-left px-6 py-3 font-semibold text-gray-700">Precio</th>
-                  <th className="text-left px-6 py-3 font-semibold text-gray-700 hidden md:table-cell">
+                  <th className="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">Precio</th>
+                  <th className="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300 hidden md:table-cell">
                     Incluye
                   </th>
                 </tr>
@@ -502,11 +502,11 @@ export default function ApiDocsPage() {
                 {PRICING_PLANS.map((plan, i) => (
                   <tr
                     key={plan.name}
-                    className={`border-b border-gray-100 last:border-0 ${
-                      plan.highlight ? "bg-gray-50" : ""
+                    className={`border-b border-gray-100 dark:border-gray-800 last:border-0 ${
+                      plan.highlight ? "bg-gray-50 dark:bg-gray-950" : ""
                     }`}
                   >
-                    <td className="px-6 py-4 font-semibold text-gray-900">
+                    <td className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-100">
                       {plan.name}
                       {plan.highlight && (
                         <span className="ml-2 text-xs bg-gray-900 text-white px-2 py-0.5 rounded-full">
@@ -514,12 +514,12 @@ export default function ApiDocsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-gray-700">{plan.requests}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-900">
+                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{plan.requests}</td>
+                    <td className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-100">
                       {plan.price}
-                      <span className="text-gray-500 font-normal text-xs">{plan.period}</span>
+                      <span className="text-gray-500 dark:text-gray-400 font-normal text-xs">{plan.period}</span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 hidden md:table-cell">
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400 hidden md:table-cell">
                       {plan.features.slice(0, 2).join(" · ")}
                     </td>
                   </tr>
@@ -533,7 +533,7 @@ export default function ApiDocsPage() {
         <section aria-labelledby="endpoints-heading" className="mb-12">
           <h2
             id="endpoints-heading"
-            className="text-xl font-semibold text-gray-900 mb-6"
+            className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6"
           >
             Endpoints disponibles
           </h2>
@@ -541,19 +541,19 @@ export default function ApiDocsPage() {
             {ENDPOINTS.map((ep) => (
               <details
                 key={ep.path}
-                className="bg-white rounded-xl border border-gray-200 group"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 group"
               >
-                <summary className="flex items-center gap-3 px-6 py-4 cursor-pointer list-none select-none hover:bg-gray-50 rounded-xl transition-colors">
-                  <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded font-mono flex-shrink-0">
+                <summary className="flex items-center gap-3 px-6 py-4 cursor-pointer list-none select-none hover:bg-gray-50 dark:bg-gray-950 rounded-xl transition-colors">
+                  <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded font-mono flex-shrink-0">
                     {ep.method}
                   </span>
-                  <code className="text-sm font-mono text-gray-900 flex-1">{ep.path}</code>
+                  <code className="text-sm font-mono text-gray-900 dark:text-gray-100 flex-1">{ep.path}</code>
                   <ChevronDown className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180 flex-shrink-0" />
                 </summary>
-                <div className="px-6 pb-6 border-t border-gray-100">
-                  <p className="text-sm text-gray-600 mt-4 mb-4">{ep.description}</p>
+                <div className="px-6 pb-6 border-t border-gray-100 dark:border-gray-800">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 mb-4">{ep.description}</p>
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                       Ejemplo de respuesta
                     </span>
                     <span className="text-xs text-gray-400">
@@ -575,7 +575,7 @@ export default function ApiDocsPage() {
         <section aria-labelledby="precios-heading" className="mb-12">
           <h2
             id="precios-heading"
-            className="text-xl font-semibold text-gray-900 mb-6"
+            className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6"
           >
             Planes de acceso
           </h2>
@@ -586,7 +586,7 @@ export default function ApiDocsPage() {
                 className={`rounded-xl border p-6 ${
                   plan.highlight
                     ? "border-2 border-gray-900"
-                    : "border border-gray-200 bg-white"
+                    : "border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
                 }`}
               >
                 {plan.highlight && (
@@ -594,19 +594,19 @@ export default function ApiDocsPage() {
                     Más popular
                   </span>
                 )}
-                <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{plan.name}</h3>
                 <div className="mt-1 mb-4">
-                  <span className="text-3xl font-bold text-gray-900">{plan.price}</span>
-                  <span className="text-sm text-gray-500">{plan.period}</span>
+                  <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{plan.price}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{plan.period}</span>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   <strong>{plan.requests}</strong> peticiones
                 </p>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-center gap-2 text-sm text-gray-700"
+                      className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
                     >
                       <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                       {feature}
@@ -618,7 +618,7 @@ export default function ApiDocsPage() {
                   className={`block text-center text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors ${
                     plan.highlight
                       ? "bg-gray-900 text-white hover:bg-gray-700"
-                      : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      : "border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-950"
                   }`}
                 >
                   Solicitar API Key
@@ -632,7 +632,7 @@ export default function ApiDocsPage() {
         <section aria-labelledby="faq-heading" className="mb-12">
           <h2
             id="faq-heading"
-            className="text-xl font-semibold text-gray-900 mb-6"
+            className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6"
           >
             Preguntas frecuentes
           </h2>
@@ -640,14 +640,14 @@ export default function ApiDocsPage() {
             {faqSchema.mainEntity.map((q) => (
               <details
                 key={q.name}
-                className="bg-white rounded-xl border border-gray-200 group"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 group"
               >
-                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none select-none hover:bg-gray-50 rounded-xl transition-colors">
-                  <span className="font-medium text-gray-900 pr-4">{q.name}</span>
+                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none select-none hover:bg-gray-50 dark:bg-gray-950 rounded-xl transition-colors">
+                  <span className="font-medium text-gray-900 dark:text-gray-100 pr-4">{q.name}</span>
                   <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
-                <div className="px-6 pb-5 border-t border-gray-100">
-                  <p className="text-sm text-gray-600 mt-4 leading-relaxed">
+                <div className="px-6 pb-5 border-t border-gray-100 dark:border-gray-800">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">
                     {q.acceptedAnswer.text}
                   </p>
                 </div>
@@ -665,7 +665,7 @@ export default function ApiDocsPage() {
           </p>
           <a
             href="mailto:hola@trafico.live?subject=Solicitud de API Key"
-            className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 dark:bg-gray-900 transition-colors"
           >
             <Key className="w-4 h-4" />
             Solicitar API Key — hola@trafico.live

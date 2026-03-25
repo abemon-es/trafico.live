@@ -13,16 +13,16 @@ export const metadata: Metadata = {
 
 export default function AvisoLegalPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Aviso Legal</h1>
-        <p className="text-sm text-gray-500 mb-10">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Aviso Legal</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
           Última actualización: 25 de marzo de 2026
         </p>
 
-        <div className="prose prose-gray max-w-none space-y-8 text-gray-700 text-[15px] leading-relaxed">
+        <div className="prose prose-gray max-w-none space-y-8 text-gray-700 dark:text-gray-300 text-[15px] leading-relaxed">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               1. Identificación del titular
             </h2>
             <ul className="list-none pl-0 space-y-1">
@@ -51,7 +51,7 @@ export default function AvisoLegalPage() {
                 <strong>Contacto:</strong>{" "}
                 <a
                   href="mailto:legal@trafico.live"
-                  className="text-tl-600 hover:underline"
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
                 >
                   legal@trafico.live
                 </a>
@@ -60,7 +60,7 @@ export default function AvisoLegalPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               2. Objeto y ámbito de aplicación
             </h2>
             <p>
@@ -75,14 +75,14 @@ export default function AvisoLegalPage() {
               así como en la{" "}
               <Link
                 href="/politica-privacidad"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 Política de Privacidad
               </Link>{" "}
               y la{" "}
               <Link
                 href="/politica-cookies"
-                className="text-tl-600 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:underline"
               >
                 Política de Cookies
               </Link>
@@ -91,7 +91,7 @@ export default function AvisoLegalPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               3. Propiedad intelectual e industrial
             </h2>
             <p>
@@ -110,7 +110,7 @@ export default function AvisoLegalPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               4. Condiciones de uso
             </h2>
             <p>El usuario se compromete a:</p>
@@ -135,7 +135,7 @@ export default function AvisoLegalPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               5. Limitación de responsabilidad
             </h2>
             <p>
@@ -164,7 +164,7 @@ export default function AvisoLegalPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               6. Enlaces externos
             </h2>
             <p>
@@ -175,7 +175,7 @@ export default function AvisoLegalPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               7. Legislación aplicable y jurisdicción
             </h2>
             <p>

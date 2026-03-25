@@ -20,7 +20,7 @@ import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 const TrafficMap = dynamic(() => import("./TrafficMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">
+    <div className="w-full h-full bg-gray-100 dark:bg-gray-900 animate-pulse flex items-center justify-center">
       <MapIcon className="w-12 h-12 text-gray-400" />
     </div>
   ),
@@ -570,20 +570,20 @@ export function UnifiedMap({
       ref={containerRef}
       id={id}
       className={`
-        bg-white rounded-lg shadow-sm border border-gray-200
+        bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800
         ${isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 flex flex-col" : "overflow-hidden"}
       `}
     >
       {/* Header */}
-      <div className={`p-4 border-b border-gray-200 ${isFullscreen ? "bg-white/95 backdrop-blur-sm" : ""}`}>
+      <div className={`p-4 border-b border-gray-200 dark:border-gray-800 ${isFullscreen ? "bg-white dark:bg-gray-900/95 backdrop-blur-sm" : ""}`}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <MapIcon className="w-5 h-5" />
             Mapa Interactivo
           </h2>
           {!isFullscreen && (
-            <span className="text-sm text-gray-500">
-              Pulsa <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono">F</kbd> para pantalla completa
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Pulsa <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-900 rounded text-xs font-mono">F</kbd> para pantalla completa
             </span>
           )}
         </div>
@@ -641,10 +641,10 @@ export function UnifiedMap({
           >
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 text-tl-600 animate-spin" />
+                <Loader2 className="w-8 h-8 text-tl-600 dark:text-tl-400 animate-spin" />
               </div>
             ) : filteredIncidents.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
                 <AlertTriangle className="w-12 h-12 mb-4 opacity-50" />
                 <p className="text-lg font-medium">No hay incidencias</p>
                 <p className="text-sm">
@@ -728,8 +728,8 @@ function IncidentListItem({
     <button
       onClick={onClick}
       className={`
-        w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors
-        ${isSelected ? "bg-tl-50" : ""}
+        w-full px-4 py-3 text-left hover:bg-gray-50 dark:bg-gray-950 transition-colors
+        ${isSelected ? "bg-tl-50 dark:bg-tl-900/20" : ""}
       `}
     >
       <div className="flex items-start gap-3">
@@ -740,13 +740,13 @@ function IncidentListItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {incident.road && (
-              <span className="font-semibold text-gray-900">{incident.road}</span>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">{incident.road}</span>
             )}
-            {incident.km && <span className="text-gray-500">km {incident.km}</span>}
-            <span className="text-sm text-gray-600">{EFFECT_LABELS[incident.effect]}</span>
+            {incident.km && <span className="text-gray-500 dark:text-gray-400">km {incident.km}</span>}
+            <span className="text-sm text-gray-600 dark:text-gray-400">{EFFECT_LABELS[incident.effect]}</span>
           </div>
           {incident.description && (
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{incident.description}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{incident.description}</p>
           )}
           <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
             <span

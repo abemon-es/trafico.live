@@ -50,17 +50,17 @@ export function CameraSection({
     <div className="mb-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-          <Camera className="w-5 h-5 text-tl-600" />
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />
           {title}
-          <span className="text-sm font-normal text-gray-500">
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
             ({cameras.length})
           </span>
         </h2>
         {linkUrl && (
           <Link
             href={linkUrl}
-            className="text-tl-600 hover:text-tl-700 text-sm flex items-center gap-1"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 text-sm flex items-center gap-1"
           >
             {linkText}
             <ChevronRight className="w-4 h-4" />
@@ -74,10 +74,10 @@ export function CameraSection({
           <button
             key={camera.id}
             onClick={() => setSelectedCamera(camera)}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-tl-300 transition-all text-left group"
+            className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-md hover:border-tl-300 transition-all text-left group"
           >
             {/* Thumbnail */}
-            <div className="relative aspect-video bg-gray-100">
+            <div className="relative aspect-video bg-gray-100 dark:bg-gray-900">
               {!imageErrors.has(camera.id) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -100,10 +100,10 @@ export function CameraSection({
 
             {/* Info */}
             <div className="p-2">
-              <p className="text-xs font-medium text-gray-900 truncate group-hover:text-tl-600 transition-colors">
+              <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-tl-600 dark:text-tl-400 transition-colors">
                 {camera.road}
                 {camera.kmPoint !== null && (
-                  <span className="text-gray-500 font-normal">
+                  <span className="text-gray-500 dark:text-gray-400 font-normal">
                     {" "}km {camera.kmPoint}
                   </span>
                 )}
@@ -118,7 +118,7 @@ export function CameraSection({
         <div className="mt-3 text-center">
           <Link
             href={linkUrl}
-            className="text-sm text-tl-600 hover:text-tl-700 hover:underline"
+            className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
           >
             Ver las {cameras.length} cámaras →
           </Link>
