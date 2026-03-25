@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, Search, ChevronRight } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Tráfico por Ciudades",
   description:
@@ -13,6 +15,9 @@ export const metadata: Metadata = {
     "cámaras tráfico",
     "incidencias tráfico",
   ],
+  alternates: {
+    canonical: `${BASE_URL}/ciudad`,
+  },
 };
 
 // Major Spanish cities

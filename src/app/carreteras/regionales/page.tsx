@@ -1,19 +1,18 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { connection } from "next/server";
-import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 300;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title: "Carreteras Regionales y Comarcales | Tráfico y Radares",
   description:
     "Listado de carreteras regionales, comarcales y provinciales de España. Estado del tráfico, cámaras y radares en vías autonómicas.",
+  alternates: { canonical: `${BASE_URL}/carreteras/regionales` },
   openGraph: {
     title: "Carreteras Regionales y Comarcales de España",
     description: "Carreteras autonómicas y provinciales con información de tráfico",
@@ -43,8 +42,6 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default async function RegionalesPage() {
-  noStore();
-  await connection();
 
   // Get all regional roads - wrapped in try-catch for build phase
   let roads: { id: string; name: string | null; type: string; provinces: string[] }[] = [];

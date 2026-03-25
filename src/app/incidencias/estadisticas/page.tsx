@@ -3,6 +3,8 @@ import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import { IncidentStatsContent } from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Estadísticas de Incidencias | Tráfico España",
   description:
@@ -11,6 +13,9 @@ export const metadata: Metadata = {
     title: "Estadísticas de Incidencias de Tráfico",
     description:
       "Análisis completo de incidencias en carreteras españolas con datos en tiempo real de la DGT.",
+  },
+  alternates: {
+    canonical: `${BASE_URL}/incidencias/estadisticas`,
   },
 };
 

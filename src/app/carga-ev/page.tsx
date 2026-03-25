@@ -3,6 +3,8 @@ import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import CargaEVContent from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Cargadores de Vehículos Eléctricos",
   description:
@@ -16,6 +18,9 @@ export const metadata: Metadata = {
     "carga rápida",
     "España",
   ],
+  alternates: {
+    canonical: `${BASE_URL}/carga-ev`,
+  },
 };
 
 function LoadingFallback() {

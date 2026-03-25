@@ -4,9 +4,14 @@ import { Suspense } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Mapa de Gasolineras | Tráfico España",
   description: "Encuentra gasolineras en el mapa interactivo. Consulta precios de combustible y ubicaciones de estaciones terrestres y marítimas.",
+  alternates: {
+    canonical: `${BASE_URL}/gasolineras/mapa`,
+  },
 };
 
 export default function GasolinerasMapaPage() {

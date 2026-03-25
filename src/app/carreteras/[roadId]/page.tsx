@@ -17,8 +17,9 @@ import {
 } from "lucide-react";
 import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 interface PageProps {
   params: Promise<{ roadId: string }>;
@@ -78,6 +79,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    alternates: { canonical: `${BASE_URL}/carreteras/${road.id}` },
     openGraph: {
       title: `Tráfico en ${road.id}${road.name ? ` - ${road.name}` : ""}`,
       description,
@@ -168,8 +170,6 @@ export default async function RoadDetailPage({ params }: PageProps) {
 
   const typeLabel = ROAD_TYPE_LABELS[road.type] || "Carretera";
   const provinceNames = road.provinces.map((p) => PROVINCE_NAMES[p] || p);
-
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
   const roadSchema = generateRoadSchema({
     id: road.id,

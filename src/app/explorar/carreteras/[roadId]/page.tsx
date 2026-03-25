@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import RoadDetailContent from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 interface PageProps {
   params: Promise<{ roadId: string }>;
 }
@@ -12,6 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${roadName} | Carreteras`,
     description: `Estado del tráfico en tiempo real en la carretera ${roadName}. Incidencias, radares, cámaras e intensidad media diaria.`,
+    alternates: { canonical: `${BASE_URL}/explorar/carreteras/${roadId}` },
     openGraph: {
       title: `Tráfico en ${roadName}`,
       description: `Estado del tráfico en la carretera ${roadName}`,

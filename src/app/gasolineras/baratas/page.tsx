@@ -2,8 +2,6 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, MapPin } from "lucide-react";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Gasolineras Baratas por Ciudad — Precios Hoy | trafico.live",
   description:

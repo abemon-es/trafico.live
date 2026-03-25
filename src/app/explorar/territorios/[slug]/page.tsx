@@ -3,7 +3,7 @@ import prisma from "@/lib/db";
 import TerritoryDetailContent from "./content";
 
 // Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -34,6 +34,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${community.name} | Explorar Territorios`,
     description: `Estado del tráfico en tiempo real en ${community.name}. ${community.provinces.length} provincias, balizas V16, incidencias y estadísticas de siniestralidad.`,
+    alternates: {
+      canonical: `https://trafico.live/explorar/territorios/${slug}`,
+    },
     openGraph: {
       title: `Tráfico en ${community.name}`,
       description: `Estado del tráfico en ${community.provinces.length} provincias de ${community.name}`,

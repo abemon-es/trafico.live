@@ -4,8 +4,9 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { TrendingUp, ArrowLeft, AlertTriangle, Camera, Radar, Zap, MapPin, Activity } from "lucide-react";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 interface PageProps {
   params: Promise<{ roadId: string }>;
@@ -54,6 +55,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    alternates: { canonical: `${BASE_URL}/carreteras/${road.id}/estadisticas` },
     openGraph: { title, description },
   };
 }

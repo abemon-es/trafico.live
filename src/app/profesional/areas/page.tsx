@@ -14,6 +14,8 @@ import {
   Package,
 } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Áreas de Servicio para Transportistas en España | Portal Profesional - trafico.live",
   description:
@@ -25,6 +27,9 @@ export const metadata: Metadata = {
     "descanso transportistas AP-7",
     "áreas servicio A-1 A-2 A-4",
   ],
+  alternates: {
+    canonical: `${BASE_URL}/profesional/areas`,
+  },
 };
 
 interface RestArea {

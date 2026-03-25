@@ -1,19 +1,18 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { connection } from "next/server";
-import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { MapPin, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 300;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title: "Carreteras Nacionales de España (N) | Tráfico y Radares",
   description:
     "Listado completo de carreteras nacionales españolas (N). Estado del tráfico, cámaras de vigilancia, radares de velocidad y estadísticas de incidencias.",
+  alternates: { canonical: `${BASE_URL}/carreteras/nacionales` },
   openGraph: {
     title: "Carreteras Nacionales de España (N)",
     description: "Todas las carreteras nacionales españolas con información de tráfico",
@@ -37,8 +36,6 @@ const PROVINCE_NAMES: Record<string, string> = {
 };
 
 export default async function NacionalesPage() {
-  noStore();
-  await connection();
 
   // Get all nacionales - wrapped in try-catch for build phase
   let roads: { id: string; name: string | null; provinces: string[] }[] = [];

@@ -7,10 +7,12 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { TrendingUp, TrendingDown, Minus, MapPin, Clock, Fuel, ChevronRight, Truck, Radar, Ban } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
-import { FuelPriceChart } from "@/components/charts/FuelPriceChart";
+import dynamic from "next/dynamic";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 
-export const dynamic = "force-dynamic";
+const FuelPriceChart = dynamic(() => import("@/components/charts/FuelPriceChart").then(m => m.FuelPriceChart), { ssr: false });
+
+export const revalidate = 3600;
 
 // Province code → { slug, name } for internal links
 const PROVINCE_CODES: Record<string, { slug: string; name: string }> = {

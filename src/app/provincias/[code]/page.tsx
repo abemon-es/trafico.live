@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar, Fuel } from "lucide-react";
 import prisma from "@/lib/db";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // Province data
 const provinces: Record<string, { name: string; community: string }> = {
@@ -78,6 +79,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Tráfico en ${province.name}`,
     description: `Estado del tráfico en ${province.name}, ${province.community}. Incidencias, balizas V16 y estadísticas de accidentes actualizadas en tiempo real.`,
+    alternates: {
+      canonical: `${BASE_URL}/provincias/${code}`,
+    },
   };
 }
 

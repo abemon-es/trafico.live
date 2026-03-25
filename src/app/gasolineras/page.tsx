@@ -13,8 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 // Provincias con fiscalidad especial
 const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];

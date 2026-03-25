@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import RestriccionesContent from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Restricciones de tráfico para transportistas | Portal Profesional - trafico.live",
   description:
@@ -12,6 +14,9 @@ export const metadata: Metadata = {
     "limitaciones transporte pesado",
     "restricciones carretera España",
   ],
+  alternates: {
+    canonical: `${BASE_URL}/profesional/restricciones`,
+  },
 };
 
 export default function RestriccionesPage() {

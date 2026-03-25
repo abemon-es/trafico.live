@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CiudadCargaEVContent from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 // City data for SEO and matching
 const CITIES: Record<string, { name: string; province: string }> = {
   madrid: { name: "Madrid", province: "Madrid" },
@@ -53,6 +55,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "electrolineras",
       cityData.province,
     ],
+    alternates: {
+      canonical: `${BASE_URL}/carga-ev/${ciudad}`,
+    },
   };
 }
 

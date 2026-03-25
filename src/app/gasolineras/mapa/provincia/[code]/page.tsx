@@ -7,8 +7,9 @@ import prisma from "@/lib/db";
 import { getProvinceBounds, getProvinceName, PROVINCE_NAMES } from "@/lib/province-bounds";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 interface PageProps {
   params: Promise<{ code: string }>;
@@ -26,6 +27,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `Mapa de Gasolineras en ${provinceName} | Tráfico España`,
     description: `Encuentra gasolineras con los mejores precios en ${provinceName}. Mapa interactivo con estaciones terrestres y precios de combustible actualizados.`,
+    alternates: {
+      canonical: `${BASE_URL}/gasolineras/mapa/provincia/${paddedCode}`,
+    },
     openGraph: {
       title: `Gasolineras en ${provinceName}`,
       description: `Mapa de gasolineras en ${provinceName} con precios de combustible`,

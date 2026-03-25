@@ -2,9 +2,14 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, AlertTriangle, ChevronRight } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Provincias",
   description: "Estado del tráfico en las 52 provincias españolas. Consulta incidencias, balizas V16 y estadísticas por provincia.",
+  alternates: {
+    canonical: `${BASE_URL}/provincias`,
+  },
 };
 
 // Spanish provinces with INE codes and autonomous communities

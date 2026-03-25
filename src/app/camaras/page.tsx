@@ -3,10 +3,15 @@ import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import { CamarasContent } from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Cámaras de Tráfico",
   description:
     "Visualiza en tiempo real las más de 500 cámaras de tráfico de la DGT en las carreteras españolas. Busca por carretera o provincia.",
+  alternates: {
+    canonical: `${BASE_URL}/camaras`,
+  },
 };
 
 function CamarasLoading() {

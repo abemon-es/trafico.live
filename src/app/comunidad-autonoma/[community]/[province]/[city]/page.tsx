@@ -2,8 +2,9 @@ import { Metadata } from "next";
 import prisma from "@/lib/db";
 import CityContent from "./content";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 interface PageProps {
   params: Promise<{ community: string; province: string; city: string }>;
@@ -47,6 +48,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `Tráfico en ${municipality.name} | ${municipality.province.name} | Tráfico España`,
     description: `Estado del tráfico en tiempo real en ${municipality.name}, ${municipality.province.name}. Balizas V16, incidencias y estadísticas de tráfico.`,
+    alternates: {
+      canonical: `${BASE_URL}/comunidad-autonoma/${communitySlug}/${provinceSlug}/${citySlug}`,
+    },
     openGraph: {
       title: `Tráfico en ${municipality.name}`,
       description: `Estado del tráfico en ${municipality.name}, ${municipality.province.name}, ${municipality.province.community.name}`,

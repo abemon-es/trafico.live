@@ -2,9 +2,14 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { AlertTriangle, Database, Clock, Shield, ExternalLink } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Sobre Tráfico España",
   description: "Información sobre el proyecto Tráfico España, fuentes de datos, metodología y equipo detrás de la plataforma.",
+  alternates: {
+    canonical: `${BASE_URL}/sobre`,
+  },
 };
 
 export default function SobrePage() {

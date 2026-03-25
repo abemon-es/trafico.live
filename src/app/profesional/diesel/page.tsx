@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import DieselContent from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Diésel más barato para transportistas | Portal Profesional - trafico.live",
   description:
@@ -12,6 +14,9 @@ export const metadata: Metadata = {
     "diesel A precio",
     "ahorro combustible camiones",
   ],
+  alternates: {
+    canonical: `${BASE_URL}/profesional/diesel`,
+  },
 };
 
 export default function DieselPage() {

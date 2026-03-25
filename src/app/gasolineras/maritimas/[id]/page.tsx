@@ -4,10 +4,15 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { Anchor, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { PriceHistoryChart, StationLocationMap, PriceComparisonCard, StationRanking } from "@/components/gas-stations";
+import dynamic from "next/dynamic";
+import { PriceComparisonCard, StationRanking } from "@/components/gas-stations";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+const StationLocationMap = dynamic(() => import("@/components/gas-stations").then(m => m.StationLocationMap), { ssr: false });
+const PriceHistoryChart = dynamic(() => import("@/components/gas-stations").then(m => m.PriceHistoryChart), { ssr: false });
+
+export const revalidate = 3600;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // Cache the station lookup so generateMetadata and the page component share one DB query per request
 const getStation = cache(async (id: string) => {
@@ -29,6 +34,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${station.name} - Estacion Maritima | Trafico Espana`,
     description: `Precios de combustible en ${station.name}${station.port ? `, Puerto de ${station.port}` : ""}. Gasoleo A: ${station.priceGasoleoA?.toFixed(3) || "N/D"}`,
+    alternates: {
+      canonical: `${BASE_URL}/gasolineras/maritimas/${id}`,
+    },
   };
 }
 

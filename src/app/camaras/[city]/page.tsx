@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Camera, MapPin, Video, ArrowRight } from "lucide-react";
 import prisma from "@/lib/db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 // City slug → province INE code + display name
 const CITY_PROVINCES: Record<string, { name: string; code: string }> = {

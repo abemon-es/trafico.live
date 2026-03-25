@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CiudadContent from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 // City data
 const CITIES: Record<
   string,
@@ -53,6 +55,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `gasolineras ${cityData.name}`,
       cityData.province,
     ],
+    alternates: {
+      canonical: `${BASE_URL}/ciudad/${slug}`,
+    },
   };
 }
 

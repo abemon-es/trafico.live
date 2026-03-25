@@ -1,17 +1,17 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { unstable_noStore as noStore } from "next/cache";
 import prisma from "@/lib/db";
 import { Route, Car, Construction, MapPin } from "lucide-react";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 3600;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title: "Carreteras de España | Tráfico en Tiempo Real",
   description:
     "Listado completo de carreteras españolas: autopistas, autovías, nacionales y regionales. Estado del tráfico, cámaras, radares y estadísticas.",
+  alternates: { canonical: `${BASE_URL}/carreteras` },
   openGraph: {
     title: "Carreteras de España",
     description: "Todas las carreteras españolas con información de tráfico en tiempo real",
@@ -58,8 +58,6 @@ const ROAD_TYPE_CONFIG = {
 };
 
 export default async function CarreterasPage() {
-  noStore();
-
   // Get roads grouped by type with counts
   const roadsByType = await prisma.road.groupBy({
     by: ["type"],

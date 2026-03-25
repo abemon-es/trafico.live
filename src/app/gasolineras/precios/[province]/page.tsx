@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MapPin, ArrowLeft, Clock } from "lucide-react";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 const PROVINCE_SLUGS: Record<string, { code: string; name: string }> = {
   "alava": { code: "01", name: "Álava" },
@@ -77,6 +78,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Precios Combustible en ${provinceData.name} | Tráfico España`,
     description: `Consulta los precios de combustible en las gasolineras de ${provinceData.name}. Encuentra la gasolinera más barata.`,
+    alternates: {
+      canonical: `${BASE_URL}/gasolineras/precios/${province}`,
+    },
   };
 }
 

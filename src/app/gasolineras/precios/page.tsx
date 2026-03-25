@@ -3,13 +3,17 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { TrendingUp, TrendingDown, Minus, MapPin } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Precios de Combustible Hoy | Tráfico España",
   description: "Consulta los precios medios de combustible por provincia y comunidad autónoma. Actualizado varias veces al día.",
+  alternates: {
+    canonical: `${BASE_URL}/gasolineras/precios`,
+  },
 };
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 const PROVINCES: Record<string, string> = {
   "01": "Álava", "02": "Albacete", "03": "Alicante", "04": "Almería",

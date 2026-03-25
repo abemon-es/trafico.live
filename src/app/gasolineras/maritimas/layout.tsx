@@ -1,14 +1,13 @@
 import { Metadata } from "next";
-import { MapaClient } from "./MapaClient";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: `${BASE_URL}/mapa`,
+    canonical: `${BASE_URL}/gasolineras/maritimas`,
   },
 };
 
-export default function MapaPage() {
-  return <MapaClient />;
+export default function MaritimasLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
