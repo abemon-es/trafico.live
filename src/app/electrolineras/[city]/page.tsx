@@ -194,18 +194,49 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
     },
   ];
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map((item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.answer,
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Place",
+      name: `Electrolineras en ${cityData.name}`,
+      description: `Red de ${totalCount} puntos de carga para vehículos eléctricos en la provincia de ${cityData.province}`,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: cityData.name,
+        addressRegion: cityData.province,
+        addressCountry: "ES",
       },
-    })),
-  };
+      amenityFeature: [
+        {
+          "@type": "LocationFeatureSpecification",
+          name: "Carga lenta (< 22 kW)",
+          value: bands.slow.length,
+        },
+        {
+          "@type": "LocationFeatureSpecification",
+          name: "Carga rápida (22-150 kW)",
+          value: bands.fast.length,
+        },
+        {
+          "@type": "LocationFeatureSpecification",
+          name: "Carga ultra-rápida (> 150 kW)",
+          value: bands.ultra.length,
+        },
+      ],
+    },
+  ];
 
   return (
     <>

@@ -255,26 +255,38 @@ export default async function TraficoCityPage({ params }: Props) {
       : "Tráfico con incidencias graves";
 
   // JSON-LD structured data
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: `Tráfico en ${cityData.name} Hoy`,
-    description: `Estado del tráfico en ${cityData.name} en tiempo real. ${incidentCount} incidencias activas.`,
-    url: `https://trafico.live/trafico/${city}`,
-    breadcrumb: {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Inicio", item: "https://trafico.live" },
-        { "@type": "ListItem", position: 2, name: "Tráfico", item: "https://trafico.live/incidencias" },
-        { "@type": "ListItem", position: 3, name: cityData.name },
-      ],
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: `Tráfico en ${cityData.name} Hoy`,
+      description: `Estado del tráfico en ${cityData.name} en tiempo real. ${incidentCount} incidencias activas.`,
+      url: `https://trafico.live/trafico/${city}`,
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Inicio", item: "https://trafico.live" },
+          { "@type": "ListItem", position: 2, name: "Tráfico", item: "https://trafico.live/incidencias" },
+          { "@type": "ListItem", position: 3, name: cityData.name },
+        ],
+      },
+      mainEntity: {
+        "@type": "ItemList",
+        name: `Incidencias de tráfico en ${cityData.name}`,
+        numberOfItems: incidentCount,
+      },
     },
-    mainEntity: {
-      "@type": "ItemList",
-      name: `Incidencias de tráfico en ${cityData.name}`,
-      numberOfItems: incidentCount,
+    {
+      "@context": "https://schema.org",
+      "@type": "City",
+      name: cityData.name,
+      containedInPlace: {
+        "@type": "AdministrativeArea",
+        name: cityData.province,
+        addressCountry: "ES",
+      },
     },
-  };
+  ];
 
   return (
     <>

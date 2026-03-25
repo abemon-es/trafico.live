@@ -73,5 +73,32 @@ export default async function CiudadPage({ params }: Props) {
     notFound();
   }
 
-  return <CiudadContent slug={slug} cityData={cityData} />;
+  const citySchema = {
+    "@context": "https://schema.org",
+    "@type": "City",
+    name: cityData.name,
+    containedInPlace: {
+      "@type": "AdministrativeArea",
+      name: cityData.province,
+      containedInPlace: {
+        "@type": "AdministrativeArea",
+        name: cityData.community,
+      },
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: cityData.lat,
+      longitude: cityData.lng,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(citySchema) }}
+      />
+      <CiudadContent slug={slug} cityData={cityData} />
+    </>
+  );
 }
