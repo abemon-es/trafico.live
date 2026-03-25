@@ -521,12 +521,12 @@ export default async function CiclistasPage() {
 
         <RelatedLinks
           links={[
-            { href: "/puntos-negros", label: "Puntos negros" },
-            { href: "/radares", label: "Radares DGT" },
-            { href: "/restricciones", label: "Restricciones de circulación" },
-            { href: "/operaciones", label: "Operaciones especiales" },
-            { href: "/zbe/madrid", label: "ZBE Madrid" },
-            { href: "/etiqueta-ambiental", label: "Etiqueta ambiental" },
+            { href: "/puntos-negros", title: "Puntos negros", description: "Tramos de concentración de accidentes en carreteras españolas" },
+            { href: "/radares", title: "Radares DGT", description: "Mapa de radares fijos y móviles en toda España" },
+            { href: "/restricciones", title: "Restricciones de circulación", description: "Restricciones para vehículos pesados y especiales" },
+            { href: "/operaciones", title: "Operaciones especiales", description: "Operaciones DGT: Semana Santa, puentes y salidas" },
+            { href: "/zbe/madrid", title: "ZBE Madrid", description: "Zona de bajas emisiones de Madrid" },
+            { href: "/etiqueta-ambiental", title: "Etiqueta ambiental", description: "Consulta tu etiqueta ambiental DGT" },
           ]}
         />
       </main>
