@@ -41,7 +41,7 @@ const ZBE_CITIES = [
 const STICKERS = [
   {
     label: "Cero (0)",
-    color: "bg-blue-100 text-blue-800 border-blue-300",
+    color: "bg-tl-100 text-tl-800 border-tl-300",
     vehicles: "Vehículos eléctricos puros (BEV) y de hidrógeno (FCEV).",
     access: "Acceso libre a todas las ZBE.",
   },
@@ -122,11 +122,11 @@ export function ZBEArticle() {
         ))}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
-        <p className="text-blue-800 text-sm font-semibold mb-1">
+      <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-8">
+        <p className="text-tl-800 text-sm font-semibold mb-1">
           ¿Cómo obtengo mi etiqueta?
         </p>
-        <p className="text-blue-700 text-sm">
+        <p className="text-tl-700 text-sm">
           Puedes obtenerla en cualquier oficina de tráfico, talleres colaboradores o
           solicitarla online en la web de la DGT. El coste es de{" "}
           <strong>entre 5 y 6 €</strong>. Si tu vehículo es nuevo, algunos fabricantes

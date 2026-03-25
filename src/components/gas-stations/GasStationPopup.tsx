@@ -30,17 +30,17 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
       {/* Prices grid */}
       <div className="grid grid-cols-2 gap-2 mb-3">
         {station.priceGasoleoA != null && (
-          <div className="bg-amber-50 rounded p-2 text-center">
-            <div className="text-xs text-amber-700 font-medium">Gasóleo A</div>
-            <div className="text-base font-bold text-amber-900">
+          <div className="bg-tl-amber-50 rounded p-2 text-center">
+            <div className="text-xs text-tl-amber-700 font-medium">Gasóleo A</div>
+            <div className="text-base font-bold text-tl-amber-900">
               {station.priceGasoleoA.toFixed(3)}€
             </div>
           </div>
         )}
         {station.priceGasolina95E5 != null && (
-          <div className="bg-blue-50 rounded p-2 text-center">
-            <div className="text-xs text-blue-700 font-medium">Gasolina 95</div>
-            <div className="text-base font-bold text-blue-900">
+          <div className="bg-tl-50 rounded p-2 text-center">
+            <div className="text-xs text-tl-700 font-medium">Gasolina 95</div>
+            <div className="text-base font-bold text-tl-900">
               {station.priceGasolina95E5.toFixed(3)}€
             </div>
           </div>
@@ -94,7 +94,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
           href={directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1 flex-1 text-center text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2 py-1.5 rounded transition-colors"
+          className="flex items-center justify-center gap-1 flex-1 text-center text-xs bg-tl-100 text-tl-700 hover:bg-tl-200 px-2 py-1.5 rounded transition-colors"
         >
           <Navigation className="w-3 h-3" />
           Cómo llegar

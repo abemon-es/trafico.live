@@ -478,7 +478,7 @@ function HourlyHeatmap({
   const colorClasses = {
     red: ["bg-gray-100", "bg-red-100", "bg-red-200", "bg-red-400", "bg-red-600"],
     orange: ["bg-gray-100", "bg-orange-100", "bg-orange-200", "bg-orange-400", "bg-orange-600"],
-    blue: ["bg-gray-100", "bg-blue-100", "bg-blue-200", "bg-blue-400", "bg-blue-600"],
+    blue: ["bg-gray-100", "bg-tl-100", "bg-tl-200", "bg-tl-400", "bg-tl-600"],
   };
 
   const getColor = (value: number) => {
@@ -558,7 +558,7 @@ function DailyTrendMini({
   }
 
   const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const bgColor = color === "orange" ? "bg-orange-500" : color === "blue" ? "bg-blue-500" : "bg-red-500";
+  const bgColor = color === "orange" ? "bg-orange-500" : color === "blue" ? "bg-tl-500" : "bg-red-500";
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -602,7 +602,7 @@ function V16DailyTrendChart({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
+          <TrendingUp className="w-5 h-5 text-tl-600" />
           Tendencia Diaria
         </h2>
         <div className="h-64 flex items-center justify-center text-gray-500">
@@ -621,7 +621,7 @@ function V16DailyTrendChart({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-blue-600" />
+        <TrendingUp className="w-5 h-5 text-tl-600" />
         Tendencia Diaria de Balizas V16
       </h2>
       <div className="h-64 flex items-end gap-1">
@@ -862,8 +862,8 @@ function ResumenSection({
         />
         <StatCard
           icon={Clock}
-          iconBgColor="bg-blue-50"
-          iconColor="text-blue-600"
+          iconBgColor="bg-tl-50"
+          iconColor="text-tl-600"
           value={hasIncidents ? incidentStats.data.totals.incidentsLast24h : "-"}
           label="Incidencias 24h"
           isLoading={incidentLoading}
@@ -957,7 +957,7 @@ function IncidenciasSection({
     ROADWORK: "bg-orange-500",
     CONGESTION: "bg-yellow-500",
     HAZARD: "bg-purple-500",
-    VEHICLE_BREAKDOWN: "bg-blue-500",
+    VEHICLE_BREAKDOWN: "bg-tl-500",
     WEATHER: "bg-cyan-500",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
@@ -1003,8 +1003,8 @@ function IncidenciasSection({
         />
         <StatCard
           icon={Clock}
-          iconBgColor="bg-blue-50"
-          iconColor="text-blue-600"
+          iconBgColor="bg-tl-50"
+          iconColor="text-tl-600"
           value={hasData ? stats!.totals.incidentsLast24h : "-"}
           label="Últimas 24h"
           isLoading={isLoading}
@@ -1329,8 +1329,8 @@ function V16Section() {
         />
         <StatCard
           icon={MapPin}
-          iconBgColor="bg-blue-50"
-          iconColor="text-blue-600"
+          iconBgColor="bg-tl-50"
+          iconColor="text-tl-600"
           value={provincesData?.data?.totals?.totalBeacons || "-"}
           label="Por Ubicación"
           subLabel={
@@ -1362,8 +1362,8 @@ function V16Section() {
 
       {/* Charts - only show for historical data */}
       {isRealtime ? (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <p className="text-blue-800 text-center">
+        <div className="bg-tl-50 border border-tl-200 rounded-lg p-6">
+          <p className="text-tl-800 text-center">
             <span className="font-medium">Modo tiempo real activo.</span> Selecciona un período
             histórico para ver estadísticas y análisis detallados.
           </p>
@@ -1500,7 +1500,7 @@ function V16Section() {
             {topRoadsChartData.length > 0 ? (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-blue-600" />
+                  <Route className="w-5 h-5 text-tl-600" />
                   Top {topRoadsChartData.length} Carreteras
                 </h2>
                 <div className="space-y-3">
@@ -1512,7 +1512,7 @@ function V16Section() {
                         <div className="w-16 text-sm font-medium text-gray-900">{road.name}</div>
                         <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
                           <div
-                            className="h-full bg-blue-500 rounded"
+                            className="h-full bg-tl-500 rounded"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
@@ -1531,7 +1531,7 @@ function V16Section() {
             ) : (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-blue-600" />
+                  <Route className="w-5 h-5 text-tl-600" />
                   Carreteras con más balizas
                 </h2>
                 <div className="h-64 flex items-center justify-center text-gray-500">
@@ -1678,8 +1678,8 @@ function CarreterasSection({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <StatCard
             icon={Route}
-            iconBgColor="bg-blue-50"
-            iconColor="text-blue-600"
+            iconBgColor="bg-tl-50"
+            iconColor="text-tl-600"
             value={data.data.summary.totalRoads}
             label="Carreteras Analizadas"
             isLoading={isLoading}
@@ -1790,8 +1790,8 @@ function ClimaSection({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <CloudRain className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-tl-50 rounded-lg">
+                <CloudRain className="w-5 h-5 text-tl-600" />
               </div>
               <h3 className="font-semibold text-gray-900">Con Alertas</h3>
             </div>
@@ -1843,7 +1843,7 @@ function ClimaSection({
                     {alertTypeLabels[alert.type] || alert.type}
                   </div>
                   <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
-                    <div className="h-full bg-blue-500 rounded" style={{ width: `${width}%` }} />
+                    <div className="h-full bg-tl-500 rounded" style={{ width: `${width}%` }} />
                   </div>
                   <div className="w-24 text-sm text-gray-600 text-right">
                     {alert.avgIncidents.toFixed(1)} inc/día
@@ -1904,8 +1904,8 @@ function CorrelacionSection({
           />
           <StatCard
             icon={Link2}
-            iconBgColor="bg-blue-50"
-            iconColor="text-blue-600"
+            iconBgColor="bg-tl-50"
+            iconColor="text-tl-600"
             value={data.data.summary.totalCorrelations}
             label="Correlaciones"
             subLabel="encontradas"
@@ -1929,7 +1929,7 @@ function CorrelacionSection({
           {/* By Distance */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-600" />
+              <MapPin className="w-5 h-5 text-tl-600" />
               Por Distancia
             </h3>
             <div className="space-y-3">
@@ -2012,9 +2012,9 @@ function CorrelacionSection({
 
       {/* Interpretation */}
       {hasData && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900 mb-2">Interpretación</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="bg-tl-50 border border-tl-200 rounded-lg p-4">
+          <h3 className="font-medium text-tl-900 mb-2">Interpretación</h3>
+          <ul className="text-sm text-tl-800 space-y-1">
             <li>
               • <strong>{data.data.summary.v16CorrelationRate}%</strong> de las balizas V16 se activaron cerca
               de una incidencia reportada (en espacio y tiempo)
@@ -2134,7 +2134,7 @@ function RankingsSection({
             onClick={() => setRankingType("provinces")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               rankingType === "provinces"
-                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                ? "bg-tl-100 text-tl-700 border border-tl-200"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >
@@ -2144,7 +2144,7 @@ function RankingsSection({
             onClick={() => setRankingType("roads")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               rankingType === "roads"
-                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                ? "bg-tl-100 text-tl-700 border border-tl-200"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >
@@ -2319,7 +2319,7 @@ function RankingsSection({
                   return (
                     <div key={r.roadName} className="flex items-center gap-2">
                       <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-20 text-sm font-bold text-blue-600">{r.roadName}</span>
+                      <span className="w-20 text-sm font-bold text-tl-600">{r.roadName}</span>
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
                       </div>
@@ -2345,7 +2345,7 @@ function RankingsSection({
                   return (
                     <div key={r.roadName} className="flex items-center gap-2">
                       <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-20 text-sm font-bold text-blue-600">{r.roadName}</span>
+                      <span className="w-20 text-sm font-bold text-tl-600">{r.roadName}</span>
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
                       </div>
@@ -2371,7 +2371,7 @@ function RankingsSection({
                   return (
                     <div key={r.roadName} className="flex items-center gap-2">
                       <span className="w-6 text-sm text-gray-500">#{idx + 1}</span>
-                      <span className="w-20 text-sm font-bold text-blue-600">{r.roadName}</span>
+                      <span className="w-20 text-sm font-bold text-tl-600">{r.roadName}</span>
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-green-500 rounded" style={{ width: `${width}%` }} />
                       </div>

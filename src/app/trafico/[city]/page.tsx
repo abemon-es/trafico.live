@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 // -------------------------------------------------------------------------
 // City registry — 10 major cities targeting "tráfico [city] hoy"
@@ -119,10 +119,10 @@ const INCIDENT_TYPE_LABELS: Record<string, string> = {
 const INCIDENT_TYPE_COLORS: Record<string, string> = {
   ACCIDENT: "bg-red-100 text-red-700 border-red-200",
   ROADWORK: "bg-orange-100 text-orange-700 border-orange-200",
-  CONGESTION: "bg-amber-100 text-amber-700 border-amber-200",
+  CONGESTION: "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200",
   HAZARD: "bg-yellow-100 text-yellow-700 border-yellow-200",
   VEHICLE_BREAKDOWN: "bg-purple-100 text-purple-700 border-purple-200",
-  WEATHER: "bg-blue-100 text-blue-700 border-blue-200",
+  WEATHER: "bg-tl-100 text-tl-700 border-tl-200",
   EVENT: "bg-green-100 text-green-700 border-green-200",
   CLOSURE: "bg-red-100 text-red-700 border-red-200",
   OTHER: "bg-gray-100 text-gray-700 border-gray-200",
@@ -244,7 +244,7 @@ export default async function TraficoCityPage({ params }: Props) {
     incidentCount === 0
       ? "bg-green-100 text-green-700 border-green-200"
       : incidentCount < 5
-      ? "bg-amber-100 text-amber-700 border-amber-200"
+      ? "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200"
       : "bg-red-100 text-red-700 border-red-200";
 
   const statusLabel =
@@ -359,7 +359,7 @@ export default async function TraficoCityPage({ params }: Props) {
 
             <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
-                <Camera className="w-3.5 h-3.5 text-blue-500" />
+                <Camera className="w-3.5 h-3.5 text-tl-500" />
                 Cámaras DGT
               </div>
               <div className="text-2xl font-bold text-gray-900">
@@ -368,7 +368,7 @@ export default async function TraficoCityPage({ params }: Props) {
               <div className="text-xs text-gray-400 mt-0.5">
                 <Link
                   href={`/camaras/${city}`}
-                  className="text-blue-600 hover:underline"
+                  className="text-tl-600 hover:underline"
                 >
                   Ver cámaras
                 </Link>
@@ -384,7 +384,7 @@ export default async function TraficoCityPage({ params }: Props) {
                 {weatherCount.toLocaleString("es-ES")}
               </div>
               <div className="text-xs text-gray-400 mt-0.5">
-                <Link href="/alertas-meteo" className="text-blue-600 hover:underline">
+                <Link href="/alertas-meteo" className="text-tl-600 hover:underline">
                   Ver alertas
                 </Link>
               </div>
@@ -414,7 +414,7 @@ export default async function TraficoCityPage({ params }: Props) {
               {incidentCount > 20 && (
                 <Link
                   href="/incidencias"
-                  className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                  className="text-sm text-tl-600 hover:underline flex items-center gap-1"
                 >
                   Ver todas ({incidentCount})
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -454,9 +454,9 @@ export default async function TraficoCityPage({ params }: Props) {
                         ) : inc.type === "ROADWORK" ? (
                           <Construction className="w-4 h-4 text-orange-500" />
                         ) : inc.type === "CONGESTION" ? (
-                          <Activity className="w-4 h-4 text-amber-500" />
+                          <Activity className="w-4 h-4 text-tl-amber-500" />
                         ) : inc.type === "WEATHER" ? (
-                          <CloudRain className="w-4 h-4 text-blue-500" />
+                          <CloudRain className="w-4 h-4 text-tl-500" />
                         ) : (
                           <Radio className="w-4 h-4 text-gray-400" />
                         )}
@@ -469,7 +469,7 @@ export default async function TraficoCityPage({ params }: Props) {
                             {typeLabel}
                           </span>
                           {inc.roadNumber && (
-                            <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                            <span className="text-xs font-semibold text-tl-700 bg-tl-50 border border-tl-200 px-2 py-0.5 rounded">
                               {inc.roadNumber}
                             </span>
                           )}
@@ -499,11 +499,11 @@ export default async function TraficoCityPage({ params }: Props) {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <Link
                 href="/mapa"
-                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-tl-300 hover:shadow-sm transition-all group"
               >
-                <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <MapPin className="w-5 h-5 text-tl-600 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 group-hover:text-blue-700">
+                  <div className="text-sm font-semibold text-gray-900 group-hover:text-tl-700">
                     Mapa en vivo
                   </div>
                   <div className="text-xs text-gray-500">España completa</div>
@@ -589,7 +589,7 @@ export default async function TraficoCityPage({ params }: Props) {
                   <Link
                     key={slug}
                     href={`/trafico/${slug}`}
-                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-tl-300 hover:text-tl-700 transition-colors"
                   >
                     {data.name}
                   </Link>

@@ -63,7 +63,7 @@ export function GasStationCard({
             <div>
               <h3 className="font-semibold text-gray-900 text-sm">{station.name}</h3>
               {showRoad && station.nearestRoad && (
-                <span className="text-xs text-blue-600 font-medium">
+                <span className="text-xs text-tl-600 font-medium">
                   {station.nearestRoad}
                   {station.roadKm && ` km ${station.roadKm}`}
                 </span>
@@ -144,7 +144,7 @@ export function GasStationCard({
         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
           <a
             href={`/gasolineras/terrestres/${station.id}`}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-tl-600 hover:underline"
           >
             Ver detalles
           </a>

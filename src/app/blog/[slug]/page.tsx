@@ -111,10 +111,10 @@ function ArticleContent({ slug }: { slug: string }) {
 }
 
 const CATEGORY_GRADIENT: Record<string, string> = {
-  guía: "from-blue-600 to-blue-800",
+  guía: "from-tl-600 to-tl-800",
   actualidad: "from-orange-500 to-orange-700",
   seguridad: "from-red-600 to-red-800",
-  combustible: "from-amber-500 to-amber-700",
+  combustible: "from-tl-amber-500 to-tl-amber-700",
 };
 
 const CATEGORY_ICON: Record<string, string> = {

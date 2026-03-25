@@ -465,9 +465,9 @@ export default function ApiDocsPage() {
               <pre>{`curl -H "X-API-Key: tu-clave-aqui" \\
      https://trafico.live/api/incidents`}</pre>
             </div>
-            <div className="mt-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <Zap className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800">
+            <div className="mt-4 flex items-start gap-3 bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4">
+              <Zap className="w-4 h-4 text-tl-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-tl-amber-800">
                 Las peticiones sin API key están limitadas a{" "}
                 <strong>10 peticiones por hora</strong> por IP. Para uso en producción,
                 solicita siempre una clave.

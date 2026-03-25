@@ -161,8 +161,8 @@ const RISK_LEVEL_CONFIG: Record<
   },
   MEDIUM: {
     label: "Medio",
-    badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
-    rowClass: "border-l-4 border-l-amber-400",
+    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200",
+    rowClass: "border-l-4 border-l-tl-amber-400",
   },
   LOW: {
     label: "Bajo",
@@ -256,7 +256,7 @@ export default async function CiclistasPage() {
               </p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
-              <p className="text-2xl font-bold text-amber-600">
+              <p className="text-2xl font-bold text-tl-amber-600">
                 <Moon className="w-5 h-5 inline mr-1" />
                 Obligatorio
               </p>
@@ -507,14 +507,14 @@ export default async function CiclistasPage() {
         </section>
 
         {/* Disclaimer */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-10">
+        <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-10">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+            <Info className="w-5 h-5 text-tl-amber-600 mt-0.5 shrink-0" />
             <div>
-              <p className="font-medium text-amber-800 mb-1">
+              <p className="font-medium text-tl-amber-800 mb-1">
                 Nota informativa
               </p>
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-tl-amber-700">
                 Esta información tiene carácter orientativo y se basa en datos
                 oficiales de la DGT. No sustituye las indicaciones de las
                 autoridades de tráfico ni la señalización vial. Las zonas de

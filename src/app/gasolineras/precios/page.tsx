@@ -171,9 +171,9 @@ export default async function PreciosPage() {
             <span className="text-sm font-normal text-gray-500 ml-2">(Península y Baleares)</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-amber-50 rounded-lg p-4">
-              <div className="text-sm text-amber-600 mb-1">Gasóleo A</div>
-              <div className="text-3xl font-bold text-amber-700">
+            <div className="bg-tl-amber-50 rounded-lg p-4">
+              <div className="text-sm text-tl-amber-600 mb-1">Gasóleo A</div>
+              <div className="text-3xl font-bold text-tl-amber-700">
                 {formatPrice(nationalStats.today.avgGasoleoA ? Number(nationalStats.today.avgGasoleoA) : null)}
                 <TrendIndicator
                   current={nationalStats.today.avgGasoleoA ? Number(nationalStats.today.avgGasoleoA) : null}
@@ -181,9 +181,9 @@ export default async function PreciosPage() {
                 />
               </div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="text-sm text-blue-600 mb-1">Gasolina 95</div>
-              <div className="text-3xl font-bold text-blue-700">
+            <div className="bg-tl-50 rounded-lg p-4">
+              <div className="text-sm text-tl-600 mb-1">Gasolina 95</div>
+              <div className="text-3xl font-bold text-tl-700">
                 {formatPrice(nationalStats.today.avgGasolina95 ? Number(nationalStats.today.avgGasolina95) : null)}
                 <TrendIndicator
                   current={nationalStats.today.avgGasolina95 ? Number(nationalStats.today.avgGasolina95) : null}
@@ -304,10 +304,10 @@ export default async function PreciosPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-amber-700">{formatPrice(province.avgGasoleoA)}</span>
+                    <span className="font-mono text-tl-amber-700">{formatPrice(province.avgGasoleoA)}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-blue-700">{formatPrice(province.avgGasolina95)}</span>
+                    <span className="font-mono text-tl-700">{formatPrice(province.avgGasolina95)}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span className="font-mono text-purple-700">{formatPrice(province.avgGasolina98)}</span>
@@ -332,41 +332,41 @@ export default async function PreciosPage() {
 
       {/* Territorios con Fiscalidad Especial */}
       {taxFreeProvinces.length > 0 && (
-        <div className="bg-amber-50 rounded-lg border border-amber-200 overflow-hidden">
-          <div className="p-4 border-b border-amber-200">
-            <h2 className="text-lg font-semibold text-amber-900">
+        <div className="bg-tl-amber-50 rounded-lg border border-tl-amber-200 overflow-hidden">
+          <div className="p-4 border-b border-tl-amber-200">
+            <h2 className="text-lg font-semibold text-tl-amber-900">
               Territorios con Fiscalidad Especial
             </h2>
-            <p className="text-sm text-amber-700">
+            <p className="text-sm text-tl-amber-700">
               Sin IVA (Ceuta, Melilla con IPSI 0.5%) o con IGIC 7% (Canarias) - precios más bajos por menor carga fiscal
             </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-amber-100/50">
+              <thead className="bg-tl-amber-100/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
                     Territorio
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
                     Impuesto
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
                     Gasóleo A
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
                     Gasolina 95
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
                     Gasolina 98
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-tl-amber-700 uppercase tracking-wider">
                     Estaciones
                   </th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-amber-200 bg-white">
+              <tbody className="divide-y divide-tl-amber-200 bg-white">
                 {taxFreeProvinces.map((province) => (
                   <tr key={province.code}>
                     <td className="px-4 py-3">
@@ -374,16 +374,16 @@ export default async function PreciosPage() {
                     </td>
                     <td className="px-4 py-3">
                       {province.taxInfo && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-tl-amber-100 text-tl-amber-800">
                           {province.taxInfo.tax} {province.taxInfo.rate}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="font-mono text-amber-700">{formatPrice(province.avgGasoleoA)}</span>
+                      <span className="font-mono text-tl-amber-700">{formatPrice(province.avgGasoleoA)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="font-mono text-blue-700">{formatPrice(province.avgGasolina95)}</span>
+                      <span className="font-mono text-tl-700">{formatPrice(province.avgGasolina95)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="font-mono text-purple-700">{formatPrice(province.avgGasolina98)}</span>

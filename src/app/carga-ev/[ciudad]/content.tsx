@@ -43,8 +43,8 @@ interface CiudadCargaEVContentProps {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const POWER_LEVELS = [
-  { id: "slow", label: "Lenta (<22 kW)", min: 0, max: 22, color: "bg-blue-100 text-blue-700" },
-  { id: "fast", label: "Rápida (22-50 kW)", min: 22, max: 50, color: "bg-amber-100 text-amber-700" },
+  { id: "slow", label: "Lenta (<22 kW)", min: 0, max: 22, color: "bg-tl-100 text-tl-700" },
+  { id: "fast", label: "Rápida (22-50 kW)", min: 22, max: 50, color: "bg-tl-amber-100 text-tl-amber-700" },
   { id: "ultra", label: "Ultra-rápida (>50 kW)", min: 50, max: 9999, color: "bg-green-100 text-green-700" },
 ];
 
@@ -254,8 +254,8 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                         charger.totalPowerKw >= 50
                           ? "bg-green-100 text-green-700"
                           : charger.totalPowerKw >= 22
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-blue-100 text-blue-700"
+                          ? "bg-tl-amber-100 text-tl-amber-700"
+                          : "bg-tl-100 text-tl-700"
                       }`}
                     >
                       {charger.totalPowerKw} kW

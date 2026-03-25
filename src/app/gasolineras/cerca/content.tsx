@@ -370,15 +370,15 @@ export default function GasolinerasCercaContent() {
 
                       {/* Prices */}
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-amber-50 rounded-lg p-2">
-                          <div className="text-xs text-amber-600 mb-0.5">Gasóleo A</div>
-                          <div className="text-base font-bold text-amber-700">
+                        <div className="bg-tl-amber-50 rounded-lg p-2">
+                          <div className="text-xs text-tl-amber-600 mb-0.5">Gasóleo A</div>
+                          <div className="text-base font-bold text-tl-amber-700">
                             {formatPrice(station.priceGasoleoA)}
                           </div>
                         </div>
-                        <div className="bg-blue-50 rounded-lg p-2">
-                          <div className="text-xs text-blue-600 mb-0.5">Gasolina 95</div>
-                          <div className="text-base font-bold text-blue-700">
+                        <div className="bg-tl-50 rounded-lg p-2">
+                          <div className="text-xs text-tl-600 mb-0.5">Gasolina 95</div>
+                          <div className="text-base font-bold text-tl-700">
                             {formatPrice(station.priceGasolina95E5)}
                           </div>
                         </div>

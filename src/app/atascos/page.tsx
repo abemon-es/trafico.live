@@ -92,7 +92,7 @@ function getSeverityColor(severity: string): string {
     case "CRITICAL":
       return "bg-red-50 border-red-200 text-red-700";
     case "MEDIUM":
-      return "bg-amber-50 border-amber-200 text-amber-700";
+      return "bg-tl-amber-50 border-tl-amber-200 text-tl-amber-700";
     default:
       return "bg-yellow-50 border-yellow-200 text-yellow-700";
   }
@@ -232,7 +232,7 @@ export default async function AtascosPage() {
               <p className="text-xs text-gray-500">Atascos activos</p>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-              <AlertTriangle className="w-5 h-5 text-amber-500 mx-auto mb-1" />
+              <AlertTriangle className="w-5 h-5 text-tl-amber-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-gray-900">{totalActive}</p>
               <p className="text-xs text-gray-500">Total incidencias</p>
             </div>

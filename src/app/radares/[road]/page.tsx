@@ -94,9 +94,9 @@ const RADAR_TYPE_CONFIG: Record<string, { label: string; color: string; badge: s
 function getSpeedBadgeColor(speed: number | null): string {
   if (!speed) return "bg-gray-100 text-gray-500";
   if (speed <= 60) return "bg-red-100 text-red-800 font-semibold";
-  if (speed <= 80) return "bg-amber-100 text-amber-800 font-semibold";
+  if (speed <= 80) return "bg-tl-amber-100 text-tl-amber-800 font-semibold";
   if (speed <= 100) return "bg-green-100 text-green-800 font-semibold";
-  return "bg-blue-100 text-blue-800 font-semibold";
+  return "bg-tl-100 text-tl-800 font-semibold";
 }
 
 interface PageProps {
@@ -456,7 +456,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 id={`heading-cameras-${roadId}`}
                 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2"
               >
-                <Camera className="w-5 h-5 text-blue-600" />
+                <Camera className="w-5 h-5 text-tl-600" />
                 Cámaras en la {roadId}
               </h2>
               {cameraCount > 0 ? (
@@ -469,7 +469,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                   </p>
                   <Link
                     href={`/carreteras/${encodeURIComponent(roadId)}/camaras`}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 hover:text-tl-800 hover:underline"
                   >
                     Ver todas las cámaras
                     <ChevronRight className="w-4 h-4" />
@@ -542,18 +542,18 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           </div>
 
           {/* Link to full road page */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
+          <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
             <div>
-              <p className="font-semibold text-blue-900">
+              <p className="font-semibold text-tl-900">
                 Ver toda la información de la {roadId}
               </p>
-              <p className="text-sm text-blue-700 mt-0.5">
+              <p className="text-sm text-tl-700 mt-0.5">
                 Cámaras en directo, incidencias, gasolineras, cargadores EV y más.
               </p>
             </div>
             <Link
               href={`/carreteras/${encodeURIComponent(roadId)}`}
-              className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-tl-600 text-white text-sm font-semibold rounded-lg hover:bg-tl-700 transition-colors"
             >
               <Route className="w-4 h-4" />
               Ver {roadId}
@@ -656,12 +656,12 @@ export default async function RadaresRoadPage({ params }: PageProps) {
               del tráfico en tiempo real, accede a la{" "}
               <Link
                 href={`/carreteras/${encodeURIComponent(roadId)}`}
-                className="text-blue-600 hover:underline"
+                className="text-tl-600 hover:underline"
               >
                 página de la {roadId}
               </Link>
               {" "}o al{" "}
-              <Link href="/mapa" className="text-blue-600 hover:underline">
+              <Link href="/mapa" className="text-tl-600 hover:underline">
                 mapa de tráfico
               </Link>
               .

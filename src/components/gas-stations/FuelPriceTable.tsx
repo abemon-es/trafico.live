@@ -181,14 +181,14 @@ export function FuelPriceTable({
                 <td className="px-4 py-3">
                   <Link
                     href={`/gasolineras/terrestres/${station.id}`}
-                    className="flex items-center gap-2 hover:text-blue-600"
+                    className="flex items-center gap-2 hover:text-tl-600"
                   >
                     <Fuel className="w-4 h-4 text-orange-500" />
                     <span className="font-medium">{station.name}</span>
                   </Link>
                 </td>
                 {showRoad && (
-                  <td className="px-4 py-3 text-blue-600">
+                  <td className="px-4 py-3 text-tl-600">
                     {station.nearestRoad}
                     {station.roadKm && (
                       <span className="text-gray-400 ml-1">km {station.roadKm}</span>

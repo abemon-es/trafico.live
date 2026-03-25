@@ -160,11 +160,11 @@ export default function RoadDetailContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-blue-600">
+        <Link href="/" className="hover:text-tl-600">
           <Home className="w-4 h-4" />
         </Link>
         <span>/</span>
-        <Link href="/explorar/carreteras" className="hover:text-blue-600">
+        <Link href="/explorar/carreteras" className="hover:text-tl-600">
           Carreteras
         </Link>
         <span>/</span>
@@ -174,7 +174,7 @@ export default function RoadDetailContent() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <Route className="w-8 h-8 text-blue-600" />
+          <Route className="w-8 h-8 text-tl-600" />
           <h1 className="text-3xl font-bold text-gray-900">{roadId}</h1>
         </div>
         <p className="text-gray-600">
@@ -185,17 +185,17 @@ export default function RoadDetailContent() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className={`rounded-lg shadow-sm border p-4 ${
-          incidents.length > 0 ? "bg-amber-50 border-amber-200" : "bg-white border-gray-200"
+          incidents.length > 0 ? "bg-tl-amber-50 border-tl-amber-200" : "bg-white border-gray-200"
         }`}>
           <div className="flex items-center gap-2 mb-2">
-            <div className={`p-2 rounded-lg ${incidents.length > 0 ? "bg-amber-100" : "bg-gray-50"}`}>
-              <AlertTriangle className={`w-5 h-5 ${incidents.length > 0 ? "text-amber-600" : "text-gray-400"}`} />
+            <div className={`p-2 rounded-lg ${incidents.length > 0 ? "bg-tl-amber-100" : "bg-gray-50"}`}>
+              <AlertTriangle className={`w-5 h-5 ${incidents.length > 0 ? "text-tl-amber-600" : "text-gray-400"}`} />
             </div>
           </div>
-          <p className={`text-2xl font-bold ${incidents.length > 0 ? "text-amber-700" : "text-gray-900"}`}>
+          <p className={`text-2xl font-bold ${incidents.length > 0 ? "text-tl-amber-700" : "text-gray-900"}`}>
             {incidents.length}
           </p>
-          <p className={`text-sm ${incidents.length > 0 ? "text-amber-600" : "text-gray-500"}`}>
+          <p className={`text-sm ${incidents.length > 0 ? "text-tl-amber-600" : "text-gray-500"}`}>
             Incidencias activas
           </p>
         </div>
@@ -212,8 +212,8 @@ export default function RoadDetailContent() {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Camera className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-tl-50 rounded-lg">
+              <Camera className="w-5 h-5 text-tl-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{cameras.length}</p>
@@ -237,7 +237,7 @@ export default function RoadDetailContent() {
       {incidents.length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
+            <AlertTriangle className="w-5 h-5 text-tl-amber-500" />
             Incidencias activas
           </h2>
           <div className="space-y-3">
@@ -331,7 +331,7 @@ export default function RoadDetailContent() {
       {cameras.length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Camera className="w-5 h-5 text-blue-500" />
+            <Camera className="w-5 h-5 text-tl-500" />
             Cámaras ({cameras.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -339,7 +339,7 @@ export default function RoadDetailContent() {
               <Link
                 key={camera.id}
                 href={`/camaras?id=${camera.id}`}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-blue-300 transition-all group"
+                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-tl-300 transition-all group"
               >
                 {camera.imageUrl && (
                   <div className="aspect-video bg-gray-100 relative">
@@ -352,7 +352,7 @@ export default function RoadDetailContent() {
                   </div>
                 )}
                 <div className="p-3">
-                  <h3 className="font-medium text-gray-900 text-sm group-hover:text-blue-600 truncate">
+                  <h3 className="font-medium text-gray-900 text-sm group-hover:text-tl-600 truncate">
                     {camera.name}
                   </h3>
                   <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
@@ -366,7 +366,7 @@ export default function RoadDetailContent() {
           {cameras.length > 8 && (
             <Link
               href={`/explorar/infraestructura?tab=camaras&road=${encodeURIComponent(roadId)}`}
-              className="mt-4 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 hover:underline"
             >
               Ver todas las {cameras.length} cámaras
               <ChevronRight className="w-4 h-4" />
@@ -454,7 +454,7 @@ export default function RoadDetailContent() {
       <div className="mt-8">
         <Link
           href="/explorar/carreteras"
-          className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+          className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
         >
           Volver al índice de carreteras
         </Link>

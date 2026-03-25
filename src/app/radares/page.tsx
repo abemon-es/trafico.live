@@ -229,7 +229,7 @@ export default async function RadaresPage() {
                       <span className="text-sm text-gray-400 w-5 text-right">{idx + 1}</span>
                       <Link
                         href={`/carreteras/${encodeURIComponent(item.roadNumber)}/radares`}
-                        className="font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        className="font-semibold text-tl-600 hover:text-tl-800 hover:underline"
                       >
                         {item.roadNumber}
                       </Link>
@@ -266,7 +266,7 @@ export default async function RadaresPage() {
                           <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                           <Link
                             href={`/provincias/${item.province}`}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                            className="text-sm text-tl-600 hover:text-tl-800 hover:underline"
                           >
                             {provinceName}
                           </Link>
@@ -301,7 +301,7 @@ export default async function RadaresPage() {
                 <Link
                   key={item.roadNumber}
                   href={`/carreteras/${encodeURIComponent(item.roadNumber)}/radares`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-tl-600 hover:bg-tl-50 hover:border-tl-200 transition-colors shadow-sm"
                 >
                   {item.roadNumber}
                   <span className="text-xs text-gray-400">({item._count})</span>
@@ -372,12 +372,12 @@ export default async function RadaresPage() {
             <p className="text-gray-600 text-sm leading-relaxed mt-2">
               trafico.live actualiza periódicamente la base de datos con la información oficial de la
               DGT. Para consultar el mapa interactivo de radares, accede a la sección{" "}
-              <Link href="/mapa" className="text-blue-600 hover:underline">
+              <Link href="/mapa" className="text-tl-600 hover:underline">
                 mapa de tráfico
               </Link>
               . Para ver los radares de una carretera concreta, navega a la página de esa vía
               dentro del apartado{" "}
-              <Link href="/carreteras" className="text-blue-600 hover:underline">
+              <Link href="/carreteras" className="text-tl-600 hover:underline">
                 carreteras
               </Link>
               .

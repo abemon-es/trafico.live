@@ -288,7 +288,7 @@ function DailyTrendChart({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
+          <TrendingUp className="w-5 h-5 text-tl-600" />
           Tendencia Diaria
         </h2>
         <div className="h-64 flex items-center justify-center text-gray-500">
@@ -307,7 +307,7 @@ function DailyTrendChart({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-blue-600" />
+        <TrendingUp className="w-5 h-5 text-tl-600" />
         Tendencia Diaria de Balizas V16
       </h2>
       <div className="h-64 flex items-end gap-1">
@@ -749,8 +749,8 @@ export function HistoricoContent() {
           />
           <StatCard
             icon={MapPin}
-            iconBgColor="bg-blue-50"
-            iconColor="text-blue-600"
+            iconBgColor="bg-tl-50"
+            iconColor="text-tl-600"
             value={provincesData?.data?.totals?.totalBeacons || "-"}
             label="Por Ubicación"
             subLabel={
@@ -782,8 +782,8 @@ export function HistoricoContent() {
 
         {/* Charts Grid - Only show for historical data, not realtime */}
         {isRealtime ? (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <p className="text-blue-800 text-center">
+          <div className="bg-tl-50 border border-tl-200 rounded-lg p-6 mb-8">
+            <p className="text-tl-800 text-center">
               <span className="font-medium">Modo tiempo real activo.</span> Selecciona un período
               histórico para ver estadísticas y análisis detallados.
             </p>
@@ -920,7 +920,7 @@ export function HistoricoContent() {
             {topRoadsChartData.length > 0 ? (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-blue-600" />
+                  <Route className="w-5 h-5 text-tl-600" />
                   Top {topRoadsChartData.length} Carreteras
                 </h2>
                 <div className="space-y-3">
@@ -932,7 +932,7 @@ export function HistoricoContent() {
                         <div className="w-16 text-sm font-medium text-gray-900">{road.name}</div>
                         <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
                           <div
-                            className="h-full bg-blue-500 rounded"
+                            className="h-full bg-tl-500 rounded"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
@@ -951,7 +951,7 @@ export function HistoricoContent() {
             ) : (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-blue-600" />
+                  <Route className="w-5 h-5 text-tl-600" />
                   Carreteras con más balizas
                 </h2>
                 <div className="h-64 flex items-center justify-center text-gray-500">

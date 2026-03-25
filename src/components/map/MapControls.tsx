@@ -460,7 +460,7 @@ export function MapControls({
               onClick={() => onViewModeChange("map")}
               className={`px-2.5 py-1.5 flex items-center gap-1 text-sm ${
                 viewMode === "map"
-                  ? "bg-blue-50 text-blue-700"
+                  ? "bg-tl-50 text-tl-700"
                   : "bg-white text-gray-600 hover:bg-gray-50"
               }`}
               title="Vista mapa"
@@ -471,7 +471,7 @@ export function MapControls({
               onClick={() => onViewModeChange("list")}
               className={`px-2.5 py-1.5 flex items-center gap-1 text-sm ${
                 viewMode === "list"
-                  ? "bg-blue-50 text-blue-700"
+                  ? "bg-tl-50 text-tl-700"
                   : "bg-white text-gray-600 hover:bg-gray-50"
               }`}
               title="Vista lista"

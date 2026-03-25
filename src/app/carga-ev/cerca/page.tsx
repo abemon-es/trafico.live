@@ -213,8 +213,8 @@ export default function CargaEVCercaPage() {
                               charger.powerKw >= 50
                                 ? "bg-green-100 text-green-700"
                                 : charger.powerKw >= 22
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-blue-100 text-blue-700"
+                                ? "bg-tl-amber-100 text-tl-amber-700"
+                                : "bg-tl-100 text-tl-700"
                             }`}
                           >
                             {charger.powerKw} kW

@@ -20,9 +20,9 @@ const colorClasses = {
     dot: "bg-orange-500",
   },
   blue: {
-    active: "bg-blue-100 border-blue-500 text-blue-700",
+    active: "bg-tl-100 border-tl-500 text-tl-700",
     inactive: "bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-100",
-    dot: "bg-blue-500",
+    dot: "bg-tl-500",
   },
   green: {
     active: "bg-green-100 border-green-500 text-green-700",
@@ -50,9 +50,9 @@ const colorClasses = {
     dot: "bg-yellow-500",
   },
   amber: {
-    active: "bg-amber-100 border-amber-500 text-amber-700",
+    active: "bg-tl-amber-100 border-tl-amber-500 text-tl-amber-700",
     inactive: "bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-100",
-    dot: "bg-amber-500",
+    dot: "bg-tl-amber-500",
   },
 };
 

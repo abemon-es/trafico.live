@@ -52,8 +52,8 @@ export default function SobrePage() {
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <Database className="w-6 h-6 text-blue-600" />
+                <div className="p-2 bg-tl-50 rounded-lg">
+                  <Database className="w-6 h-6 text-tl-600" />
                 </div>
                 <h3 className="font-semibold text-gray-900">Datos oficiales</h3>
               </div>
@@ -104,7 +104,7 @@ export default function SobrePage() {
                   href="https://nap.dgt.es"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
+                  className="text-tl-600 hover:text-tl-700 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -122,7 +122,7 @@ export default function SobrePage() {
                   href="https://www.dgt.es/menusecundario/dgt-en-cifras/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
+                  className="text-tl-600 hover:text-tl-700 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -140,7 +140,7 @@ export default function SobrePage() {
                   href="https://www.aemet.es"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
+                  className="text-tl-600 hover:text-tl-700 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -158,7 +158,7 @@ export default function SobrePage() {
                   href="https://api.euskadi.eus"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
+                  className="text-tl-600 hover:text-tl-700 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -176,7 +176,7 @@ export default function SobrePage() {
                   href="https://transit.gencat.cat"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
+                  className="text-tl-600 hover:text-tl-700 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -188,8 +188,8 @@ export default function SobrePage() {
         {/* Limitations */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Limitaciones</h2>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
-            <ul className="space-y-3 text-amber-800">
+          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-6">
+            <ul className="space-y-3 text-tl-amber-800">
               <li className="flex items-start gap-2">
                 <span className="font-bold">•</span>
                 <span>Puede haber un retraso de hasta 2 minutos entre que ocurre un evento y su publicación en el sistema.</span>

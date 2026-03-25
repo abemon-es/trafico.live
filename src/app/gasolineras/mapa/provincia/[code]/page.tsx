@@ -159,13 +159,13 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="text-sm text-gray-600 mb-1">Gasóleo A (media)</div>
-            <div className="text-2xl font-bold text-amber-600">
+            <div className="text-2xl font-bold text-tl-amber-600">
               {avgDiesel ? `${avgDiesel.toFixed(3)}€` : "-"}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="text-sm text-gray-600 mb-1">Gasolina 95 (media)</div>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-tl-600">
               {avgGas95 ? `${avgGas95.toFixed(3)}€` : "-"}
             </div>
           </div>
@@ -183,11 +183,11 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             {cheapestDiesel && (
               <Link
                 href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-                className="bg-amber-50 rounded-lg border border-amber-200 p-4 hover:bg-amber-100 transition-colors"
+                className="bg-tl-amber-50 rounded-lg border border-tl-amber-200 p-4 hover:bg-tl-amber-100 transition-colors"
               >
-                <div className="text-sm text-amber-600 mb-1">Gasóleo A más barato</div>
+                <div className="text-sm text-tl-amber-600 mb-1">Gasóleo A más barato</div>
                 <div className="font-semibold text-gray-900">{cheapestDiesel.name}</div>
-                <div className="text-xl font-bold text-amber-700 mt-1">
+                <div className="text-xl font-bold text-tl-amber-700 mt-1">
                   {cheapestDiesel.price.toFixed(3)}€
                 </div>
               </Link>
@@ -195,11 +195,11 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             {cheapestGas95 && (
               <Link
                 href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-                className="bg-blue-50 rounded-lg border border-blue-200 p-4 hover:bg-blue-100 transition-colors"
+                className="bg-tl-50 rounded-lg border border-tl-200 p-4 hover:bg-tl-100 transition-colors"
               >
-                <div className="text-sm text-blue-600 mb-1">Gasolina 95 más barata</div>
+                <div className="text-sm text-tl-600 mb-1">Gasolina 95 más barata</div>
                 <div className="font-semibold text-gray-900">{cheapestGas95.name}</div>
-                <div className="text-xl font-bold text-blue-700 mt-1">
+                <div className="text-xl font-bold text-tl-700 mt-1">
                   {cheapestGas95.price.toFixed(3)}€
                 </div>
               </Link>
@@ -246,7 +246,7 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             href={`/gasolineras/precios/${paddedCode}`}
             className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
           >
-            <BarChart3 className="w-6 h-6 text-blue-600" />
+            <BarChart3 className="w-6 h-6 text-tl-600" />
             <div>
               <h3 className="font-semibold text-gray-900">Precios</h3>
               <p className="text-sm text-gray-500">Comparativa de precios en {provinceName}</p>

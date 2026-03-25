@@ -88,7 +88,7 @@ export function CamarasContent() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Camera className="w-8 h-8 text-blue-600" />
+            <Camera className="w-8 h-8 text-tl-600" />
             Cámaras de Tráfico
           </h1>
           <p className="mt-2 text-gray-600">
@@ -108,7 +108,7 @@ export function CamarasContent() {
                 <p className="text-sm text-gray-500">Cámaras totales</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-tl-600">
                   {filteredCameras.length}
                 </p>
                 <p className="text-sm text-gray-500">Mostrando</p>
@@ -131,7 +131,7 @@ export function CamarasContent() {
                   placeholder="Buscar carretera, km..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
                 />
               </div>
 
@@ -144,7 +144,7 @@ export function CamarasContent() {
                     setSelectedCommunity(e.target.value);
                     setSelectedProvince(""); // Clear province when community changes
                   }}
-                  className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
                 >
                   <option value="">Todas las comunidades</option>
                   {communities.map((community) => (
@@ -161,7 +161,7 @@ export function CamarasContent() {
                 <select
                   value={selectedProvince}
                   onChange={(e) => setSelectedProvince(e.target.value)}
-                  className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-tl-500 focus:border-transparent"
                 >
                   <option value="">Todas las provincias</option>
                   {data?.provinces.map((province) => (
@@ -192,7 +192,7 @@ export function CamarasContent() {
         {/* Loading state */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-4" />
+            <Loader2 className="w-8 h-8 text-tl-600 animate-spin mb-4" />
             <p className="text-gray-600">Cargando cámaras...</p>
           </div>
         )}

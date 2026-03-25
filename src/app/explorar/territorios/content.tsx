@@ -80,14 +80,14 @@ export default function TerritoriosContent() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {/* Real-time - highlighted first */}
-        <div className="bg-amber-50 rounded-lg shadow-sm border border-amber-200 p-4">
+        <div className="bg-tl-amber-50 rounded-lg shadow-sm border border-tl-amber-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-amber-100 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-amber-600" />
+            <div className="p-2 bg-tl-amber-100 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-tl-amber-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-amber-700">{stats.activeIncidents || 0}</p>
-          <p className="text-sm text-amber-600">Incidencias activas</p>
+          <p className="text-2xl font-bold text-tl-amber-700">{stats.activeIncidents || 0}</p>
+          <p className="text-sm text-tl-amber-600">Incidencias activas</p>
         </div>
         <div className="bg-orange-50 rounded-lg shadow-sm border border-orange-200 p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -100,8 +100,8 @@ export default function TerritoriosContent() {
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <MapPin className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-tl-50 rounded-lg">
+              <MapPin className="w-5 h-5 text-tl-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{communities.length}</p>
@@ -165,11 +165,11 @@ export default function TerritoriosContent() {
             <Link
               key={community.code}
               href={`/explorar/territorios/${community.slug}`}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all group"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-tl-600">
                     {community.name}
                   </h3>
                   <p className="text-sm text-gray-500">
@@ -177,7 +177,7 @@ export default function TerritoriosContent() {
                     {community.provinces.length !== 1 ? "s" : ""}
                   </p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500" />
               </div>
               {community.provinces.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1">
@@ -225,7 +225,7 @@ export default function TerritoriosContent() {
                       {community.provinces.length !== 1 ? "s" : ""}
                     </p>
                   </div>
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">
+                  <span className="text-xs bg-tl-amber-100 text-tl-amber-700 px-2 py-1 rounded">
                     Sistema propio
                   </span>
                 </div>

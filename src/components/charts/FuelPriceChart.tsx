@@ -66,8 +66,8 @@ const PERIOD_LABELS: Record<Period, string> = {
 };
 
 const COLORS = {
-  diesel: "#d97706",    // amber-600
-  gasolina95: "#2563eb", // blue-600
+  diesel: "#d97706",    // tl-amber-600
+  gasolina95: "#2563eb", // tl-600
   gasolina98: "#7c3aed", // violet-600
 };
 
@@ -226,22 +226,22 @@ export function FuelPriceChart({
           onClick={() => toggleLine("diesel")}
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.diesel
-              ? "border-amber-400 bg-amber-50 text-amber-700"
+              ? "border-tl-amber-400 bg-tl-amber-50 text-tl-amber-700"
               : "border-gray-200 bg-gray-50 text-gray-400 opacity-50"
           }`}
         >
-          <span className="w-2 h-2 rounded-full bg-amber-500" />
+          <span className="w-2 h-2 rounded-full bg-tl-amber-500" />
           Gasóleo A
         </button>
         <button
           onClick={() => toggleLine("gasolina95")}
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.gasolina95
-              ? "border-blue-400 bg-blue-50 text-blue-700"
+              ? "border-tl-400 bg-tl-50 text-tl-700"
               : "border-gray-200 bg-gray-50 text-gray-400 opacity-50"
           }`}
         >
-          <span className="w-2 h-2 rounded-full bg-blue-600" />
+          <span className="w-2 h-2 rounded-full bg-tl-600" />
           Gasolina 95
         </button>
         <button

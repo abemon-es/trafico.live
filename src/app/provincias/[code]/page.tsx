@@ -222,8 +222,8 @@ export default async function ProvinciaDetailPage({ params }: Props) {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Calendar className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-tl-50 rounded-lg">
+                <Calendar className="w-5 h-5 text-tl-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
@@ -283,7 +283,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                           {incident.roadNumber && (
                             <Link
                               href={`/carreteras/${incident.roadNumber}`}
-                              className="text-sm text-blue-600 hover:underline"
+                              className="text-sm text-tl-600 hover:underline"
                             >
                               {incident.roadNumber}
                             </Link>
@@ -422,15 +422,15 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                   {cheapestDiesel && (
                     <Link
                       href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-                      className="block p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+                      className="block p-3 bg-tl-amber-50 rounded-lg hover:bg-tl-amber-100 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-xs text-amber-600 mb-1">Gasóleo A más barato</div>
+                          <div className="text-xs text-tl-amber-600 mb-1">Gasóleo A más barato</div>
                           <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestDiesel.name}</div>
                           <div className="text-xs text-gray-500">{cheapestDiesel.locality}</div>
                         </div>
-                        <div className="text-xl font-bold text-amber-700">
+                        <div className="text-xl font-bold text-tl-amber-700">
                           {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
                         </div>
                       </div>
@@ -439,15 +439,15 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                   {cheapestGas95 && (
                     <Link
                       href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-                      className="block p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                      className="block p-3 bg-tl-50 rounded-lg hover:bg-tl-100 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-xs text-blue-600 mb-1">Gasolina 95 más barata</div>
+                          <div className="text-xs text-tl-600 mb-1">Gasolina 95 más barata</div>
                           <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestGas95.name}</div>
                           <div className="text-xs text-gray-500">{cheapestGas95.locality}</div>
                         </div>
-                        <div className="text-xl font-bold text-blue-700">
+                        <div className="text-xl font-bold text-tl-700">
                           {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
                         </div>
                       </div>

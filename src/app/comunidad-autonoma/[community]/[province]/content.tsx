@@ -140,7 +140,7 @@ export default function ProvinceContent() {
             {data?.success === false ? "Provincia no encontrada" : "Error al cargar datos"}
           </h2>
           <p className="text-gray-500">No se pudieron cargar los datos de la provincia</p>
-          <Link href="/espana" className="mt-4 inline-block text-blue-600 hover:underline">
+          <Link href="/espana" className="mt-4 inline-block text-tl-600 hover:underline">
             ← Volver a todas las comunidades
           </Link>
         </div>
@@ -155,17 +155,17 @@ export default function ProvinceContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-          <Link href="/" className="hover:text-blue-600">
+          <Link href="/" className="hover:text-tl-600">
             <Home className="w-4 h-4" />
           </Link>
           <span>/</span>
-          <Link href="/espana" className="hover:text-blue-600">
+          <Link href="/espana" className="hover:text-tl-600">
             España
           </Link>
           <span>/</span>
           <Link
             href={`/comunidad-autonoma/${province.community.slug}`}
-            className="hover:text-blue-600"
+            className="hover:text-tl-600"
           >
             {province.community.name}
           </Link>
@@ -186,8 +186,8 @@ export default function ProvinceContent() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Building2 className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-tl-50 rounded-lg">
+                <Building2 className="w-5 h-5 text-tl-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
@@ -271,8 +271,8 @@ export default function ProvinceContent() {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Camera className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-tl-50 rounded-lg">
+                <Camera className="w-5 h-5 text-tl-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
@@ -314,7 +314,7 @@ export default function ProvinceContent() {
         {provinceStats?.success && (
           <div className="mb-8 space-y-6">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+              <BarChart3 className="w-5 h-5 text-tl-600" />
               Estadísticas de Tráfico (Últimos 30 días)
             </h2>
 
@@ -374,7 +374,7 @@ export default function ProvinceContent() {
             {provinceStats.data.topRoads.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Route className="w-5 h-5 text-blue-600" />
+                  <Route className="w-5 h-5 text-tl-600" />
                   Carreteras con más Actividad
                 </h3>
                 <div className="overflow-x-auto">
@@ -403,9 +403,9 @@ export default function ProvinceContent() {
             )}
 
             {/* Comparison to National Average */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-medium text-blue-900 mb-2">Comparación con Media Nacional</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+            <div className="bg-tl-50 border border-tl-200 rounded-lg p-4">
+              <h3 className="font-medium text-tl-900 mb-2">Comparación con Media Nacional</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-tl-800">
                 <div>
                   <span className="font-medium">Incidencias:</span>{" "}
                   {provinceStats.data.comparison.incidents.province} en la provincia vs{" "}
@@ -444,11 +444,11 @@ export default function ProvinceContent() {
                 <Link
                   key={municipality.code}
                   href={`/comunidad-autonoma/${province.community.slug}/${province.slug}/${municipality.slug}`}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all group"
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-900 group-hover:text-blue-600">
+                      <h3 className="font-semibold text-gray-900 group-hover:text-tl-600">
                         {municipality.name}
                       </h3>
                       <p className="text-sm text-gray-500">
@@ -457,7 +457,7 @@ export default function ProvinceContent() {
                           : "Sin datos"}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500" />
                   </div>
                 </Link>
               ))}
@@ -481,13 +481,13 @@ export default function ProvinceContent() {
         <div className="mt-8 flex gap-4">
           <Link
             href={`/comunidad-autonoma/${province.community.slug}`}
-            className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
           >
             ← Volver a {province.community.name}
           </Link>
           <Link
             href="/espana"
-            className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
           >
             ← Todas las comunidades
           </Link>

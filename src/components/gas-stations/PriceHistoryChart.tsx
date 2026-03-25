@@ -134,12 +134,12 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasoleoA
-              ? "bg-amber-100 text-amber-700 border border-amber-200"
+              ? "bg-tl-amber-100 text-tl-amber-700 border border-tl-amber-200"
               : "bg-gray-100 text-gray-500 border border-gray-200"
             }
           `}
         >
-          <span className="w-2 h-2 rounded-full bg-amber-500" />
+          <span className="w-2 h-2 rounded-full bg-tl-amber-500" />
           Gasóleo A
           {trends.gasoleoA && <TrendIcon direction={trends.gasoleoA.direction} />}
         </button>
@@ -148,12 +148,12 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasolina95
-              ? "bg-blue-100 text-blue-700 border border-blue-200"
+              ? "bg-tl-100 text-tl-700 border border-tl-200"
               : "bg-gray-100 text-gray-500 border border-gray-200"
             }
           `}
         >
-          <span className="w-2 h-2 rounded-full bg-blue-500" />
+          <span className="w-2 h-2 rounded-full bg-tl-500" />
           Gasolina 95
           {trends.gasolina95 && <TrendIcon direction={trends.gasolina95.direction} />}
         </button>

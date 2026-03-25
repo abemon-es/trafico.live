@@ -238,35 +238,35 @@ export default async function BaratasCityPage({ params }: Props) {
 
         {/* Provincial average summary */}
         {provincialAvg && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
-            <h2 className="text-sm font-semibold text-blue-700 uppercase tracking-wide mb-3">
+          <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-8">
+            <h2 className="text-sm font-semibold text-tl-700 uppercase tracking-wide mb-3">
               Precio Medio Provincial — {cityData.province}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
-                <div className="text-xs text-blue-600 mb-0.5">Gasóleo A (media)</div>
-                <div className="text-2xl font-bold text-blue-800">
+                <div className="text-xs text-tl-600 mb-0.5">Gasóleo A (media)</div>
+                <div className="text-2xl font-bold text-tl-800">
                   {formatPrice(provincialAvg.avgGasoleoA)}
                 </div>
-                <div className="text-xs text-blue-500 mt-0.5">
+                <div className="text-xs text-tl-500 mt-0.5">
                   Mín {formatPrice(provincialAvg.minGasoleoA)} · Máx {formatPrice(provincialAvg.maxGasoleoA)}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-blue-600 mb-0.5">Gasolina 95 (media)</div>
-                <div className="text-2xl font-bold text-blue-800">
+                <div className="text-xs text-tl-600 mb-0.5">Gasolina 95 (media)</div>
+                <div className="text-2xl font-bold text-tl-800">
                   {formatPrice(provincialAvg.avgGasolina95)}
                 </div>
-                <div className="text-xs text-blue-500 mt-0.5">
+                <div className="text-xs text-tl-500 mt-0.5">
                   Mín {formatPrice(provincialAvg.minGasolina95)} · Máx {formatPrice(provincialAvg.maxGasolina95)}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-blue-600 mb-0.5">Estaciones totales</div>
-                <div className="text-2xl font-bold text-blue-800">
+                <div className="text-xs text-tl-600 mb-0.5">Estaciones totales</div>
+                <div className="text-2xl font-bold text-tl-800">
                   {provincialAvg.stationCount.toLocaleString("es-ES")}
                 </div>
-                <div className="text-xs text-blue-500 mt-0.5">
+                <div className="text-xs text-tl-500 mt-0.5">
                   en {cityData.province}
                 </div>
               </div>
@@ -288,7 +288,7 @@ export default async function BaratasCityPage({ params }: Props) {
         {/* Cheapest Diesel Top 10 */}
         <section className="mb-10">
           <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-amber-500 inline-block"></span>
             Top 10 Gasóleo A más barato en {cityData.name}
           </h2>
           <p className="text-sm text-gray-500 mb-4">
@@ -306,24 +306,24 @@ export default async function BaratasCityPage({ params }: Props) {
                 <Link
                   key={station.id}
                   href={`/gasolineras/terrestres/${station.id}`}
-                  className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-amber-300 hover:shadow-sm transition-all group"
+                  className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-tl-amber-300 hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         idx === 0
-                          ? "bg-amber-500 text-white"
+                          ? "bg-tl-amber-500 text-white"
                           : idx === 1
-                          ? "bg-amber-400 text-white"
+                          ? "bg-tl-amber-400 text-white"
                           : idx === 2
-                          ? "bg-amber-300 text-white"
+                          ? "bg-tl-amber-300 text-white"
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
                       {idx + 1}
                     </span>
                     <div className="min-w-0">
-                      <div className="font-semibold text-gray-900 text-sm group-hover:text-amber-700 transition-colors truncate">
+                      <div className="font-semibold text-gray-900 text-sm group-hover:text-tl-amber-700 transition-colors truncate">
                         {station.name}
                       </div>
                       <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
@@ -343,7 +343,7 @@ export default async function BaratasCityPage({ params }: Props) {
                       </span>
                     )}
                     <SavingsBadge price={station.priceGasoleoA} avg={avgDiesel} />
-                    <span className="text-xl font-bold text-amber-700 font-mono min-w-[70px] text-right">
+                    <span className="text-xl font-bold text-tl-amber-700 font-mono min-w-[70px] text-right">
                       {formatPrice(station.priceGasoleoA)}
                     </span>
                   </div>
@@ -358,7 +358,7 @@ export default async function BaratasCityPage({ params }: Props) {
         {/* Cheapest Gas95 Top 10 */}
         <section className="mb-10">
           <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-500 inline-block"></span>
             Top 10 Gasolina 95 más barata en {cityData.name}
           </h2>
           <p className="text-sm text-gray-500 mb-4">
@@ -376,24 +376,24 @@ export default async function BaratasCityPage({ params }: Props) {
                 <Link
                   key={station.id}
                   href={`/gasolineras/terrestres/${station.id}`}
-                  className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all group"
+                  className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-tl-300 hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         idx === 0
-                          ? "bg-blue-500 text-white"
+                          ? "bg-tl-500 text-white"
                           : idx === 1
-                          ? "bg-blue-400 text-white"
+                          ? "bg-tl-400 text-white"
                           : idx === 2
-                          ? "bg-blue-300 text-white"
+                          ? "bg-tl-300 text-white"
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
                       {idx + 1}
                     </span>
                     <div className="min-w-0">
-                      <div className="font-semibold text-gray-900 text-sm group-hover:text-blue-700 transition-colors truncate">
+                      <div className="font-semibold text-gray-900 text-sm group-hover:text-tl-700 transition-colors truncate">
                         {station.name}
                       </div>
                       <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
@@ -413,7 +413,7 @@ export default async function BaratasCityPage({ params }: Props) {
                       </span>
                     )}
                     <SavingsBadge price={station.priceGasolina95E5} avg={avgGas95} />
-                    <span className="text-xl font-bold text-blue-700 font-mono min-w-[70px] text-right">
+                    <span className="text-xl font-bold text-tl-700 font-mono min-w-[70px] text-right">
                       {formatPrice(station.priceGasolina95E5)}
                     </span>
                   </div>

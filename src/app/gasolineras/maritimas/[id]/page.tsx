@@ -121,7 +121,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
       {/* Back button */}
       <Link
         href="/gasolineras/maritimas"
-        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6"
+        className="inline-flex items-center gap-2 text-tl-600 hover:text-tl-700 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver al listado
@@ -130,21 +130,21 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
       {/* Header with brand and badges */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Anchor className="w-7 h-7 text-blue-600" />
+          <div className="w-14 h-14 bg-tl-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Anchor className="w-7 h-7 text-tl-600" />
           </div>
           <div className="flex-1">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 {/* Brand and port badges */}
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="inline-flex px-2 py-0.5 bg-blue-800 text-white text-xs font-bold rounded">
+                  <span className="inline-flex px-2 py-0.5 bg-tl-800 text-white text-xs font-bold rounded">
                     {brandName}
                   </span>
                   {badges.map((badge) => (
                     <span
                       key={badge.label}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-tl-100 text-tl-700 rounded text-xs font-medium"
                     >
                       {badge.label === "24h" && <Clock className="w-3 h-3" />}
                       {badge.label}
@@ -153,7 +153,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900">{station.name}</h1>
                 {station.port && (
-                  <p className="text-lg text-blue-600 font-medium">Puerto de {station.port}</p>
+                  <p className="text-lg text-tl-600 font-medium">Puerto de {station.port}</p>
                 )}
                 <p className="text-gray-600">
                   {station.locality}
@@ -174,7 +174,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
                 href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-tl-600 text-white rounded-lg hover:bg-tl-700 transition-colors"
               >
                 <Navigation className="w-4 h-4" />
                 Como llegar
@@ -243,8 +243,8 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
         <div className="grid grid-cols-2 gap-4">
           {mainFuels.map((fuel) => {
             const colorClasses: Record<string, { bg: string; text: string; textDark: string }> = {
-              amber: { bg: "bg-amber-50", text: "text-amber-600", textDark: "text-amber-700" },
-              blue: { bg: "bg-blue-50", text: "text-blue-600", textDark: "text-blue-700" },
+              amber: { bg: "bg-tl-amber-50", text: "text-tl-amber-600", textDark: "text-tl-amber-700" },
+              blue: { bg: "bg-tl-50", text: "text-tl-600", textDark: "text-tl-700" },
             };
             const colors = colorClasses[fuel.color] || colorClasses.amber;
 

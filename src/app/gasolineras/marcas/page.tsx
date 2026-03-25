@@ -208,26 +208,26 @@ export default async function MarcasPage() {
         )}
 
         {biggestBrand && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+          <div className="bg-tl-50 border border-tl-200 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Building2 className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Marca con más estaciones</span>
+              <Building2 className="w-5 h-5 text-tl-600" />
+              <span className="text-sm font-medium text-tl-700">Marca con más estaciones</span>
             </div>
-            <p className="text-2xl font-bold text-blue-800">{biggestBrand.brand}</p>
-            <p className="text-lg font-semibold text-blue-700 mt-1">
-              {biggestBrand.count.toLocaleString("es-ES")} <span className="text-sm font-normal text-blue-600">estaciones</span>
+            <p className="text-2xl font-bold text-tl-800">{biggestBrand.brand}</p>
+            <p className="text-lg font-semibold text-tl-700 mt-1">
+              {biggestBrand.count.toLocaleString("es-ES")} <span className="text-sm font-normal text-tl-600">estaciones</span>
             </p>
           </div>
         )}
 
         {savings50L && cheapestDieselBrand && mostExpensiveDieselBrand && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Fuel className="w-5 h-5 text-amber-600" />
-              <span className="text-sm font-medium text-amber-700">Ahorro repostando 50 L</span>
+              <Fuel className="w-5 h-5 text-tl-amber-600" />
+              <span className="text-sm font-medium text-tl-amber-700">Ahorro repostando 50 L</span>
             </div>
-            <p className="text-2xl font-bold text-amber-800">{savings50L}€</p>
-            <p className="text-sm text-amber-700 mt-1">
+            <p className="text-2xl font-bold text-tl-amber-800">{savings50L}€</p>
+            <p className="text-sm text-tl-amber-700 mt-1">
               eligiendo {cheapestDieselBrand.brand} en vez de {mostExpensiveDieselBrand.brand}
             </p>
           </div>
@@ -299,7 +299,7 @@ export default async function MarcasPage() {
                     <td className="px-4 py-3.5 text-right tabular-nums">
                       <span
                         className={`font-semibold ${
-                          isFirst ? "text-green-700" : isLast ? "text-red-600" : "text-amber-700"
+                          isFirst ? "text-green-700" : isLast ? "text-red-600" : "text-tl-amber-700"
                         }`}
                       >
                         {formatPrice(b.avgDiesel)}
@@ -309,7 +309,7 @@ export default async function MarcasPage() {
                       {formatPrice(b.minDiesel)}
                     </td>
                     <td className="px-4 py-3.5 text-right tabular-nums">
-                      <span className="text-blue-700 font-medium">{formatPrice(b.avgGas95)}</span>
+                      <span className="text-tl-700 font-medium">{formatPrice(b.avgGas95)}</span>
                     </td>
                     <td className="px-4 py-3.5 text-right tabular-nums text-gray-600">
                       {formatPrice(b.minGas95)}

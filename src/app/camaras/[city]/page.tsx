@@ -160,8 +160,8 @@ export default async function CamarasCityPage({ params }: Props) {
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <Video className="w-8 h-8 text-blue-600" />
+            <div className="p-3 bg-tl-50 rounded-lg">
+              <Video className="w-8 h-8 text-tl-600" />
             </div>
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
@@ -173,11 +173,11 @@ export default async function CamarasCityPage({ params }: Props) {
               </p>
             </div>
             {hasCameras && (
-              <div className="hidden md:flex flex-col items-center bg-blue-50 border border-blue-200 rounded-lg px-5 py-3 text-center">
-                <span className="text-3xl font-bold text-blue-700">
+              <div className="hidden md:flex flex-col items-center bg-tl-50 border border-tl-200 rounded-lg px-5 py-3 text-center">
+                <span className="text-3xl font-bold text-tl-700">
                   {cameras.length.toLocaleString("es-ES")}
                 </span>
-                <span className="text-sm text-blue-600 mt-0.5">cámaras activas</span>
+                <span className="text-sm text-tl-600 mt-0.5">cámaras activas</span>
               </div>
             )}
           </div>
@@ -188,12 +188,12 @@ export default async function CamarasCityPage({ params }: Props) {
             {/* Stats bar */}
             <div className="flex flex-wrap gap-3 mb-6">
               <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm shadow-sm">
-                <Camera className="w-4 h-4 text-blue-600" />
+                <Camera className="w-4 h-4 text-tl-600" />
                 <span className="font-medium">{cameras.length}</span>
                 <span className="text-gray-500">cámaras</span>
               </div>
               <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm shadow-sm">
-                <MapPin className="w-4 h-4 text-amber-500" />
+                <MapPin className="w-4 h-4 text-tl-amber-500" />
                 <span className="font-medium">{roadsSorted.length}</span>
                 <span className="text-gray-500">carreteras</span>
               </div>
@@ -221,7 +221,7 @@ export default async function CamarasCityPage({ params }: Props) {
                       {road !== "Sin carretera" && (
                         <Link
                           href={`/carreteras/${encodeURIComponent(road)}/camaras`}
-                          className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                          className="flex items-center gap-1 text-sm text-tl-600 hover:text-tl-800 hover:underline"
                         >
                           Ver carretera
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -254,7 +254,7 @@ export default async function CamarasCityPage({ params }: Props) {
                               {cam.name}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs font-medium text-blue-600">
+                              <span className="text-xs font-medium text-tl-600">
                                 {cam.roadNumber}
                               </span>
                               {cam.kmPoint !== null && (
@@ -273,13 +273,13 @@ export default async function CamarasCityPage({ params }: Props) {
             </div>
 
             {/* Link to full cameras page */}
-            <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between gap-4">
-              <p className="text-sm text-blue-800">
+            <div className="mt-8 bg-tl-50 border border-tl-200 rounded-lg p-4 flex items-center justify-between gap-4">
+              <p className="text-sm text-tl-800">
                 ¿Quieres ver todas las cámaras de España? Accede al directorio completo.
               </p>
               <Link
                 href="/camaras"
-                className="flex-shrink-0 inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-shrink-0 inline-flex items-center gap-2 bg-tl-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-tl-700 transition-colors"
               >
                 Ver todas
                 <ArrowRight className="w-4 h-4" />
@@ -334,7 +334,7 @@ export default async function CamarasCityPage({ params }: Props) {
                         <Link
                           key={slug}
                           href={`/camaras/${slug}`}
-                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-tl-600 hover:bg-tl-50 hover:border-tl-200 transition-colors"
                         >
                           {nearbyData.name}
                         </Link>
@@ -342,7 +342,7 @@ export default async function CamarasCityPage({ params }: Props) {
                     })}
                     <Link
                       href="/camaras"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-tl-600 text-white rounded-lg text-sm font-medium hover:bg-tl-700 transition-colors"
                     >
                       Ver todas las cámaras
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -375,12 +375,12 @@ export default async function CamarasCityPage({ params }: Props) {
                   href={NON_DGT_CAMERA_PROVINCES[cityData.code]!.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
+                  className="text-tl-600 hover:underline"
                 >
                   transit.gencat.cat
                 </a>
                 . Para ver incidencias activas en {cityData.name}, consulta la sección de{" "}
-                <Link href="/incidencias" className="text-blue-600 hover:underline">
+                <Link href="/incidencias" className="text-tl-600 hover:underline">
                   incidencias de tráfico
                 </Link>
                 .
@@ -398,7 +398,7 @@ export default async function CamarasCityPage({ params }: Props) {
                 Las imágenes se actualizan automáticamente cada pocos minutos y son accesibles a
                 través de trafico.live sin necesidad de registrarse. Para ver incidencias activas en
                 {" "}{cityData.name}, consulta la sección de{" "}
-                <Link href="/incidencias" className="text-blue-600 hover:underline">
+                <Link href="/incidencias" className="text-tl-600 hover:underline">
                   incidencias de tráfico
                 </Link>
                 .

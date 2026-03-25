@@ -189,19 +189,19 @@ function WeatherAlertBadge({ count }: { count: number }) {
   if (count === 0) return null;
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-3">
-      <div className="p-2 bg-amber-100 rounded-lg">
-        <CloudRain className="w-5 h-5 text-amber-600" />
+    <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-3 flex items-center gap-3">
+      <div className="p-2 bg-tl-amber-100 rounded-lg">
+        <CloudRain className="w-5 h-5 text-tl-amber-600" />
       </div>
       <div className="flex-1">
-        <p className="text-sm font-medium text-amber-800">
+        <p className="text-sm font-medium text-tl-amber-800">
           {count} {count === 1 ? "alerta meteorológica activa" : "alertas meteorológicas activas"}
         </p>
-        <p className="text-xs text-amber-600">Puede afectar al tráfico</p>
+        <p className="text-xs text-tl-amber-600">Puede afectar al tráfico</p>
       </div>
       <a
         href="/estadisticas?tab=clima"
-        className="text-amber-700 hover:text-amber-900 flex items-center gap-1 text-sm"
+        className="text-tl-amber-700 hover:text-tl-amber-900 flex items-center gap-1 text-sm"
       >
         Ver <ArrowRight className="w-4 h-4" />
       </a>
@@ -227,19 +227,19 @@ function PeakHourBadge({
       className={`rounded-lg p-3 flex items-center gap-3 ${
         isAboveAverage
           ? "bg-red-50 border border-red-200"
-          : "bg-blue-50 border border-blue-200"
+          : "bg-tl-50 border border-tl-200"
       }`}
     >
-      <div className={`p-2 rounded-lg ${isAboveAverage ? "bg-red-100" : "bg-blue-100"}`}>
-        <Clock className={`w-5 h-5 ${isAboveAverage ? "text-red-600" : "text-blue-600"}`} />
+      <div className={`p-2 rounded-lg ${isAboveAverage ? "bg-red-100" : "bg-tl-100"}`}>
+        <Clock className={`w-5 h-5 ${isAboveAverage ? "text-red-600" : "text-tl-600"}`} />
       </div>
       <div className="flex-1">
-        <p className={`text-sm font-medium ${isAboveAverage ? "text-red-800" : "text-blue-800"}`}>
+        <p className={`text-sm font-medium ${isAboveAverage ? "text-red-800" : "text-tl-800"}`}>
           {isAboveAverage
             ? "Actividad superior a la media"
             : `Hora punta (${formatHour(currentHour)})`}
         </p>
-        <p className={`text-xs ${isAboveAverage ? "text-red-600" : "text-blue-600"}`}>
+        <p className={`text-xs ${isAboveAverage ? "text-red-600" : "text-tl-600"}`}>
           {isAboveAverage
             ? "Se recomienda precaución en carretera"
             : "Mayor concentración de tráfico habitual"}
@@ -338,8 +338,8 @@ export function EnhancedStatsCards() {
         <StatCard
           title="Cámaras"
           value={displayStats.cameras}
-          icon={<Camera className="w-5 h-5 text-blue-600" />}
-          color="bg-blue-50"
+          icon={<Camera className="w-5 h-5 text-tl-600" />}
+          color="bg-tl-50"
         />
         <StatCard
           title="Cargadores EV"

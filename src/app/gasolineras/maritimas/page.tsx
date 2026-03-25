@@ -71,8 +71,8 @@ const REGION_META: Record<
   },
   "Atlántico Sur": {
     label: "Atlántico Sur",
-    color: "bg-blue-50",
-    borderColor: "border-blue-200",
+    color: "bg-tl-50",
+    borderColor: "border-tl-200",
     icon: "⚓",
     desc: "Andalucía occidental, Islas Canarias",
   },
@@ -92,8 +92,8 @@ const REGION_META: Record<
   },
   "Ceuta y Melilla": {
     label: "Ceuta y Melilla",
-    color: "bg-amber-50",
-    borderColor: "border-amber-200",
+    color: "bg-tl-amber-50",
+    borderColor: "border-tl-amber-200",
     icon: "🏛️",
     desc: "Ciudades autónomas (fiscalidad especial)",
   },
@@ -102,7 +102,7 @@ const REGION_META: Record<
 const FUEL_TYPES = [
   {
     name: "Gasóleo A",
-    badge: "bg-amber-100 text-amber-800",
+    badge: "bg-tl-amber-100 text-tl-amber-800",
     desc: "Para motores diésel en embarcaciones de recreo y uso general. Es el combustible más utilizado en náutica por la mayoría de cruceros, veleros auxiliares y barcos de pesca artesanal.",
   },
   {
@@ -112,7 +112,7 @@ const FUEL_TYPES = [
   },
   {
     name: "Gasolina 95",
-    badge: "bg-blue-100 text-blue-800",
+    badge: "bg-tl-100 text-tl-800",
     desc: "Para motores fueraborda de gasolina, equipados en embarcaciones ligeras, neumáticas y pequeñas lanchas. También utilizado en motos de agua.",
   },
 ];
@@ -182,7 +182,7 @@ function FuelTypesSection() {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Fuel className="w-5 h-5 text-amber-600" />
+        <Fuel className="w-5 h-5 text-tl-amber-600" />
         Tipos de combustible en puertos deportivos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -201,11 +201,11 @@ function FuelTypesSection() {
 
 function TaxInfoBox() {
   return (
-    <div className="bg-amber-50 rounded-lg border border-amber-200 p-5 mb-8 flex items-start gap-3">
-      <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+    <div className="bg-tl-amber-50 rounded-lg border border-tl-amber-200 p-5 mb-8 flex items-start gap-3">
+      <AlertTriangle className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
       <div>
-        <h3 className="font-semibold text-amber-900 mb-1">Fiscalidad especial del combustible náutico</h3>
-        <p className="text-sm text-amber-800 leading-relaxed">
+        <h3 className="font-semibold text-tl-amber-900 mb-1">Fiscalidad especial del combustible náutico</h3>
+        <p className="text-sm text-tl-amber-800 leading-relaxed">
           El combustible adquirido en <strong>Canarias</strong> (IGIC 7 %), <strong>Ceuta</strong> y{" "}
           <strong>Melilla</strong> (IPSI 0,5 %) tiene una carga fiscal significativamente menor.
           La navegación comercial y de transporte en aguas comunitarias puede acceder a{" "}
@@ -223,7 +223,7 @@ function FAQSection() {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Info className="w-5 h-5 text-blue-600" />
+        <Info className="w-5 h-5 text-tl-600" />
         Preguntas frecuentes sobre combustible marítimo
       </h2>
       <div className="space-y-3">
@@ -334,7 +334,7 @@ export default function MaritimasPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-3">
-          <Anchor className="w-8 h-8 text-blue-600" />
+          <Anchor className="w-8 h-8 text-tl-600" />
           Estaciones Marítimas de Combustible en España
         </h1>
         <p className="text-gray-600 max-w-3xl">
@@ -345,14 +345,14 @@ export default function MaritimasPage() {
       </div>
 
       {/* Who needs maritime fuel */}
-      <div className="bg-blue-50 rounded-lg border border-blue-200 p-6 mb-8">
+      <div className="bg-tl-50 rounded-lg border border-tl-200 p-6 mb-8">
         <div className="flex items-start gap-4">
-          <Ship className="w-8 h-8 text-blue-600 flex-shrink-0 mt-0.5" />
+          <Ship className="w-8 h-8 text-tl-600 flex-shrink-0 mt-0.5" />
           <div>
-            <h2 className="text-lg font-semibold text-blue-900 mb-2">
+            <h2 className="text-lg font-semibold text-tl-900 mb-2">
               ¿Quién necesita combustible en puerto?
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-blue-800">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-tl-800">
               <div>
                 <strong className="block mb-1">Náutica de recreo</strong>
                 Veleros, cruceros, motos de agua y lanchas deportivas que requieren Gasóleo A o Gasolina 95 según el motor.
@@ -380,13 +380,13 @@ export default function MaritimasPage() {
             <div className="text-sm text-gray-500">estaciones en puertos</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-amber-700">
+            <div className="text-2xl font-bold text-tl-amber-700">
               {avgDiesel != null ? formatP(avgDiesel) : "—"}
             </div>
             <div className="text-sm text-gray-500">precio medio Gasóleo A</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-blue-700">
+            <div className="text-2xl font-bold text-tl-700">
               {avgGas95 != null ? formatP(avgGas95) : "—"}
             </div>
             <div className="text-sm text-gray-500">precio medio Gasolina 95</div>
@@ -451,7 +451,7 @@ export default function MaritimasPage() {
             onClick={() => setActiveRegion(null)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
               activeRegion === null
-                ? "bg-blue-600 text-white"
+                ? "bg-tl-600 text-white"
                 : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
             }`}
           >
@@ -463,7 +463,7 @@ export default function MaritimasPage() {
               onClick={() => setActiveRegion(activeRegion === key ? null : key)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeRegion === key
-                  ? "bg-blue-600 text-white"
+                  ? "bg-tl-600 text-white"
                   : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
               }`}
             >
@@ -483,7 +483,7 @@ export default function MaritimasPage() {
               placeholder="Buscar por nombre, puerto, localidad..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tl-500 focus:border-transparent"
             />
           </div>
           <button
@@ -503,7 +503,7 @@ export default function MaritimasPage() {
               <select
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tl-500"
               >
                 <option value="">Todas las provincias</option>
                 {Object.entries(PROVINCES).sort((a, b) => a[1].localeCompare(b[1])).map(([code, name]) => (
@@ -516,9 +516,9 @@ export default function MaritimasPage() {
 
         {province && (
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+            <span className="flex items-center gap-1 px-2 py-1 bg-tl-100 text-tl-700 rounded-full text-sm">
               {PROVINCES[province]}
-              <button onClick={() => setProvince("")} className="hover:text-blue-900">
+              <button onClick={() => setProvince("")} className="hover:text-tl-900">
                 <X className="w-4 h-4" />
               </button>
             </span>
@@ -529,7 +529,7 @@ export default function MaritimasPage() {
       {/* Results */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tl-600" />
         </div>
       ) : error ? (
         <div className="text-center py-12 text-red-600">
@@ -640,10 +640,10 @@ export default function MaritimasPage() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all group text-sm"
+              className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-tl-300 hover:shadow-sm transition-all group text-sm"
             >
-              <Anchor className="w-4 h-4 text-blue-500 flex-shrink-0" />
-              <span className="text-gray-700 group-hover:text-blue-700 transition-colors line-clamp-1">
+              <Anchor className="w-4 h-4 text-tl-500 flex-shrink-0" />
+              <span className="text-gray-700 group-hover:text-tl-700 transition-colors line-clamp-1">
                 {link.label}
               </span>
             </Link>
@@ -674,7 +674,7 @@ function StationCard({
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 line-clamp-1">{station.name}</h3>
           {station.port && (
-            <p className="text-sm text-blue-600 font-medium truncate">Puerto: {station.port}</p>
+            <p className="text-sm text-tl-600 font-medium truncate">Puerto: {station.port}</p>
           )}
           <p className="text-sm text-gray-500 line-clamp-1">
             {station.locality}
@@ -682,7 +682,7 @@ function StationCard({
           </p>
         </div>
         {station.is24h && (
-          <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full ml-2 flex-shrink-0">
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-tl-100 text-tl-700 text-xs rounded-full ml-2 flex-shrink-0">
             <Clock className="w-3 h-3" />
             24 h
           </span>
@@ -690,13 +690,13 @@ function StationCard({
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-amber-50 rounded p-2">
-          <div className="text-xs text-amber-600">Gasóleo A</div>
-          <div className="font-bold text-amber-700">{formatP(station.priceGasoleoA)}</div>
+        <div className="bg-tl-amber-50 rounded p-2">
+          <div className="text-xs text-tl-amber-600">Gasóleo A</div>
+          <div className="font-bold text-tl-amber-700">{formatP(station.priceGasoleoA)}</div>
         </div>
-        <div className="bg-blue-50 rounded p-2">
-          <div className="text-xs text-blue-600">Gasolina 95</div>
-          <div className="font-bold text-blue-700">{formatP(station.priceGasolina95E5)}</div>
+        <div className="bg-tl-50 rounded p-2">
+          <div className="text-xs text-tl-600">Gasolina 95</div>
+          <div className="font-bold text-tl-700">{formatP(station.priceGasolina95E5)}</div>
         </div>
       </div>
 

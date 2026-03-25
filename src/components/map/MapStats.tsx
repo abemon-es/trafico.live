@@ -49,7 +49,7 @@ export function MapStats({
 
         {cameraCount > 0 && (
           <div className="flex items-center gap-1.5 text-gray-700">
-            <Camera className="w-4 h-4 text-blue-500" />
+            <Camera className="w-4 h-4 text-tl-500" />
             <span className="font-medium">{cameraCount}</span>
             <span className="text-gray-500">cámaras</span>
           </div>

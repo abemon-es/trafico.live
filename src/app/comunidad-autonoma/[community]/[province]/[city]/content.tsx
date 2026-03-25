@@ -73,7 +73,7 @@ export default function CityContent() {
             {data?.success === false ? "Municipio no encontrado" : "Error al cargar datos"}
           </h2>
           <p className="text-gray-500">No se pudieron cargar los datos del municipio</p>
-          <Link href="/espana" className="mt-4 inline-block text-blue-600 hover:underline">
+          <Link href="/espana" className="mt-4 inline-block text-tl-600 hover:underline">
             ← Volver a todas las comunidades
           </Link>
         </div>
@@ -88,24 +88,24 @@ export default function CityContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-          <Link href="/" className="hover:text-blue-600">
+          <Link href="/" className="hover:text-tl-600">
             <Home className="w-4 h-4" />
           </Link>
           <span>/</span>
-          <Link href="/espana" className="hover:text-blue-600">
+          <Link href="/espana" className="hover:text-tl-600">
             España
           </Link>
           <span>/</span>
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}`}
-            className="hover:text-blue-600"
+            className="hover:text-tl-600"
           >
             {municipality.province.community.name}
           </Link>
           <span>/</span>
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}/${municipality.province.slug}`}
-            className="hover:text-blue-600"
+            className="hover:text-tl-600"
           >
             {municipality.province.name}
           </Link>
@@ -152,8 +152,8 @@ export default function CityContent() {
           )}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Building2 className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-tl-50 rounded-lg">
+                <Building2 className="w-5 h-5 text-tl-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">{municipality.code}</p>
@@ -171,7 +171,7 @@ export default function CityContent() {
             </p>
             <Link
               href={`/mapa?lat=${municipality.latitude}&lng=${municipality.longitude}&zoom=12`}
-              className="mt-2 inline-block text-blue-600 hover:text-blue-700 text-sm"
+              className="mt-2 inline-block text-tl-600 hover:text-tl-700 text-sm"
             >
               Ver en el mapa →
             </Link>
@@ -194,19 +194,19 @@ export default function CityContent() {
         <div className="mt-8 flex flex-wrap gap-4">
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}/${municipality.province.slug}`}
-            className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
           >
             ← Volver a {municipality.province.name}
           </Link>
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}`}
-            className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
           >
             ← {municipality.province.community.name}
           </Link>
           <Link
             href="/espana"
-            className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
           >
             ← Todas las comunidades
           </Link>

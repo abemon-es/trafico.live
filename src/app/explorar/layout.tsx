@@ -70,12 +70,12 @@ export default function ExplorarLayout({
                   className={`
                     group flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors
                     ${isActive
-                      ? "border-blue-500 text-blue-600"
+                      ? "border-tl-500 text-tl-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }
                   `}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-blue-500" : "text-gray-400 group-hover:text-gray-500"}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-tl-500" : "text-gray-400 group-hover:text-gray-500"}`} />
                   <span>{tab.label}</span>
                 </Link>
               );

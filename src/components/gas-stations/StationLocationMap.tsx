@@ -57,7 +57,7 @@ export function StationLocationMap({
     el.innerHTML = `
       <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white ${
         stationType === "maritime"
-          ? "bg-blue-500"
+          ? "bg-tl-500"
           : "bg-orange-500"
       }">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -111,7 +111,7 @@ export function StationLocationMap({
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-tl-600 hover:text-tl-700 hover:bg-tl-50 rounded transition-colors"
           >
             <Navigation className="w-3 h-3" />
             Llegar

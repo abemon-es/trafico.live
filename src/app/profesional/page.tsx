@@ -49,8 +49,8 @@ const FEATURE_CARDS = [
       "Localiza en tiempo real las gasolineras con el precio de diésel más competitivo para optimizar el coste de tu flota.",
     href: "/profesional/diesel",
     icon: Fuel,
-    color: "bg-amber-100 text-amber-600",
-    borderHover: "hover:border-amber-300",
+    color: "bg-tl-amber-100 text-tl-amber-600",
+    borderHover: "hover:border-tl-amber-300",
     stats: "Precios actualizados hoy",
     badge: null,
   },
@@ -60,8 +60,8 @@ const FEATURE_CARDS = [
       "Encuentra áreas de servicio con parking seguro para vehículos pesados, duchas, restauración y servicios 24h.",
     href: "/profesional/areas",
     icon: MapPin,
-    color: "bg-blue-100 text-blue-600",
-    borderHover: "hover:border-blue-300",
+    color: "bg-tl-100 text-tl-600",
+    borderHover: "hover:border-tl-300",
     stats: "Con servicios 24h",
     badge: null,
   },
@@ -227,7 +227,7 @@ export default function ProfesionalPage() {
           className="bg-white rounded-xl border border-gray-200 p-8 mb-10"
         >
           <div className="flex items-center gap-2 mb-2">
-            <Star className="w-5 h-5 text-amber-500" />
+            <Star className="w-5 h-5 text-tl-amber-500" />
             <h2 id="planes-heading" className="text-xl font-semibold text-gray-900">
               Planes de acceso
             </h2>
@@ -285,7 +285,7 @@ export default function ProfesionalPage() {
                   "Soporte por email prioritario",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm text-gray-700">
-                    <Zap className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    <Zap className="w-4 h-4 text-tl-amber-500 flex-shrink-0" />
                     {item}
                   </li>
                 ))}

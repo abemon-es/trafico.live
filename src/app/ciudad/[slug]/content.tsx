@@ -128,8 +128,8 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-tl-100 rounded-lg flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-tl-600" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -145,7 +145,7 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <AlertTriangle className="w-6 h-6 text-amber-500 mb-2" />
+            <AlertTriangle className="w-6 h-6 text-tl-amber-500 mb-2" />
             <p className="text-2xl font-bold text-gray-900">
               {incidentsLoading ? "-" : incidentsData?.count || 0}
             </p>
@@ -153,7 +153,7 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <Camera className="w-6 h-6 text-blue-500 mb-2" />
+            <Camera className="w-6 h-6 text-tl-500 mb-2" />
             <p className="text-2xl font-bold text-gray-900">
               {camerasLoading ? "-" : camerasData?.count || 0}
             </p>
@@ -182,12 +182,12 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <AlertTriangle className="w-5 h-5 text-tl-amber-500" />
                 <h2 className="font-semibold text-gray-900">Incidencias activas</h2>
               </div>
               <Link
                 href="/incidencias"
-                className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                className="text-sm text-tl-600 hover:underline flex items-center gap-1"
               >
                 Ver todas
                 <ChevronRight className="w-4 h-4" />
@@ -223,12 +223,12 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-blue-500" />
+                <Camera className="w-5 h-5 text-tl-500" />
                 <h2 className="font-semibold text-gray-900">Cámaras de tráfico</h2>
               </div>
               <Link
                 href="/camaras"
-                className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                className="text-sm text-tl-600 hover:underline flex items-center gap-1"
               >
                 Ver todas
                 <ChevronRight className="w-4 h-4" />
@@ -321,7 +321,7 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                           className={`text-xs font-medium px-2 py-0.5 rounded ${
                             charger.powerKw >= 50
                               ? "bg-green-100 text-green-700"
-                              : "bg-amber-100 text-amber-700"
+                              : "bg-tl-amber-100 text-tl-amber-700"
                           }`}
                         >
                           {charger.powerKw} kW
@@ -371,7 +371,7 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
                       className={`text-xs px-2 py-0.5 rounded ${
                         zone.status === "ACTIVE"
                           ? "bg-red-100 text-red-700"
-                          : "bg-amber-100 text-amber-700"
+                          : "bg-tl-amber-100 text-tl-amber-700"
                       }`}
                     >
                       {zone.status === "ACTIVE" ? "Activa" : "Planificada"}
@@ -392,14 +392,14 @@ export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
               href="/gasolineras"
               className="bg-white rounded-lg p-4 text-center hover:shadow-md transition-shadow"
             >
-              <Fuel className="w-6 h-6 text-amber-600 mx-auto mb-2" />
+              <Fuel className="w-6 h-6 text-tl-amber-600 mx-auto mb-2" />
               <span className="text-sm text-gray-700">Gasolineras</span>
             </Link>
             <Link
               href="/carreteras"
               className="bg-white rounded-lg p-4 text-center hover:shadow-md transition-shadow"
             >
-              <MapPin className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+              <MapPin className="w-6 h-6 text-tl-600 mx-auto mb-2" />
               <span className="text-sm text-gray-700">Carreteras</span>
             </Link>
             <Link

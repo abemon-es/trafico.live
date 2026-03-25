@@ -88,15 +88,15 @@ export function PriceAlertForm({
 
   const isAmber = accent === "amber" || fuelType === "gasoleoA";
 
-  const borderColor = isAmber ? "border-amber-200" : "border-blue-200";
-  const bgColor = isAmber ? "bg-amber-50" : "bg-blue-50";
-  const titleColor = isAmber ? "text-amber-900" : "text-tl-800";
-  const iconColor = isAmber ? "text-amber-600" : "text-tl-600";
+  const borderColor = isAmber ? "border-tl-amber-200" : "border-tl-200";
+  const bgColor = isAmber ? "bg-tl-amber-50" : "bg-tl-50";
+  const titleColor = isAmber ? "text-tl-amber-900" : "text-tl-800";
+  const iconColor = isAmber ? "text-tl-amber-600" : "text-tl-600";
   const btnClass = isAmber
-    ? "bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
+    ? "bg-tl-amber-600 hover:bg-tl-amber-700 focus:ring-tl-amber-500"
     : "bg-tl-600 hover:bg-tl-700 focus:ring-tl-500";
   const inputFocusClass = isAmber
-    ? "focus:ring-amber-400 focus:border-amber-400"
+    ? "focus:ring-tl-amber-400 focus:border-tl-amber-400"
     : "focus:ring-tl-400 focus:border-tl-400";
 
   const selectedProvince = PROVINCES.find((p) => p.code === province);

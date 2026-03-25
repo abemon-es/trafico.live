@@ -53,7 +53,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 // Road type categories
 const ROAD_TYPES = [
   { prefix: "AP-", label: "Autopistas de peaje", color: "bg-purple-100 text-purple-700 border-purple-200" },
-  { prefix: "A-", label: "Autovías", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  { prefix: "A-", label: "Autovías", color: "bg-tl-100 text-tl-700 border-tl-200" },
   { prefix: "N-", label: "Carreteras Nacionales", color: "bg-green-100 text-green-700 border-green-200" },
   { prefix: "M-", label: "Madrid (Circunvalación)", color: "bg-orange-100 text-orange-700 border-orange-200" },
   { prefix: "B-", label: "Barcelona", color: "bg-red-100 text-red-700 border-red-200" },
@@ -201,21 +201,21 @@ export default function CarreterasContent() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Route className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-tl-50 rounded-lg">
+              <Route className="w-5 h-5 text-tl-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{totalRoads}</p>
           <p className="text-sm text-gray-500">Carreteras con datos</p>
         </div>
-        <div className="bg-amber-50 rounded-lg shadow-sm border border-amber-200 p-4">
+        <div className="bg-tl-amber-50 rounded-lg shadow-sm border border-tl-amber-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-amber-100 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            <div className="p-2 bg-tl-amber-100 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-tl-amber-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-amber-700">{incidentsData?.count || totalIncidents}</p>
-          <p className="text-sm text-amber-600">Incidencias activas</p>
+          <p className="text-2xl font-bold text-tl-amber-700">{incidentsData?.count || totalIncidents}</p>
+          <p className="text-sm text-tl-amber-600">Incidencias activas</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -273,7 +273,7 @@ export default function CarreterasContent() {
             onClick={() => setSelectedType(null)}
             className={`px-3 py-1 text-sm rounded-full border transition-colors ${
               selectedType === null
-                ? "bg-blue-100 text-blue-700 border-blue-300"
+                ? "bg-tl-100 text-tl-700 border-tl-300"
                 : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
             }`}
           >
@@ -337,19 +337,19 @@ export default function CarreterasContent() {
                     <Link
                       key={road.roadName}
                       href={`/explorar/carreteras/${encodeURIComponent(road.roadName)}`}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all group"
+                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600">
+                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-tl-600">
                           {road.roadName}
                         </h3>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         {road.incidentCount > 0 && (
                           <div className="flex items-center gap-1.5">
-                            <AlertTriangle className="w-4 h-4 text-amber-500" />
+                            <AlertTriangle className="w-4 h-4 text-tl-amber-500" />
                             <span className="text-gray-600">{road.incidentCount} incid.</span>
                           </div>
                         )}
@@ -367,7 +367,7 @@ export default function CarreterasContent() {
                         )}
                         {road.cameraCount > 0 && (
                           <div className="flex items-center gap-1.5">
-                            <Camera className="w-4 h-4 text-blue-500" />
+                            <Camera className="w-4 h-4 text-tl-500" />
                             <span className="text-gray-600">{road.cameraCount} cám.</span>
                           </div>
                         )}
@@ -385,7 +385,7 @@ export default function CarreterasContent() {
                 {!selectedType && sortedRoads.length > 12 && (
                   <button
                     onClick={() => setSelectedType(typePrefix)}
-                    className="mt-4 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                    className="mt-4 text-sm text-tl-600 hover:text-tl-700 hover:underline"
                   >
                     Ver todas las {sortedRoads.length} carreteras {typeInfo.label.toLowerCase()}
                   </button>

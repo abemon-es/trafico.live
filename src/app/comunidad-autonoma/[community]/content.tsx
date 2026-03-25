@@ -97,7 +97,7 @@ export default function CommunityContent() {
             {data?.success === false ? "Comunidad no encontrada" : "Error al cargar datos"}
           </h2>
           <p className="text-gray-500">No se pudieron cargar los datos de la comunidad</p>
-          <Link href="/espana" className="mt-4 inline-block text-blue-600 hover:underline">
+          <Link href="/espana" className="mt-4 inline-block text-tl-600 hover:underline">
             ← Volver a todas las comunidades
           </Link>
         </div>
@@ -113,11 +113,11 @@ export default function CommunityContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-blue-600">
+          <Link href="/" className="hover:text-tl-600">
             <Home className="w-4 h-4" />
           </Link>
           <span>/</span>
-          <Link href="/espana" className="hover:text-blue-600">
+          <Link href="/espana" className="hover:text-tl-600">
             España
           </Link>
           <span>/</span>
@@ -130,7 +130,7 @@ export default function CommunityContent() {
           <p className="mt-2 text-gray-600">
             Estado del tráfico en tiempo real en {community.name}.
             {community.isExcluded && (
-              <span className="ml-2 text-amber-600">
+              <span className="ml-2 text-tl-amber-600">
                 (Esta comunidad tiene sistema de tráfico propio)
               </span>
             )}
@@ -139,8 +139,8 @@ export default function CommunityContent() {
 
         {/* Excluded Warning */}
         {community.isExcluded && community.excludedReason && (
-          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-amber-800">
+          <div className="mb-6 bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4">
+            <p className="text-tl-amber-800">
               <strong>Nota:</strong> {community.excludedReason}
             </p>
           </div>
@@ -149,16 +149,16 @@ export default function CommunityContent() {
         {/* Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           {/* Real-time incidents - highlighted */}
-          <div className="bg-amber-50 rounded-lg shadow-sm border border-amber-200 p-4">
+          <div className="bg-tl-amber-50 rounded-lg shadow-sm border border-tl-amber-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-amber-600" />
+              <div className="p-2 bg-tl-amber-100 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-tl-amber-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-amber-700">
+            <p className="text-2xl font-bold text-tl-amber-700">
               {stats.activeIncidents || 0}
             </p>
-            <p className="text-sm text-amber-600">Incidencias activas</p>
+            <p className="text-sm text-tl-amber-600">Incidencias activas</p>
           </div>
           {/* V16 beacons */}
           <div className="bg-orange-50 rounded-lg shadow-sm border border-orange-200 p-4">
@@ -174,8 +174,8 @@ export default function CommunityContent() {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <MapPin className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-tl-50 rounded-lg">
+                <MapPin className="w-5 h-5 text-tl-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">{community.provinces.length}</p>
@@ -196,8 +196,8 @@ export default function CommunityContent() {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Camera className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-tl-50 rounded-lg">
+                <Camera className="w-5 h-5 text-tl-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
@@ -239,11 +239,11 @@ export default function CommunityContent() {
               <Link
                 key={province.code}
                 href={`/comunidad-autonoma/${community.slug}/${province.slug}`}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all group"
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-tl-600">
                       {province.name}
                     </h3>
                     <p className="text-sm text-gray-500">
@@ -252,7 +252,7 @@ export default function CommunityContent() {
                         : "Sin datos de población"}
                     </p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500" />
                 </div>
                 {province.municipalities.length > 0 && (
                   <div className="mt-3">
@@ -278,7 +278,7 @@ export default function CommunityContent() {
         <div className="mt-8">
           <Link
             href="/espana"
-            className="text-blue-600 hover:text-blue-700 hover:underline text-sm"
+            className="text-tl-600 hover:text-tl-700 hover:underline text-sm"
           >
             ← Volver a todas las comunidades
           </Link>

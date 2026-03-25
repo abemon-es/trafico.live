@@ -56,11 +56,11 @@ const CHARGING_TYPES: ChargingType[] = [
     sublabel: "~3.7 kW AC",
     pricePerKwh: 0.15,
     powerKw: 3.7,
-    color: "text-blue-700",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
-    activeBg: "bg-blue-100",
-    activeBorder: "border-blue-500",
+    color: "text-tl-700",
+    bgColor: "bg-tl-50",
+    borderColor: "border-tl-200",
+    activeBg: "bg-tl-100",
+    activeBorder: "border-tl-500",
   },
   {
     id: "public-slow",
@@ -68,11 +68,11 @@ const CHARGING_TYPES: ChargingType[] = [
     sublabel: "22 kW AC",
     pricePerKwh: 0.30,
     powerKw: 22,
-    color: "text-amber-700",
-    bgColor: "bg-amber-50",
-    borderColor: "border-amber-200",
-    activeBg: "bg-amber-100",
-    activeBorder: "border-amber-500",
+    color: "text-tl-amber-700",
+    bgColor: "bg-tl-amber-50",
+    borderColor: "border-tl-amber-200",
+    activeBg: "bg-tl-amber-100",
+    activeBorder: "border-tl-amber-500",
   },
   {
     id: "fast",
@@ -379,7 +379,7 @@ export default function CuantoCuestaCargarContent() {
                 if (targetCharge <= v) setTargetCharge(Math.min(100, v + 5));
               }}
               unit="%"
-              color="text-amber-600"
+              color="text-tl-amber-600"
             />
             <SliderInput
               label="Carga objetivo"
@@ -392,7 +392,7 @@ export default function CuantoCuestaCargarContent() {
               color="text-green-600"
             />
             {chargeDelta === 0 && (
-              <p className="text-xs text-amber-600 flex items-center gap-1">
+              <p className="text-xs text-tl-amber-600 flex items-center gap-1">
                 <Info className="w-3.5 h-3.5" />
                 La carga objetivo debe ser mayor que la actual.
               </p>
@@ -552,7 +552,7 @@ export default function CuantoCuestaCargarContent() {
                     </div>
                     <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden">
                       <div
-                        className="h-3 bg-amber-400 rounded-full"
+                        className="h-3 bg-tl-amber-400 rounded-full"
                         style={{
                           width:
                             results.cost > 0
@@ -561,7 +561,7 @@ export default function CuantoCuestaCargarContent() {
                         }}
                       />
                     </div>
-                    <div className="w-16 text-xs font-bold text-amber-700 text-right">
+                    <div className="w-16 text-xs font-bold text-tl-amber-700 text-right">
                       {formatEuros(results.dieselCostSameKm)}
                     </div>
                   </div>

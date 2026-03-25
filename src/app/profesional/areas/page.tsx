@@ -298,8 +298,8 @@ const AREAS_BY_ROUTE: { route: string; label: string; areas: RestArea[] }[] = [
 ];
 
 const SERVICE_ICONS: Record<string, { icon: React.ElementType; label: string; color: string }> = {
-  parking: { icon: Truck, label: "Parking camiones", color: "text-blue-600" },
-  fuel: { icon: Fuel, label: "Combustible", color: "text-amber-600" },
+  parking: { icon: Truck, label: "Parking camiones", color: "text-tl-600" },
+  fuel: { icon: Fuel, label: "Combustible", color: "text-tl-amber-600" },
   restaurant: { icon: Utensils, label: "Restaurante", color: "text-green-600" },
   coffee: { icon: Coffee, label: "Cafetería", color: "text-orange-600" },
   shower: { icon: ShowerHead, label: "Duchas", color: "text-cyan-600" },
@@ -309,9 +309,9 @@ const SERVICE_ICONS: Record<string, { icon: React.ElementType; label: string; co
 };
 
 const ROUTE_COLORS: Record<string, string> = {
-  "AP-7": "bg-blue-100 text-blue-700 border-blue-200",
+  "AP-7": "bg-tl-100 text-tl-700 border-tl-200",
   "A-1": "bg-green-100 text-green-700 border-green-200",
-  "A-2": "bg-amber-100 text-amber-700 border-amber-200",
+  "A-2": "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200",
   "A-4": "bg-red-100 text-red-700 border-red-200",
   "A-31": "bg-orange-100 text-orange-700 border-orange-200",
   "A-6": "bg-purple-100 text-purple-700 border-purple-200",
@@ -340,8 +340,8 @@ export default function AreasPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-tl-100 rounded-lg flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-tl-600" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -440,14 +440,14 @@ export default function AreasPage() {
                     </div>
 
                     {area.truckParking && (
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-tl-600 mt-1">
                         <Truck className="w-3 h-3 inline mr-1" />
                         ~{area.truckParking} plazas para camiones
                       </p>
                     )}
 
                     {area.notes && (
-                      <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 mt-2">
+                      <p className="text-xs text-tl-amber-700 bg-tl-amber-50 rounded px-2 py-1 mt-2">
                         {area.notes}
                       </p>
                     )}
@@ -482,19 +482,19 @@ export default function AreasPage() {
           </h2>
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               El reglamento CE 561/2006 exige una pausa de 45 min tras 4,5 h de conducción continua.
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               El descanso diario mínimo es de 11 horas consecutivas (o reducido a 9 h máximo 3 veces por semana).
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               Planifica las paradas con antelación en rutas con alto tráfico pesado (AP-7 en verano, A-2 permanente).
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               Los datos de plazas son orientativos. Confirma disponibilidad contactando con el área o usando apps de parking.
             </li>
           </ul>

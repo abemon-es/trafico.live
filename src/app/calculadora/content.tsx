@@ -30,9 +30,9 @@ const FUEL_DEFAULTS: Record<FuelType, FuelDefaults> = {
     precio: 1.35,
     co2Factor: 2.65,
     unit: "L",
-    color: "text-amber-700",
-    bgColor: "bg-amber-50",
-    borderColor: "border-amber-200",
+    color: "text-tl-amber-700",
+    bgColor: "bg-tl-amber-50",
+    borderColor: "border-tl-amber-200",
   },
   gasolina95: {
     label: "Gasolina 95",
@@ -184,7 +184,7 @@ function ComparisonRow({
         <div
           className={`w-2 h-8 rounded-full ${
             fuelType === "diesel"
-              ? "bg-amber-400"
+              ? "bg-tl-amber-400"
               : fuelType === "gasolina95"
               ? "bg-tl-500"
               : fuelType === "gasolina98"

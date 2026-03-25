@@ -82,12 +82,12 @@ const CATEGORY_META: Record<
   },
   combustible: {
     label: "Combustible",
-    badgeClass: "bg-amber-100 text-amber-700",
+    badgeClass: "bg-tl-amber-100 text-tl-amber-700",
   },
   ciudad: { label: "Ciudades", badgeClass: "bg-green-100 text-green-700" },
   provincia: {
     label: "Provincias",
-    badgeClass: "bg-blue-100 text-blue-700",
+    badgeClass: "bg-tl-100 text-tl-700",
   },
   carretera: {
     label: "Carreteras",

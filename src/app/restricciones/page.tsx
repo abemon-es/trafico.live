@@ -216,14 +216,14 @@ export default async function RestriccionesPage() {
                   </div>
                   <p className="text-sm text-red-700">08:00 – 24:00</p>
                 </div>
-                <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
+                <div className="bg-tl-amber-50 rounded-lg p-3 border border-tl-amber-100">
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm font-semibold text-amber-800">
+                    <Clock className="w-4 h-4 text-tl-amber-600" />
+                    <span className="text-sm font-semibold text-tl-amber-800">
                       Vísperas de festivo
                     </span>
                   </div>
-                  <p className="text-sm text-amber-700">15:00 – 24:00</p>
+                  <p className="text-sm text-tl-amber-700">15:00 – 24:00</p>
                 </div>
               </div>
 
@@ -246,10 +246,10 @@ export default async function RestriccionesPage() {
               {HEAVY_VEHICLE_RESTRICTIONS.specialPeriods.map((sp) => (
                 <div
                   key={sp.period}
-                  className="bg-white rounded-lg shadow-sm border border-amber-100 p-4"
+                  className="bg-white rounded-lg shadow-sm border border-tl-amber-100 p-4"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <AlertTriangle className="w-4 h-4 text-tl-amber-600" />
                     <h3 className="font-semibold text-gray-900">{sp.period}</h3>
                   </div>
                   <p className="text-xs text-tl-600 font-medium mb-2">{sp.dates}</p>
@@ -320,7 +320,7 @@ export default async function RestriccionesPage() {
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           zone.activeAllYear
                             ? "bg-red-50 text-red-600 border border-red-100"
-                            : "bg-amber-50 text-amber-600 border border-amber-100"
+                            : "bg-tl-amber-50 text-tl-amber-600 border border-tl-amber-100"
                         }`}
                       >
                         {zone.activeAllYear ? "Todo el año" : "Períodos limitados"}
@@ -358,7 +358,7 @@ export default async function RestriccionesPage() {
                 <p className="text-xs text-gray-500">Gálibo vertical</p>
               </div>
               <div className="bg-white rounded-lg border border-gray-200 p-3 text-center">
-                <Scale className="w-5 h-5 text-amber-600 mx-auto mb-1.5" />
+                <Scale className="w-5 h-5 text-tl-amber-600 mx-auto mb-1.5" />
                 <p className="text-sm font-medium text-gray-900">Peso</p>
                 <p className="text-xs text-gray-500">Tonelaje máximo</p>
               </div>
@@ -393,7 +393,7 @@ export default async function RestriccionesPage() {
                       </span>
                     )}
                     {t.weight && (
-                      <span className="text-xs bg-amber-50 text-amber-700 border border-amber-100 px-2 py-1 rounded-lg font-medium">
+                      <span className="text-xs bg-tl-amber-50 text-tl-amber-700 border border-tl-amber-100 px-2 py-1 rounded-lg font-medium">
                         Tonelaje máx: {t.weight}
                       </span>
                     )}

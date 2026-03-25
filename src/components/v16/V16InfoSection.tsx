@@ -117,8 +117,8 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
                 <p className="text-xs text-gray-600">A más de 1 km de distancia</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-              <MapPin className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-3 bg-tl-50 rounded-lg">
+              <MapPin className="w-5 h-5 text-tl-600 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-gray-900">GPS integrado</p>
                 <p className="text-xs text-gray-600">Transmite posición a la DGT</p>
@@ -253,16 +253,16 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
       </div>
 
       {/* Data Source Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">Sobre los datos mostrados</h3>
-        <p className="text-sm text-blue-800 mb-2">
+      <div className="bg-tl-50 border border-tl-200 rounded-lg p-4">
+        <h3 className="font-semibold text-tl-900 mb-2">Sobre los datos mostrados</h3>
+        <p className="text-sm text-tl-800 mb-2">
           Los datos de balizas V16 se obtienen en tiempo real de la plataforma{" "}
           <strong>NAP DATEX II</strong> de la DGT (Dirección General de Tráfico). El sistema
           recopila información cada 5 minutos sobre las balizas V16 conectadas que están activas en
           las carreteras españolas.
         </p>
         {dataStartDate && (
-          <p className="text-xs text-blue-700">
+          <p className="text-xs text-tl-700">
             <strong>Recopilando datos desde:</strong>{" "}
             {new Date(dataStartDate).toLocaleDateString("es-ES", {
               day: "numeric",

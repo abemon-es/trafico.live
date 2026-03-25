@@ -71,7 +71,7 @@ const EFFECT_CONFIG: Record<IncidentEffect, { label: string; icon: React.ReactNo
   DIVERSION: {
     label: "Desvíos",
     icon: <ArrowLeftRight className="w-4 h-4" />,
-    color: "bg-blue-500",
+    color: "bg-tl-500",
   },
   OTHER_EFFECT: {
     label: "Otras afecciones",
@@ -85,7 +85,7 @@ const CAUSE_CONFIG: Record<IncidentCause, { label: string; icon: React.ReactNode
   ROADWORK: {
     label: "Obras",
     icon: <Construction className="w-4 h-4" />,
-    color: "bg-amber-600",
+    color: "bg-tl-amber-600",
   },
   ACCIDENT: {
     label: "Accidentes",
@@ -95,7 +95,7 @@ const CAUSE_CONFIG: Record<IncidentCause, { label: string; icon: React.ReactNode
   WEATHER: {
     label: "Meteorológicos",
     icon: <CloudRain className="w-4 h-4" />,
-    color: "bg-blue-600",
+    color: "bg-tl-600",
   },
   RESTRICTION: {
     label: "Restricciones",

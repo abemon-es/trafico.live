@@ -49,7 +49,7 @@ function getZBEStatus(zone: ZBEZone): { label: string; color: string } {
   const from = new Date(zone.effectiveFrom);
   const until = zone.effectiveUntil ? new Date(zone.effectiveUntil) : null;
 
-  if (from > now) return { label: "Planificada", color: "bg-amber-100 text-amber-700" };
+  if (from > now) return { label: "Planificada", color: "bg-tl-amber-100 text-tl-amber-700" };
   if (until && until < now) return { label: "Expirada", color: "bg-gray-100 text-gray-700" };
   return { label: "Activa", color: "bg-red-100 text-red-700" };
 }
@@ -239,11 +239,11 @@ export default function RestriccionesContent() {
         {activeTab === "roads" && (
           <>
             {/* Info Banner */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-amber-800">Restricciones de infraestructura</h3>
-                <p className="text-sm text-amber-700 mt-1">
+                <h3 className="font-medium text-tl-amber-800">Restricciones de infraestructura</h3>
+                <p className="text-sm text-tl-amber-700 mt-1">
                   Algunos túneles y tramos tienen limitaciones de altura, peso o anchura.
                   Consulta siempre la normativa actualizada antes de planificar tu ruta.
                 </p>
@@ -253,12 +253,12 @@ export default function RestriccionesContent() {
             {/* Restriction Types */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-                <Ruler className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                <Ruler className="w-6 h-6 text-tl-600 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-900">Altura</p>
                 <p className="text-xs text-gray-500">Límites verticales</p>
               </div>
               <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-                <Scale className="w-6 h-6 text-amber-600 mx-auto mb-2" />
+                <Scale className="w-6 h-6 text-tl-amber-600 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-900">Peso</p>
                 <p className="text-xs text-gray-500">Tonelaje máximo</p>
               </div>
@@ -279,9 +279,9 @@ export default function RestriccionesContent() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-medium text-gray-900">{restriction.name}</h3>
-                      <p className="text-sm text-blue-600">{restriction.road}</p>
+                      <p className="text-sm text-tl-600">{restriction.road}</p>
                     </div>
-                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">
+                    <span className="text-xs bg-tl-amber-100 text-tl-amber-700 px-2 py-1 rounded">
                       {restriction.type === "tunnel" ? "Túnel" : "Carretera"}
                     </span>
                   </div>

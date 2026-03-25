@@ -46,18 +46,18 @@ export function BalizaV16Article() {
       <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
         Cronología de la obligatoriedad
       </h2>
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
+      <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-6">
         <ul className="space-y-3">
           <li className="flex items-start gap-3">
-            <span className="flex-shrink-0 w-24 text-sm font-semibold text-blue-700">Ene 2021</span>
+            <span className="flex-shrink-0 w-24 text-sm font-semibold text-tl-700">Ene 2021</span>
             <span className="text-gray-700 text-sm">La baliza V16 se aprueba como alternativa voluntaria a los triángulos.</span>
           </li>
           <li className="flex items-start gap-3">
-            <span className="flex-shrink-0 w-24 text-sm font-semibold text-blue-700">Ene 2026</span>
+            <span className="flex-shrink-0 w-24 text-sm font-semibold text-tl-700">Ene 2026</span>
             <span className="text-gray-700 text-sm"><strong>Obligatoria</strong> para todos los vehículos. Los triángulos dejan de ser válidos en carretera interurbana.</span>
           </li>
           <li className="flex items-start gap-3">
-            <span className="flex-shrink-0 w-24 text-sm font-semibold text-blue-700">2026+</span>
+            <span className="flex-shrink-0 w-24 text-sm font-semibold text-tl-700">2026+</span>
             <span className="text-gray-700 text-sm">Las versiones conectadas con transmisión GPS se exigirán progresivamente en vehículos nuevos.</span>
           </li>
         </ul>
@@ -134,9 +134,9 @@ export function BalizaV16Article() {
         <li>Llama al 112 o a tu asistencia en carretera.</li>
       </ol>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mt-8">
-        <p className="text-amber-800 text-sm font-medium mb-1">Multa por no llevarla</p>
-        <p className="text-amber-700 text-sm">
+      <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mt-8">
+        <p className="text-tl-amber-800 text-sm font-medium mb-1">Multa por no llevarla</p>
+        <p className="text-tl-amber-700 text-sm">
           No llevar la baliza V16 o utilizar triángulos en vía interurbana a partir de
           enero de 2026 puede suponer una multa de{" "}
           <strong>hasta 200 €</strong> según el artículo 11 del Reglamento General de

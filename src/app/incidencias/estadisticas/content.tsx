@@ -116,7 +116,7 @@ function DailyTrendChart({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
+          <TrendingUp className="w-5 h-5 text-tl-600" />
           Tendencia Diaria
         </h2>
         <div className="h-64 flex items-center justify-center text-gray-500">
@@ -134,7 +134,7 @@ function DailyTrendChart({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-blue-600" />
+        <TrendingUp className="w-5 h-5 text-tl-600" />
         Tendencia Diaria de Incidencias
       </h2>
       <div className="h-64 flex items-end gap-1">
@@ -304,7 +304,7 @@ function IncidentTypeChart({
     ROADWORK: "bg-orange-500",
     CONGESTION: "bg-yellow-500",
     HAZARD: "bg-purple-500",
-    VEHICLE_BREAKDOWN: "bg-blue-500",
+    VEHICLE_BREAKDOWN: "bg-tl-500",
     WEATHER: "bg-cyan-500",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
@@ -420,7 +420,7 @@ function SourceChart({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
+          <BarChart3 className="w-5 h-5 text-tl-600" />
           Por Fuente de Datos
         </h2>
         <div className="h-48 flex items-center justify-center text-gray-500">
@@ -451,7 +451,7 @@ function SourceChart({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <BarChart3 className="w-5 h-5 text-blue-600" />
+        <BarChart3 className="w-5 h-5 text-tl-600" />
         Por Fuente de Datos
       </h2>
       <div className="space-y-3">
@@ -465,7 +465,7 @@ function SourceChart({
                 <div className="w-20 text-sm font-medium text-gray-900">{source}</div>
                 <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
                   <div
-                    className="h-full bg-blue-500 rounded"
+                    className="h-full bg-tl-500 rounded"
                     style={{ width: `${barWidth}%` }}
                   />
                 </div>
@@ -569,8 +569,8 @@ export function IncidentStatsContent() {
           />
           <StatCard
             icon={Clock}
-            iconBgColor="bg-blue-50"
-            iconColor="text-blue-600"
+            iconBgColor="bg-tl-50"
+            iconColor="text-tl-600"
             value={hasData ? data.data.totals.incidentsLast24h : "-"}
             label="Últimas 24h"
             isLoading={isLoading}
@@ -675,9 +675,9 @@ export function IncidentStatsContent() {
         </div>
 
         {/* Data Source Note */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 mb-2">Sobre estos datos</h3>
-          <p className="text-sm text-blue-800">
+        <div className="mt-8 bg-tl-50 border border-tl-200 rounded-lg p-4">
+          <h3 className="font-semibold text-tl-900 mb-2">Sobre estos datos</h3>
+          <p className="text-sm text-tl-800">
             Los datos de incidencias se obtienen en tiempo real de múltiples fuentes oficiales: DGT
             (Dirección General de Tráfico), SCT (Servei Català de Trànsit), Tráfico País Vasco, y
             DGT Madrid. Las incidencias incluyen accidentes, obras, congestiones, cortes de

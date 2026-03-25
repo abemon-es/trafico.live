@@ -468,15 +468,15 @@ function statusBadge(status: ZBEStatus) {
   }
   if (status === "planificada") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 border border-amber-200 rounded-full text-sm font-semibold">
-        <span className="w-2 h-2 bg-amber-500 rounded-full" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-amber-100 text-tl-amber-700 border border-tl-amber-200 rounded-full text-sm font-semibold">
+        <span className="w-2 h-2 bg-tl-amber-500 rounded-full" />
         Planificada
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 border border-blue-200 rounded-full text-sm font-semibold">
-      <span className="w-2 h-2 bg-blue-500 rounded-full" />
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-100 text-tl-700 border border-tl-200 rounded-full text-sm font-semibold">
+      <span className="w-2 h-2 bg-tl-500 rounded-full" />
       En desarrollo
     </span>
   );
@@ -488,7 +488,7 @@ function AccessIcon({ value }: { value: AccessValue }) {
   if (value === "permitido")
     return <CheckCircle className="w-5 h-5 text-green-500" />;
   if (value === "restringido")
-    return <MinusCircle className="w-5 h-5 text-amber-500" />;
+    return <MinusCircle className="w-5 h-5 text-tl-amber-500" />;
   return <XCircle className="w-5 h-5 text-red-500" />;
 }
 
@@ -500,13 +500,13 @@ function accessLabel(value: AccessValue) {
 
 function accessRowClass(value: AccessValue) {
   if (value === "permitido") return "bg-green-50 border-green-100";
-  if (value === "restringido") return "bg-amber-50 border-amber-100";
+  if (value === "restringido") return "bg-tl-amber-50 border-tl-amber-100";
   return "bg-red-50 border-red-100";
 }
 
 function accessTextClass(value: AccessValue) {
   if (value === "permitido") return "text-green-700";
-  if (value === "restringido") return "text-amber-700";
+  if (value === "restringido") return "text-tl-amber-700";
   return "text-red-700";
 }
 
@@ -691,8 +691,8 @@ export default async function ZBECityPage({ params }: Props) {
 
               {/* Schedule */}
               <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-start gap-3">
-                <div className="p-2 bg-amber-50 rounded-lg flex-shrink-0">
-                  <Clock className="w-5 h-5 text-amber-600" />
+                <div className="p-2 bg-tl-amber-50 rounded-lg flex-shrink-0">
+                  <Clock className="w-5 h-5 text-tl-amber-600" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Horario de restricción</p>
@@ -713,7 +713,7 @@ export default async function ZBECityPage({ params }: Props) {
                   <p className="text-gray-900 font-semibold text-sm">
                     Etiquetas 0, ECO y C (sin restricción)
                   </p>
-                  <p className="text-xs text-amber-600 mt-0.5">Etiqueta B: acceso restringido</p>
+                  <p className="text-xs text-tl-amber-600 mt-0.5">Etiqueta B: acceso restringido</p>
                 </div>
               </div>
             </div>
@@ -821,16 +821,16 @@ export default async function ZBECityPage({ params }: Props) {
               </div>
 
               {cfg.status === "activa" && (
-                <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 mt-3">
-                  <p className="text-sm text-amber-800">
+                <div className="bg-tl-amber-50 border border-tl-amber-100 rounded-lg p-3 mt-3">
+                  <p className="text-sm text-tl-amber-800">
                     <strong>Episodios de contaminación:</strong> En episodios de alta contaminación declarados por el Ayuntamiento, las restricciones pueden ampliarse a vehículos con etiqueta C o B. Consulta el portal municipal para alertas en tiempo real.
                   </p>
                 </div>
               )}
 
               {cfg.status !== "activa" && (
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mt-3">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-tl-50 border border-tl-100 rounded-lg p-3 mt-3">
+                  <p className="text-sm text-tl-800">
                     <strong>Nota:</strong> Esta ZBE está en fase de planificación o desarrollo. Los horarios indicados son orientativos y pueden variar cuando entre en vigor. Consulta el Ayuntamiento de {cfg.name} para la información oficial más actualizada.
                   </p>
                 </div>
@@ -902,8 +902,8 @@ export default async function ZBECityPage({ params }: Props) {
 
               {/* Public transport */}
               <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200">
-                <div className="p-2 bg-blue-50 rounded-lg flex-shrink-0">
-                  <Bus className="w-5 h-5 text-blue-600" />
+                <div className="p-2 bg-tl-50 rounded-lg flex-shrink-0">
+                  <Bus className="w-5 h-5 text-tl-600" />
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900 text-sm">Transporte público</p>

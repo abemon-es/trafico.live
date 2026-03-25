@@ -521,9 +521,9 @@ export default function EtiquetaAmbientalPage() {
               Qué permite y qué restringe cada etiqueta en las ZBE
             </h2>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-5 flex items-start gap-3">
-              <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-700 leading-relaxed">
+            <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-5 flex items-start gap-3">
+              <Info className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-tl-amber-700 leading-relaxed">
                 Las ZBE se implementan de forma progresiva en España. Cada municipio establece sus
                 propias reglas dentro del marco de la{" "}
                 <strong>Ley de Cambio Climático y Transición Energética (Ley 7/2021)</strong>. Los
@@ -593,7 +593,7 @@ export default function EtiquetaAmbientalPage() {
                               row.icons[i] === "check"
                                 ? "text-green-700"
                                 : row.icons[i] === "warn"
-                                  ? "text-amber-600"
+                                  ? "text-tl-amber-600"
                                   : "text-red-600"
                             }`}
                           >

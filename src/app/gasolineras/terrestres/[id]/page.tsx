@@ -328,7 +328,7 @@ export default async function StationDetailPage({ params }: Props) {
                 href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-tl-600 text-white rounded-lg hover:bg-tl-700 transition-colors"
               >
                 <Navigation className="w-4 h-4" />
                 Como llegar
@@ -404,8 +404,8 @@ export default async function StationDetailPage({ params }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {mainFuels.map((fuel) => {
             const colorClasses: Record<string, { bg: string; text: string; textDark: string }> = {
-              amber: { bg: "bg-amber-50", text: "text-amber-600", textDark: "text-amber-700" },
-              blue: { bg: "bg-blue-50", text: "text-blue-600", textDark: "text-blue-700" },
+              amber: { bg: "bg-tl-amber-50", text: "text-tl-amber-600", textDark: "text-tl-amber-700" },
+              blue: { bg: "bg-tl-50", text: "text-tl-600", textDark: "text-tl-700" },
               purple: { bg: "bg-purple-50", text: "text-purple-600", textDark: "text-purple-700" },
               green: { bg: "bg-green-50", text: "text-green-600", textDark: "text-green-700" },
             };
@@ -529,10 +529,10 @@ export default async function StationDetailPage({ params }: Props) {
                   <div className="flex items-center gap-3 flex-shrink-0 ml-4">
                     <div className="text-right">
                       {altDiesel && (
-                        <p className="font-bold text-amber-700">{altDiesel.toFixed(3)} €</p>
+                        <p className="font-bold text-tl-amber-700">{altDiesel.toFixed(3)} €</p>
                       )}
                       {altGas95 && !altDiesel && (
-                        <p className="font-bold text-blue-700">{altGas95.toFixed(3)} €</p>
+                        <p className="font-bold text-tl-700">{altGas95.toFixed(3)} €</p>
                       )}
                       {saving && saving > 0 && (
                         <p className="text-xs text-green-600 font-medium">

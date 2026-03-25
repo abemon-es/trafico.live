@@ -221,7 +221,7 @@ function CustomBarTooltip({
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-sm">
       <p className="font-medium text-gray-700">{displayLabel}</p>
-      <p className="text-blue-600 font-semibold">
+      <p className="text-tl-600 font-semibold">
         {formatNumber(payload[0].value)} incidencias
       </p>
     </div>
@@ -355,8 +355,8 @@ export default function MejorHoraContent() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-blue-50 rounded-xl shrink-0">
-              <Clock className="w-8 h-8 text-blue-600" />
+            <div className="p-3 bg-tl-50 rounded-xl shrink-0">
+              <Clock className="w-8 h-8 text-tl-600" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 leading-tight">
@@ -374,7 +374,7 @@ export default function MejorHoraContent() {
         {/* Loading */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-24 text-gray-500">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin text-tl-600 mb-4" />
             <p>Cargando análisis de tráfico...</p>
           </div>
         )}
@@ -435,16 +435,16 @@ export default function MejorHoraContent() {
 
             {/* Day callout row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-4">
-                <TrendingDown className="w-8 h-8 text-blue-600 shrink-0" />
+              <div className="bg-tl-50 border border-tl-200 rounded-xl p-4 flex items-center gap-4">
+                <TrendingDown className="w-8 h-8 text-tl-600 shrink-0" />
                 <div>
-                  <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide">
+                  <p className="text-xs font-semibold text-tl-500 uppercase tracking-wide">
                     Día con menos incidencias
                   </p>
                   <p className="text-xl font-bold text-gray-900 mt-0.5">
                     {insights.bestDay}
                   </p>
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-tl-700">
                     {formatNumber(insights.bestDayCount)} incidencias (30 días)
                   </p>
                 </div>
@@ -645,7 +645,7 @@ export default function MejorHoraContent() {
                     )} concentran el mayor número de accidentes y atascos. Retrasa o adelanta tu salida siempre que sea posible.`,
                   },
                   {
-                    icon: <Calendar className="w-5 h-5 text-blue-500" />,
+                    icon: <Calendar className="w-5 h-5 text-tl-500" />,
                     title: `${insights.bestDay}: el mejor día de la semana`,
                     text: `El ${insights.bestDay.toLowerCase()} registra un ${Math.round(
                       ((insights.worstDayCount - insights.bestDayCount) /

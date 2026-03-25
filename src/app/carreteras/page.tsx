@@ -32,9 +32,9 @@ const ROAD_TYPE_CONFIG = {
     label: "Autovías",
     description: "Vías de alta capacidad sin peaje",
     icon: Route,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
+    color: "text-tl-600",
+    bgColor: "bg-tl-50",
+    borderColor: "border-tl-200",
     href: "/carreteras/autovias",
   },
   NACIONAL: {
@@ -113,7 +113,7 @@ export default async function CarreterasPage() {
             <div className="text-sm text-gray-600">Carreteras</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-blue-600">{cameraCount.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-tl-600">{cameraCount.toLocaleString()}</div>
             <div className="text-sm text-gray-600">Cámaras</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">

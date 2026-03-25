@@ -641,7 +641,7 @@ export function UnifiedMap({
           >
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                <Loader2 className="w-8 h-8 text-tl-600 animate-spin" />
               </div>
             ) : filteredIncidents.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
@@ -729,7 +729,7 @@ function IncidentListItem({
       onClick={onClick}
       className={`
         w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors
-        ${isSelected ? "bg-blue-50" : ""}
+        ${isSelected ? "bg-tl-50" : ""}
       `}
     >
       <div className="flex items-start gap-3">

@@ -212,7 +212,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                <span className="px-3 py-1 bg-tl-100 text-tl-800 rounded-full text-sm font-medium">
                   {typeLabel}
                 </span>
                 {incidents.length > 0 && (
@@ -237,7 +237,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <Camera className="w-5 h-5 mx-auto text-blue-600 mb-1" />
+              <Camera className="w-5 h-5 mx-auto text-tl-600 mb-1" />
               <div className="text-xl font-bold text-gray-900">{cameras.length}</div>
               <div className="text-xs text-gray-600">Cámaras</div>
             </div>
@@ -304,7 +304,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
             {cameras.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-blue-600" />
+                  <Camera className="w-5 h-5 text-tl-600" />
                   Cámaras de Tráfico ({cameras.length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -327,7 +327,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     </p>
                     <Link
                       href={`/carreteras/${road.id}/camaras`}
-                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                      className="text-sm text-tl-600 hover:text-tl-800 hover:underline flex items-center gap-1"
                     >
                       Ver todas <ExternalLink className="w-3 h-3" />
                     </Link>
@@ -383,7 +383,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     </p>
                     <Link
                       href={`/carreteras/${road.id}/radares`}
-                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                      className="text-sm text-tl-600 hover:text-tl-800 hover:underline flex items-center gap-1"
                     >
                       Ver todos <ExternalLink className="w-3 h-3" />
                     </Link>
@@ -416,10 +416,10 @@ export default async function RoadDetailPage({ params }: PageProps) {
                           speed <= 60
                             ? "bg-red-100 text-red-800"
                             : speed <= 80
-                            ? "bg-amber-100 text-amber-800"
+                            ? "bg-tl-amber-100 text-tl-amber-800"
                             : speed <= 100
                             ? "bg-green-100 text-green-800"
-                            : "bg-blue-100 text-blue-800";
+                            : "bg-tl-100 text-tl-800";
                         return (
                           <tr key={sl.id} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-2">{Number(sl.kmStart).toFixed(1)}</td>
@@ -460,15 +460,15 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     {cheapestDiesel && (
                       <Link
                         href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-                        className="p-3 bg-amber-50 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors"
+                        className="p-3 bg-tl-amber-50 rounded-lg border border-tl-amber-200 hover:bg-tl-amber-100 transition-colors"
                       >
-                        <div className="text-xs text-amber-600 mb-1">Gasóleo A más barato</div>
+                        <div className="text-xs text-tl-amber-600 mb-1">Gasóleo A más barato</div>
                         <div className="font-semibold text-gray-900 text-sm">{cheapestDiesel.name}</div>
                         <div className="flex items-center justify-between mt-1">
                           <span className="text-xs text-gray-500">
                             {cheapestDiesel.roadKm ? `km ${Number(cheapestDiesel.roadKm)}` : ""}
                           </span>
-                          <span className="text-lg font-bold text-amber-700">
+                          <span className="text-lg font-bold text-tl-amber-700">
                             {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
                           </span>
                         </div>
@@ -477,15 +477,15 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     {cheapestGas95 && (
                       <Link
                         href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-                        className="p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
+                        className="p-3 bg-tl-50 rounded-lg border border-tl-200 hover:bg-tl-100 transition-colors"
                       >
-                        <div className="text-xs text-blue-600 mb-1">Gasolina 95 más barata</div>
+                        <div className="text-xs text-tl-600 mb-1">Gasolina 95 más barata</div>
                         <div className="font-semibold text-gray-900 text-sm">{cheapestGas95.name}</div>
                         <div className="flex items-center justify-between mt-1">
                           <span className="text-xs text-gray-500">
                             {cheapestGas95.roadKm ? `km ${Number(cheapestGas95.roadKm)}` : ""}
                           </span>
-                          <span className="text-lg font-bold text-blue-700">
+                          <span className="text-lg font-bold text-tl-700">
                             {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
                           </span>
                         </div>

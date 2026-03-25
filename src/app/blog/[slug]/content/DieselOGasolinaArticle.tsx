@@ -225,8 +225,8 @@ export function DieselOGasolinaArticle() {
       <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
         ¿Cuándo elegir diésel?
       </h2>
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
-        <ul className="space-y-2 text-blue-800 text-sm">
+      <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-6">
+        <ul className="space-y-2 text-tl-800 text-sm">
           <li className="flex items-start gap-2">
             <span className="font-bold mt-0.5">✓</span>
             <span>Haces más de <strong>20.000 km/año</strong>, principalmente en carretera o autopista.</span>
@@ -249,8 +249,8 @@ export function DieselOGasolinaArticle() {
       <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
         ¿Cuándo elegir gasolina?
       </h2>
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6">
-        <ul className="space-y-2 text-amber-800 text-sm">
+      <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-6">
+        <ul className="space-y-2 text-tl-amber-800 text-sm">
           <li className="flex items-start gap-2">
             <span className="font-bold mt-0.5">✓</span>
             <span>Haces menos de <strong>15.000 km/año</strong> o mayoritariamente en ciudad.</span>

@@ -74,11 +74,11 @@ const TIPS = [
 ];
 
 const CATEGORY_COLOR: Record<string, string> = {
-  Conducción: "bg-blue-100 text-blue-700",
+  Conducción: "bg-tl-100 text-tl-700",
   Climatización: "bg-cyan-100 text-cyan-700",
   Mantenimiento: "bg-green-100 text-green-700",
   Planificación: "bg-purple-100 text-purple-700",
-  Precio: "bg-amber-100 text-amber-700",
+  Precio: "bg-tl-amber-100 text-tl-amber-700",
 };
 
 export function AhorrarGasolinaArticle() {
@@ -137,11 +137,11 @@ export function AhorrarGasolinaArticle() {
         más barata (fácilmente <strong>100-150 € más al año</strong>).
       </p>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8">
-        <p className="text-amber-800 text-sm font-semibold mb-1">
+      <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-8">
+        <p className="text-tl-amber-800 text-sm font-semibold mb-1">
           Ahorro total estimado
         </p>
-        <p className="text-amber-700 text-sm">
+        <p className="text-tl-amber-700 text-sm">
           Combinando conducción eficiente + repostaje inteligente, un conductor medio
           puede ahorrar fácilmente entre{" "}
           <strong>350 € y 550 € anuales</strong> sin ningún gasto adicional.

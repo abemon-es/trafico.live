@@ -55,8 +55,8 @@ const POWER_BANDS = [
     label: "Carga lenta",
     sublabel: "hasta 22 kW",
     maxKw: 22,
-    color: "bg-blue-100 text-blue-700 border-blue-200",
-    dot: "bg-blue-500",
+    color: "bg-tl-100 text-tl-700 border-tl-200",
+    dot: "bg-tl-500",
   },
   {
     id: "fast",
@@ -299,8 +299,8 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
               </p>
               <p className="text-xs text-gray-500">cargadores totales</p>
             </div>
-            <div className="bg-white rounded-xl border border-blue-100 p-4 shadow-sm text-center">
-              <p className="text-3xl font-bold text-blue-700 mb-0.5">
+            <div className="bg-white rounded-xl border border-tl-100 p-4 shadow-sm text-center">
+              <p className="text-3xl font-bold text-tl-700 mb-0.5">
                 {bands.slow.length.toLocaleString("es-ES")}
               </p>
               <p className="text-xs text-gray-500">carga lenta</p>

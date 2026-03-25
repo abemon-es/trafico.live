@@ -71,9 +71,9 @@ export function NuevosRadaresDGTArticle() {
         informe de siniestralidad de la DGT. España tiene actualmente unos 780
         cinemómetros fijos; el plan 2026–2027 elevará esa cifra a más de 900.
       </p>
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
-        <p className="text-blue-800 text-sm font-semibold mb-1">Cifras clave</p>
-        <ul className="space-y-1 text-blue-700 text-sm">
+      <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-8">
+        <p className="text-tl-800 text-sm font-semibold mb-1">Cifras clave</p>
+        <ul className="space-y-1 text-tl-700 text-sm">
           <li>
             <strong>33</strong> nuevos radares operativos en 2026
           </li>

@@ -287,7 +287,7 @@ export default async function PrecioDieselHoyPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-amber-600 text-sm font-medium mb-2">
+          <div className="flex items-center gap-2 text-tl-amber-600 text-sm font-medium mb-2">
             <Fuel className="w-4 h-4" />
             <span>Gasóleo A · Datos oficiales MITERD</span>
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -303,14 +303,14 @@ export default async function PrecioDieselHoyPage() {
         {nationalToday ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {/* Gasóleo A — main hero */}
-            <div className="md:col-span-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-6 text-white shadow-lg">
-              <div className="text-amber-100 text-sm font-medium mb-1">
+            <div className="md:col-span-2 bg-gradient-to-br from-tl-amber-500 to-tl-amber-600 rounded-2xl p-6 text-white shadow-lg">
+              <div className="text-tl-amber-100 text-sm font-medium mb-1">
                 Gasóleo A (Diésel) — Precio Medio Nacional
               </div>
               <div className="text-6xl font-extrabold tracking-tight mb-2">
                 {formatPrice(nationalToday.avgGasoleoA)}
               </div>
-              <div className="text-amber-100 text-sm mb-4">por litro · Península y Baleares</div>
+              <div className="text-tl-amber-100 text-sm mb-4">por litro · Península y Baleares</div>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
                   Mín: <span className="font-bold">{formatPrice(nationalToday.minGasoleoA)}</span>
@@ -368,7 +368,7 @@ export default async function PrecioDieselHoyPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8 text-amber-800">
+          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-6 mb-8 text-tl-amber-800">
             Los precios de hoy aún no están disponibles. Los datos se actualizan varias veces al
             día desde la API oficial del MITERD.
           </div>
@@ -394,20 +394,20 @@ export default async function PrecioDieselHoyPage() {
         )}
 
         {/* Professional transport callout */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8 flex items-start gap-4">
-          <Truck className="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" />
+        <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-8 flex items-start gap-4">
+          <Truck className="w-6 h-6 text-tl-amber-600 mt-0.5 flex-shrink-0" />
           <div>
-            <h2 className="font-semibold text-amber-900 mb-1">
+            <h2 className="font-semibold text-tl-amber-900 mb-1">
               ¿Transportista o empresa con flota?
             </h2>
-            <p className="text-amber-800 text-sm leading-relaxed mb-3">
+            <p className="text-tl-amber-800 text-sm leading-relaxed mb-3">
               Consulta nuestra sección profesional con datos específicos para flotas: precio del
               gasóleo A en grandes volúmenes, áreas de servicio en autopistas y restricciones de
               circulación para vehículos pesados.
             </p>
             <Link
               href="/profesional/diesel"
-              className="inline-flex items-center gap-2 bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+              className="inline-flex items-center gap-2 bg-tl-amber-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-tl-amber-700 transition-colors"
             >
               <Truck className="w-4 h-4" />
               Sección Profesional — Diésel
@@ -437,7 +437,7 @@ export default async function PrecioDieselHoyPage() {
           <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-amber-500" />
+                <span className="w-3 h-3 rounded-full bg-tl-amber-500" />
                 10 Gasolineras Más Baratas — Gasóleo A (Diésel)
               </h2>
               <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full hidden sm:block">
@@ -449,24 +449,24 @@ export default async function PrecioDieselHoyPage() {
                 <Link
                   key={station.id}
                   href={`/gasolineras/terrestres/${station.id}`}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-amber-50 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-tl-amber-50 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         idx === 0
-                          ? "bg-amber-400 text-amber-900"
+                          ? "bg-tl-amber-400 text-tl-amber-900"
                           : idx === 1
                           ? "bg-gray-300 text-gray-700"
                           : idx === 2
                           ? "bg-orange-300 text-orange-800"
-                          : "bg-amber-100 text-amber-700"
+                          : "bg-tl-amber-100 text-tl-amber-700"
                       }`}
                     >
                       {idx + 1}
                     </span>
                     <div>
-                      <div className="font-semibold text-gray-900 text-sm group-hover:text-amber-700 transition-colors">
+                      <div className="font-semibold text-gray-900 text-sm group-hover:text-tl-amber-700 transition-colors">
                         {station.name}
                       </div>
                       <div className="text-xs text-gray-500 flex items-center gap-1">
@@ -476,7 +476,7 @@ export default async function PrecioDieselHoyPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-extrabold text-amber-700">
+                    <div className="text-xl font-extrabold text-tl-amber-700">
                       {formatPrice(station.priceGasoleoA)}
                     </div>
                     {station.priceGasoleoPremium && (
@@ -491,7 +491,7 @@ export default async function PrecioDieselHoyPage() {
             <div className="mt-4 pt-4 border-t border-gray-100 text-center">
               <Link
                 href="/gasolineras/terrestres"
-                className="text-amber-600 hover:text-amber-700 text-sm font-medium inline-flex items-center gap-1"
+                className="text-tl-amber-600 hover:text-tl-amber-700 text-sm font-medium inline-flex items-center gap-1"
               >
                 Ver todas las gasolineras
                 <ChevronRight className="w-4 h-4" />
@@ -601,12 +601,12 @@ export default async function PrecioDieselHoyPage() {
                             ? `/gasolineras/precios/${province.slug}`
                             : "/gasolineras/precios"
                         }
-                        className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 hover:bg-amber-100 transition-colors"
+                        className="flex items-center gap-2 bg-tl-amber-50 border border-tl-amber-200 rounded-lg px-3 py-2 hover:bg-tl-amber-100 transition-colors"
                       >
-                        <span className="text-xs font-medium text-amber-800">
+                        <span className="text-xs font-medium text-tl-amber-800">
                           {province?.name ?? code}
                         </span>
-                        <span className="text-xs font-bold text-amber-600">
+                        <span className="text-xs font-bold text-tl-amber-600">
                           {formatPrice(p.avgGasoleoA)}
                         </span>
                       </Link>

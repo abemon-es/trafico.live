@@ -63,10 +63,10 @@ const MESSAGE_TYPE_STYLES: Record<
     badge: "bg-red-100 text-red-700 border-red-200",
   },
   PRECAUTION: {
-    bg: "bg-amber-50",
-    border: "border-amber-300",
-    text: "text-amber-800",
-    badge: "bg-amber-100 text-amber-700 border-amber-200",
+    bg: "bg-tl-amber-50",
+    border: "border-tl-amber-300",
+    text: "text-tl-amber-800",
+    badge: "bg-tl-amber-100 text-tl-amber-700 border-tl-amber-200",
   },
   SPEED_LIMIT: {
     bg: "bg-orange-50",
@@ -81,10 +81,10 @@ const MESSAGE_TYPE_STYLES: Record<
     badge: "bg-red-100 text-red-700 border-red-200",
   },
   INFO: {
-    bg: "bg-blue-50",
-    border: "border-blue-300",
-    text: "text-blue-800",
-    badge: "bg-blue-100 text-blue-700 border-blue-200",
+    bg: "bg-tl-50",
+    border: "border-tl-300",
+    text: "text-tl-800",
+    badge: "bg-tl-100 text-tl-700 border-tl-200",
   },
 };
 
@@ -232,8 +232,8 @@ export default async function PanelesPage({ searchParams }: Props) {
           {/* Page header */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-blue-50 rounded-lg flex-shrink-0">
-                <MonitorSmartphone className="w-8 h-8 text-blue-600" />
+              <div className="p-3 bg-tl-50 rounded-lg flex-shrink-0">
+                <MonitorSmartphone className="w-8 h-8 text-tl-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
@@ -245,11 +245,11 @@ export default async function PanelesPage({ searchParams }: Props) {
                   retenciones, obras, cierres y condiciones de la vía.
                 </p>
               </div>
-              <div className="hidden md:flex flex-col items-center bg-blue-50 border border-blue-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
-                <span className="text-3xl font-bold text-blue-700">
+              <div className="hidden md:flex flex-col items-center bg-tl-50 border border-tl-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
+                <span className="text-3xl font-bold text-tl-700">
                   {totalCount.toLocaleString("es-ES")}
                 </span>
-                <span className="text-sm text-blue-600 mt-0.5">paneles activos</span>
+                <span className="text-sm text-tl-600 mt-0.5">paneles activos</span>
               </div>
             </div>
           </div>
@@ -284,13 +284,13 @@ export default async function PanelesPage({ searchParams }: Props) {
 
           {/* Active message alert */}
           {withMessageCount > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h2 className="font-semibold text-amber-800">
+                <h2 className="font-semibold text-tl-amber-800">
                   {withMessageCount.toLocaleString("es-ES")} paneles con mensaje activo
                 </h2>
-                <p className="text-sm text-amber-700 mt-0.5">
+                <p className="text-sm text-tl-amber-700 mt-0.5">
                   Hay incidencias activas en la red. Consulta los mensajes antes de
                   iniciar tu ruta.
                 </p>
@@ -313,7 +313,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   id="provincia"
                   name="provincia"
                   defaultValue={filterProvince}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500 bg-white"
                 >
                   <option value="">Todas las provincias</option>
                   {allProvinces
@@ -340,7 +340,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   type="text"
                   defaultValue={filterRoad}
                   placeholder="Ej: A-1, M-30..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-tl-500 focus:border-tl-500"
                 />
               </div>
 
@@ -352,7 +352,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                     name="conMensaje"
                     value="1"
                     defaultChecked={onlyWithMessage}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded border-gray-300 text-tl-600 focus:ring-tl-500"
                   />
                   <span className="text-sm text-gray-700">Solo con mensaje</span>
                 </label>
@@ -361,7 +361,7 @@ export default async function PanelesPage({ searchParams }: Props) {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-tl-600 text-white rounded-lg text-sm font-medium hover:bg-tl-700 transition-colors"
                 >
                   Filtrar
                 </button>
@@ -389,7 +389,7 @@ export default async function PanelesPage({ searchParams }: Props) {
               </p>
               <Link
                 href="/paneles"
-                className="mt-4 inline-block text-sm text-blue-600 hover:underline"
+                className="mt-4 inline-block text-sm text-tl-600 hover:underline"
               >
                 Ver todos los paneles
               </Link>
@@ -407,7 +407,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                       <div
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-semibold text-sm ${
                           roadHasMessage
-                            ? "bg-amber-50 border-amber-200 text-amber-800"
+                            ? "bg-tl-amber-50 border-tl-amber-200 text-tl-amber-800"
                             : "bg-gray-100 border-gray-200 text-gray-600"
                         }`}
                       >
@@ -417,7 +417,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                       <span className="text-sm text-gray-400">
                         {roadPanels.length} panel{roadPanels.length !== 1 ? "es" : ""}
                         {roadWithMessage > 0 && (
-                          <span className="ml-1.5 text-amber-600 font-medium">
+                          <span className="ml-1.5 text-tl-amber-600 font-medium">
                             · {roadWithMessage} con mensaje
                           </span>
                         )}
@@ -425,7 +425,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                       {road !== "Sin carretera" && (
                         <Link
                           href={`/carreteras/${encodeURIComponent(road)}`}
-                          className="ml-auto text-xs text-blue-600 hover:underline flex items-center gap-0.5"
+                          className="ml-auto text-xs text-tl-600 hover:underline flex items-center gap-0.5"
                         >
                           Ver carretera <ChevronRight className="w-3 h-3" />
                         </Link>
@@ -545,7 +545,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                       </span>
                       <Link
                         href={`/carreteras/${encodeURIComponent(item.roadNumber!)}`}
-                        className="font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        className="font-semibold text-tl-600 hover:text-tl-800 hover:underline"
                       >
                         {item.roadNumber}
                       </Link>
@@ -577,7 +577,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   <Link
                     key={item.roadNumber}
                     href={`/paneles?carretera=${encodeURIComponent(item.roadNumber!)}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-tl-600 hover:bg-tl-50 hover:border-tl-200 transition-colors shadow-sm"
                   >
                     {item.roadNumber}
                     <span className="text-xs text-gray-400">
@@ -616,7 +616,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   className="bg-white rounded-lg border border-gray-200 shadow-sm p-5"
                 >
                   <h3 className="font-semibold text-gray-900 mb-2 flex items-start gap-2">
-                    <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <Info className="w-4 h-4 text-tl-500 flex-shrink-0 mt-0.5" />
                     {item.q}
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed pl-6">
@@ -676,11 +676,11 @@ export default async function PanelesPage({ searchParams }: Props) {
               cada 5 minutos. Puedes consultar el estado de todos los paneles,
               filtrar por provincia o carretera, y ver qué tramos tienen mensajes
               activos antes de salir. Para una vista geográfica, accede al{" "}
-              <Link href="/mapa" className="text-blue-600 hover:underline">
+              <Link href="/mapa" className="text-tl-600 hover:underline">
                 mapa de tráfico
               </Link>{" "}
               o consulta las{" "}
-              <Link href="/incidencias" className="text-blue-600 hover:underline">
+              <Link href="/incidencias" className="text-tl-600 hover:underline">
                 incidencias en tiempo real
               </Link>
               .

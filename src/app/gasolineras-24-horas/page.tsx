@@ -376,7 +376,7 @@ export default async function Gasolineras24hPage() {
           <div className="mb-8">
             <Link
               href="/gasolineras/mapa?horario=24h"
-              className="flex items-center gap-4 p-5 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200 hover:border-orange-300 hover:shadow-sm transition-all group"
+              className="flex items-center gap-4 p-5 bg-gradient-to-r from-orange-50 to-tl-amber-50 rounded-xl border border-orange-200 hover:border-orange-300 hover:shadow-sm transition-all group"
             >
               <div className="p-3 bg-orange-100 rounded-lg flex-shrink-0">
                 <MapPin className="w-6 h-6 text-orange-600" />

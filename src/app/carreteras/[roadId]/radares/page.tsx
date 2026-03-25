@@ -160,7 +160,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
             <div className="text-sm text-gray-600">Radares de tramo</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-tl-600">
               {radarSpeedValues.length > 0 ? `${radarSpeedValues[0]}-${radarSpeedValues[radarSpeedValues.length - 1]}` : "-"}
             </div>
             <div className="text-sm text-gray-600">Límites (km/h)</div>
@@ -276,10 +276,10 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                       speed <= 60
                         ? "bg-red-100 text-red-800"
                         : speed <= 80
-                        ? "bg-amber-100 text-amber-800"
+                        ? "bg-tl-amber-100 text-tl-amber-800"
                         : speed <= 100
                         ? "bg-green-100 text-green-800"
-                        : "bg-blue-100 text-blue-800";
+                        : "bg-tl-100 text-tl-800";
                     return (
                       <tr key={sl.id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-4">{Number(sl.kmStart).toFixed(1)}</td>

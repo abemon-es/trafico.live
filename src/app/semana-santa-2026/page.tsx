@@ -384,9 +384,9 @@ export default async function SemanaSanta2026Page() {
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="bg-white rounded-lg border border-amber-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-amber-50 rounded-lg flex-shrink-0">
-                <Zap className="w-5 h-5 text-amber-600" />
+            <div className="bg-white rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-amber-50 rounded-lg flex-shrink-0">
+                <Zap className="w-5 h-5 text-tl-amber-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-2xl font-bold text-gray-900">
@@ -637,16 +637,16 @@ export default async function SemanaSanta2026Page() {
           {/* ------------------------------------------------------------------ */}
           {/* FUEL CALLOUT                                                       */}
           {/* ------------------------------------------------------------------ */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8">
+          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-5 mb-8">
             <div className="flex items-start gap-4">
-              <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
-                <Fuel className="w-6 h-6 text-amber-700" />
+              <div className="p-2 bg-tl-amber-100 rounded-lg flex-shrink-0">
+                <Fuel className="w-6 h-6 text-tl-amber-700" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-amber-900 mb-1">
+                <h3 className="font-semibold text-tl-amber-900 mb-1">
                   Consulta el precio del combustible antes de salir
                 </h3>
-                <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                <p className="text-sm text-tl-amber-800 leading-relaxed mb-3">
                   Las gasolineras en accesos a autopistas y áreas de servicio
                   pueden ser hasta un 20% más caras durante la operación salida.
                   Repostar en tu ciudad o en carreteras secundarias te puede
@@ -655,14 +655,14 @@ export default async function SemanaSanta2026Page() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href="/precio-gasolina-hoy"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-amber-700 text-white px-3 py-1.5 rounded-lg hover:bg-amber-800 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-tl-amber-700 text-white px-3 py-1.5 rounded-lg hover:bg-tl-amber-800 transition-colors"
                   >
                     Precio gasolina hoy
                     <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                   <Link
                     href="/precio-diesel-hoy"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white text-tl-amber-700 border border-tl-amber-300 px-3 py-1.5 rounded-lg hover:bg-tl-amber-50 transition-colors"
                   >
                     Precio diésel hoy
                     <ChevronRight className="w-3.5 h-3.5" />

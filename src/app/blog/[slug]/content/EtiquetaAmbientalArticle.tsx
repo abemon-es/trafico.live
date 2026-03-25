@@ -3,8 +3,8 @@ import Link from "next/link";
 const LABELS = [
   {
     id: "Cero (0)",
-    color: "bg-blue-100 border-blue-400 text-blue-900",
-    badge: "bg-blue-600 text-white",
+    color: "bg-tl-100 border-tl-400 text-tl-900",
+    badge: "bg-tl-600 text-white",
     vehicles: [
       "Vehículos 100% eléctricos (BEV)",
       "Vehículos de hidrógeno (FCEV)",
@@ -153,11 +153,11 @@ export function EtiquetaAmbientalArticle() {
         la matrícula del vehículo.
       </p>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
-        <p className="text-blue-800 text-sm font-semibold mb-1">
+      <div className="bg-tl-50 border border-tl-200 rounded-xl p-5 mb-8">
+        <p className="text-tl-800 text-sm font-semibold mb-1">
           ¿Y si mi vehículo no aparece o tiene etiqueta incorrecta?
         </p>
-        <p className="text-blue-700 text-sm">
+        <p className="text-tl-700 text-sm">
           Puede ocurrir con vehículos importados, con cambios de motor o matriculados
           antes de 2006. En ese caso debes acudir a la Jefatura Provincial de Tráfico
           con la ficha técnica del vehículo para que asignen manualmente la categoría
@@ -192,7 +192,7 @@ export function EtiquetaAmbientalArticle() {
           </thead>
           <tbody>
             <tr className="hover:bg-gray-50">
-              <td className="px-4 py-3 font-bold text-blue-700 border border-gray-200">
+              <td className="px-4 py-3 font-bold text-tl-700 border border-gray-200">
                 Cero (0)
               </td>
               <td className="px-4 py-3 text-center text-green-600 font-semibold border border-gray-200">

@@ -148,7 +148,7 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
+              className="flex items-center gap-1 text-tl-600 hover:text-tl-700 hover:underline"
             >
               <MapPin className="w-4 h-4" />
               Ver en mapa

@@ -49,8 +49,8 @@ const POWER_LEVELS = [
     sublabel: "<22 kW",
     min: 0,
     max: 22,
-    color: "bg-blue-100 text-blue-700",
-    activeColor: "bg-blue-100 text-blue-700 ring-2 ring-blue-500",
+    color: "bg-tl-100 text-tl-700",
+    activeColor: "bg-tl-100 text-tl-700 ring-2 ring-tl-500",
   },
   {
     id: "semi",
@@ -58,8 +58,8 @@ const POWER_LEVELS = [
     sublabel: "22–50 kW",
     min: 22,
     max: 50,
-    color: "bg-amber-100 text-amber-700",
-    activeColor: "bg-amber-100 text-amber-700 ring-2 ring-amber-500",
+    color: "bg-tl-amber-100 text-tl-amber-700",
+    activeColor: "bg-tl-amber-100 text-tl-amber-700 ring-2 ring-tl-amber-500",
   },
   {
     id: "fast",
@@ -426,8 +426,8 @@ export default function CargaEVContent() {
                           : charger.totalPowerKw >= 50
                           ? "bg-orange-100 text-orange-700"
                           : charger.totalPowerKw >= 22
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-blue-100 text-blue-700"
+                          ? "bg-tl-amber-100 text-tl-amber-700"
+                          : "bg-tl-100 text-tl-700"
                       }`}
                     >
                       {charger.totalPowerKw} kW

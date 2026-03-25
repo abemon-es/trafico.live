@@ -220,9 +220,9 @@ export default async function OperacionesPage() {
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="bg-white rounded-lg border border-amber-100 p-4 flex items-center gap-3">
-              <div className="p-2 bg-amber-50 rounded-lg">
-                <Zap className="w-5 h-5 text-amber-600" />
+            <div className="bg-white rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
+              <div className="p-2 bg-tl-amber-50 rounded-lg">
+                <Zap className="w-5 h-5 text-tl-amber-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
@@ -255,7 +255,7 @@ export default async function OperacionesPage() {
                     ) : (
                       <div
                         className={`w-3 h-3 rounded-full mt-1 ${
-                          op.type === "festivo" ? "bg-tl-500" : "bg-amber-500"
+                          op.type === "festivo" ? "bg-tl-500" : "bg-tl-amber-500"
                         }`}
                       />
                     )}
@@ -269,7 +269,7 @@ export default async function OperacionesPage() {
                         className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
                           op.type === "festivo"
                             ? "bg-tl-50 text-tl-700 border-tl-200"
-                            : "bg-amber-50 text-amber-700 border-amber-200"
+                            : "bg-tl-amber-50 text-tl-amber-700 border-tl-amber-200"
                         }`}
                       >
                         {op.type === "festivo" ? "Operación festiva" : "Puente"}
@@ -317,11 +317,11 @@ export default async function OperacionesPage() {
           </section>
 
           {/* Warning banner */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-8 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-amber-800">Franjas horarias punta</h3>
-              <p className="text-sm text-amber-700 mt-0.5">
+              <h3 className="font-semibold text-tl-amber-800">Franjas horarias punta</h3>
+              <p className="text-sm text-tl-amber-700 mt-0.5">
                 En operaciones de salida, los viernes de{" "}
                 <strong>15:00 a 21:00</strong> concentran el mayor volumen de tráfico.
                 En operaciones de retorno, los domingos de{" "}

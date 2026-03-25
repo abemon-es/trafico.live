@@ -473,18 +473,18 @@ export default function TerrestresPage() {
 
                     {/* Fuel prices */}
                     <div className="grid grid-cols-3 gap-1.5">
-                      <div className={`rounded p-2 ${gasoleoAPrice ? "bg-amber-50" : "bg-gray-50"}`}>
-                        <div className="text-xs text-amber-600 mb-0.5">Gasóleo A</div>
+                      <div className={`rounded p-2 ${gasoleoAPrice ? "bg-tl-amber-50" : "bg-gray-50"}`}>
+                        <div className="text-xs text-tl-amber-600 mb-0.5">Gasóleo A</div>
                         {gasoleoAPrice ? (
-                          <div className="font-bold text-amber-700 text-sm">{gasoleoAPrice}</div>
+                          <div className="font-bold text-tl-amber-700 text-sm">{gasoleoAPrice}</div>
                         ) : (
                           <div className="text-xs text-gray-400 italic">No disp.</div>
                         )}
                       </div>
-                      <div className={`rounded p-2 ${gasolina95Price ? "bg-blue-50" : "bg-gray-50"}`}>
-                        <div className="text-xs text-blue-600 mb-0.5">G. 95</div>
+                      <div className={`rounded p-2 ${gasolina95Price ? "bg-tl-50" : "bg-gray-50"}`}>
+                        <div className="text-xs text-tl-600 mb-0.5">G. 95</div>
                         {gasolina95Price ? (
-                          <div className="font-bold text-blue-700 text-sm">{gasolina95Price}</div>
+                          <div className="font-bold text-tl-700 text-sm">{gasolina95Price}</div>
                         ) : (
                           <div className="text-xs text-gray-400 italic">No disp.</div>
                         )}
@@ -563,10 +563,10 @@ export default function TerrestresPage() {
                             <span className="text-gray-400"> · {station.provinceName}</span>
                           ) : null}
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-amber-700">
+                        <td className="px-4 py-3 text-right font-semibold text-tl-amber-700">
                           {gasoleoAPrice ?? <span className="text-xs text-gray-400 font-normal">N/D</span>}
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-blue-700">
+                        <td className="px-4 py-3 text-right font-semibold text-tl-700">
                           {gasolina95Price ?? <span className="text-xs text-gray-400 font-normal">N/D</span>}
                         </td>
                         <td className="px-4 py-3 text-right font-semibold text-purple-700">

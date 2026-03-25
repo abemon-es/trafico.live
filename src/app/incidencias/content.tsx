@@ -222,7 +222,7 @@ export function IncidenciasContent() {
           </div>
           <Link
             href="/incidencias/analytics"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-sm font-medium border border-blue-200 whitespace-nowrap self-start"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-50 text-tl-700 hover:bg-tl-100 transition-colors text-sm font-medium border border-tl-200 whitespace-nowrap self-start"
           >
             <BarChart2 className="w-4 h-4" />
             Ver análisis histórico
@@ -277,7 +277,7 @@ export function IncidenciasContent() {
                   onClick={() => setViewMode("map")}
                   className={`px-3 py-2 flex items-center gap-1.5 text-sm ${
                     viewMode === "map"
-                      ? "bg-blue-50 text-blue-700"
+                      ? "bg-tl-50 text-tl-700"
                       : "bg-white text-gray-600 hover:bg-gray-50"
                   }`}
                 >
@@ -288,7 +288,7 @@ export function IncidenciasContent() {
                   onClick={() => setViewMode("list")}
                   className={`px-3 py-2 flex items-center gap-1.5 text-sm ${
                     viewMode === "list"
-                      ? "bg-blue-50 text-blue-700"
+                      ? "bg-tl-50 text-tl-700"
                       : "bg-white text-gray-600 hover:bg-gray-50"
                   }`}
                 >
@@ -309,7 +309,7 @@ export function IncidenciasContent() {
             <span className="flex items-center gap-2">
               Filtros
               {(activeEffects.length > 0 || activeCauses.length > 0) && (
-                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
+                <span className="bg-tl-100 text-tl-700 px-2 py-0.5 rounded-full text-xs">
                   {activeEffects.length + activeCauses.length} activos
                 </span>
               )}
@@ -339,7 +339,7 @@ export function IncidenciasContent() {
           {/* Loading state */}
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-4" />
+              <Loader2 className="w-8 h-8 text-tl-600 animate-spin mb-4" />
               <p className="text-gray-600">Cargando incidencias...</p>
             </div>
           )}
@@ -457,7 +457,7 @@ function IncidentListItem({
     <button
       onClick={onClick}
       className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-        isSelected ? "bg-blue-50" : ""
+        isSelected ? "bg-tl-50" : ""
       }`}
     >
       <div className="flex items-start gap-3">

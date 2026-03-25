@@ -96,9 +96,9 @@ export default async function AutoviasPage() {
         </nav>
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 mb-6 border border-blue-200">
+        <div className="bg-gradient-to-r from-tl-50 to-tl-100 rounded-lg p-6 mb-6 border border-tl-200">
           <div className="flex items-center gap-3 mb-4">
-            <Route className="w-8 h-8 text-blue-600" />
+            <Route className="w-8 h-8 text-tl-600" />
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Autovías de España</h1>
               <p className="text-gray-600">Vías de alta capacidad sin peaje (A)</p>
@@ -108,11 +108,11 @@ export default async function AutoviasPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">{roads.length}</div>
+              <div className="text-2xl font-bold text-tl-600">{roads.length}</div>
               <div className="text-sm text-gray-600">Autovías</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">{totalCameras}</div>
+              <div className="text-2xl font-bold text-tl-600">{totalCameras}</div>
               <div className="text-sm text-gray-600">Cámaras</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -161,7 +161,7 @@ export default async function AutoviasPage() {
                         <td className="py-3 px-4">
                           <Link
                             href={`/carreteras/${road.id}`}
-                            className="font-semibold text-blue-600 hover:text-blue-800"
+                            className="font-semibold text-tl-600 hover:text-tl-800"
                           >
                             {road.id}
                           </Link>
@@ -174,7 +174,7 @@ export default async function AutoviasPage() {
                           {road.provinces.length > 3 && ` +${road.provinces.length - 3}`}
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <span className={cameras > 0 ? "font-medium text-blue-600" : "text-gray-400"}>
+                          <span className={cameras > 0 ? "font-medium text-tl-600" : "text-gray-400"}>
                             {cameras}
                           </span>
                         </td>

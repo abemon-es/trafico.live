@@ -175,12 +175,12 @@ export default async function GasolinerasPage() {
         </Link>
         <Link
           href="/gasolineras/maritimas"
-          className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
+          className="flex items-center gap-3 p-4 bg-tl-50 rounded-lg border border-tl-200 hover:bg-tl-100 transition-colors"
         >
-          <Anchor className="w-8 h-8 text-blue-600" />
+          <Anchor className="w-8 h-8 text-tl-600" />
           <div>
-            <div className="font-semibold text-blue-900">Marítimas</div>
-            <div className="text-sm text-blue-700">{stats.maritimeCount.toLocaleString("es-ES")} estaciones</div>
+            <div className="font-semibold text-tl-900">Marítimas</div>
+            <div className="text-sm text-tl-700">{stats.maritimeCount.toLocaleString("es-ES")} estaciones</div>
           </div>
         </Link>
         <Link
@@ -213,29 +213,29 @@ export default async function GasolinerasPage() {
             <span className="text-sm font-normal text-gray-500 ml-2">(Península y Baleares)</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-amber-50 rounded-lg p-4">
-              <div className="text-sm text-amber-600 mb-1">Gasóleo A</div>
-              <div className="text-3xl font-bold text-amber-700 mb-2">
+            <div className="bg-tl-amber-50 rounded-lg p-4">
+              <div className="text-sm text-tl-amber-600 mb-1">Gasóleo A</div>
+              <div className="text-3xl font-bold text-tl-amber-700 mb-2">
                 {formatPrice(stats.nationalStats.avgGasoleoA)}
               </div>
               <TrendBadge
                 current={stats.nationalStats.avgGasoleoA ? Number(stats.nationalStats.avgGasoleoA) : null}
                 previous={stats.yesterday?.avgGasoleoA ? Number(stats.yesterday.avgGasoleoA) : null}
               />
-              <div className="text-xs text-amber-600 mt-2">
+              <div className="text-xs text-tl-amber-600 mt-2">
                 Min: {formatPrice(stats.nationalStats.minGasoleoA)} | Max: {formatPrice(stats.nationalStats.maxGasoleoA)}
               </div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="text-sm text-blue-600 mb-1">Gasolina 95</div>
-              <div className="text-3xl font-bold text-blue-700 mb-2">
+            <div className="bg-tl-50 rounded-lg p-4">
+              <div className="text-sm text-tl-600 mb-1">Gasolina 95</div>
+              <div className="text-3xl font-bold text-tl-700 mb-2">
                 {formatPrice(stats.nationalStats.avgGasolina95)}
               </div>
               <TrendBadge
                 current={stats.nationalStats.avgGasolina95 ? Number(stats.nationalStats.avgGasolina95) : null}
                 previous={stats.yesterday?.avgGasolina95 ? Number(stats.yesterday.avgGasolina95) : null}
               />
-              <div className="text-xs text-blue-600 mt-2">
+              <div className="text-xs text-tl-600 mt-2">
                 Min: {formatPrice(stats.nationalStats.minGasolina95)} | Max: {formatPrice(stats.nationalStats.maxGasolina95)}
               </div>
             </div>
@@ -258,21 +258,21 @@ export default async function GasolinerasPage() {
 
       {/* Maritime Stats */}
       {stats.maritimeStats._count > 0 && (
-        <div className="bg-white rounded-lg border border-blue-200 p-6 mb-8">
+        <div className="bg-white rounded-lg border border-tl-200 p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Anchor className="w-6 h-6 text-blue-600" />
+            <Anchor className="w-6 h-6 text-tl-600" />
             Precios Medios Estaciones Marítimas
             <span className="text-sm font-normal text-gray-500 ml-2">
               ({stats.maritimeCount.toLocaleString("es-ES")} estaciones en puertos)
             </span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-amber-50 rounded-lg p-4">
-              <div className="text-sm text-amber-600 mb-1">Gasóleo A</div>
-              <div className="text-3xl font-bold text-amber-700 mb-2">
+            <div className="bg-tl-amber-50 rounded-lg p-4">
+              <div className="text-sm text-tl-amber-600 mb-1">Gasóleo A</div>
+              <div className="text-3xl font-bold text-tl-amber-700 mb-2">
                 {formatPrice(stats.maritimeStats._avg.priceGasoleoA)}
               </div>
-              <div className="text-xs text-amber-600">
+              <div className="text-xs text-tl-amber-600">
                 Min: {formatPrice(stats.maritimeStats._min.priceGasoleoA)} | Max: {formatPrice(stats.maritimeStats._max.priceGasoleoA)}
               </div>
             </div>
@@ -286,12 +286,12 @@ export default async function GasolinerasPage() {
               </div>
               <div className="text-xs text-cyan-500 mt-1">(uso náutico/pesca)</div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="text-sm text-blue-600 mb-1">Gasolina 95</div>
-              <div className="text-3xl font-bold text-blue-700 mb-2">
+            <div className="bg-tl-50 rounded-lg p-4">
+              <div className="text-sm text-tl-600 mb-1">Gasolina 95</div>
+              <div className="text-3xl font-bold text-tl-700 mb-2">
                 {formatPrice(stats.maritimeStats._avg.priceGasolina95E5)}
               </div>
-              <div className="text-xs text-blue-600">
+              <div className="text-xs text-tl-600">
                 Min: {formatPrice(stats.maritimeStats._min.priceGasolina95E5)} | Max: {formatPrice(stats.maritimeStats._max.priceGasolina95E5)}
               </div>
             </div>
@@ -301,11 +301,11 @@ export default async function GasolinerasPage() {
 
       {/* Territorios con Fiscalidad Especial */}
       {(stats.ceutaStats || stats.melillaStats || stats.canariasAvg) && (
-        <div className="bg-amber-50 rounded-lg border border-amber-200 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-amber-900 mb-2">
+        <div className="bg-tl-amber-50 rounded-lg border border-tl-amber-200 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-tl-amber-900 mb-2">
             Territorios con Fiscalidad Especial
           </h2>
-          <p className="text-sm text-amber-700 mb-4">
+          <p className="text-sm text-tl-amber-700 mb-4">
             Sin IVA (Ceuta, Melilla) o con IGIC 7% (Canarias) - precios más bajos por menor carga fiscal
           </p>
 
@@ -313,11 +313,11 @@ export default async function GasolinerasPage() {
             {/* Ceuta */}
             <Link
               href="/gasolineras/precios/ceuta"
-              className="bg-white rounded-lg p-4 border border-amber-200 hover:shadow-md transition-shadow"
+              className="bg-white rounded-lg p-4 border border-tl-amber-200 hover:shadow-md transition-shadow"
             >
               <h3 className="font-semibold text-gray-900">Ceuta</h3>
               <div className="text-sm text-gray-500 mb-1">IPSI 0.5%</div>
-              <div className="text-2xl font-bold text-amber-600">
+              <div className="text-2xl font-bold text-tl-amber-600">
                 {stats.ceutaStats?.avgGasoleoA ? formatPrice(stats.ceutaStats.avgGasoleoA) : "N/D"}
               </div>
               <div className="text-xs text-gray-500">Gasóleo A medio</div>
@@ -326,11 +326,11 @@ export default async function GasolinerasPage() {
             {/* Melilla */}
             <Link
               href="/gasolineras/precios/melilla"
-              className="bg-white rounded-lg p-4 border border-amber-200 hover:shadow-md transition-shadow"
+              className="bg-white rounded-lg p-4 border border-tl-amber-200 hover:shadow-md transition-shadow"
             >
               <h3 className="font-semibold text-gray-900">Melilla</h3>
               <div className="text-sm text-gray-500 mb-1">IPSI 0.5%</div>
-              <div className="text-2xl font-bold text-amber-600">
+              <div className="text-2xl font-bold text-tl-amber-600">
                 {stats.melillaStats?.avgGasoleoA ? formatPrice(stats.melillaStats.avgGasoleoA) : "N/D"}
               </div>
               <div className="text-xs text-gray-500">Gasóleo A medio</div>
@@ -339,11 +339,11 @@ export default async function GasolinerasPage() {
             {/* Canarias */}
             <Link
               href="/gasolineras/precios/las-palmas"
-              className="bg-white rounded-lg p-4 border border-amber-200 hover:shadow-md transition-shadow"
+              className="bg-white rounded-lg p-4 border border-tl-amber-200 hover:shadow-md transition-shadow"
             >
               <h3 className="font-semibold text-gray-900">Islas Canarias</h3>
               <div className="text-sm text-gray-500 mb-1">IGIC 7%</div>
-              <div className="text-2xl font-bold text-amber-600">
+              <div className="text-2xl font-bold text-tl-amber-600">
                 {stats.canariasAvg ? `${stats.canariasAvg.toFixed(3)}€` : "N/D"}
               </div>
               <div className="text-xs text-gray-500">Gasóleo A medio</div>
@@ -356,7 +356,7 @@ export default async function GasolinerasPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-amber-500"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-amber-500"></span>
             Gasóleo A Más Barato
             <span className="text-xs font-normal text-gray-500">(Península)</span>
           </h2>
@@ -368,7 +368,7 @@ export default async function GasolinerasPage() {
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-sm font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-tl-amber-100 text-tl-amber-700 text-sm font-bold flex items-center justify-center">
                     {idx + 1}
                   </span>
                   <div>
@@ -376,7 +376,7 @@ export default async function GasolinerasPage() {
                     <div className="text-xs text-gray-500">{station.locality}, {station.provinceName}</div>
                   </div>
                 </div>
-                <div className="text-lg font-bold text-amber-700">
+                <div className="text-lg font-bold text-tl-amber-700">
                   {formatPrice(station.priceGasoleoA)}
                 </div>
               </Link>
@@ -386,7 +386,7 @@ export default async function GasolinerasPage() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-500"></span>
             Gasolina 95 Más Barata
             <span className="text-xs font-normal text-gray-500">(Península)</span>
           </h2>
@@ -398,7 +398,7 @@ export default async function GasolinerasPage() {
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-tl-100 text-tl-700 text-sm font-bold flex items-center justify-center">
                     {idx + 1}
                   </span>
                   <div>
@@ -406,7 +406,7 @@ export default async function GasolinerasPage() {
                     <div className="text-xs text-gray-500">{station.locality}, {station.provinceName}</div>
                   </div>
                 </div>
-                <div className="text-lg font-bold text-blue-700">
+                <div className="text-lg font-bold text-tl-700">
                   {formatPrice(station.priceGasolina95E5)}
                 </div>
               </Link>
@@ -417,9 +417,9 @@ export default async function GasolinerasPage() {
 
       {/* Cheapest Maritime Stations */}
       {cheapest.cheapestMaritimeDiesel.length > 0 && (
-        <div className="bg-white rounded-lg border border-blue-200 p-6 mb-8">
+        <div className="bg-white rounded-lg border border-tl-200 p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Anchor className="w-5 h-5 text-blue-600" />
+            <Anchor className="w-5 h-5 text-tl-600" />
             Gasóleo A Más Barato - Marítimas
           </h2>
           <div className="space-y-3">
@@ -427,10 +427,10 @@ export default async function GasolinerasPage() {
               <Link
                 key={station.id}
                 href={`/gasolineras/maritimas/${station.id}`}
-                className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                className="flex items-center justify-between p-3 bg-tl-50 rounded-lg hover:bg-tl-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center border border-blue-200">
+                  <span className="w-6 h-6 rounded-full bg-tl-100 text-tl-700 text-sm font-bold flex items-center justify-center border border-tl-200">
                     {idx + 1}
                   </span>
                   <div>
@@ -438,7 +438,7 @@ export default async function GasolinerasPage() {
                     <div className="text-xs text-gray-500">{station.port || station.locality}{station.provinceName && `, ${station.provinceName}`}</div>
                   </div>
                 </div>
-                <div className="text-lg font-bold text-blue-700">
+                <div className="text-lg font-bold text-tl-700">
                   {formatPrice(station.priceGasoleoA)}
                 </div>
               </Link>

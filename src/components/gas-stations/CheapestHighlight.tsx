@@ -35,8 +35,8 @@ export function CheapestHighlight({
         {dieselStation && (
           <div className="bg-white rounded-lg p-4 shadow-sm border border-green-100">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
-                <Fuel className="w-3 h-3 text-amber-600" />
+              <div className="w-6 h-6 rounded-full bg-tl-amber-100 flex items-center justify-center">
+                <Fuel className="w-3 h-3 text-tl-amber-600" />
               </div>
               <span className="text-sm font-medium text-gray-600">Gasóleo A más barato</span>
             </div>
@@ -54,7 +54,7 @@ export function CheapestHighlight({
               {dieselStation.provinceName && `, ${dieselStation.provinceName}`}
             </div>
             {dieselStation.nearestRoad && (
-              <div className="text-xs text-blue-600 mt-1">
+              <div className="text-xs text-tl-600 mt-1">
                 {dieselStation.nearestRoad}
                 {dieselStation.roadKm && ` km ${dieselStation.roadKm}`}
               </div>
@@ -74,8 +74,8 @@ export function CheapestHighlight({
         {gasolineStation && (
           <div className="bg-white rounded-lg p-4 shadow-sm border border-green-100">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-                <Fuel className="w-3 h-3 text-blue-600" />
+              <div className="w-6 h-6 rounded-full bg-tl-100 flex items-center justify-center">
+                <Fuel className="w-3 h-3 text-tl-600" />
               </div>
               <span className="text-sm font-medium text-gray-600">Gasolina 95 más barata</span>
             </div>
@@ -93,7 +93,7 @@ export function CheapestHighlight({
               {gasolineStation.provinceName && `, ${gasolineStation.provinceName}`}
             </div>
             {gasolineStation.nearestRoad && (
-              <div className="text-xs text-blue-600 mt-1">
+              <div className="text-xs text-tl-600 mt-1">
                 {gasolineStation.nearestRoad}
                 {gasolineStation.roadKm && ` km ${gasolineStation.roadKm}`}
               </div>

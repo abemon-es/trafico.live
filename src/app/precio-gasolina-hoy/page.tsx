@@ -359,7 +359,7 @@ export default async function PrecioGasolinaHoyPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8 text-amber-800">
+          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-xl p-6 mb-8 text-tl-amber-800">
             Los precios de hoy aún no están disponibles. Los datos se actualizan varias veces al
             día desde la API oficial del MITERD.
           </div>
@@ -424,7 +424,7 @@ export default async function PrecioGasolinaHoyPage() {
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         idx === 0
-                          ? "bg-amber-400 text-amber-900"
+                          ? "bg-tl-amber-400 text-tl-amber-900"
                           : idx === 1
                           ? "bg-gray-300 text-gray-700"
                           : idx === 2
@@ -570,12 +570,12 @@ export default async function PrecioGasolinaHoyPage() {
                             ? `/gasolineras/precios/${province.slug}`
                             : "/gasolineras/precios"
                         }
-                        className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 hover:bg-amber-100 transition-colors"
+                        className="flex items-center gap-2 bg-tl-amber-50 border border-tl-amber-200 rounded-lg px-3 py-2 hover:bg-tl-amber-100 transition-colors"
                       >
-                        <span className="text-xs font-medium text-amber-800">
+                        <span className="text-xs font-medium text-tl-amber-800">
                           {province?.name ?? code}
                         </span>
-                        <span className="text-xs font-bold text-amber-600">
+                        <span className="text-xs font-bold text-tl-amber-600">
                           {formatPrice(p.avgGasolina95)}
                         </span>
                       </Link>

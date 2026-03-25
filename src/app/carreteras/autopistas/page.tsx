@@ -112,7 +112,7 @@ export default async function AutopistasPage() {
               <div className="text-sm text-gray-600">Autopistas</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">{totalCameras}</div>
+              <div className="text-2xl font-bold text-tl-600">{totalCameras}</div>
               <div className="text-sm text-gray-600">Cámaras</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -174,7 +174,7 @@ export default async function AutopistasPage() {
                           {road.provinces.length > 3 && ` +${road.provinces.length - 3}`}
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <span className={cameras > 0 ? "font-medium text-blue-600" : "text-gray-400"}>
+                          <span className={cameras > 0 ? "font-medium text-tl-600" : "text-gray-400"}>
                             {cameras}
                           </span>
                         </td>

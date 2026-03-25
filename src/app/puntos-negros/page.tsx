@@ -64,9 +64,9 @@ const RISK_LEVEL_CONFIG: Record<
   },
   MEDIUM: {
     label: "Medio",
-    badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
-    rowClass: "border-l-4 border-l-amber-400",
-    dotClass: "bg-amber-500",
+    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200",
+    rowClass: "border-l-4 border-l-tl-amber-400",
+    dotClass: "bg-tl-amber-500",
   },
   LOW: {
     label: "Bajo",
@@ -264,13 +264,13 @@ export default async function PuntosNegrosPage() {
           </div>
 
           {/* Alert banner */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-tl-amber-50 border border-tl-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <Info className="w-5 h-5 text-tl-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h2 className="font-semibold text-amber-800">
+              <h2 className="font-semibold text-tl-amber-800">
                 ¿Qué es un Tramo de Concentración de Accidentes?
               </h2>
-              <p className="text-sm text-amber-700 mt-0.5">
+              <p className="text-sm text-tl-amber-700 mt-0.5">
                 Un TCA es un tramo de carretera de al menos{" "}
                 <strong>500 metros de longitud</strong> donde se han producido{" "}
                 <strong>3 o más accidentes con víctimas en un período de 3 años</strong> consecutivos.

@@ -238,12 +238,12 @@ export default async function ProvincePricesPage({ params }: Props) {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`font-mono ${idx < 3 ? "text-green-700 font-bold" : "text-amber-700"}`}>
+                    <span className={`font-mono ${idx < 3 ? "text-green-700 font-bold" : "text-tl-amber-700"}`}>
                       {formatPrice(station.priceGasoleoA)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-blue-700">{formatPrice(station.priceGasolina95E5)}</span>
+                    <span className="font-mono text-tl-700">{formatPrice(station.priceGasolina95E5)}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span className="font-mono text-purple-700">{formatPrice(station.priceGasolina98E5)}</span>

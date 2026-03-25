@@ -113,8 +113,8 @@ export default function DieselContent() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-              <Fuel className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 bg-tl-amber-100 rounded-lg flex items-center justify-center">
+              <Fuel className="w-5 h-5 text-tl-amber-600" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -139,7 +139,7 @@ export default function DieselContent() {
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <Fuel className="w-6 h-6 text-amber-600 mb-2" />
+              <Fuel className="w-6 h-6 text-tl-amber-600 mb-2" />
               <p className="text-2xl font-bold text-gray-900">
                 {avgPrice ? `${avgPrice.toFixed(3)} €` : "-"}
               </p>
@@ -147,7 +147,7 @@ export default function DieselContent() {
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <MapPin className="w-6 h-6 text-blue-600 mb-2" />
+              <MapPin className="w-6 h-6 text-tl-600 mb-2" />
               <p className="text-2xl font-bold text-gray-900">
                 {filteredStations?.length || 0}
               </p>
@@ -175,7 +175,7 @@ export default function DieselContent() {
               placeholder="Buscar por nombre o localidad..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-tl-amber-500 focus:border-transparent"
             />
           </div>
 
@@ -185,7 +185,7 @@ export default function DieselContent() {
               <select
                 value={provinceFilter}
                 onChange={(e) => setProvinceFilter(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-tl-amber-500"
               >
                 <option value="">Todas las provincias</option>
                 {(provinces as string[]).map((p) => (
@@ -243,7 +243,7 @@ export default function DieselContent() {
                           : index < 3
                           ? "bg-green-50 text-green-600"
                           : index < 10
-                          ? "bg-amber-50 text-amber-600"
+                          ? "bg-tl-amber-50 text-tl-amber-600"
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
@@ -280,7 +280,7 @@ export default function DieselContent() {
                           href={`https://www.google.com/maps?q=${station.latitude},${station.longitude}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-2 inline-flex items-center gap-1 text-xs text-amber-600 hover:underline"
+                          className="mt-2 inline-flex items-center gap-1 text-xs text-tl-amber-600 hover:underline"
                         >
                           <MapPin className="w-3 h-3" />
                           Ver en mapa
@@ -297,7 +297,7 @@ export default function DieselContent() {
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-500">
                   Mostrando 50 de {filteredStations.length} gasolineras.{" "}
-                  <Link href="/gasolineras" className="text-amber-600 hover:underline">
+                  <Link href="/gasolineras" className="text-tl-amber-600 hover:underline">
                     Ver todas
                   </Link>
                 </p>

@@ -1183,7 +1183,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                 ` : ""}
                 <p class="font-bold text-sm">${camera.name}</p>
                 ${camera.province ? `<p class="text-xs text-gray-500">${camera.province}</p>` : ""}
-                <a href="/camaras?id=${camera.id}" class="inline-block mt-2 text-blue-600 text-sm hover:underline">Ver cámara →</a>
+                <a href="/camaras?id=${camera.id}" class="inline-block mt-2 text-tl-600 text-sm hover:underline">Ver cámara →</a>
               </div>
             `)
           )
@@ -1583,15 +1583,15 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-2">
                   ${station.priceGasoleoA ? `
-                    <div class="bg-amber-50 p-1.5 rounded">
-                      <div class="text-xs text-amber-600">Gasóleo A</div>
-                      <div class="font-bold text-amber-700">${formatPrice(station.priceGasoleoA)}</div>
+                    <div class="bg-tl-amber-50 p-1.5 rounded">
+                      <div class="text-xs text-tl-amber-600">Gasóleo A</div>
+                      <div class="font-bold text-tl-amber-700">${formatPrice(station.priceGasoleoA)}</div>
                     </div>
                   ` : ''}
                   ${station.priceGasolina95E5 ? `
-                    <div class="bg-blue-50 p-1.5 rounded">
-                      <div class="text-xs text-blue-600">Gasolina 95</div>
-                      <div class="font-bold text-blue-700">${formatPrice(station.priceGasolina95E5)}</div>
+                    <div class="bg-tl-50 p-1.5 rounded">
+                      <div class="text-xs text-tl-600">Gasolina 95</div>
+                      <div class="font-bold text-tl-700">${formatPrice(station.priceGasolina95E5)}</div>
                     </div>
                   ` : ''}
                   ${station.priceGasolina98E5 ? `
@@ -1641,7 +1641,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
         const formatPrice = (price: number | null) => price ? `${price.toFixed(3)}€` : "N/D";
         const is24hBadge = station.is24h
-          ? '<span class="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded ml-1">24h</span>'
+          ? '<span class="inline-block px-1.5 py-0.5 bg-tl-100 text-tl-700 text-xs rounded ml-1">24h</span>'
           : '';
 
         const marker = new maplibregl.Marker({ element: el })
@@ -1650,22 +1650,22 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             new maplibregl.Popup({ offset: 25, maxWidth: "280px" }).setHTML(`
               <div class="p-2 min-w-[200px]">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                  <span class="w-3 h-3 rounded-full bg-tl-500"></span>
                   <span class="font-bold text-sm flex-1">${station.name}</span>
                   ${is24hBadge}
                 </div>
-                ${station.port ? `<p class="text-sm text-blue-600 mb-2">Puerto: ${station.port}</p>` : ''}
+                ${station.port ? `<p class="text-sm text-tl-600 mb-2">Puerto: ${station.port}</p>` : ''}
                 <div class="grid grid-cols-2 gap-2 mb-2">
                   ${station.priceGasoleoA ? `
-                    <div class="bg-amber-50 p-1.5 rounded">
-                      <div class="text-xs text-amber-600">Gasóleo A</div>
-                      <div class="font-bold text-amber-700">${formatPrice(station.priceGasoleoA)}</div>
+                    <div class="bg-tl-amber-50 p-1.5 rounded">
+                      <div class="text-xs text-tl-amber-600">Gasóleo A</div>
+                      <div class="font-bold text-tl-amber-700">${formatPrice(station.priceGasoleoA)}</div>
                     </div>
                   ` : ''}
                   ${station.priceGasolina95E5 ? `
-                    <div class="bg-blue-50 p-1.5 rounded">
-                      <div class="text-xs text-blue-600">Gasolina 95</div>
-                      <div class="font-bold text-blue-700">${formatPrice(station.priceGasolina95E5)}</div>
+                    <div class="bg-tl-50 p-1.5 rounded">
+                      <div class="text-xs text-tl-600">Gasolina 95</div>
+                      <div class="font-bold text-tl-700">${formatPrice(station.priceGasolina95E5)}</div>
                     </div>
                   ` : ''}
                 </div>
@@ -1675,7 +1675,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                 </div>
                 <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
                   <span class="text-xs text-gray-400">${station.latitude.toFixed(5)}, ${station.longitude.toFixed(5)}</span>
-                  <a href="/gasolineras/maritimas/${station.id}" class="text-blue-600 text-xs hover:underline">Ver detalles →</a>
+                  <a href="/gasolineras/maritimas/${station.id}" class="text-tl-600 text-xs hover:underline">Ver detalles →</a>
                 </div>
               </div>
             `)

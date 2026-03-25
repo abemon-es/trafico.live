@@ -117,7 +117,7 @@ function getSeverityBadge(severity: string): string {
     case "CRITICAL":
       return "bg-red-50 border-red-200 text-red-700";
     case "MEDIUM":
-      return "bg-amber-50 border-amber-200 text-amber-700";
+      return "bg-tl-amber-50 border-tl-amber-200 text-tl-amber-700";
     default:
       return "bg-gray-50 border-gray-200 text-gray-600";
   }
@@ -222,16 +222,16 @@ export default async function CortesTráficoPage() {
           {/* Header */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="p-3 bg-amber-50 rounded-lg flex-shrink-0">
-                <Construction className="w-8 h-8 text-amber-600" />
+              <div className="p-3 bg-tl-amber-50 rounded-lg flex-shrink-0">
+                <Construction className="w-8 h-8 text-tl-amber-600" />
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-3 mb-2">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                     Cortes de Tráfico y Obras en Carreteras
                   </h1>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-700 border border-amber-200">
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-tl-amber-100 text-tl-amber-700 border border-tl-amber-200">
+                    <span className="w-2 h-2 rounded-full bg-tl-amber-500 animate-pulse" />
                     {closures.length} activos
                   </span>
                 </div>
@@ -262,7 +262,7 @@ export default async function CortesTráficoPage() {
               <p className="text-xs text-gray-500">Cortes activos</p>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-              <Construction className="w-5 h-5 text-amber-500 mx-auto mb-1" />
+              <Construction className="w-5 h-5 text-tl-amber-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-gray-900">{worksIncidents.length}</p>
               <p className="text-xs text-gray-500">Obras en curso</p>
             </div>
@@ -309,15 +309,15 @@ export default async function CortesTráficoPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <div
                       className={`p-2 rounded-lg ${
-                        group.icon === "closure" ? "bg-red-50" : "bg-amber-50"
+                        group.icon === "closure" ? "bg-red-50" : "bg-tl-amber-50"
                       }`}
                     >
                       {group.icon === "closure" ? (
                         <Ban
-                          className={`w-5 h-5 ${group.icon === "closure" ? "text-red-600" : "text-amber-600"}`}
+                          className={`w-5 h-5 ${group.icon === "closure" ? "text-red-600" : "text-tl-amber-600"}`}
                         />
                       ) : (
-                        <Construction className="w-5 h-5 text-amber-600" />
+                        <Construction className="w-5 h-5 text-tl-amber-600" />
                       )}
                     </div>
                     <h2
@@ -327,7 +327,7 @@ export default async function CortesTráficoPage() {
                       {group.label}
                       <span
                         className={`ml-2 text-base font-normal ${
-                          group.color === "red" ? "text-red-500" : "text-amber-500"
+                          group.color === "red" ? "text-red-500" : "text-tl-amber-500"
                         }`}
                       >
                         ({group.incidents.length})
@@ -342,7 +342,7 @@ export default async function CortesTráficoPage() {
                         className={`bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow ${
                           group.color === "red"
                             ? "border-red-100 hover:border-red-200"
-                            : "border-amber-100 hover:border-amber-200"
+                            : "border-tl-amber-100 hover:border-tl-amber-200"
                         }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start gap-3">
@@ -354,7 +354,7 @@ export default async function CortesTráficoPage() {
                                 className={`inline-block px-3 py-1.5 text-white text-sm font-bold rounded-lg transition-colors ${
                                   group.color === "red"
                                     ? "bg-red-600 hover:bg-red-700"
-                                    : "bg-amber-600 hover:bg-amber-700"
+                                    : "bg-tl-amber-600 hover:bg-tl-amber-700"
                                 }`}
                               >
                                 {incident.roadNumber}

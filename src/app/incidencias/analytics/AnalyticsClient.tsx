@@ -119,7 +119,7 @@ function StatCard({
   color?: "blue" | "red" | "green" | "orange";
 }) {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-700",
+    blue: "bg-tl-50 text-tl-700",
     red: "bg-red-50 text-red-700",
     green: "bg-green-50 text-green-700",
     orange: "bg-orange-50 text-orange-700",
@@ -173,7 +173,7 @@ function CustomTooltip({
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-sm">
       <p className="font-medium text-gray-700">{displayLabel}</p>
-      <p className="text-blue-600 font-semibold">
+      <p className="text-tl-600 font-semibold">
         {formatNumber(payload[0].value)} {valueLabel}
       </p>
     </div>
@@ -209,7 +209,7 @@ export function IncidenciasAnalyticsClient() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <BarChart2 className="w-8 h-8 text-blue-600" />
+                <BarChart2 className="w-8 h-8 text-tl-600" />
                 Análisis de Incidencias de Tráfico
               </h1>
               <p className="mt-1 text-gray-600">
@@ -227,7 +227,7 @@ export function IncidenciasAnalyticsClient() {
                   onClick={() => setPeriod(p)}
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     period === p
-                      ? "bg-blue-600 text-white"
+                      ? "bg-tl-600 text-white"
                       : "text-gray-600 hover:bg-gray-50"
                   }`}
                 >
@@ -246,7 +246,7 @@ export function IncidenciasAnalyticsClient() {
         {/* Loading */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-24 text-gray-500">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin text-tl-600 mb-4" />
             <p>Cargando análisis...</p>
           </div>
         )}
@@ -504,13 +504,13 @@ export function IncidenciasAnalyticsClient() {
                           <td className="py-2.5 px-3 font-medium text-gray-800">
                             {p.province}
                           </td>
-                          <td className="py-2.5 px-3 text-right font-semibold text-blue-700">
+                          <td className="py-2.5 px-3 text-right font-semibold text-tl-700">
                             {formatNumber(p.count)}
                           </td>
                           <td className="py-2.5 px-3">
                             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                                className="h-full bg-tl-500 rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>

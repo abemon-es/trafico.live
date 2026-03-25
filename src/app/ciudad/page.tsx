@@ -51,8 +51,8 @@ export default function CiudadesPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-tl-100 rounded-lg flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-tl-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">
               Tráfico por ciudades
@@ -69,11 +69,11 @@ export default function CiudadesPage() {
             <Search className="w-5 h-5" />
             <p className="text-sm">
               ¿No encuentras tu ciudad? Prueba a buscar por{" "}
-              <Link href="/espana" className="text-blue-600 hover:underline">
+              <Link href="/espana" className="text-tl-600 hover:underline">
                 provincia
               </Link>{" "}
               o{" "}
-              <Link href="/comunidad-autonoma" className="text-blue-600 hover:underline">
+              <Link href="/comunidad-autonoma" className="text-tl-600 hover:underline">
                 comunidad autónoma
               </Link>
             </p>
@@ -86,16 +86,16 @@ export default function CiudadesPage() {
             <Link
               key={city.slug}
               href={`/ciudad/${city.slug}`}
-              className="bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 hover:shadow-md transition-all group"
+              className="bg-white rounded-lg border border-gray-200 p-4 hover:border-tl-300 hover:shadow-md transition-all group"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                  <h2 className="font-semibold text-gray-900 group-hover:text-tl-700 transition-colors">
                     {city.name}
                   </h2>
                   <p className="text-sm text-gray-500">{city.province}</p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-600 transition-colors" />
               </div>
               <p className="text-xs text-gray-400 mt-2">{city.population} habitantes</p>
             </Link>
@@ -106,7 +106,7 @@ export default function CiudadesPage() {
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>
             Más ciudades disponibles a través de{" "}
-            <Link href="/espana" className="text-blue-600 hover:underline">
+            <Link href="/espana" className="text-tl-600 hover:underline">
               navegación por provincias
             </Link>
           </p>

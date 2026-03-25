@@ -105,8 +105,8 @@ export function StatsCards() {
       <StatCard
         title="Cámaras"
         value={displayStats.cameras}
-        icon={<Camera className="w-5 h-5 text-blue-600" />}
-        color="bg-blue-50"
+        icon={<Camera className="w-5 h-5 text-tl-600" />}
+        color="bg-tl-50"
       />
       <StatCard
         title="Cargadores EV"

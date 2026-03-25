@@ -112,7 +112,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Camera className="w-8 h-8 text-blue-600" />
+                <Camera className="w-8 h-8 text-tl-600" />
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
                     Cámaras de tráfico en {road.id}
@@ -137,7 +137,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
         {/* Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-2xl font-bold text-blue-600">{cameras.length}</div>
+            <div className="text-2xl font-bold text-tl-600">{cameras.length}</div>
             <div className="text-sm text-gray-600">Cámaras activas</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -191,7 +191,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
                         href={camera.feedUrl || camera.thumbnailUrl || ""}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        className="text-sm text-tl-600 hover:text-tl-800 flex items-center gap-1"
                       >
                         Ver imagen <ExternalLink className="w-3 h-3" />
                       </a>

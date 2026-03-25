@@ -58,7 +58,7 @@ function InfraCard({
   return (
     <Link
       href={href}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all group"
+      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -73,7 +73,7 @@ function InfraCard({
             {sublabel && <p className="text-xs text-gray-400">{sublabel}</p>}
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500 transition-colors" />
       </div>
     </Link>
   );
@@ -110,7 +110,7 @@ export function InfrastructureStatus() {
         </div>
         <Link
           href="/explorar/infraestructura"
-          className="text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+          className="text-sm text-tl-600 hover:text-tl-700 hover:underline flex items-center gap-1"
         >
           Ver todo
           <ChevronRight className="w-4 h-4" />
@@ -125,11 +125,11 @@ export function InfrastructureStatus() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <InfraCard
-              icon={<Camera className="w-5 h-5 text-blue-600" />}
+              icon={<Camera className="w-5 h-5 text-tl-600" />}
               label="Cámaras"
               count={data?.cameras.count || 0}
               href="/explorar/infraestructura?tab=camaras"
-              color="bg-blue-50"
+              color="bg-tl-50"
               isLoading={isLoading}
             />
             <InfraCard

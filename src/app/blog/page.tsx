@@ -33,10 +33,10 @@ export const metadata: Metadata = {
 
 // Article placeholder colors by category (no external images needed)
 const CATEGORY_GRADIENT: Record<string, string> = {
-  guía: "from-blue-500 to-blue-700",
+  guía: "from-tl-500 to-tl-700",
   actualidad: "from-orange-500 to-orange-700",
   seguridad: "from-red-500 to-red-700",
-  combustible: "from-amber-500 to-amber-700",
+  combustible: "from-tl-amber-500 to-tl-amber-700",
 };
 
 const CATEGORY_ICON: Record<string, string> = {

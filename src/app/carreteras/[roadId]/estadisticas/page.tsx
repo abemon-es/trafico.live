@@ -192,11 +192,11 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Camera className="w-5 h-5 text-blue-600" />
+              <Camera className="w-5 h-5 text-tl-600" />
               <span className="text-sm text-gray-600">Cámaras</span>
             </div>
             <div className="text-3xl font-bold text-gray-900">{cameras}</div>
-            <Link href={`/carreteras/${road.id}/camaras`} className="text-sm text-blue-600 hover:underline">
+            <Link href={`/carreteras/${road.id}/camaras`} className="text-sm text-tl-600 hover:underline">
               Ver todas →
             </Link>
           </div>
