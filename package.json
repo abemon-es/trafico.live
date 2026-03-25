@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && NODE_OPTIONS='--max-old-space-size=4096' NEXT_WORKER_COUNT=4 next build",
+    "build": "prisma generate && NODE_OPTIONS='--max-old-space-size=4096' NEXT_WORKER_COUNT=2 next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
