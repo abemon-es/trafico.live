@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>trafico.live — Brand Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'DM Sans',sans-serif;background:#fff;color:#111827;font-size:15px;line-height:1.6}
+    h1,h2,h3,h4,h5{font-family:'Exo 2',sans-serif;line-height:1.2}
+    .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+
+    /* Layout */
+    .wrap{max-width:960px;margin:0 auto;padding:0 32px}
+    .s{padding:56px 0;border-bottom:1px solid #e5e7eb}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+    .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+    /* Nav */
+    .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-bottom:1px solid #e5e7eb;padding:10px 0}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between}
+    .nav-links{display:flex;gap:16px;font-size:12px;font-weight:500;color:#6b7280}
+    .nav-links a{color:#6b7280;text-decoration:none} .nav-links a:hover{color:#1b4bd5}
+
+    /* Cover */
+    .cover{padding:80px 0 64px;text-align:center;border-bottom:2px solid #1b4bd5}
+    .cover .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#1b4bd5;background:#f0f5ff;border:1px solid #c0d5ff;padding:4px 14px;border-radius:100px;margin-bottom:28px}
+
+    /* Section headings */
+    .sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#1b4bd5;margin-bottom:4px}
+    .sh{font-size:20px;font-weight:700;color:#111827;margin-bottom:6px}
+    .sd{font-size:13px;color:#6b7280;margin-bottom:28px;line-height:1.6;max-width:640px}
+
+    /* Frames */
+    .f{background:#fafbfc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+    .fb{padding:28px;display:flex;align-items:center;justify-content:center;min-height:100px}
+    .fb.dark{background:#0b0f1a} .fb.blue{background:#1b4bd5} .fb.gray{background:#f8fafc}
+    .fl{padding:8px 12px;border-top:1px solid #e5e7eb;font-size:10px;color:#9ca3af;font-weight:500;background:#fff}
+
+    /* Color swatches */
+    .ps{display:flex;height:48px;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb}
+    .ps>div{flex:1;display:flex;align-items:center;justify-content:center}
+    .ps .l{font-family:'JetBrains Mono';font-size:8px;opacity:0.7}
+
+    /* Tokens table */
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6b7280;padding:8px 0;border-bottom:2px solid #e5e7eb}
+    td{padding:10px 0;border-bottom:1px solid #f1f5f9;vertical-align:top}
+    td:first-child{font-family:'JetBrains Mono';font-size:12px;color:#1b4bd5;font-weight:500}
+
+    /* Type scale preview */
+    .ts{padding:16px 0;border-bottom:1px solid #f1f5f9}
+    .ts:last-child{border-bottom:none}
+
+    /* Do/Don't */
+    .do,.dont{border-radius:10px;padding:20px;display:flex;align-items:center;justify-content:center;min-height:72px;gap:10px}
+    .do{background:#ecfdf5;border:1px solid #a7f3d0}
+    .dont{background:#fef2f2;border:1px solid #fecaca}
+    .do-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#065f46;padding:6px 0}
+    .dont-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#991b1b;padding:6px 0}
+
+    /* Voice cards */
+    .vc{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:20px}
+    .vc h4{font-size:14px;margin-bottom:8px}
+    .vc p{font-size:13px;color:#6b7280;line-height:1.5}
+    .vc .ex{font-style:italic;color:#111827;background:#fff;padding:8px 12px;border-radius:6px;border-left:3px solid #1b4bd5;margin-top:8px;font-size:13px}
+    .vc .bad{border-left-color:#dc2626;color:#991b1b;background:#fef2f2}
+
+    /* Badges */
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;background:#1b4bd5}
+    .badge .dot{width:5px;height:5px;border-radius:50%;background:white;opacity:0.85}
+    .badge span{font-family:'Exo 2';font-weight:700;font-size:11px;color:white;letter-spacing:1.5px}
+
+    /* Signal badges */
+    .sb{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:600}
+    .sb .d{width:6px;height:6px;border-radius:50%}
+    .sg{background:#ecfdf5;color:#065f46} .sg .d{background:#059669}
+    .sa{background:#fffbeb;color:#92400e} .sa .d{background:#d97706}
+    .sr{background:#fef2f2;color:#991b1b} .sr .d{background:#dc2626}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:'Exo 2';font-size:13px;font-weight:700;border:none;cursor:pointer}
+    .btn-p{background:#1b4bd5;color:white} .btn-s{background:#f0f5ff;color:#092ea8;border:1px solid #c0d5ff}
+    .btn-a{background:#d48139;color:white} .btn-g{background:transparent;color:#6b7280;border:1px solid #d1d5db}
+    .btn-d{background:#dc2626;color:white}
+
+    /* Stat card */
+    .sc{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+    .sc .v{font-family:'JetBrains Mono';font-size:24px;font-weight:500}
+    .sc .lb{font-size:11px;color:#6b7280;margin-top:2px}
+
+    /* Rule block */
+    .rule{background:#f0f5ff;border:1px solid #c0d5ff;border-radius:8px;padding:14px 18px;margin:12px 0;font-size:13px;color:#092ea8}
+    .rule strong{color:#1b4bd5}
+
+    /* Footer */
+    .foot{text-align:center;padding:48px 0}
+  </style>
+</head>
+<body>
+
+<!-- STICKY NAV -->
+<div class="nav">
+  <div class="wrap nav-inner">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <svg width="8" height="22" viewBox="0 0 8 22" fill="none"><circle cx="4" cy="3" r="2.5" fill="#dc2626"/><circle cx="4" cy="11" r="2.5" fill="#d97706"/><circle cx="4" cy="19" r="2.5" fill="#059669"/></svg>
+      <span style="font-family:'Exo 2';font-weight:800;font-size:13px;color:#111827;">trafico</span>
+      <span style="display:inline-flex;align-items:center;gap:2px;padding:1px 5px;border-radius:3px;background:#1b4bd5;"><span style="width:2px;height:2px;border-radius:50%;background:white;display:block;"></span><span style="font-family:'Exo 2';font-weight:700;font-size:7px;color:white;letter-spacing:0.8px;">.LIVE</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="#logo">Logo</a>
+      <a href="#color">Color</a>
+      <a href="#type">Tipograf&iacute;a</a>
+      <a href="#voice">Voz</a>
+      <a href="#writing">Escritura</a>
+      <a href="#components">Componentes</a>
+      <a href="#access">Accesibilidad</a>
+    </div>
+  </div>
+</div>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="wrap">
+    <div class="tag">Brand Guide v1.0</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px;">
+      <svg width="20" height="52" viewBox="0 0 20 52" fill="none"><circle cx="10" cy="8" r="7" fill="#dc2626"/><circle cx="10" cy="26" r="7" fill="#d97706"/><circle cx="10" cy="44" r="7" fill="#059669"/></svg>
+      <div style="text-align:left;">
+        <div style="font-family:'Exo 2';font-weight:800;font-size:48px;color:#111827;letter-spacing:-1.5px;line-height:1;">trafico</div>
+        <div class="badge" style="margin-top:4px;"><div class="dot"></div><span>.LIVE</span></div>
+      </div>
+    </div>
+    <p style="font-size:16px;color:#6b7280;max-width:480px;margin:16px auto 0;">Gu&iacute;a completa de marca: identidad visual, voz, tono, estilo de escritura, componentes y accesibilidad.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ════════════════════════════════════════════════
+     01. MISSION & VALUES
+     ════════════════════════════════════════════════ -->
+<div class="s">
+  <div class="sl">01 &mdash; Misi&oacute;n</div>
+  <div class="sh">Qu&eacute; es trafico.live</div>
+  <div class="sd">Plataforma de inteligencia vial en tiempo real para Espa&ntilde;a. Datos oficiales de la DGT actualizados cada 60 segundos.</div>
+
+  <div class="g3">
+    <div class="vc">
+      <h4>Para qui&eacute;n</h4>
+      <p>Viajeros personales y transportistas profesionales. Desde el conductor que planifica su ruta de vacaciones hasta el gestor de flotas que necesita alertas en tiempo real.</p>
+    </div>
+    <div class="vc">
+      <h4>Qu&eacute; ofrecemos</h4>
+      <p>Incidencias, c&aacute;maras DGT, radares, precios de combustible, cargadores el&eacute;ctricos, ZBE, restricciones y operaciones especiales. Todo en un solo lugar.</p>
+    </div>
+    <div class="vc">
+      <h4>Por qu&eacute; existimos</h4>
+      <p>La informaci&oacute;n vial en Espa&ntilde;a est&aacute; fragmentada. trafico.live la unifica, la actualiza y la hace accesible para cualquier conductor.</p>
+    </div>
+  </div>
+
+  <div class="rule" style="margin-top:20px;">
+    <strong>Principio fundacional:</strong> Lideramos con datos, no con opiniones. Cada n&uacute;mero en la plataforma viene de una fuente oficial verificable.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     02. LOGO SYSTEM
+     ════════════════════════════════════════════════ -->
+<div class="s" id="logo">
+  <div class="sl">02 &mdash; Sistema de logo</div>
+  <div class="sh">3 Puntos + trafico + .LIVE badge</div>
+  <div class="sd">El logotipo tiene tres componentes: el icono (3 puntos de sem&aacute;foro), el wordmark (&ldquo;trafico&rdquo; en Exo 2 800) y el badge (.LIVE). Juntos forman el lockup.</div>
+
+  <!-- Primary lockup construction -->
+  <div style="background:#fafbfc;border:1px solid #e5e7eb;border-radius:12px;padding:40px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+    <svg width="460" height="120" viewBox="0 0 460 120">
+      <line x1="0" y1="12" x2="460" y2="12" stroke="#dbeafe" stroke-width="0.5" stroke-dasharray="2 4"/>
+      <line x1="0" y1="60" x2="460" y2="60" stroke="#dbeafe" stroke-width="0.5" stroke-dasharray="2 4"/>
+      <line x1="0" y1="108" x2="460" y2="108" stroke="#dbeafe" stroke-width="0.5" stroke-dasharray="2 4"/>
+      <circle cx="28" cy="24" r="12" fill="#dc2626"/>
+      <circle cx="28" cy="60" r="12" fill="#d97706"/>
+      <circle cx="28" cy="96" r="12" fill="#059669"/>
+      <line x1="6" y1="12" x2="6" y2="36" stroke="#1b4bd5" stroke-width="0.5"/>
+      <line x1="4" y1="12" x2="8" y2="12" stroke="#1b4bd5" stroke-width="0.5"/>
+      <line x1="4" y1="36" x2="8" y2="36" stroke="#1b4bd5" stroke-width="0.5"/>
+      <text x="2" y="27" font-family="'JetBrains Mono'" font-size="7" fill="#1b4bd5" transform="rotate(-90,2,27)">24px</text>
+      <line x1="50" y1="12" x2="50" y2="108" stroke="#dc2626" stroke-width="0.5"/>
+      <line x1="48" y1="12" x2="52" y2="12" stroke="#dc2626" stroke-width="0.5"/>
+      <line x1="48" y1="108" x2="52" y2="108" stroke="#dc2626" stroke-width="0.5"/>
+      <text x="54" y="64" font-family="'JetBrains Mono'" font-size="7" fill="#dc2626">96px</text>
+      <line x1="40" y1="5" x2="80" y2="5" stroke="#1b4bd5" stroke-width="0.5"/>
+      <text x="52" y="4" font-family="'JetBrains Mono'" font-size="6" fill="#1b4bd5">24px gap</text>
+      <text x="80" y="62" font-family="'Exo 2'" font-weight="800" font-size="56" fill="#111827" letter-spacing="-1.5">trafico</text>
+      <line x1="80" y1="22" x2="330" y2="22" stroke="#dc2626" stroke-width="0.5" opacity="0.3" stroke-dasharray="2 3"/>
+      <text x="335" y="25" font-family="'JetBrains Mono'" font-size="6" fill="#dc2626">cap top</text>
+      <line x1="80" y1="62" x2="330" y2="62" stroke="#dc2626" stroke-width="0.5" opacity="0.3" stroke-dasharray="2 3"/>
+      <text x="335" y="65" font-family="'JetBrains Mono'" font-size="6" fill="#dc2626">baseline</text>
+      <rect x="80" y="74" width="88" height="28" rx="7" fill="#1b4bd5"/>
+      <circle cx="96" cy="88" r="4" fill="white" opacity="0.85"/>
+      <text x="106" y="93" font-family="'Exo 2'" font-weight="700" font-size="15" fill="white" letter-spacing="1.5">.LIVE</text>
+      <line x1="172" y1="62" x2="172" y2="74" stroke="#1b4bd5" stroke-width="0.5"/>
+      <text x="176" y="71" font-family="'JetBrains Mono'" font-size="6" fill="#1b4bd5">12px</text>
+      <line x1="40" y1="102" x2="168" y2="102" stroke="#059669" stroke-width="0.5" opacity="0.3" stroke-dasharray="2 3"/>
+      <text x="172" y="105" font-family="'JetBrains Mono'" font-size="6" fill="#059669">badge bottom &asymp; dots bottom</text>
+    </svg>
+  </div>
+
+  <!-- Clean lockups -->
+  <div class="g2" style="margin-bottom:16px;">
+    <div class="f"><div class="fb" style="min-height:120px;">
+      <svg width="300" height="96" viewBox="0 0 300 96"><circle cx="16" cy="12" r="12" fill="#dc2626"/><circle cx="16" cy="48" r="12" fill="#d97706"/><circle cx="16" cy="84" r="12" fill="#059669"/><text x="52" y="50" font-family="'Exo 2'" font-weight="800" font-size="56" fill="#111827" letter-spacing="-1.5">trafico</text><rect x="52" y="62" width="88" height="28" rx="7" fill="#1b4bd5"/><circle cx="68" cy="76" r="4" fill="white" opacity="0.85"/><text x="78" y="81" font-family="'Exo 2'" font-weight="700" font-size="15" fill="white" letter-spacing="1.5">.LIVE</text></svg>
+    </div><div class="fl">Primary lockup &mdash; light</div></div>
+    <div class="f"><div class="fb dark" style="min-height:120px;">
+      <svg width="300" height="96" viewBox="0 0 300 96"><circle cx="16" cy="12" r="12" fill="#f87171"/><circle cx="16" cy="48" r="12" fill="#fbbf24"/><circle cx="16" cy="84" r="12" fill="#34d399"/><text x="52" y="50" font-family="'Exo 2'" font-weight="800" font-size="56" fill="#f1f5f9" letter-spacing="-1.5">trafico</text><rect x="52" y="62" width="88" height="28" rx="7" fill="#366cf8"/><circle cx="68" cy="76" r="4" fill="white" opacity="0.85"/><text x="78" y="81" font-family="'Exo 2'" font-weight="700" font-size="15" fill="white" letter-spacing="1.5">.LIVE</text></svg>
+    </div><div class="fl">Primary lockup &mdash; dark</div></div>
+  </div>
+
+  <!-- Variants -->
+  <div class="g3" style="margin-bottom:16px;">
+    <div class="f"><div class="fb" style="flex-direction:column;gap:8px;min-height:130px;">
+      <svg width="18" height="48" viewBox="0 0 18 48" fill="none"><circle cx="9" cy="6" r="6" fill="#dc2626"/><circle cx="9" cy="24" r="6" fill="#d97706"/><circle cx="9" cy="42" r="6" fill="#059669"/></svg>
+      <div style="text-align:center;"><div style="font-family:'Exo 2';font-weight:800;font-size:28px;color:#111827;letter-spacing:-1px;line-height:1;">trafico</div><div class="badge" style="margin-top:5px;"><div class="dot"></div><span>.LIVE</span></div></div>
+    </div><div class="fl">Stacked</div></div>
+    <div class="f"><div class="fb" style="gap:7px;min-height:130px;">
+      <svg width="10" height="28" viewBox="0 0 10 28" fill="none"><circle cx="5" cy="4" r="3.5" fill="#dc2626"/><circle cx="5" cy="14" r="3.5" fill="#d97706"/><circle cx="5" cy="24" r="3.5" fill="#059669"/></svg>
+      <span style="font-family:'Exo 2';font-weight:800;font-size:17px;color:#111827;letter-spacing:-0.4px;">trafico</span>
+      <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;background:#1b4bd5;"><span style="width:3px;height:3px;border-radius:50%;background:white;display:block;"></span><span style="font-family:'Exo 2';font-weight:700;font-size:8px;color:white;letter-spacing:1px;">.LIVE</span></span>
+    </div><div class="fl">Inline</div></div>
+    <div class="f"><div class="fb" style="min-height:130px;">
+      <svg width="24" height="64" viewBox="0 0 24 64" fill="none"><circle cx="12" cy="8" r="8" fill="#dc2626"/><circle cx="12" cy="32" r="8" fill="#d97706"/><circle cx="12" cy="56" r="8" fill="#059669"/></svg>
+    </div><div class="fl">Icon only</div></div>
+  </div>
+
+  <!-- Clear space -->
+  <div class="rule"><strong>Clear space:</strong> M&iacute;nimo 1d (un di&aacute;metro de punto = 24px a tama&ntilde;o base) en todos los lados. Ning&uacute;n elemento puede invadir esta zona.</div>
+
+  <!-- Do's and Don'ts -->
+  <h4 style="font-size:14px;margin:24px 0 12px;">Uso correcto</h4>
+  <div class="g2" style="margin-bottom:8px;">
+    <div><div class="do">
+      <svg width="14" height="36" viewBox="0 0 14 36" fill="none"><circle cx="7" cy="5" r="4.5" fill="#dc2626"/><circle cx="7" cy="18" r="4.5" fill="#d97706"/><circle cx="7" cy="31" r="4.5" fill="#059669"/></svg>
+      <span style="font-family:'Exo 2';font-weight:800;font-size:18px;color:#111827;letter-spacing:-0.5px;">trafico</span>
+    </div><div class="do-l">&check; Colores correctos, proporci&oacute;n correcta</div></div>
+    <div><div class="dont">
+      <svg width="14" height="36" viewBox="0 0 14 36" fill="none"><circle cx="7" cy="5" r="4.5" fill="#3b82f6"/><circle cx="7" cy="18" r="4.5" fill="#3b82f6"/><circle cx="7" cy="31" r="4.5" fill="#3b82f6"/></svg>
+      <span style="font-family:'Exo 2';font-weight:800;font-size:18px;color:#111827;letter-spacing:-0.5px;">trafico</span>
+    </div><div class="dont-l">&cross; Nunca un solo color en los 3 puntos</div></div>
+  </div>
+  <div class="g2" style="margin-bottom:8px;">
+    <div><div class="do"><svg width="14" height="36" viewBox="0 0 14 36" fill="none"><circle cx="7" cy="5" r="4.5" fill="#dc2626"/><circle cx="7" cy="18" r="4.5" fill="#d97706"/><circle cx="7" cy="31" r="4.5" fill="#059669"/></svg></div><div class="do-l">&check; Siempre rojo arriba, &aacute;mbar centro, verde abajo</div></div>
+    <div><div class="dont"><svg width="14" height="36" viewBox="0 0 14 36" fill="none"><circle cx="7" cy="5" r="4.5" fill="#059669"/><circle cx="7" cy="18" r="4.5" fill="#d97706"/><circle cx="7" cy="31" r="4.5" fill="#dc2626"/></svg></div><div class="dont-l">&cross; Nunca invertir el orden</div></div>
+  </div>
+  <div class="g2">
+    <div><div class="do" style="gap:7px;">
+      <svg width="10" height="28" viewBox="0 0 10 28" fill="none"><circle cx="5" cy="4" r="3.5" fill="#dc2626"/><circle cx="5" cy="14" r="3.5" fill="#d97706"/><circle cx="5" cy="24" r="3.5" fill="#059669"/></svg>
+      <span style="font-family:'Exo 2';font-weight:800;font-size:14px;color:#111827;">trafico</span>
+      <span style="display:inline-flex;align-items:center;gap:2px;padding:2px 6px;border-radius:4px;background:#1b4bd5;"><span style="width:3px;height:3px;border-radius:50%;background:white;display:block;"></span><span style="font-family:'Exo 2';font-weight:700;font-size:8px;color:white;letter-spacing:1px;">.LIVE</span></span>
+    </div><div class="do-l">&check; Badge siempre con punto blanco + .LIVE</div></div>
+    <div><div class="dont" style="gap:7px;">
+      <svg width="10" height="28" viewBox="0 0 10 28" fill="none"><circle cx="5" cy="4" r="3.5" fill="#dc2626"/><circle cx="5" cy="14" r="3.5" fill="#d97706"/><circle cx="5" cy="24" r="3.5" fill="#059669"/></svg>
+      <span style="font-family:'Exo 2';font-weight:800;font-size:14px;color:#111827;">trafico.live</span>
+    </div><div class="dont-l">&cross; Nunca &ldquo;.live&rdquo; como texto plano</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     03. COLOR SYSTEM
+     ════════════════════════════════════════════════ -->
+<div class="s" id="color">
+  <div class="sl">03 &mdash; Color</div>
+  <div class="sh">Sistema de color</div>
+  <div class="sd">Paletas OKLCH de 11 pasos con contraste WCAG AA+ validado. Los colores de se&ntilde;al del icono son los mismos que se usan en la interfaz para estados sem&aacute;nticos.</div>
+
+  <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px;">Signal Blue &mdash; Primary</div>
+  <div class="ps" style="margin-bottom:16px;"><div style="background:#f0f5ff;color:#111;"><span class="l">50</span></div><div style="background:#dde8ff;color:#111;"><span class="l">100</span></div><div style="background:#c0d5ff;color:#111;"><span class="l">200</span></div><div style="background:#94b6ff;color:#111;"><span class="l">300</span></div><div style="background:#6393ff;color:#fff;"><span class="l">400</span></div><div style="background:#366cf8;color:#fff;"><span class="l">500</span></div><div style="background:#1b4bd5;color:#fff;"><span class="l">600</span></div><div style="background:#092ea8;color:#fff;"><span class="l">700</span></div><div style="background:#011577;color:#fff;"><span class="l">800</span></div><div style="background:#000245;color:#fff;"><span class="l">900</span></div><div style="background:#000025;color:#fff;"><span class="l">950</span></div></div>
+
+  <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px;">Signal Amber &mdash; Accent</div>
+  <div class="ps" style="margin-bottom:16px;"><div style="background:#fff3ea;color:#111;"><span class="l">50</span></div><div style="background:#ffe2cc;color:#111;"><span class="l">100</span></div><div style="background:#fcc8a1;color:#111;"><span class="l">200</span></div><div style="background:#eca66e;color:#111;"><span class="l">300</span></div><div style="background:#d48139;color:#fff;"><span class="l">400</span></div><div style="background:#b56200;color:#fff;"><span class="l">500</span></div><div style="background:#8c4a00;color:#fff;"><span class="l">600</span></div><div style="background:#653400;color:#fff;"><span class="l">700</span></div></div>
+
+  <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px;">Signal Colors</div>
+  <div style="display:flex;gap:12px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca;"><div style="width:16px;height:16px;border-radius:50%;background:#dc2626;"></div><span class="mono" style="font-size:11px;color:#991b1b;">#dc2626 Red</span></div>
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#fffbeb;border-radius:8px;border:1px solid #fde68a;"><div style="width:16px;height:16px;border-radius:50%;background:#d97706;"></div><span class="mono" style="font-size:11px;color:#92400e;">#d97706 Amber</span></div>
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;"><div style="width:16px;height:16px;border-radius:50%;background:#059669;"></div><span class="mono" style="font-size:11px;color:#065f46;">#059669 Green</span></div>
+  </div>
+
+  <div class="rule"><strong>Regla:</strong> Siempre usar tokens <span class="mono">tl-*</span> y <span class="mono">tl-amber-*</span>. Nunca hex hardcodeado en componentes. Nunca colores gen&eacute;ricos de Tailwind (blue-500, amber-600).</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     04. TYPOGRAPHY
+     ════════════════════════════════════════════════ -->
+<div class="s" id="type">
+  <div class="sl">04 &mdash; Tipograf&iacute;a</div>
+  <div class="sh">Sistema tipogr&aacute;fico</div>
+  <div class="sd">Tres familias con roles claros. Exo 2 para impacto, DM Sans para legibilidad, JetBrains Mono para datos.</div>
+
+  <div class="g3" style="margin-bottom:24px;">
+    <div class="f" style="border:none;background:#f0f5ff;">
+      <div style="padding:24px;">
+        <div style="font-family:'JetBrains Mono';font-size:10px;color:#1b4bd5;font-weight:500;margin-bottom:12px;">HEADINGS</div>
+        <div style="font-family:'Exo 2';font-weight:800;font-size:36px;color:#111827;letter-spacing:-1px;">Aa Bb</div>
+        <div style="font-family:'Exo 2';font-weight:700;font-size:18px;color:#1b4bd5;margin-top:6px;">Tr&aacute;fico en tiempo real</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:8px;">Exo 2 &mdash; 500, 600, 700, 800</div>
+      </div>
+    </div>
+    <div class="f" style="border:none;background:#f8fafc;">
+      <div style="padding:24px;">
+        <div style="font-family:'JetBrains Mono';font-size:10px;color:#1b4bd5;font-weight:500;margin-bottom:12px;">BODY</div>
+        <div style="font-size:20px;font-weight:500;color:#111827;">Aa Bb Cc</div>
+        <div style="font-size:14px;color:#6b7280;line-height:1.6;margin-top:6px;">Datos oficiales de la DGT actualizados cada 60 segundos.</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:8px;">DM Sans &mdash; 400, 500, 600</div>
+      </div>
+    </div>
+    <div class="f" style="border:none;background:#f8fafc;">
+      <div style="padding:24px;">
+        <div style="font-family:'JetBrains Mono';font-size:10px;color:#1b4bd5;font-weight:500;margin-bottom:12px;">DATA</div>
+        <div class="mono" style="font-size:32px;font-weight:500;color:#1b4bd5;">1.284 &euro;</div>
+        <div class="mono" style="font-size:12px;color:#6b7280;margin-top:6px;">40.4168&deg;N 3.7038&deg;W</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:8px;">JetBrains Mono &mdash; 400, 500</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Type scale -->
+  <h4 style="font-size:14px;margin-bottom:12px;">Escala tipogr&aacute;fica</h4>
+  <div style="background:#fafbfc;border:1px solid #e5e7eb;border-radius:10px;padding:20px;">
+    <div class="ts"><span class="mono" style="font-size:10px;color:#6b7280;display:inline-block;width:60px;">48px</span><span style="font-family:'Exo 2';font-weight:800;font-size:48px;color:#111827;letter-spacing:-1.5px;">Headline 1</span></div>
+    <div class="ts"><span class="mono" style="font-size:10px;color:#6b7280;display:inline-block;width:60px;">36px</span><span style="font-family:'Exo 2';font-weight:700;font-size:36px;color:#111827;letter-spacing:-1px;">Headline 2</span></div>
+    <div class="ts"><span class="mono" style="font-size:10px;color:#6b7280;display:inline-block;width:60px;">24px</span><span style="font-family:'Exo 2';font-weight:700;font-size:24px;color:#111827;letter-spacing:-0.5px;">Headline 3</span></div>
+    <div class="ts"><span class="mono" style="font-size:10px;color:#6b7280;display:inline-block;width:60px;">20px</span><span style="font-family:'Exo 2';font-weight:600;font-size:20px;color:#111827;">Headline 4</span></div>
+    <div class="ts"><span class="mono" style="font-size:10px;color:#6b7280;display:inline-block;width:60px;">16px</span><span style="font-size:16px;color:#111827;">Body text &mdash; p&aacute;rrafos, descripciones, contenido principal.</span></div>
+    <div class="ts"><span class="mono" style="font-size:10px;color:#6b7280;display:inline-block;width:60px;">14px</span><span style="font-size:14px;color:#6b7280;">Small text &mdash; labels, captions, metadata.</span></div>
+    <div class="ts"><span class="mono" style="font-size:10px;color:#6b7280;display:inline-block;width:60px;">12px</span><span style="font-size:12px;color:#9ca3af;">Tiny &mdash; badges, timestamps, legal.</span></div>
+  </div>
+
+  <div class="rule" style="margin-top:16px;"><strong>Nunca usar:</strong> Inter, Roboto, Arial, Geist, Space Grotesk, Helvetica, system-ui en UI visible.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     05. VOICE & TONE
+     ════════════════════════════════════════════════ -->
+<div class="s" id="voice">
+  <div class="sl">05 &mdash; Voz y tono</div>
+  <div class="sh">C&oacute;mo habla trafico.live</div>
+  <div class="sd">Nuestra voz es constante (qui&eacute;nes somos), nuestro tono se adapta al contexto (c&oacute;mo lo decimos seg&uacute;n la situaci&oacute;n).</div>
+
+  <h4 style="font-size:14px;margin-bottom:12px;">Personalidad</h4>
+  <div class="g4" style="margin-bottom:24px;">
+    <div class="vc"><h4 style="color:#1b4bd5;">Directa</h4><p>Lideramos con el dato, no con la explicaci&oacute;n. El n&uacute;mero primero, el contexto despu&eacute;s.</p></div>
+    <div class="vc"><h4 style="color:#1b4bd5;">Segura</h4><p>Hablamos con autoridad porque tenemos los datos. Fuentes oficiales, actualizaci&oacute;n constante.</p></div>
+    <div class="vc"><h4 style="color:#1b4bd5;">Accesible</h4><p>Lenguaje claro para todos: desde el conductor ocasional hasta el gestor de flotas profesional.</p></div>
+    <div class="vc"><h4 style="color:#1b4bd5;">&Uacute;til</h4><p>Cada frase debe ayudar a tomar una decisi&oacute;n. Si no a&ntilde;ade valor, no se dice.</p></div>
+  </div>
+
+  <h4 style="font-size:14px;margin-bottom:12px;">Espectro de tono</h4>
+  <table style="margin-bottom:24px;">
+    <tr><th>Situaci&oacute;n</th><th>Tono</th><th>Ejemplo</th></tr>
+    <tr><td>Alerta cr&iacute;tica</td><td>Urgente, claro</td><td>&ldquo;Corte total AP-7 km 342. Retenciones de 12 km. Alternativa: N-340.&rdquo;</td></tr>
+    <tr><td>Dato normal</td><td>Neutro, factual</td><td>&ldquo;47 incidencias activas. 892 c&aacute;maras operativas.&rdquo;</td></tr>
+    <tr><td>Buen estado</td><td>Positivo, breve</td><td>&ldquo;Tr&aacute;fico fluido en todas las v&iacute;as principales.&rdquo;</td></tr>
+    <tr><td>Explicaci&oacute;n</td><td>Did&aacute;ctico, cercano</td><td>&ldquo;Las ZBE restringen el acceso seg&uacute;n tu distintivo ambiental.&rdquo;</td></tr>
+    <tr><td>Error/no data</td><td>Honesto, breve</td><td>&ldquo;Sin datos disponibles para esta zona. Fuente DGT no responde.&rdquo;</td></tr>
+  </table>
+
+  <h4 style="font-size:14px;margin-bottom:12px;">S&iacute; / No</h4>
+  <div class="g2">
+    <div class="vc">
+      <h4 style="color:#059669;">&check; As&iacute; s&iacute;</h4>
+      <div class="ex">&ldquo;47 incidencias activas en la red de carreteras.&rdquo;</div>
+      <div class="ex">&ldquo;Di&eacute;sel desde 1.284 &euro;/L en MURCIA.&rdquo;</div>
+      <div class="ex">&ldquo;Datos DGT actualizados hace 23 segundos.&rdquo;</div>
+    </div>
+    <div class="vc">
+      <h4 style="color:#dc2626;">&cross; As&iacute; no</h4>
+      <div class="ex bad">&ldquo;&iexcl;Ojo! Parece que hay bastantes incidencias hoy...&rdquo;</div>
+      <div class="ex bad">&ldquo;El precio del di&eacute;sel est&aacute; por las nubes &uarr;&uarr;&uarr;&rdquo;</div>
+      <div class="ex bad">&ldquo;Nuestros datos son los mejores del mercado.&rdquo;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     06. WRITING STYLE
+     ════════════════════════════════════════════════ -->
+<div class="s" id="writing">
+  <div class="sl">06 &mdash; Estilo de escritura</div>
+  <div class="sh">Reglas de formato y redacci&oacute;n</div>
+
+  <table>
+    <tr><th style="width:200px;">Regla</th><th>Correcto</th><th>Incorrecto</th></tr>
+    <tr><td>N&uacute;meros siempre en cifra</td><td>3 incidencias, 47 c&aacute;maras</td><td>Tres incidencias, cuarenta y siete</td></tr>
+    <tr><td>Precios: mono, 3 decimales</td><td><span class="mono">1.284 &euro;/L</span></td><td>1,28&euro; o &ldquo;uno veintiocho&rdquo;</td></tr>
+    <tr><td>Horas: formato 24h</td><td>14:30, 08:00</td><td>2:30 PM, 8 de la ma&ntilde;ana</td></tr>
+    <tr><td>Atribuci&oacute;n de datos</td><td>&ldquo;Fuente: DGT&rdquo;, &ldquo;Datos MINECO&rdquo;</td><td>Sin atribuci&oacute;n</td></tr>
+    <tr><td>Carreteras: may&uacute;sculas</td><td>AP-7, A-2, N-340, M-30</td><td>ap-7, la autopista 7</td></tr>
+    <tr><td>Coordenadas: grados</td><td><span class="mono">40.4168&deg;N, 3.7038&deg;W</span></td><td>Cerca de Madrid</td></tr>
+    <tr><td>Fechas: formato espa&ntilde;ol</td><td>25 mar 2026, 25/03/2026</td><td>Mar 25, 2026 o 03/25/2026</td></tr>
+    <tr><td>Idioma: espa&ntilde;ol natural</td><td>Zona de Bajas Emisiones</td><td>Low Emission Zone</td></tr>
+    <tr><td>Marca: siempre min&uacute;scula</td><td>trafico.live</td><td>Trafico.Live, TRAFICO.LIVE</td></tr>
+    <tr><td>.live: siempre badge</td><td><span style="display:inline-flex;align-items:center;gap:2px;padding:1px 5px;border-radius:3px;background:#1b4bd5;vertical-align:middle;"><span style="width:2px;height:2px;border-radius:50%;background:white;display:block;"></span><span style="font-family:'Exo 2';font-weight:700;font-size:7px;color:white;letter-spacing:0.8px;">.LIVE</span></span></td><td>.live como texto plano</td></tr>
+  </table>
+
+  <div class="rule" style="margin-top:16px;"><strong>Tono general:</strong> Escribimos como hablar&iacute;a un copiloto experto &mdash; conciso, preciso, &uacute;til. Nunca como un vendedor, nunca como una m&aacute;quina.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     07. COMPONENTS
+     ════════════════════════════════════════════════ -->
+<div class="s" id="components">
+  <div class="sl">07 &mdash; Componentes</div>
+  <div class="sh">UI Kit de referencia</div>
+
+  <!-- Nav -->
+  <h4 style="font-size:13px;margin-bottom:8px;color:#6b7280;">NAVEGACI&Oacute;N</h4>
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:48px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:7px;">
+      <svg width="8" height="22" viewBox="0 0 8 22" fill="none"><circle cx="4" cy="3" r="2.5" fill="#dc2626"/><circle cx="4" cy="11" r="2.5" fill="#d97706"/><circle cx="4" cy="19" r="2.5" fill="#059669"/></svg>
+      <span style="font-family:'Exo 2';font-weight:800;font-size:14px;color:#111827;letter-spacing:-0.3px;">trafico</span>
+      <span style="display:inline-flex;align-items:center;gap:2px;padding:1px 5px;border-radius:3px;background:#1b4bd5;"><span style="width:2px;height:2px;border-radius:50%;background:white;display:block;"></span><span style="font-family:'Exo 2';font-weight:700;font-size:7px;color:white;letter-spacing:0.8px;">.LIVE</span></span>
+    </div>
+    <div style="display:flex;gap:18px;font-size:12px;font-weight:500;"><span style="color:#1b4bd5;">Mapa</span><span style="color:#6b7280;">Carreteras</span><span style="color:#6b7280;">Combustible</span><span style="color:#6b7280;">Alertas</span><span style="color:#6b7280;">Profesional</span></div>
+  </div>
+
+  <!-- Buttons -->
+  <h4 style="font-size:13px;margin-bottom:8px;color:#6b7280;">BOTONES</h4>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+    <button class="btn btn-p">Ver mapa en vivo</button>
+    <button class="btn btn-s">Filtrar resultados</button>
+    <button class="btn btn-a">Buscar gasolinera</button>
+    <button class="btn btn-g">Cancelar</button>
+    <button class="btn btn-d">Reportar incidencia</button>
+  </div>
+
+  <!-- Signal badges -->
+  <h4 style="font-size:13px;margin-bottom:8px;color:#6b7280;">BADGES DE SE&Ntilde;AL</h4>
+  <div style="display:flex;gap:10px;margin-bottom:20px;">
+    <span class="sb sg"><span class="d"></span>Fluido</span>
+    <span class="sb sa"><span class="d"></span>Obras</span>
+    <span class="sb sr"><span class="d"></span>Incidencia</span>
+  </div>
+
+  <!-- Stat cards -->
+  <h4 style="font-size:13px;margin-bottom:8px;color:#6b7280;">TARJETAS DE DATOS</h4>
+  <div class="g4" style="margin-bottom:20px;">
+    <div class="sc"><div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Incidencias</div><div class="v" style="color:#dc2626;">47</div></div>
+    <div class="sc"><div style="font-size:11px;color:#6b7280;margin-bottom:4px;">C&aacute;maras DGT</div><div class="v" style="color:#1b4bd5;">892</div></div>
+    <div class="sc"><div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Di&eacute;sel m&iacute;n.</div><div class="v" style="color:#b56200;">1.284 &euro;</div></div>
+    <div class="sc"><div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Cargadores EV</div><div class="v" style="color:#059669;">3.241</div></div>
+  </div>
+
+  <!-- Info card -->
+  <h4 style="font-size:13px;margin-bottom:8px;color:#6b7280;">TARJETA INFORMATIVA</h4>
+  <div style="background:#fff;border:1px solid #e5e7eb;border-left:4px solid #1b4bd5;border-radius:10px;padding:16px;">
+    <h4 style="font-size:15px;font-weight:700;color:#111827;margin-bottom:3px;">Operaci&oacute;n retorno activa</h4>
+    <p style="font-size:13px;color:#6b7280;line-height:1.5;">Restricciones en la AP-7 y A-2 para veh&iacute;culos pesados.</p>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;"><span class="sb sr" style="font-size:11px;"><span class="d"></span>Alta densidad</span><span class="mono" style="font-size:10px;color:#9ca3af;">14:32</span></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     08. ACCESSIBILITY
+     ════════════════════════════════════════════════ -->
+<div class="s" id="access">
+  <div class="sl">08 &mdash; Accesibilidad</div>
+  <div class="sh">WCAG 2.1 AA m&iacute;nimo</div>
+  <div class="sd">trafico.live es una herramienta de seguridad vial. La accesibilidad no es opcional &mdash; es parte de nuestra misi&oacute;n.</div>
+
+  <table>
+    <tr><th>Est&aacute;ndar</th><th>Requisito</th></tr>
+    <tr><td>Contraste texto</td><td>4.5:1 m&iacute;nimo para texto normal, 3:1 para texto grande (&ge;18px bold)</td></tr>
+    <tr><td>Contraste UI</td><td>3:1 para bordes, iconos y controles interactivos</td></tr>
+    <tr><td>Touch targets</td><td>44&times;44px m&iacute;nimo en m&oacute;vil</td></tr>
+    <tr><td>Focus states</td><td>Visible en todos los elementos interactivos (teclado)</td></tr>
+    <tr><td>Reducci&oacute;n movimiento</td><td><span class="mono">prefers-reduced-motion</span>: desactiva TODA animaci&oacute;n Motion/GSAP</td></tr>
+    <tr><td>Color no suficiente</td><td>Nunca usar solo color para transmitir informaci&oacute;n &mdash; a&ntilde;adir texto o icono</td></tr>
+    <tr><td>Im&aacute;genes</td><td>Alt text descriptivo en todas las im&aacute;genes</td></tr>
+    <tr><td>Formularios</td><td>Labels visibles en todos los inputs. Error messages descriptivos.</td></tr>
+    <tr><td>Iconos</td><td>Lucide React con <span class="mono">aria-label</span> cuando son funcionales</td></tr>
+    <tr><td>Idioma</td><td><span class="mono">&lt;html lang="es"&gt;</span> siempre declarado</td></tr>
+  </table>
+
+  <div class="rule" style="margin-top:16px;"><strong>Regla de oro:</strong> Si un usuario con daltonismo no puede distinguir una alerta de un estado normal, hemos fallado. Siempre: color + texto + icono.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     09. ASSETS & FILES
+     ════════════════════════════════════════════════ -->
+<div class="s">
+  <div class="sl">09 &mdash; Archivos</div>
+  <div class="sh">Assets disponibles</div>
+
+  <table>
+    <tr><th>Archivo</th><th>Formato</th><th>Uso</th></tr>
+    <tr><td>icon-3puntos.svg</td><td>SVG 512px</td><td>Icono principal, outline, transparente</td></tr>
+    <tr><td>icon-3puntos-dark.svg</td><td>SVG 512px</td><td>Icono para fondos oscuros (colores elevados)</td></tr>
+    <tr><td>app-icon.svg</td><td>SVG 512px</td><td>App icon con fondo azul redondeado</td></tr>
+    <tr><td>icon-on-blue.svg</td><td>SVG 512px</td><td>Icono pastel sobre fondo azul</td></tr>
+    <tr><td>tokens.css</td><td>CSS</td><td>Variables CSS completas (light + dark)</td></tr>
+    <tr><td>tokens.ts</td><td>TypeScript</td><td>Tokens tipados para uso program&aacute;tico</td></tr>
+    <tr><td>BRAND.md</td><td>Markdown</td><td>Guidelines completas en texto</td></tr>
+    <tr><td>brand-guide.html</td><td>HTML</td><td>Esta gu&iacute;a visual interactiva</td></tr>
+  </table>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+    <svg width="8" height="22" viewBox="0 0 8 22" fill="none"><circle cx="4" cy="3" r="2.5" fill="#dc2626"/><circle cx="4" cy="11" r="2.5" fill="#d97706"/><circle cx="4" cy="19" r="2.5" fill="#059669"/></svg>
+    <span style="font-family:'Exo 2';font-weight:800;font-size:13px;color:#111827;">trafico</span>
+    <span style="display:inline-flex;align-items:center;gap:2px;padding:1px 5px;border-radius:3px;background:#1b4bd5;"><span style="width:2px;height:2px;border-radius:50%;background:white;display:block;"></span><span style="font-family:'Exo 2';font-weight:700;font-size:7px;color:white;letter-spacing:0.8px;">.LIVE</span></span>
+  </div>
+  <div style="font-size:11px;color:#9ca3af;">Brand Guide v1.0 &middot; 3 Puntos + Exo 2 &middot; OKLCH palettes &middot; WCAG AA+</div>
+  <div style="font-size:11px;color:#d1d5db;margin-top:4px;">&copy; 2026 trafico.live &mdash; Todos los derechos reservados</div>
+</div>
+
+</div>
+</body>
+</html>

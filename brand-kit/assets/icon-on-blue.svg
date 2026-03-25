@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 3 Puntos on brand blue background (no rounded rect) -->
+  <rect width="512" height="512" fill="#1b4bd5"/>
+  <circle cx="256" cy="64" r="64" fill="#fca5a5"/>
+  <circle cx="256" cy="256" r="64" fill="#fde68a"/>
+  <circle cx="256" cy="448" r="64" fill="#6ee7b7"/>
+</svg>
