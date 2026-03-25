@@ -80,11 +80,11 @@ function ComparisonBar({
           />
         </div>
         <div className="w-14 text-right">
-          <span className="text-xs font-medium text-gray-700">
+          <span className="text-xs font-medium text-gray-700 font-data">
             {avgPrice.toFixed(3)}
           </span>
         </div>
-        <div className={`w-16 text-right text-xs font-medium ${getTextColor()}`}>
+        <div className={`w-16 text-right text-xs font-medium font-data ${getTextColor()}`}>
           {isBelow ? (
             <span className="flex items-center justify-end gap-0.5">
               <TrendingDown className="w-3 h-3" />
@@ -121,7 +121,7 @@ function FuelComparisonSection({ comparison }: { comparison: PriceComparison }) 
     <div className={`rounded-lg border ${colors.border} ${colors.bg} p-4`}>
       <div className="flex items-center justify-between mb-3">
         <h4 className={`font-semibold ${colors.text}`}>{comparison.fuelLabel}</h4>
-        <div className={`text-lg font-bold ${colors.text}`}>
+        <div className={`text-lg font-bold font-data ${colors.text}`}>
           {comparison.stationPrice.toFixed(3)}
         </div>
       </div>
@@ -156,7 +156,7 @@ function FuelComparisonSection({ comparison }: { comparison: PriceComparison }) 
       <div className="mt-3 pt-3 border-t border-gray-200/50">
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-500">Posicion nacional:</span>
-          <span className={`font-medium ${
+          <span className={`font-medium font-data ${
             comparison.nationalPercentile <= 25 ? "text-green-600" :
             comparison.nationalPercentile <= 50 ? "text-green-500" :
             comparison.nationalPercentile <= 75 ? "text-yellow-600" :

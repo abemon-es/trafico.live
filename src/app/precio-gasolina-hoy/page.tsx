@@ -197,7 +197,7 @@ function TrendArrow({
 
   if (change > 0.001) {
     return (
-      <span className="inline-flex items-center gap-1 text-red-600 font-medium text-sm">
+      <span className="inline-flex items-center gap-1 text-red-600 font-medium text-sm font-data">
         <TrendingUp className="w-4 h-4" />
         +{change.toFixed(3)}€{!short && " vs ayer"}
       </span>
@@ -205,7 +205,7 @@ function TrendArrow({
   }
   if (change < -0.001) {
     return (
-      <span className="inline-flex items-center gap-1 text-green-600 font-medium text-sm">
+      <span className="inline-flex items-center gap-1 text-green-600 font-medium text-sm font-data">
         <TrendingDown className="w-4 h-4" />
         {change.toFixed(3)}€{!short && " vs ayer"}
       </span>
@@ -305,18 +305,18 @@ export default async function PrecioGasolinaHoyPage() {
               <div className="text-tl-200 text-sm font-medium mb-1">
                 Gasolina 95 — Precio Medio Nacional
               </div>
-              <div className="text-6xl font-extrabold tracking-tight mb-2">
+              <div className="text-6xl font-extrabold tracking-tight mb-2 font-data">
                 {formatPrice(nationalToday.avgGasolina95)}
               </div>
               <div className="text-tl-100 text-sm mb-4">por litro · Península y Baleares</div>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
-                  Mín: <span className="font-bold">{formatPrice(nationalToday.minGasolina95)}</span>
+                  Mín: <span className="font-bold font-data">{formatPrice(nationalToday.minGasolina95)}</span>
                 </div>
                 <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
-                  Máx: <span className="font-bold">{formatPrice(nationalToday.maxGasolina95)}</span>
+                  Máx: <span className="font-bold font-data">{formatPrice(nationalToday.maxGasolina95)}</span>
                 </div>
-                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
+                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm font-data">
                   {nationalToday.stationCount.toLocaleString("es-ES")} gasolineras
                 </div>
               </div>
@@ -330,27 +330,27 @@ export default async function PrecioGasolinaHoyPage() {
             {/* Gasolina 98 */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <div className="text-purple-600 text-sm font-medium mb-1">Gasolina 98</div>
-              <div className="text-4xl font-extrabold text-gray-900 mb-1">
+              <div className="text-4xl font-extrabold text-gray-900 mb-1 font-data">
                 {formatPrice(nationalToday.avgGasolina98)}
               </div>
               <div className="text-gray-500 text-xs mb-4">precio medio · Península</div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Mínimo</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-gray-900 font-data">
                     {formatPrice(nationalToday.minGasolina98)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Máximo</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-gray-900 font-data">
                     {formatPrice(nationalToday.maxGasolina98)}
                   </span>
                 </div>
                 {avg98 !== null && avg95 !== null && (
                   <div className="flex justify-between pt-2 border-t border-gray-100">
                     <span className="text-gray-500">Diferencia vs 95</span>
-                    <span className="font-semibold text-purple-600">
+                    <span className="font-semibold text-purple-600 font-data">
                       +{(avg98 - avg95).toFixed(3)}€
                     </span>
                   </div>
@@ -375,7 +375,7 @@ export default async function PrecioGasolinaHoyPage() {
             <div className="flex flex-wrap gap-4 text-sm">
               <span>
                 Ayer:{" "}
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-gray-900 font-data">
                   {formatPrice(nationalYesterday.avgGasolina95)}
                 </span>
               </span>
@@ -422,7 +422,7 @@ export default async function PrecioGasolinaHoyPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 font-data ${
                         idx === 0
                           ? "bg-tl-amber-400 text-tl-amber-900"
                           : idx === 1
@@ -445,11 +445,11 @@ export default async function PrecioGasolinaHoyPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-extrabold text-tl-700">
+                    <div className="text-xl font-extrabold text-tl-700 font-data">
                       {formatPrice(station.priceGasolina95E5)}
                     </div>
                     {station.priceGasolina98E5 && (
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-400 font-data">
                         98: {formatPrice(station.priceGasolina98E5)}
                       </div>
                     )}
@@ -525,7 +525,7 @@ export default async function PrecioGasolinaHoyPage() {
                         </td>
                         <td className="py-3 px-2 text-right">
                           <span
-                            className={`font-bold ${
+                            className={`font-bold font-data ${
                               isCheap
                                 ? "text-green-600"
                                 : isExpensive
@@ -536,13 +536,13 @@ export default async function PrecioGasolinaHoyPage() {
                             {formatPrice(p.avgGasolina95)}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell">
+                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell font-data">
                           {formatPrice(p.minGasolina95)}
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell">
+                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell font-data">
                           {formatPrice(p.maxGasolina95)}
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-500 hidden md:table-cell">
+                        <td className="py-3 px-2 text-right text-gray-500 hidden md:table-cell font-data">
                           {p.stationCount.toLocaleString("es-ES")}
                         </td>
                       </tr>
@@ -575,7 +575,7 @@ export default async function PrecioGasolinaHoyPage() {
                         <span className="text-xs font-medium text-tl-amber-800">
                           {province?.name ?? code}
                         </span>
-                        <span className="text-xs font-bold text-tl-amber-600">
+                        <span className="text-xs font-bold text-tl-amber-600 font-data">
                           {formatPrice(p.avgGasolina95)}
                         </span>
                       </Link>

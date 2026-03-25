@@ -238,32 +238,32 @@ export default async function RoadDetailPage({ params }: PageProps) {
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <Camera className="w-5 h-5 mx-auto text-tl-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900">{cameras.length}</div>
+              <div className="text-xl font-bold text-gray-900 font-data">{cameras.length}</div>
               <div className="text-xs text-gray-600">Cámaras</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <Radar className="w-5 h-5 mx-auto text-yellow-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900">{radars.length}</div>
+              <div className="text-xl font-bold text-gray-900 font-data">{radars.length}</div>
               <div className="text-xs text-gray-600">Radares</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <AlertTriangle className="w-5 h-5 mx-auto text-red-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900">{incidents.length}</div>
+              <div className="text-xl font-bold text-gray-900 font-data">{incidents.length}</div>
               <div className="text-xs text-gray-600">Incidencias</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <Fuel className="w-5 h-5 mx-auto text-orange-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900">{gasStations.length}</div>
+              <div className="text-xl font-bold text-gray-900 font-data">{gasStations.length}</div>
               <div className="text-xs text-gray-600">Gasolineras</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <Zap className="w-5 h-5 mx-auto text-green-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900">{chargers.length}</div>
+              <div className="text-xl font-bold text-gray-900 font-data">{chargers.length}</div>
               <div className="text-xs text-gray-600">Cargadores EV</div>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <MapPin className="w-5 h-5 mx-auto text-purple-600 mb-1" />
-              <div className="text-xl font-bold text-gray-900">{road.provinces.length}</div>
+              <div className="text-xl font-bold text-gray-900 font-data">{road.provinces.length}</div>
               <div className="text-xs text-gray-600">Provincias</div>
             </div>
           </div>
@@ -287,7 +287,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                           {incident.type.replace(/_/g, " ")}
                         </span>
                         {incident.kmPoint && (
-                          <span className="text-xs text-red-600">km {Number(incident.kmPoint)}</span>
+                          <span className="text-xs text-red-600 font-data">km {Number(incident.kmPoint)}</span>
                         )}
                       </div>
                       <p className="text-sm text-gray-700">{incident.description}</p>
@@ -313,7 +313,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                       <div className="font-medium text-gray-900 text-sm">
                         {camera.name || `Cámara ${camera.id}`}
                       </div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs text-gray-600 font-data">
                         {camera.kmPoint ? `km ${camera.kmPoint}` : ""}
                         {camera.province && ` · ${PROVINCE_NAMES[camera.province] || camera.province}`}
                       </div>
@@ -355,10 +355,10 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     <tbody>
                       {radars.slice(0, 15).map((radar) => (
                         <tr key={radar.radarId} className="border-b border-gray-100">
-                          <td className="py-2">
+                          <td className="py-2 font-data">
                             km {Number(radar.kmPoint)}
                             {radar.province && (
-                              <span className="text-gray-500 ml-2">
+                              <span className="text-gray-500 ml-2 font-sans">
                                 ({PROVINCE_NAMES[radar.province] || radar.province})
                               </span>
                             )}
@@ -370,7 +370,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                               {radar.type === "SECTION" ? "Tramo" : "Fijo"}
                             </span>
                           </td>
-                          <td className="py-2">{radar.speedLimit ? `${radar.speedLimit} km/h` : "-"}</td>
+                          <td className="py-2 font-data">{radar.speedLimit ? `${radar.speedLimit} km/h` : "-"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -422,10 +422,10 @@ export default async function RoadDetailPage({ params }: PageProps) {
                             : "bg-tl-100 text-tl-800";
                         return (
                           <tr key={sl.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-2">{Number(sl.kmStart).toFixed(1)}</td>
-                            <td className="py-2">{Number(sl.kmEnd).toFixed(1)}</td>
+                            <td className="py-2 font-data">{Number(sl.kmStart).toFixed(1)}</td>
+                            <td className="py-2 font-data">{Number(sl.kmEnd).toFixed(1)}</td>
                             <td className="py-2">
-                              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${speedBadge}`}>
+                              <span className={`px-2 py-0.5 rounded text-xs font-semibold font-data ${speedBadge}`}>
                                 {speed}
                               </span>
                             </td>
@@ -465,10 +465,10 @@ export default async function RoadDetailPage({ params }: PageProps) {
                         <div className="text-xs text-tl-amber-600 mb-1">Gasóleo A más barato</div>
                         <div className="font-semibold text-gray-900 text-sm">{cheapestDiesel.name}</div>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 font-data">
                             {cheapestDiesel.roadKm ? `km ${Number(cheapestDiesel.roadKm)}` : ""}
                           </span>
-                          <span className="text-lg font-bold text-tl-amber-700">
+                          <span className="text-lg font-bold text-tl-amber-700 font-data">
                             {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
                           </span>
                         </div>
@@ -482,10 +482,10 @@ export default async function RoadDetailPage({ params }: PageProps) {
                         <div className="text-xs text-tl-600 mb-1">Gasolina 95 más barata</div>
                         <div className="font-semibold text-gray-900 text-sm">{cheapestGas95.name}</div>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 font-data">
                             {cheapestGas95.roadKm ? `km ${Number(cheapestGas95.roadKm)}` : ""}
                           </span>
-                          <span className="text-lg font-bold text-tl-700">
+                          <span className="text-lg font-bold text-tl-700 font-data">
                             {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
                           </span>
                         </div>
@@ -517,15 +517,15 @@ export default async function RoadDetailPage({ params }: PageProps) {
                             </Link>
                             <div className="text-xs text-gray-500">{station.locality}</div>
                           </td>
-                          <td className="py-2 text-gray-600">
+                          <td className="py-2 text-gray-600 font-data">
                             {station.roadKm ? Number(station.roadKm) : "-"}
                           </td>
-                          <td className="py-2 text-right font-medium">
+                          <td className="py-2 text-right font-medium font-data">
                             {station.priceGasoleoA
                               ? `${Number(station.priceGasoleoA).toFixed(3)}€`
                               : "-"}
                           </td>
-                          <td className="py-2 text-right font-medium">
+                          <td className="py-2 text-right font-medium font-data">
                             {station.priceGasolina95E5
                               ? `${Number(station.priceGasolina95E5).toFixed(3)}€`
                               : "-"}
@@ -566,7 +566,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                 {road.totalKm && (
                   <div>
                     <dt className="text-sm text-gray-600">Longitud</dt>
-                    <dd className="font-medium text-gray-900">{Number(road.totalKm).toFixed(1)} km</dd>
+                    <dd className="font-medium text-gray-900 font-data">{Number(road.totalKm).toFixed(1)} km</dd>
                   </div>
                 )}
                 <div>
@@ -590,7 +590,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     <div key={zone.id} className="p-2 bg-orange-50 rounded text-sm">
                       <span className="font-medium text-orange-800">{zone.type}</span>
                       {zone.kmStart && zone.kmEnd && (
-                        <span className="text-orange-600 ml-2">
+                        <span className="text-orange-600 ml-2 font-data">
                           km {Number(zone.kmStart).toFixed(0)} - {Number(zone.kmEnd).toFixed(0)}
                         </span>
                       )}

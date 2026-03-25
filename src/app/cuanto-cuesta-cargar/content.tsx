@@ -329,7 +329,7 @@ export default function CuantoCuestaCargarContent() {
                   }`}
                 >
                   <p className="font-semibold text-gray-900 leading-snug">{ev.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{ev.battery} kWh</p>
+                  <p className="text-xs text-gray-500 mt-0.5 font-data">{ev.battery} kWh</p>
                 </button>
               ))}
               <button
@@ -420,7 +420,7 @@ export default function CuantoCuestaCargarContent() {
                 >
                   <p className={`text-sm font-semibold ${ct.color}`}>{ct.label}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{ct.sublabel}</p>
-                  <p className="text-xs font-bold text-gray-700 mt-1">
+                  <p className="text-xs font-bold text-gray-700 mt-1 font-data">
                     {ct.pricePerKwh.toFixed(2)} €/kWh
                   </p>
                 </button>
@@ -480,10 +480,10 @@ export default function CuantoCuestaCargarContent() {
                   <p className="text-xs font-medium text-green-700 uppercase tracking-wide mb-1">
                     Coste total
                   </p>
-                  <p className="text-2xl font-bold text-green-700">
+                  <p className="text-2xl font-bold text-green-700 font-data">
                     {formatEuros(results.cost)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5 font-data">
                     {results.kwhNeeded} kWh
                   </p>
                 </div>
@@ -492,10 +492,10 @@ export default function CuantoCuestaCargarContent() {
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                     Tiempo estimado
                   </p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold text-gray-800 font-data">
                     {formatTime(results.timeHours)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5 font-data">
                     {chargingType.powerKw} kW · {chargeDelta}% de batería
                   </p>
                 </div>
@@ -504,10 +504,10 @@ export default function CuantoCuestaCargarContent() {
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                     Coste/100 km
                   </p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold text-gray-800 font-data">
                     {formatEuros(results.costPer100km)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5 font-data">
                     {evConsumption} kWh/100km
                   </p>
                 </div>
@@ -516,7 +516,7 @@ export default function CuantoCuestaCargarContent() {
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                     Autonomía añadida
                   </p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold text-gray-800 font-data">
                     {results.kmFromCharge} km
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">aprox.</p>
@@ -540,7 +540,7 @@ export default function CuantoCuestaCargarContent() {
                         style={{ width: "100%" }}
                       />
                     </div>
-                    <div className="w-16 text-xs font-bold text-green-700 text-right">
+                    <div className="w-16 text-xs font-bold text-green-700 text-right font-data">
                       {formatEuros(results.cost)}
                     </div>
                   </div>
@@ -561,7 +561,7 @@ export default function CuantoCuestaCargarContent() {
                         }}
                       />
                     </div>
-                    <div className="w-16 text-xs font-bold text-tl-amber-700 text-right">
+                    <div className="w-16 text-xs font-bold text-tl-amber-700 text-right font-data">
                       {formatEuros(results.dieselCostSameKm)}
                     </div>
                   </div>
@@ -577,12 +577,12 @@ export default function CuantoCuestaCargarContent() {
                         style={{ width: "100%" }}
                       />
                     </div>
-                    <div className="w-16 text-xs font-bold text-red-600 text-right">
+                    <div className="w-16 text-xs font-bold text-red-600 text-right font-data">
                       {formatEuros(results.gasolineCostSameKm)}
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-gray-400 mt-2 font-data">
                   Gasolina: {GASOLINE_CONSUMPTION}L/100km · {GASOLINE_PRICE}€/L &nbsp;|&nbsp;
                   Diésel: {DIESEL_CONSUMPTION}L/100km · {DIESEL_PRICE}€/L
                 </p>
@@ -597,17 +597,17 @@ export default function CuantoCuestaCargarContent() {
                   <div>
                     <p className="font-bold text-lg leading-tight">
                       Ahorras{" "}
-                      <span className="text-green-200">
+                      <span className="text-green-200 font-data">
                         {formatEuros(results.savingsVsGasolinePer100km)}
                       </span>{" "}
                       vs gasolina por cada 100 km
                     </p>
                     <p className="text-green-100 text-sm mt-1">
                       Y{" "}
-                      <span className="font-semibold">
+                      <span className="font-semibold font-data">
                         {formatEuros(results.savingsVsDieselPer100km)}
                       </span>{" "}
-                      vs diésel · Precio de carga: {pricePerKwh.toFixed(2)} €/kWh
+                      vs diésel · Precio de carga: <span className="font-data">{pricePerKwh.toFixed(2)} €/kWh</span>
                     </p>
                   </div>
                 </div>
@@ -656,16 +656,16 @@ export default function CuantoCuestaCargarContent() {
                     <td className="py-3 pr-4 font-medium text-gray-900">
                       {row.model}
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-600">
+                    <td className="py-3 px-3 text-right text-gray-600 font-data">
                       {row.battery} kWh
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-600">
+                    <td className="py-3 px-3 text-right text-gray-600 font-data">
                       {row.consumption} kWh/100
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-600">
+                    <td className="py-3 px-3 text-right text-gray-600 font-data">
                       ~{row.range} km
                     </td>
-                    <td className="py-3 pl-3 text-right font-bold text-green-700">
+                    <td className="py-3 pl-3 text-right font-bold text-green-700 font-data">
                       {formatEuros(row.homeCost)}
                     </td>
                   </tr>
@@ -791,15 +791,15 @@ export default function CuantoCuestaCargarContent() {
               <p className="text-sm text-gray-600 leading-relaxed">
                 Sí, en casi todos los escenarios. Cargando en casa el coste por 100 km
                 es de{" "}
-                <strong>
+                <strong className="font-data">
                   {formatEuros(DEFAULT_EV_CONSUMPTION * CHARGING_TYPES[0].pricePerKwh)}
                 </strong>
                 , frente a los{" "}
-                <strong>{formatEuros(GASOLINE_CONSUMPTION * GASOLINE_PRICE)}</strong>{" "}
+                <strong className="font-data">{formatEuros(GASOLINE_CONSUMPTION * GASOLINE_PRICE)}</strong>{" "}
                 de gasolina o los{" "}
-                <strong>{formatEuros(DIESEL_CONSUMPTION * DIESEL_PRICE)}</strong> de
+                <strong className="font-data">{formatEuros(DIESEL_CONSUMPTION * DIESEL_PRICE)}</strong> de
                 diésel. Incluso en electrolinera rápida (~0,45 €/kWh) el coste eléctrico es
-                de ~{formatEuros(DEFAULT_EV_CONSUMPTION * 0.45)} por 100 km, aún inferior a
+                de ~<span className="font-data">{formatEuros(DEFAULT_EV_CONSUMPTION * 0.45)}</span> por 100 km, aún inferior a
                 la gasolina.
               </p>
             </div>

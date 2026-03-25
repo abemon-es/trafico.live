@@ -132,7 +132,7 @@ export default function DieselContent() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <TrendingDown className="w-6 h-6 text-green-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 font-data">
                 {cheapestPrice ? `${cheapestPrice.toFixed(3)} €` : "-"}
               </p>
               <p className="text-sm text-gray-500">Precio más bajo</p>
@@ -140,7 +140,7 @@ export default function DieselContent() {
 
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <Fuel className="w-6 h-6 text-tl-amber-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 font-data">
                 {avgPrice ? `${avgPrice.toFixed(3)} €` : "-"}
               </p>
               <p className="text-sm text-gray-500">Precio medio</p>
@@ -148,7 +148,7 @@ export default function DieselContent() {
 
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <MapPin className="w-6 h-6 text-tl-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 font-data">
                 {filteredStations?.length || 0}
               </p>
               <p className="text-sm text-gray-500">Gasolineras</p>
@@ -156,7 +156,7 @@ export default function DieselContent() {
 
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <Truck className="w-6 h-6 text-gray-600 mb-2" />
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 font-data">
                 {cheapestPrice && avgPrice
                   ? `${((avgPrice - cheapestPrice) * 1000).toFixed(0)} €`
                   : "-"}
@@ -237,7 +237,7 @@ export default function DieselContent() {
                   <div className="flex items-start gap-4">
                     {/* Rank badge */}
                     <div
-                      className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+                      className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-data ${
                         index === 0
                           ? "bg-green-100 text-green-700"
                           : index < 3
@@ -257,7 +257,7 @@ export default function DieselContent() {
                           <h3 className="font-medium text-gray-900">{station.name}</h3>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-xl font-bold text-green-700">
+                          <p className="text-xl font-bold text-green-700 font-data">
                             {station.priceGasoleoA?.toFixed(3)} €
                           </p>
                           <p className="text-xs text-gray-400">Diésel A</p>

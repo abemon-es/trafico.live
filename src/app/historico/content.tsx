@@ -258,7 +258,7 @@ function StatCard({
       {isLoading ? (
         <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
       ) : (
-        <p className="text-2xl font-bold text-gray-900">
+        <p className="text-2xl font-bold text-gray-900 font-data">
           {typeof value === "number" ? value.toLocaleString("es-ES") : value}
         </p>
       )}
@@ -419,12 +419,12 @@ function HourlyHeatmap({
       {data.peaks && (
         <div className="mt-4 text-sm text-gray-600">
           <p>
-            <span className="font-medium">Hora pico:</span> {data.peaks.hour.hour}:00 (promedio{" "}
-            {data.peaks.hour.avgCount} balizas)
+            <span className="font-medium">Hora pico:</span> <span className="font-data">{data.peaks.hour.hour}:00</span> (promedio{" "}
+            <span className="font-data">{data.peaks.hour.avgCount}</span> balizas)
           </p>
           <p>
             <span className="font-medium">Día con más actividad:</span> {data.peaks.day.dayName}{" "}
-            (promedio {data.peaks.day.avgCount} balizas/hora)
+            (promedio <span className="font-data">{data.peaks.day.avgCount}</span> balizas/hora)
           </p>
         </div>
       )}
@@ -483,7 +483,7 @@ function DurationDistribution({
                 style={{ width: `${(bucket.percentage / maxPercentage) * 100}%` }}
               />
             </div>
-            <div className="w-16 text-sm text-gray-600 text-right">{bucket.percentage}%</div>
+            <div className="w-16 text-sm text-gray-600 text-right font-data">{bucket.percentage}%</div>
           </div>
         ))}
       </div>
@@ -491,11 +491,11 @@ function DurationDistribution({
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Media:</span>{" "}
-            <span className="font-medium">{data.stats.avgMinutes} min</span>
+            <span className="font-medium font-data">{data.stats.avgMinutes} min</span>
           </div>
           <div>
             <span className="text-gray-500">Mediana:</span>{" "}
-            <span className="font-medium">{data.stats.medianMinutes} min</span>
+            <span className="font-medium font-data">{data.stats.medianMinutes} min</span>
           </div>
         </div>
       )}
@@ -682,15 +682,15 @@ export function HistoricoContent() {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
             </span>
             <span className="text-green-700 font-medium">
-              Tiempo real - {realtimeData?.count || 0} balizas activas
+              Tiempo real - <span className="font-data">{realtimeData?.count || 0}</span> balizas activas
             </span>
             {realtimeData?.lastUpdated && (
               <span className="text-gray-400">
                 (actualizado:{" "}
-                {new Date(realtimeData.lastUpdated).toLocaleTimeString("es-ES", {
+                <span className="font-data">{new Date(realtimeData.lastUpdated).toLocaleTimeString("es-ES", {
                   hour: "2-digit",
                   minute: "2-digit",
-                })}
+                })}</span>
                 )
               </span>
             )}
@@ -886,7 +886,7 @@ export function HistoricoContent() {
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-16 text-sm text-gray-600 text-right">
+                        <div className="w-16 text-sm text-gray-600 text-right font-data">
                           {item.value} ({percentage}%)
                         </div>
                       </div>
@@ -936,15 +936,15 @@ export function HistoricoContent() {
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-10 text-sm text-gray-600 text-right">{road.value}</div>
+                        <div className="w-10 text-sm text-gray-600 text-right font-data">{road.value}</div>
                       </div>
                     );
                   })}
                 </div>
                 {roadsData?.data?.totals && (
                   <p className="text-xs text-gray-500 mt-4">
-                    {roadsData.data.totals.totalBeacons} balizas en{" "}
-                    {roadsData.data.totals.uniqueRoads} carreteras diferentes
+                    <span className="font-data">{roadsData.data.totals.totalBeacons}</span> balizas en{" "}
+                    <span className="font-data">{roadsData.data.totals.uniqueRoads}</span> carreteras diferentes
                   </p>
                 )}
               </div>

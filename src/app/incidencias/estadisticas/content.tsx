@@ -86,7 +86,7 @@ function StatCard({
       {isLoading ? (
         <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
       ) : (
-        <p className="text-2xl font-bold text-gray-900">
+        <p className="text-2xl font-bold text-gray-900 font-data">
           {typeof value === "number" ? value.toLocaleString("es-ES") : value}
         </p>
       )}
@@ -250,12 +250,12 @@ function HourlyHeatmap({
       {peaks && (
         <div className="mt-4 text-sm text-gray-600">
           <p>
-            <span className="font-medium">Hora pico:</span> {peaks.hour.hour}:00 (promedio{" "}
-            {peaks.hour.avgCount} incidencias)
+            <span className="font-medium">Hora pico:</span> <span className="font-data">{peaks.hour.hour}:00</span> (promedio{" "}
+            <span className="font-data">{peaks.hour.avgCount}</span> incidencias)
           </p>
           <p>
             <span className="font-medium">Día con más incidencias:</span> {peaks.day.dayName}{" "}
-            (promedio {peaks.day.avgCount} incidencias/hora)
+            (promedio <span className="font-data">{peaks.day.avgCount}</span> incidencias/hora)
           </p>
         </div>
       )}
@@ -331,7 +331,7 @@ function IncidentTypeChart({
                   style={{ width: `${item.percentage}%` }}
                 />
               </div>
-              <div className="w-20 text-sm text-gray-600 text-right">
+              <div className="w-20 text-sm text-gray-600 text-right font-data">
                 {item.count.toLocaleString("es-ES")} ({item.percentage}%)
               </div>
             </div>
@@ -339,7 +339,7 @@ function IncidentTypeChart({
         })}
       </div>
       <p className="text-xs text-gray-500 mt-4">
-        Total: {total.toLocaleString("es-ES")} incidencias
+        Total: <span className="font-data">{total.toLocaleString("es-ES")}</span> incidencias
       </p>
     </div>
   );
@@ -398,7 +398,7 @@ function SeverityChart({
               <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
                 <div className={`h-full ${bgColor} rounded`} style={{ width: `${percentage}%` }} />
               </div>
-              <div className="w-20 text-sm text-gray-600 text-right">
+              <div className="w-20 text-sm text-gray-600 text-right font-data">
                 {item.count.toLocaleString("es-ES")} ({percentage}%)
               </div>
             </div>
@@ -469,7 +469,7 @@ function SourceChart({
                     style={{ width: `${barWidth}%` }}
                   />
                 </div>
-                <div className="w-24 text-sm text-gray-600 text-right">
+                <div className="w-24 text-sm text-gray-600 text-right font-data">
                   {item.count.toLocaleString("es-ES")} ({percentage}%)
                 </div>
               </div>

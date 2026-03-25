@@ -153,7 +153,7 @@ export default async function RadaresPage() {
                 </p>
               </div>
               <div className="hidden md:flex flex-col items-center bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-center">
-                <span className="text-3xl font-bold text-yellow-700">{totalCount.toLocaleString("es-ES")}</span>
+                <span className="text-3xl font-bold text-yellow-700 font-data">{totalCount.toLocaleString("es-ES")}</span>
                 <span className="text-sm text-yellow-600 mt-0.5">radares activos</span>
               </div>
             </div>
@@ -167,7 +167,7 @@ export default async function RadaresPage() {
                 <h2 className="font-semibold text-orange-800">Atención: radares de tramo activos</h2>
                 <p className="text-sm text-orange-700 mt-0.5">
                   Hay{" "}
-                  <strong>
+                  <strong className="font-data">
                     {byType.find((t) => t.type === "SECTION")?._count.toLocaleString("es-ES")}
                   </strong>{" "}
                   radares de tramo activos en España. Estos sistemas miden tu velocidad media durante
@@ -200,7 +200,7 @@ export default async function RadaresPage() {
                       >
                         {info.label}
                       </span>
-                      <span className="text-2xl font-bold text-gray-900">
+                      <span className="text-2xl font-bold text-gray-900 font-data">
                         {item._count.toLocaleString("es-ES")}
                       </span>
                     </div>
@@ -235,7 +235,7 @@ export default async function RadaresPage() {
                       </Link>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-gray-900 font-data">
                         {item._count.toLocaleString("es-ES")}
                       </span>
                       <span className="text-xs text-gray-500">radares</span>
@@ -271,7 +271,7 @@ export default async function RadaresPage() {
                             {provinceName}
                           </Link>
                         </div>
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-gray-900 font-data">
                           {item._count.toLocaleString("es-ES")}
                         </span>
                       </div>
@@ -280,7 +280,7 @@ export default async function RadaresPage() {
                 {byProvince.filter((item) => !item.province).length > 0 && (
                   <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-400">
                     <span>Sin provincia asignada</span>
-                    <span>
+                    <span className="font-data">
                       {byProvince
                         .filter((item) => !item.province)
                         .reduce((s, i) => s + i._count, 0)}
@@ -304,7 +304,7 @@ export default async function RadaresPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-tl-600 hover:bg-tl-50 hover:border-tl-200 transition-colors shadow-sm"
                 >
                   {item.roadNumber}
-                  <span className="text-xs text-gray-400">({item._count})</span>
+                  <span className="text-xs text-gray-400 font-data">({item._count})</span>
                 </Link>
               ))}
             </div>

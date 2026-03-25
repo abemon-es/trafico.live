@@ -197,7 +197,7 @@ function TrendArrow({
 
   if (change > 0.001) {
     return (
-      <span className="inline-flex items-center gap-1 text-red-600 font-medium text-sm">
+      <span className="inline-flex items-center gap-1 text-red-600 font-medium text-sm font-data">
         <TrendingUp className="w-4 h-4" />
         +{change.toFixed(3)}€{!short && " vs ayer"}
       </span>
@@ -205,7 +205,7 @@ function TrendArrow({
   }
   if (change < -0.001) {
     return (
-      <span className="inline-flex items-center gap-1 text-green-600 font-medium text-sm">
+      <span className="inline-flex items-center gap-1 text-green-600 font-medium text-sm font-data">
         <TrendingDown className="w-4 h-4" />
         {change.toFixed(3)}€{!short && " vs ayer"}
       </span>
@@ -307,18 +307,18 @@ export default async function PrecioDieselHoyPage() {
               <div className="text-tl-amber-100 text-sm font-medium mb-1">
                 Gasóleo A (Diésel) — Precio Medio Nacional
               </div>
-              <div className="text-6xl font-extrabold tracking-tight mb-2">
+              <div className="text-6xl font-extrabold tracking-tight mb-2 font-data">
                 {formatPrice(nationalToday.avgGasoleoA)}
               </div>
               <div className="text-tl-amber-100 text-sm mb-4">por litro · Península y Baleares</div>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
-                  Mín: <span className="font-bold">{formatPrice(nationalToday.minGasoleoA)}</span>
+                  Mín: <span className="font-bold font-data">{formatPrice(nationalToday.minGasoleoA)}</span>
                 </div>
                 <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
-                  Máx: <span className="font-bold">{formatPrice(nationalToday.maxGasoleoA)}</span>
+                  Máx: <span className="font-bold font-data">{formatPrice(nationalToday.maxGasoleoA)}</span>
                 </div>
-                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
+                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm font-data">
                   {nationalToday.stationCount.toLocaleString("es-ES")} gasolineras
                 </div>
               </div>
@@ -332,7 +332,7 @@ export default async function PrecioDieselHoyPage() {
             {/* Comparativa con gasolina 95 */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <div className="text-tl-600 text-sm font-medium mb-1">Gasolina 95 hoy</div>
-              <div className="text-4xl font-extrabold text-gray-900 mb-1">
+              <div className="text-4xl font-extrabold text-gray-900 mb-1 font-data">
                 {formatPrice(nationalToday.avgGasolina95)}
               </div>
               <div className="text-gray-500 text-xs mb-4">precio medio · Península</div>
@@ -341,7 +341,7 @@ export default async function PrecioDieselHoyPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Diésel vs Gasolina 95</span>
                     <span
-                      className={`font-bold ${
+                      className={`font-bold font-data ${
                         avgDiesel < avg95 ? "text-green-600" : "text-red-600"
                       }`}
                     >
@@ -384,7 +384,7 @@ export default async function PrecioDieselHoyPage() {
             <div className="flex flex-wrap gap-4 text-sm">
               <span>
                 Ayer:{" "}
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-gray-900 font-data">
                   {formatPrice(nationalYesterday.avgGasoleoA)}
                 </span>
               </span>
@@ -453,7 +453,7 @@ export default async function PrecioDieselHoyPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 font-data ${
                         idx === 0
                           ? "bg-tl-amber-400 text-tl-amber-900"
                           : idx === 1
@@ -476,11 +476,11 @@ export default async function PrecioDieselHoyPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-extrabold text-tl-amber-700">
+                    <div className="text-xl font-extrabold text-tl-amber-700 font-data">
                       {formatPrice(station.priceGasoleoA)}
                     </div>
                     {station.priceGasoleoPremium && (
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-400 font-data">
                         Premium: {formatPrice(station.priceGasoleoPremium)}
                       </div>
                     )}
@@ -556,7 +556,7 @@ export default async function PrecioDieselHoyPage() {
                         </td>
                         <td className="py-3 px-2 text-right">
                           <span
-                            className={`font-bold ${
+                            className={`font-bold font-data ${
                               isCheap
                                 ? "text-green-600"
                                 : isExpensive
@@ -567,13 +567,13 @@ export default async function PrecioDieselHoyPage() {
                             {formatPrice(p.avgGasoleoA)}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell">
+                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell font-data">
                           {formatPrice(p.minGasoleoA)}
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell">
+                        <td className="py-3 px-2 text-right text-gray-600 hidden sm:table-cell font-data">
                           {formatPrice(p.maxGasoleoA)}
                         </td>
-                        <td className="py-3 px-2 text-right text-gray-500 hidden md:table-cell">
+                        <td className="py-3 px-2 text-right text-gray-500 hidden md:table-cell font-data">
                           {p.stationCount.toLocaleString("es-ES")}
                         </td>
                       </tr>
@@ -606,7 +606,7 @@ export default async function PrecioDieselHoyPage() {
                         <span className="text-xs font-medium text-tl-amber-800">
                           {province?.name ?? code}
                         </span>
-                        <span className="text-xs font-bold text-tl-amber-600">
+                        <span className="text-xs font-bold text-tl-amber-600 font-data">
                           {formatPrice(p.avgGasoleoA)}
                         </span>
                       </Link>

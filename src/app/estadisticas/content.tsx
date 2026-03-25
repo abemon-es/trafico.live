@@ -418,7 +418,7 @@ function StatCard({
       {isLoading ? (
         <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
       ) : (
-        <p className="text-2xl font-bold text-gray-900">
+        <p className="text-2xl font-bold text-gray-900 font-data">
           {typeof value === "number" ? value.toLocaleString("es-ES") : value}
         </p>
       )}
@@ -431,7 +431,7 @@ function StatCard({
           }`}
         >
           {trend.isPositive ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
-          <span>{Math.abs(trend.value).toFixed(1)}%</span>
+          <span className="font-data">{Math.abs(trend.value).toFixed(1)}%</span>
         </div>
       )}
     </div>
@@ -528,7 +528,7 @@ function HourlyHeatmap({
       </div>
       {peaks && (
         <p className="mt-3 text-sm text-gray-600">
-          Pico: <span className="font-medium">{peaks.hour.hour}:00</span> ({peaks.day.dayName})
+          Pico: <span className="font-medium font-data">{peaks.hour.hour}:00</span> ({peaks.day.dayName})
         </p>
       )}
     </div>
@@ -732,12 +732,12 @@ function V16HourlyHeatmap({
       {data.peaks && (
         <div className="mt-4 text-sm text-gray-600">
           <p>
-            <span className="font-medium">Hora pico:</span> {data.peaks.hour.hour}:00 (promedio{" "}
-            {data.peaks.hour.avgCount} balizas)
+            <span className="font-medium">Hora pico:</span> <span className="font-data">{data.peaks.hour.hour}:00</span> (promedio{" "}
+            <span className="font-data">{data.peaks.hour.avgCount}</span> balizas)
           </p>
           <p>
             <span className="font-medium">Día con más actividad:</span> {data.peaks.day.dayName}{" "}
-            (promedio {data.peaks.day.avgCount} balizas/hora)
+            (promedio <span className="font-data">{data.peaks.day.avgCount}</span> balizas/hora)
           </p>
         </div>
       )}
@@ -797,7 +797,7 @@ function V16DurationDistribution({
                 style={{ width: `${(bucket.percentage / maxPercentage) * 100}%` }}
               />
             </div>
-            <div className="w-16 text-sm text-gray-600 text-right">{bucket.percentage}%</div>
+            <div className="w-16 text-sm text-gray-600 text-right font-data">{bucket.percentage}%</div>
           </div>
         ))}
       </div>
@@ -805,11 +805,11 @@ function V16DurationDistribution({
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Media:</span>{" "}
-            <span className="font-medium">{data.stats.avgMinutes} min</span>
+            <span className="font-medium font-data">{data.stats.avgMinutes} min</span>
           </div>
           <div>
             <span className="text-gray-500">Mediana:</span>{" "}
-            <span className="font-medium">{data.stats.medianMinutes} min</span>
+            <span className="font-medium font-data">{data.stats.medianMinutes} min</span>
           </div>
         </div>
       )}
@@ -1054,7 +1054,7 @@ function IncidenciasSection({
                       style={{ width: `${item.percentage}%` }}
                     />
                   </div>
-                  <div className="w-16 text-sm text-gray-600 text-right">{item.percentage}%</div>
+                  <div className="w-16 text-sm text-gray-600 text-right font-data">{item.percentage}%</div>
                 </div>
               ))}
             </div>
@@ -1264,15 +1264,15 @@ function V16Section() {
             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
           </span>
           <span className="text-green-700 font-medium">
-            Tiempo real - {realtimeData?.count || 0} balizas activas
+            Tiempo real - <span className="font-data">{realtimeData?.count || 0}</span> balizas activas
           </span>
           {realtimeData?.lastUpdated && (
             <span className="text-gray-400">
               (actualizado:{" "}
-              {new Date(realtimeData.lastUpdated).toLocaleTimeString("es-ES", {
+              <span className="font-data">{new Date(realtimeData.lastUpdated).toLocaleTimeString("es-ES", {
                 hour: "2-digit",
                 minute: "2-digit",
-              })}
+              })}</span>
               )
             </span>
           )}
@@ -1466,7 +1466,7 @@ function V16Section() {
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-16 text-sm text-gray-600 text-right">
+                        <div className="w-16 text-sm text-gray-600 text-right font-data">
                           {item.value} ({percentage}%)
                         </div>
                       </div>
@@ -1516,15 +1516,15 @@ function V16Section() {
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <div className="w-10 text-sm text-gray-600 text-right">{road.value}</div>
+                        <div className="w-10 text-sm text-gray-600 text-right font-data">{road.value}</div>
                       </div>
                     );
                   })}
                 </div>
                 {roadsData?.data?.totals && (
                   <p className="text-xs text-gray-500 mt-4">
-                    {roadsData.data.totals.totalBeacons} balizas en{" "}
-                    {roadsData.data.totals.uniqueRoads} carreteras diferentes
+                    <span className="font-data">{roadsData.data.totals.totalBeacons}</span> balizas en{" "}
+                    <span className="font-data">{roadsData.data.totals.uniqueRoads}</span> carreteras diferentes
                   </p>
                 )}
               </div>
@@ -1726,9 +1726,9 @@ function CarreterasSection({
                   return (
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{road.road}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-center">{road.incidentCount}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-center">{road.v16Count}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-center">
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center font-data">{road.incidentCount}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center font-data">{road.v16Count}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-center font-data">
                         {road.avgDurationMins ? `${road.avgDurationMins}m` : "-"}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -1795,11 +1795,11 @@ function ClimaSection({
               </div>
               <h3 className="font-semibold text-gray-900">Con Alertas</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 font-data">
               {data.data.correlation.withAlerts.avgIncidents.toFixed(1)}
             </p>
             <p className="text-sm text-gray-500">incidencias/día promedio</p>
-            <p className="text-xs text-gray-400 mt-1">{data.data.correlation.withAlerts.days} días</p>
+            <p className="text-xs text-gray-400 mt-1"><span className="font-data">{data.data.correlation.withAlerts.days}</span> días</p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -1809,11 +1809,11 @@ function ClimaSection({
               </div>
               <h3 className="font-semibold text-gray-900">Sin Alertas</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 font-data">
               {data.data.correlation.withoutAlerts.avgIncidents.toFixed(1)}
             </p>
             <p className="text-sm text-gray-500">incidencias/día promedio</p>
-            <p className="text-xs text-gray-400 mt-1">{data.data.correlation.withoutAlerts.days} días</p>
+            <p className="text-xs text-gray-400 mt-1"><span className="font-data">{data.data.correlation.withoutAlerts.days}</span> días</p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -1823,7 +1823,7 @@ function ClimaSection({
               </div>
               <h3 className="font-semibold text-gray-900">Multiplicador</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">×{data.data.correlation.impactMultiplier.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-900 font-data">×{data.data.correlation.impactMultiplier.toFixed(2)}</p>
             <p className="text-sm text-gray-500">más incidencias con alertas</p>
           </div>
         </div>
@@ -1845,7 +1845,7 @@ function ClimaSection({
                   <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
                     <div className="h-full bg-tl-500 rounded" style={{ width: `${width}%` }} />
                   </div>
-                  <div className="w-24 text-sm text-gray-600 text-right">
+                  <div className="w-24 text-sm text-gray-600 text-right font-data">
                     {alert.avgIncidents.toFixed(1)} inc/día
                   </div>
                 </div>
@@ -1947,7 +1947,7 @@ function CorrelacionSection({
                     <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
                       <div className={`h-full ${item.color} rounded`} style={{ width: `${percentage}%` }} />
                     </div>
-                    <div className="w-16 text-sm text-gray-600 text-right">{item.value}</div>
+                    <div className="w-16 text-sm text-gray-600 text-right font-data">{item.value}</div>
                   </div>
                 );
               })}
@@ -1978,7 +1978,7 @@ function CorrelacionSection({
                     <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
                       <div className={`h-full ${item.color} rounded`} style={{ width: `${percentage}%` }} />
                     </div>
-                    <div className="w-16 text-sm text-gray-600 text-right">{item.value}</div>
+                    <div className="w-16 text-sm text-gray-600 text-right font-data">{item.value}</div>
                   </div>
                 );
               })}
@@ -2016,16 +2016,16 @@ function CorrelacionSection({
           <h3 className="font-medium text-tl-900 mb-2">Interpretación</h3>
           <ul className="text-sm text-tl-800 space-y-1">
             <li>
-              • <strong>{data.data.summary.v16CorrelationRate}%</strong> de las balizas V16 se activaron cerca
+              • <strong className="font-data">{data.data.summary.v16CorrelationRate}%</strong> de las balizas V16 se activaron cerca
               de una incidencia reportada (en espacio y tiempo)
             </li>
             <li>
-              • <strong>{data.data.summary.incidentCorrelationRate}%</strong> de las incidencias tuvieron una
+              • <strong className="font-data">{data.data.summary.incidentCorrelationRate}%</strong> de las incidencias tuvieron una
               baliza V16 activada en sus inmediaciones
             </li>
             <li>
-              • El análisis considera un radio máximo de {data.data.parameters.maxDistanceKm}km y
-              diferencia temporal de {data.data.parameters.maxTimeDiffMinutes} minutos
+              • El análisis considera un radio máximo de <span className="font-data">{data.data.parameters.maxDistanceKm}</span>km y
+              diferencia temporal de <span className="font-data">{data.data.parameters.maxTimeDiffMinutes}</span> minutos
             </li>
           </ul>
         </div>
@@ -2052,14 +2052,14 @@ function CorrelacionSection({
               <tbody className="divide-y divide-gray-200">
                 {data.data.sampleCorrelations.slice(0, 10).map((corr, idx) => (
                   <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">{corr.distanceKm} km</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-gray-900 font-data">{corr.distanceKm} km</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 font-data">
                       {corr.timeDiffMinutes === 0 ? "Durante" : `${corr.timeDiffMinutes} min`}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-gray-600 font-data">
                       {new Date(corr.v16Time).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-gray-600 font-data">
                       {new Date(corr.incidentTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{corr.province || "-"}</td>
@@ -2174,7 +2174,7 @@ function RankingsSection({
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right">{p.totalIncidents}</span>
+                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.totalIncidents}</span>
                     </div>
                   );
                 })}
@@ -2200,7 +2200,7 @@ function RankingsSection({
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-purple-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right">{p.incidentsPer100k.toFixed(1)}</span>
+                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.incidentsPer100k.toFixed(1)}</span>
                     </div>
                   );
                 })}
@@ -2227,7 +2227,7 @@ function RankingsSection({
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right">{p.totalV16}</span>
+                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.totalV16}</span>
                     </div>
                   );
                 })}
@@ -2253,7 +2253,7 @@ function RankingsSection({
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-gray-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right">{p.accidentsPer100k.toFixed(1)}</span>
+                      <span className="w-16 text-sm text-gray-600 text-right font-data">{p.accidentsPer100k.toFixed(1)}</span>
                     </div>
                   );
                 })}
@@ -2273,7 +2273,7 @@ function RankingsSection({
                 {data.provinces.mostImproved.slice(0, 5).map((p, idx) => (
                   <div key={p.province} className="flex items-center justify-between">
                     <span className="font-medium text-green-800">{p.province}</span>
-                    <span className="text-green-600 font-bold">{p.changePercent.toFixed(1)}%</span>
+                    <span className="text-green-600 font-bold font-data">{p.changePercent.toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
@@ -2292,7 +2292,7 @@ function RankingsSection({
                 {data.provinces.mostWorsened.slice(0, 5).map((p, idx) => (
                   <div key={p.province} className="flex items-center justify-between">
                     <span className="font-medium text-red-800">{p.province}</span>
-                    <span className="text-red-600 font-bold">+{p.changePercent.toFixed(1)}%</span>
+                    <span className="text-red-600 font-bold font-data">+{p.changePercent.toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
@@ -2323,7 +2323,7 @@ function RankingsSection({
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-12 text-sm text-gray-600 text-right">{r.totalIncidents}</span>
+                      <span className="w-12 text-sm text-gray-600 text-right font-data">{r.totalIncidents}</span>
                     </div>
                   );
                 })}
@@ -2349,7 +2349,7 @@ function RankingsSection({
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-12 text-sm text-gray-600 text-right">{r.riskScore.toFixed(1)}</span>
+                      <span className="w-12 text-sm text-gray-600 text-right font-data">{r.riskScore.toFixed(1)}</span>
                     </div>
                   );
                 })}
@@ -2375,7 +2375,7 @@ function RankingsSection({
                       <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
                         <div className="h-full bg-green-500 rounded" style={{ width: `${width}%` }} />
                       </div>
-                      <span className="w-16 text-sm text-gray-600 text-right">{(r.avgIMD / 1000).toFixed(0)}k</span>
+                      <span className="w-16 text-sm text-gray-600 text-right font-data">{(r.avgIMD / 1000).toFixed(0)}k</span>
                     </div>
                   );
                 })}
@@ -2396,9 +2396,9 @@ function RankingsSection({
                   <div key={r.roadName} className="flex items-center justify-between bg-white rounded px-3 py-2">
                     <div>
                       <span className="font-bold text-red-800">{r.roadName}</span>
-                      <p className="text-xs text-red-600">{r.incidentsPerKm.toFixed(2)} inc/km</p>
+                      <p className="text-xs text-red-600 font-data">{r.incidentsPerKm.toFixed(2)} inc/km</p>
                     </div>
-                    <span className="text-lg font-bold text-red-700">{r.riskScore.toFixed(1)}</span>
+                    <span className="text-lg font-bold text-red-700 font-data">{r.riskScore.toFixed(1)}</span>
                   </div>
                 ))}
               </div>

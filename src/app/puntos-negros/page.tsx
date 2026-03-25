@@ -252,7 +252,7 @@ export default async function PuntosNegrosPage() {
               </div>
               {totalAccidentsLatest > 0 && (
                 <div className="hidden md:flex flex-col items-center bg-red-50 border border-red-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
-                  <span className="text-3xl font-bold text-red-700">
+                  <span className="text-3xl font-bold text-red-700 font-data">
                     {totalAccidentsLatest.toLocaleString("es-ES")}
                   </span>
                   <span className="text-sm text-red-600 mt-0.5">
@@ -284,21 +284,21 @@ export default async function PuntosNegrosPage() {
           {totalAccidentsLatest > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
               <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 font-data">
                   {totalAccidentsLatest.toLocaleString("es-ES")}
                 </p>
                 <p className="text-sm text-gray-500">accidentes registrados</p>
-                <p className="text-xs text-gray-400 mt-0.5">{latestYear?.year}</p>
+                <p className="text-xs text-gray-400 mt-0.5 font-data">{latestYear?.year}</p>
               </div>
               <div className="bg-white rounded-lg border border-red-100 p-4">
-                <p className="text-2xl font-bold text-red-700">
+                <p className="text-2xl font-bold text-red-700 font-data">
                   {totalFatalitiesLatest.toLocaleString("es-ES")}
                 </p>
                 <p className="text-sm text-gray-500">fallecidos en carretera</p>
-                <p className="text-xs text-gray-400 mt-0.5">{latestYear?.year}</p>
+                <p className="text-xs text-gray-400 mt-0.5 font-data">{latestYear?.year}</p>
               </div>
               <div className="bg-white rounded-lg border border-tl-100 p-4 col-span-2 sm:col-span-1">
-                <p className="text-2xl font-bold text-tl-700">
+                <p className="text-2xl font-bold text-tl-700 font-data">
                   {riskZones.length.toLocaleString("es-ES")}
                 </p>
                 <p className="text-sm text-gray-500">zonas de riesgo catalogadas</p>
@@ -352,7 +352,7 @@ export default async function PuntosNegrosPage() {
                                 {zone.roadNumber}
                               </Link>
                             </td>
-                            <td className="px-4 py-3 text-gray-600">
+                            <td className="px-4 py-3 text-gray-600 font-data">
                               {Number(zone.kmStart).toFixed(1)}
                               {" — "}
                               {Number(zone.kmEnd).toFixed(1)}
@@ -412,14 +412,14 @@ export default async function PuntosNegrosPage() {
                     <tbody className="divide-y divide-gray-100">
                       {yearRows.map((row) => (
                         <tr key={row.year} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-3 font-semibold text-gray-900">{row.year}</td>
-                          <td className="px-4 py-3 text-right text-gray-900">
+                          <td className="px-4 py-3 font-semibold text-gray-900 font-data">{row.year}</td>
+                          <td className="px-4 py-3 text-right text-gray-900 font-data">
                             {(row._sum.accidents ?? 0).toLocaleString("es-ES")}
                           </td>
-                          <td className="px-4 py-3 text-right font-semibold text-red-700">
+                          <td className="px-4 py-3 text-right font-semibold text-red-700 font-data">
                             {(row._sum.fatalities ?? 0).toLocaleString("es-ES")}
                           </td>
-                          <td className="px-4 py-3 text-right text-gray-600 hidden sm:table-cell">
+                          <td className="px-4 py-3 text-right text-gray-600 hidden sm:table-cell font-data">
                             {(row._sum.hospitalized ?? 0).toLocaleString("es-ES")}
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -429,17 +429,17 @@ export default async function PuntosNegrosPage() {
                                 <span>—</span>
                               </span>
                             ) : row.delta < 0 ? (
-                              <span className="text-green-700 font-medium flex items-center justify-end gap-1">
+                              <span className="text-green-700 font-medium flex items-center justify-end gap-1 font-data">
                                 <TrendingDown className="w-3.5 h-3.5" />
                                 {Math.abs(row.delta)}%
                               </span>
                             ) : row.delta > 0 ? (
-                              <span className="text-red-700 font-medium flex items-center justify-end gap-1">
+                              <span className="text-red-700 font-medium flex items-center justify-end gap-1 font-data">
                                 <TrendingUp className="w-3.5 h-3.5" />
                                 +{row.delta}%
                               </span>
                             ) : (
-                              <span className="text-gray-500 flex items-center justify-end gap-1">
+                              <span className="text-gray-500 flex items-center justify-end gap-1 font-data">
                                 <Minus className="w-3.5 h-3.5" />
                                 0%
                               </span>
@@ -485,10 +485,10 @@ export default async function PuntosNegrosPage() {
                             </Link>
                           </div>
                           <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                            <span className="text-sm font-semibold text-gray-900">
+                            <span className="text-sm font-semibold text-gray-900 font-data">
                               {accidents.toLocaleString("es-ES")}
                             </span>
-                            <span className="text-xs text-red-600 font-medium">
+                            <span className="text-xs text-red-600 font-medium font-data">
                               {(item._sum.fatalities ?? 0).toLocaleString("es-ES")} fallecidos
                             </span>
                           </div>
@@ -531,14 +531,14 @@ export default async function PuntosNegrosPage() {
                           <div>
                             <p className="font-medium text-gray-900">{label}</p>
                             <p className="text-xs text-gray-500 mt-0.5">
-                              Tasa mortalidad: {mortalityRate}%
+                              Tasa mortalidad: <span className="font-data">{mortalityRate}%</span>
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-bold text-gray-900">
+                            <p className="text-lg font-bold text-gray-900 font-data">
                               {accidents.toLocaleString("es-ES")}
                             </p>
-                            <p className="text-xs text-red-600 font-medium">
+                            <p className="text-xs text-red-600 font-medium font-data">
                               {fatalities.toLocaleString("es-ES")} fallecidos
                             </p>
                           </div>

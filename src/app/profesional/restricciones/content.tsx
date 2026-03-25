@@ -172,8 +172,8 @@ export default function RestriccionesContent() {
             {!zbeLoading && zbeData?.data && (
               <>
                 <p className="text-sm text-gray-500 mb-4">
-                  {zbeData.data.summary.totalZones} zonas de bajas emisiones registradas
-                  ({zbeData.data.summary.activeZones} activas)
+                  <span className="font-data">{zbeData.data.summary.totalZones}</span> zonas de bajas emisiones registradas
+                  (<span className="font-data">{zbeData.data.summary.activeZones}</span> activas)
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

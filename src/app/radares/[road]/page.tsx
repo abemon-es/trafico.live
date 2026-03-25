@@ -268,7 +268,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 </p>
               </div>
               <div className="hidden md:flex flex-col items-center bg-yellow-50 border border-yellow-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
-                <span className="text-3xl font-bold text-yellow-700">
+                <span className="text-3xl font-bold text-yellow-700 font-data">
                   {radars.length.toLocaleString("es-ES")}
                 </span>
                 <span className="text-sm text-yellow-600 mt-0.5">
@@ -292,7 +292,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                       >
                         {cfg.label}
                       </span>
-                      <span className="text-sm font-semibold text-gray-900">{count}</span>
+                      <span className="text-sm font-semibold text-gray-900 font-data">{count}</span>
                     </div>
                   );
                 })}
@@ -301,7 +301,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                     <TrendingUp className="w-4 h-4 text-gray-400" />
                     <span className="text-sm text-gray-600">
                       Velocidad media controlada:{" "}
-                      <strong className="text-gray-900">{avgSpeedLimit} km/h</strong>
+                      <strong className="text-gray-900 font-data">{avgSpeedLimit} km/h</strong>
                     </span>
                   </div>
                 )}
@@ -396,7 +396,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                               idx % 2 === 0 ? "" : "bg-gray-50/50"
                             }`}
                           >
-                            <td className="px-4 py-3 font-mono font-semibold text-gray-900">
+                            <td className="px-4 py-3 font-mono font-semibold text-gray-900 font-data">
                               km {Number(radar.kmPoint).toFixed(1)}
                             </td>
                             <td className="px-4 py-3">
@@ -409,7 +409,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                             <td className="px-4 py-3">
                               {radar.speedLimit ? (
                                 <span
-                                  className={`inline-block text-xs px-2 py-0.5 rounded ${getSpeedBadgeColor(radar.speedLimit)}`}
+                                  className={`inline-block text-xs px-2 py-0.5 rounded font-data ${getSpeedBadgeColor(radar.speedLimit)}`}
                                 >
                                   {radar.speedLimit} km/h
                                 </span>
@@ -463,7 +463,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 <>
                   <p className="text-gray-600 text-sm mb-3">
                     Hay{" "}
-                    <strong className="text-gray-900">{cameraCount}</strong>{" "}
+                    <strong className="text-gray-900 font-data">{cameraCount}</strong>{" "}
                     cámara{cameraCount !== 1 ? "s" : ""} de tráfico activa
                     {cameraCount !== 1 ? "s" : ""} en la {roadId}.
                   </p>
@@ -511,15 +511,15 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                           key={sl.id}
                           className="border-b border-gray-100 hover:bg-gray-50"
                         >
-                          <td className="py-2 font-mono text-xs text-gray-700">
+                          <td className="py-2 font-mono text-xs text-gray-700 font-data">
                             {Number(sl.kmStart).toFixed(1)}
                           </td>
-                          <td className="py-2 font-mono text-xs text-gray-700">
+                          <td className="py-2 font-mono text-xs text-gray-700 font-data">
                             {Number(sl.kmEnd).toFixed(1)}
                           </td>
                           <td className="py-2">
                             <span
-                              className={`inline-block text-xs px-2 py-0.5 rounded ${getSpeedBadgeColor(sl.speedLimit)}`}
+                              className={`inline-block text-xs px-2 py-0.5 rounded font-data ${getSpeedBadgeColor(sl.speedLimit)}`}
                             >
                               {sl.speedLimit} km/h
                             </span>

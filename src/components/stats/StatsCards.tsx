@@ -44,7 +44,7 @@ function StatCard({ title, value, change, icon, color, loading }: StatCardProps)
             ) : isNegative ? (
               <TrendingDown className="w-4 h-4" />
             ) : null}
-            <span>{Math.abs(change)}%</span>
+            <span className="font-data">{Math.abs(change)}%</span>
           </div>
         )}
       </div>
@@ -56,7 +56,7 @@ function StatCard({ title, value, change, icon, color, loading }: StatCardProps)
           </div>
         ) : (
           <>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 font-data">
               {typeof value === "number" ? value.toLocaleString("es-ES") : value}
             </p>
             <p className="text-sm text-gray-500">{title}</p>

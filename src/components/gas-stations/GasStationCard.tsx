@@ -89,7 +89,7 @@ export function GasStationCard({
             >
               <div className="text-xs text-gray-500 mb-0.5">Gasóleo A</div>
               <div
-                className={`text-lg font-bold ${station.isCheapestDiesel ? "text-green-700" : "text-gray-900"}`}
+                className={`text-lg font-bold font-data ${station.isCheapestDiesel ? "text-green-700" : "text-gray-900"}`}
               >
                 {station.priceGasoleoA.toFixed(3)}€
               </div>
@@ -104,7 +104,7 @@ export function GasStationCard({
             >
               <div className="text-xs text-gray-500 mb-0.5">Gasolina 95</div>
               <div
-                className={`text-lg font-bold ${station.isCheapestGas95 ? "text-green-700" : "text-gray-900"}`}
+                className={`text-lg font-bold font-data ${station.isCheapestGas95 ? "text-green-700" : "text-gray-900"}`}
               >
                 {station.priceGasolina95E5.toFixed(3)}€
               </div>
@@ -113,7 +113,7 @@ export function GasStationCard({
           {station.priceGasolina98E5 && (
             <div className="p-2 rounded-lg bg-gray-50 text-center">
               <div className="text-xs text-gray-500 mb-0.5">Gasolina 98</div>
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-lg font-bold text-gray-900 font-data">
                 {station.priceGasolina98E5.toFixed(3)}€
               </div>
             </div>
@@ -121,7 +121,7 @@ export function GasStationCard({
           {station.priceGLP && (
             <div className="p-2 rounded-lg bg-gray-50 text-center">
               <div className="text-xs text-gray-500 mb-0.5">GLP</div>
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-lg font-bold text-gray-900 font-data">
                 {station.priceGLP.toFixed(3)}€
               </div>
             </div>

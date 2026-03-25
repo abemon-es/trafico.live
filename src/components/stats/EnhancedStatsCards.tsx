@@ -141,7 +141,7 @@ function StatCard({
             ) : isNegative ? (
               <TrendingDown className="w-4 h-4" />
             ) : null}
-            <span>{Math.abs(change)}%</span>
+            <span className="font-data">{Math.abs(change)}%</span>
           </div>
         )}
       </div>
@@ -153,22 +153,22 @@ function StatCard({
           </div>
         ) : (
           <>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 font-data">
               {typeof value === "number" ? value.toLocaleString("es-ES") : value}
             </p>
             <p className="text-sm text-gray-500">{title}</p>
             {comparison && (
               <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
                 <span>
-                  Ayer: {comparison.yesterday}
+                  Ayer: <span className="font-data">{comparison.yesterday}</span>
                   {comparison.changeVsYesterday !== null && (
                     <span
                       className={
                         comparison.changeVsYesterday > 0
-                          ? "text-red-500 ml-1"
+                          ? "text-red-500 ml-1 font-data"
                           : comparison.changeVsYesterday < 0
-                          ? "text-green-500 ml-1"
-                          : ""
+                          ? "text-green-500 ml-1 font-data"
+                          : "font-data"
                       }
                     >
                       ({comparison.changeVsYesterday > 0 ? "+" : ""}
@@ -195,7 +195,7 @@ function WeatherAlertBadge({ count }: { count: number }) {
       </div>
       <div className="flex-1">
         <p className="text-sm font-medium text-tl-amber-800">
-          {count} {count === 1 ? "alerta meteorológica activa" : "alertas meteorológicas activas"}
+          <span className="font-data">{count}</span> {count === 1 ? "alerta meteorológica activa" : "alertas meteorológicas activas"}
         </p>
         <p className="text-xs text-tl-amber-600">Puede afectar al tráfico</p>
       </div>

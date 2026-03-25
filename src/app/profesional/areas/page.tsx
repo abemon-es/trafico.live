@@ -357,15 +357,15 @@ export default function AreasPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">{totalAreas}</p>
+            <p className="text-2xl font-bold text-gray-900 font-data">{totalAreas}</p>
             <p className="text-xs text-gray-500 mt-1">Áreas registradas</p>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">{AREAS_BY_ROUTE.length}</p>
+            <p className="text-2xl font-bold text-gray-900 font-data">{AREAS_BY_ROUTE.length}</p>
             <p className="text-xs text-gray-500 mt-1">Rutas cubiertas</p>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 font-data">
               {AREAS_BY_ROUTE.reduce(
                 (sum, g) => sum + g.areas.filter((a) => a.schedule === "24h").length,
                 0
@@ -374,7 +374,7 @@ export default function AreasPage() {
             <p className="text-xs text-gray-500 mt-1">Abiertas 24h</p>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 font-data">
               {AREAS_BY_ROUTE.reduce(
                 (sum, g) =>
                   sum +
@@ -430,7 +430,7 @@ export default function AreasPage() {
                           >
                             {area.road}
                           </span>
-                          km {area.km} &middot; {area.province}
+                          <span className="font-data">km {area.km}</span> &middot; {area.province}
                         </p>
                       </div>
                       <div className="flex items-center gap-1 text-xs text-gray-500 ml-3 flex-shrink-0">
@@ -442,7 +442,7 @@ export default function AreasPage() {
                     {area.truckParking && (
                       <p className="text-xs text-tl-600 mt-1">
                         <Truck className="w-3 h-3 inline mr-1" />
-                        ~{area.truckParking} plazas para camiones
+                        ~<span className="font-data">{area.truckParking}</span> plazas para camiones
                       </p>
                     )}
 

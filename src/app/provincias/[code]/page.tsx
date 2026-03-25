@@ -208,7 +208,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{v16Count}</p>
+            <p className="text-2xl font-bold text-gray-900 font-data">{v16Count}</p>
             <p className="text-sm text-gray-500">V16 Activas</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -217,7 +217,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 <AlertTriangle className="w-5 h-5 text-orange-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{incidentCount}</p>
+            <p className="text-2xl font-bold text-gray-900 font-data">{incidentCount}</p>
             <p className="text-sm text-gray-500">Incidencias</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -226,7 +226,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 <Calendar className="w-5 h-5 text-tl-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 font-data">
               {historicalAccidents?.accidents.toLocaleString() ?? 0}
             </p>
             <p className="text-sm text-gray-500">
@@ -243,7 +243,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 )}
               </div>
             </div>
-            <p className={`text-2xl font-bold ${yearChange !== null && yearChange < 0 ? "text-green-600" : "text-red-600"}`}>
+            <p className={`text-2xl font-bold font-data ${yearChange !== null && yearChange < 0 ? "text-green-600" : "text-red-600"}`}>
               {yearChange !== null ? `${yearChange > 0 ? "+" : ""}${yearChange.toFixed(1)}%` : "N/A"}
             </p>
             <p className="text-sm text-gray-500">Variación anual</p>
@@ -289,7 +289,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                             </Link>
                           )}
                           {incident.kmPoint && (
-                            <span className="text-sm text-gray-500">km {Number(incident.kmPoint).toFixed(1)}</span>
+                            <span className="text-sm text-gray-500 font-data">km {Number(incident.kmPoint).toFixed(1)}</span>
                           )}
                         </div>
                         {incident.description && (
@@ -378,28 +378,28 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                     <Camera className="w-4 h-4" />
                     <span>Cámaras</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{cameraCount}</span>
+                  <span className="font-semibold text-gray-900 font-data">{cameraCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Radar className="w-4 h-4" />
                     <span>Radares</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{radarCount}</span>
+                  <span className="font-semibold text-gray-900 font-data">{radarCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Route className="w-4 h-4" />
                     <span>Carreteras</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{roads.length}</span>
+                  <span className="font-semibold text-gray-900 font-data">{roads.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Fuel className="w-4 h-4" />
                     <span>Gasolineras</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{gasStationCount}</span>
+                  <span className="font-semibold text-gray-900 font-data">{gasStationCount}</span>
                 </div>
               </div>
             </div>
@@ -430,7 +430,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                           <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestDiesel.name}</div>
                           <div className="text-xs text-gray-500">{cheapestDiesel.locality}</div>
                         </div>
-                        <div className="text-xl font-bold text-tl-amber-700">
+                        <div className="text-xl font-bold text-tl-amber-700 font-data">
                           {Number(cheapestDiesel.priceGasoleoA).toFixed(3)}€
                         </div>
                       </div>
@@ -447,7 +447,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                           <div className="font-medium text-gray-900 text-sm line-clamp-1">{cheapestGas95.name}</div>
                           <div className="text-xs text-gray-500">{cheapestGas95.locality}</div>
                         </div>
-                        <div className="text-xl font-bold text-tl-700">
+                        <div className="text-xl font-bold text-tl-700 font-data">
                           {Number(cheapestGas95.priceGasolina95E5).toFixed(3)}€
                         </div>
                       </div>
@@ -466,25 +466,25 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Accidentes</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-gray-900 font-data">
                       {historicalAccidents.accidents.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Fallecidos</span>
-                    <span className="font-semibold text-red-600">
+                    <span className="font-semibold text-red-600 font-data">
                       {historicalAccidents.fatalities}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Hospitalizados</span>
-                    <span className="font-semibold text-orange-600">
+                    <span className="font-semibold text-orange-600 font-data">
                       {historicalAccidents.hospitalized}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Heridos leves</span>
-                    <span className="font-semibold text-yellow-600">
+                    <span className="font-semibold text-yellow-600 font-data">
                       {historicalAccidents.nonHospitalized}
                     </span>
                   </div>

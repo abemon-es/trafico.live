@@ -191,7 +191,7 @@ export function FuelPriceTable({
                   <td className="px-4 py-3 text-tl-600">
                     {station.nearestRoad}
                     {station.roadKm && (
-                      <span className="text-gray-400 ml-1">km {station.roadKm}</span>
+                      <span className="text-gray-400 ml-1 font-data">km {station.roadKm}</span>
                     )}
                   </td>
                 )}
@@ -201,7 +201,7 @@ export function FuelPriceTable({
                 <td className="px-4 py-3 text-right">
                   {station.priceGasoleoA ? (
                     <span
-                      className={`font-mono ${isCheapestDiesel ? "font-bold text-green-700" : ""}`}
+                      className={`font-data ${isCheapestDiesel ? "font-bold text-green-700" : ""}`}
                     >
                       {station.priceGasoleoA.toFixed(3)}€
                     </span>
@@ -212,7 +212,7 @@ export function FuelPriceTable({
                 <td className="px-4 py-3 text-right">
                   {station.priceGasolina95E5 ? (
                     <span
-                      className={`font-mono ${isCheapestGas95 ? "font-bold text-green-700" : ""}`}
+                      className={`font-data ${isCheapestGas95 ? "font-bold text-green-700" : ""}`}
                     >
                       {station.priceGasolina95E5.toFixed(3)}€
                     </span>
@@ -222,7 +222,7 @@ export function FuelPriceTable({
                 </td>
                 <td className="px-4 py-3 text-right">
                   {station.priceGasolina98E5 ? (
-                    <span className="font-mono">{station.priceGasolina98E5.toFixed(3)}€</span>
+                    <span className="font-data">{station.priceGasolina98E5.toFixed(3)}€</span>
                   ) : (
                     <span className="text-gray-400">—</span>
                   )}

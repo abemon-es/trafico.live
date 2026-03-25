@@ -41,7 +41,7 @@ export function CheapestHighlight({
               <span className="text-sm font-medium text-gray-600">Gasóleo A más barato</span>
             </div>
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-3xl font-bold text-green-700">
+              <span className="text-3xl font-bold text-green-700 font-data">
                 {dieselStation.priceGasoleoA?.toFixed(3)}€
               </span>
             </div>
@@ -54,7 +54,7 @@ export function CheapestHighlight({
               {dieselStation.provinceName && `, ${dieselStation.provinceName}`}
             </div>
             {dieselStation.nearestRoad && (
-              <div className="text-xs text-tl-600 mt-1">
+              <div className="text-xs text-tl-600 mt-1 font-data">
                 {dieselStation.nearestRoad}
                 {dieselStation.roadKm && ` km ${dieselStation.roadKm}`}
               </div>
@@ -80,7 +80,7 @@ export function CheapestHighlight({
               <span className="text-sm font-medium text-gray-600">Gasolina 95 más barata</span>
             </div>
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-3xl font-bold text-green-700">
+              <span className="text-3xl font-bold text-green-700 font-data">
                 {gasolineStation.priceGasolina95E5?.toFixed(3)}€
               </span>
             </div>
@@ -93,7 +93,7 @@ export function CheapestHighlight({
               {gasolineStation.provinceName && `, ${gasolineStation.provinceName}`}
             </div>
             {gasolineStation.nearestRoad && (
-              <div className="text-xs text-tl-600 mt-1">
+              <div className="text-xs text-tl-600 mt-1 font-data">
                 {gasolineStation.nearestRoad}
                 {gasolineStation.roadKm && ` km ${gasolineStation.roadKm}`}
               </div>

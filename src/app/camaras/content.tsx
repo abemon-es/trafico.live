@@ -102,19 +102,19 @@ export function CamarasContent() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 font-data">
                   {isLoading ? "-" : data?.count || 0}
                 </p>
                 <p className="text-sm text-gray-500">Cámaras totales</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-tl-600">
+                <p className="text-2xl font-bold text-tl-600 font-data">
                   {filteredCameras.length}
                 </p>
                 <p className="text-sm text-gray-500">Mostrando</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 font-data">
                   {data?.provinces.length || 0}
                 </p>
                 <p className="text-sm text-gray-500">Provincias</p>

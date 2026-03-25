@@ -242,7 +242,7 @@ export default function CargaEVContent() {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <Gauge className="w-6 h-6 text-green-600 mb-2" />
             <h3 className="font-medium text-gray-900">Carga rápida</h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1 font-data">
               {stats?.byBand.find((b) => b.id === "fast")?.count ?? 0} puntos 50–150 kW
             </p>
           </div>
@@ -250,13 +250,13 @@ export default function CargaEVContent() {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <Building2 className="w-6 h-6 text-green-600 mb-2" />
             <h3 className="font-medium text-gray-900">Operadores</h3>
-            <p className="text-xs text-gray-500 mt-1">{stats?.operators || 0} redes</p>
+            <p className="text-xs text-gray-500 mt-1 font-data">{stats?.operators || 0} redes</p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <Zap className="w-6 h-6 text-green-600 mb-2" />
             <h3 className="font-medium text-gray-900">Total puntos</h3>
-            <p className="text-xs text-gray-500 mt-1">{stats?.total || 0} disponibles</p>
+            <p className="text-xs text-gray-500 mt-1 font-data">{stats?.total || 0} disponibles</p>
           </div>
         </div>
 
@@ -273,7 +273,7 @@ export default function CargaEVContent() {
                     : "bg-white border border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <p className="text-2xl font-bold text-gray-900">{band.count}</p>
+                <p className="text-2xl font-bold text-gray-900 font-data">{band.count}</p>
                 <p className="text-sm font-medium text-gray-700">{band.label}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{band.sublabel}</p>
               </button>
@@ -391,7 +391,7 @@ export default function CargaEVContent() {
         {/* Results count */}
         {!isLoading && filteredChargers && (
           <p className="text-sm text-gray-500 mb-4">
-            {filteredChargers.length} puntos de carga
+            <span className="font-data">{filteredChargers.length}</span> puntos de carga
             {hasActiveFilters && " (filtrados)"}
           </p>
         )}
@@ -420,7 +420,7 @@ export default function CargaEVContent() {
                   </h3>
                   {charger.totalPowerKw > 0 && (
                     <span
-                      className={`text-sm font-bold px-2 py-0.5 rounded shrink-0 ${
+                      className={`text-sm font-bold px-2 py-0.5 rounded shrink-0 font-data ${
                         charger.totalPowerKw >= 150
                           ? "bg-green-100 text-green-700"
                           : charger.totalPowerKw >= 50
@@ -486,7 +486,7 @@ export default function CargaEVContent() {
         {!isLoading && filteredChargers && filteredChargers.length > 50 && (
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Mostrando 50 de {filteredChargers.length} resultados.{" "}
+              Mostrando <span className="font-data">50</span> de <span className="font-data">{filteredChargers.length}</span> resultados.{" "}
               <Link
                 href="/explorar/infraestructura?tab=cargadores"
                 className="text-green-600 hover:underline inline-flex items-center gap-1"

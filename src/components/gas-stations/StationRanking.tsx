@@ -95,7 +95,7 @@ function RankingRow({ ranking }: { ranking: RankingData }) {
           <div className="text-sm font-medium text-gray-900">
             {scopeLabel}: {ranking.scopeName}
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-500 font-data">
             #{ranking.rank.toLocaleString("es-ES")} de {ranking.total.toLocaleString("es-ES")} gasolineras
           </div>
         </div>
@@ -103,13 +103,13 @@ function RankingRow({ ranking }: { ranking: RankingData }) {
 
       <div className="flex items-center gap-3">
         {savingsVsAvg > 0.005 && (
-          <div className="text-xs text-green-600">
+          <div className="text-xs text-green-600 font-data">
             -{savingsPercent}% vs media
           </div>
         )}
         <RankBadge rank={ranking.rank} total={ranking.total} percentile={ranking.percentile} />
         {!RankBadge({ rank: ranking.rank, total: ranking.total, percentile: ranking.percentile }) && (
-          <span className={`text-sm font-medium ${
+          <span className={`text-sm font-medium font-data ${
             ranking.percentile <= 25 ? "text-green-600" :
             ranking.percentile <= 50 ? "text-green-500" :
             ranking.percentile <= 75 ? "text-yellow-600" :
@@ -202,7 +202,7 @@ export function StationRanking({ stationId, stationType = "terrestrial", default
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">{data.fuelLabel}</span>
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-xl font-bold text-gray-900 font-data">
                 {data.rankings[0]?.price.toFixed(3)}
               </span>
             </div>
