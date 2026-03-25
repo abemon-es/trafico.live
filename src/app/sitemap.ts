@@ -307,6 +307,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    // Municipality index (individual pages served via /municipio/[slug]/sitemap.xml)
+    {
+      url: `${BASE_URL}/municipio`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    },
     // Weather alerts (AEMET)
     {
       url: `${BASE_URL}/alertas-meteo`,
