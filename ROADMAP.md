@@ -23,7 +23,7 @@
 - [x] Email routing: hola@trafico.live → mj@blue-mountain.es
 - [x] Repo moved to abemon-es/trafico.live
 
-### 0.2 — Fix Broken Features
+### 0.2 — Fix Broken Features ✅
 - [x] Fix font bug (Geist Sans now properly used)
 - [x] Fix broken logo.png reference in structured data
 - [x] Replace hardcoded hex colors with design tokens (tl-* palette)
@@ -35,35 +35,55 @@
 
 ---
 
-## Phase 1: SEO Foundation (weeks 1-2)
+## Phase 0.5: Legal & Compliance ✅ COMPLETE (2026-03-25)
 
-### 1.1 — Technical SEO Fixes
-- [ ] Add `<link rel="canonical">` on all pages + aliased routes
-- [ ] Convert homepage from pure CSR → hybrid SSR (hero + stats SSR, map CSR)
+### 0.5.1 — Repo Documentation ✅
+- [x] Proper README.md (project description, setup, architecture)
+- [x] Proprietary LICENSE (all rights reserved)
+- [x] CHANGELOG.md (from git history)
+- [x] SECURITY.md + `.well-known/security.txt` (RFC 9116)
+- [x] GitHub templates (issue bug/feature, PR template)
+
+### 0.5.2 — Legal Pages (LSSI-CE + GDPR/LOPDGDD) ✅
+- [x] `/aviso-legal` — identification, conditions, IP, liability
+- [x] `/politica-privacidad` — data controller, GDPR rights, data sources, retention
+- [x] `/politica-cookies` — cookie inventory, consent mechanism, browser instructions
+- [x] Cookie consent banner with accept/reject (gates GA4 behind consent)
+- [x] GA4 loads only after explicit user consent (GDPR compliant)
+- [x] "Gestionar cookies" button in footer to revoke consent
+- [x] Legal links in footer (Aviso legal, Privacidad, Cookies)
+
+---
+
+## Phase 1: SEO Foundation ⏳ IN PROGRESS
+
+### 1.1 — Technical SEO Fixes (partially done)
+- [x] Convert homepage from pure CSR → hybrid SSR (hero + stats SSR, map CSR)
+- [~] Add `<link rel="canonical">` on all pages (~32 pages done, ~20 pages missing)
 - [ ] Switch `force-dynamic` pages to ISR (`revalidate = 3600`) where data is slow-changing
 - [ ] Improve Core Web Vitals: lazy-load below-fold, optimize LCP
 
-### 1.2 — High-Volume Landing Pages
-- [ ] `/precio-gasolina-hoy` — daily prices, province breakdown, 30d chart (~150K/mo searches)
-- [ ] `/precio-diesel-hoy` — same for diesel (~90K/mo)
-- [ ] `/radares` — top-level dedicated radar map page (~35K/mo)
-- [ ] `/camaras/[city]` — per-city camera pages for top 20 cities
-- [ ] `/zbe/[city]` — per-city ZBE pages for ZBE cities (~30K/mo)
-- [ ] `/gasolineras/baratas/[province]` — cheapest per province
+### 1.2 — High-Volume Landing Pages ✅ COMPLETE
+- [x] `/precio-gasolina-hoy` — daily prices, province breakdown, 30d chart, FAQ schema
+- [x] `/precio-diesel-hoy` — same for diesel
+- [x] `/radares` — top-level dedicated radar map page + `/radares/[road]`
+- [x] `/camaras/[city]` — per-city camera pages
+- [x] `/zbe/[city]` — per-city ZBE pages with FAQ + AdministrativeArea schema
+- [x] `/gasolineras/baratas/[city]` — cheapest per city
 
-### 1.3 — DGT-Stolen Features (high SEO impact)
-- [ ] `/operaciones` — Operaciones especiales: Semana Santa, puentes, operación salida/retorno calendar
-- [ ] `/restricciones` — Heavy vehicle + seasonal circulation restrictions by date/road
-- [ ] `/puntos-negros` — Accident black spots map (we have HistoricalAccidents + RiskZone data)
+### 1.3 — DGT-Stolen Features (mostly done)
+- [x] `/operaciones` — Operaciones especiales + seasonal campaign pages
+- [x] `/restricciones` — Heavy vehicle + seasonal circulation restrictions
+- [x] `/puntos-negros` — Accident black spots with FAQ schema + province breakdown
 - [ ] `/ciclistas` — Safe cycling routes from DGT data
 
-### 1.4 — Internal Linking & Structured Data
-- [ ] Build internal link mesh: road→cameras, province→fuel, city→ZBE/EV/fuel
-- [ ] Add breadcrumbs to all pages (currently only road detail)
-- [ ] Add FAQ sections with `FAQPage` schema on high-value pages
-- [ ] `GasStation` + `LocalBusiness` schema on station pages
+### 1.4 — Internal Linking & Structured Data (mostly done)
+- [x] Build internal link mesh: RelatedLinks component on 16+ pages
+- [x] Add breadcrumbs on ~30 pages via Breadcrumbs component
+- [x] FAQ sections with `FAQPage` schema on 10+ high-value pages
+- [x] `GasStation` + `LocalBusiness` schema on station pages
 - [ ] `Place` + `amenityFeature` on EV charger pages
-- [ ] `City`/`Place` with `geo` on city pages
+- [ ] `City`/`Place` with `geo` on city pages (partial: ZBE has it, others don't)
 
 ---
 
@@ -71,7 +91,7 @@
 
 ### 2.1 — Ad Infrastructure
 - [ ] Integrate Setupad or Ezoic (not vanilla AdSense)
-- [ ] Ad placements: sidebar desktop, between-section mobile, sticky footer
+- [x] Ad placements: sidebar desktop, between-section mobile, sticky footer
 - [ ] Lazy-load ads below fold for CWV
 
 ### 2.2 — Affiliate Widgets
@@ -95,18 +115,18 @@
 - [ ] Per-municipality pages (~8,000): local fuel, nearest cameras, ZBE, incidents
 - [ ] Road segment pages: per-province breakdowns for major roads
 
-### 3.2 — Blog / Editorial
-- [ ] `/blog` section with MDX support
-- [ ] Seasonal: "Tráfico Semana Santa 2026", "Operación salida verano", "Nuevos radares DGT 2026"
-- [ ] Evergreen: "Cómo funciona la baliza V16", "Guía ZBE España", "Mejores apps tráfico"
-- [ ] Target: 2-4 articles/month for Google Discover
+### 3.2 — Blog / Editorial ✅ COMPLETE (TSX-based, not MDX)
+- [x] `/blog` section with article grid + per-article pages
+- [x] 6 articles: Semana Santa 2026, Nuevos radares DGT, Baliza V16, ZBE guía, Diesel o gasolina, Ahorrar gasolina
+- [x] Seasonal + evergreen content mix
+- [ ] Target: 2-4 articles/month for Google Discover (ongoing)
 
 ---
 
 ## Phase 4: Product Features (weeks 8-16)
 
 ### 4.1 — User Engagement
-- [ ] PWA manifest + offline radar/camera data
+- [x] PWA manifest + offline page
 - [ ] Push notifications: "Diesel baja de €1.30 en tu provincia"
 - [ ] Price alert subscriptions (free tier: 1 alert)
 - [ ] Saved routes with incident notifications
@@ -158,7 +178,8 @@
 | Phase | Timeline | Monthly Revenue | Driver |
 |-------|----------|----------------|--------|
 | Phase 0 ✅ | Done | €0 | Brand independence |
-| Phase 1 | Weeks 1-2 | €0 | SEO foundation + DGT stolen features |
+| Phase 0.5 ✅ | Done | €0 | Legal compliance + repo docs |
+| Phase 1 ⏳ | In progress | €0 | SEO foundation + DGT stolen features |
 | Phase 2 | Weeks 3-4 | €500-2,000 | Ads + first affiliate |
 | Phase 3 | Weeks 5-8 | €2,000-5,000 | Programmatic scale + sponsored |
 | Phase 4 | Weeks 8-16 | €5,000-15,000 | Professional tier + API |
@@ -175,32 +196,28 @@
 
 ---
 
-## Blitz Session Plan
+## Remaining Blitz Sessions
 
-Each row = one `/blitz` session, sized for ~1-2 hours.
+Updated to reflect actual state. Only remaining work listed.
 
 | # | Session | Phase | Depends | Est. |
 |---|---------|-------|---------|------|
-| S01 | `seo-technical-fixes` | 1.1 | — | 1h |
-| S02 | `fuel-price-pages` | 1.2a | — | 1.5h |
-| S03 | `radar-camera-zbe-pages` | 1.2b | — | 1.5h |
-| S04 | `dgt-operaciones-restricciones` | 1.3a | — | 2h |
-| S05 | `dgt-puntos-negros-ciclistas` | 1.3b | — | 1.5h |
-| S06 | `internal-linking-schema` | 1.4 | S01 | 1h |
-| S07 | `ad-infrastructure` | 2.1 | S01 | 1h |
+| S01 | `seo-remaining-fixes` | 1.1 | — | 1h |
+| S05b | `ciclistas-page` | 1.3 | — | 1h |
+| S06b | `ev-city-schema` | 1.4 | — | 0.5h |
+| S07 | `ad-infrastructure` | 2.1 | — | 1h |
 | S08 | `affiliate-widgets` | 2.2-2.3 | S07 | 1h |
-| S09 | `programmatic-stations` | 3.1a | S02 | 2h |
+| S09 | `programmatic-stations` | 3.1a | — | 2h |
 | S10 | `programmatic-municipalities` | 3.1b | S09 | 2h |
-| S11 | `blog-engine` | 3.2 | — | 1h |
 | S12 | `pwa-notifications` | 4.1 | — | 1.5h |
-| S13 | `route-calculator` | 4.2 | S02 | 2h |
+| S13 | `route-calculator` | 4.2 | — | 2h |
 | S14 | `professional-tier` | 4.3 | S13 | 2h |
 | S15 | `public-api` | 4.4 | S14 | 1.5h |
 
-### Parallel Groups (independent, can run simultaneously)
+### Parallel Groups
 
-- **Group A:** S01, S02, S03, S04, S05, S11 (all independent)
-- **Group B:** S06, S07 (after S01)
-- **Group C:** S08, S09 (after S07/S02)
-- **Group D:** S10, S12, S13 (after S09)
-- **Group E:** S14, S15 (after S13/S14)
+- **Group A:** S01, S05b, S06b, S07 (all independent)
+- **Group B:** S08 (after S07)
+- **Group C:** S09, S12, S13 (independent)
+- **Group D:** S10, S14 (after S09/S13)
+- **Group E:** S15 (after S14)

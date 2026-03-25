@@ -380,12 +380,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
-    // About
+    // About & Legal
     {
       url: `${BASE_URL}/sobre`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/aviso-legal`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/politica-privacidad`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/politica-cookies`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
     },
     // Blog index
     {

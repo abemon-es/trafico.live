@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Exo_2, DM_Sans, JetBrains_Mono } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
+import { CookieConsent } from "@/components/legal/CookieConsent";
 import { StructuredData, generateOrganizationSchema } from "@/components/seo/StructuredData";
 import "./globals.css";
-
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -107,6 +105,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}`,
+          }}
+        />
+      </head>
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
@@ -115,8 +120,8 @@ export default function RootLayout({
         {children}
         <StickyFooterAd />
         <Footer />
+        <CookieConsent />
       </body>
-      {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
     </html>
   );
 }

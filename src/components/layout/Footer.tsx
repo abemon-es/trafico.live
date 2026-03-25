@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsButton } from "@/components/legal/CookieConsent";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -176,6 +177,21 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/aviso-legal" className="text-gray-600 hover:text-gray-900">
+                  Aviso legal
+                </Link>
+              </li>
+              <li>
+                <Link href="/politica-privacidad" className="text-gray-600 hover:text-gray-900">
+                  Privacidad
+                </Link>
+              </li>
+              <li>
+                <Link href="/politica-cookies" className="text-gray-600 hover:text-gray-900">
+                  Cookies
+                </Link>
+              </li>
+              <li>
                 <Link href="/sitemap.xml" className="text-gray-600 hover:text-gray-900">
                   Mapa del sitio
                 </Link>
@@ -204,9 +220,13 @@ export function Footer() {
               </span>
             </div>
           </div>
-          <p className="text-center text-xs text-gray-400 mt-4">
-            &copy; {currentYear} trafico.live. Todos los derechos reservados.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-4">
+            <p className="text-xs text-gray-400">
+              &copy; {currentYear} trafico.live. Todos los derechos reservados.
+            </p>
+            <span className="hidden sm:inline text-gray-300">·</span>
+            <CookieSettingsButton />
+          </div>
         </div>
       </div>
     </footer>
