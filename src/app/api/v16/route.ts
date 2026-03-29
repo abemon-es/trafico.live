@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
@@ -11,6 +12,13 @@ export async function GET(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
+    // Check Redis cache first
+    const cacheKey = "api:v16:active";
+    const cached = await getFromCache<object>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     // Query active V16 beacons from database (stored by v16-collector every 5 min)
     const dbBeacons = await prisma.v16BeaconEvent.findMany({
       where: { isActive: true },
@@ -54,7 +62,7 @@ export async function GET(request: NextRequest) {
         )
       : new Date();
 
-    return NextResponse.json({
+    const response = {
       count: dbBeacons.length,
       lastUpdated: latestFetch.toISOString(),
       source: "database",
@@ -71,7 +79,12 @@ export async function GET(request: NextRequest) {
         province: b.provinceName,
         community: b.communityName,
       })),
-    });
+    };
+
+    // Cache for 60s — matches ISR revalidate
+    await setInCache(cacheKey, response, 60);
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching V16 beacons from database:", error);
     return NextResponse.json(

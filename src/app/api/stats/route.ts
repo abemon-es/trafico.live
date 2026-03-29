@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
@@ -37,6 +38,13 @@ export async function GET(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
+    // Check Redis cache first — this endpoint runs 13 parallel DB queries
+    const cacheKey = "api:stats:all";
+    const cached = await getFromCache<Stats>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     // Query current counts from database in parallel
     const [
       v16Count,
@@ -221,6 +229,9 @@ export async function GET(request: NextRequest) {
       byIncidentType,
       historical,
     };
+
+    // Cache for 60s — saves 13 DB queries per request
+    await setInCache(cacheKey, stats, 60);
 
     return NextResponse.json(stats);
   } catch (error) {

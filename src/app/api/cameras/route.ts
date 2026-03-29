@@ -10,7 +10,7 @@ import {
 import { getFromCache, setInCache } from "@/lib/redis";
 
 const CACHE_KEY_PREFIX = "api:cameras";
-const CACHE_TTL = 3600; // 1 hour — cameras rarely change
+const CACHE_TTL = 300; // 5 min — aligned with ISR revalidate to prevent stale Redis overriding ISR
 
 // Cache the response for 5 minutes
 export const revalidate = 300;
