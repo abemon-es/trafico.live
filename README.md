@@ -137,7 +137,7 @@ trafico.live/
 │   ├── migrations/           # Migration history
 │   └── seed.ts               # Reference data seed
 ├── scripts/                  # One-off import and maintenance scripts
-├── railway.toml              # Railway deployment config (compatibility)
+├── railway.toml              # Legacy deployment config (kept for reference)
 └── next.config.ts            # Next.js configuration
 ```
 
@@ -166,7 +166,7 @@ The production instance runs on **Coolify** (self-hosted PaaS) on a **Hetzner** 
 - PostgreSQL and Redis run as Coolify-managed services on the same host
 - Background collector services run as separate Coolify applications, each connecting to the shared database
 
-A `railway.toml` is maintained at the project root for Railway.app compatibility if a cloud migration is needed.
+A legacy `railway.toml` exists at the project root from the previous Railway deployment (migrated to Coolify).
 
 ### Build command
 

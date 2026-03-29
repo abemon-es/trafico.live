@@ -56,7 +56,7 @@ Tested:
 | `/provincias` | `/espana` | ✅ 308 |
 | `trafico.abemon.es/*` | `trafico.logisticsexpress.es/*` | ❌ 404 |
 
-**Issue:** trafico.abemon.es returns 404. Domain configured in Cloudflare but NOT added as custom domain in Railway for the main dashboard service.
+**Issue:** trafico.abemon.es returns 404. Domain configured in Cloudflare but NOT added as custom domain in Coolify for the main dashboard service.
 
 ---
 
@@ -114,7 +114,7 @@ Tested:
 
 ## 3. Infrastructure Audit
 
-### 3.1 Railway Services
+### 3.1 Coolify Services
 
 | Component | Status |
 |-----------|--------|
@@ -197,7 +197,7 @@ All endpoints healthy with response times under 1 second.
 
 | # | Issue | Action |
 |---|-------|--------|
-| 1 | trafico.abemon.es returns 404 | Add as custom domain in Railway dashboard |
+| 1 | trafico.abemon.es returns 404 | Add as custom domain in Coolify dashboard |
 
 ### Recommended
 
@@ -210,11 +210,11 @@ All endpoints healthy with response times under 1 second.
 ### Manual Steps Required
 
 **To fix trafico.abemon.es redirect:**
-1. Go to Railway dashboard: https://railway.com/project/trafico-espana
+1. Go to Coolify dashboard for trafico-espana project
 2. Select the main dashboard service (not gas-station-collector)
 3. Settings → Domains → Add Custom Domain
 4. Add: `trafico.abemon.es`
-5. Verify DNS (should already be pointing to Railway via Cloudflare)
+5. Verify DNS (should already be pointing to Coolify via Cloudflare)
 
 ---
 
@@ -234,7 +234,7 @@ src/lib/api-utils.ts  | +29 lines (CORS fix)
 ## 8. Next Steps
 
 1. **Deploy changes** - Push security fixes to production
-2. **Add trafico.abemon.es** - Configure in Railway dashboard
+2. **Add trafico.abemon.es** - Configure in Coolify dashboard
 3. **Monitor** - Check logs for any issues after deploy
 4. **Consider** - Evaluate xlsx replacement for long-term security
 

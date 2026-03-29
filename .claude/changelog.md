@@ -19,16 +19,16 @@
 - fix: add noStore() to carreteras pages for dynamic rendering  Ensures database queries are not attempted during static generation.
 - feat(gasolineras): add maritime station statistics section  Add dedicated price statistics for maritime fuel stations including: - Average/min/max prices for Gasóleo A, Gasóleo B, and Gasolina 95 - Cheapest maritime stations list with links to detail pages - Maritime-specific styling with blue accen
 - fix(gasolineras): show gas stations by default on /gasolineras/mapa  - Add initialLayers prop with gasStations and maritimeStations enabled - Disable all other layers (v16, incidents, weather, highways, etc.) - Update instructions since layer activation is no longer needed
-- fix: mark remaining database-dependent pages as dynamic for Railway build  Pages using Prisma queries need dynamic rendering since Railway's internal database hostname is only accessible at runtime, not during build.  Added dynamic = 'force-dynamic' to: - carreteras category pages (autopistas, autov
-- fix: mark remaining database-dependent pages as dynamic for Railway build  Pages using Prisma queries need dynamic rendering since Railway's internal database hostname is only accessible at runtime, not during build.  Added dynamic = 'force-dynamic' to: - carreteras category pages (autopistas, autov
+- fix: mark remaining database-dependent pages as dynamic for production build  Pages using Prisma queries need dynamic rendering since the internal database hostname is only accessible at runtime, not during build.  Added dynamic = 'force-dynamic' to: - carreteras category pages (autopistas, autov
+- fix: mark remaining database-dependent pages as dynamic for production build  Pages using Prisma queries need dynamic rendering since the internal database hostname is only accessible at runtime, not during build.  Added dynamic = 'force-dynamic' to: - carreteras category pages (autopistas, autov
 - feat: add security improvements and health check endpoint  Security improvements: - Add health check endpoint (/api/health) with DB and collector monitoring - Fix error info disclosure in roads/catalog API (remove error.message) - Add input validation for incidents API (whitelist effect/cause/source
-- feat: implement rate limiting with Railway Redis  Rate limiting infrastructure: - Add Redis client with connection pooling and error handling (src/lib/redis.ts) - Add rate limiter with 3 tiers: api (100/min), expensive (30/min), strict (10/min) - Add api-utils with IP extraction, CORS, and security
+- feat: implement rate limiting with Redis  Rate limiting infrastructure: - Add Redis client with connection pooling and error handling (src/lib/redis.ts) - Add rate limiter with 3 tiers: api (100/min), expensive (30/min), strict (10/min) - Add api-utils with IP extraction, CORS, and security
 - feat: promote Gasolineras to primary nav, demote Mapa to dropdown  Gasolineras works well but was hidden in "Más" dropdown. Mapa link has issues, so moved to dropdown.
-- fix: add noStore() to road category pages for reliable dynamic rendering  Fixes Railway build failure on /carreteras/* pages where Next.js 16 Turbopack was attempting to prerender despite force-dynamic. The unstable_noStore() function reliably opts out of static generation.
-- fix(weather-collector): use local Dockerfile with service-level root  Updated weather-collector to match gas-station-collector pattern: - Copy schema.prisma and prisma.config.ts locally - Use relative paths in Dockerfile - Use DOCKERFILE builder in railway.toml  Requires Railway service root directo
+- fix: add noStore() to road category pages for reliable dynamic rendering  Fixes build failure on /carreteras/* pages where Next.js 16 Turbopack was attempting to prerender despite force-dynamic. The unstable_noStore() function reliably opts out of static generation.
+- fix(weather-collector): use local Dockerfile with service-level root  Updated weather-collector to match gas-station-collector pattern: - Copy schema.prisma and prisma.config.ts locally - Use relative paths in Dockerfile - Use DOCKERFILE builder in deployment config  Requires service root directo
 - chore(weather-collector): force cache bust
-- fix(weather-collector): use repo-root paths in Dockerfile  Railway wasn't reading the updated Dockerfile with service-level root. Changed approach: build context is repo root, Dockerfile uses full paths.
-- fix(weather-collector): rename Dockerfile to bust Railway cache
+- fix(weather-collector): use repo-root paths in Dockerfile  Build system wasn't reading the updated Dockerfile with service-level root. Changed approach: build context is repo root, Dockerfile uses full paths.
+- fix(weather-collector): rename Dockerfile to bust build cache
 - feat: separate tax-free zones from national fuel price statistics  - Add TAX_FREE_PROVINCES constant (Ceuta, Melilla, Las Palmas, Santa Cruz de Tenerife) - Filter national stats to exclude tax-free zones for fair comparison - Add new "tax-free" scope in aggregator for combined special territories st
 - fix: add security headers and restrict CORS origins  - Add comprehensive security headers (CSP, HSTS, X-Frame-Options, etc.) - Replace wildcard CORS with explicit allowed origins whitelist - Update hono to fix JWT algorithm confusion vulnerabilities - Update prisma to 7.3.0
 - feat: add fuel price history API endpoint  - Add /api/fuel-prices/history for historical price analysis - Support querying by scope (national, province, community, road) - Support date range up to 365 days - Include period statistics (avg, min, max, change) - Support comparison between two scopes -
@@ -37,17 +37,17 @@
 - fix: add OpenMapTiles fonts and worker-src to CSP  - Add fonts.openmaptiles.org to font-src and connect-src for map labels - Add worker-src for MapLibre web workers - Remove unused Mapbox domains
 - feat: Add complete gas stations integration with MINETUR API  - Add Prisma models for GasStation, MaritimeStation, price history and daily stats - Create gas-station-collector service for fetching data from MINETUR API - Add API routes for gas stations, maritime stations, and fuel prices - Create /g
 - fix: Update gas station collectors for Prisma 7 adapter and correct API endpoints  - Use PrismaPg adapter in all collectors (collector.ts, maritime.ts, aggregator.ts) - Fix maritime API endpoint: PostesMaritimos/ instead of EstacionesMaritimas/ - Fix maritime field mappings: IDPosteMaritimo, Rótulo,
-- fix: Update gas-station-collector for Railway deployment  - Add missing pg and @prisma/adapter-pg dependencies - Update railway.toml with correct builder and cronSchedule format - Update Dockerfile to use main project's package.json - Match configuration pattern from working collectors
-- fix: Make gas-station-collector self-contained for Railway  - Copy prisma schema into service directory - Update Dockerfile to use local paths - Update railway.toml to use local Dockerfile path - Service can now be deployed standalone with --path-as-root
-- fix: Use UTC dates consistently for fuel price stats  Fix timezone mismatch between collector (local time) and Railway server (UTC). All date calculations now use Date.UTC() to ensure consistent date handling: - aggregator.ts: UTC date for daily stats - collector.ts: UTC date for price history - mar
-- fix: Add error handling for database queries during build  Pages that query the database now handle errors gracefully during the build phase when the database is not accessible (Railway internal network).  - autopistas/page.tsx: Try-catch around database queries - autovias/page.tsx: Try-catch around
+- fix: Update gas-station-collector for deployment  - Add missing pg and @prisma/adapter-pg dependencies - Update deployment config with correct builder and cronSchedule format - Update Dockerfile to use main project's package.json - Match configuration pattern from working collectors
+- fix: Make gas-station-collector self-contained for Coolify  - Copy prisma schema into service directory - Update Dockerfile to use local paths - Update deployment config to use local Dockerfile path - Service can now be deployed standalone with --path-as-root
+- fix: Use UTC dates consistently for fuel price stats  Fix timezone mismatch between collector (local time) and server (UTC). All date calculations now use Date.UTC() to ensure consistent date handling: - aggregator.ts: UTC date for daily stats - collector.ts: UTC date for price history - mar
+- fix: Add error handling for database queries during build  Pages that query the database now handle errors gracefully during the build phase when the database is not accessible (internal network).  - autopistas/page.tsx: Try-catch around database queries - autovias/page.tsx: Try-catch around
 - restore: cron schedule for gas-station-collector  Internal database connection verified working. Restore 3x daily schedule (7:00, 14:00, 21:00 Madrid time).
 - feat: complete gasolineras integration with navigation, carreteras, and maps  - Add Gasolineras link to header "Más" dropdown with Fuel icon - Add Gasolineras section to footer with 5 links (5-column layout) - Add gasolineras section to carreteras detail page:   - Fetch gas stations by nearestRoad
 - feat: add rate limiting to expensive API endpoints  Apply rate limiting to 10 high-priority routes: - /api/gas-stations/cheapest (strict: 10 req/min) - /api/stats (expensive: 30 req/min) - /api/rankings (expensive: 30 req/min) - /api/historico/* endpoints (expensive: 30 req/min)  This prevents abuse
 - fix: increase priceGasoleoB precision for maritime bulk pricing  MINETUR API returns Gasoleo B prices per 1000L for fishing ports (values 548-1059 EUR), exceeding Decimal(5,3) max of 99.999.  Changed MaritimeStation.priceGasoleoB from Decimal(5,3) to Decimal(7,3).
-- chore: add prisma migrate deploy to build script  Ensures database migrations run automatically on Railway deploy.
+- chore: add prisma migrate deploy to build script  Ensures database migrations run automatically on deploy.
 - revert: remove prisma migrate from build (no db access during build)  Will use db push instead for schema sync.
-- revert: remove prisma migrate from build  Build environment can't access Railway internal database. Will apply migration manually via db push.
+- revert: remove prisma migrate from build  Build environment can't access internal database. Will apply migration manually via db push.
 - fix: add schema sync to collector and update schema  - Add prisma db push to collector startup to sync schema - Update collector schema.prisma with priceGasoleoB fix (Decimal 7,3) - Fixes numeric overflow for maritime bulk fuel prices
 - fix: normalize maritime Gasoleo B prices to per-liter  MINETUR API reports Gasoleo B for fishing ports in bulk pricing (per 1000L). This normalizes the display to per-liter pricing to match other fuel types.  - API: Divides priceGasoleoB by 1000 if > 10€ - Detail page: Same normalization with (pesqu
 - fix: normalize maritime Gasoleo B prices to per-litre  MINETUR API returns Gasoleo B for fishing ports in bulk pricing (per 1000L, e.g., 626€). Now normalized to per-litre (0.626€/L) for consistent display with other fuel types.  - Added parseBulkPrice() function to convert bulk→per-litre - Reverted
@@ -60,19 +60,19 @@
 ## 2026-01-25
 
 - feat: rebrand to Logistics Express (trafico.logisticsexpress.es)  - Update color palette from red to Logistics Express green (#006633, #39a935) - Add Logistics Express branding to header with link to logisticsexpress.es - Update meta tags, OG tags, and author info for new domain - Add middleware for
-- feat: add GA4 analytics support with @next/third-parties  - Install @next/third-parties package - Add GoogleAnalytics component to layout (conditional on env var) - Reads NEXT_PUBLIC_GA_MEASUREMENT_ID from environment  To enable: Add NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX in Railway
+- feat: add GA4 analytics support with @next/third-parties  - Install @next/third-parties package - Add GoogleAnalytics component to layout (conditional on env var) - Reads NEXT_PUBLIC_GA_MEASUREMENT_ID from environment  To enable: Add NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX in Coolify
 - feat: complete Logistics Express rebrand  - Header: replace car icon with Logistics Express logo - Footer: dual branding (abemonFLOW™ Engine + Logistics Express) - /sobre page: dual tech/operator sections with LE contact info - Update User-Agent headers to new domain
 - fix: update logo to dark version for white background
 
 ## 2026-01-21
 
-- feat: add backup cron service for PostgreSQL  - Daily backups at 3am Madrid time via Railway cron - Dual destination: Cloudflare R2 + Google Drive - Retention policy: 7 daily + 4 weekly + 3 monthly - Alpine-based Docker image with pg_dump, rclone, python
+- feat: add backup cron service for PostgreSQL  - Daily backups at 3am Madrid time via Coolify cron - Dual destination: Cloudflare R2 + Google Drive - Retention policy: 7 daily + 4 weekly + 3 monthly - Alpine-based Docker image with pg_dump, rclone, python
 - fix: use pip for Google API libraries instead of Alpine packages
 - fix: show pg_dump errors for debugging
-- fix: use PostgreSQL 17 client to match Railway server version  Railway Postgres is v17.7, need pg_dump v17+ to dump.
-- fix: use postgres:17-bookworm image for pg_dump v17 compatibility  Railway Postgres is v17.7, Alpine only has pg_dump v16. Using official postgres:17 image ensures version match.
+- fix: use PostgreSQL 17 client to match server version  PostgreSQL server is v17.7, need pg_dump v17+ to dump.
+- fix: use postgres:17-bookworm image for pg_dump v17 compatibility  PostgreSQL server is v17.7, Alpine only has pg_dump v16. Using official postgres:17 image ensures version match.
 - fix: continue to Drive upload even if R2 fails  R2 credentials issue being investigated separately. Backup succeeds if at least one destination works.
-- feat: add v16-collector cron service for historical baliza data  - Add lifecycle fields to V16BeaconEvent (firstSeenAt, lastSeenAt, durationSecs) - Create v16-collector Railway cron service (runs every 5 minutes) - Implement collector.ts: fetches from DGT API, tracks beacon lifecycle - Implement agg
+- feat: add v16-collector cron service for historical baliza data  - Add lifecycle fields to V16BeaconEvent (firstSeenAt, lastSeenAt, durationSecs) - Create v16-collector Coolify cron service (runs every 5 minutes) - Implement collector.ts: fetches from DGT API, tracks beacon lifecycle - Implement agg
 - fix: remove postinstall from v16-collector package.json
 - fix: update Prisma version to match main app (7.2.0)
 - feat: add root-level Dockerfile for v16-collector
@@ -80,16 +80,16 @@
 - feat: add highway GeoJSON layer to map (A1-A7)  - Add public/geojson/highways.json with main Spanish highways - Add highways layer to TrafficMap with colored lines and labels - Add "Autovías" toggle button to map pages (home and /mapa) - Add cyan color option to LayerToggle component
 - feat: add interactive provinces layer to map  - Add public/geojson/provinces.json with all 52 Spanish provinces - Add provinces layer to TrafficMap with circles and labels - Add click handler to navigate to province page on click - Add "Provincias" toggle button to map pages
 - fix: pass DATABASE_URL explicitly to PrismaClient in v16-collector  Prisma 7.x requires explicit datasource configuration when prisma.config.ts is not present in the working directory.
-- chore: add Railway config to exclude services directory from build
+- chore: add build config to exclude services directory from build
 - chore: increase Node memory for build
 - chore: add debug flag to build
 - chore: limit build workers to 4
 - chore: exclude WIP pages from build
 - feat: refactor comunidad-autonoma pages for dynamic rendering  - Remove generateStaticParams from all community/province/city pages - Add API routes with force-dynamic for runtime data fetching - Create client content components using SWR for data fetching - Enable /comunidad-autonoma/* routes for p
 - feat: add incident-collector for Cataluña and País Vasco  - Create incident-collector service with SCT (DATEX II) and Euskadi (JSON) parsers - Normalize regional incidents to unified TrafficIncident table - Remove exclusion flags for Cataluña (09) and País Vasco (16) - Add Dockerfile.incident-collec
-- refactor: move incident-collector Dockerfile to service directory  Aligns with v16-collector pattern for Railway service detection.
+- refactor: move incident-collector Dockerfile to service directory  Aligns with v16-collector pattern for Coolify service detection.
 - chore: trigger deployment
-- fix: relocate incident-collector Dockerfile to project root  Match v16-collector pattern for Railway auto-detection.
+- fix: relocate incident-collector Dockerfile to project root  Match v16-collector pattern for Coolify auto-detection.
 - feat: serve SCT/Euskadi incidents from database in /api/incidents  Add regional incident data to the unified API endpoint: - Query database for active SCT and Euskadi incidents - Merge with live DGT NAP data in parallel - Map database IncidentType to API effect/cause fields - Gracefully handle parti
 - feat: database-first architecture for all API routes  - Add DGT parser to incident-collector (Phase 1) - Serve V16 beacons from database instead of live API (Phase 2) - Serve all incidents from database only (Phase 3) - Serve stats from database with breakdowns (Phase 4) - Add historical accident da
 - feat: expand data sources and fix parser gaps  Parser fixes: - dgt-parser: Extract municipality, causeType, detailedCauseType, managementType - sct-parser: Remove incorrect Barcelona province fallback - euskadi-parser: Add pagination support for active incidents  New integrations: - madrid-parser: R

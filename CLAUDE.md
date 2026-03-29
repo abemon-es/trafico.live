@@ -4,7 +4,7 @@ Real-time Spanish traffic intelligence platform. Aggregates data from DGT, AEMET
 
 **URL:** https://trafico.live
 **Brand:** `~/Desarrollos/.claude-brands/trafico-live.md`
-**Deployed on:** Railway
+**Deployed on:** Coolify
 
 ## Stack
 
