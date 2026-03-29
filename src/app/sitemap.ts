@@ -46,12 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 1.0,
     },
-    {
-      url: `${BASE_URL}/mapa`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-    },
+    // /mapa redirects to / — excluded from sitemap
     // Roads section
     {
       url: `${BASE_URL}/carreteras`,
@@ -96,12 +91,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.8,
     },
-    {
-      url: `${BASE_URL}/alertas`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-    },
+    // /alertas is a rewrite of /incidencias — excluded from sitemap to avoid duplicate content
     // Cameras
     {
       url: `${BASE_URL}/camaras`,
@@ -155,12 +145,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.8,
     },
-    {
-      url: `${BASE_URL}/provincias`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+    // /provincias redirects to /espana — excluded from sitemap
     {
       url: `${BASE_URL}/comunidad-autonoma`,
       lastModified: now,
@@ -193,12 +178,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 0.9,
     },
-    {
-      url: `${BASE_URL}/combustible`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-    },
+    // /combustible is a rewrite of /gasolineras — excluded from sitemap to avoid duplicate content
     {
       url: `${BASE_URL}/gasolineras/terrestres`,
       lastModified: now,
