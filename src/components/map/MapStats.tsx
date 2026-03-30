@@ -6,7 +6,7 @@ interface MapStatsProps {
   v16Count?: number;
   incidentCount?: number;
   cameraCount?: number;
-  lastUpdated?: Date;
+  lastUpdated?: Date | null;
   isLoading: boolean;
   isFullscreen?: boolean;
 }

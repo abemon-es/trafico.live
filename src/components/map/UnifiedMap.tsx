@@ -259,7 +259,7 @@ export function UnifiedMap({
   const pathname = usePathname();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [incidentViewMode, setIncidentViewMode] = useState<IncidentViewMode>("clusters");
@@ -380,6 +380,7 @@ export function UnifiedMap({
   } = useSWR<V16Response>("/api/v16", fetcher, {
     refreshInterval: 60000,
     revalidateOnFocus: true,
+    onSuccess: () => setLastUpdated(new Date()),
   });
 
   const {
@@ -389,42 +390,43 @@ export function UnifiedMap({
   } = useSWR<IncidentsResponse>("/api/incidents", fetcher, {
     refreshInterval: 60000,
     revalidateOnFocus: true,
+    onSuccess: () => setLastUpdated(new Date()),
   });
 
   const { data: camerasData } = useSWR<CamerasResponse>(
     activeLayers.cameras ? "/api/cameras" : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const { data: chargersData } = useSWR<ChargersResponse>(
     activeLayers.chargers ? "/api/chargers" : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const { data: weatherData } = useSWR<WeatherResponse>(
     activeLayers.weather ? "/api/weather" : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const { data: radarsData } = useSWR<RadarsResponse>(
     activeLayers.radars ? "/api/radars" : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 3600000 }
   );
 
   const { data: riskZonesData } = useSWR<RiskZonesResponse>(
     activeLayers.riskZones ? "/api/risk-zones" : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 3600000 }
   );
 
   const { data: zbeData } = useSWR<ZBEResponse>(
     activeLayers.zbe ? "/api/zbe" : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 3600000 }
   );
 
   // Build gas stations URL with filters
@@ -439,7 +441,7 @@ export function UnifiedMap({
   const { data: gasStationsData } = useSWR<GasStationsResponse>(
     gasStationsUrl,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 600000 }
   );
 
   // Build maritime stations URL with filters
@@ -453,7 +455,7 @@ export function UnifiedMap({
   const { data: maritimeStationsData } = useSWR<MaritimeStationsResponse>(
     maritimeStationsUrl,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 600000 }
   );
 
   const isLoading = v16Loading || incidentsLoading;
@@ -517,7 +519,6 @@ export function UnifiedMap({
   };
 
   const handleRefresh = () => {
-    setLastUpdated(new Date());
     mutateV16();
     mutateIncidents();
   };

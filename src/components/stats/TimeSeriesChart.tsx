@@ -94,10 +94,10 @@ export function TimeSeriesChart({
 
   // Transform API hourly data to chart format (last 48 hours from weekly pattern)
   const transformedHourlyData: HourlyDataPoint[] | undefined = hourlyApiData?.success
-    ? hourlyApiData.data.hourlyAverages.map((h: { hour: number; avgCount: number }) => ({
+    ? hourlyApiData.data.hourlyAverages.map((h: { hour: number; avgCount: number; avgIncidentCount?: number }) => ({
         time: `${h.hour.toString().padStart(2, "0")}:00`,
         v16: h.avgCount,
-        incidents: Math.round(h.avgCount * 0.4), // Estimate incidents as ~40% of V16
+        incidents: h.avgIncidentCount ?? 0,
       }))
     : undefined;
 

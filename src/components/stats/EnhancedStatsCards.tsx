@@ -141,7 +141,7 @@ function StatCard({
             ) : isNegative ? (
               <TrendingDown className="w-4 h-4" />
             ) : null}
-            <span className="font-data">{Math.abs(change)}%</span>
+            <span className="font-data">{change > 0 ? "+" : ""}{change}</span>
           </div>
         )}
       </div>
