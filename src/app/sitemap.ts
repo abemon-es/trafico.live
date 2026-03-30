@@ -9,9 +9,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // Shard size for paginated sitemaps
 const SHARD_SIZE = 5000;
 
-// ID ranges: 0 = core, 1-99 = gas stations, 100+ = municipalities
+// ID ranges: 0 = core, 1-99 = gas stations, 100-199 = municipalities, 200+ = postal codes
 const GAS_STATION_OFFSET = 1;
 const MUNICIPALITY_OFFSET = 100;
+const POSTAL_CODE_OFFSET = 200;
 
 /**
  * Generates sitemap index entries.
@@ -20,13 +21,19 @@ const MUNICIPALITY_OFFSET = 100;
  */
 export async function generateSitemaps() {
   try {
-    const [stationCount, municipalityCount] = await Promise.all([
+    const [stationCount, municipalityCount, postalCodeCount] = await Promise.all([
       prisma.gasStation.count(),
       prisma.municipality.count(),
+      prisma.gasStation.findMany({
+        select: { postalCode: true },
+        distinct: ["postalCode"],
+        where: { postalCode: { not: null } },
+      }).then((r) => r.length),
     ]);
 
     const stationShards = Math.max(1, Math.ceil(stationCount / SHARD_SIZE));
     const municipalityShards = Math.max(1, Math.ceil(municipalityCount / SHARD_SIZE));
+    const postalCodeShards = Math.max(1, Math.ceil(postalCodeCount / SHARD_SIZE));
 
     return [
       { id: 0 }, // Core pages
@@ -35,6 +42,9 @@ export async function generateSitemaps() {
       })),
       ...Array.from({ length: municipalityShards }, (_, i) => ({
         id: MUNICIPALITY_OFFSET + i,
+      })),
+      ...Array.from({ length: postalCodeShards }, (_, i) => ({
+        id: POSTAL_CODE_OFFSET + i,
       })),
     ];
   } catch {
@@ -51,7 +61,10 @@ export default async function sitemap({
   if (id >= GAS_STATION_OFFSET && id < MUNICIPALITY_OFFSET) {
     return gasStationSitemap(id - GAS_STATION_OFFSET);
   }
-  return municipalitySitemap(id - MUNICIPALITY_OFFSET);
+  if (id >= MUNICIPALITY_OFFSET && id < POSTAL_CODE_OFFSET) {
+    return municipalitySitemap(id - MUNICIPALITY_OFFSET);
+  }
+  return postalCodeSitemap(id - POSTAL_CODE_OFFSET);
 }
 
 // ---------------------------------------------------------------------------
@@ -321,6 +334,36 @@ async function municipalitySitemap(
       changeFrequency: "weekly" as const,
       priority: 0.5,
     }));
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Postal code sitemap shards
+// ---------------------------------------------------------------------------
+
+async function postalCodeSitemap(
+  shardIndex: number
+): Promise<MetadataRoute.Sitemap> {
+  try {
+    const postalCodes = await prisma.gasStation.findMany({
+      select: { postalCode: true },
+      distinct: ["postalCode"],
+      where: { postalCode: { not: null } },
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      orderBy: { postalCode: "asc" },
+    });
+
+    return postalCodes
+      .filter((p) => p.postalCode)
+      .map((p) => ({
+        url: `${BASE_URL}/codigo-postal/${p.postalCode}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.45,
+      }));
   } catch {
     return [];
   }
