@@ -9,10 +9,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // Shard size for paginated sitemaps
 const SHARD_SIZE = 5000;
 
-// ID ranges: 0 = core, 1-99 = gas stations, 100-199 = municipalities, 200+ = postal codes
+// ID ranges: 0 = core, 1-99 = gas stations, 100-199 = municipalities, 200-299 = postal codes, 300 = insights
 const GAS_STATION_OFFSET = 1;
 const MUNICIPALITY_OFFSET = 100;
 const POSTAL_CODE_OFFSET = 200;
+const INSIGHTS_OFFSET = 300;
 
 /**
  * Generates sitemap index entries.
@@ -46,6 +47,7 @@ export async function generateSitemaps() {
       ...Array.from({ length: postalCodeShards }, (_, i) => ({
         id: POSTAL_CODE_OFFSET + i,
       })),
+      { id: INSIGHTS_OFFSET }, // Insights (single shard — low volume)
     ];
   } catch {
     return [{ id: 0 }];
@@ -64,7 +66,10 @@ export default async function sitemap({
   if (id >= MUNICIPALITY_OFFSET && id < POSTAL_CODE_OFFSET) {
     return municipalitySitemap(id - MUNICIPALITY_OFFSET);
   }
-  return postalCodeSitemap(id - POSTAL_CODE_OFFSET);
+  if (id >= POSTAL_CODE_OFFSET && id < INSIGHTS_OFFSET) {
+    return postalCodeSitemap(id - POSTAL_CODE_OFFSET);
+  }
+  return insightsSitemap();
 }
 
 // ---------------------------------------------------------------------------
@@ -364,6 +369,37 @@ async function postalCodeSitemap(
         changeFrequency: "weekly" as const,
         priority: 0.45,
       }));
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Insights sitemap
+// ---------------------------------------------------------------------------
+
+async function insightsSitemap(): Promise<MetadataRoute.Sitemap> {
+  try {
+    const insights = await prisma.insight.findMany({
+      select: { slug: true, publishedAt: true, updatedAt: true },
+      orderBy: { publishedAt: "desc" },
+      take: SHARD_SIZE,
+    });
+
+    return [
+      {
+        url: `${BASE_URL}/insights`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 0.7,
+      },
+      ...insights.map((i) => ({
+        url: `${BASE_URL}/insights/${i.slug}`,
+        lastModified: i.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      })),
+    ];
   } catch {
     return [];
   }
