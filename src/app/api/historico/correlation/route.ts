@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -41,9 +42,16 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get("days") || "30", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "30", 10), 90);
     const maxDistanceKm = parseFloat(searchParams.get("maxDistance") || "2");
     const maxTimeDiffMinutes = parseInt(searchParams.get("maxTimeDiff") || "60", 10);
+
+    // Redis cache — 300s TTL to avoid recomputing the expensive correlation loop
+    const cacheKey = `correlation:${days}:${maxDistanceKm}:${maxTimeDiffMinutes}`;
+    const cached = await getFromCache<object>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -63,7 +71,7 @@ export async function GET(request: NextRequest) {
         roadNumber: true,
       },
       orderBy: { activatedAt: "desc" },
-      take: 5000, // Limit for performance
+      take: 2000,
     });
 
     // Get incidents with coordinates
@@ -82,64 +90,85 @@ export async function GET(request: NextRequest) {
         type: true,
       },
       orderBy: { startedAt: "desc" },
-      take: 5000, // Limit for performance
+      take: 2000,
     });
 
-    // Find correlations
+    // Pre-group both datasets by province to reduce comparisons from O(n²)
+    // to O(n * m/p) where p = number of provinces
+    const v16ByProvince = new Map<string, typeof v16Events>();
+    for (const v16 of v16Events) {
+      const prov = v16.provinceName || "_unknown";
+      if (!v16ByProvince.has(prov)) v16ByProvince.set(prov, []);
+      v16ByProvince.get(prov)!.push(v16);
+    }
+
+    const incidentsByProvince = new Map<string, typeof incidents>();
+    for (const inc of incidents) {
+      const prov = inc.provinceName || "_unknown";
+      if (!incidentsByProvince.has(prov)) incidentsByProvince.set(prov, []);
+      incidentsByProvince.get(prov)!.push(inc);
+    }
+
+    // Find correlations — only compare within the same province
     const correlations: CorrelationMatch[] = [];
     const v16WithCorrelation = new Set<string>();
     const incidentsWithCorrelation = new Set<string>();
 
-    for (const v16 of v16Events) {
-      if (!v16.latitude || !v16.longitude) continue;
+    for (const [prov, provV16s] of v16ByProvince) {
+      const provIncidents = incidentsByProvince.get(prov);
+      if (!provIncidents) continue;
 
-      for (const incident of incidents) {
-        if (!incident.latitude || !incident.longitude) continue;
+      for (const v16 of provV16s) {
+        if (!v16.latitude || !v16.longitude) continue;
 
-        // Calculate spatial distance
-        const distance = haversineDistance(
-          Number(v16.latitude),
-          Number(v16.longitude),
-          Number(incident.latitude),
-          Number(incident.longitude)
-        );
+        for (const incident of provIncidents) {
+          if (!incident.latitude || !incident.longitude) continue;
 
-        if (distance > maxDistanceKm) continue;
+          // Calculate spatial distance
+          const distance = haversineDistance(
+            Number(v16.latitude),
+            Number(v16.longitude),
+            Number(incident.latitude),
+            Number(incident.longitude)
+          );
 
-        // Calculate time difference (in minutes)
-        const v16Time = v16.activatedAt.getTime();
-        const incidentStart = incident.startedAt.getTime();
-        const incidentEnd = incident.endedAt?.getTime() || incidentStart + 3600000; // Default 1hr
+          if (distance > maxDistanceKm) continue;
 
-        // Check if V16 was activated during or near the incident
-        let timeDiffMinutes: number;
-        if (v16Time >= incidentStart && v16Time <= incidentEnd) {
-          // V16 was during the incident
-          timeDiffMinutes = 0;
-        } else if (v16Time < incidentStart) {
-          // V16 was before the incident
-          timeDiffMinutes = (incidentStart - v16Time) / 60000;
-        } else {
-          // V16 was after the incident ended
-          timeDiffMinutes = (v16Time - incidentEnd) / 60000;
+          // Calculate time difference (in minutes)
+          const v16Time = v16.activatedAt.getTime();
+          const incidentStart = incident.startedAt.getTime();
+          const incidentEnd = incident.endedAt?.getTime() || incidentStart + 3600000; // Default 1hr
+
+          // Check if V16 was activated during or near the incident
+          let timeDiffMinutes: number;
+          if (v16Time >= incidentStart && v16Time <= incidentEnd) {
+            // V16 was during the incident
+            timeDiffMinutes = 0;
+          } else if (v16Time < incidentStart) {
+            // V16 was before the incident
+            timeDiffMinutes = (incidentStart - v16Time) / 60000;
+          } else {
+            // V16 was after the incident ended
+            timeDiffMinutes = (v16Time - incidentEnd) / 60000;
+          }
+
+          if (timeDiffMinutes > maxTimeDiffMinutes) continue;
+
+          // This is a correlation
+          correlations.push({
+            v16Id: v16.id,
+            incidentId: incident.id,
+            distanceKm: Math.round(distance * 100) / 100,
+            timeDiffMinutes: Math.round(timeDiffMinutes),
+            v16Time: v16.activatedAt,
+            incidentTime: incident.startedAt,
+            province: v16.provinceName || incident.provinceName,
+            road: v16.roadNumber || incident.roadNumber,
+          });
+
+          v16WithCorrelation.add(v16.id);
+          incidentsWithCorrelation.add(incident.id);
         }
-
-        if (timeDiffMinutes > maxTimeDiffMinutes) continue;
-
-        // This is a correlation
-        correlations.push({
-          v16Id: v16.id,
-          incidentId: incident.id,
-          distanceKm: Math.round(distance * 100) / 100,
-          timeDiffMinutes: Math.round(timeDiffMinutes),
-          v16Time: v16.activatedAt,
-          incidentTime: incident.startedAt,
-          province: v16.provinceName || incident.provinceName,
-          road: v16.roadNumber || incident.roadNumber,
-        });
-
-        v16WithCorrelation.add(v16.id);
-        incidentsWithCorrelation.add(incident.id);
       }
     }
 
@@ -211,7 +240,7 @@ export async function GET(request: NextRequest) {
         road: c.road,
       }));
 
-    return NextResponse.json({
+    const responseBody = {
       success: true,
       data: {
         summary: {
@@ -234,7 +263,10 @@ export async function GET(request: NextRequest) {
           maxTimeDiffMinutes,
         },
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseBody, 300);
+    return NextResponse.json(responseBody);
   } catch (error) {
     console.error("Correlation API error:", error);
     return NextResponse.json(
