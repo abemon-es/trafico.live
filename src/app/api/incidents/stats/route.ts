@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -23,19 +24,35 @@ const SEVERITY_LABELS: Record<string, string> = {
   VERY_HIGH: "Muy Alta",
 };
 
+// Raw query result types
+type DailyRow = { date: string; count: bigint };
+type HourlyRow = { hour: bigint; total: bigint; days_count: bigint };
+type WeeklyRow = { dow: bigint; total: bigint; days_count: bigint };
+type HeatmapRow = { hour: bigint; day: bigint; total: bigint };
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get("days") || "30", 10);
+
+    // Redis cache — 300 s TTL
+    const cacheKey = `incidents:stats:${days}`;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // Calculate date range
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
 
-    // Run all queries in parallel
+    // Run all queries in parallel — no unbounded findMany
     const [
-      allIncidents,
+      totalIncidents,
+      avgDurationResult,
+      dailyRows,
+      hourlyRows,
+      weeklyRows,
+      heatmapRows,
       byType,
       byCause,
       bySource,
@@ -46,20 +63,65 @@ export async function GET(request: Request) {
       last7dCount,
       activeCount,
     ] = await Promise.all([
-      // Get all incidents for duration and daily trend calculation
-      prisma.trafficIncident.findMany({
+      // Total count — replaces allIncidents.length
+      prisma.trafficIncident.count({
+        where: { startedAt: { gte: startDate } },
+      }),
+
+      // Average duration — replaces manual reduce
+      prisma.trafficIncident.aggregate({
         where: {
           startedAt: { gte: startDate },
+          durationSecs: { not: null },
         },
-        select: {
-          startedAt: true,
-          endedAt: true,
-          durationSecs: true,
-          type: true,
-          causeType: true,
-        },
-        orderBy: { startedAt: "asc" },
+        _avg: { durationSecs: true },
       }),
+
+      // Daily trend: GROUP BY date
+      prisma.$queryRaw<DailyRow[]>`
+        SELECT
+          TO_CHAR("startedAt" AT TIME ZONE 'Europe/Madrid', 'YYYY-MM-DD') AS date,
+          COUNT(*) AS count
+        FROM "TrafficIncident"
+        WHERE "startedAt" >= ${startDate}
+        GROUP BY date
+        ORDER BY date ASC
+      `,
+
+      // Hourly pattern: aggregate by hour of day + distinct days per bucket
+      prisma.$queryRaw<HourlyRow[]>`
+        SELECT
+          EXTRACT(HOUR FROM "startedAt" AT TIME ZONE 'Europe/Madrid')::int AS hour,
+          COUNT(*) AS total,
+          COUNT(DISTINCT TO_CHAR("startedAt" AT TIME ZONE 'Europe/Madrid', 'YYYY-MM-DD')) AS days_count
+        FROM "TrafficIncident"
+        WHERE "startedAt" >= ${startDate}
+        GROUP BY hour
+        ORDER BY hour ASC
+      `,
+
+      // Weekly pattern: aggregate by day of week (0=Sun … 6=Sat)
+      prisma.$queryRaw<WeeklyRow[]>`
+        SELECT
+          EXTRACT(DOW FROM "startedAt" AT TIME ZONE 'Europe/Madrid')::int AS dow,
+          COUNT(*) AS total,
+          COUNT(DISTINCT TO_CHAR("startedAt" AT TIME ZONE 'Europe/Madrid', 'YYYY-MM-DD')) AS days_count
+        FROM "TrafficIncident"
+        WHERE "startedAt" >= ${startDate}
+        GROUP BY dow
+        ORDER BY dow ASC
+      `,
+
+      // Heatmap: hour × day
+      prisma.$queryRaw<HeatmapRow[]>`
+        SELECT
+          EXTRACT(HOUR FROM "startedAt" AT TIME ZONE 'Europe/Madrid')::int AS hour,
+          EXTRACT(DOW  FROM "startedAt" AT TIME ZONE 'Europe/Madrid')::int AS day,
+          COUNT(*) AS total
+        FROM "TrafficIncident"
+        WHERE "startedAt" >= ${startDate}
+        GROUP BY hour, day
+      `,
 
       // By incident type
       prisma.trafficIncident.groupBy({
@@ -127,17 +189,10 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    const totalIncidents = allIncidents.length;
-
-    // Calculate average duration (only for incidents with duration data)
-    const incidentsWithDuration = allIncidents.filter((i) => i.durationSecs !== null);
+    // Average duration in minutes (null if no data)
     const avgDurationMins =
-      incidentsWithDuration.length > 0
-        ? Math.round(
-            incidentsWithDuration.reduce((sum, i) => sum + (i.durationSecs || 0), 0) /
-              incidentsWithDuration.length /
-              60
-          )
+      avgDurationResult._avg.durationSecs != null
+        ? Math.round(avgDurationResult._avg.durationSecs / 60)
         : null;
 
     // Build by type with labels and percentages
@@ -204,81 +259,66 @@ export async function GET(request: Request) {
       count: item._count,
     }));
 
-    // Calculate daily trend
-    const dailyMap: Record<string, number> = {};
-    for (const incident of allIncidents) {
-      const date = incident.startedAt.toISOString().split("T")[0];
-      dailyMap[date] = (dailyMap[date] || 0) + 1;
-    }
+    // Daily trend — map raw rows (bigint coercion)
+    const dailyTrend = dailyRows.map((r) => ({
+      date: r.date,
+      count: Number(r.count),
+    }));
 
-    const dailyTrend = Object.entries(dailyMap)
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date));
-
-    // Calculate hourly pattern (aggregate by hour of day)
-    const hourlyMap: Record<number, { total: number; days: Set<string> }> = {};
+    // Hourly pattern — fill all 24 buckets
+    const hourlyMap: Record<number, { avgCount: number; totalCount: number }> = {};
     for (let h = 0; h < 24; h++) {
-      hourlyMap[h] = { total: 0, days: new Set() };
+      hourlyMap[h] = { avgCount: 0, totalCount: 0 };
     }
-
-    for (const incident of allIncidents) {
-      const hour = incident.startedAt.getHours();
-      const date = incident.startedAt.toISOString().split("T")[0];
-      hourlyMap[hour].total += 1;
-      hourlyMap[hour].days.add(date);
+    for (const r of hourlyRows) {
+      const h = Number(r.hour);
+      const total = Number(r.total);
+      const daysCount = Number(r.days_count);
+      hourlyMap[h] = {
+        totalCount: total,
+        avgCount: daysCount > 0 ? Math.round(total / daysCount) : 0,
+      };
     }
-
-    const hourlyPattern = Object.entries(hourlyMap).map(([hour, data]) => ({
-      hour: parseInt(hour, 10),
-      avgCount: data.days.size > 0 ? Math.round(data.total / data.days.size) : 0,
-      totalCount: data.total,
+    const hourlyPattern = Array.from({ length: 24 }, (_, h) => ({
+      hour: h,
+      ...hourlyMap[h],
     }));
 
-    // Calculate day of week pattern
-    const dayOfWeekMap: Record<number, { total: number; days: Set<string> }> = {};
-    for (let d = 0; d < 7; d++) {
-      dayOfWeekMap[d] = { total: 0, days: new Set() };
-    }
-
-    for (const incident of allIncidents) {
-      const dayOfWeek = incident.startedAt.getDay();
-      const date = incident.startedAt.toISOString().split("T")[0];
-      dayOfWeekMap[dayOfWeek].total += 1;
-      dayOfWeekMap[dayOfWeek].days.add(date);
-    }
-
+    // Weekly pattern — fill all 7 buckets
     const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const weeklyPattern = Object.entries(dayOfWeekMap).map(([day, data]) => ({
-      day: parseInt(day, 10),
-      dayName: dayNames[parseInt(day, 10)],
-      avgCount: data.days.size > 0 ? Math.round(data.total / data.days.size) : 0,
-      totalCount: data.total,
+    const weeklyMap: Record<number, { avgCount: number; totalCount: number }> = {};
+    for (let d = 0; d < 7; d++) {
+      weeklyMap[d] = { avgCount: 0, totalCount: 0 };
+    }
+    for (const r of weeklyRows) {
+      const d = Number(r.dow);
+      const total = Number(r.total);
+      const daysCount = Number(r.days_count);
+      weeklyMap[d] = {
+        totalCount: total,
+        avgCount: daysCount > 0 ? Math.round(total / daysCount) : 0,
+      };
+    }
+    const weeklyPattern = Array.from({ length: 7 }, (_, d) => ({
+      day: d,
+      dayName: dayNames[d],
+      ...weeklyMap[d],
     }));
 
-    // Build hour x day heatmap
-    const heatmapMatrix: Record<string, { total: number; count: number }> = {};
-    for (const incident of allIncidents) {
-      const hour = incident.startedAt.getHours();
-      const day = incident.startedAt.getDay();
-      const key = `${hour}-${day}`;
-      if (!heatmapMatrix[key]) {
-        heatmapMatrix[key] = { total: 0, count: 0 };
-      }
-      heatmapMatrix[key].total += 1;
-      heatmapMatrix[key].count += 1;
+    // Heatmap — pre-fill 24×7 matrix then overlay DB results
+    const daysInPeriod = Math.ceil(days / 7);
+    const heatmapLookup: Record<string, number> = {};
+    for (const r of heatmapRows) {
+      heatmapLookup[`${Number(r.hour)}-${Number(r.day)}`] = Number(r.total);
     }
-
     const heatmapData: Array<{ hour: number; day: number; value: number }> = [];
-    const daysInPeriod = Math.ceil(days / 7); // Approximate number of each weekday in period
-
     for (let hour = 0; hour < 24; hour++) {
       for (let day = 0; day < 7; day++) {
-        const key = `${hour}-${day}`;
-        const data = heatmapMatrix[key];
+        const total = heatmapLookup[`${hour}-${day}`] ?? 0;
         heatmapData.push({
           hour,
           day,
-          value: data ? Math.round(data.total / Math.max(daysInPeriod, 1)) : 0,
+          value: total > 0 ? Math.round(total / Math.max(daysInPeriod, 1)) : 0,
         });
       }
     }
@@ -293,7 +333,7 @@ export async function GET(request: Request) {
       weeklyPattern[0]
     );
 
-    return NextResponse.json({
+    const result = {
       success: true,
       data: {
         totals: {
@@ -319,7 +359,11 @@ export async function GET(request: Request) {
         provinceRanking,
         periodDays: days,
       },
-    });
+    };
+
+    await setInCache(cacheKey, result, 300);
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Incident stats API error:", error);
     return NextResponse.json(
