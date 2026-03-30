@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,20 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get("days") || "30", 10);
 
+    const cacheKey = `historico:map:${days}`;
+    const cached = await getFromCache<{
+      success: boolean;
+      data: {
+        beacons: BeaconMapData[];
+        clusters: { province: string; lat: number; lng: number; count: number }[];
+        count: number;
+        periodDays: number;
+      };
+    }>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     // Get V16 beacon events for the period
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -46,6 +61,7 @@ export async function GET(request: NextRequest) {
       orderBy: {
         activatedAt: "desc",
       },
+      take: 2000,
     });
 
     // Map severity to numeric weight for heatmap intensity
@@ -97,7 +113,7 @@ export async function GET(request: NextRequest) {
       count: data.count,
     }));
 
-    return NextResponse.json({
+    const response = {
       success: true,
       data: {
         beacons: mapBeacons,
@@ -105,7 +121,10 @@ export async function GET(request: NextRequest) {
         count: mapBeacons.length,
         periodDays: days,
       },
-    });
+    };
+
+    await setInCache(cacheKey, response, 300);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Historico map API error:", error);
     return NextResponse.json(

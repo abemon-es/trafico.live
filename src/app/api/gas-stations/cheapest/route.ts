@@ -47,45 +47,34 @@ export async function GET(request: NextRequest) {
       where.nearestRoad = road.toUpperCase();
     }
 
-    // Get cheapest for diesel
-    const cheapestDiesel = await prisma.gasStation.findMany({
-      where: {
-        ...where,
-        priceGasoleoA: { not: null },
-      },
-      orderBy: { priceGasoleoA: "asc" },
-      take: limit,
-    });
-
-    // Get cheapest for gasoline 95
-    const cheapestGas95 = await prisma.gasStation.findMany({
-      where: {
-        ...where,
-        priceGasolina95E5: { not: null },
-      },
-      orderBy: { priceGasolina95E5: "asc" },
-      take: limit,
-    });
-
-    // Get cheapest for gasoline 98
-    const cheapestGas98 = await prisma.gasStation.findMany({
-      where: {
-        ...where,
-        priceGasolina98E5: { not: null },
-      },
-      orderBy: { priceGasolina98E5: "asc" },
-      take: limit,
-    });
-
-    // Get cheapest for GLP
-    const cheapestGLP = await prisma.gasStation.findMany({
-      where: {
-        ...where,
-        priceGLP: { not: null },
-      },
-      orderBy: { priceGLP: "asc" },
-      take: limit,
-    });
+    // Fetch all 4 fuel types in parallel
+    const [cheapestDiesel, cheapestGas95, cheapestGas98, cheapestGLP] =
+      await Promise.all([
+        // Cheapest diesel
+        prisma.gasStation.findMany({
+          where: { ...where, priceGasoleoA: { not: null } },
+          orderBy: { priceGasoleoA: "asc" },
+          take: limit,
+        }),
+        // Cheapest gasoline 95
+        prisma.gasStation.findMany({
+          where: { ...where, priceGasolina95E5: { not: null } },
+          orderBy: { priceGasolina95E5: "asc" },
+          take: limit,
+        }),
+        // Cheapest gasoline 98
+        prisma.gasStation.findMany({
+          where: { ...where, priceGasolina98E5: { not: null } },
+          orderBy: { priceGasolina98E5: "asc" },
+          take: limit,
+        }),
+        // Cheapest GLP
+        prisma.gasStation.findMany({
+          where: { ...where, priceGLP: { not: null } },
+          orderBy: { priceGLP: "asc" },
+          take: limit,
+        }),
+      ]);
 
     const transform = (stations: typeof cheapestDiesel) =>
       stations.map((s) => ({

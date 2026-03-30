@@ -55,17 +55,76 @@ export async function GET(request: NextRequest) {
     // the issue entirely and is equally efficient.
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    // Raw SQL for hourly breakdown — only way to use EXTRACT with Prisma
-    const hourlyRaw = await prisma.$queryRaw<
-      Array<{ hour: number; count: bigint }>
-    >`
-      SELECT EXTRACT(HOUR FROM "startedAt")::int AS hour,
-             COUNT(*)::bigint AS count
-      FROM "TrafficIncident"
-      WHERE "startedAt" > ${startDate}
-      GROUP BY hour
-      ORDER BY hour
-    `;
+    // All 7 queries run in parallel
+    const [
+      hourlyRaw,
+      dailyRaw,
+      topRoadsRaw,
+      topProvincesRaw,
+      byTypeRaw,
+      totalActive,
+      totalHistoric,
+    ] = await Promise.all([
+      // Raw SQL for hourly breakdown — only way to use EXTRACT with Prisma
+      prisma.$queryRaw<Array<{ hour: number; count: bigint }>>`
+        SELECT EXTRACT(HOUR FROM "startedAt")::int AS hour,
+               COUNT(*)::bigint AS count
+        FROM "TrafficIncident"
+        WHERE "startedAt" > ${startDate}
+        GROUP BY hour
+        ORDER BY hour
+      `,
+
+      // Raw SQL for day-of-week breakdown
+      prisma.$queryRaw<Array<{ dow: number; count: bigint }>>`
+        SELECT EXTRACT(DOW FROM "startedAt")::int AS dow,
+               COUNT(*)::bigint AS count
+        FROM "TrafficIncident"
+        WHERE "startedAt" > ${startDate}
+        GROUP BY dow
+        ORDER BY dow
+      `,
+
+      // Top 15 roads
+      prisma.trafficIncident.groupBy({
+        by: ["roadNumber"],
+        where: {
+          startedAt: { gte: startDate },
+          roadNumber: { not: null },
+        },
+        _count: true,
+        orderBy: { _count: { roadNumber: "desc" } },
+        take: 15,
+      }),
+
+      // Top 15 provinces
+      prisma.trafficIncident.groupBy({
+        by: ["provinceName"],
+        where: {
+          startedAt: { gte: startDate },
+          provinceName: { not: null },
+        },
+        _count: true,
+        orderBy: { _count: { provinceName: "desc" } },
+        take: 15,
+      }),
+
+      // By incident type
+      prisma.trafficIncident.groupBy({
+        by: ["type"],
+        where: { startedAt: { gte: startDate } },
+        _count: true,
+        orderBy: { _count: { type: "desc" } },
+      }),
+
+      // Currently active
+      prisma.trafficIncident.count({ where: { isActive: true } }),
+
+      // Total in selected period
+      prisma.trafficIncident.count({
+        where: { startedAt: { gte: startDate } },
+      }),
+    ]);
 
     // Fill all 24 hours (some may have 0 incidents)
     const hourlyMap = new Map<number, number>(
@@ -76,18 +135,6 @@ export async function GET(request: NextRequest) {
       count: hourlyMap.get(h) ?? 0,
     }));
 
-    // Raw SQL for day-of-week breakdown
-    const dailyRaw = await prisma.$queryRaw<
-      Array<{ dow: number; count: bigint }>
-    >`
-      SELECT EXTRACT(DOW FROM "startedAt")::int AS dow,
-             COUNT(*)::bigint AS count
-      FROM "TrafficIncident"
-      WHERE "startedAt" > ${startDate}
-      GROUP BY dow
-      ORDER BY dow
-    `;
-
     const dowMap = new Map<number, number>(
       dailyRaw.map((r) => [r.dow, Number(r.count)])
     );
@@ -96,50 +143,6 @@ export async function GET(request: NextRequest) {
       day: DAY_NAMES[dow],
       count: dowMap.get(dow) ?? 0,
     }));
-
-    // Parallel Prisma groupBy queries (reuses startDate computed above)
-    const [topRoadsRaw, topProvincesRaw, byTypeRaw, totalActive, totalHistoric] =
-      await Promise.all([
-        // Top 15 roads
-        prisma.trafficIncident.groupBy({
-          by: ["roadNumber"],
-          where: {
-            startedAt: { gte: startDate },
-            roadNumber: { not: null },
-          },
-          _count: true,
-          orderBy: { _count: { roadNumber: "desc" } },
-          take: 15,
-        }),
-
-        // Top 15 provinces
-        prisma.trafficIncident.groupBy({
-          by: ["provinceName"],
-          where: {
-            startedAt: { gte: startDate },
-            provinceName: { not: null },
-          },
-          _count: true,
-          orderBy: { _count: { provinceName: "desc" } },
-          take: 15,
-        }),
-
-        // By incident type
-        prisma.trafficIncident.groupBy({
-          by: ["type"],
-          where: { startedAt: { gte: startDate } },
-          _count: true,
-          orderBy: { _count: { type: "desc" } },
-        }),
-
-        // Currently active
-        prisma.trafficIncident.count({ where: { isActive: true } }),
-
-        // Total in selected period
-        prisma.trafficIncident.count({
-          where: { startedAt: { gte: startDate } },
-        }),
-      ]);
 
     const topRoads = topRoadsRaw.map((r) => ({
       road: r.roadNumber ?? "Desconocido",

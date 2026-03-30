@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get("days") || "30", 10);
+
+    const cacheKey = `historico:duration:${days}`;
+    const cached = await getFromCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     // Get deactivated V16 beacon events with duration data
     const startDate = new Date();
@@ -29,6 +36,7 @@ export async function GET(request: NextRequest) {
         roadType: true,
         severity: true,
       },
+      take: 2000,
     });
 
     if (beaconsWithDuration.length === 0) {
@@ -129,7 +137,7 @@ export async function GET(request: NextRequest) {
       }))
       .sort((a, b) => b.avgDurationSecs - a.avgDurationSecs);
 
-    return NextResponse.json({
+    const response = {
       success: true,
       data: {
         stats: {
@@ -149,7 +157,10 @@ export async function GET(request: NextRequest) {
         byRoadType,
         periodDays: days,
       },
-    });
+    };
+
+    await setInCache(cacheKey, response, 300);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Historico duration API error:", error);
     return NextResponse.json(
