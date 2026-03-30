@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { resolveProvinceCode, mergeByResolvedProvince } from "@/lib/geo/province-normalize";
 
 export const dynamic = "force-dynamic";
 
@@ -118,9 +119,14 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
         _count: { id: true },
       });
 
-      const prevIncidentsMap = new Map(
-        incidentsByProvincePrev.map((i) => [i.province, i._count.id])
-      );
+      // Normalize previous-period map: resolve names → codes and sum duplicates
+      const prevIncidentsRaw = new Map<string, number>();
+      for (const i of incidentsByProvincePrev) {
+        const code = resolveProvinceCode(i.province) ?? i.province ?? "";
+        if (!code) continue;
+        prevIncidentsRaw.set(code, (prevIncidentsRaw.get(code) ?? 0) + i._count.id);
+      }
+      const prevIncidentsMap = prevIncidentsRaw;
 
       // Get V16 by province (current period)
       const v16ByProvince = await prisma.v16BeaconEvent.groupBy({
@@ -146,18 +152,50 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
           })
         : [];
 
+      // ---------------------------------------------------------------------------
+      // Normalize province codes: merge rows where the same province was stored
+      // as a name ("Madrid", "València/Valencia") instead of an INE code ("28", "46").
+      // ---------------------------------------------------------------------------
+
+      // incidents current period — merge duplicates into { resolvedCode, count }
+      const normalizedIncidents = mergeByResolvedProvince(
+        incidentsByProvince,
+        (i) => i.province,
+        (a, b) => ({ ...a, _count: { id: a._count.id + b._count.id } })
+      );
+
+      // V16 current period — same merge
+      const normalizedV16 = mergeByResolvedProvince(
+        v16ByProvince,
+        (v) => v.province,
+        (a, b) => ({ ...a, _count: { id: a._count.id + b._count.id } })
+      );
+
+      // Historical accidents — same merge
+      const normalizedAccidents = mergeByResolvedProvince(
+        accidentsByProvince,
+        (a) => a.province,
+        (a, b) => ({
+          ...a,
+          _sum: {
+            accidents: (a._sum.accidents ?? 0) + (b._sum.accidents ?? 0),
+            fatalities: (a._sum.fatalities ?? 0) + (b._sum.fatalities ?? 0),
+          },
+        })
+      );
+
       // Calculate rankings
 
       // By incidents total
-      const byIncidentsTotal: ProvinceRanking[] = incidentsByProvince
-        .map((i) => {
-          const provinceData = provinceMap.get(i.province || "");
-          const prevCount = prevIncidentsMap.get(i.province) || 0;
+      const byIncidentsTotal: ProvinceRanking[] = normalizedIncidents
+        .map(({ resolvedCode, row: i }) => {
+          const provinceData = provinceMap.get(resolvedCode);
+          const prevCount = prevIncidentsMap.get(resolvedCode) ?? 0;
           const change = prevCount > 0 ? ((i._count.id - prevCount) / prevCount) * 100 : null;
           return {
             rank: 0,
-            provinceCode: i.province || "",
-            provinceName: provinceData?.name || i.province || "Desconocido",
+            provinceCode: resolvedCode,
+            provinceName: provinceData?.name || resolvedCode,
             value: i._count.id,
             formattedValue: i._count.id.toLocaleString("es-ES"),
             population: provinceData?.population || undefined,
@@ -169,15 +207,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
         .map((item, index) => ({ ...item, rank: index + 1 }));
 
       // By incidents per 100k population
-      const byIncidentsPer100k: ProvinceRanking[] = incidentsByProvince
-        .map((i) => {
-          const provinceData = provinceMap.get(i.province || "");
-          const population = provinceData?.population || 0;
+      const byIncidentsPer100k: ProvinceRanking[] = normalizedIncidents
+        .map(({ resolvedCode, row: i }) => {
+          const provinceData = provinceMap.get(resolvedCode);
+          const population = provinceData?.population ?? 0;
           const rate = population > 0 ? (i._count.id / population) * 100000 : 0;
           return {
             rank: 0,
-            provinceCode: i.province || "",
-            provinceName: provinceData?.name || i.province || "Desconocido",
+            provinceCode: resolvedCode,
+            provinceName: provinceData?.name || resolvedCode,
             value: rate,
             formattedValue: rate.toFixed(1),
             population: population || undefined,
@@ -189,13 +227,13 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
         .map((item, index) => ({ ...item, rank: index + 1 }));
 
       // By V16 total
-      const byV16Total: ProvinceRanking[] = v16ByProvince
-        .map((v) => {
-          const provinceData = provinceMap.get(v.province || "");
+      const byV16Total: ProvinceRanking[] = normalizedV16
+        .map(({ resolvedCode, row: v }) => {
+          const provinceData = provinceMap.get(resolvedCode);
           return {
             rank: 0,
-            provinceCode: v.province || "",
-            provinceName: provinceData?.name || v.province || "Desconocido",
+            provinceCode: resolvedCode,
+            provinceName: provinceData?.name || resolvedCode,
             value: v._count.id,
             formattedValue: v._count.id.toLocaleString("es-ES"),
             population: provinceData?.population || undefined,
@@ -206,15 +244,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
         .map((item, index) => ({ ...item, rank: index + 1 }));
 
       // By V16 per 100k
-      const byV16Per100k: ProvinceRanking[] = v16ByProvince
-        .map((v) => {
-          const provinceData = provinceMap.get(v.province || "");
-          const population = provinceData?.population || 0;
+      const byV16Per100k: ProvinceRanking[] = normalizedV16
+        .map(({ resolvedCode, row: v }) => {
+          const provinceData = provinceMap.get(resolvedCode);
+          const population = provinceData?.population ?? 0;
           const rate = population > 0 ? (v._count.id / population) * 100000 : 0;
           return {
             rank: 0,
-            provinceCode: v.province || "",
-            provinceName: provinceData?.name || v.province || "Desconocido",
+            provinceCode: resolvedCode,
+            provinceName: provinceData?.name || resolvedCode,
             value: rate,
             formattedValue: rate.toFixed(1),
             population: population || undefined,
@@ -226,16 +264,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
         .map((item, index) => ({ ...item, rank: index + 1 }));
 
       // By accidents per 100k (historical data)
-      const byAccidentsPer100k: ProvinceRanking[] = accidentsByProvince
-        .map((a) => {
-          const provinceData = provinceMap.get(a.province || "");
-          const population = provinceData?.population || 0;
-          const accidentsCount = a._sum.accidents || 0;
+      const byAccidentsPer100k: ProvinceRanking[] = normalizedAccidents
+        .map(({ resolvedCode, row: a }) => {
+          const provinceData = provinceMap.get(resolvedCode);
+          const population = provinceData?.population ?? 0;
+          const accidentsCount = a._sum.accidents ?? 0;
           const rate = population > 0 ? (accidentsCount / population) * 100000 : 0;
           return {
             rank: 0,
-            provinceCode: a.province || "",
-            provinceName: provinceData?.name || a.province || "Desconocido",
+            provinceCode: resolvedCode,
+            provinceName: provinceData?.name || resolvedCode,
             value: rate,
             formattedValue: rate.toFixed(1),
             population: population || undefined,
@@ -247,15 +285,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
         .map((item, index) => ({ ...item, rank: index + 1 }));
 
       // Most improved (biggest decrease in incidents)
-      const mostImproved: ProvinceRanking[] = incidentsByProvince
-        .map((i) => {
-          const provinceData = provinceMap.get(i.province || "");
-          const prevCount = prevIncidentsMap.get(i.province) || 0;
+      const mostImproved: ProvinceRanking[] = normalizedIncidents
+        .map(({ resolvedCode, row: i }) => {
+          const provinceData = provinceMap.get(resolvedCode);
+          const prevCount = prevIncidentsMap.get(resolvedCode) ?? 0;
           const change = prevCount > 0 ? ((i._count.id - prevCount) / prevCount) * 100 : null;
           return {
             rank: 0,
-            provinceCode: i.province || "",
-            provinceName: provinceData?.name || i.province || "Desconocido",
+            provinceCode: resolvedCode,
+            provinceName: provinceData?.name || resolvedCode,
             value: change !== null ? change : 0,
             formattedValue: change !== null ? `${change > 0 ? "+" : ""}${change.toFixed(1)}%` : "N/A",
             change: change !== null ? Math.round(change) : undefined,
@@ -267,15 +305,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
         .map((item, index) => ({ ...item, rank: index + 1 }));
 
       // Most worsened (biggest increase in incidents)
-      const mostWorsened: ProvinceRanking[] = incidentsByProvince
-        .map((i) => {
-          const provinceData = provinceMap.get(i.province || "");
-          const prevCount = prevIncidentsMap.get(i.province) || 0;
+      const mostWorsened: ProvinceRanking[] = normalizedIncidents
+        .map(({ resolvedCode, row: i }) => {
+          const provinceData = provinceMap.get(resolvedCode);
+          const prevCount = prevIncidentsMap.get(resolvedCode) ?? 0;
           const change = prevCount > 0 ? ((i._count.id - prevCount) / prevCount) * 100 : null;
           return {
             rank: 0,
-            provinceCode: i.province || "",
-            provinceName: provinceData?.name || i.province || "Desconocido",
+            provinceCode: resolvedCode,
+            provinceName: provinceData?.name || resolvedCode,
             value: change !== null ? change : 0,
             formattedValue: change !== null ? `${change > 0 ? "+" : ""}${change.toFixed(1)}%` : "N/A",
             change: change !== null ? Math.round(change) : undefined,

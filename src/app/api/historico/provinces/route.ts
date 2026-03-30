@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { resolveProvinceCode } from "@/lib/geo/province-normalize";
+import { PROVINCES } from "@/lib/geo/ine-codes";
 
 export const dynamic = "force-dynamic";
 
@@ -28,14 +30,41 @@ export async function GET(request: NextRequest) {
       _avg: { durationSecs: true },
     });
 
+    // Build a name lookup from the PROVINCES array
+    const provinceNameMap = new Map(PROVINCES.map((p) => [p.code, p.name]));
+
+    // Normalize province codes (some rows carry name strings instead of INE codes)
+    // and merge duplicates that arise from the inconsistency.
+    const mergedProvinces = new Map<string, { count: number; totalDuration: number; durationRows: number }>();
+
+    for (const p of byProvince) {
+      if (!p.province) continue;
+      const code = resolveProvinceCode(p.province) ?? p.province;
+      const existing = mergedProvinces.get(code);
+      if (existing) {
+        existing.count += p._count.id;
+        if (p._avg.durationSecs) {
+          existing.totalDuration += p._avg.durationSecs * p._count.id;
+          existing.durationRows += p._count.id;
+        }
+      } else {
+        mergedProvinces.set(code, {
+          count: p._count.id,
+          totalDuration: p._avg.durationSecs ? p._avg.durationSecs * p._count.id : 0,
+          durationRows: p._avg.durationSecs ? p._count.id : 0,
+        });
+      }
+    }
+
     // Sort by count descending
-    const provinceRanking = byProvince
-      .filter((p) => p.province)
-      .map((p) => ({
-        code: p.province as string,
-        name: p.province as string,
-        count: p._count.id,
-        avgDurationSecs: p._avg.durationSecs ? Math.round(p._avg.durationSecs) : null,
+    const provinceRanking = Array.from(mergedProvinces.entries())
+      .map(([code, stats]) => ({
+        code,
+        name: provinceNameMap.get(code) ?? code,
+        count: stats.count,
+        avgDurationSecs: stats.durationRows > 0
+          ? Math.round(stats.totalDuration / stats.durationRows)
+          : null,
       }))
       .sort((a, b) => b.count - a.count);
 
@@ -53,6 +82,8 @@ export async function GET(request: NextRequest) {
       .filter((c) => c.community)
       .map((c) => ({
         code: c.community as string,
+        // community field may store the community name directly (not a numeric code),
+        // so use it as both code and name — no numeric lookup needed here.
         name: c.community as string,
         count: c._count.id,
       }))

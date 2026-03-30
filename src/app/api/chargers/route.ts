@@ -33,6 +33,12 @@ interface ChargerResponseItem {
 
 interface ChargersResponse {
   count: number;
+  totalCount: number;
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
   chargers: ChargerResponseItem[];
   provinces: string[];
   stats?: {
@@ -55,6 +61,12 @@ export async function GET(request: NextRequest) {
 
     const cached = await getFromCache<ChargersResponse>(cacheKey);
     if (cached) return NextResponse.json(cached);
+
+    // Pagination params
+    const rawLimit = parseInt(searchParams.get("limit") ?? "100", 10);
+    const limit = isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 5000);
+    const rawOffset = parseInt(searchParams.get("offset") ?? "0", 10);
+    const offset = isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset;
 
     const filterProvince = searchParams.get("province");
     const filterCommunity = searchParams.get("community");
@@ -110,14 +122,19 @@ export async function GET(request: NextRequest) {
       where.is24h = true;
     }
 
-    // Fetch from database
-    const dbChargers = await prisma.eVCharger.findMany({
-      where,
-      orderBy: [
-        { provinceName: "asc" },
-        { city: "asc" },
-      ],
-    });
+    // Fetch from database (paginated) + total count in parallel
+    const [dbChargers, totalCount] = await Promise.all([
+      prisma.eVCharger.findMany({
+        where,
+        orderBy: [
+          { provinceName: "asc" },
+          { city: "asc" },
+        ],
+        take: limit,
+        skip: offset,
+      }),
+      prisma.eVCharger.count({ where }),
+    ]);
 
     // Transform to response format
     const chargers: ChargerResponseItem[] = dbChargers.map((charger) => {
@@ -150,6 +167,12 @@ export async function GET(request: NextRequest) {
 
     const response: ChargersResponse = {
       count: chargers.length,
+      totalCount,
+      pagination: {
+        total: totalCount,
+        limit,
+        offset,
+      },
       chargers,
       provinces,
     };

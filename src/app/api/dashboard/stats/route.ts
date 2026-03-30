@@ -57,11 +57,17 @@ export async function GET() {
       v16: stat.v16Count,
     }));
 
-    // Get daily totals for comparison
-    const [todayStats, yesterdayStats, lastWeekStats] = await Promise.all([
-      prisma.dailyStats.findFirst({
-        where: { dateStart: { gte: todayStart } },
-        select: { incidentTotal: true, v16Total: true },
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+    // Get daily totals for comparison.
+    // "today" is summed from HourlyStats because DailyStats records are only
+    // written by the aggregator at end-of-day and would always read 0 during
+    // the current day.
+    const [todayAgg, yesterdayStats, lastWeekStats] = await Promise.all([
+      prisma.hourlyStats.aggregate({
+        where: { hourStart: { gte: todayStart, lt: tomorrowStart } },
+        _sum: { incidentCount: true, v16Count: true },
       }),
       prisma.dailyStats.findFirst({
         where: {
@@ -76,6 +82,12 @@ export async function GET() {
         select: { incidentTotal: true, v16Total: true },
       }),
     ]);
+
+    // Flatten the aggregate result into the same shape used below.
+    const todayStats = {
+      incidentTotal: todayAgg._sum.incidentCount ?? 0,
+      v16Total: todayAgg._sum.v16Count ?? 0,
+    };
 
     // Calculate comparison data for incidents
     const incidentComparison: ComparisonData = {
@@ -119,12 +131,11 @@ export async function GET() {
       );
     }
 
-    // Get active weather alerts
+    // Get active weather alerts.
+    // Using isActive instead of endedAt range so alerts with null endedAt
+    // (open-ended alerts) are included.
     const activeWeatherAlerts = await prisma.weatherAlert.count({
-      where: {
-        startedAt: { lte: now },
-        endedAt: { gte: now },
-      },
+      where: { isActive: true },
     });
 
     // Determine peak hours (historically high-risk hours: 7-9 AM, 5-8 PM)

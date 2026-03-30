@@ -93,6 +93,12 @@ export async function GET(request: NextRequest) {
     const cached = await getFromCache(cacheKey);
     if (cached) return NextResponse.json(cached);
 
+    // Pagination params
+    const rawLimit = parseInt(searchParams.get("limit") ?? "100", 10);
+    const limit = isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 5000);
+    const rawOffset = parseInt(searchParams.get("offset") ?? "0", 10);
+    const offset = isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset;
+
     // Filter params (comma-separated values) with validation
     const effectFilter = searchParams.get("effect")
       ?.split(",")
@@ -177,6 +183,12 @@ export async function GET(request: NextRequest) {
       incidents = incidents.filter((i) => i.community?.toLowerCase() === cLower || i.communityName?.toLowerCase().includes(cLower));
     }
 
+    // Total after filters, before pagination
+    const filteredTotal = incidents.length;
+
+    // Apply pagination
+    incidents = incidents.slice(offset, offset + limit);
+
     // Convert to GeoJSON for map consumption
     const geojson = {
       type: "FeatureCollection" as const,
@@ -219,6 +231,12 @@ export async function GET(request: NextRequest) {
     const responseData = {
       count: incidents.length,
       totalCount,
+      filteredTotal,
+      pagination: {
+        total: filteredTotal,
+        limit,
+        offset,
+      },
       lastUpdated: latestFetch.toISOString(),
       source: "database",
       counts: {
