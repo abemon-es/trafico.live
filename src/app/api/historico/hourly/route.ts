@@ -25,14 +25,15 @@ export async function GET(request: NextRequest) {
     });
 
     // Aggregate by hour of day (0-23)
-    const byHourOfDay: Record<number, { total: number; count: number }> = {};
+    const byHourOfDay: Record<number, { total: number; count: number; incidentTotal: number }> = {};
     for (let i = 0; i < 24; i++) {
-      byHourOfDay[i] = { total: 0, count: 0 };
+      byHourOfDay[i] = { total: 0, count: 0, incidentTotal: 0 };
     }
 
     hourlyStats.forEach((stat) => {
       const hour = stat.hourStart.getHours();
       byHourOfDay[hour].total += stat.v16Count;
+      byHourOfDay[hour].incidentTotal += stat.incidentCount;
       byHourOfDay[hour].count += 1;
     });
 
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
     const hourlyAverages = Object.entries(byHourOfDay).map(([hour, data]) => ({
       hour: parseInt(hour, 10),
       avgCount: data.count > 0 ? Math.round(data.total / data.count) : 0,
+      avgIncidentCount: data.count > 0 ? Math.round(data.incidentTotal / data.count) : 0,
       totalCount: data.total,
     }));
 

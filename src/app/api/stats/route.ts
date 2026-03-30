@@ -239,6 +239,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Internal server error",
+        isError: true,
         v16Active: 0,
         incidents: 0,
         cameras: 0,
