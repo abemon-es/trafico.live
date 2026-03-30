@@ -170,7 +170,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Ciudad no encontrada" };
   }
 
-  const title = `Tráfico en ${cityData.name} Hoy — Incidencias en Tiempo Real | trafico.live`;
+  const title = `Tráfico en ${cityData.name} Hoy — Incidencias en Tiempo Real`;
   const description = `Estado del tráfico en ${cityData.name} ahora mismo. Incidencias activas, obras, retenciones y alertas meteorológicas en las carreteras de ${cityData.province} en tiempo real.`;
 
   return {

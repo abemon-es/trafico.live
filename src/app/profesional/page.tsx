@@ -20,7 +20,7 @@ import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Portal Profesional para Flotas y Transportistas | trafico.live",
+  title: "Portal Profesional para Flotas y Transportistas",
   description:
     "Herramientas especializadas para flotas y transportistas profesionales: diésel más barato, áreas de descanso con parking, restricciones activas y calculadora de ruta. Accede también a la API de datos de tráfico en tiempo real.",
   keywords: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "herramientas flota transporte",
   ],
   openGraph: {
-    title: "Portal Profesional para Flotas y Transportistas | trafico.live",
+    title: "Portal Profesional para Flotas y Transportistas",
     description:
       "Diésel más barato, áreas de descanso, restricciones activas y API de datos. Todo lo que necesita tu flota.",
   },

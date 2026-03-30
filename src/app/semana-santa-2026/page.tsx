@@ -30,7 +30,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
-      "Tráfico Semana Santa 2026 — Operación Salida y Retorno | trafico.live",
+      "Tráfico Semana Santa 2026 — Operación Salida y Retorno",
     description:
       "Estado del tráfico en Semana Santa 2026 (2-6 abril). Mapa en tiempo real, previsiones DGT, operación salida y retorno, mejores horarios y carreteras alternativas.",
     keywords: [
@@ -47,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     openGraph: {
       title:
-        "Tráfico Semana Santa 2026 — Operación Salida y Retorno | trafico.live",
+        "Tráfico Semana Santa 2026 — Operación Salida y Retorno",
       description:
         "Mapa en tiempo real, previsiones DGT, operación salida y retorno, mejores horarios y carreteras alternativas para Semana Santa 2026.",
       url: "https://trafico.live/semana-santa-2026",

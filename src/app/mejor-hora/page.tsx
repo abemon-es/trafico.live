@@ -4,7 +4,7 @@ import MejorHoraContent from "./content";
 const BASE_URL = "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "¿Cuál es la Mejor Hora para Viajar? — Análisis de Tráfico | trafico.live",
+  title: "¿Cuál es la Mejor Hora para Viajar? — Análisis de Tráfico",
   description:
     "Descubre la mejor hora para viajar en coche y evitar el tráfico en España. Análisis de incidencias por hora y día de la semana basado en datos reales de los últimos 30 días.",
   keywords: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     canonical: `${BASE_URL}/mejor-hora`,
   },
   openGraph: {
-    title: "¿Cuál es la Mejor Hora para Viajar? — Análisis de Tráfico | trafico.live",
+    title: "¿Cuál es la Mejor Hora para Viajar? — Análisis de Tráfico",
     description:
       "Mapa de calor de incidencias de tráfico por hora y día: descubre cuándo circular con mayor seguridad en las carreteras españolas.",
     type: "website",

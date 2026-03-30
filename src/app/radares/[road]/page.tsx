@@ -122,10 +122,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const countText = count > 0 ? `${count} radares` : "radares activos";
 
   return {
-    title: `Radares en la ${roadId} — Ubicación y Límites de Velocidad ${CURRENT_YEAR} | trafico.live`,
+    title: `Radares en la ${roadId} — Ubicación y Límites de Velocidad ${CURRENT_YEAR}`,
     description: `Todos los radares fijos y de tramo en la ${roadId}. ${countText} con ubicación exacta, límite de velocidad y dirección. Datos DGT actualizados.`,
     openGraph: {
-      title: `Radares en la ${roadId} ${CURRENT_YEAR} | trafico.live`,
+      title: `Radares en la ${roadId} ${CURRENT_YEAR}`,
       description: `${countText} con ubicación exacta y límite de velocidad en la ${roadId}. Consulta la lista completa de radares DGT.`,
     },
     alternates: {

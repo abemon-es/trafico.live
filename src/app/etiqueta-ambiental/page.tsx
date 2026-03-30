@@ -21,7 +21,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const metadata: Metadata = {
-  title: `Etiqueta Ambiental DGT: Consulta y Guía Completa ${CURRENT_YEAR} | trafico.live`,
+  title: `Etiqueta Ambiental DGT: Consulta y Guía Completa ${CURRENT_YEAR}`,
   description:
     "Guía completa de la etiqueta ambiental DGT: distintivos 0, ECO, C, B y sin etiqueta. Cómo consultar tu etiqueta, qué circulación permite cada distintivo en ZBE y multas por incumplimiento.",
   keywords: [
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     "cómo obtener etiqueta ambiental",
   ],
   openGraph: {
-    title: `Etiqueta Ambiental DGT: Consulta y Guía Completa ${CURRENT_YEAR} | trafico.live`,
+    title: `Etiqueta Ambiental DGT: Consulta y Guía Completa ${CURRENT_YEAR}`,
     description:
       "Todo sobre la etiqueta ambiental DGT: qué distintivo corresponde a tu vehículo, cómo consultarlo y qué restricciones aplican en Zonas de Bajas Emisiones.",
     type: "article",

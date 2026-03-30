@@ -24,7 +24,7 @@ export const revalidate = 3600;
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const metadata: Metadata = {
-  title: `Restricciones de Circulación en España ${CURRENT_YEAR} | trafico.live`,
+  title: `Restricciones de Circulación en España ${CURRENT_YEAR}`,
   description:
     "Restricciones de circulación en España: vehículos pesados, Zonas de Bajas Emisiones (ZBE), túneles, restricciones estacionales y por meteorología adversa. Datos oficiales DGT.",
   keywords: [
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     "limitaciones circulación España",
   ],
   openGraph: {
-    title: `Restricciones de Circulación en España ${CURRENT_YEAR} | trafico.live`,
+    title: `Restricciones de Circulación en España ${CURRENT_YEAR}`,
     description:
       "Todas las restricciones de circulación en España: camiones, ZBE, túneles y festivos. Datos oficiales DGT actualizados.",
   },

@@ -4,7 +4,7 @@ import RestriccionesContent from "./content";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Restricciones de tráfico para transportistas | Portal Profesional - trafico.live",
+  title: "Restricciones de tráfico para transportistas | Portal Profesional",
   description:
     "ZBE, túneles y limitaciones de peso, altura y anchura para transporte pesado en España. Consulta las restricciones activas antes de planificar tu ruta.",
   keywords: [

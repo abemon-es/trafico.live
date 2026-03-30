@@ -85,18 +85,6 @@ export function CamarasContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-            <Camera className="w-8 h-8 text-tl-600 dark:text-tl-400" />
-            Cámaras de Tráfico
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Imágenes en tiempo real de las cámaras de la DGT en las carreteras
-            españolas.
-          </p>
-        </div>
-
         {/* Stats bar */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-4">

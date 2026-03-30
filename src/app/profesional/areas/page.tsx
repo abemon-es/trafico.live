@@ -17,7 +17,7 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Áreas de Servicio para Transportistas en España | Portal Profesional - trafico.live",
+  title: "Áreas de Servicio para Transportistas en España | Portal Profesional",
   description:
     "Directorio completo de áreas de servicio y descanso para camioneros en las principales autopistas y autovías de España: AP-7, A-1, A-2, A-4, A-6, A-7, AP-9 y más.",
   keywords: [

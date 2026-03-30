@@ -5,17 +5,18 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
 export const revalidate = 3600;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const metadata: Metadata = {
-  title: `Radares DGT en España — Mapa Completo ${CURRENT_YEAR} | trafico.live`,
+  title: `Radares DGT en España — Mapa Completo ${CURRENT_YEAR}`,
   description:
     "Consulta todos los radares de la DGT en España: radares fijos, de tramo, móviles y semafóricos. Agrupados por tipo, carretera y provincia. Actualizado diariamente.",
   openGraph: {
-    title: `Radares DGT en España — Mapa Completo ${CURRENT_YEAR} | trafico.live`,
+    title: `Radares DGT en España — Mapa Completo ${CURRENT_YEAR}`,
     description:
       "Todos los radares de velocidad de la DGT en España. Radares fijos, de tramo y móviles agrupados por carretera y provincia.",
   },
@@ -118,12 +119,22 @@ export default async function RadaresPage() {
     })),
   };
 
+  const radarDatasetSchema = generateDatasetSchema({
+    name: `Radares DGT en España — Directorio Completo ${CURRENT_YEAR}`,
+    description: "Directorio completo de radares de velocidad activos en las carreteras españolas, gestionados por la Dirección General de Tráfico (DGT). Incluye radares fijos, de tramo, móviles y semafóricos con ubicación, tipo y límite de velocidad.",
+    url: "https://trafico.live/radares",
+    keywords: ["radares DGT", "radares velocidad", "radares fijos", "radares tramo", "España", "DGT"],
+    temporalCoverage: "P1D",
+    spatialCoverage: "España",
+  });
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
+      <StructuredData data={radarDatasetSchema} />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs

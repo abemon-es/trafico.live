@@ -22,7 +22,7 @@ export const revalidate = 120;
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const metadata: Metadata = {
-  title: `Atascos y Retenciones en España Hoy ${CURRENT_YEAR} | trafico.live`,
+  title: `Atascos y Retenciones en España Hoy ${CURRENT_YEAR}`,
   description:
     "Atascos en tiempo real en España: retenciones, congestiones y tráfico denso en carreteras y autopistas. Información actualizada al minuto de todas las retenciones hoy.",
   keywords: [
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     "tráfico lento carreteras",
   ],
   openGraph: {
-    title: `Atascos y Retenciones en España Hoy ${CURRENT_YEAR} | trafico.live`,
+    title: `Atascos y Retenciones en España Hoy ${CURRENT_YEAR}`,
     description:
       "Atascos en tiempo real en España. Retenciones, congestiones y tráfico lento en carreteras y autopistas. Actualizado al minuto.",
     type: "website",

@@ -53,30 +53,30 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
+  async redirects() {
     return [
-      // Dual routing: /combustible serves /gasolineras content
+      // 301: /combustible → /gasolineras (was a rewrite — duplicate content)
       {
         source: "/combustible",
         destination: "/gasolineras",
+        permanent: true,
       },
       {
         source: "/combustible/:path*",
         destination: "/gasolineras/:path*",
+        permanent: true,
       },
-      // Dual routing: /alertas serves /incidencias content
+      // 301: /alertas → /incidencias (was a rewrite — duplicate content)
       {
         source: "/alertas",
         destination: "/incidencias",
+        permanent: true,
       },
       {
         source: "/alertas/:path*",
         destination: "/incidencias/:path*",
+        permanent: true,
       },
-    ];
-  },
-  async redirects() {
-    return [
       // Redirect old /provincias to /espana
       {
         source: "/provincias",

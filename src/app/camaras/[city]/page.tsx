@@ -88,7 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Ciudad no encontrada" };
   }
 
-  const title = `Cámaras de Tráfico en ${cityData.name} — En Tiempo Real | trafico.live`;
+  const title = `Cámaras de Tráfico en ${cityData.name} — En Tiempo Real`;
   const description = `Consulta en tiempo real las cámaras de tráfico de la DGT en ${cityData.name} (provincia de ${cityData.name}). Listado completo por carretera con imágenes actualizadas.`;
 
   return {

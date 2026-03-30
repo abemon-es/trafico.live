@@ -54,11 +54,10 @@ export async function generateSitemaps() {
   }
 }
 
-export default async function sitemap({
-  id,
-}: {
-  id: number;
+export default async function sitemap(props: {
+  id: Promise<string>;
 }): Promise<MetadataRoute.Sitemap> {
+  const id = Number(await props.id);
   if (id === 0) return coreSitemap();
   if (id >= GAS_STATION_OFFSET && id < MUNICIPALITY_OFFSET) {
     return gasStationSitemap(id - GAS_STATION_OFFSET);

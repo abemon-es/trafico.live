@@ -79,14 +79,6 @@ export default function EspanaContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Tráfico en España</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Estado del tráfico en tiempo real en las comunidades autónomas de España.
-          </p>
-        </div>
-
         {/* National Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           {/* Real-time - highlighted first */}

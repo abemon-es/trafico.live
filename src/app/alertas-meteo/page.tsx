@@ -6,7 +6,7 @@ import { AlertasMeteoContent } from "./content";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Alertas Meteorológicas para Carreteras — AEMET | trafico.live",
+  title: "Alertas Meteorológicas para Carreteras — AEMET",
   description:
     "Consulta en tiempo real los avisos meteorológicos de la AEMET que afectan a las carreteras españolas. Lluvia, nieve, viento, tormentas y más — actualizado cada 5 minutos.",
   keywords: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     canonical: `${BASE_URL}/alertas-meteo`,
   },
   openGraph: {
-    title: "Alertas Meteorológicas para Carreteras — AEMET | trafico.live",
+    title: "Alertas Meteorológicas para Carreteras — AEMET",
     description:
       "Avisos AEMET en tiempo real para carreteras: lluvia, nieve, viento y tormentas.",
     url: `${BASE_URL}/alertas-meteo`,

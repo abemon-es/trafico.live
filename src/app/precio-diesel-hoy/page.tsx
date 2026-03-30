@@ -162,7 +162,7 @@ export async function generateMetadata(): Promise<Metadata> {
     : "consulta el precio";
 
   return {
-    title: `Precio Diésel Hoy ${dateStr} — ${avgStr} | trafico.live`,
+    title: `Precio Diésel Hoy ${dateStr} — ${avgStr}`,
     description: `Precio del gasóleo A (diésel) hoy en España: media nacional ${avgStr}. Consulta las gasolineras más baratas, precios por provincia y evolución respecto a ayer. Datos oficiales MITERD.`,
     keywords: [
       "precio diesel hoy",
@@ -176,7 +176,7 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: "https://trafico.live/precio-diesel-hoy",
     },
     openGraph: {
-      title: `Precio Diésel Hoy — ${avgStr} | trafico.live`,
+      title: `Precio Diésel Hoy — ${avgStr}`,
       description: `Media nacional del gasóleo A hoy en España: ${avgStr}. Datos oficiales MITERD actualizados.`,
       type: "website",
       locale: "es_ES",

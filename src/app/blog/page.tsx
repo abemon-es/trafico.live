@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "noticias DGT",
   ],
   openGraph: {
-    title: "Blog — Noticias y Guías de Tráfico en España | trafico.live",
+    title: "Blog — Noticias y Guías de Tráfico en España",
     description:
       "Guías prácticas, noticias y consejos sobre tráfico en España.",
     type: "website",

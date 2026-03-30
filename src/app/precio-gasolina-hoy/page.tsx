@@ -163,7 +163,7 @@ export async function generateMetadata(): Promise<Metadata> {
     : "consulta el precio";
 
   return {
-    title: `Precio Gasolina Hoy ${dateStr} — ${avgStr} | trafico.live`,
+    title: `Precio Gasolina Hoy ${dateStr} — ${avgStr}`,
     description: `Precio de la gasolina 95 hoy en España: media nacional ${avgStr}. Consulta las gasolineras más baratas, precios por provincia y evolución respecto a ayer. Datos oficiales MITERD.`,
     keywords: [
       "precio gasolina hoy",
@@ -176,7 +176,7 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: "https://trafico.live/precio-gasolina-hoy",
     },
     openGraph: {
-      title: `Precio Gasolina Hoy — ${avgStr} | trafico.live`,
+      title: `Precio Gasolina Hoy — ${avgStr}`,
       description: `Media nacional de gasolina 95 hoy en España: ${avgStr}. Datos oficiales MITERD actualizados.`,
       type: "website",
       locale: "es_ES",

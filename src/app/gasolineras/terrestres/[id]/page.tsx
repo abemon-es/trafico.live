@@ -40,8 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : null;
 
   const title = leadFuelPrice
-    ? `Gasolinera ${brandName} en ${locality} — Precio ${leadFuelLabel} ${leadFuelPrice}€/L Hoy | trafico.live`
-    : `Gasolinera ${brandName} en ${locality} — Precios Combustible Hoy | trafico.live`;
+    ? `Gasolinera ${brandName} en ${locality} — Precio ${leadFuelLabel} ${leadFuelPrice}€/L Hoy`
+    : `Gasolinera ${brandName} en ${locality} — Precios Combustible Hoy`;
 
   const description = `Precios actualizados de la gasolinera ${station.name} en ${locality}${province && province !== locality ? `, ${province}` : ""}. Gasóleo A: ${dieselPrice}. Gasolina 95: ${gas95Price}. Horario: ${schedule}. Las 5 alternativas más baratas cerca.`;
 

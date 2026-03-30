@@ -55,6 +55,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `gasolineras ${cityData.name}`,
       cityData.province,
     ],
+    openGraph: {
+      title: `Tráfico en ${cityData.name} en Tiempo Real`,
+      description: `Información de tráfico en tiempo real en ${cityData.name}: incidencias, cámaras, precios de combustible, cargadores eléctricos y zonas ZBE.`,
+      url: `${BASE_URL}/ciudad/${slug}`,
+      type: "website",
+      locale: "es_ES",
+    },
     alternates: {
       canonical: `${BASE_URL}/ciudad/${slug}`,
     },

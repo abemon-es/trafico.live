@@ -527,7 +527,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `ZBE ${cfg.name} — Zona de Bajas Emisiones ${CURRENT_YEAR} | trafico.live`,
+    title: `ZBE ${cfg.name} — Zona de Bajas Emisiones ${CURRENT_YEAR}`,
     description: `Zona de Bajas Emisiones de ${cfg.name}: restricciones de acceso por etiqueta ambiental, horarios, multa de ${cfg.fineAmount}€ y alternativas de transporte. Información actualizada ${CURRENT_YEAR}.`,
     keywords: [
       `ZBE ${cfg.name}`,
@@ -541,7 +541,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `ZBE ${cfg.name} — Zona de Bajas Emisiones ${CURRENT_YEAR}`,
       description: `Restricciones de acceso, etiquetas permitidas, horarios y multas de la Zona de Bajas Emisiones de ${cfg.name}.`,
+      url: `https://trafico.live/zbe/${city}`,
       type: "website",
+      locale: "es_ES",
     },
     alternates: {
       canonical: `https://trafico.live/zbe/${city}`,

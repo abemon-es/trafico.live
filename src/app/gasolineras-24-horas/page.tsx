@@ -17,7 +17,7 @@ export const revalidate = 3600;
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const metadata: Metadata = {
-  title: `Gasolineras Abiertas 24 Horas en España ${CURRENT_YEAR} | trafico.live`,
+  title: `Gasolineras Abiertas 24 Horas en España ${CURRENT_YEAR}`,
   description:
     "Todas las gasolineras abiertas 24 horas en España. Distribución por provincia, las 10 más baratas en gasóleo A y respuestas a las preguntas más frecuentes. Datos actualizados.",
   keywords: [

@@ -24,7 +24,7 @@ export const revalidate = 300;
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const metadata: Metadata = {
-  title: `Cortes de Tráfico y Obras en Carreteras España ${CURRENT_YEAR} | trafico.live`,
+  title: `Cortes de Tráfico y Obras en Carreteras España ${CURRENT_YEAR}`,
   description:
     "Cortes de tráfico en España hoy: cierres de carretera, obras viales, carriles cortados y desvíos activos. Información en tiempo real de incidencias DGT. Planifica tu ruta.",
   keywords: [
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     "obras viales España",
   ],
   openGraph: {
-    title: `Cortes de Tráfico y Obras en Carreteras España ${CURRENT_YEAR} | trafico.live`,
+    title: `Cortes de Tráfico y Obras en Carreteras España ${CURRENT_YEAR}`,
     description:
       "Cortes de tráfico, obras y cierres de carretera en España. Datos en tiempo real de la DGT. Planifica tu ruta evitando los cierres activos.",
     type: "website",

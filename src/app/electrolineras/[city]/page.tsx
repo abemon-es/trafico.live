@@ -101,7 +101,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Ciudad no encontrada" };
   }
 
-  const title = `Electrolineras en ${cityData.name} — Puntos de Carga para VE | trafico.live`;
+  const title = `Electrolineras en ${cityData.name} — Puntos de Carga para VE`;
   const description = `Mapa y listado actualizado de electrolineras en ${cityData.name}. Cargadores rápidos, ultra-rápidos y lentos en la provincia de ${cityData.province}. Potencia, operadores y ubicación.`;
 
   return {

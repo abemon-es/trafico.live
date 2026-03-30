@@ -4,10 +4,18 @@ import { prisma } from "@/lib/db";
 import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
+import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
 export const metadata: Metadata = {
   title: "Gasolineras y Precios de Combustible | Tráfico España",
   description: "Consulta los precios de combustible actualizados en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti.",
+  openGraph: {
+    title: "Gasolineras y Precios de Combustible en España",
+    description: "Consulta los precios de combustible actualizados en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti.",
+    url: "https://trafico.live/gasolineras",
+    type: "website",
+    locale: "es_ES",
+  },
   alternates: {
     canonical: "https://trafico.live/gasolineras",
   },
@@ -138,6 +146,15 @@ function TrendBadge({ current, previous }: { current: number | null; previous: n
 export default async function GasolinerasPage() {
   const [stats, cheapest] = await Promise.all([getStats(), getCheapestStations()]);
 
+  const fuelDatasetSchema = generateDatasetSchema({
+    name: "Precios de Combustible en Gasolineras de España",
+    description: "Precios actualizados de gasolina, gasóleo y otros combustibles en más de 12.000 gasolineras terrestres y estaciones marítimas de España. Fuente oficial: MITERD.",
+    url: "https://trafico.live/gasolineras",
+    keywords: ["gasolineras", "precios combustible", "gasolina", "diesel", "España", "MITERD"],
+    temporalCoverage: "P1D",
+    spatialCoverage: "España",
+  });
+
   const formatPrice = (price: unknown) => {
     if (price == null) return "N/D";
     const num = typeof price === "object" && "toNumber" in price
@@ -147,6 +164,8 @@ export default async function GasolinerasPage() {
   };
 
   return (
+    <>
+      <StructuredData data={fuelDatasetSchema} />
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
@@ -468,5 +487,6 @@ export default async function GasolinerasPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

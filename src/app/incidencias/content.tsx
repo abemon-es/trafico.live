@@ -209,17 +209,8 @@ export function IncidenciasContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
-              Incidencias de Tráfico
-            </h1>
-            <p className="mt-1 text-gray-600 dark:text-gray-400">
-              Mapa en tiempo real de incidencias en las carreteras españolas.
-            </p>
-          </div>
+        {/* Actions bar */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
           <Link
             href="/incidencias/analytics"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 hover:bg-tl-100 dark:bg-tl-900/30 transition-colors text-sm font-medium border border-tl-200 dark:border-tl-800 whitespace-nowrap self-start"

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronRight, MapPin } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Gasolineras Baratas por Ciudad — Precios Hoy | trafico.live",
+  title: "Gasolineras Baratas por Ciudad — Precios Hoy",
   description:
     "Encuentra las gasolineras más baratas en tu ciudad. Precios actualizados de Gasóleo A y Gasolina 95 para las principales ciudades de España.",
   alternates: {

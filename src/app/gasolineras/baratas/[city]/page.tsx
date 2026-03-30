@@ -47,10 +47,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `Gasolineras Baratas en ${cityData.name} — Precios Hoy | trafico.live`,
+    title: `Gasolineras Baratas en ${cityData.name} — Precios Hoy`,
     description: `Las gasolineras más baratas de ${cityData.name} hoy. Top 10 con precios de Gasóleo A y Gasolina 95 actualizados. Ahorra en tu próximo repostaje.`,
     alternates: {
-      canonical: `/gasolineras/baratas/${city}`,
+      canonical: `${process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live"}/gasolineras/baratas/${city}`,
     },
     openGraph: {
       title: `Gasolineras Baratas en ${cityData.name} — Precios Hoy`,

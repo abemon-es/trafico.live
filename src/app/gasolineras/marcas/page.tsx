@@ -9,7 +9,7 @@ import { Fuel, TrendingDown, BarChart3, Building2, ChevronRight } from "lucide-r
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Comparativa de Precios por Marca de Gasolinera — España 2026 | trafico.live",
+  title: "Comparativa de Precios por Marca de Gasolinera — España 2026",
   description:
     "Compara los precios de combustible por marca: Repsol, Cepsa, BP, Shell, Galp, low-cost y supermercados. Descubre qué marca vende el diesel y la gasolina 95 más barata en España.",
   keywords: [

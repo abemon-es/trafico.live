@@ -4,7 +4,7 @@ import DieselContent from "./content";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Diésel más barato para transportistas | Portal Profesional - trafico.live",
+  title: "Diésel más barato para transportistas | Portal Profesional",
   description:
     "Encuentra las gasolineras con diésel más barato de España ordenadas por precio. Filtra por provincia y ahorra en tus rutas de transporte profesional.",
   keywords: [

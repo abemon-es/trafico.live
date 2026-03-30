@@ -27,7 +27,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
-      "Tráfico Puente de Mayo 2026 — Operación Salida 1 de Mayo | trafico.live",
+      "Tráfico Puente de Mayo 2026 — Operación Salida 1 de Mayo",
     description:
       "Estado del tráfico en el Puente de Mayo 2026 (30 abril – 3 mayo). Incidencias en tiempo real, mejores horarios para viajar, rutas principales y consejos DGT.",
     keywords: [
@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     openGraph: {
       title:
-        "Tráfico Puente de Mayo 2026 — Operación Salida 1 de Mayo | trafico.live",
+        "Tráfico Puente de Mayo 2026 — Operación Salida 1 de Mayo",
       description:
         "Incidencias en tiempo real, mejores horarios, rutas afectadas y consejos para el Puente de Mayo 2026 (30 abril – 3 mayo).",
       url: "https://trafico.live/puente-mayo-2026",

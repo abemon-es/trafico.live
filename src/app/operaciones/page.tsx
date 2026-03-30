@@ -24,7 +24,7 @@ export const revalidate = 300;
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const metadata: Metadata = {
-  title: `Operaciones Especiales de Tráfico ${CURRENT_YEAR} — DGT | trafico.live`,
+  title: `Operaciones Especiales de Tráfico ${CURRENT_YEAR} — DGT`,
   description:
     "Calendario completo de operaciones especiales de tráfico de la DGT para 2026: Semana Santa, Verano, Navidad, puentes y festivos. Horarios punta, previsión de desplazamientos y recomendaciones.",
   keywords: [
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     "DGT operaciones 2026",
   ],
   openGraph: {
-    title: `Operaciones Especiales de Tráfico ${CURRENT_YEAR} — DGT | trafico.live`,
+    title: `Operaciones Especiales de Tráfico ${CURRENT_YEAR} — DGT`,
     description:
       "Calendario de operaciones especiales DGT 2026: previsión de desplazamientos, horarios punta y recomendaciones para circular con seguridad.",
   },

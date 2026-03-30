@@ -14,7 +14,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 const BASE_URL = "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "API de Tráfico España — Datos en Tiempo Real | trafico.live",
+  title: "API de Tráfico España — Datos en Tiempo Real",
   description:
     "REST API para datos de tráfico en España: incidencias, cámaras DGT, radares, precios de combustible, puntos de carga eléctrica y zonas de bajas emisiones. 100 peticiones/día gratis.",
   keywords: [
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     "datos tráfico REST API",
   ],
   openGraph: {
-    title: "API de Tráfico España — Datos en Tiempo Real | trafico.live",
+    title: "API de Tráfico España — Datos en Tiempo Real",
     description:
       "Accede a datos de tráfico, combustible, cámaras y más vía REST API. Plan gratuito con 100 peticiones/día.",
   },
