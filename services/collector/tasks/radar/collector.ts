@@ -326,7 +326,26 @@ export async function run(prisma: PrismaClient) {
       console.log(`[radar-collector] Marked ${missingIds.length} radars as inactive`);
     }
 
-    // 5. Summary statistics
+    // 5. Enrich speedLimit from SpeedLimit table
+    try {
+      const enriched = await prisma.$executeRaw`
+        UPDATE "Radar" r
+        SET "speedLimit" = sl."speedLimit"
+        FROM "SpeedLimit" sl
+        WHERE r."speedLimit" IS NULL
+          AND r."isActive" = true
+          AND LOWER(sl."roadNumber") = LOWER(r."roadNumber")
+          AND r."kmPoint" >= sl."kmStart"
+          AND r."kmPoint" <= sl."kmEnd"
+      `;
+      if (enriched > 0) {
+        console.log(`[radar-collector] Enriched speedLimit for ${enriched} radars from SpeedLimit table`);
+      }
+    } catch (err) {
+      console.error("[radar-collector] SpeedLimit enrichment failed (non-fatal):", err);
+    }
+
+    // 6. Summary statistics
     const stats = await prisma.radar.groupBy({
       by: ["province"],
       where: { isActive: true },
