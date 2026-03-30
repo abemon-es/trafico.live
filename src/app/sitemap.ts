@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
 import { ARTICLES } from "@/app/blog/articles";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR: regenerate sitemap hourly
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
