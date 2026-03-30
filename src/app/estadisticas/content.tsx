@@ -2083,13 +2083,42 @@ function CorrelacionSection({
 }
 
 function RankingsSection({
-  data,
+  data: rawData,
   isLoading,
 }: {
   data?: RankingsResponse;
   isLoading: boolean;
 }) {
-  const hasData = data?.success;
+  // API returns { success, data: { provinces, roads, summary } }
+  // Normalize to match component's expected field names
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const apiData = (rawData as any)?.data;
+  const norm = (arr: any[], nameKey: string, valKey: string) =>
+    (arr || []).map((item: any) => ({
+      ...item,
+      [nameKey]: item[nameKey] || item.provinceName || item.roadNumber || "",
+      [valKey]: item[valKey] ?? item.value ?? 0,
+    }));
+  const data: RankingsResponse | undefined = apiData ? {
+    success: rawData!.success,
+    provinces: {
+      byIncidentsTotal: norm(apiData.provinces?.byIncidentsTotal, "province", "totalIncidents"),
+      byIncidentsPer100k: norm(apiData.provinces?.byIncidentsPer100k, "province", "incidentsPer100k"),
+      byV16Total: norm(apiData.provinces?.byV16Total, "province", "totalV16"),
+      byV16Per100k: norm(apiData.provinces?.byV16Per100k, "province", "v16Per100k"),
+      byAccidentsPer100k: norm(apiData.provinces?.byAccidentsPer100k, "province", "accidentsPer100k"),
+      mostImproved: norm(apiData.provinces?.mostImproved, "province", "changePercent"),
+      mostWorsened: norm(apiData.provinces?.mostWorsened, "province", "changePercent"),
+    },
+    roads: {
+      byIncidentsTotal: norm(apiData.roads?.byIncidentsTotal, "roadName", "totalIncidents"),
+      byRiskScore: norm(apiData.roads?.byRiskScore, "roadName", "riskScore"),
+      byIMD: norm(apiData.roads?.byIMD, "roadName", "avgIMD"),
+      mostDangerous: norm(apiData.roads?.mostDangerous, "roadName", "riskScore"),
+    },
+  } as RankingsResponse : rawData;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  const hasData = data?.success && data?.provinces;
   const [rankingType, setRankingType] = useState<"provinces" | "roads">("provinces");
 
   if (isLoading) {
