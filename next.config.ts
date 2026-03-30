@@ -45,6 +45,25 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      // DGT camera feeds (NAP portal)
+      {
+        protocol: "https",
+        hostname: "nap.dgt.es",
+      },
+      // DGT camera feeds (infocar portal)
+      {
+        protocol: "https",
+        hostname: "infocar.dgt.es",
+      },
+      // DGT informacion.trafico portal (camera stills)
+      {
+        protocol: "https",
+        hostname: "informacion.trafico.dgt.es",
+      },
+    ],
+  },
   async headers() {
     return [
       {

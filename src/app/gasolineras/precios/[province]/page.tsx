@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MapPin, ArrowLeft, Clock } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -117,14 +118,12 @@ export default async function ProvincePricesPage({ params }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>
-        <span>/</span>
-        <Link href="/gasolineras/precios" className="hover:text-gray-700 dark:text-gray-300">Precios</Link>
-        <span>/</span>
-        <span className="text-gray-900 dark:text-gray-100">{provinceData.name}</span>
-      </div>
+      <Breadcrumbs items={[
+        { name: "Inicio", href: "/" },
+        { name: "Gasolineras", href: "/gasolineras" },
+        { name: "Precios", href: "/gasolineras/precios" },
+        { name: provinceData.name, href: `/gasolineras/precios/${province}` },
+      ]} />
 
       <Link
         href="/gasolineras/precios"

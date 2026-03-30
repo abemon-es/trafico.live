@@ -269,6 +269,20 @@ export default async function PrecioGasolinaHoyPage() {
     TAX_FREE_PROVINCES.includes(extractProvinceCode(p.scope))
   );
 
+  // Limit SSR HTML: show top 10 cheapest + top 10 most expensive, rest behind <details>
+  const sortedByPrice = [...peninsulaProvinces].sort((a, b) => {
+    const pa = toNum(a.avgGasolina95) ?? Infinity;
+    const pb = toNum(b.avgGasolina95) ?? Infinity;
+    return pa - pb;
+  });
+  const top10Cheapest = sortedByPrice.slice(0, 10);
+  const top10Expensive = sortedByPrice.slice(-10).reverse();
+  const top10CheapestScopes = new Set(top10Cheapest.map((p) => p.scope));
+  const top10ExpensiveScopes = new Set(top10Expensive.map((p) => p.scope));
+  const remainingProvinces = peninsulaProvinces.filter(
+    (p) => !top10CheapestScopes.has(p.scope) && !top10ExpensiveScopes.has(p.scope)
+  );
+
   return (
     <>
       <StructuredData data={faqSchema} />
@@ -476,82 +490,119 @@ export default async function PrecioGasolinaHoyPage() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-5">
               Precio Gasolina 95 por Provincia — Hoy
             </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-800">
-                    <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Provincia</th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">
-                      Media hoy
-                    </th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">
-                      Mínimo
-                    </th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">
-                      Máximo
-                    </th>
-                    <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden md:table-cell">
-                      Estaciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {peninsulaProvinces.map((p) => {
-                    const code = extractProvinceCode(p.scope);
-                    const province = PROVINCE_CODES[code];
-                    const avg = toNum(p.avgGasolina95);
-                    const nationalAvg = toNum(nationalToday?.avgGasolina95);
-                    const isCheap =
-                      avg !== null && nationalAvg !== null && avg < nationalAvg - 0.005;
-                    const isExpensive =
-                      avg !== null && nationalAvg !== null && avg > nationalAvg + 0.005;
 
-                    return (
-                      <tr
-                        key={p.scope}
-                        className="border-b border-gray-50 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
-                      >
-                        <td className="py-3 px-2">
-                          {province ? (
-                            <Link
-                              href={`/gasolineras/precios/${province.slug}`}
-                              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit"
-                            >
-                              {province.name}
-                              <ChevronRight className="w-3 h-3 opacity-60" />
-                            </Link>
-                          ) : (
-                            <span className="text-gray-700 dark:text-gray-300 font-medium">{code}</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-2 text-right">
-                          <span
-                            className={`font-bold font-data ${
-                              isCheap
-                                ? "text-green-600 dark:text-green-400"
-                                : isExpensive
-                                ? "text-red-600 dark:text-red-400"
-                                : "text-gray-900 dark:text-gray-100"
-                            }`}
-                          >
-                            {formatPrice(p.avgGasolina95)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">
-                          {formatPrice(p.minGasolina95)}
-                        </td>
-                        <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">
-                          {formatPrice(p.maxGasolina95)}
-                        </td>
-                        <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-400 hidden md:table-cell font-data">
-                          {p.stationCount.toLocaleString("es-ES")}
-                        </td>
+            {(["cheapest", "expensive"] as const).map((section) => {
+              const rows = section === "cheapest" ? top10Cheapest : top10Expensive;
+              return (
+                <div key={section} className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                    {section === "cheapest"
+                      ? "10 provincias más baratas"
+                      : "10 provincias más caras"}
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-800">
+                          <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Provincia</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Media hoy</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Mínimo</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Máximo</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden md:table-cell">Estaciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((p) => {
+                          const code = extractProvinceCode(p.scope);
+                          const province = PROVINCE_CODES[code];
+                          const avg = toNum(p.avgGasolina95);
+                          const nationalAvg = toNum(nationalToday?.avgGasolina95);
+                          const isCheap = avg !== null && nationalAvg !== null && avg < nationalAvg - 0.005;
+                          const isExpensive = avg !== null && nationalAvg !== null && avg > nationalAvg + 0.005;
+                          return (
+                            <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                              <td className="py-3 px-2">
+                                {province ? (
+                                  <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit">
+                                    {province.name}
+                                    <ChevronRight className="w-3 h-3 opacity-60" />
+                                  </Link>
+                                ) : (
+                                  <span className="text-gray-700 dark:text-gray-300 font-medium">{code}</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-2 text-right">
+                                <span className={`font-bold font-data ${isCheap ? "text-green-600 dark:text-green-400" : isExpensive ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-gray-100"}`}>
+                                  {formatPrice(p.avgGasolina95)}
+                                </span>
+                              </td>
+                              <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.minGasolina95)}</td>
+                              <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.maxGasolina95)}</td>
+                              <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-400 hidden md:table-cell font-data">{p.stationCount.toLocaleString("es-ES")}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Remaining provinces — collapsed by default */}
+            {remainingProvinces.length > 0 && (
+              <details className="group mt-2">
+                <summary className="cursor-pointer list-none flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 py-2">
+                  <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
+                  Ver todas las provincias ({remainingProvinces.length} restantes)
+                </summary>
+                <div className="overflow-x-auto mt-3">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-800">
+                        <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Provincia</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Media hoy</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Mínimo</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Máximo</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden md:table-cell">Estaciones</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody>
+                      {remainingProvinces.map((p) => {
+                        const code = extractProvinceCode(p.scope);
+                        const province = PROVINCE_CODES[code];
+                        const avg = toNum(p.avgGasolina95);
+                        const nationalAvg = toNum(nationalToday?.avgGasolina95);
+                        const isCheap = avg !== null && nationalAvg !== null && avg < nationalAvg - 0.005;
+                        const isExpensive = avg !== null && nationalAvg !== null && avg > nationalAvg + 0.005;
+                        return (
+                          <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                            <td className="py-3 px-2">
+                              {province ? (
+                                <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit">
+                                  {province.name}
+                                  <ChevronRight className="w-3 h-3 opacity-60" />
+                                </Link>
+                              ) : (
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">{code}</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-2 text-right">
+                              <span className={`font-bold font-data ${isCheap ? "text-green-600 dark:text-green-400" : isExpensive ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-gray-100"}`}>
+                                {formatPrice(p.avgGasolina95)}
+                              </span>
+                            </td>
+                            <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.minGasolina95)}</td>
+                            <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.maxGasolina95)}</td>
+                            <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-400 hidden md:table-cell font-data">{p.stationCount.toLocaleString("es-ES")}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            )}
 
             {/* Tax-free provinces */}
             {taxFreeProvinces.length > 0 && (

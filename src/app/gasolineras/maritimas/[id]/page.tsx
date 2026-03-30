@@ -5,6 +5,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { Anchor, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -107,8 +108,70 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
   const badges = [];
   if (station.is24h) badges.push({ label: "24h", color: "blue" });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": ["GasStation", "LocalBusiness"],
+    name: station.name,
+    ...(station.port ? { description: `Estación marítima en Puerto de ${station.port}` } : {}),
+    ...(station.latitude && station.longitude ? {
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: Number(station.latitude),
+        longitude: Number(station.longitude),
+      },
+    } : {}),
+    ...(station.provinceName ? {
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: station.port || station.locality || undefined,
+        addressRegion: station.provinceName,
+        addressCountry: "ES",
+      },
+    } : {}),
+    priceRange: "€",
+    url: `${BASE_URL}/gasolineras/maritimas/${station.id}`,
+    ...(station.priceGasoleoA ? {
+      offers: [
+        ...(station.priceGasoleoA ? [{
+          "@type": "Offer",
+          name: "Gasóleo A",
+          price: Number(station.priceGasoleoA).toFixed(3),
+          priceCurrency: "EUR",
+          priceSpecification: {
+            "@type": "UnitPriceSpecification",
+            price: Number(station.priceGasoleoA).toFixed(3),
+            priceCurrency: "EUR",
+            unitCode: "LTR",
+          },
+        }] : []),
+        ...(station.priceGasolina95E5 ? [{
+          "@type": "Offer",
+          name: "Gasolina 95 E5",
+          price: Number(station.priceGasolina95E5).toFixed(3),
+          priceCurrency: "EUR",
+          priceSpecification: {
+            "@type": "UnitPriceSpecification",
+            price: Number(station.priceGasolina95E5).toFixed(3),
+            priceCurrency: "EUR",
+            unitCode: "LTR",
+          },
+        }] : []),
+      ],
+    } : {}),
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Breadcrumbs items={[
+        { name: "Inicio", href: "/" },
+        { name: "Gasolineras", href: "/gasolineras" },
+        { name: "Marítimas", href: "/gasolineras/maritimas" },
+        { name: station.name, href: `/gasolineras/maritimas/${station.id}` },
+      ]} />
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
         <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>

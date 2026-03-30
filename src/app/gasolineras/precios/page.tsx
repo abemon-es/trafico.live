@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { TrendingUp, TrendingDown, Minus, MapPin } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -150,6 +151,12 @@ export default async function PreciosPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { name: "Inicio", href: "/" },
+        { name: "Gasolineras", href: "/gasolineras" },
+        { name: "Precios", href: "/gasolineras/precios" },
+      ]} />
+
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">

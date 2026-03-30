@@ -140,6 +140,14 @@ interface OrganizationSchemaProps {
   url: string;
   description: string;
   logo?: string;
+  sameAs?: string[];
+  contactPoint?: {
+    contactType: string;
+    url: string;
+    availableLanguage: string;
+  };
+  foundingDate?: string;
+  areaServed?: { "@type": string; name: string };
 }
 
 export function generateOrganizationSchema({
@@ -147,6 +155,10 @@ export function generateOrganizationSchema({
   url,
   description,
   logo,
+  sameAs,
+  contactPoint,
+  foundingDate,
+  areaServed,
 }: OrganizationSchemaProps): BaseStructuredData {
   return {
     "@context": "https://schema.org",
@@ -155,6 +167,17 @@ export function generateOrganizationSchema({
     url,
     description,
     ...(logo && { logo }),
+    ...(sameAs && sameAs.length > 0 && { sameAs }),
+    ...(contactPoint && {
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: contactPoint.contactType,
+        url: contactPoint.url,
+        availableLanguage: contactPoint.availableLanguage,
+      },
+    }),
+    ...(foundingDate && { foundingDate }),
+    ...(areaServed && { areaServed }),
   };
 }
 

@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Camera, MapPin, Video, ArrowRight } from "lucide-react";
 import prisma from "@/lib/db";
 
@@ -236,12 +237,14 @@ export default async function CamarasCityPage({ params }: Props) {
                         >
                           {cam.thumbnailUrl ? (
                             <div className="aspect-video bg-gray-100 dark:bg-gray-900 relative overflow-hidden">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
+                              <Image
                                 src={cam.thumbnailUrl}
                                 alt={`Cámara DGT ${cam.roadNumber ?? ""} km ${cam.kmPoint ?? ""} — ${cityData.name}`}
+                                width={640}
+                                height={480}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
+                                quality={75}
                               />
                             </div>
                           ) : (

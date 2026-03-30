@@ -1,10 +1,11 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock } from "lucide-react";
+import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock, HelpCircle } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
-import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
+import { StructuredData, generateDatasetSchema, generateFAQSchema } from "@/components/seo/StructuredData";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Gasolineras y Precios de Combustible | Tráfico España",
@@ -166,6 +167,12 @@ export default async function GasolinerasPage() {
   return (
     <>
       <StructuredData data={fuelDatasetSchema} />
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Gasolineras", href: "/gasolineras" },
+        ]} />
+      </div>
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
@@ -469,6 +476,83 @@ export default async function GasolinerasPage() {
       {/* Price alert subscription */}
       <div className="mb-8">
         <PriceAlertForm accent="amber" />
+      </div>
+
+      {/* FAQ Section */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          Preguntas Frecuentes
+        </h2>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema({
+            questions: [
+              {
+                question: "¿Con qué frecuencia se actualizan los precios de las gasolineras?",
+                answer: "Los precios se actualizan varias veces al día desde la API oficial del Ministerio para la Transición Ecológica y el Reto Demográfico (MITERD). Las gasolineras reportan sus precios al Ministerio, que los publica en tiempo real.",
+              },
+              {
+                question: "¿Cuántas gasolineras hay en España?",
+                answer: `España cuenta con más de ${stats.terrestrialCount.toLocaleString("es-ES")} gasolineras terrestres y ${stats.maritimeCount.toLocaleString("es-ES")} estaciones marítimas. Nuestra plataforma muestra los precios de todas ellas.`,
+              },
+              {
+                question: "¿Por qué los precios en Canarias, Ceuta y Melilla son más bajos?",
+                answer: "Estos territorios tienen una fiscalidad especial. Canarias aplica IGIC (7%) en lugar de IVA (21%), mientras que Ceuta y Melilla aplican IPSI (0,5%). Esta menor carga fiscal se traduce en precios de combustible significativamente más bajos.",
+              },
+              {
+                question: "¿Qué tipos de combustible se muestran?",
+                answer: "Mostramos precios de Gasóleo A (diésel), Gasolina 95 E5, Gasolina 98 E5, GLP (autogas), Gasóleo B, Gasóleo Premium, GNC, GNL, hidrógeno y AdBlue. La disponibilidad depende de cada estación de servicio.",
+              },
+              {
+                question: "¿Cómo puedo encontrar la gasolinera más barata cerca de mí?",
+                answer: "Puedes usar nuestra sección 'Gasolineras Cerca' que utiliza la geolocalización de tu dispositivo para encontrar las estaciones más próximas ordenadas por precio. También puedes buscar por ciudad en 'Gasolineras Baratas' o filtrar por provincia en el directorio.",
+              },
+            ],
+          })) }}
+        />
+        <dl className="space-y-6">
+          <div>
+            <dt className="font-medium text-gray-900 dark:text-gray-100 mb-2">¿Con qué frecuencia se actualizan los precios de las gasolineras?</dt>
+            <dd className="text-sm text-gray-600 dark:text-gray-400">Los precios se actualizan varias veces al día desde la API oficial del Ministerio para la Transición Ecológica y el Reto Demográfico (MITERD).</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-900 dark:text-gray-100 mb-2">¿Cuántas gasolineras hay en España?</dt>
+            <dd className="text-sm text-gray-600 dark:text-gray-400">España cuenta con más de <span className="font-data">{stats.terrestrialCount.toLocaleString("es-ES")}</span> gasolineras terrestres y <span className="font-data">{stats.maritimeCount.toLocaleString("es-ES")}</span> estaciones marítimas.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-900 dark:text-gray-100 mb-2">¿Por qué los precios en Canarias, Ceuta y Melilla son más bajos?</dt>
+            <dd className="text-sm text-gray-600 dark:text-gray-400">Estos territorios tienen fiscalidad especial: Canarias aplica IGIC (7%) en lugar de IVA (21%), y Ceuta y Melilla aplican IPSI (0,5%).</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-900 dark:text-gray-100 mb-2">¿Qué tipos de combustible se muestran?</dt>
+            <dd className="text-sm text-gray-600 dark:text-gray-400">Gasóleo A, Gasolina 95 E5, Gasolina 98 E5, GLP, Gasóleo B, Gasóleo Premium, GNC, GNL, hidrógeno y AdBlue.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-900 dark:text-gray-100 mb-2">¿Cómo puedo encontrar la gasolinera más barata cerca de mí?</dt>
+            <dd className="text-sm text-gray-600 dark:text-gray-400">Usa <Link href="/gasolineras/cerca" className="text-tl-600 dark:text-tl-400 hover:underline">Gasolineras Cerca</Link> con geolocalización, busca por ciudad en <Link href="/gasolineras/baratas" className="text-tl-600 dark:text-tl-400 hover:underline">Gasolineras Baratas</Link>, o filtra por provincia.</dd>
+          </div>
+        </dl>
+      </div>
+
+      {/* Explore More Sections */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <Link href="/gasolineras/marcas" className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">Por Marca</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Repsol, Cepsa, BP...</div>
+        </Link>
+        <Link href="/gasolineras/baratas" className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">Baratas por Ciudad</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Top 10 más baratas</div>
+        </Link>
+        <Link href="/gasolineras-24-horas" className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">24 Horas</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Abiertas siempre</div>
+        </Link>
+        <Link href="/gasolineras/cerca" className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">Cerca de Mí</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Con geolocalización</div>
+        </Link>
       </div>
 
       {/* Info Box */}

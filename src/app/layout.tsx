@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Exo_2, DM_Sans, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
@@ -97,6 +98,18 @@ const organizationSchema = generateOrganizationSchema({
   url: BASE_URL,
   description: "Plataforma de inteligencia vial en tiempo real para España. Datos oficiales de la DGT incluyendo incidencias, cámaras, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones.",
   logo: `${BASE_URL}/icon.svg`,
+  sameAs: [
+    "https://twitter.com/traficolive",
+    "https://www.linkedin.com/company/traficolive",
+    "https://www.facebook.com/traficolive",
+  ],
+  contactPoint: {
+    contactType: "customer service",
+    url: `${BASE_URL}/sobre`,
+    availableLanguage: "Spanish",
+  },
+  foundingDate: "2024",
+  areaServed: { "@type": "Country", name: "España" },
 });
 
 const webSiteSchema = generateWebSiteSchema({
@@ -111,15 +124,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="es">
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}`,
-          }}
-        />
-      </head>
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
@@ -129,6 +137,17 @@ export default function RootLayout({
         <StickyFooterAd />
         <Footer />
         <CookieConsent />
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   );
