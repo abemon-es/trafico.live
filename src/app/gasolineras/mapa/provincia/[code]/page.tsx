@@ -5,7 +5,9 @@ import { Suspense } from "react";
 import { MapPin, Loader2, ChevronLeft, Fuel, List, BarChart3 } from "lucide-react";
 import prisma from "@/lib/db";
 import { getProvinceBounds, getProvinceName, PROVINCE_NAMES } from "@/lib/province-bounds";
+import { provinceSlug } from "@/lib/geo/slugify";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -108,22 +110,12 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">
-            Inicio
-          </Link>
-          <span className="mx-2">/</span>
-          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">
-            Gasolineras
-          </Link>
-          <span className="mx-2">/</span>
-          <Link href="/gasolineras/mapa" className="hover:text-gray-700 dark:text-gray-300">
-            Mapa
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 dark:text-gray-100">{provinceName}</span>
-        </nav>
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Gasolineras", href: "/gasolineras" },
+          { name: "Mapa", href: "/gasolineras/mapa" },
+          { name: provinceName, href: `/gasolineras/mapa/provincia/${paddedCode}` },
+        ]} />
 
         {/* Header */}
         <div className="mb-6">
@@ -243,7 +235,7 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             </div>
           </Link>
           <Link
-            href={`/gasolineras/precios/${paddedCode}`}
+            href={`/gasolineras/precios/${provinceSlug(provinceName)}`}
             className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
           >
             <BarChart3 className="w-6 h-6 text-tl-600 dark:text-tl-400" />

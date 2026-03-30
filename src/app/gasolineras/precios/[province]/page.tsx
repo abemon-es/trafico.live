@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { MapPin, ArrowLeft, Clock } from "lucide-react";
+import { MapPin, ArrowLeft, Clock, Map, Tag, Fuel, BarChart3 } from "lucide-react";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
@@ -267,6 +268,36 @@ export default async function ProvincePricesPage({ params }: Props) {
           No se encontraron gasolineras en {provinceData.name}
         </div>
       )}
+
+      <RelatedLinks
+        title={`Más sobre gasolineras en ${provinceData.name}`}
+        links={[
+          {
+            title: `Mapa de gasolineras en ${provinceData.name}`,
+            description: "Ver todas las estaciones en el mapa interactivo",
+            href: `/gasolineras/mapa/provincia/${provinceData.code}`,
+            icon: <Map className="w-5 h-5" />,
+          },
+          {
+            title: "Comparar precios por marca",
+            description: "Repsol, Cepsa, BP y más — precios medios por marca",
+            href: "/gasolineras/marcas",
+            icon: <Tag className="w-5 h-5" />,
+          },
+          {
+            title: "Directorio completo",
+            description: "Busca y filtra entre todas las gasolineras de España",
+            href: "/gasolineras/terrestres",
+            icon: <Fuel className="w-5 h-5" />,
+          },
+          {
+            title: "Precios nacionales",
+            description: "Comparativa de precios medios por provincia",
+            href: "/gasolineras/precios",
+            icon: <BarChart3 className="w-5 h-5" />,
+          },
+        ]}
+      />
     </div>
   );
 }
