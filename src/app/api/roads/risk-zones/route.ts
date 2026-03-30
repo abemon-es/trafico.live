@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { RiskType, Severity } from "@prisma/client";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,14 @@ export async function GET(request: Request) {
     const severityFilter = searchParams.get("severity") as Severity | null;
     const animalFilter = searchParams.get("animal");
     const includeGeometry = searchParams.get("includeGeometry") !== "false";
+    const isUnfiltered = !typeFilter && !roadFilter && !severityFilter && !animalFilter;
+
+    // Cache unfiltered requests (data changes infrequently)
+    const cacheKey = `roads:risk-zones:${typeFilter ?? ""}:${roadFilter ?? ""}:${severityFilter ?? ""}:${animalFilter ?? ""}`;
+    if (isUnfiltered) {
+      const cached = await getFromCache(cacheKey);
+      if (cached) return NextResponse.json(cached);
+    }
 
     // Build where clause
     const where: Record<string, unknown> = {};
@@ -75,9 +84,10 @@ export async function GET(request: Request) {
       };
     }
 
-    // Fetch risk zones
+    // Fetch risk zones (cap at 500 when no specific road filter to avoid oversized responses)
     const zones = await prisma.riskZone.findMany({
       where,
+      ...(!roadFilter && { take: 500 }),
       select: {
         id: true,
         type: true,
@@ -162,7 +172,7 @@ export async function GET(request: Request) {
         {} as Record<string, { count: number; zones: number }>
       );
 
-    return NextResponse.json({
+    const responseBody = {
       success: true,
       data: {
         zones: transformedZones,
@@ -174,7 +184,13 @@ export async function GET(request: Request) {
           animalStats: Object.keys(animalStats).length > 0 ? animalStats : null,
         },
       },
-    });
+    };
+
+    if (isUnfiltered) {
+      await setInCache(cacheKey, responseBody, 3600);
+    }
+
+    return NextResponse.json(responseBody);
   } catch (error) {
     console.error("Risk zones API error:", error);
     return NextResponse.json(

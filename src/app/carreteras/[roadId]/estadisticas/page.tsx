@@ -85,7 +85,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
     notFound();
   }
 
-  // Fetch all statistics
+  // Fetch all statistics in parallel
   const [
     cameras,
     radars,
@@ -95,6 +95,9 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
     chargers,
     speedLimits,
     v16Events,
+    radarBreakdown,
+    incidentTypes,
+    recentIncidents,
   ] = await Promise.all([
     prisma.camera.count({ where: { roadNumber: road.id, isActive: true } }),
     prisma.radar.count({ where: { roadNumber: road.id, isActive: true } }),
@@ -109,40 +112,34 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
         activatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
       }
     }),
+    prisma.radar.groupBy({
+      by: ["type"],
+      where: { roadNumber: road.id, isActive: true },
+      _count: true,
+    }),
+    prisma.trafficIncident.groupBy({
+      by: ["type"],
+      where: { roadNumber: road.id },
+      _count: true,
+      orderBy: { _count: { type: "desc" } },
+      take: 5,
+    }),
+    prisma.trafficIncident.findMany({
+      where: { roadNumber: road.id },
+      orderBy: { startedAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        type: true,
+        description: true,
+        startedAt: true,
+        endedAt: true,
+        isActive: true,
+        kmPoint: true,
+        province: true,
+      },
+    }),
   ]);
-
-  // Get radar breakdown
-  const radarBreakdown = await prisma.radar.groupBy({
-    by: ["type"],
-    where: { roadNumber: road.id, isActive: true },
-    _count: true,
-  });
-
-  // Get incident types
-  const incidentTypes = await prisma.trafficIncident.groupBy({
-    by: ["type"],
-    where: { roadNumber: road.id },
-    _count: true,
-    orderBy: { _count: { type: "desc" } },
-    take: 5,
-  });
-
-  // Get recent incidents
-  const recentIncidents = await prisma.trafficIncident.findMany({
-    where: { roadNumber: road.id },
-    orderBy: { startedAt: "desc" },
-    take: 10,
-    select: {
-      id: true,
-      type: true,
-      description: true,
-      startedAt: true,
-      endedAt: true,
-      isActive: true,
-      kmPoint: true,
-      province: true,
-    },
-  });
 
   const typeLabel = ROAD_TYPE_LABELS[road.type] || "Carretera";
   const provinceNames = road.provinces.map((p) => PROVINCE_NAMES[p] || p);

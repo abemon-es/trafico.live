@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getFromCache, setInCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,10 @@ interface ComparisonData {
 
 export async function GET() {
   try {
+    const cacheKey = "dashboard:stats";
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
+
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
@@ -151,7 +156,7 @@ export async function GET() {
     const currentIncidents = currentHourStats?.incidentCount ?? 0;
     const isAboveAverage = currentIncidents > avgIncidents * 1.2; // 20% above average
 
-    return NextResponse.json({
+    const responseBody = {
       success: true,
       data: {
         sparkline: sparklineData,
@@ -172,7 +177,10 @@ export async function GET() {
         },
         timestamp: now.toISOString(),
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseBody, 60);
+    return NextResponse.json(responseBody);
   } catch (error) {
     console.error("Dashboard stats API error:", error);
     return NextResponse.json(
