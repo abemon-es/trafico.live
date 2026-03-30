@@ -976,3 +976,38 @@ model StationDailyRanking {
   @@index([stationId])
   @@index([recordedAt])
 }
+
+// ---------------------------------------------------------------------------
+// Insights — auto-generated articles from data analysis
+// ---------------------------------------------------------------------------
+
+enum InsightCategory {
+  REGULATORY
+  PRICE_ALERT
+  INCIDENT_DIGEST
+  WEATHER_ALERT
+  NEW_STATION
+  DAILY_REPORT
+}
+
+model Insight {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  summary     String          @db.Text
+  body        String          @db.Text
+  category    InsightCategory
+  source      String
+  sourceUrl   String?
+  province    String?
+  imageUrl    String?
+
+  publishedAt DateTime        @default(now()) @db.Timestamptz
+  createdAt   DateTime        @default(now()) @db.Timestamptz
+  updatedAt   DateTime        @updatedAt
+
+  @@index([category])
+  @@index([publishedAt])
+  @@index([province])
+  @@index([slug])
+}
