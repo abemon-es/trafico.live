@@ -14,6 +14,7 @@ const GAS_STATION_OFFSET = 1;
 const MUNICIPALITY_OFFSET = 100;
 const POSTAL_CODE_OFFSET = 200;
 const INSIGHTS_OFFSET = 300;
+const MARITIME_OFFSET = 400;
 
 /**
  * Generates sitemap index entries.
@@ -22,7 +23,7 @@ const INSIGHTS_OFFSET = 300;
  */
 export async function generateSitemaps() {
   try {
-    const [stationCount, municipalityCount, postalCodeCount] = await Promise.all([
+    const [stationCount, municipalityCount, postalCodeCount, maritimeCount] = await Promise.all([
       prisma.gasStation.count(),
       prisma.municipality.count(),
       prisma.gasStation.findMany({
@@ -30,11 +31,13 @@ export async function generateSitemaps() {
         distinct: ["postalCode"],
         where: { postalCode: { not: null } },
       }).then((r) => r.length),
+      prisma.maritimeStation.count(),
     ]);
 
     const stationShards = Math.max(1, Math.ceil(stationCount / SHARD_SIZE));
     const municipalityShards = Math.max(1, Math.ceil(municipalityCount / SHARD_SIZE));
     const postalCodeShards = Math.max(1, Math.ceil(postalCodeCount / SHARD_SIZE));
+    const maritimeShards = Math.max(1, Math.ceil(maritimeCount / SHARD_SIZE));
 
     return [
       { id: 0 }, // Core pages
@@ -48,6 +51,9 @@ export async function generateSitemaps() {
         id: POSTAL_CODE_OFFSET + i,
       })),
       { id: INSIGHTS_OFFSET }, // Insights (single shard — low volume)
+      ...Array.from({ length: maritimeShards }, (_, i) => ({
+        id: MARITIME_OFFSET + i,
+      })),
     ];
   } catch {
     return [{ id: 0 }];
@@ -68,7 +74,13 @@ export default async function sitemap(props: {
   if (id >= POSTAL_CODE_OFFSET && id < INSIGHTS_OFFSET) {
     return postalCodeSitemap(id - POSTAL_CODE_OFFSET);
   }
-  return insightsSitemap();
+  if (id === INSIGHTS_OFFSET) {
+    return insightsSitemap();
+  }
+  if (id >= MARITIME_OFFSET) {
+    return maritimeStationSitemap(id - MARITIME_OFFSET);
+  }
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -106,6 +118,21 @@ const BARATOS_CITY_SLUGS = [
   "valladolid", "granada", "oviedo", "santander", "pamplona",
   "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
 ];
+
+// All 52 province slugs for /gasolineras/precios/{province}
+const PRICE_PROVINCE_SLUGS = [
+  "alava", "albacete", "alicante", "almeria", "avila", "badajoz", "baleares",
+  "barcelona", "burgos", "caceres", "cadiz", "castellon", "ciudad-real", "cordoba",
+  "a-coruna", "cuenca", "girona", "granada", "guadalajara", "gipuzkoa", "huelva",
+  "huesca", "jaen", "leon", "lleida", "la-rioja", "lugo", "madrid", "malaga",
+  "murcia", "navarra", "ourense", "asturias", "palencia", "las-palmas", "pontevedra",
+  "salamanca", "santa-cruz-de-tenerife", "cantabria", "segovia", "sevilla", "soria",
+  "tarragona", "teruel", "toledo", "valencia", "valladolid", "bizkaia", "zamora",
+  "zaragoza", "ceuta", "melilla",
+];
+
+// Province codes 01-52 for /gasolineras/mapa/provincia/{code}
+const PROVINCE_MAP_CODES = Array.from({ length: 52 }, (_, i) => String(i + 1).padStart(2, "0"));
 
 const CAMARAS_CITY_SLUGS = [
   "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
@@ -203,6 +230,10 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     ...ELECTROLINERAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/electrolineras/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
     ...BARATOS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/gasolineras/baratas/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.9 })),
     ...CAMARAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/camaras/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
+    // Province fuel price pages (52 provinces)
+    ...PRICE_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/gasolineras/precios/${slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
+    // Province gas station map pages (52 provinces)
+    ...PROVINCE_MAP_CODES.map((code) => ({ url: `${BASE_URL}/gasolineras/mapa/provincia/${code}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
   ];
 
   // Blog articles
@@ -368,6 +399,32 @@ async function postalCodeSitemap(
         changeFrequency: "weekly" as const,
         priority: 0.45,
       }));
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Maritime station sitemap shards
+// ---------------------------------------------------------------------------
+
+async function maritimeStationSitemap(
+  shardIndex: number
+): Promise<MetadataRoute.Sitemap> {
+  try {
+    const stations = await prisma.maritimeStation.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { id: true },
+      orderBy: { id: "asc" },
+    });
+
+    return stations.map((station) => ({
+      url: `${BASE_URL}/gasolineras/maritimas/${station.id}`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.5,
+    }));
   } catch {
     return [];
   }
