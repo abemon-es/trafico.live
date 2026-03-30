@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { labelForEnum } from "@/lib/labels";
 
 export const revalidate = 300;
 
@@ -284,7 +285,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     <div key={incident.id} className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium text-red-800">
-                          {incident.type.replace(/_/g, " ")}
+                          {labelForEnum(incident.type)}
                         </span>
                         {incident.kmPoint && (
                           <span className="text-xs text-red-600 dark:text-red-400 font-data">km {Number(incident.kmPoint)}</span>

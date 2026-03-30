@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { TrendingUp, ArrowLeft, AlertTriangle, Camera, Radar, Zap, MapPin, Activity } from "lucide-react";
+import { labelForEnum } from "@/lib/labels";
 
 export const revalidate = 3600;
 
@@ -277,7 +278,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
                 return (
                   <div key={item.type}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{item.type.replace(/_/g, " ")}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{labelForEnum(item.type)}</span>
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item._count}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
@@ -314,7 +315,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
                         {new Date(incident.startedAt).toLocaleDateString("es-ES")}
                       </td>
                       <td className="py-2 px-3 text-gray-900 dark:text-gray-100">
-                        {incident.type.replace(/_/g, " ")}
+                        {labelForEnum(incident.type)}
                       </td>
                       <td className="py-2 px-3 text-gray-600 dark:text-gray-400 hidden md:table-cell">
                         {incident.kmPoint ? `km ${Number(incident.kmPoint).toFixed(0)}` : ""}
