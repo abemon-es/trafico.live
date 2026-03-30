@@ -12,8 +12,14 @@
  *   - Top 10 longest roads
  */
 
+export const revalidate = 86400;
+
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY = "roads:stats";
+const CACHE_TTL = 3600; // 1 hour
 
 // Province code to name mapping
 const PROVINCE_NAMES: Record<string, string> = {
@@ -122,42 +128,52 @@ export async function GET(): Promise<
   NextResponse<StatsResponse | ErrorResponse>
 > {
   try {
-    // Get all roads for aggregation
-    const roads = await prisma.road.findMany();
-
-    // Calculate total stats
-    const totalRoads = roads.length;
-    const totalKm = roads.reduce(
-      (sum, road) => sum + (road.totalKm ? Number(road.totalKm) : 0),
-      0
-    );
-
-    // Calculate by type
-    const typeMap = new Map<
-      string,
-      { count: number; totalKm: number }
-    >();
-    for (const road of roads) {
-      const current = typeMap.get(road.type) || { count: 0, totalKm: 0 };
-      typeMap.set(road.type, {
-        count: current.count + 1,
-        totalKm: current.totalKm + (road.totalKm ? Number(road.totalKm) : 0),
+    // Serve from Redis cache if available
+    const cached = await getFromCache<StatsResponse>(CACHE_KEY);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
+          "X-Cache": "HIT",
+        },
       });
     }
 
-    const byType: TypeStats[] = Array.from(typeMap.entries())
-      .map(([type, stats]) => ({
-        type,
-        count: stats.count,
-        totalKm: Math.round(stats.totalKm * 100) / 100,
-        percentage: Math.round((stats.count / totalRoads) * 10000) / 100,
+    // Run targeted DB queries in parallel — no full table scan
+    const [totalRoads, aggregateKm, byTypeRaw, longestRoadsRaw, provincesOnly] =
+      await Promise.all([
+        prisma.road.count(),
+        prisma.road.aggregate({ _sum: { totalKm: true } }),
+        prisma.road.groupBy({
+          by: ["type"],
+          _count: true,
+          _sum: { totalKm: true },
+        }),
+        prisma.road.findMany({
+          orderBy: { totalKm: "desc" },
+          take: 10,
+          select: { id: true, name: true, type: true, totalKm: true },
+        }),
+        // Only select the provinces array — avoids pulling all columns
+        prisma.road.findMany({ select: { provinces: true } }),
+      ]);
+
+    const totalKm = Number(aggregateKm._sum.totalKm ?? 0);
+
+    // Build byType from groupBy result
+    const byType: TypeStats[] = byTypeRaw
+      .map((row) => ({
+        type: row.type,
+        count: row._count,
+        totalKm: Math.round(Number(row._sum.totalKm ?? 0) * 100) / 100,
+        percentage: Math.round((row._count / totalRoads) * 10000) / 100,
       }))
       .sort((a, b) => b.totalKm - a.totalKm);
 
-    // Calculate by province (count roads passing through each)
+    // Province breakdown — still needs all rows but only the provinces field
     const provinceMap = new Map<string, number>();
-    for (const road of roads) {
-      for (const province of road.provinces) {
+    for (const row of provincesOnly) {
+      for (const province of row.provinces) {
         provinceMap.set(province, (provinceMap.get(province) || 0) + 1);
       }
     }
@@ -169,13 +185,11 @@ export async function GET(): Promise<
         roadCount: count,
       }))
       .sort((a, b) => b.roadCount - a.roadCount)
-      .slice(0, 20); // Top 20 provinces
+      .slice(0, 20);
 
-    // Get longest roads
-    const longestRoads: LongestRoad[] = roads
+    // Map longest roads
+    const longestRoads: LongestRoad[] = longestRoadsRaw
       .filter((road) => road.totalKm !== null)
-      .sort((a, b) => Number(b.totalKm) - Number(a.totalKm))
-      .slice(0, 10)
       .map((road) => ({
         id: road.id,
         name: road.name,
@@ -207,9 +221,13 @@ export async function GET(): Promise<
       },
     };
 
+    // Store in Redis for 1 hour
+    await setInCache(CACHE_KEY, response, CACHE_TTL);
+
     return NextResponse.json(response, {
       headers: {
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
+        "X-Cache": "MISS",
       },
     });
   } catch (error) {
