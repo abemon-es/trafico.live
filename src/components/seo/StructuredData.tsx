@@ -158,6 +158,39 @@ export function generateOrganizationSchema({
   };
 }
 
+interface WebSiteSchemaProps {
+  name: string;
+  url: string;
+  description: string;
+  searchUrl?: string;
+}
+
+export function generateWebSiteSchema({
+  name,
+  url,
+  description,
+  searchUrl,
+}: WebSiteSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name,
+    url,
+    description,
+    inLanguage: "es",
+    ...(searchUrl && {
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: searchUrl,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    }),
+  };
+}
+
 interface DatasetSchemaProps {
   name: string;
   description: string;

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Mapa en tiempo real de incidencias en las carreteras españolas. Cortes de carretera, obras, accidentes y condiciones meteorológicas adversas.",
   alternates: {
-    canonical: "/incidencias",
+    canonical: "https://trafico.live/incidencias",
   },
 };
 

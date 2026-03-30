@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "coste ruta españa",
   ],
   alternates: {
-    canonical: "/calculadora",
+    canonical: "https://trafico.live/calculadora",
   },
   openGraph: {
     title: "Calculadora de Coste de Ruta — Combustible y Peajes | trafico.live",

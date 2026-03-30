@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "carga rapida precio",
   ],
   alternates: {
-    canonical: "/cuanto-cuesta-cargar",
+    canonical: "https://trafico.live/cuanto-cuesta-cargar",
   },
   openGraph: {
     title: "¿Cuánto Cuesta Cargar un Coche Eléctrico en 2026? — Calculadora | trafico.live",

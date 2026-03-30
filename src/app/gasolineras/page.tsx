@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Gasolineras y Precios de Combustible | Tráfico España",
   description: "Consulta los precios de combustible actualizados en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti.",
   alternates: {
-    canonical: "/gasolineras",
+    canonical: "https://trafico.live/gasolineras",
   },
 };
 

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Encuentra las gasolineras más baratas en tu ciudad. Precios actualizados de Gasóleo A y Gasolina 95 para las principales ciudades de España.",
   alternates: {
-    canonical: "/gasolineras/baratas",
+    canonical: "https://trafico.live/gasolineras/baratas",
   },
 };
 

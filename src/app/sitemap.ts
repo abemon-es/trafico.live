@@ -2,18 +2,68 @@ import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
 import { ARTICLES } from "@/app/blog/articles";
 
-// Force dynamic rendering - database not accessible during build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-// Per-city live traffic pages ("tráfico [city] hoy" — 5-30K searches/mo each)
+// Shard size for paginated sitemaps
+const SHARD_SIZE = 5000;
+
+// ID ranges: 0 = core, 1-99 = gas stations, 100+ = municipalities
+const GAS_STATION_OFFSET = 1;
+const MUNICIPALITY_OFFSET = 100;
+
+/**
+ * Generates sitemap index entries.
+ * Next.js automatically creates /sitemap.xml as the index,
+ * with individual sitemaps at /sitemap/{id}.xml
+ */
+export async function generateSitemaps() {
+  try {
+    const [stationCount, municipalityCount] = await Promise.all([
+      prisma.gasStation.count(),
+      prisma.municipality.count(),
+    ]);
+
+    const stationShards = Math.max(1, Math.ceil(stationCount / SHARD_SIZE));
+    const municipalityShards = Math.max(1, Math.ceil(municipalityCount / SHARD_SIZE));
+
+    return [
+      { id: 0 }, // Core pages
+      ...Array.from({ length: stationShards }, (_, i) => ({
+        id: GAS_STATION_OFFSET + i,
+      })),
+      ...Array.from({ length: municipalityShards }, (_, i) => ({
+        id: MUNICIPALITY_OFFSET + i,
+      })),
+    ];
+  } catch {
+    return [{ id: 0 }];
+  }
+}
+
+export default async function sitemap({
+  id,
+}: {
+  id: number;
+}): Promise<MetadataRoute.Sitemap> {
+  if (id === 0) return coreSitemap();
+  if (id >= GAS_STATION_OFFSET && id < MUNICIPALITY_OFFSET) {
+    return gasStationSitemap(id - GAS_STATION_OFFSET);
+  }
+  return municipalitySitemap(id - MUNICIPALITY_OFFSET);
+}
+
+// ---------------------------------------------------------------------------
+// Core sitemap: static pages, roads, communities, cities, blog
+// ---------------------------------------------------------------------------
+
+// Per-city live traffic pages
 const TRAFFIC_CITY_SLUGS = [
   "madrid", "barcelona", "valencia", "sevilla", "malaga",
   "zaragoza", "bilbao", "alicante", "murcia", "granada",
 ];
 
-// Electrolineras city pages ("electrolineras [city]" — 2-6K searches/mo each)
 const ELECTROLINERAS_CITY_SLUGS = [
   "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
   "malaga", "murcia", "palma", "bilbao", "alicante",
@@ -21,99 +71,55 @@ const ELECTROLINERAS_CITY_SLUGS = [
   "granada", "oviedo", "santander", "san-sebastian", "pamplona",
 ];
 
-// ZBE cities with dedicated pages
 const ZBE_CITY_SLUGS = [
   "madrid", "barcelona", "granada", "malaga", "zaragoza",
   "sabadell", "vitoria", "valladolid", "sevilla", "valencia",
 ];
 
-// Major cities for city pages
 const CITIES = [
   "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
   "malaga", "murcia", "palma", "bilbao", "alicante",
   "cordoba", "valladolid", "vigo", "gijon", "granada",
-  "vitoria", "oviedo", "san-sebastian", "santander", "pamplona"
+  "vitoria", "oviedo", "san-sebastian", "santander", "pamplona",
 ];
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+const BARATOS_CITY_SLUGS = [
+  "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
+  "malaga", "murcia", "bilbao", "alicante", "cordoba",
+  "valladolid", "granada", "oviedo", "santander", "pamplona",
+  "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
+];
+
+const CAMARAS_CITY_SLUGS = [
+  "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
+  "malaga", "murcia", "bilbao", "alicante", "cordoba",
+  "valladolid", "granada", "oviedo", "santander", "pamplona",
+  "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
+];
+
+const COMMUNITIES = [
+  "andalucia", "aragon", "asturias", "baleares", "canarias",
+  "cantabria", "castilla-la-mancha", "castilla-y-leon", "cataluna",
+  "comunidad-valenciana", "extremadura", "galicia", "madrid",
+  "murcia", "navarra", "pais-vasco", "la-rioja", "ceuta", "melilla",
+];
+
+async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
-  // Static pages with high priority
   const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: BASE_URL,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 1.0,
-    },
-    // /mapa redirects to / — excluded from sitemap
-    // Roads section
-    {
-      url: `${BASE_URL}/carreteras`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/carreteras/autopistas`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/carreteras/autovias`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/carreteras/nacionales`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/carreteras/regionales`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    // Incidents (with alias)
-    {
-      url: `${BASE_URL}/incidencias`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/incidencias/analytics`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    // /alertas is a rewrite of /incidencias — excluded from sitemap to avoid duplicate content
-    // Cameras
-    {
-      url: `${BASE_URL}/camaras`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.8,
-    },
-    // Variable message panels (PMV)
-    {
-      url: `${BASE_URL}/paneles`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.8,
-    },
-    // Radares (high-value SEO page)
-    {
-      url: `${BASE_URL}/radares`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    // Per-road radar pages (3-8K searches/mo each — "radares AP-7", "radares A-1", etc.)
+    { url: BASE_URL, lastModified: now, changeFrequency: "hourly", priority: 1.0 },
+    { url: `${BASE_URL}/carreteras`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/carreteras/autopistas`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/carreteras/autovias`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/carreteras/nacionales`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/carreteras/regionales`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/incidencias`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${BASE_URL}/incidencias/analytics`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/camaras`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
+    { url: `${BASE_URL}/paneles`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
+    { url: `${BASE_URL}/radares`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    // Per-road radar pages
     ...([
       "AP-7", "AP-68", "AP-1", "AP-2", "AP-4", "AP-6", "AP-9",
       "A-1", "A-2", "A-3", "A-4", "A-5", "A-6", "A-7", "A-8",
@@ -125,379 +131,77 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.85,
     }))),
-    // Statistics
-    {
-      url: `${BASE_URL}/estadisticas`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/historico`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    // Geographic
-    {
-      url: `${BASE_URL}/espana`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    // /provincias redirects to /espana — excluded from sitemap
-    {
-      url: `${BASE_URL}/comunidad-autonoma`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/ciudad`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    // High-value fuel price landing pages
-    {
-      url: `${BASE_URL}/precio-gasolina-hoy`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.95,
-    },
-    {
-      url: `${BASE_URL}/precio-diesel-hoy`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.95,
-    },
-    // Gas stations (with alias)
-    {
-      url: `${BASE_URL}/gasolineras`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-    },
-    // /combustible is a rewrite of /gasolineras — excluded from sitemap to avoid duplicate content
-    {
-      url: `${BASE_URL}/gasolineras/terrestres`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/gasolineras/maritimas`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/gasolineras/cerca`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/gasolineras/precios`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/gasolineras/mapa`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/gasolineras/marcas`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    // EV Chargers section (NEW)
-    {
-      url: `${BASE_URL}/carga-ev`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.85,
-    },
-    {
-      url: `${BASE_URL}/carga-ev/cerca`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    // Professional section (NEW)
-    {
-      url: `${BASE_URL}/profesional`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/profesional/diesel`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/profesional/areas`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    {
-      url: `${BASE_URL}/profesional/restricciones`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    // Route cost calculator (high SEO value — "calculadora ruta", "coste viaje coche")
-    {
-      url: `${BASE_URL}/calculadora`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    // EV charging cost calculator (high SEO value — "cuánto cuesta cargar coche eléctrico")
-    {
-      url: `${BASE_URL}/cuanto-cuesta-cargar`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    // Best travel hour analysis (SEO — "mejor hora para viajar", "horas punta tráfico")
-    {
-      url: `${BASE_URL}/mejor-hora`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    // Black spots / accident concentration zones (high SEO value)
-    {
-      url: `${BASE_URL}/puntos-negros`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    {
-      url: `${BASE_URL}/ciclistas`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    // Municipality index (individual pages served via /municipio/[slug]/sitemap.xml)
-    {
-      url: `${BASE_URL}/municipio`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    // Weather alerts (AEMET)
-    {
-      url: `${BASE_URL}/alertas-meteo`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.85,
-    },
-    // Seasonal SEO pages
-    {
-      url: `${BASE_URL}/semana-santa-2026`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 1.0,
-    },
-    {
-      url: `${BASE_URL}/puente-mayo-2026`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.95,
-    },
-    {
-      url: `${BASE_URL}/operaciones`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/restricciones`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    // Gasolineras 24 horas (high SEO value — "gasolineras 24 horas", "gasolineras abiertas")
-    {
-      url: `${BASE_URL}/gasolineras-24-horas`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    // High-SEO live traffic landing pages
-    {
-      url: `${BASE_URL}/atascos`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.95,
-    },
-    {
-      url: `${BASE_URL}/cortes-trafico`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-    },
-    // Etiqueta ambiental guide ("etiqueta ambiental DGT" 25-50K/mo, "cómo saber etiqueta coche" 20-40K/mo)
-    {
-      url: `${BASE_URL}/etiqueta-ambiental`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.95,
-    },
-    // Explore
-    {
-      url: `${BASE_URL}/explorar`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/explorar/infraestructura`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    // API documentation
-    {
-      url: `${BASE_URL}/api-docs`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    // About & Legal
-    {
-      url: `${BASE_URL}/sobre`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${BASE_URL}/aviso-legal`,
-      lastModified: now,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${BASE_URL}/politica-privacidad`,
-      lastModified: now,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${BASE_URL}/politica-cookies`,
-      lastModified: now,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    // Blog index
-    {
-      url: `${BASE_URL}/blog`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
+    { url: `${BASE_URL}/estadisticas`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/historico`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/espana`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/comunidad-autonoma`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/ciudad`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/precio-gasolina-hoy`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
+    { url: `${BASE_URL}/precio-diesel-hoy`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
+    { url: `${BASE_URL}/gasolineras`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${BASE_URL}/gasolineras/terrestres`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/gasolineras/maritimas`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/gasolineras/cerca`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/gasolineras/precios`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
+    { url: `${BASE_URL}/gasolineras/mapa`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/gasolineras/marcas`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/carga-ev`, lastModified: now, changeFrequency: "daily", priority: 0.85 },
+    { url: `${BASE_URL}/carga-ev/cerca`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/profesional`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/profesional/diesel`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
+    { url: `${BASE_URL}/profesional/areas`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/profesional/restricciones`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/calculadora`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE_URL}/cuanto-cuesta-cargar`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE_URL}/mejor-hora`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/puntos-negros`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE_URL}/ciclistas`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE_URL}/municipio`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/alertas-meteo`, lastModified: now, changeFrequency: "hourly", priority: 0.85 },
+    { url: `${BASE_URL}/semana-santa-2026`, lastModified: now, changeFrequency: "hourly", priority: 1.0 },
+    { url: `${BASE_URL}/puente-mayo-2026`, lastModified: now, changeFrequency: "hourly", priority: 0.95 },
+    { url: `${BASE_URL}/operaciones`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE_URL}/restricciones`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE_URL}/gasolineras-24-horas`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/atascos`, lastModified: now, changeFrequency: "hourly", priority: 0.95 },
+    { url: `${BASE_URL}/cortes-trafico`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${BASE_URL}/etiqueta-ambiental`, lastModified: now, changeFrequency: "monthly", priority: 0.95 },
+    { url: `${BASE_URL}/explorar`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/explorar/infraestructura`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/api-docs`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE_URL}/sobre`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE_URL}/aviso-legal`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/politica-privacidad`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/politica-cookies`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/gasolineras/baratas`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
   ];
 
-  // Per-city live traffic pages (high SEO value — "tráfico madrid hoy", etc.)
-  const trafficCityPages: MetadataRoute.Sitemap = TRAFFIC_CITY_SLUGS.map((city) => ({
-    url: `${BASE_URL}/trafico/${city}`,
-    lastModified: now,
-    changeFrequency: "hourly" as const,
-    priority: 0.9,
-  }));
-
-  // ZBE city pages (high SEO value — "ZBE Madrid", "zona bajas emisiones Barcelona", etc.)
-  const zbeCityPages: MetadataRoute.Sitemap = ZBE_CITY_SLUGS.map((city) => ({
-    url: `${BASE_URL}/zbe/${city}`,
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: 0.88,
-  }));
-
-  // City pages (NEW)
-  const cityPages: MetadataRoute.Sitemap = CITIES.map((city) => ({
-    url: `${BASE_URL}/ciudad/${city}`,
-    lastModified: now,
-    changeFrequency: "daily" as const,
-    priority: 0.75,
-  }));
-
-  // EV charger city pages (NEW)
-  const evCityPages: MetadataRoute.Sitemap = CITIES.slice(0, 10).map((city) => ({
-    url: `${BASE_URL}/carga-ev/${city}`,
-    lastModified: now,
-    changeFrequency: "daily" as const,
-    priority: 0.7,
-  }));
-
-  // Electrolineras city pages — "electrolineras [city]" (2-6K/mo each)
-  const electrolinerasCityPages: MetadataRoute.Sitemap = ELECTROLINERAS_CITY_SLUGS.map((city) => ({
-    url: `${BASE_URL}/electrolineras/${city}`,
-    lastModified: now,
-    changeFrequency: "daily" as const,
-    priority: 0.8,
-  }));
-
-  // Cheapest gas station city pages — high SEO value ("gasolineras baratas madrid", etc.)
-  const baratosCitySlugs = [
-    "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
-    "malaga", "murcia", "bilbao", "alicante", "cordoba",
-    "valladolid", "granada", "oviedo", "santander", "pamplona",
-    "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
+  // City-based pages
+  const cityPages = [
+    ...TRAFFIC_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/trafico/${c}`, lastModified: now, changeFrequency: "hourly" as const, priority: 0.9 })),
+    ...ZBE_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/zbe/${c}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.88 })),
+    ...CITIES.map((c) => ({ url: `${BASE_URL}/ciudad/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.75 })),
+    ...CITIES.slice(0, 10).map((c) => ({ url: `${BASE_URL}/carga-ev/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
+    ...ELECTROLINERAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/electrolineras/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
+    ...BARATOS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/gasolineras/baratas/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.9 })),
+    ...CAMARAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/camaras/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
   ];
-  const baratosIndexPage: MetadataRoute.Sitemap = [
-    {
-      url: `${BASE_URL}/gasolineras/baratas`,
-      lastModified: now,
-      changeFrequency: "daily" as const,
-      priority: 0.9,
-    },
-  ];
-  const baratosCityPages: MetadataRoute.Sitemap = baratosCitySlugs.map((city) => ({
-    url: `${BASE_URL}/gasolineras/baratas/${city}`,
-    lastModified: now,
-    changeFrequency: "daily" as const,
-    priority: 0.9,
-  }));
 
-  // Camera city pages — high SEO value ("cámaras tráfico madrid", etc.)
-  const camarasCitySlugsList = [
-    "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
-    "malaga", "murcia", "bilbao", "alicante", "cordoba",
-    "valladolid", "granada", "oviedo", "santander", "pamplona",
-    "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
-  ];
-  const camarasCityPages: MetadataRoute.Sitemap = camarasCitySlugsList.map((city) => ({
-    url: `${BASE_URL}/camaras/${city}`,
-    lastModified: now,
-    changeFrequency: "daily" as const,
-    priority: 0.8,
-  }));
-
-  // Blog article pages (static, from ARTICLES registry)
-  const blogArticlePages: MetadataRoute.Sitemap = ARTICLES.map((article) => ({
+  // Blog articles
+  const blogPages = ARTICLES.map((article) => ({
     url: `${BASE_URL}/blog/${article.slug}`,
     lastModified: new Date(article.date),
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
 
-  // Get all roads for dynamic pages
+  // Dynamic road pages
   const roads = await prisma.road.findMany({
     select: { id: true, type: true },
     orderBy: { id: "asc" },
   });
 
-  // Road pages - higher priority for main roads
   const roadPages: MetadataRoute.Sitemap = roads.flatMap((road) => {
     const isMainRoad = ["AUTOPISTA", "AUTOVIA", "NACIONAL"].includes(road.type);
     const priority = road.type === "AUTOPISTA" ? 0.85 : road.type === "AUTOVIA" ? 0.8 : road.type === "NACIONAL" ? 0.75 : 0.6;
@@ -511,9 +215,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     ];
 
-    // Add sub-pages only for main roads
     if (isMainRoad) {
-      // Round to 1 decimal to avoid IEEE-754 artifacts (e.g. 0.85 - 0.1 = 0.7500000000000001)
       const subPriority = Number((priority - 0.1).toFixed(1));
       pages.push(
         {
@@ -536,17 +238,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
       );
     }
-
     return pages;
   });
 
-  // Get provinces for province pages
+  // Province pages (from camera data)
   const provinces = await prisma.camera.findMany({
     select: { province: true },
     distinct: ["province"],
   });
 
-  const provincePages: MetadataRoute.Sitemap = provinces
+  const provincePages = provinces
     .filter((p) => p.province)
     .map((p) => ({
       url: `${BASE_URL}/provincias/${encodeURIComponent(p.province!)}`,
@@ -555,65 +256,72 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.75,
     }));
 
-  // Get communities
-  const communities = [
-    "andalucia", "aragon", "asturias", "baleares", "canarias",
-    "cantabria", "castilla-la-mancha", "castilla-y-leon", "cataluna",
-    "comunidad-valenciana", "extremadura", "galicia", "madrid",
-    "murcia", "navarra", "pais-vasco", "la-rioja", "ceuta", "melilla"
-  ];
-
-  const communityPages: MetadataRoute.Sitemap = communities.map((community) => ({
+  // Community pages
+  const communityPages = COMMUNITIES.map((community) => ({
     url: `${BASE_URL}/comunidad-autonoma/${community}`,
     lastModified: now,
     changeFrequency: "daily" as const,
     priority: 0.7,
   }));
 
-  // ---------------------------------------------------------------------------
-  // GAS STATION DETAIL PAGES — 11,742+ individual station URLs
-  // ---------------------------------------------------------------------------
-  // Each station has a URL at /gasolineras/terrestres/[id] with full SEO
-  // metadata (JSON-LD GasStation+LocalBusiness schema, canonical, OG tags)
-  // and a "5 alternativas más baratas" section for internal linking depth.
-  //
-  // WHY NOT INCLUDED HERE:
-  // A single sitemap.xml file must stay under 50,000 URLs and 50 MB (Google
-  // limit). With 11,742+ stations, plus roads, cameras, and other pages, the
-  // total exceeds the per-file limit. Including all stations here would also
-  // bloat this sitemap to the point that crawl budget is wasted on it.
-  //
-  // NEXT ITERATION — Sitemap Index:
-  // Implement a sitemap index at /sitemap-index.xml that references:
-  //   - /sitemap/core.xml        → static + road + city pages (this file)
-  //   - /sitemap/gasolineras-1.xml → stations 1–10,000 (by lastPriceUpdate)
-  //   - /sitemap/gasolineras-2.xml → stations 10,001–end
-  //
-  // Each per-station sitemap entry will use:
-  //   url: `${BASE_URL}/gasolineras/terrestres/${station.id}`
-  //   lastModified: station.lastPriceUpdate   ← daily price updates = fresh signal
-  //   changeFrequency: "daily"
-  //   priority: 0.65
-  //
-  // The sitemap index route should live at:
-  //   /src/app/sitemap-index.xml/route.ts
-  // and the per-shard sitemaps at:
-  //   /src/app/sitemap/gasolineras-[shard]/route.ts
-  // ---------------------------------------------------------------------------
-
   return [
     ...staticPages,
-    ...blogArticlePages,
-    ...trafficCityPages,
-    ...zbeCityPages,
     ...cityPages,
-    ...evCityPages,
-    ...electrolinerasCityPages,
-    ...baratosIndexPage,
-    ...baratosCityPages,
-    ...camarasCityPages,
+    ...blogPages,
     ...roadPages,
     ...provincePages,
-    ...communityPages
+    ...communityPages,
   ];
+}
+
+// ---------------------------------------------------------------------------
+// Gas station sitemap shards — uses lastPriceUpdate for fresh lastModified
+// ---------------------------------------------------------------------------
+
+async function gasStationSitemap(
+  shardIndex: number
+): Promise<MetadataRoute.Sitemap> {
+  try {
+    const stations = await prisma.gasStation.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { id: true, lastPriceUpdate: true },
+      orderBy: { id: "asc" },
+    });
+
+    return stations.map((station) => ({
+      url: `${BASE_URL}/gasolineras/terrestres/${station.id}`,
+      lastModified: station.lastPriceUpdate ?? new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Municipality sitemap shards
+// ---------------------------------------------------------------------------
+
+async function municipalitySitemap(
+  shardIndex: number
+): Promise<MetadataRoute.Sitemap> {
+  try {
+    const municipalities = await prisma.municipality.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { slug: true },
+      orderBy: { slug: "asc" },
+    });
+
+    return municipalities.map((m) => ({
+      url: `${BASE_URL}/municipio/${m.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
+    }));
+  } catch {
+    return [];
+  }
 }

@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { CookieConsent } from "@/components/legal/CookieConsent";
-import { StructuredData, generateOrganizationSchema } from "@/components/seo/StructuredData";
+import { StructuredData, generateOrganizationSchema, generateWebSiteSchema } from "@/components/seo/StructuredData";
 import "./globals.css";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -98,6 +98,13 @@ const organizationSchema = generateOrganizationSchema({
   logo: `${BASE_URL}/icon.svg`,
 });
 
+const webSiteSchema = generateWebSiteSchema({
+  name: "trafico.live",
+  url: BASE_URL,
+  description: "Tráfico en tiempo real en España: incidencias, cámaras DGT, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones.",
+  searchUrl: `${BASE_URL}/explorar?q={search_term_string}`,
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -115,7 +122,7 @@ export default function RootLayout({
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <StructuredData data={organizationSchema} />
+        <StructuredData data={[organizationSchema, webSiteSchema]} />
         <Header />
         {children}
         <StickyFooterAd />

@@ -172,7 +172,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "precio litro gasolina hoy",
     ],
     alternates: {
-      canonical: "/precio-gasolina-hoy",
+      canonical: "https://trafico.live/precio-gasolina-hoy",
     },
     openGraph: {
       title: `Precio Gasolina Hoy — ${avgStr} | trafico.live`,

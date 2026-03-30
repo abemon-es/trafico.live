@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Encuentra las gasolineras más baratas cerca de tu ubicación. Precios de Gasóleo A y Gasolina 95 actualizados al momento. Compara distancia y precio de las 20 estaciones más próximas.",
   alternates: {
-    canonical: "/gasolineras/cerca",
+    canonical: "https://trafico.live/gasolineras/cerca",
   },
   openGraph: {
     title: "Gasolineras Baratas Cerca de Mí — trafico.live",
