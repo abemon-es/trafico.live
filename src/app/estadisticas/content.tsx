@@ -2432,46 +2432,46 @@ export function EstadisticasContent({ initialTab }: EstadisticasContentProps) {
     }
   }, [initialTab]);
 
-  // Fetch all data
-  const { data: historicalData, isLoading: historicalLoading } = useSWR<HistoricalApiResponse>(
-    "/api/historical",
-    fetcher,
-    { revalidateOnFocus: false }
-  );
-
+  // Eager fetches — needed for resumen + incidencias tabs (default view)
   const { data: incidentStats, isLoading: incidentLoading } = useSWR<IncidentStatsResponse>(
     `/api/incidents/stats?days=${incidentPeriod}`,
     fetcher,
     { revalidateOnFocus: false }
   );
 
-  // V16 data for ResumenSection (fixed 30 day period for summary)
   const { data: v16Summary, isLoading: v16SummaryLoading } = useSWR<V16StatsResponse>(
     "/api/historico/daily?days=30",
     fetcher,
     { revalidateOnFocus: false }
   );
 
+  // Lazy fetches — only fire when the corresponding tab is active
+  const { data: historicalData, isLoading: historicalLoading } = useSWR<HistoricalApiResponse>(
+    activeTab === "historico" ? "/api/historical" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
   const { data: roadRisk, isLoading: roadRiskLoading } = useSWR<RoadRiskResponse>(
-    "/api/roads/risk",
+    activeTab === "carreteras" ? "/api/roads/risk" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: weatherImpact, isLoading: weatherLoading } = useSWR<WeatherImpactResponse>(
-    "/api/weather/impact",
+    activeTab === "clima" ? "/api/weather/impact" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: correlation, isLoading: correlationLoading } = useSWR<CorrelationResponse>(
-    "/api/historico/correlation?days=30",
+    activeTab === "correlacion" ? "/api/historico/correlation?days=30" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   const { data: rankings, isLoading: rankingsLoading } = useSWR<RankingsResponse>(
-    "/api/rankings",
+    activeTab === "rankings" ? "/api/rankings" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
