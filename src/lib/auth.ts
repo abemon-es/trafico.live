@@ -8,7 +8,7 @@ const ALLOWED_HOSTS = [
 ];
 
 // Endpoints that bypass auth (monitoring, health checks)
-const AUTH_EXEMPT = ["/api/health"];
+const AUTH_EXEMPT = ["/api/health", "/api/cron/"];
 
 /**
  * Check if request is same-origin (browser on same domain)

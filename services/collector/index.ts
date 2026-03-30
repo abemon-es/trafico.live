@@ -13,7 +13,7 @@ if (!TASK) {
   process.exit(1);
 }
 
-const VALID_TASKS = ["v16", "incident", "panel", "weather", "camera", "radar", "charger", "speedlimit", "insights"];
+const VALID_TASKS = ["v16", "incident", "panel", "weather", "camera", "radar", "charger", "speedlimit", "insights", "gas-station"];
 
 if (!VALID_TASKS.includes(TASK)) {
   console.error(`Unknown task: ${TASK}. Valid tasks: ${VALID_TASKS.join(", ")}`);
