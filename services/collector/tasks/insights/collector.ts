@@ -39,20 +39,11 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  const [todayAvg, yesterdayAvg] = await Promise.all([
-    prisma.gasStation.aggregate({
-      _avg: { priceGasoleoA: true },
-      where: { priceGasoleoA: { not: null } },
-    }),
-    // Use price history for yesterday if available
-    prisma.gasStationPriceHistory.aggregate({
-      _avg: { provinceRankDiesel: true },
-      where: { recordedAt: yesterday },
-    }),
-  ]);
+  const todayAvg = await prisma.gasStation.aggregate({
+    _avg: { priceGasoleoA: true },
+    where: { priceGasoleoA: { not: null } },
+  });
 
-  // Simplified: compare current avg prices. If no history comparison possible,
-  // just create a daily price snapshot insight.
   const avgDiesel = todayAvg._avg.priceGasoleoA;
 
   if (avgDiesel) {
