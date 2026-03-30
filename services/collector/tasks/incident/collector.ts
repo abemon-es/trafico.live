@@ -36,6 +36,15 @@ const COMMUNITIES: Record<string, string> = {
 
 type IncidentData = SCTIncident | EuskadiIncident | DGTIncident | MadridIncident;
 
+function mapDirection(dir?: string): Direction | undefined {
+  if (!dir) return undefined;
+  const d = dir.toLowerCase();
+  if (d.includes("ascend") || d.includes("creciente")) return "ASCENDING";
+  if (d.includes("descend") || d.includes("decreciente")) return "DESCENDING";
+  if (d.includes("both") || d.includes("ambos")) return "BOTH";
+  return "UNKNOWN";
+}
+
 interface NormalizedIncident {
   situationId: string;
   type: IncidentType;
@@ -62,7 +71,7 @@ interface NormalizedIncident {
 }
 
 function normalizeIncident(
-  incident: IncidentData,
+  incident: SCTIncident | EuskadiIncident,
   source: "SCT" | "EUSKADI",
   communityCode: string
 ): NormalizedIncident {
@@ -76,7 +85,7 @@ function normalizeIncident(
     roadNumber: incident.roadNumber,
     roadType: inferRoadType(incident.roadNumber),
     kmPoint: incident.kmPoint,
-    direction: undefined, // Would need mapping
+    direction: mapDirection(incident.direction),
     province: incident.province,
     provinceName: incident.provinceName,
     community: communityCode,
@@ -98,7 +107,7 @@ function normalizeDGTIncident(incident: DGTIncident): NormalizedIncident {
     roadNumber: incident.roadNumber,
     roadType: inferRoadType(incident.roadNumber),
     kmPoint: incident.kmPoint,
-    direction: undefined, // DGT provides direction as string, would need mapping
+    direction: mapDirection(incident.direction),
     province: incident.province,
     provinceName: incident.provinceName,
     community: incident.community,

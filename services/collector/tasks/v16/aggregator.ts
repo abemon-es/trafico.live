@@ -40,6 +40,21 @@ export async function aggregateStats(prisma: PrismaClient, now: Date): Promise<v
       where: { isActive: true }
     }).catch(() => 0);
 
+    // Incident type breakdown
+    const byIncidentTypeRaw = await prisma.trafficIncident.groupBy({
+      by: ["type"],
+      where: { isActive: true },
+      _count: true
+    }).catch(() => [] as { type: string; _count: number }[]);
+    const byIncidentType = Object.fromEntries(
+      byIncidentTypeRaw.map(t => [t.type, t._count])
+    );
+
+    // Active weather alerts count
+    const weatherAlertCount = await prisma.weatherAlert.count({
+      where: { isActive: true }
+    }).catch(() => 0);
+
     // Province breakdown (active beacons)
     const byProvinceRaw = await prisma.v16BeaconEvent.groupBy({
       by: ["province"],
@@ -93,7 +108,8 @@ export async function aggregateStats(prisma: PrismaClient, now: Date): Promise<v
         byCommunity,
         byRoadType,
         bySeverity,
-        weatherAlerts: 0
+        byIncidentType,
+        weatherAlerts: weatherAlertCount,
       },
       update: {
         v16Count: activeCount,
@@ -103,7 +119,9 @@ export async function aggregateStats(prisma: PrismaClient, now: Date): Promise<v
         byProvince,
         byCommunity,
         byRoadType,
-        bySeverity
+        bySeverity,
+        byIncidentType,
+        weatherAlerts: weatherAlertCount,
       }
     });
 
@@ -182,6 +200,15 @@ export async function aggregateStats(prisma: PrismaClient, now: Date): Promise<v
         }
       }
 
+      // Check if there are any active weather alerts today
+      const todayWeatherAlerts = await prisma.weatherAlert.count({
+        where: {
+          isActive: true,
+          startedAt: { lte: now },
+        }
+      }).catch(() => 0);
+      const hasWeatherAlerts = todayWeatherAlerts > 0 ? 1 : 0;
+
       // Upsert daily stats
       await prisma.dailyStats.upsert({
         where: { dateStart: todayStart },
@@ -196,7 +223,7 @@ export async function aggregateStats(prisma: PrismaClient, now: Date): Promise<v
           byProvince: dailyByProvince,
           byCommunity: dailyByCommunity,
           byRoadType: dailyByRoadType,
-          weatherAlertDays: 0
+          weatherAlertDays: hasWeatherAlerts,
         },
         update: {
           v16Total: dailyV16Total,
@@ -207,7 +234,8 @@ export async function aggregateStats(prisma: PrismaClient, now: Date): Promise<v
           byHourOfDay,
           byProvince: dailyByProvince,
           byCommunity: dailyByCommunity,
-          byRoadType: dailyByRoadType
+          byRoadType: dailyByRoadType,
+          weatherAlertDays: hasWeatherAlerts,
         }
       });
 

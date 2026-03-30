@@ -39,31 +39,50 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  const todayAvg = await prisma.gasStation.aggregate({
-    _avg: { priceGasoleoA: true },
-    where: { priceGasoleoA: { not: null } },
-  });
+  const [todayAvg, yesterdayStats] = await Promise.all([
+    prisma.gasStation.aggregate({
+      _avg: { priceGasoleoA: true },
+      where: { priceGasoleoA: { not: null } },
+    }),
+    prisma.fuelPriceDailyStats.findFirst({
+      where: { date: yesterday, scope: "national" },
+    }),
+  ]);
 
   const avgDiesel = todayAvg._avg.priceGasoleoA;
 
   if (avgDiesel) {
-    const slug = `precio-diesel-${todaySlug()}`;
-    const existing = await prisma.insight.findUnique({ where: { slug } });
+    const price = Number(avgDiesel).toFixed(3);
+    const yesterdayPrice = yesterdayStats?.avgGasoleoA ? Number(yesterdayStats.avgGasoleoA) : null;
 
-    if (!existing) {
-      const price = Number(avgDiesel).toFixed(3);
-      await prisma.insight.create({
-        data: {
-          slug,
-          title: `Precio medio del diésel hoy: ${price} €/L`,
-          summary: `La media nacional del precio del gasóleo A se sitúa en ${price} €/L según datos del MITERD.`,
-          body: `## Precio del diésel hoy\n\nEl precio medio nacional del **Gasóleo A** se sitúa hoy en **${price} €/L** según los datos oficiales del Ministerio para la Transición Ecológica (MITERD).\n\nConsulta las [gasolineras más baratas](/gasolineras/baratas) para encontrar el mejor precio cerca de ti.`,
-          category: "PRICE_ALERT" as InsightCategory,
-          source: "MITERD",
-          sourceUrl: "https://geoportalgasolineras.es",
-        },
-      });
-      created++;
+    // Only create insight if price changed >2% or no yesterday data (daily report)
+    const pctChange = yesterdayPrice
+      ? ((Number(avgDiesel) - yesterdayPrice) / yesterdayPrice) * 100
+      : null;
+    const isSignificant = pctChange === null || Math.abs(pctChange) >= 2;
+
+    if (isSignificant) {
+      const slug = `precio-diesel-${todaySlug()}`;
+      const existing = await prisma.insight.findUnique({ where: { slug } });
+
+      if (!existing) {
+        const changeText = pctChange !== null
+          ? `, un ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% respecto a ayer (${yesterdayPrice!.toFixed(3)} €/L)`
+          : "";
+
+        await prisma.insight.create({
+          data: {
+            slug,
+            title: `Precio medio del diésel hoy: ${price} €/L`,
+            summary: `La media nacional del precio del gasóleo A se sitúa en ${price} €/L${changeText}. Datos del MITERD.`,
+            body: `## Precio del diésel hoy\n\nEl precio medio nacional del **Gasóleo A** se sitúa hoy en **${price} €/L**${changeText} según los datos oficiales del Ministerio para la Transición Ecológica (MITERD).\n\nConsulta las [gasolineras más baratas](/gasolineras/baratas) para encontrar el mejor precio cerca de ti.`,
+            category: "PRICE_ALERT" as InsightCategory,
+            source: "MITERD",
+            sourceUrl: "https://geoportalgasolineras.es",
+          },
+        });
+        created++;
+      }
     }
   }
 
