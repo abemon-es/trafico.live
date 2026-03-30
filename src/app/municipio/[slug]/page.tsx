@@ -73,6 +73,7 @@ export default async function MunicipioPage({ params }: Props) {
 
   const provinceCode = municipality.provinceCode;
 
+  const munCode = municipality.code;
   const [
     gasStationCount,
     cameraCount,
@@ -80,7 +81,9 @@ export default async function MunicipioPage({ params }: Props) {
     radarCount,
     evChargerCount,
   ] = await Promise.all([
-    prisma.gasStation.count({ where: { province: provinceCode } }),
+    // Gas stations filtered at municipality level (has municipalityCode)
+    prisma.gasStation.count({ where: { municipalityCode: munCode } }),
+    // Cameras/incidents/radars only have province-level data
     prisma.camera.count({ where: { province: provinceCode } }),
     prisma.trafficIncident.count({
       where: { province: provinceCode, isActive: true },
@@ -124,7 +127,9 @@ export default async function MunicipioPage({ params }: Props) {
         name: `¿Cuántas gasolineras hay en ${name}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `En la provincia de ${province.name} hay ${gasStationCount} gasolineras registradas. Puedes consultar precios actualizados y encontrar la más barata en trafico.live/gasolineras.`,
+          text: gasStationCount > 0
+            ? `En ${name} hay ${gasStationCount} gasolineras registradas. Puedes consultar precios actualizados y encontrar la más barata en trafico.live/gasolineras.`
+            : `No hay gasolineras registradas directamente en ${name}. Consulta las gasolineras cercanas en la provincia de ${province.name}.`,
         },
       },
       {
@@ -237,7 +242,7 @@ export default async function MunicipioPage({ params }: Props) {
           <Breadcrumbs
             items={[
               { name: "Inicio", href: "/" },
-              { name: "Municipios", href: "/municipio" },
+              { name: province.name, href: `/provincias/${provinceCode}` },
               { name, href: `/municipio/${slug}` },
             ]}
           />
@@ -288,7 +293,7 @@ export default async function MunicipioPage({ params }: Props) {
               id="stats-heading"
               className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
             >
-              Infraestructura en la provincia de {province.name}
+              Infraestructura en {name} y provincia
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {stats.map((stat) => (
@@ -384,10 +389,19 @@ export default async function MunicipioPage({ params }: Props) {
                     ¿Cuántas gasolineras hay en {name}?
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    En la provincia de {province.name} hay{" "}
-                    <strong>{gasStationCount}</strong> gasolineras registradas.
-                    Puedes consultar precios actualizados y encontrar la más
-                    barata en nuestra sección de gasolineras.
+                    {gasStationCount > 0 ? (
+                      <>
+                        En {name} hay{" "}
+                        <strong>{gasStationCount}</strong> gasolineras registradas.
+                        Puedes consultar precios actualizados y encontrar la más
+                        barata en nuestra sección de gasolineras.
+                      </>
+                    ) : (
+                      <>
+                        No hay gasolineras registradas directamente en {name}.
+                        Consulta las gasolineras cercanas en la provincia de {province.name}.
+                      </>
+                    )}
                   </p>
                 </div>
                 <div className="border-t border-gray-100 dark:border-gray-800 pt-4">

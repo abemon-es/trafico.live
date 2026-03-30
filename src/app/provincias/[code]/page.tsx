@@ -1,8 +1,11 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar, Fuel } from "lucide-react";
+import { AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar, Fuel, Zap, Building2 } from "lucide-react";
 import prisma from "@/lib/db";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
+import { provinceDescription, provinceTitle } from "@/lib/seo/text-generators";
 
 export const revalidate = 300;
 
@@ -77,10 +80,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `Tráfico en ${province.name}`,
-    description: `Estado del tráfico en ${province.name}, ${province.community}. Incidencias, balizas V16 y estadísticas de accidentes actualizadas en tiempo real.`,
+    title: provinceTitle(province.name),
+    description: provinceDescription({ name: province.name, community: province.community }),
     alternates: {
       canonical: `${BASE_URL}/provincias/${code}`,
+    },
+    openGraph: {
+      title: provinceTitle(province.name),
+      description: `Estado del tráfico, gasolineras, radares y cargadores EV en ${province.name}, ${province.community}.`,
+      url: `${BASE_URL}/provincias/${code}`,
+      type: "website",
     },
   };
 }
@@ -103,6 +112,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
     incidentCount,
     cameraCount,
     radarCount,
+    evChargerCount,
     incidents,
     roads,
     historicalAccidents,
@@ -110,59 +120,59 @@ export default async function ProvinciaDetailPage({ params }: Props) {
     gasStationCount,
     cheapestDiesel,
     cheapestGas95,
+    municipalities,
   ] = await Promise.all([
-    // Active V16 beacons in this province
     prisma.v16BeaconEvent.count({
       where: { province: code, isActive: true },
     }),
-    // Active incidents in this province
     prisma.trafficIncident.count({
       where: { province: code, isActive: true },
     }),
-    // Cameras in this province
     prisma.camera.count({
       where: { province: code, isActive: true },
     }),
-    // Radars in this province
     prisma.radar.count({
       where: { province: code, isActive: true },
     }),
-    // Get recent incidents for the list
+    prisma.eVCharger.count({
+      where: { province: code },
+    }),
     prisma.trafficIncident.findMany({
       where: { province: code, isActive: true },
       orderBy: { startedAt: "desc" },
       take: 10,
     }),
-    // Roads passing through this province
     prisma.road.findMany({
       where: { provinces: { has: code } },
       orderBy: { id: "asc" },
       take: 20,
     }),
-    // Historical accidents for the latest year
     prisma.historicalAccidents.findFirst({
       where: { province: code },
       orderBy: { year: "desc" },
     }),
-    // Previous year for comparison
     prisma.historicalAccidents.findMany({
       where: { province: code },
       orderBy: { year: "desc" },
       take: 2,
     }),
-    // Gas stations in this province
     prisma.gasStation.count({
       where: { province: code },
     }),
-    // Cheapest diesel station
     prisma.gasStation.findFirst({
       where: { province: code, priceGasoleoA: { not: null } },
       orderBy: { priceGasoleoA: "asc" },
     }),
-    // Cheapest gasoline 95 station
     prisma.gasStation.findFirst({
       where: { province: code, priceGasolina95E5: { not: null } },
       orderBy: { priceGasolina95E5: "asc" },
+    }),
+    // Top municipalities in this province
+    prisma.municipality.findMany({
+      where: { provinceCode: code },
+      select: { name: true, slug: true, population: true },
+      orderBy: { population: { sort: "desc", nulls: "last" } },
+      take: 20,
     }),
   ]);
 
@@ -176,27 +186,57 @@ export default async function ProvinciaDetailPage({ params }: Props) {
     }
   }
 
+  // FAQ schema with live data
+  const faqData = generateFAQSchema({
+    questions: [
+      {
+        question: `¿Cuántas gasolineras hay en ${province.name}?`,
+        answer: `En ${province.name} hay ${gasStationCount.toLocaleString("es-ES")} gasolineras registradas con precios actualizados diariamente. Encuentra la más barata en trafico.live/gasolineras.`,
+      },
+      {
+        question: `¿Cuántos radares hay en ${province.name}?`,
+        answer: `${province.name} cuenta con ${radarCount} radares de velocidad activos en sus carreteras.`,
+      },
+      {
+        question: `¿Hay cargadores eléctricos en ${province.name}?`,
+        answer: evChargerCount > 0
+          ? `Sí, hay ${evChargerCount} puntos de carga para vehículos eléctricos en ${province.name}.`
+          : `Actualmente no hay cargadores eléctricos registrados en ${province.name}.`,
+      },
+    ],
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <StructuredData data={faqData} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
-        <Link
-          href="/provincias"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 mb-6"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Todas las provincias
-        </Link>
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { name: "Inicio", href: "/" },
+            { name: "España", href: "/espana" },
+            { name: province.community, href: "/comunidad-autonoma" },
+            { name: province.name, href: `/provincias/${code}` },
+          ]}
+        />
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 mb-2">
+          <div className="flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 mb-2">
             <MapPin className="w-4 h-4" />
             {province.community}
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{province.name}</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Estado del tráfico y estadísticas de siniestralidad vial en {province.name}.
+            {provinceDescription({
+              name: province.name,
+              community: province.community,
+              gasStationCount,
+              cameraCount,
+              radarCount,
+              chargerCount: evChargerCount,
+              municipalityCount: municipalities.length,
+            })}
           </p>
         </div>
 
@@ -401,6 +441,13 @@ export default async function ProvinciaDetailPage({ params }: Props) {
                   </div>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{gasStationCount}</span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <Zap className="w-4 h-4" />
+                    <span>Cargadores EV</span>
+                  </div>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{evChargerCount}</span>
+                </div>
               </div>
             </div>
 
@@ -493,6 +540,36 @@ export default async function ProvinciaDetailPage({ params }: Props) {
             )}
           </div>
         </div>
+
+        {/* Municipality list */}
+        {municipalities.length > 0 && (
+          <section className="mt-8">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Building2 className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Municipios de {province.name}
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {municipalities.map((m) => (
+                  <Link
+                    key={m.slug}
+                    href={`/municipio/${m.slug}`}
+                    className="px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-950 hover:bg-tl-50 dark:hover:bg-tl-900/20 text-gray-700 dark:text-gray-300 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                  >
+                    <span className="font-medium">{m.name}</span>
+                    {m.population && (
+                      <span className="text-xs text-gray-400 ml-1">
+                        {m.population.toLocaleString("es-ES")} hab.
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );
