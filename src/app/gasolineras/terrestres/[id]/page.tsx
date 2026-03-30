@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus, ChevronRight, Tag } from "lucide-react";
+import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus, Tag } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
@@ -251,24 +252,14 @@ export default async function StationDetailPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Breadcrumb — Inicio > Combustible > Terrestres > {name} */}
-      <nav aria-label="Breadcrumb" className="mb-4">
-        <ol className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
-          <li>
-            <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
-          </li>
-          <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
-          <li>
-            <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Combustible</Link>
-          </li>
-          <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
-          <li>
-            <Link href="/gasolineras/terrestres" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Terrestres</Link>
-          </li>
-          <li aria-hidden="true"><ChevronRight className="w-3.5 h-3.5" /></li>
-          <li className="text-gray-900 dark:text-gray-100 font-medium truncate max-w-[200px]" aria-current="page">{station.name}</li>
-        </ol>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { name: "Inicio", href: "/" },
+          { name: "Gasolineras", href: "/gasolineras" },
+          { name: "Terrestres", href: "/gasolineras/terrestres" },
+          { name: station.name, href: `/gasolineras/terrestres/${station.id}` },
+        ]}
+      />
 
       {/* Back button */}
       <Link
@@ -374,10 +365,10 @@ export default async function StationDetailPage({ params }: Props) {
             {station.nearestRoad && (
               <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400">Carretera</span>
-                <span className="font-medium">
+                <Link href={`/carreteras/${encodeURIComponent(station.nearestRoad)}`} className="font-medium text-tl-600 dark:text-tl-400 hover:underline">
                   {station.nearestRoad}
                   {station.roadKm && ` - km ${Number(station.roadKm).toFixed(1)}`}
-                </span>
+                </Link>
               </div>
             )}
             <div className="flex justify-between">
@@ -386,7 +377,13 @@ export default async function StationDetailPage({ params }: Props) {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Provincia</span>
-              <span className="font-medium">{station.provinceName || "N/D"}</span>
+              {station.province ? (
+                <Link href={`/provincias/${station.province}`} className="font-medium text-tl-600 dark:text-tl-400 hover:underline">
+                  {station.provinceName || station.province}
+                </Link>
+              ) : (
+                <span className="font-medium">N/D</span>
+              )}
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Codigo postal</span>
@@ -599,7 +596,9 @@ export default async function StationDetailPage({ params }: Props) {
           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
             <span className="text-gray-500 dark:text-gray-400 text-sm">Carretera mas cercana:</span>
             <p className="font-medium">
-              {station.nearestRoad}
+              <Link href={`/carreteras/${encodeURIComponent(station.nearestRoad)}`} className="text-tl-600 dark:text-tl-400 hover:underline">
+                {station.nearestRoad}
+              </Link>
               {station.roadKm && ` - km ${Number(station.roadKm).toFixed(1)}`}
             </p>
           </div>

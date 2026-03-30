@@ -16,6 +16,7 @@ import {
   Fuel,
 } from "lucide-react";
 import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 300;
 
@@ -198,14 +199,13 @@ export default async function RoadDetailPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <StructuredData data={[roadSchema, ...webPageSchema]} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
-          <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 dark:text-gray-100">{road.id}</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { name: "Inicio", href: "/" },
+            { name: "Carreteras", href: "/carreteras" },
+            { name: road.id, href: `/carreteras/${encodeURIComponent(road.id)}` },
+          ]}
+        />
 
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
