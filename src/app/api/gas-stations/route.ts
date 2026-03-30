@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
     const brand = searchParams.get("brand");
     const fuel = searchParams.get("fuel") || "gasoleoA";
     const is24h = searchParams.get("is24h");
+    const includeRestricted = searchParams.get("includeRestricted") === "true";
     const bbox = searchParams.get("bbox"); // "minLng,minLat,maxLng,maxLat"
 
     // Pagination - support both page/pageSize and limit/offset
@@ -77,6 +78,14 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: Record<string, unknown> = {};
+
+    // Default: only public stations (exclude restricted/wholesale depots)
+    if (!includeRestricted) {
+      where.OR = [
+        { saleType: "P" },
+        { saleType: null },
+      ];
+    }
 
     if (province) {
       where.province = province.padStart(2, "0");

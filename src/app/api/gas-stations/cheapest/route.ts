@@ -32,8 +32,10 @@ export async function GET(request: NextRequest) {
     const fuel = searchParams.get("fuel") || "gasoleoA";
     const limit = Math.min(parseInt(searchParams.get("limit") || "10"), 50);
 
-    // Build where clause
-    const where: Record<string, unknown> = {};
+    // Build where clause — default to public stations only
+    const where: Record<string, unknown> = {
+      OR: [{ saleType: "P" }, { saleType: null }],
+    };
 
     if (province) {
       where.province = province.padStart(2, "0");

@@ -13,9 +13,9 @@ export async function GET(request: NextRequest) {
     const cached = await getFromCache(CACHE_KEY);
     if (cached) return NextResponse.json(cached);
 
-    // Get today's date (start of day)
+    // Get today's date (start of day, UTC to match aggregator)
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
     // Get national stats for today
     const nationalStats = await prisma.fuelPriceDailyStats.findFirst({

@@ -88,12 +88,19 @@ export default async function Gasolineras24hPage() {
       orderBy: { _count: { province: "desc" } },
     }),
 
-    // Top 10 cheapest 24h by diesel
+    // Top 10 cheapest 24h by diesel (public stations only)
     prisma.gasStation.findMany({
       where: {
-        OR: [
-          { schedule: { contains: "24" } },
-          { is24h: true },
+        AND: [
+          {
+            OR: [
+              { schedule: { contains: "24" } },
+              { is24h: true },
+            ],
+          },
+          {
+            OR: [{ saleType: "P" }, { saleType: null }],
+          },
         ],
         priceGasoleoA: { not: null },
       },

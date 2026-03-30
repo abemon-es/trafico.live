@@ -39,6 +39,7 @@ async function main() {
     const nationalStats = await prisma.gasStation.aggregate({
       where: {
         province: { notIn: TAX_FREE_PROVINCES },
+        OR: [{ saleType: "P" }, { saleType: null }],
       },
       _avg: {
         priceGasoleoA: true,
@@ -101,6 +102,7 @@ async function main() {
     const taxFreeStats = await prisma.gasStation.aggregate({
       where: {
         province: { in: TAX_FREE_PROVINCES },
+        OR: [{ saleType: "P" }, { saleType: null }],
       },
       _avg: {
         priceGasoleoA: true,
@@ -180,6 +182,7 @@ async function main() {
       _count: true,
       where: {
         province: { not: null },
+        OR: [{ saleType: "P" }, { saleType: null }],
       },
     });
 
@@ -247,6 +250,7 @@ async function main() {
       _count: true,
       where: {
         communityCode: { not: null },
+        OR: [{ saleType: "P" }, { saleType: null }],
       },
     });
 
@@ -314,6 +318,7 @@ async function main() {
       _count: true,
       where: {
         nearestRoad: { not: null },
+        OR: [{ saleType: "P" }, { saleType: null }],
       },
       having: {
         nearestRoad: {

@@ -102,6 +102,7 @@ async function getDieselData() {
       where: {
         priceGasoleoA: { not: null },
         province: { notIn: TAX_FREE_PROVINCES },
+        OR: [{ saleType: "P" }, { saleType: null }],
       },
       orderBy: { priceGasoleoA: "asc" },
       take: 10,

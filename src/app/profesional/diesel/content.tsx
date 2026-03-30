@@ -92,6 +92,9 @@ export default function DieselContent() {
     return true;
   });
 
+  // Total count from API (not limited by query limit)
+  const totalStations = data?.pagination?.total ?? 0;
+
   // Stats
   const cheapestPrice = filteredStations?.[0]?.priceGasoleoA;
   const avgPrice = filteredStations?.length
@@ -149,7 +152,7 @@ export default function DieselContent() {
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
               <MapPin className="w-6 h-6 text-tl-600 dark:text-tl-400 mb-2" />
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">
-                {filteredStations?.length || 0}
+                {(searchTerm || provinceFilter ? (filteredStations?.length ?? 0) : totalStations).toLocaleString("es-ES")}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">Gasolineras</p>
             </div>
@@ -225,7 +228,7 @@ export default function DieselContent() {
         {!isLoading && filteredStations && (
           <>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              {filteredStations.length} gasolineras ordenadas por precio
+              {filteredStations.length} de {totalStations.toLocaleString("es-ES")} gasolineras ordenadas por precio
             </p>
 
             <div className="space-y-3">
@@ -296,7 +299,7 @@ export default function DieselContent() {
             {filteredStations.length > 50 && (
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Mostrando 50 de {filteredStations.length} gasolineras.{" "}
+                  Mostrando 50 de {totalStations.toLocaleString("es-ES")} gasolineras.{" "}
                   <Link href="/gasolineras" className="text-tl-amber-600 dark:text-tl-amber-400 hover:underline">
                     Ver todas
                   </Link>

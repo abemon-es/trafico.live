@@ -204,7 +204,7 @@ async function main() {
           return null;
         }
 
-        const provinceCode = station.IDProvincia.padStart(2, "0");
+        const provinceCode = station.IDProvincia ? station.IDProvincia.padStart(2, "0") : null;
         const provinceName = PROVINCES[provinceCode] || station.Provincia;
 
         return {

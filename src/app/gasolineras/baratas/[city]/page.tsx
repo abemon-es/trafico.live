@@ -152,12 +152,12 @@ export default async function BaratasCityPage({ params }: Props) {
 
   const [cheapestDiesel, cheapestGas95, provincialAvg, total24h] = await Promise.all([
     prisma.gasStation.findMany({
-      where: { province: cityData.provinceCode, priceGasoleoA: { not: null } },
+      where: { province: cityData.provinceCode, priceGasoleoA: { not: null }, OR: [{ saleType: "P" }, { saleType: null }] },
       orderBy: { priceGasoleoA: "asc" },
       take: 10,
     }),
     prisma.gasStation.findMany({
-      where: { province: cityData.provinceCode, priceGasolina95E5: { not: null } },
+      where: { province: cityData.provinceCode, priceGasolina95E5: { not: null }, OR: [{ saleType: "P" }, { saleType: null }] },
       orderBy: { priceGasolina95E5: "asc" },
       take: 10,
     }),

@@ -102,6 +102,7 @@ async function getGasolinaData() {
       where: {
         priceGasolina95E5: { not: null },
         province: { notIn: TAX_FREE_PROVINCES },
+        OR: [{ saleType: "P" }, { saleType: null }],
       },
       orderBy: { priceGasolina95E5: "asc" },
       take: 10,
