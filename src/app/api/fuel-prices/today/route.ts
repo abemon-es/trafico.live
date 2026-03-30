@@ -25,9 +25,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get yesterday's stats for comparison
+    // Get yesterday's stats for comparison (use UTC to avoid DST/timezone drift)
     const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
     const yesterdayStats = await prisma.fuelPriceDailyStats.findFirst({
       where: {

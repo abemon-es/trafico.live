@@ -47,8 +47,7 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# WIP pages that try to access DB during build (not ready for deploy)
-/src/app/api/historical/
+# WIP pages (not ready for deploy)
 /data/
 /scripts/
 

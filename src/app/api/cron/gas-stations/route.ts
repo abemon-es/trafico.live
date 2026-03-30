@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { invalidateCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes max for Vercel/Coolify
@@ -200,6 +201,28 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Community aggregation
+    const commStats = await prisma.gasStation.groupBy({
+      by: ["communityCode"],
+      where: { communityCode: { not: null }, ...pub },
+      _avg: { priceGasoleoA: true, priceGasolina95E5: true, priceGasolina98E5: true },
+      _min: { priceGasoleoA: true, priceGasolina95E5: true, priceGasolina98E5: true },
+      _max: { priceGasoleoA: true, priceGasolina95E5: true, priceGasolina98E5: true },
+      _count: true,
+    });
+
+    for (const s of commStats) {
+      if (!s.communityCode) continue;
+      await prisma.fuelPriceDailyStats.upsert({
+        where: { date_scope: { date: today, scope: `community:${s.communityCode}` } },
+        create: { date: today, scope: `community:${s.communityCode}`, avgGasoleoA: s._avg.priceGasoleoA, minGasoleoA: s._min.priceGasoleoA, maxGasoleoA: s._max.priceGasoleoA, avgGasolina95: s._avg.priceGasolina95E5, minGasolina95: s._min.priceGasolina95E5, maxGasolina95: s._max.priceGasolina95E5, avgGasolina98: s._avg.priceGasolina98E5, minGasolina98: s._min.priceGasolina98E5, maxGasolina98: s._max.priceGasolina98E5, stationCount: s._count },
+        update: { avgGasoleoA: s._avg.priceGasoleoA, minGasoleoA: s._min.priceGasoleoA, maxGasoleoA: s._max.priceGasoleoA, avgGasolina95: s._avg.priceGasolina95E5, minGasolina95: s._min.priceGasolina95E5, maxGasolina95: s._max.priceGasolina95E5, avgGasolina98: s._avg.priceGasolina98E5, minGasolina98: s._min.priceGasolina98E5, maxGasolina98: s._max.priceGasolina98E5, stationCount: s._count },
+      });
+    }
+
+    // Invalidate fuel-prices cache so the today route sees fresh data immediately
+    await invalidateCache("api:fuel-prices:today");
+
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
 
     return NextResponse.json({
@@ -207,6 +230,7 @@ export async function GET(request: NextRequest) {
       stations: processed,
       historyCreated: history.count,
       provinces: provStats.length,
+      communities: commStats.length,
       nationalCount: natl._count,
       elapsed: `${elapsed}s`,
     });
