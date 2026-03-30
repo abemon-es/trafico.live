@@ -2446,35 +2446,42 @@ export function EstadisticasContent({ initialTab }: EstadisticasContentProps) {
   );
 
   // Lazy fetches — only fire when the corresponding tab is active
-  const { data: historicalData, isLoading: historicalLoading } = useSWR<HistoricalApiResponse>(
+  // SWR with null key returns { data: undefined, isLoading: false }
+  // so we treat "no data yet" as loading to prevent components from crashing
+  const { data: historicalData, isLoading: historicalFetching } = useSWR<HistoricalApiResponse>(
     activeTab === "historico" ? "/api/historical" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
+  const historicalLoading = historicalFetching || !historicalData;
 
-  const { data: roadRisk, isLoading: roadRiskLoading } = useSWR<RoadRiskResponse>(
+  const { data: roadRisk, isLoading: roadRiskFetching } = useSWR<RoadRiskResponse>(
     activeTab === "carreteras" ? "/api/roads/risk" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
+  const roadRiskLoading = roadRiskFetching || !roadRisk;
 
-  const { data: weatherImpact, isLoading: weatherLoading } = useSWR<WeatherImpactResponse>(
+  const { data: weatherImpact, isLoading: weatherFetching } = useSWR<WeatherImpactResponse>(
     activeTab === "clima" ? "/api/weather/impact" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
+  const weatherLoading = weatherFetching || !weatherImpact;
 
-  const { data: correlation, isLoading: correlationLoading } = useSWR<CorrelationResponse>(
+  const { data: correlation, isLoading: correlationFetching } = useSWR<CorrelationResponse>(
     activeTab === "correlacion" ? "/api/historico/correlation?days=30" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
+  const correlationLoading = correlationFetching || !correlation;
 
-  const { data: rankings, isLoading: rankingsLoading } = useSWR<RankingsResponse>(
+  const { data: rankings, isLoading: rankingsFetching } = useSWR<RankingsResponse>(
     activeTab === "rankings" ? "/api/rankings" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
+  const rankingsLoading = rankingsFetching || !rankings;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
