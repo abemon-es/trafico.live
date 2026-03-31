@@ -43,10 +43,11 @@ export default function CamarasPage() {
             Cámaras de Tráfico
           </h1>
           <p className="mt-2 mb-6 text-gray-600 dark:text-gray-400 max-w-3xl">
-            Imágenes en tiempo real de las más de 500 cámaras de la DGT instaladas en
+            Imágenes en tiempo real de las cámaras de la DGT instaladas en
             autopistas, autovías y carreteras nacionales de toda España. Busca por
             carretera, kilómetro o provincia.
           </p>
+          <h2 className="sr-only">Buscar y filtrar cámaras DGT por provincia y carretera</h2>
         </div>
       </div>
 

@@ -25,6 +25,7 @@ export function CamarasContent() {
   const [selectedProvince, setSelectedProvince] = useState(initialProvince);
   const [selectedCommunity, setSelectedCommunity] = useState(initialCommunity);
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
+  const [visibleCount, setVisibleCount] = useState(48);
 
   // Update filters when URL params change
   useEffect(() => {
@@ -81,6 +82,14 @@ export function CamarasContent() {
       return true;
     });
   }, [data?.cameras, search, selectedProvince, selectedCommunity]);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(48);
+  }, [search, selectedProvince, selectedCommunity]);
+
+  const visibleCameras = filteredCameras.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredCameras.length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -211,15 +220,35 @@ export function CamarasContent() {
 
         {/* Camera grid */}
         {!isLoading && !error && filteredCameras.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredCameras.map((camera) => (
-              <CameraCard
-                key={camera.id}
-                camera={camera}
-                onClick={() => setSelectedCamera(camera)}
-              />
-            ))}
-          </div>
+          <>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              {selectedProvince || selectedCommunity
+                ? `Cámaras en ${selectedProvince || selectedCommunity}`
+                : "Todas las cámaras de tráfico"}
+              <span className="ml-2 text-base font-normal text-gray-500">
+                ({filteredCameras.length})
+              </span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {visibleCameras.map((camera) => (
+                <CameraCard
+                  key={camera.id}
+                  camera={camera}
+                  onClick={() => setSelectedCamera(camera)}
+                />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 48)}
+                  className="px-6 py-3 bg-tl-600 hover:bg-tl-700 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Cargar más cámaras ({filteredCameras.length - visibleCount} restantes)
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Modal */}
