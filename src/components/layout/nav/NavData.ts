@@ -26,6 +26,7 @@ import {
   Timer,
   Radio,
   TrendingUp,
+  Code2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -206,6 +207,38 @@ export const megaMenuPanels: MegaMenuPanel[] = [
           { name: "Noticias", href: "/noticias", icon: BookOpen, description: "Informes, guías y alertas" },
           { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
           { name: "Ciclistas", href: "/ciclistas", icon: Bike, description: "Info para ciclistas" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "profesional",
+    label: "Profesional",
+    categories: [
+      {
+        title: "Flotas y transporte",
+        items: [
+          { name: "Diésel más barato", href: "/profesional/diesel", icon: Fuel, description: "Mejores precios para tu flota" },
+          { name: "Áreas de descanso", href: "/profesional/areas", icon: MapPin, description: "Parking seguro 24h" },
+          { name: "Restricciones activas", href: "/restricciones", icon: Ban, description: "ZBE, peso y altura" },
+          { name: "Calculadora de ruta", href: "/calculadora", icon: Calculator, description: "Coste de combustible y peajes" },
+        ],
+      },
+      {
+        title: "Herramientas",
+        items: [
+          { name: "Mejor hora para viajar", href: "/mejor-hora", icon: Clock, description: "Evita horas punta" },
+          { name: "Operaciones DGT", href: "/operaciones", icon: Users, description: "Campañas especiales" },
+          { name: "Etiqueta ambiental", href: "/etiqueta-ambiental", icon: Tag, description: "Consulta tu distintivo" },
+          { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
+        ],
+      },
+      {
+        title: "API y datos",
+        items: [
+          { name: "API REST", href: "/api-docs", icon: Code2, description: "Datos en tiempo real" },
+          { name: "Estadísticas", href: "/estadisticas", icon: BarChart3, description: "Cifras del tráfico" },
+          { name: "Histórico", href: "/historico", icon: Clock, description: "Datos acumulados" },
         ],
       },
     ],

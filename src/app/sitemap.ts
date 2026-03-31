@@ -261,6 +261,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/cuanto-cuesta-cargar`, lastModified: today, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE_URL}/mejor-hora`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/puntos-negros`, lastModified: today, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE_URL}/informe-diario`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/ciclistas`, lastModified: today, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/municipio`, lastModified: today, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/alertas-meteo`, lastModified: now, changeFrequency: "hourly", priority: 0.85 },

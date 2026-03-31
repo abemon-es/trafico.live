@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Menu, X, Search } from "lucide-react";
 import { SearchOverlay, useSearchOverlay } from "@/components/search/SearchOverlay";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -47,14 +46,6 @@ export function Header() {
                   ⌘K
                 </kbd>
               </button>
-
-              {/* Profesional link — desktop only */}
-              <Link
-                href="/profesional"
-                className="hidden lg:inline-flex px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-              >
-                Profesional
-              </Link>
 
               <ThemeToggle />
 
