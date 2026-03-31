@@ -56,6 +56,14 @@ services:
     # Coolify cron: */5 * * * *
     # DGT MeasuredDataPublication — traffic intensity, speed, occupancy
 
+  collector-intensity:
+    <<: *collector-base
+    environment:
+      TASK: intensity
+    # Coolify cron: */5 * * * *
+    # Madrid real-time sensors (informo.madrid.es) — 6,117 sensors, intensity + occupancy + LOS
+    # Also builds HourlyTrafficProfile running averages
+
   # ── Frequent (every 6 hours — AEMET updates ~2x/day) ──────────────
   collector-weather:
     <<: *collector-base
