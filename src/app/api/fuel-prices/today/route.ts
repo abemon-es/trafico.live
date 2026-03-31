@@ -18,17 +18,10 @@ export async function GET(request: NextRequest) {
     // Always fetch the most recent national stats available.
     // The gas station cron runs at 06:00/13:00/20:00 UTC — before the first
     // daily run there's no record for today, so we serve the latest available.
-    let nationalStats;
-    try {
-      nationalStats = await prisma.fuelPriceDailyStats.findFirst({
-        where: { scope: "national" },
-        orderBy: { date: "desc" },
-      });
-    } catch (dbError) {
-      console.error("[fuel-prices/today] Prisma findFirst failed:", dbError);
-      nationalStats = null;
-    }
-    console.log("[fuel-prices/today] nationalStats:", nationalStats ? `found (date=${nationalStats.date})` : "null", "| DB_URL set:", !!process.env.DATABASE_URL);
+    const nationalStats = await prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "national" },
+      orderBy: { date: "desc" },
+    });
 
     const effectiveDate = nationalStats?.date ?? new Date();
 
