@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { FileText, Calendar } from "lucide-react";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { FileText, Calendar, Newspaper, AlertTriangle, BarChart3, MapPin } from "lucide-react";
 
 export const revalidate = 300;
 
@@ -106,6 +107,13 @@ export default async function InformeDiarioIndexPage() {
             <p className="text-sm text-gray-400 mt-2">Los informes se generan automáticamente al final de cada día.</p>
           </div>
         )}
+
+        <RelatedLinks links={[
+          { title: "Noticias de tráfico", description: "Últimas noticias y análisis del tráfico en España", href: "/noticias", icon: <Newspaper className="w-5 h-5" /> },
+          { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
+          { title: "Estadísticas de tráfico", description: "Datos históricos de siniestralidad vial", href: "/estadisticas", icon: <BarChart3 className="w-5 h-5" /> },
+          { title: "Estado del tráfico hoy", description: "Mapa interactivo con incidencias en tiempo real", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
+        ]} />
       </main>
     </div>
   );

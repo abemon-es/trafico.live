@@ -13,9 +13,11 @@ import {
   Fuel,
   Radio,
   Activity,
+  Route,
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const revalidate = 120;
 
@@ -638,6 +640,13 @@ export default async function TraficoCityPage({ params }: Props) {
               </div>
             </div>
           </div>
+
+          <RelatedLinks links={[
+            { title: "Tráfico en España", description: "Índice de ciudades con incidencias en tiempo real", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
+            { title: "Cámaras en " + cityData.name, description: "Imágenes en vivo de las cámaras DGT de la provincia", href: `/camaras/${city}`, icon: <Camera className="w-5 h-5" /> },
+            { title: "Incidencias nacionales", description: "Mapa y listado de todas las incidencias activas", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
+            { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
+          ]} />
         </main>
       </div>
     </>

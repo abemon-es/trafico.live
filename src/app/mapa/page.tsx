@@ -1,6 +1,8 @@
 import { Metadata } from "next";
+import { AlertTriangle, Video, Fuel, MapPin } from "lucide-react";
 import { MapaClient } from "./MapaClient";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -48,6 +50,14 @@ export default function MapaPage() {
         ]} />
       </div>
       <MapaClient />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <RelatedLinks links={[
+          { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
+          { title: "Cámaras DGT", description: "Imágenes en vivo de las principales carreteras", href: "/camaras", icon: <Video className="w-5 h-5" /> },
+          { title: "Gasolineras baratas", description: "Mapa de precios de carburante en tiempo real", href: "/gasolineras/mapa", icon: <Fuel className="w-5 h-5" /> },
+          { title: "Estado del tráfico", description: "Incidencias de tráfico por ciudad en España", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
+        ]} />
+      </div>
     </>
   );
 }

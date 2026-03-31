@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { Calendar, TrendingUp, BarChart3, Fuel } from "lucide-react";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { Calendar, TrendingUp, BarChart3, Fuel, Newspaper, FileText, AlertTriangle } from "lucide-react";
 
 export const revalidate = 300;
 
@@ -156,6 +157,13 @@ export default async function InformesPage() {
             </Link>
           ))}
         </div>
+
+        <RelatedLinks links={[
+          { title: "Noticias de tráfico", description: "Últimas noticias y análisis del tráfico en España", href: "/noticias", icon: <Newspaper className="w-5 h-5" /> },
+          { title: "Informes diarios", description: "Resumen diario de incidencias, combustible y meteorología", href: "/informe-diario", icon: <FileText className="w-5 h-5" /> },
+          { title: "Estadísticas de tráfico", description: "Histórico de siniestralidad vial con datos DGT", href: "/estadisticas", icon: <BarChart3 className="w-5 h-5" /> },
+          { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
+        ]} />
       </main>
     </div>
   );
