@@ -14,9 +14,11 @@ import {
   ArrowLeft,
   ExternalLink,
   Fuel,
+  BarChart2,
 } from "lucide-react";
 import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { labelForEnum } from "@/lib/labels";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
@@ -642,6 +644,24 @@ export default async function RoadDetailPage({ params }: PageProps) {
               </p>
             )}
           </div>
+        </div>
+
+        {/* Related links */}
+        <div className="mt-2">
+          <RelatedLinks links={[
+            {
+              title: `Análisis de tráfico en ${road.id}`,
+              description: `Informe detallado de volúmenes, velocidades medias y tendencias en la ${road.id}.`,
+              href: `/analisis/carreteras/${road.id}`,
+              icon: <TrendingUp className="w-5 h-5" />,
+            },
+            {
+              title: `Estadísticas de ${road.id}`,
+              description: `Datos históricos de accidentalidad, IMD y carga de tráfico en la ${road.id}.`,
+              href: `/carreteras/${road.id}/estadisticas`,
+              icon: <BarChart2 className="w-5 h-5" />,
+            },
+          ]} />
         </div>
       </main>
     </div>

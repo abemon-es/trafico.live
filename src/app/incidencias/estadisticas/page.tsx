@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { Loader2, AlertTriangle, BarChart2, ShieldAlert, Radar } from "lucide-react";
+import { Loader2, AlertTriangle, BarChart2, ShieldAlert, Radar, GaugeCircle } from "lucide-react";
 import { IncidentStatsContent } from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
@@ -51,6 +51,7 @@ export default function IncidentStatsPage() {
           { title: "Analítica de incidencias", description: "Patrones horarios, por día y por carretera", href: "/incidencias/analytics", icon: <BarChart2 className="w-5 h-5" /> },
           { title: "Estadísticas de accidentes", description: "Histórico de siniestralidad vial DGT", href: "/estadisticas/accidentes", icon: <ShieldAlert className="w-5 h-5" /> },
           { title: "Radares de la DGT", description: "Ubicación de radares fijos y tramos en España", href: "/radares", icon: <Radar className="w-5 h-5" /> },
+          { title: "Estadísticas generales", description: "Datos históricos de siniestralidad y tráfico en España", href: "/estadisticas", icon: <GaugeCircle className="w-5 h-5" /> },
         ]} />
       </div>
     </>

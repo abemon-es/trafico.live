@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const revalidate = 3600;
 
@@ -986,43 +987,14 @@ export default async function ZBECityPage({ params }: Props) {
           </section>
 
           {/* Related links */}
-          <nav aria-label="Páginas relacionadas" className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">También te puede interesar</h3>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/zbe"
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
-              >
-                Todas las ZBE de España
-              </Link>
-              <Link
-                href="/restricciones"
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
-              >
-                Restricciones de circulación
-              </Link>
-              {cfg.evChargersCity && (
-                <Link
-                  href={`/carga-ev/${cfg.evChargersCity}`}
-                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
-                >
-                  Carga eléctrica en {cfg.name}
-                </Link>
-              )}
-              <Link
-                href="/gasolineras-24-horas"
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
-              >
-                Gasolineras 24 horas
-              </Link>
-              <Link
-                href="/profesional/restricciones"
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm rounded-full transition-colors"
-              >
-                Restricciones para transportistas
-              </Link>
-            </div>
-          </nav>
+          <RelatedLinks links={[
+            { title: "Etiqueta ambiental DGT", description: "Consulta el distintivo ambiental de tu vehículo", href: "/etiqueta-ambiental", icon: <Leaf className="w-5 h-5" /> },
+            { title: "Restricciones de tráfico", description: "Restricciones de circulación por tipo de vehículo", href: "/restricciones", icon: <AlertCircle className="w-5 h-5" /> },
+            { title: "Puntos de carga EV", description: "Cargadores eléctricos en España", href: "/carga-ev", icon: <Zap className="w-5 h-5" /> },
+            { title: "Todas las ZBE de España", description: "Zonas de Bajas Emisiones activas y en desarrollo", href: "/zbe", icon: <MapPin className="w-5 h-5" /> },
+            { title: "Gasolineras 24 horas", description: "Estaciones de servicio abiertas las 24 horas", href: "/gasolineras-24-horas", icon: <Car className="w-5 h-5" /> },
+            { title: "Restricciones para transportistas", description: "Normativa de circulación para vehículos pesados", href: "/profesional/restricciones", icon: <Bus className="w-5 h-5" /> },
+          ]} />
 
         </main>
       </div>

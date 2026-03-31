@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
-import { Anchor, MapPin, Fuel, Navigation, Ship } from "lucide-react";
+import { Anchor, MapPin, Fuel, Navigation, Ship, Cloud, ShieldCheck } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const revalidate = 3600;
 
@@ -389,6 +390,13 @@ export default async function PortDetailPage({ params }: Props) {
               Ver todos los puertos
             </Link>
           </div>
+
+          <RelatedLinks links={[
+            { title: "Hub Marítimo", description: "Información marítima de España: puertos, combustible y seguridad", href: "/maritimo", icon: <Anchor className="w-5 h-5" /> },
+            { title: "Meteorología costera", description: "Previsiones meteorológicas para navegación costera", href: "/maritimo/meteorologia", icon: <Cloud className="w-5 h-5" /> },
+            { title: "Combustible marítimo", description: "Precios de combustible náutico en puertos españoles", href: "/maritimo/combustible", icon: <Fuel className="w-5 h-5" /> },
+            { title: "Seguridad marítima", description: "Avisos y normas de seguridad para la navegación", href: "/maritimo/seguridad", icon: <ShieldCheck className="w-5 h-5" /> },
+          ]} />
         </div>
       </div>
     </>

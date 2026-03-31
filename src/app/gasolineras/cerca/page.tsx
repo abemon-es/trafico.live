@@ -2,12 +2,14 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import GasolinerasCercaContent from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Gasolineras Baratas Cerca de Mí — Precios en Tiempo Real",
   description:
     "Encuentra las gasolineras más baratas cerca de tu ubicación. Precios de Gasóleo A y Gasolina 95 actualizados al momento. Compara distancia y precio de las 20 estaciones más próximas.",
   alternates: {
-    canonical: "https://trafico.live/gasolineras/cerca",
+    canonical: `${BASE_URL}/gasolineras/cerca`,
   },
   openGraph: {
     title: "Gasolineras Baratas Cerca de Mí",

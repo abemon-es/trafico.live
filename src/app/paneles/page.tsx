@@ -17,6 +17,8 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
         "Estado en tiempo real de los paneles de mensaje variable instalados en la red de carreteras española.",
     },
     alternates: {
-      canonical: "https://trafico.live/paneles",
+      canonical: `${BASE_URL}/paneles`,
     },
   };
 }

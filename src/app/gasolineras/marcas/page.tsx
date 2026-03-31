@@ -6,6 +6,8 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Fuel, TrendingDown, BarChart3, Building2, ChevronRight } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   alternates: {
-    canonical: "https://trafico.live/gasolineras/marcas",
+    canonical: `${BASE_URL}/gasolineras/marcas`,
   },
 };
 

@@ -3,12 +3,14 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Gasolineras Baratas por Ciudad — Precios Hoy",
   description:
     "Encuentra las gasolineras más baratas en tu ciudad. Precios actualizados de Gasóleo A y Gasolina 95 para las principales ciudades de España.",
   alternates: {
-    canonical: "https://trafico.live/gasolineras/baratas",
+    canonical: `${BASE_URL}/gasolineras/baratas`,
   },
 };
 

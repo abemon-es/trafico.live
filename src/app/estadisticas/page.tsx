@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { ShieldAlert, AlertTriangle, GaugeCircle, Activity } from "lucide-react";
+import { ShieldAlert, AlertTriangle, GaugeCircle, Activity, BarChart2 } from "lucide-react";
 import { EstadisticasContent } from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
@@ -68,7 +68,8 @@ export default function EstadisticasPage({
           { title: "Estadísticas de accidentes", description: "Histórico de siniestralidad vial por año y comunidad", href: "/estadisticas/accidentes", icon: <ShieldAlert className="w-5 h-5" /> },
           { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
           { title: "Estaciones de aforo", description: "IMD y aforos de la Red de Carreteras del Estado", href: "/estaciones-aforo", icon: <GaugeCircle className="w-5 h-5" /> },
-          { title: "Intensidad de tráfico", description: "Datos de intensidad media diaria por carretera", href: "/intensidad", icon: <Activity className="w-5 h-5" /> },
+          { title: "Intensidad de tráfico (IMD)", description: "Datos de intensidad media diaria por carretera", href: "/intensidad", icon: <Activity className="w-5 h-5" /> },
+          { title: "Estadísticas de incidencias", description: "Análisis estadístico de incidencias por tipo y zona", href: "/incidencias/estadisticas", icon: <BarChart2 className="w-5 h-5" /> },
         ]} />
       </div>
     </>

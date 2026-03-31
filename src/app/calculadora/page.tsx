@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import CalculadoraContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Calculadora de Coste de Ruta — Combustible y Peajes",
   description:
@@ -17,7 +19,7 @@ export const metadata: Metadata = {
     "coste ruta españa",
   ],
   alternates: {
-    canonical: "https://trafico.live/calculadora",
+    canonical: `${BASE_URL}/calculadora`,
   },
   openGraph: {
     title: "Calculadora de Coste de Ruta — Combustible y Peajes",

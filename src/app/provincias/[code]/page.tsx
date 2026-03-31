@@ -1,11 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar, Fuel, Zap, Building2 } from "lucide-react";
+import { AlertTriangle, MapPin, Calendar, TrendingDown, TrendingUp, Camera, Route, Radar, Fuel, Zap, Building2, BarChart2 } from "lucide-react";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { provinceDescription, provinceTitle } from "@/lib/seo/text-generators";
+import { provinceSlug } from "@/lib/geo/slugify";
 
 export const revalidate = 300;
 
@@ -412,42 +414,57 @@ export default async function ProvinciaDetailPage({ params }: Props) {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Infraestructura
               </h2>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="space-y-1">
+                <Link
+                  href="/camaras"
+                  className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                     <Camera className="w-4 h-4" />
                     <span>Cámaras</span>
                   </div>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{cameraCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                </Link>
+                <Link
+                  href={`/radares/provincia/${provinceSlug(province.name)}`}
+                  className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                     <Radar className="w-4 h-4" />
                     <span>Radares</span>
                   </div>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{radarCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                </Link>
+                <Link
+                  href="/carreteras"
+                  className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                     <Route className="w-4 h-4" />
                     <span>Carreteras</span>
                   </div>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{roads.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                </Link>
+                <Link
+                  href={`/gasolineras/precios/${provinceSlug(province.name)}`}
+                  className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                     <Fuel className="w-4 h-4" />
                     <span>Gasolineras</span>
                   </div>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{gasStationCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                </Link>
+                <Link
+                  href="/electrolineras"
+                  className="flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                     <Zap className="w-4 h-4" />
                     <span>Cargadores EV</span>
                   </div>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">{evChargerCount}</span>
-                </div>
+                </Link>
               </div>
             </div>
 
@@ -570,6 +587,42 @@ export default async function ProvinciaDetailPage({ params }: Props) {
             </div>
           </section>
         )}
+
+        {/* Related links */}
+        <div className="mt-8">
+          <RelatedLinks links={[
+            {
+              title: `Precios de combustible en ${province.name}`,
+              description: `Gasolineras más baratas y comparativa de precios de carburante en ${province.name}.`,
+              href: `/gasolineras/precios/${provinceSlug(province.name)}`,
+              icon: <Fuel className="w-5 h-5" />,
+            },
+            {
+              title: `Estadísticas de accidentes en ${province.name}`,
+              description: `Histórico de siniestralidad, fallecidos y heridos en carreteras de ${province.name}.`,
+              href: `/estadisticas/accidentes/${provinceSlug(province.name)}`,
+              icon: <BarChart2 className="w-5 h-5" />,
+            },
+            {
+              title: `Radares en ${province.name}`,
+              description: `Radares fijos, de tramo y móviles en las carreteras de ${province.name}.`,
+              href: `/radares/provincia/${provinceSlug(province.name)}`,
+              icon: <Radar className="w-5 h-5" />,
+            },
+            {
+              title: `Cámaras de tráfico`,
+              description: `Cámaras de la DGT en carreteras de ${province.name}.`,
+              href: `/camaras`,
+              icon: <Camera className="w-5 h-5" />,
+            },
+            {
+              title: "Todas las provincias",
+              description: "Estado del tráfico y datos de todas las provincias españolas.",
+              href: "/espana",
+              icon: <MapPin className="w-5 h-5" />,
+            },
+          ]} />
+        </div>
       </main>
     </div>
   );

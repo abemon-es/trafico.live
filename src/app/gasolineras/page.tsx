@@ -7,18 +7,20 @@ import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 import { StructuredData, generateDatasetSchema, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Gasolineras y Precios de Combustible | Tráfico España",
   description: "Consulta los precios de combustible actualizados en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti.",
   openGraph: {
     title: "Gasolineras y Precios de Combustible en España",
     description: "Consulta los precios de combustible actualizados en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti.",
-    url: "https://trafico.live/gasolineras",
+    url: `${BASE_URL}/gasolineras`,
     type: "website",
     locale: "es_ES",
   },
   alternates: {
-    canonical: "https://trafico.live/gasolineras",
+    canonical: `${BASE_URL}/gasolineras`,
   },
 };
 
@@ -150,7 +152,7 @@ export default async function GasolinerasPage() {
   const fuelDatasetSchema = generateDatasetSchema({
     name: "Precios de Combustible en Gasolineras de España",
     description: "Precios actualizados de gasolina, gasóleo y otros combustibles en más de 12.000 gasolineras terrestres y estaciones marítimas de España. Fuente oficial: MITERD.",
-    url: "https://trafico.live/gasolineras",
+    url: `${BASE_URL}/gasolineras`,
     keywords: ["gasolineras", "precios combustible", "gasolina", "diesel", "España", "MITERD"],
     temporalCoverage: "P1D",
     spatialCoverage: "España",

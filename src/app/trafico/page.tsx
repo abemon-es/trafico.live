@@ -6,6 +6,8 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 120;
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -62,7 +64,7 @@ export const metadata: Metadata = {
       "Estado del tráfico en tiempo real en las principales ciudades españolas. Incidencias activas, retenciones y cámaras.",
   },
   alternates: {
-    canonical: "https://trafico.live/trafico",
+    canonical: `${BASE_URL}/trafico`,
   },
 };
 
@@ -100,7 +102,7 @@ export default async function TraficoIndexPage() {
     name: `Tráfico en España — Incidencias en Tiempo Real ${CURRENT_YEAR}`,
     description:
       "Incidencias de tráfico activas en las principales ciudades españolas, agregadas de la Dirección General de Tráfico (DGT). Retenciones, accidentes, obras y condiciones de la vía actualizadas cada dos minutos.",
-    url: "https://trafico.live/trafico",
+    url: `${BASE_URL}/trafico`,
     keywords: [
       "tráfico España",
       "incidencias tráfico",

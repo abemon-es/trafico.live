@@ -10,6 +10,8 @@ import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 import { FuelPriceChart } from "@/components/charts/FuelPriceChart";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 3600;
 
 // Province code → { slug, name } for internal links
@@ -173,7 +175,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "precio litro gasolina hoy",
     ],
     alternates: {
-      canonical: "https://trafico.live/precio-gasolina-hoy",
+      canonical: `${BASE_URL}/precio-gasolina-hoy`,
     },
     openGraph: {
       title: `Precio Gasolina Hoy — ${avgStr}`,

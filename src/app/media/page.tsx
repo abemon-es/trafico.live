@@ -3,11 +3,13 @@ import { Logo } from "@/components/brand/Logo";
 import { Download } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Media Kit — Brand Assets & Guidelines",
   description:
     "Descarga los assets oficiales de trafico.live: logotipo, icono, paleta de colores, tipografía y guía de uso de marca.",
-  alternates: { canonical: "https://trafico.live/media" },
+  alternates: { canonical: `${BASE_URL}/media` },
 };
 
 const COLORS = {

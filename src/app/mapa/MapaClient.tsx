@@ -28,6 +28,8 @@ import {
   Radio,
 } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 const UnifiedMap = dynamic(
   () => import("@/components/map/UnifiedMap").then((m) => m.UnifiedMap),
   { ssr: false }
@@ -165,11 +167,11 @@ export function MapaClient() {
             "@type": "WebApplication",
             name: "Mapa Interactivo de Tráfico — trafico.live",
             description: "El mapa de tráfico más completo de España con 14 capas de datos en tiempo real",
-            url: "https://trafico.live/mapa",
+            url: `${BASE_URL}/mapa`,
             applicationCategory: "UtilitiesApplication",
             operatingSystem: "Web",
             offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-            author: { "@type": "Organization", name: "trafico.live", url: "https://trafico.live" },
+            author: { "@type": "Organization", name: "trafico.live", url: BASE_URL },
           }),
         }}
       />

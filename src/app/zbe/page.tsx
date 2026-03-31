@@ -21,6 +21,8 @@ import {
   generateFAQSchema,
 } from "@/components/seo/StructuredData";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 3600;
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -265,7 +267,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   alternates: {
-    canonical: "https://trafico.live/zbe",
+    canonical: `${BASE_URL}/zbe`,
   },
 };
 
@@ -351,7 +353,7 @@ export default async function ZBEIndexPage() {
     name: `Zonas de Bajas Emisiones en España ${CURRENT_YEAR}`,
     description:
       "Dataset de ZBE españolas: ciudad, estado, horarios, restricciones por etiqueta ambiental y multas.",
-    url: "https://trafico.live/zbe",
+    url: `${BASE_URL}/zbe`,
     keywords: [
       "ZBE",
       "bajas emisiones",

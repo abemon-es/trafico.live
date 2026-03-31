@@ -17,6 +17,8 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 120;
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -150,7 +152,7 @@ export default async function AtascosPage() {
     name: `Atascos y Retenciones en España Hoy ${CURRENT_YEAR}`,
     description:
       "Atascos en tiempo real en España: retenciones, congestiones y tráfico denso en carreteras y autopistas.",
-    url: "https://trafico.live/atascos",
+    url: `${BASE_URL}/atascos`,
     speakable: {
       "@type": "SpeakableSpecification",
       cssSelector: ["h1", ".live-count", ".atasco-item"],

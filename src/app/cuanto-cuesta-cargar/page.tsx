@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import CuantoCuestaCargarContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "¿Cuánto Cuesta Cargar un Coche Eléctrico en 2026? — Calculadora",
   description:
@@ -17,7 +19,7 @@ export const metadata: Metadata = {
     "carga rapida precio",
   ],
   alternates: {
-    canonical: "https://trafico.live/cuanto-cuesta-cargar",
+    canonical: `${BASE_URL}/cuanto-cuesta-cargar`,
   },
   openGraph: {
     title: "¿Cuánto Cuesta Cargar un Coche Eléctrico en 2026? — Calculadora",

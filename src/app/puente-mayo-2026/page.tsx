@@ -18,6 +18,8 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 300;
 
 // ---------------------------------------------------------------------------
@@ -45,10 +47,10 @@ export async function generateMetadata(): Promise<Metadata> {
         "Tráfico Puente de Mayo 2026 — Operación Salida 1 de Mayo",
       description:
         "Incidencias en tiempo real, mejores horarios, rutas afectadas y consejos para el Puente de Mayo 2026 (30 abril – 3 mayo).",
-      url: "https://trafico.live/puente-mayo-2026",
+      url: `${BASE_URL}/puente-mayo-2026`,
     },
     alternates: {
-      canonical: "https://trafico.live/puente-mayo-2026",
+      canonical: `${BASE_URL}/puente-mayo-2026`,
     },
   };
 }
@@ -260,7 +262,7 @@ export default async function PuenteMayo2026Page() {
       name: "Dirección General de Tráfico",
       url: "https://www.dgt.es",
     },
-    url: "https://trafico.live/puente-mayo-2026",
+    url: `${BASE_URL}/puente-mayo-2026`,
   };
 
   return (

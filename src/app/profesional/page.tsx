@@ -19,6 +19,8 @@ import {
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const metadata: Metadata = {
   title: "Portal Profesional para Flotas y Transportistas",
   description:
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
       "Diésel más barato, áreas de descanso, restricciones activas y API de datos. Todo lo que necesita tu flota.",
   },
   alternates: {
-    canonical: "https://trafico.live/profesional",
+    canonical: `${BASE_URL}/profesional`,
   },
 };
 

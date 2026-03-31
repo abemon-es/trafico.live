@@ -20,6 +20,8 @@ import {
   generateFAQSchema,
 } from "@/components/seo/StructuredData";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 3600;
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -132,13 +134,13 @@ export const metadata: Metadata = {
     "CHAdeMO",
     `electrolineras ${CURRENT_YEAR}`,
   ],
-  alternates: { canonical: "https://trafico.live/electrolineras" },
+  alternates: { canonical: `${BASE_URL}/electrolineras` },
   openGraph: {
     title: `Electrolineras en España ${CURRENT_YEAR} — Puntos de Recarga Eléctrica`,
     description:
       "Directorio de electrolineras en España: puntos de recarga, tipos de conector, potencia y disponibilidad por ciudad.",
     type: "website",
-    url: "https://trafico.live/electrolineras",
+    url: `${BASE_URL}/electrolineras`,
   },
 };
 
@@ -174,7 +176,7 @@ export default async function ElectrolinerasIndexPage() {
   const datasetSchema = generateDatasetSchema({
     name: `Electrolineras en España ${CURRENT_YEAR}`,
     description: `Directorio nacional de ${totalChargers.toLocaleString("es-ES")} puntos de recarga para vehículos eléctricos en España. Incluye tipo de conector, potencia, operador y disponibilidad 24h.`,
-    url: "https://trafico.live/electrolineras",
+    url: `${BASE_URL}/electrolineras`,
     keywords: [
       "electrolineras",
       "puntos de recarga eléctrica",

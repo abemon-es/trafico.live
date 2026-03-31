@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { Loader2, MapPin, Video, Route, Car } from "lucide-react";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+import { Loader2, MapPin, Video, Route, Car, BarChart2, BarChart3, CloudLightning, AlertOctagon } from "lucide-react";
 import Link from "next/link";
 import { IncidenciasContent } from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -14,12 +16,12 @@ export const metadata: Metadata = {
     title: "Incidencias de Tráfico en Tiempo Real — España",
     description:
       "Mapa en tiempo real de incidencias en las carreteras españolas. Cortes de carretera, obras, accidentes y condiciones meteorológicas adversas.",
-    url: "https://trafico.live/incidencias",
+    url: `${BASE_URL}/incidencias`,
     type: "website",
     locale: "es_ES",
   },
   alternates: {
-    canonical: "https://trafico.live/incidencias",
+    canonical: `${BASE_URL}/incidencias`,
   },
 };
 
@@ -56,6 +58,26 @@ export default function IncidenciasPage() {
         </div>
       </div>
 
+      {/* SSR analytics links — visible to crawlers, placed before client Suspense */}
+      <div className="bg-gray-50 dark:bg-gray-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 flex flex-wrap gap-3">
+          <Link
+            href="/incidencias/estadisticas"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+          >
+            <BarChart2 className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+            Estadísticas de incidencias
+          </Link>
+          <Link
+            href="/incidencias/analytics"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+          >
+            <BarChart3 className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+            Análisis de incidencias
+          </Link>
+        </div>
+      </div>
+
       {/* Server-rendered city traffic links for SEO — visually hidden, fully crawlable */}
       <nav aria-label="Tráfico por ciudad" className="sr-only">
         <ul>
@@ -89,6 +111,10 @@ export default function IncidenciasPage() {
           { title: "Cámaras DGT", description: "Imágenes en vivo de las principales carreteras", href: "/camaras", icon: <Video className="w-5 h-5" /> },
           { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
           { title: "Atascos y retenciones", description: "Puntos negros de tráfico y vías saturadas", href: "/atascos", icon: <Car className="w-5 h-5" /> },
+          { title: "Estadísticas de incidencias", description: "Tendencias y patrones históricos de incidencias", href: "/incidencias/estadisticas", icon: <BarChart2 className="w-5 h-5" /> },
+          { title: "Análisis de incidencias", description: "Distribución horaria, por día y carretera", href: "/incidencias/analytics", icon: <BarChart3 className="w-5 h-5" /> },
+          { title: "Cortes de tráfico", description: "Cortes de carretera activos en España", href: "/cortes-trafico", icon: <AlertOctagon className="w-5 h-5" /> },
+          { title: "Alertas meteorológicas", description: "Alertas AEMET que afectan a la circulación", href: "/alertas-meteo", icon: <CloudLightning className="w-5 h-5" /> },
         ]} />
       </div>
     </>

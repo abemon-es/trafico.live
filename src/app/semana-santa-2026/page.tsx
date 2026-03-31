@@ -25,6 +25,8 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -50,10 +52,10 @@ export async function generateMetadata(): Promise<Metadata> {
         "Tráfico Semana Santa 2026 — Operación Salida y Retorno",
       description:
         "Mapa en tiempo real, previsiones DGT, operación salida y retorno, mejores horarios y carreteras alternativas para Semana Santa 2026.",
-      url: "https://trafico.live/semana-santa-2026",
+      url: `${BASE_URL}/semana-santa-2026`,
     },
     alternates: {
-      canonical: "https://trafico.live/semana-santa-2026",
+      canonical: `${BASE_URL}/semana-santa-2026`,
     },
   };
 }
@@ -306,7 +308,7 @@ export default async function SemanaSanta2026Page() {
       name: "Dirección General de Tráfico",
       url: "https://www.dgt.es",
     },
-    url: "https://trafico.live/semana-santa-2026",
+    url: `${BASE_URL}/semana-santa-2026`,
   };
 
   return (

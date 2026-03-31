@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { Loader2, Zap, Fuel, ShieldCheck, CircleDollarSign } from "lucide-react";
+import { Loader2, Zap, Fuel, ShieldCheck, CircleDollarSign, MapPin, Leaf } from "lucide-react";
 import CargaEVContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
@@ -62,6 +62,10 @@ export default function CargaEVPage() {
           { title: "Gasolineras más baratas", description: "Precios de carburante en tiempo real en toda España", href: "/gasolineras", icon: <Fuel className="w-5 h-5" /> },
           { title: "Zonas de Bajas Emisiones", description: "ZBE activas y restricciones de acceso por ciudad", href: "/zbe", icon: <ShieldCheck className="w-5 h-5" /> },
           { title: "¿Cuánto cuesta cargar un coche eléctrico?", description: "Comparativa de tarifas y coste por kWh en España", href: "/cuanto-cuesta-cargar", icon: <CircleDollarSign className="w-5 h-5" /> },
+          { title: "Cargadores cerca de mí", description: "Puntos de carga EV próximos a tu ubicación", href: "/carga-ev/cerca", icon: <MapPin className="w-5 h-5" /> },
+          { title: "Etiqueta ambiental", description: "Consulta el distintivo ambiental DGT de tu vehículo", href: "/etiqueta-ambiental", icon: <Leaf className="w-5 h-5" /> },
+          { title: "Electrolineras Madrid", description: "Puntos de carga eléctrica en Madrid", href: "/electrolineras/madrid", icon: <Zap className="w-5 h-5" /> },
+          { title: "Electrolineras Barcelona", description: "Puntos de carga eléctrica en Barcelona", href: "/electrolineras/barcelona", icon: <Zap className="w-5 h-5" /> },
         ]} />
       </main>
     </div>

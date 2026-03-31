@@ -19,6 +19,8 @@ import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 export const revalidate = 120;
 
 // -------------------------------------------------------------------------
@@ -180,13 +182,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: {
-      canonical: `https://trafico.live/trafico/${city}`,
+      canonical: `${BASE_URL}/trafico/${city}`,
     },
     openGraph: {
       title,
       description,
       type: "website",
-      url: `https://trafico.live/trafico/${city}`,
+      url: `${BASE_URL}/trafico/${city}`,
     },
   };
 }
@@ -264,12 +266,12 @@ export default async function TraficoCityPage({ params }: Props) {
       "@type": "WebPage",
       name: `Tráfico en ${cityData.name} Hoy`,
       description: `Estado del tráfico en ${cityData.name} en tiempo real. ${incidentCount} incidencias activas.`,
-      url: `https://trafico.live/trafico/${city}`,
+      url: `${BASE_URL}/trafico/${city}`,
       breadcrumb: {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Inicio", item: "https://trafico.live" },
-          { "@type": "ListItem", position: 2, name: "Tráfico", item: "https://trafico.live/incidencias" },
+          { "@type": "ListItem", position: 1, name: "Inicio", item: BASE_URL },
+          { "@type": "ListItem", position: 2, name: "Tráfico", item: `${BASE_URL}/incidencias` },
           { "@type": "ListItem", position: 3, name: cityData.name },
         ],
       },
