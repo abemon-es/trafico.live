@@ -1173,6 +1173,22 @@ model PriceAlert {
   @@index([isActive, fuelType])
 }
 
+// Weekly digest email subscribers
+model DigestSubscriber {
+  id               String   @id @default(cuid())
+  email            String
+  province         String?  // optional: personalize by province (INE code)
+  provinceName     String?
+  isActive         Boolean  @default(true)
+  confirmedAt      DateTime? // null until email confirmed (double opt-in)
+  lastSentAt       DateTime?
+  unsubscribeToken String   @unique @default(cuid())
+  createdAt        DateTime @default(now())
+
+  @@unique([email])
+  @@index([isActive, confirmedAt])
+}
+
 // StationDailyRanking model removed — rankings are computed live via SQL
 
 // ---------------------------------------------------------------------------
