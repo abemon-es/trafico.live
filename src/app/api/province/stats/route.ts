@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       ? { provinceName: { contains: provinceName, mode: "insensitive" as const } }
       : { provinceCode };
 
-    // Get V16 daily trend for the province
+    // Get V16 daily trend for the province (capped to prevent memory issues)
     const v16Events = await prisma.v16BeaconEvent.findMany({
       where: {
         activatedAt: { gte: startDate },
@@ -40,6 +40,7 @@ export async function GET(request: Request) {
         roadType: true,
       },
       orderBy: { activatedAt: "asc" },
+      take: 5000,
     });
 
     // Group V16 by date
@@ -53,7 +54,7 @@ export async function GET(request: Request) {
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    // Get incidents for the province
+    // Get incidents for the province (capped to prevent memory issues)
     const incidents = await prisma.trafficIncident.findMany({
       where: {
         startedAt: { gte: startDate },
@@ -66,6 +67,7 @@ export async function GET(request: Request) {
         startedAt: true,
         durationSecs: true,
       },
+      take: 5000,
     });
 
     // Incident type breakdown

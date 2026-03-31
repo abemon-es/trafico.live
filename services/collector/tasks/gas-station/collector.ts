@@ -84,8 +84,9 @@ function extractRoadInfo(address: string, margin: string | null): { road: string
 
   const upper = address.toUpperCase();
 
-  // Match road patterns: A-1, AP-7, N-340, N-III, C-31, etc.
-  const roadMatch = upper.match(/\b(AP?-\d+[A-Z]?|N-[IVX]+|N-\d+[A-Z]?|C-\d+[A-Z]?|E-\d+)\b/);
+  // Match road patterns: national (A-, AP-, N-, E-), regional (M-, CM-, EX-, CT-),
+  // provincial (GI-, B-, T-, MA-, SE-, CA-, GR-, etc.)
+  const roadMatch = upper.match(/\b(AP-\d+|A-\d+[A-Z]?|N-[IVX]+|N-\d+[A-Z]?|E-\d+|(?:M|CM|EX|CT|GI|BI|SS|NA|LO|HU|TE|CS|CA|CO|GR|H|J|MA|SE|SO|BU|VA|ZA|LE|SA|AV|SG|CU|GU|TO|CR|AB|MU|AL|OU|PO|LU|OR|PA|S|AS|TF|GC|CE|ML|B|T|L|C)-\d+[A-Z]?)\b/);
   const road = roadMatch ? roadMatch[1] : null;
 
   // Match km patterns: KM 23, P.K. 567, KM. 22,5

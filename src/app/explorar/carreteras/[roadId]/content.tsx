@@ -114,25 +114,25 @@ export default function RoadDetailContent() {
   const { data: incidentsData, isLoading: incidentsLoading } = useSWR<IncidentsResponse>(
     `/api/incidents?road=${encodeURIComponent(roadId)}`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const { data: radarsData, isLoading: radarsLoading } = useSWR<RadarsResponse>(
     `/api/radars?road=${encodeURIComponent(roadId)}`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const { data: camerasData, isLoading: camerasLoading } = useSWR<CamerasResponse>(
     `/api/cameras?road=${encodeURIComponent(roadId)}`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const { data: imdData, isLoading: imdLoading } = useSWR<IMDResponse>(
     `/api/imd?road=${encodeURIComponent(roadId)}`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const isLoading = incidentsLoading || radarsLoading || camerasLoading || imdLoading;
