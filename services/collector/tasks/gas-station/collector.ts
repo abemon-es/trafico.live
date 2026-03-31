@@ -70,6 +70,34 @@ function is24Hours(schedule: string): boolean {
   return schedule.includes("24H") || schedule.includes("24h");
 }
 
+/**
+ * Extract road number and km point from MINETUR address field.
+ * Common patterns:
+ *   "AUTOVIA A-7, KM 23"
+ *   "CTRA. N-340 P.K. 567,2"
+ *   "CR N-III, KM. 22"
+ *   "AUTOPISTA AP-7 KM 135"
+ *   "A-66 SALIDA 473"
+ */
+function extractRoadInfo(address: string, margin: string | null): { road: string | null; km: number | null } {
+  if (!address) return { road: null, km: null };
+
+  const upper = address.toUpperCase();
+
+  // Match road patterns: A-1, AP-7, N-340, N-III, C-31, etc.
+  const roadMatch = upper.match(/\b(AP?-\d+[A-Z]?|N-[IVX]+|N-\d+[A-Z]?|C-\d+[A-Z]?|E-\d+)\b/);
+  const road = roadMatch ? roadMatch[1] : null;
+
+  // Match km patterns: KM 23, P.K. 567, KM. 22,5
+  let km: number | null = null;
+  const kmMatch = upper.match(/(?:KM\.?|P\.?K\.?)\s*(\d+(?:[,\.]\d+)?)/);
+  if (kmMatch) {
+    km = parseFloat(kmMatch[1].replace(",", "."));
+  }
+
+  return { road, km };
+}
+
 function parseAPIDate(dateStr: string): Date {
   const [datePart, timePart] = dateStr.split(" ");
   const [day, month, year] = datePart.split("/").map(Number);
@@ -120,6 +148,9 @@ export async function run(prisma: PrismaClient) {
       const provinceCode = station.IDProvincia ? station.IDProvincia.padStart(2, "0") : null;
       const provinceName = (provinceCode ? PROVINCES[provinceCode] : null) || station.Provincia;
 
+      // Extract road info from address field
+      const roadInfo = extractRoadInfo(station.Dirección, station.Margen);
+
       return {
         id: station.IDEESS,
         name: station.Rótulo || "Sin nombre",
@@ -143,6 +174,8 @@ export async function run(prisma: PrismaClient) {
         priceGNC: parsePrice(station["Precio Gas Natural Comprimido"]),
         priceGNL: parsePrice(station["Precio Gas Natural Licuado"]),
         priceHidrogeno: parsePrice(station["Precio Hidrogeno"]),
+        nearestRoad: roadInfo.road,
+        roadKm: roadInfo.km,
         schedule: station.Horario || null,
         is24h: is24Hours(station.Horario),
         margin: station.Margen || null,
@@ -153,7 +186,8 @@ export async function run(prisma: PrismaClient) {
     })
     .filter((s): s is NonNullable<typeof s> => s !== null);
 
-  console.log(`[gas-station] Processing ${validStations.length} valid stations...`);
+  const withRoad = validStations.filter(s => s.nearestRoad).length;
+  console.log(`[gas-station] Processing ${validStations.length} valid stations (${withRoad} with road info)...`);
 
   // ── 3. Bulk upsert stations ────────────────────────────────────────────
 
@@ -164,8 +198,8 @@ export async function run(prisma: PrismaClient) {
     const batch = validStations.slice(i, i + BATCH_SIZE);
 
     const values = batch.map((_, idx) => {
-      const base = idx * 29;
-      return `(${Array.from({ length: 29 }, (__, j) => `$${base + j + 1}`).join(", ")})`;
+      const base = idx * 31;
+      return `(${Array.from({ length: 31 }, (__, j) => `$${base + j + 1}`).join(", ")})`;
     }).join(", ");
 
     const params = batch.flatMap((s) => [
@@ -174,7 +208,8 @@ export async function run(prisma: PrismaClient) {
       s.provinceName, s.communityCode, s.priceGasoleoA, s.priceGasoleoB,
       s.priceGasoleoPremium, s.priceGasolina95E5, s.priceGasolina95E10,
       s.priceGasolina98E5, s.priceGasolina98E10, s.priceGLP, s.priceGNC,
-      s.priceGNL, s.priceHidrogeno, s.schedule, s.is24h, s.margin, s.saleType,
+      s.priceGNL, s.priceHidrogeno, s.nearestRoad, s.roadKm,
+      s.schedule, s.is24h, s.margin, s.saleType,
       s.lastPriceUpdate, s.lastUpdated,
     ]);
 
@@ -185,7 +220,8 @@ export async function run(prisma: PrismaClient) {
         "provinceName", "communityCode", "priceGasoleoA", "priceGasoleoB",
         "priceGasoleoPremium", "priceGasolina95E5", "priceGasolina95E10",
         "priceGasolina98E5", "priceGasolina98E10", "priceGLP", "priceGNC",
-        "priceGNL", "priceHidrogeno", schedule, "is24h", margin, "saleType",
+        "priceGNL", "priceHidrogeno", "nearestRoad", "roadKm",
+        schedule, "is24h", margin, "saleType",
         "lastPriceUpdate", "lastUpdated"
       ) VALUES ${values}
       ON CONFLICT (id) DO UPDATE SET
@@ -211,6 +247,8 @@ export async function run(prisma: PrismaClient) {
         "priceGNC" = EXCLUDED."priceGNC",
         "priceGNL" = EXCLUDED."priceGNL",
         "priceHidrogeno" = EXCLUDED."priceHidrogeno",
+        "nearestRoad" = COALESCE(EXCLUDED."nearestRoad", "GasStation"."nearestRoad"),
+        "roadKm" = COALESCE(EXCLUDED."roadKm", "GasStation"."roadKm"),
         schedule = EXCLUDED.schedule,
         "is24h" = EXCLUDED."is24h",
         margin = EXCLUDED.margin,
