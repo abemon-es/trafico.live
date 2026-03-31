@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Search,
   X,
@@ -1202,12 +1203,17 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                       const isActive = idx === activeIndex;
 
                       return (
-                        <button
+                        <Link
                           key={result.href}
+                          href={result.href}
+                          prefetch={false}
                           data-index={idx}
                           role="option"
                           aria-selected={isActive}
-                          onClick={() => navigate(result.href)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate(result.href);
+                          }}
                           onMouseEnter={() => setActiveIndex(idx)}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                             isActive
@@ -1251,7 +1257,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                           >
                             {meta.label}
                           </span>
-                        </button>
+                        </Link>
                       );
                     })}
                   </div>
