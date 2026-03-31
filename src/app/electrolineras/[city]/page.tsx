@@ -14,7 +14,7 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 // -------------------------------------------------------------------------
 // City registry — 20 cities targeting "electrolineras [city]" (2-6K/mo each)

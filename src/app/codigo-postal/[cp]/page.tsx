@@ -7,7 +7,7 @@ import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredDa
 import { postalCodeTitle, postalCodeDescription } from "@/lib/seo/text-generators";
 import { Fuel, Zap, MapPin, Building2 } from "lucide-react";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

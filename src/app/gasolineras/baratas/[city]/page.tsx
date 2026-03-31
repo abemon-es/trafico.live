@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { MapPin, Clock, TrendingDown, Fuel, ChevronRight, AlertCircle } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const CITIES: Record<string, { name: string; province: string; provinceCode: string; provinceSlug: string }> = {
   madrid: { name: "Madrid", province: "Madrid", provinceCode: "28", provinceSlug: "madrid" },

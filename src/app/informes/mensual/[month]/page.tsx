@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import prisma from "@/lib/db";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 type Props = { params: Promise<{ month: string }> };
 

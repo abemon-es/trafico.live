@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { Anchor, MapPin, Fuel, Navigation, Ship } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
