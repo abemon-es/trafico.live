@@ -13,28 +13,15 @@ export async function GET(request: NextRequest) {
     const cached = await getFromCache(CACHE_KEY);
     if (cached) return NextResponse.json(cached);
 
-    // Get today's date (start of day, UTC to match aggregator)
-    const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-
-    // Get national stats for today — if none exist yet, fall back to the most
-    // recent available date. The gas station cron runs at 06:00/13:00/20:00 UTC
-    // so before the first daily run there's no record for today yet.
-    let nationalStats = await prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: today },
+    // Always fetch the most recent national stats available.
+    // The gas station cron runs at 06:00/13:00/20:00 UTC — before the first
+    // daily run there's no record for today, so we serve the latest available.
+    const nationalStats = await prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "national" },
+      orderBy: { date: "desc" },
     });
 
-    // Determine the effective date we're serving data for
-    let effectiveDate = today;
-    if (!nationalStats) {
-      nationalStats = await prisma.fuelPriceDailyStats.findFirst({
-        where: { scope: "national" },
-        orderBy: { date: "desc" },
-      });
-      if (nationalStats) {
-        effectiveDate = nationalStats.date;
-      }
-    }
+    const effectiveDate = nationalStats?.date ?? new Date();
 
     // Get the previous day's stats for trend comparison
     const prevDate = new Date(effectiveDate);
