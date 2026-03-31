@@ -382,6 +382,10 @@ import {
   generateDailyFuelReport,
   generateWeeklyReport as generateWeeklyReportV2,
   generateWeeklyPriceRanking,
+  generateAnnualAccidentReports,
+  generateRoadIMDAnalyses,
+  generateMonthlyAccidentReport,
+  generateMonthlyFuelReport,
 } from "./generators";
 
 // ---------------------------------------------------------------------------
@@ -403,6 +407,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
     generateWeeklyPriceRanking(prisma),
     // Legacy fuel trend (kept until v2 weekly price ranking is validated)
     generateFuelTrend(prisma),
+    // Analytical content generators — run on 1st of month / always
+    generateAnnualAccidentReports(prisma),
+    generateRoadIMDAnalyses(prisma),
+    generateMonthlyAccidentReport(prisma),
+    generateMonthlyFuelReport(prisma),
   ]);
 
   let total = 0;
