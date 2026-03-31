@@ -72,6 +72,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Next.js auto-generated sitemap index is broken (404) with generateSitemaps
+        // in Coolify builds. Route to our manual API handler instead.
+        {
+          source: "/sitemap.xml",
+          destination: "/api/sitemap-index",
+        },
+      ],
+    };
+  },
   async redirects() {
     return [
       // 301: /combustible → /gasolineras (was a rewrite — duplicate content)

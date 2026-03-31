@@ -2,12 +2,11 @@ import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
 import { ARTICLES } from "@/app/blog/articles";
 
-// NOTE: Do NOT export `dynamic = "force-dynamic"` here.
-// generateSitemaps() is called at build time to register shard IDs for the
-// sitemap index (/sitemap.xml). force-dynamic prevents the index from being
-// registered, causing a 404 in production. Individual shard routes
-// (/sitemap/[__metadata_id__]) are already rendered dynamically at request
-// time because they query the DB — they do not need force-dynamic either.
+// Revalidate every 60s so shards re-render with live DB data after deploy.
+// (Coolify builds with DATABASE_URL='' → build-time renders are empty shells.)
+// Do NOT use force-dynamic — generateSitemaps() must run at build time to
+// register shard IDs.
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -52,10 +51,12 @@ export async function generateSitemaps() {
       prisma.maritimeStation.count(),
     ]);
 
-    const stationShards = Math.max(1, Math.ceil(stationCount / SHARD_SIZE));
-    const municipalityShards = Math.max(1, Math.ceil(municipalityCount / SHARD_SIZE));
-    const postalCodeShards = Math.max(1, Math.ceil(postalCodeCount / SHARD_SIZE));
-    const maritimeShards = Math.max(1, Math.ceil(maritimeCount / SHARD_SIZE));
+    // When DB proxy returns 0 (build time with DATABASE_URL=''), use fallbacks
+    // so all shard routes are registered and available for ISR revalidation.
+    const stationShards = stationCount > 0 ? Math.ceil(stationCount / SHARD_SIZE) : FALLBACK_STATION_SHARDS;
+    const municipalityShards = municipalityCount > 0 ? Math.ceil(municipalityCount / SHARD_SIZE) : FALLBACK_MUNICIPALITY_SHARDS;
+    const postalCodeShards = postalCodeCount > 0 ? Math.ceil(postalCodeCount / SHARD_SIZE) : FALLBACK_POSTAL_CODE_SHARDS;
+    const maritimeShards = maritimeCount > 0 ? Math.ceil(maritimeCount / SHARD_SIZE) : FALLBACK_MARITIME_SHARDS;
 
     return [
       { id: 0 }, // Core pages
