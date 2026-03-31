@@ -73,6 +73,19 @@
   --color-tl-amber-900: #1f0c00;
   --color-tl-amber-950: #0d0400;
 
+  /* Maritime — OKLCH-generated from #0369a1 (ocean blue) */
+  --color-tl-sea-50: #e8f4fd;
+  --color-tl-sea-100: #c8e6fa;
+  --color-tl-sea-200: #90cdf4;
+  --color-tl-sea-300: #5ab5ec;
+  --color-tl-sea-400: #2d9cdb;
+  --color-tl-sea-500: #0369a1;
+  --color-tl-sea-600: #024e7a;
+  --color-tl-sea-700: #013755;
+  --color-tl-sea-800: #012235;
+  --color-tl-sea-900: #001019;
+  --color-tl-sea-950: #00080d;
+
   /* Signal colors (always fixed, not theme-dependent) */
   --color-signal-green: #059669;
   --color-signal-amber: #d97706;

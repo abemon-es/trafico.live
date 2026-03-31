@@ -119,6 +119,17 @@ const nextConfig: NextConfig = {
       { source: "/blog/:slug*", destination: "/noticias/:slug*", permanent: true },
       { source: "/insights", destination: "/noticias", permanent: true },
       { source: "/insights/:slug*", destination: "/noticias/:slug*", permanent: true },
+      // 301: /gasolineras/maritimas → /maritimo/combustible
+      {
+        source: "/gasolineras/maritimas",
+        destination: "/maritimo/combustible",
+        permanent: true,
+      },
+      {
+        source: "/gasolineras/maritimas/:path*",
+        destination: "/maritimo/combustible/:path*",
+        permanent: true,
+      },
       // Note: /provincias/[code] redirects would need middleware
       // since we need to look up the slug from the code
     ];
