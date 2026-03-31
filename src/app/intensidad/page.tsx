@@ -1,6 +1,8 @@
 import { Metadata } from "next";
+import { GaugeCircle, MapPin, BarChart3, Route } from "lucide-react";
 import IntensidadContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -28,6 +30,14 @@ export default function IntensidadPage() {
         ]} />
       </div>
       <IntensidadContent />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <RelatedLinks links={[
+          { title: "Estaciones de aforo", description: "Mapa interactivo con los 3.458 puntos de aforo nacionales", href: "/estaciones-aforo", icon: <GaugeCircle className="w-5 h-5" /> },
+          { title: "Estado del tráfico en tiempo real", description: "Incidencias y mapa de tráfico de España", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
+          { title: "Estadísticas de tráfico", description: "Histórico de siniestralidad y datos DGT", href: "/estadisticas", icon: <BarChart3 className="w-5 h-5" /> },
+          { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
+        ]} />
+      </div>
     </>
   );
 }

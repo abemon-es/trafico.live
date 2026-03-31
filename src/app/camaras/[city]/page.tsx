@@ -2,11 +2,15 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Camera, MapPin, Video, ArrowRight } from "lucide-react";
+import { Camera, MapPin, Video, ArrowRight, Radio, AlertTriangle, Route } from "lucide-react";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { StructuredData, generateWebPageSchema } from "@/components/seo/StructuredData";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const revalidate = 3600;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // City slug → province INE code + display name
 const CITY_PROVINCES: Record<string, { name: string; code: string }> = {
@@ -143,9 +147,23 @@ export default async function CamarasCityPage({ params }: Props) {
   const roadsSorted = Object.keys(camerasByRoad).sort();
   const hasCameras = cameras.length > 0;
 
+  const pageTitle = `Cámaras de Tráfico en ${cityData.name} — En Tiempo Real`;
+  const pageDescription = `Consulta en tiempo real las cámaras de tráfico de la DGT en ${cityData.name}. Listado completo por carretera con imágenes actualizadas.`;
+  const structuredData = generateWebPageSchema({
+    title: pageTitle,
+    description: pageDescription,
+    url: `${BASE_URL}/camaras/${city}`,
+    breadcrumbs: [
+      { name: "Inicio", url: BASE_URL },
+      { name: "Cámaras", url: `${BASE_URL}/camaras` },
+      { name: cityData.name, url: `${BASE_URL}/camaras/${city}` },
+    ],
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <StructuredData data={structuredData} />
         <Breadcrumbs
           items={[
             { name: "Inicio", href: "/" },

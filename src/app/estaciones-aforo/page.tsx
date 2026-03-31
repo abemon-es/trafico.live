@@ -1,6 +1,8 @@
 import { Metadata } from "next";
+import { Activity, BarChart3, Route, AlertTriangle } from "lucide-react";
 import EstacionesAforoContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -28,6 +30,14 @@ export default function EstacionesAforoPage() {
         ]} />
       </div>
       <EstacionesAforoContent />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <RelatedLinks links={[
+          { title: "Intensidad de tráfico (IMD)", description: "Análisis de IMD por provincia, carretera y año", href: "/intensidad", icon: <Activity className="w-5 h-5" /> },
+          { title: "Estadísticas de tráfico", description: "Datos históricos de siniestralidad vial", href: "/estadisticas", icon: <BarChart3 className="w-5 h-5" /> },
+          { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
+          { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
+        ]} />
+      </div>
     </>
   );
 }

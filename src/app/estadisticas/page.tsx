@@ -1,7 +1,11 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
+import Link from "next/link";
+import { ShieldAlert, AlertTriangle, GaugeCircle, Activity } from "lucide-react";
 import { EstadisticasContent } from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -39,9 +43,27 @@ export default function EstadisticasPage({
           { name: "Estadísticas", href: "/estadisticas" },
         ]} />
       </div>
+
+      {/* Server-rendered subpage links for SEO — visually hidden, fully crawlable */}
+      <nav aria-label="Estadísticas de tráfico" className="sr-only">
+        <ul>
+          <li><Link href="/estadisticas/accidentes">Accidentes de tráfico en España</Link></li>
+          <li><Link href="/estaciones-aforo">Estaciones de aforo</Link></li>
+          <li><Link href="/intensidad">Intensidad de tráfico</Link></li>
+        </ul>
+      </nav>
+
       <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">Cargando...</div>}>
         <EstadisticasPageContent searchParams={searchParams} />
       </Suspense>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <RelatedLinks links={[
+          { title: "Estadísticas de accidentes", description: "Histórico de siniestralidad vial por año y comunidad", href: "/estadisticas/accidentes", icon: <ShieldAlert className="w-5 h-5" /> },
+          { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
+          { title: "Estaciones de aforo", description: "IMD y aforos de la Red de Carreteras del Estado", href: "/estaciones-aforo", icon: <GaugeCircle className="w-5 h-5" /> },
+          { title: "Intensidad de tráfico", description: "Datos de intensidad media diaria por carretera", href: "/intensidad", icon: <Activity className="w-5 h-5" /> },
+        ]} />
+      </div>
     </>
   );
 }

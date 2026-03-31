@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin, Video, Route, Car } from "lucide-react";
+import Link from "next/link";
 import { IncidenciasContent } from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const metadata: Metadata = {
   title: "Incidencias de Tráfico",
@@ -54,10 +56,41 @@ export default function IncidenciasPage() {
         </div>
       </div>
 
+      {/* Server-rendered city traffic links for SEO — visually hidden, fully crawlable */}
+      <nav aria-label="Tráfico por ciudad" className="sr-only">
+        <ul>
+          {[
+            { city: "madrid", label: "Tráfico en Madrid" },
+            { city: "barcelona", label: "Tráfico en Barcelona" },
+            { city: "valencia", label: "Tráfico en Valencia" },
+            { city: "sevilla", label: "Tráfico en Sevilla" },
+            { city: "malaga", label: "Tráfico en Málaga" },
+            { city: "zaragoza", label: "Tráfico en Zaragoza" },
+            { city: "bilbao", label: "Tráfico en Bilbao" },
+            { city: "alicante", label: "Tráfico en Alicante" },
+            { city: "murcia", label: "Tráfico en Murcia" },
+            { city: "granada", label: "Tráfico en Granada" },
+          ].map(({ city, label }) => (
+            <li key={city}>
+              <Link href={`/trafico/${city}`}>{label}</Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
       {/* Client component with interactive map, filters, and live SWR data */}
       <Suspense fallback={<IncidenciasLoading />}>
         <IncidenciasContent />
       </Suspense>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <RelatedLinks links={[
+          { title: "Estado del tráfico en tiempo real", description: "Mapa interactivo con todas las capas de datos", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
+          { title: "Cámaras DGT", description: "Imágenes en vivo de las principales carreteras", href: "/camaras", icon: <Video className="w-5 h-5" /> },
+          { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
+          { title: "Atascos y retenciones", description: "Puntos negros de tráfico y vías saturadas", href: "/atascos", icon: <Car className="w-5 h-5" /> },
+        ]} />
+      </div>
     </>
   );
 }
