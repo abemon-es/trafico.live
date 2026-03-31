@@ -40,9 +40,13 @@ export const LAYERS = {
 } as const;
 
 /**
- * Years with confirmed working ArcGIS services
+ * Years with confirmed working ArcGIS services.
+ * Override via IMD_ARCGIS_YEARS env var (comma-separated).
  */
-export const AVAILABLE_YEARS = [2015, 2016, 2017, 2018, 2019] as const;
+const DEFAULT_YEARS = [2015, 2016, 2017, 2018, 2019];
+export const AVAILABLE_YEARS: number[] = process.env.IMD_ARCGIS_YEARS
+  ? process.env.IMD_ARCGIS_YEARS.split(",").map(Number).filter(Boolean)
+  : DEFAULT_YEARS;
 
 function buildServiceUrl(year: number): string {
   return `${BASE_URL}/Mapa${year}web/MapServer`;

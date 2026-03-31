@@ -25,6 +25,7 @@ interface Station {
 
 interface StationMapProps {
   stations: Station[];
+  geojson?: GeoJSON.FeatureCollection | null;
   onStationClick: (station: Station) => void;
   selectedStation: Station | null;
 }
@@ -84,6 +85,7 @@ function stationsToGeoJSON(stations: Station[]): GeoJSON.FeatureCollection {
 
 export default function StationMap({
   stations,
+  geojson,
   onStationClick,
   selectedStation,
 }: StationMapProps) {
@@ -198,7 +200,7 @@ export default function StationMap({
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update source data when stations change
+  // Update source data — prefer pre-built GeoJSON from API, fallback to conversion
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -206,7 +208,8 @@ export default function StationMap({
     const updateSource = () => {
       const source = map.getSource("stations") as maplibregl.GeoJSONSource | undefined;
       if (source) {
-        source.setData(stationsToGeoJSON(stations));
+        const data = geojson?.type === "FeatureCollection" ? geojson : stationsToGeoJSON(stations);
+        source.setData(data);
       }
     };
 
@@ -215,7 +218,7 @@ export default function StationMap({
     } else {
       map.on("load", updateSource);
     }
-  }, [stations]);
+  }, [stations, geojson]);
 
   // Fly to selected station
   useEffect(() => {

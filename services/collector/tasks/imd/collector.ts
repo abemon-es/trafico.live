@@ -163,6 +163,7 @@ function parseSegment(feature: ArcGISFeature, year: number): SegmentData | null 
 
   const kmStart = parseKm(attrs.Pk_inicio || attrs.pk_inicio);
   const kmEnd = parseKm(attrs.Pk_fin || attrs.pk_fin);
+  if (kmStart === 0 && kmEnd === 0) return null; // Reject degenerate km ranges
 
   const provinceName = String(attrs.Provincia || attrs.provincia || "").trim();
   const province = normalizeProvince(provinceName);
@@ -210,7 +211,7 @@ async function upsertStations(
   stations: StationData[]
 ): Promise<number> {
   let count = 0;
-  const batchSize = 50;
+  const batchSize = 200;
 
   for (let i = 0; i < stations.length; i += batchSize) {
     const batch = stations.slice(i, i + batchSize);
@@ -280,7 +281,7 @@ async function upsertSegments(
   segments: SegmentData[]
 ): Promise<number> {
   let count = 0;
-  const batchSize = 50;
+  const batchSize = 200;
 
   for (let i = 0; i < segments.length; i += batchSize) {
     const batch = segments.slice(i, i + batchSize);

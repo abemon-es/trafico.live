@@ -53,6 +53,9 @@ export async function GET(request: Request) {
       if (maxIMD) where.imd.lte = parseInt(maxIMD, 10);
     }
 
+    // Exclude null-island stations (lat=0 means no coordinates available)
+    where.NOT = { latitude: 0 };
+
     const [stations, totalCount] = await Promise.all([
       prisma.trafficStation.findMany({
         where,

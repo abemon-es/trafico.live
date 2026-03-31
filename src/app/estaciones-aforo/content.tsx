@@ -92,18 +92,31 @@ export default function EstacionesAforoContent() {
   const [stationType, setStationType] = useState("");
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
 
-  const params = new URLSearchParams();
-  if (province) params.set("province", province);
-  if (road) params.set("road", road);
-  if (stationType) params.set("type", stationType);
-  params.set("limit", "3000");
+  const filterParams = new URLSearchParams();
+  if (province) filterParams.set("province", province);
+  if (road) filterParams.set("road", road);
+  if (stationType) filterParams.set("type", stationType);
 
-  const { data, isLoading } = useSWR<StationsResponse>(
-    `/api/estaciones-aforo?${params}`,
+  // GeoJSON for map (lightweight, all stations with coords only)
+  const mapParams = new URLSearchParams(filterParams);
+  mapParams.set("format", "geojson");
+  mapParams.set("limit", "3000");
+  const { data: geoData, isLoading: mapLoading } = useSWR(
+    `/api/estaciones-aforo?${mapParams}`,
     fetcher,
     { revalidateOnFocus: false }
   );
 
+  // Paginated JSON for table + stats (only 100 rows)
+  const tableParams = new URLSearchParams(filterParams);
+  tableParams.set("limit", "100");
+  const { data, isLoading: tableLoading } = useSWR<StationsResponse>(
+    `/api/estaciones-aforo?${tableParams}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const isLoading = mapLoading || tableLoading;
   const stations = data?.data?.stations || [];
   const stats = data?.data?.stats;
 
@@ -204,6 +217,7 @@ export default function EstacionesAforoContent() {
         ) : (
           <StationMap
             stations={stations}
+            geojson={geoData}
             onStationClick={setSelectedStation}
             selectedStation={selectedStation}
           />
