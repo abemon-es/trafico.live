@@ -390,6 +390,8 @@ import {
   generateEnhancedIncidentSpike,
   generateMaritimeReport,
   generateMaritimeFuelRanking,
+  generateMaritimeZoneReports,
+  generateWeeklyMaritimeSummary,
 } from "./generators";
 
 // ---------------------------------------------------------------------------
@@ -421,6 +423,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
     generateMaritimeReport(prisma),
     // Maritime weekly fuel price ranking — coast regions + station top 10
     generateMaritimeFuelRanking(prisma),
+    // Maritime zone-specific daily reports — one per coastal zone with active COASTAL alerts
+    generateMaritimeZoneReports(prisma),
+    // Maritime weekly national digest — Mondays only
+    generateWeeklyMaritimeSummary(prisma),
   ]);
 
   let total = 0;
