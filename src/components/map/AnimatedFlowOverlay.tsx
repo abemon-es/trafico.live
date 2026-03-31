@@ -106,12 +106,13 @@ export function useAnimatedFlow({ map, enabled, flowData }: AnimatedFlowOverlayP
     let lastTime = 0;
     const FRAME_INTERVAL = 80; // ms between frames
 
+    const mapRef = map; // capture non-null ref for closure
     function animate(timestamp: number) {
       if (timestamp - lastTime >= FRAME_INTERVAL) {
         lastTime = timestamp;
         stepRef.current = (stepRef.current + 1) % dashArraySequence.length;
-        if (map.getLayer("flow-animated")) {
-          map.setPaintProperty("flow-animated", "line-dasharray", dashArraySequence[stepRef.current]);
+        if (mapRef.getLayer("flow-animated")) {
+          mapRef.setPaintProperty("flow-animated", "line-dasharray", dashArraySequence[stepRef.current]);
         }
       }
       animationRef.current = requestAnimationFrame(animate);
