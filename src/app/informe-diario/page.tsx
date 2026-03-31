@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default async function InformeDiarioIndexPage() {
   // Get all daily reports from insights
-  const reports = await prisma.insight.findMany({
+  const reports = await prisma.article.findMany({
     where: { category: "DAILY_REPORT" },
     orderBy: { publishedAt: "desc" },
     take: 90, // Last ~3 months
