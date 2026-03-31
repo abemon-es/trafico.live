@@ -294,14 +294,6 @@ export function UnifiedMap({
   // Connect SSE for real-time push updates
   useTrafficStream();
 
-  // Voice alerts for new incidents
-  useVoiceAlerts(incidentsData?.incidents || [], { enabled: voiceEnabled });
-
-  // Route alert notifications
-  const { watchedRoads, watchRoad, unwatchRoad, isWatching } = useRouteAlerts({
-    incidents: incidentsData?.incidents || [],
-  });
-
   // Parse initial state from URL or props
   const getInitialLayers = (): ActiveLayers => {
     // If initialLayers prop is provided, use it as the base
@@ -518,6 +510,14 @@ export function UnifiedMap({
 
   const isLoading = v16Loading || incidentsLoading;
 
+  // Voice alerts for new incidents
+  useVoiceAlerts(incidentsData?.incidents || [], { enabled: voiceEnabled });
+
+  // Route alert notifications
+  const { watchedRoads, watchRoad, unwatchRoad, isWatching } = useRouteAlerts({
+    incidents: incidentsData?.incidents || [],
+  });
+
   // Handle fullscreen
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
@@ -720,7 +720,6 @@ export function UnifiedMap({
               historicalIncidents={
                 timelineData?.data?.slots?.[0]?.incidents?.map((i: Incident) => ({ lat: i.lat, lng: i.lng, effect: i.effect })) || []
               }
-              timeLabel="Hace 24h"
               onClose={() => setComparatorActive(false)}
             />
           </div>

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 /**
  * GET /api/trafico/distribucion-horaria
  *
  * Hourly traffic distribution profiles derived from two sources:
- * 1. Madrid sensor profiles (HourlyTrafficProfile, when available)
+ * 1. Madrid sensor profiles (HourlyTrafficProfile — DB-side aggregation)
  * 2. Incident frequency by hour (proxy for traffic volume)
  *
  * Query Parameters:
@@ -25,56 +25,45 @@ export async function GET(request: Request) {
 
     const result: Record<string, unknown> = {};
 
-    // Sensor-based profiles (Madrid)
+    // Sensor-based profiles (Madrid) — aggregated in DB, not in JS
     if (source === "sensors" || source === "both") {
-      const where: Record<string, unknown> = { source: "MADRID" };
-      if (dayOfWeek != null) where.dayOfWeek = parseInt(dayOfWeek, 10);
+      const dowFilter = dayOfWeek != null ? Prisma.sql`AND "dayOfWeek" = ${parseInt(dayOfWeek, 10)}` : Prisma.empty;
 
-      const profiles = await prisma.hourlyTrafficProfile.findMany({ where });
-
-      // Aggregate across all sensors per hour-of-day
-      const hourMap = new Map<number, { intensity: number; count: number; sl: number }>();
-      for (const p of profiles) {
-        const existing = hourMap.get(p.hour);
-        if (existing) {
-          existing.intensity += p.avgIntensity * p.sampleCount;
-          existing.count += p.sampleCount;
-          existing.sl += Number(p.avgServiceLevel || 0) * p.sampleCount;
-        } else {
-          hourMap.set(p.hour, {
-            intensity: p.avgIntensity * p.sampleCount,
-            count: p.sampleCount,
-            sl: Number(p.avgServiceLevel || 0) * p.sampleCount,
-          });
-        }
-      }
+      const sensorRows = await prisma.$queryRaw<
+        { dayOfWeek: number; hour: number; avg_intensity: number; avg_sl: number; total_samples: bigint }[]
+      >`
+        SELECT "dayOfWeek", "hour",
+          ROUND(SUM("avgIntensity" * "sampleCount")::numeric / NULLIF(SUM("sampleCount"), 0))::int AS avg_intensity,
+          ROUND(SUM(COALESCE("avgServiceLevel", 0) * "sampleCount") / NULLIF(SUM("sampleCount"), 0), 2) AS avg_sl,
+          SUM("sampleCount") AS total_samples
+        FROM "HourlyTrafficProfile"
+        WHERE "source" = 'MADRID' ${dowFilter}
+        GROUP BY "dayOfWeek", "hour"
+        ORDER BY "dayOfWeek", "hour"
+      `;
 
       result.sensorProfiles = Array.from({ length: 24 }, (_, h) => {
-        const d = hourMap.get(h);
-        return {
-          hour: h,
-          avgIntensity: d ? Math.round(d.intensity / d.count) : null,
-          avgServiceLevel: d ? Math.round((d.sl / d.count) * 100) / 100 : null,
-          sampleCount: d?.count || 0,
-        };
+        const rows = sensorRows.filter((r) => r.hour === h);
+        const totalSamples = rows.reduce((s, r) => s + Number(r.total_samples), 0);
+        const avgIntensity = rows.length > 0
+          ? Math.round(rows.reduce((s, r) => s + (r.avg_intensity || 0) * Number(r.total_samples), 0) / (totalSamples || 1))
+          : null;
+        return { hour: h, avgIntensity, sampleCount: totalSamples };
       });
     }
 
     // Incident-based profiles (all Spain, proxy for traffic volume)
     if (source === "incidents" || source === "both") {
-      const incidentWhere: Record<string, unknown> = {};
-      if (province) incidentWhere.province = province;
+      const provFilter = province ? Prisma.sql`WHERE province = ${province}` : Prisma.empty;
 
-      // Count incidents by hour of day from TrafficIncident
-      const incidents = await prisma.$queryRawUnsafe<
+      const incidents = await prisma.$queryRaw<
         { hour: number; count: bigint }[]
-      >(
-        `SELECT EXTRACT(HOUR FROM "startTime")::int as hour, COUNT(*) as count
-         FROM "TrafficIncident"
-         ${province ? `WHERE province = $1` : ""}
-         GROUP BY hour ORDER BY hour`,
-        ...(province ? [province] : [])
-      );
+      >`
+        SELECT EXTRACT(HOUR FROM "startedAt")::int as hour, COUNT(*) as count
+        FROM "TrafficIncident"
+        ${provFilter}
+        GROUP BY hour ORDER BY hour
+      `;
 
       const totalIncidents = incidents.reduce((s, r) => s + Number(r.count), 0);
 
@@ -88,16 +77,14 @@ export async function GET(request: Request) {
         };
       });
 
-      // Day-of-week pattern from incidents
-      const byDow = await prisma.$queryRawUnsafe<
+      const byDow = await prisma.$queryRaw<
         { dow: number; count: bigint }[]
-      >(
-        `SELECT EXTRACT(DOW FROM "startTime")::int as dow, COUNT(*) as count
-         FROM "TrafficIncident"
-         ${province ? `WHERE province = $1` : ""}
-         GROUP BY dow ORDER BY dow`,
-        ...(province ? [province] : [])
-      );
+      >`
+        SELECT EXTRACT(DOW FROM "startedAt")::int as dow, COUNT(*) as count
+        FROM "TrafficIncident"
+        ${provFilter}
+        GROUP BY dow ORDER BY dow
+      `;
 
       result.dayOfWeekPattern = Array.from({ length: 7 }, (_, d) => {
         const row = byDow.find((r) => r.dow === d);

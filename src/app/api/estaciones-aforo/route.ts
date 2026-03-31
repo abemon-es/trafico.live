@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma, StationType } from "@prisma/client";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 /**
@@ -94,20 +93,21 @@ export async function GET(request: Request) {
       });
     }
 
-    // Summary stats
-    const stats = await prisma.trafficStation.aggregate({
-      where,
-      _count: { id: true },
-      _avg: { imd: true },
-      _max: { imd: true },
-      _min: { imd: true },
-    });
-
-    const stationTypes = await prisma.trafficStation.groupBy({
-      by: ["stationType"],
-      where,
-      _count: { id: true },
-    });
+    // Summary stats — parallelized
+    const [stats, stationTypes] = await Promise.all([
+      prisma.trafficStation.aggregate({
+        where,
+        _count: { id: true },
+        _avg: { imd: true },
+        _max: { imd: true },
+        _min: { imd: true },
+      }),
+      prisma.trafficStation.groupBy({
+        by: ["stationType"],
+        where,
+        _count: { id: true },
+      }),
+    ]);
 
     return NextResponse.json({
       success: true,

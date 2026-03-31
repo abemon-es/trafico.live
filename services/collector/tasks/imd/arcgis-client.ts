@@ -92,10 +92,13 @@ export async function fetchAllFeatures(
   const allFeatures: ArcGISFeature[] = [];
   let offset = 0;
   let hasMore = true;
+  const MAX_PAGES = 500;
+  let pageCount = 0;
 
   log(TASK, `Fetching layer ${layerId} for year ${year}...`);
 
-  while (hasMore) {
+  while (hasMore && pageCount < MAX_PAGES) {
+    pageCount++;
     try {
       const data = await queryPage(serviceUrl, layerId, offset, where);
 
@@ -111,6 +114,8 @@ export async function fetchAllFeatures(
         hasMore = false;
       } else {
         offset += MAX_RECORDS;
+        // Rate limit: 300ms between pages to avoid government server throttling
+        await new Promise((r) => setTimeout(r, 300));
       }
 
       if (features.length > 0) {
@@ -118,19 +123,22 @@ export async function fetchAllFeatures(
       }
     } catch (error) {
       logError(TASK, `Failed at offset ${offset}:`, error);
-      // Retry once after a short delay
       await new Promise((r) => setTimeout(r, 2000));
       try {
         const retryData = await queryPage(serviceUrl, layerId, offset, where);
         const features = retryData.features || [];
         allFeatures.push(...features);
-        if (features.length < MAX_RECORDS) hasMore = false;
+        if (features.length < MAX_RECORDS && !retryData.exceededTransferLimit) hasMore = false;
         else offset += MAX_RECORDS;
       } catch {
         logError(TASK, `Retry also failed at offset ${offset}, stopping.`);
         hasMore = false;
       }
     }
+  }
+
+  if (pageCount >= MAX_PAGES) {
+    logError(TASK, `Reached max page limit (${MAX_PAGES}) for layer ${layerId}/${year}`);
   }
 
   log(TASK, `Total: ${allFeatures.length} features from layer ${layerId} (${year})`);

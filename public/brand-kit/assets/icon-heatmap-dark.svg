@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Heatmap Grid: dark mode — elevated brightness -->
+  <rect x="18" y="18" width="148" height="148" rx="16" fill="#6393ff" opacity="0.10"/>
+  <rect x="182" y="18" width="148" height="148" rx="16" fill="#6393ff" opacity="0.20"/>
+  <rect x="346" y="18" width="148" height="148" rx="16" fill="#6393ff" opacity="0.35"/>
+  <rect x="18" y="182" width="148" height="148" rx="16" fill="#6393ff" opacity="0.20"/>
+  <rect x="182" y="182" width="148" height="148" rx="16" fill="#6393ff" opacity="0.50"/>
+  <rect x="346" y="182" width="148" height="148" rx="16" fill="#6393ff" opacity="0.70"/>
+  <rect x="18" y="346" width="148" height="148" rx="16" fill="#6393ff" opacity="0.35"/>
+  <rect x="182" y="346" width="148" height="148" rx="16" fill="#6393ff" opacity="0.70"/>
+  <rect x="346" y="346" width="148" height="148" rx="16" fill="#6393ff"/>
+</svg>

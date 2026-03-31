@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -23,54 +24,42 @@ export async function GET(request: Request) {
     const format = searchParams.get("format");
     const profile = searchParams.get("profile");
 
-    // Hourly profiles mode
+    // Hourly profiles mode — DB-side aggregation (not load-all-into-JS)
     if (profile === "hourly") {
       const dayOfWeek = searchParams.get("dayOfWeek");
-      const where: Record<string, unknown> = { source };
-      if (dayOfWeek != null) where.dayOfWeek = parseInt(dayOfWeek, 10);
+      const dowFilter = dayOfWeek != null ? Prisma.sql`AND "dayOfWeek" = ${parseInt(dayOfWeek, 10)}` : Prisma.empty;
 
-      const profiles = await prisma.hourlyTrafficProfile.findMany({
-        where,
-        orderBy: [{ dayOfWeek: "asc" }, { hour: "asc" }],
-      });
-
-      // Aggregate across sensors for a city-wide hourly profile
-      const hourlyMap = new Map<string, { intensity: number; count: number; serviceLevel: number }>();
-      for (const p of profiles) {
-        const key = `${p.dayOfWeek}-${p.hour}`;
-        const existing = hourlyMap.get(key);
-        if (existing) {
-          existing.intensity += p.avgIntensity * p.sampleCount;
-          existing.count += p.sampleCount;
-          existing.serviceLevel += Number(p.avgServiceLevel || 0) * p.sampleCount;
-        } else {
-          hourlyMap.set(key, {
-            intensity: p.avgIntensity * p.sampleCount,
-            count: p.sampleCount,
-            serviceLevel: Number(p.avgServiceLevel || 0) * p.sampleCount,
-          });
-        }
-      }
-
-      const hourlyData = Array.from(hourlyMap.entries()).map(([key, val]) => {
-        const [dow, h] = key.split("-").map(Number);
-        return {
-          dayOfWeek: dow,
-          hour: h,
-          avgIntensity: Math.round(val.intensity / val.count),
-          avgServiceLevel: Math.round((val.serviceLevel / val.count) * 100) / 100,
-          sampleCount: val.count,
-        };
-      });
+      const hourlyData = await prisma.$queryRaw<
+        { dayOfWeek: number; hour: number; avg_intensity: number; avg_sl: number; total_samples: bigint }[]
+      >`
+        SELECT "dayOfWeek", "hour",
+          ROUND(SUM("avgIntensity" * "sampleCount")::numeric / NULLIF(SUM("sampleCount"), 0))::int AS avg_intensity,
+          ROUND(SUM(COALESCE("avgServiceLevel", 0) * "sampleCount") / NULLIF(SUM("sampleCount"), 0), 2) AS avg_sl,
+          SUM("sampleCount") AS total_samples
+        FROM "HourlyTrafficProfile"
+        WHERE "source" = ${source} ${dowFilter}
+        GROUP BY "dayOfWeek", "hour"
+        ORDER BY "dayOfWeek", "hour"
+      `;
 
       return NextResponse.json({
         success: true,
-        data: { source, profiles: hourlyData, totalSensors: profiles.length },
+        data: {
+          source,
+          profiles: hourlyData.map((r) => ({
+            dayOfWeek: r.dayOfWeek,
+            hour: r.hour,
+            avgIntensity: r.avg_intensity,
+            avgServiceLevel: Number(r.avg_sl),
+            sampleCount: Number(r.total_samples),
+          })),
+        },
       });
     }
 
-    // Live data mode — get latest snapshot
+    // Live data mode — push limit to DB, select only needed fields
     const fiveMinAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const limit = format === "geojson" ? 6200 : 200;
     const readings = await prisma.trafficIntensity.findMany({
       where: {
         source,
@@ -79,6 +68,12 @@ export async function GET(request: Request) {
         error: false,
       },
       orderBy: { intensity: "desc" },
+      take: limit,
+      select: {
+        sensorId: true, description: true, intensity: true, occupancy: true,
+        load: true, serviceLevel: true, saturation: true, latitude: true,
+        longitude: true, recordedAt: true,
+      },
     });
 
     if (format === "geojson") {
@@ -103,7 +98,6 @@ export async function GET(request: Request) {
       });
     }
 
-    // Stats
     const total = readings.length;
     const avgIntensity = total > 0 ? Math.round(readings.reduce((s, r) => s + r.intensity, 0) / total) : 0;
     const congested = readings.filter((r) => r.serviceLevel >= 2).length;
@@ -122,7 +116,7 @@ export async function GET(request: Request) {
           holdups: readings.filter((r) => r.serviceLevel === 2).length,
           congestion: readings.filter((r) => r.serviceLevel === 3).length,
         },
-        readings: readings.slice(0, 200).map((r) => ({
+        readings: readings.map((r) => ({
           sensorId: r.sensorId,
           description: r.description,
           intensity: r.intensity,

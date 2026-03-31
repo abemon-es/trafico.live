@@ -5,9 +5,9 @@ Source: mapatrafico.transportes.gob.es/2022/Visor/datos/GIS/estaciones.js
 This is a static GeoJSON file with 3,659 stations including coordinates.
 Run on hetzner-dev.
 """
-import json, sys, subprocess, unicodedata, urllib.request
+import json, os, sys, subprocess, unicodedata, urllib.request
 
-DB = "postgresql://apps:cCrwx3nWNBsNphpzjzUpZkNYwmwlnHWCypjAqMEd@127.0.0.1:5435/le_trafico"
+DB = os.environ.get("DATABASE_URL", "postgresql://apps@127.0.0.1:5435/le_trafico")
 URL = "https://mapatrafico.transportes.gob.es/2022/Visor/datos/GIS/estaciones.js"
 YEAR = 2022
 

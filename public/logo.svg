@@ -1,13 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" fill="none">
-  <!-- Road mark -->
-  <path d="M4 28L16 12h6L10 28H4z" fill="#2563eb"/>
-  <path d="M14 28L26 12h6L20 28h-6z" fill="#2563eb" opacity="0.7"/>
-  <path d="M24 28L36 12h6L30 28h-6z" fill="#2563eb" opacity="0.4"/>
-  <!-- Live pulse dot -->
-  <circle cx="44" cy="20" r="5" fill="#f59e0b"/>
-  <circle cx="44" cy="20" r="8" fill="#f59e0b" opacity="0.3"/>
-  <!-- Text: trafico -->
-  <text x="56" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#1e3a8a">trafico</text>
-  <!-- Text: .live -->
-  <text x="140" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#f59e0b">.live</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 40" fill="none">
+  <g transform="translate(0,2) scale(0.0703125)">
+    <rect x="18" y="18" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.10"/>
+    <rect x="182" y="18" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.20"/>
+    <rect x="346" y="18" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.35"/>
+    <rect x="18" y="182" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.20"/>
+    <rect x="182" y="182" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.50"/>
+    <rect x="346" y="182" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.70"/>
+    <rect x="18" y="346" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.35"/>
+    <rect x="182" y="346" width="148" height="148" rx="16" fill="#1b4bd5" opacity="0.70"/>
+    <rect x="346" y="346" width="148" height="148" rx="16" fill="#1b4bd5"/>
+  </g>
+  <text x="48" y="29" font-family="'Exo 2', system-ui, sans-serif" font-size="24" font-weight="800" letter-spacing="-0.5" fill="#111827">trafico</text>
+  <text x="179" y="29" font-family="'Exo 2', system-ui, sans-serif" font-size="24" font-weight="800" letter-spacing="-0.5" fill="#1b4bd5">.</text>
+  <text x="187" y="29" font-family="'Exo 2', system-ui, sans-serif" font-size="24" font-weight="600" letter-spacing="-0.5" fill="#1b4bd5">live</text>
 </svg>

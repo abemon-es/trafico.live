@@ -1,7 +1,6 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { Download, Copy, ExternalLink } from "lucide-react";
+import { Download } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Media Kit — Brand Assets & Guidelines",
@@ -45,28 +44,28 @@ const MEDIA_CDN = "https://media.trafico.live";
 
 const ASSETS = [
   {
-    name: "Icon — 3 Puntos",
-    file: `${MEDIA_CDN}/assets/icon-3puntos.svg`,
-    local: "/brand-kit/assets/icon-3puntos.svg",
+    name: "Icon — Heatmap Grid",
+    file: `${MEDIA_CDN}/assets/icon-heatmap.svg`,
+    local: "/brand-kit/assets/icon-heatmap.svg",
     desc: "Primary icon, transparent background",
   },
   {
     name: "Icon — Dark mode",
-    file: `${MEDIA_CDN}/assets/icon-3puntos-dark.svg`,
-    local: "/brand-kit/assets/icon-3puntos-dark.svg",
+    file: `${MEDIA_CDN}/assets/icon-heatmap-dark.svg`,
+    local: "/brand-kit/assets/icon-heatmap-dark.svg",
     desc: "Elevated colors for dark backgrounds",
   },
   {
     name: "App Icon",
     file: `${MEDIA_CDN}/assets/app-icon.svg`,
     local: "/brand-kit/assets/app-icon.svg",
-    desc: "Pastel dots on blue rounded rectangle",
+    desc: "Heatmap grid on blue rounded rectangle",
   },
   {
     name: "Icon on Blue",
     file: `${MEDIA_CDN}/assets/icon-on-blue.svg`,
     local: "/brand-kit/assets/icon-on-blue.svg",
-    desc: "For brand blue backgrounds",
+    desc: "White grid on brand blue background",
   },
   {
     name: "CSS Tokens",
@@ -137,10 +136,10 @@ export default function MediaPage() {
                 className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:border-tl-300 hover:shadow-md transition-all"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-600 dark:text-tl-400 transition-colors">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors">
                     {asset.name}
                   </h3>
-                  <Download className="w-4 h-4 text-gray-400 group-hover:text-tl-600 dark:text-tl-400 transition-colors flex-shrink-0" />
+                  <Download className="w-4 h-4 text-gray-400 group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors flex-shrink-0" />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{asset.desc}</p>
                 <span className="inline-block mt-2 text-[10px] font-data text-gray-400">
@@ -162,7 +161,7 @@ export default function MediaPage() {
               <Logo variant="horizontal" size="md" href={undefined} />
             </div>
             <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 flex items-center justify-center bg-white dark:bg-gray-900">
-              <Logo variant="inline" size="md" href={undefined} />
+              <Logo variant="stacked" size="md" href={undefined} />
             </div>
             <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 flex items-center justify-center bg-white dark:bg-gray-900">
               <Logo variant="icon" size="lg" href={undefined} />
@@ -174,7 +173,7 @@ export default function MediaPage() {
               <Logo variant="horizontal" size="md" theme="dark" href={undefined} />
             </div>
             <div className="border border-gray-800 rounded-lg p-6 flex items-center justify-center bg-[#0b0f1a]">
-              <Logo variant="inline" size="md" theme="dark" href={undefined} />
+              <Logo variant="stacked" size="md" theme="dark" href={undefined} />
             </div>
             <div className="border border-gray-800 rounded-lg p-6 flex items-center justify-center bg-[#0b0f1a]">
               <Logo variant="icon" size="lg" theme="dark" href={undefined} />
@@ -185,12 +184,13 @@ export default function MediaPage() {
           <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-5">
             <h3 className="font-semibold text-tl-800 dark:text-tl-200 mb-3 text-sm">Reglas de uso</h3>
             <ul className="text-sm text-tl-700 dark:text-tl-300 space-y-1.5">
-              <li>&bull; Siempre: rojo arriba, &aacute;mbar centro, verde abajo</li>
-              <li>&bull; Nunca usar un solo color para los 3 puntos</li>
-              <li>&bull; Nunca invertir el orden de los colores</li>
-              <li>&bull; &ldquo;.LIVE&rdquo; siempre dentro del badge azul con punto blanco</li>
-              <li>&bull; Espacio libre m&iacute;nimo: 1 di&aacute;metro de punto en todos los lados</li>
-              <li>&bull; &ldquo;trafico&rdquo; siempre en min&uacute;scula</li>
+              <li>&bull; El icono es un grid 3x3 con flujo de calor diagonal (arriba-izquierda fr&iacute;o → abajo-derecha caliente)</li>
+              <li>&bull; Nunca cambiar las opacidades ni la direcci&oacute;n del gradiente</li>
+              <li>&bull; &ldquo;trafico&rdquo; siempre en min&uacute;scula, peso 800</li>
+              <li>&bull; &ldquo;.live&rdquo; siempre en azul brand, peso 600</li>
+              <li>&bull; El punto &ldquo;.&rdquo; entre trafico y live usa peso 800</li>
+              <li>&bull; Espacio libre m&iacute;nimo: 1 celda de grid en todos los lados</li>
+              <li>&bull; Usar tl-600 (#1b4bd5) para light, tl-400 (#6393ff) para dark</li>
             </ul>
           </div>
         </section>
@@ -220,7 +220,7 @@ export default function MediaPage() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Signal Colors (Icon)</h3>
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Signal Colors (Semantic)</h3>
             <div className="flex gap-3">
               {COLORS.signal.map((c) => (
                 <div
@@ -249,7 +249,7 @@ export default function MediaPage() {
 
           <div className="space-y-4">
             <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-5">
-              <span className="text-[10px] font-data text-tl-600 dark:text-tl-400 uppercase tracking-wider">Headings</span>
+              <span className="text-[10px] font-data text-tl-600 dark:text-tl-400 uppercase tracking-wider">Headings &amp; Wordmark</span>
               <div className="mt-2" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "32px", letterSpacing: "-0.5px" }}>
                 Exo 2 — 800
               </div>
@@ -285,7 +285,11 @@ export default function MediaPage() {
                 </tr>
                 <tr className="border-b border-gray-200 dark:border-gray-800">
                   <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Tagline</td>
-                  <td className="px-4 py-3">Inteligencia vial en tiempo real</td>
+                  <td className="px-4 py-3">Inteligencia de tr&aacute;fico en tiempo real</td>
+                </tr>
+                <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Icon</td>
+                  <td className="px-4 py-3">Heatmap Grid 3x3 (diagonal heat flow)</td>
                 </tr>
                 <tr className="border-b border-gray-200 dark:border-gray-800">
                   <td className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950">Primary color</td>
@@ -322,7 +326,7 @@ export default function MediaPage() {
             <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Icono SVG (HTML)</h3>
               <pre className="font-data text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-3 overflow-x-auto">
-{`<img src="${MEDIA_CDN}/assets/icon-3puntos.svg" alt="trafico.live" width="24" height="64" />`}
+{`<img src="${MEDIA_CDN}/assets/icon-heatmap.svg" alt="trafico.live" width="64" height="64" />`}
               </pre>
             </div>
 

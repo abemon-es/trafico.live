@@ -3,9 +3,9 @@
 Import 2017-2018 stations (no geometry in ArcGIS) and backfill lat/lng from 2019 stations.
 Run on hetzner-dev.
 """
-import json, math, sys, subprocess, time, unicodedata, urllib.request, urllib.parse
+import json, math, os, sys, subprocess, time, unicodedata, urllib.request, urllib.parse
 
-DB = "postgresql://apps:cCrwx3nWNBsNphpzjzUpZkNYwmwlnHWCypjAqMEd@127.0.0.1:5435/le_trafico"
+DB = os.environ.get("DATABASE_URL", "postgresql://apps@127.0.0.1:5435/le_trafico")
 BASE = "https://mapas.fomento.gob.es/arcgis/rest/services/MapaTrafico"
 YEARS = [2017, 2018]
 

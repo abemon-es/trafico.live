@@ -1,95 +1,60 @@
 import Link from "next/link";
 
 interface LogoProps {
-  variant?: "horizontal" | "inline" | "stacked" | "icon";
+  variant?: "horizontal" | "stacked" | "icon";
   size?: "sm" | "md" | "lg";
   theme?: "light" | "dark" | "auto";
   href?: string;
   className?: string;
 }
 
-const SIGNAL = {
-  light: { red: "#dc2626", amber: "#d97706", green: "#059669" },
-  dark: { red: "#f87171", amber: "#fbbf24", green: "#34d399" },
-};
+/* Diagonal heat flow: opacity increases from top-left → bottom-right */
+const GRID_OPACITIES = [0.1, 0.2, 0.35, 0.2, 0.5, 0.7, 0.35, 0.7, 1];
 
-function Icon3Puntos({
-  height,
+function HeatmapGrid({
+  size,
   theme = "light",
 }: {
-  height: number;
+  size: number;
   theme: "light" | "dark";
 }) {
-  const c = SIGNAL[theme];
-  // Geometry: 3 dots, gap = 0.5d, total = 4d
-  const d = height / 4;
-  const r = d / 2;
-  const cx = r;
+  const fill = theme === "dark" ? "#6393ff" : "#1b4bd5";
+  // 3x3 grid with tight gaps: cell = 148/512 of size, gap = 16/512 of size
+  const s = size / 512;
+  const cellW = 148 * s;
+  const r = 16 * s;
+  const starts = [18 * s, 182 * s, 346 * s];
+
   return (
     <svg
-      width={d}
-      height={height}
-      viewBox={`0 0 ${d} ${height}`}
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
       fill="none"
       aria-hidden="true"
     >
-      <circle cx={cx} cy={r} r={r} fill={c.red} />
-      <circle cx={cx} cy={height / 2} r={r} fill={c.amber} />
-      <circle cx={cx} cy={height - r} r={r} fill={c.green} />
+      {starts.map((y, row) =>
+        starts.map((x, col) => (
+          <rect
+            key={`${row}-${col}`}
+            x={x}
+            y={y}
+            width={cellW}
+            height={cellW}
+            rx={r}
+            fill={fill}
+            opacity={GRID_OPACITIES[row * 3 + col]}
+          />
+        ))
+      )}
     </svg>
   );
 }
 
-function LiveBadge({
-  fontSize,
-  theme = "light",
-}: {
-  fontSize: number;
-  theme: "light" | "dark";
-}) {
-  const bg = theme === "dark" ? "bg-tl-50 dark:bg-tl-900/200" : "bg-tl-600";
-  const dotSize = Math.max(2, fontSize * 0.35);
-  const py = Math.max(1, fontSize * 0.2);
-  const px = Math.max(4, fontSize * 0.6);
-  const radius = Math.max(3, fontSize * 0.5);
-
-  return (
-    <span
-      className={`inline-flex items-center ${bg}`}
-      style={{
-        gap: `${dotSize}px`,
-        padding: `${py}px ${px}px`,
-        borderRadius: `${radius}px`,
-      }}
-    >
-      <span
-        className="block rounded-full bg-white dark:bg-gray-900"
-        style={{
-          width: `${dotSize}px`,
-          height: `${dotSize}px`,
-          opacity: 0.85,
-        }}
-      />
-      <span
-        className="text-white"
-        style={{
-          fontFamily: "var(--font-heading)",
-          fontWeight: 700,
-          fontSize: `${fontSize}px`,
-          letterSpacing: `${fontSize * 0.1}px`,
-          lineHeight: 1,
-        }}
-      >
-        .LIVE
-      </span>
-    </span>
-  );
-}
-
 const SIZES = {
-  sm: { iconH: 20, text: 14, badge: 7, gap: 6 },
-  md: { iconH: 28, text: 18, badge: 9, gap: 8 },
-  lg: { iconH: 48, text: 32, badge: 13, gap: 12 },
+  sm: { icon: 20, text: 16, gap: 7 },
+  md: { icon: 28, text: 22, gap: 9 },
+  lg: { icon: 48, text: 36, gap: 12 },
 };
 
 export function Logo({
@@ -103,78 +68,60 @@ export function Logo({
   const resolvedTheme = theme === "auto" ? "light" : theme;
 
   const textColor =
-    resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900 dark:text-gray-100";
+    resolvedTheme === "dark"
+      ? "text-gray-100"
+      : "text-gray-900 dark:text-gray-100";
+  const accentColor =
+    resolvedTheme === "dark"
+      ? "text-tl-400"
+      : "text-tl-600 dark:text-tl-400";
+
+  const wordmark = (
+    <span
+      style={{
+        fontFamily: "var(--font-heading)",
+        fontSize: `${s.text}px`,
+        letterSpacing: "-0.3px",
+        lineHeight: 1,
+      }}
+    >
+      <span className={textColor} style={{ fontWeight: 800 }}>
+        trafico
+      </span>
+      <span className={accentColor} style={{ fontWeight: 800 }}>
+        .
+      </span>
+      <span className={accentColor} style={{ fontWeight: 600 }}>
+        live
+      </span>
+    </span>
+  );
 
   const content = (() => {
     switch (variant) {
       case "icon":
-        return <Icon3Puntos height={s.iconH} theme={resolvedTheme} />;
+        return <HeatmapGrid size={s.icon} theme={resolvedTheme} />;
 
       case "stacked":
         return (
-          <div className="flex flex-col items-center" style={{ gap: `${s.gap}px` }}>
-            <Icon3Puntos height={s.iconH} theme={resolvedTheme} />
-            <div className="text-center">
-              <div
-                className={textColor}
-                style={{
-                  fontFamily: "var(--font-heading)",
-                  fontWeight: 800,
-                  fontSize: `${s.text}px`,
-                  letterSpacing: "-0.5px",
-                  lineHeight: 1,
-                }}
-              >
-                trafico
-              </div>
-              <div style={{ marginTop: `${s.gap * 0.5}px` }}>
-                <LiveBadge fontSize={s.badge} theme={resolvedTheme} />
-              </div>
-            </div>
+          <div
+            className="flex flex-col items-center"
+            style={{ gap: `${s.gap}px` }}
+          >
+            <HeatmapGrid size={s.icon} theme={resolvedTheme} />
+            {wordmark}
           </div>
         );
 
-      case "inline":
       case "horizontal":
       default:
         return (
-          <div className="flex items-center" style={{ gap: `${s.gap}px` }}>
-            <Icon3Puntos height={s.iconH} theme={resolvedTheme} />
-            {variant === "inline" ? (
-              <>
-                <span
-                  className={textColor}
-                  style={{
-                    fontFamily: "var(--font-heading)",
-                    fontWeight: 800,
-                    fontSize: `${s.text}px`,
-                    letterSpacing: "-0.3px",
-                    lineHeight: 1,
-                  }}
-                >
-                  trafico
-                </span>
-                <LiveBadge fontSize={s.badge} theme={resolvedTheme} />
-              </>
-            ) : (
-              <div>
-                <div
-                  className={textColor}
-                  style={{
-                    fontFamily: "var(--font-heading)",
-                    fontWeight: 800,
-                    fontSize: `${s.text}px`,
-                    letterSpacing: "-0.5px",
-                    lineHeight: 1,
-                  }}
-                >
-                  trafico
-                </div>
-                <div style={{ marginTop: `${s.gap * 0.4}px` }}>
-                  <LiveBadge fontSize={s.badge} theme={resolvedTheme} />
-                </div>
-              </div>
-            )}
+          <div
+            className="flex items-center"
+            style={{ gap: `${s.gap}px` }}
+          >
+            <HeatmapGrid size={s.icon} theme={resolvedTheme} />
+            {wordmark}
           </div>
         );
     }
@@ -182,7 +129,11 @@ export function Logo({
 
   if (href) {
     return (
-      <Link href={href} className={`inline-flex ${className}`} aria-label="trafico.live — Inicio">
+      <Link
+        href={href}
+        className={`inline-flex ${className}`}
+        aria-label="trafico.live — Inicio"
+      >
         {content}
       </Link>
     );

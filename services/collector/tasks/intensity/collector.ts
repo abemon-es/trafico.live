@@ -11,55 +11,17 @@
  * Also builds hourly traffic profiles by aggregating snapshots over time.
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { utmToWgs84 as utmToWgs84Raw } from "../imd/utm-converter.js";
 
 const TASK = "intensity";
 const MADRID_URL = "https://informo.madrid.es/informo/tmadrid/pm.xml";
 
-// UTM Zone 30N → WGS84 (simplified for Madrid area)
-const a = 6378137.0;
-const f = 1 / 298.257223563;
-const k0 = 0.9996;
-const e = Math.sqrt(2 * f - f * f);
-const e2 = e * e;
-const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
-const lon0 = (-3 * Math.PI) / 180;
-
 function utmToWgs84(easting: number, northing: number): { lat: number; lon: number } {
-  const x = easting - 500000;
-  const y = northing;
-  const M = y / k0;
-  const mu = M / (a * (1 - e2 / 4 - (3 * e2 * e2) / 64 - (5 * e2 * e2 * e2) / 256));
-  const phi1 =
-    mu +
-    ((3 * e1) / 2 - (27 * e1 * e1 * e1) / 32) * Math.sin(2 * mu) +
-    ((21 * e1 * e1) / 16 - (55 * e1 * e1 * e1 * e1) / 32) * Math.sin(4 * mu) +
-    ((151 * e1 * e1 * e1) / 96) * Math.sin(6 * mu);
-  const sp = Math.sin(phi1),
-    cp = Math.cos(phi1),
-    tp = sp / cp;
-  const N1 = a / Math.sqrt(1 - e2 * sp * sp);
-  const T1 = tp * tp;
-  const C1 = (e2 / (1 - e2)) * cp * cp;
-  const R1 = (a * (1 - e2)) / Math.pow(1 - e2 * sp * sp, 1.5);
-  const D = x / (N1 * k0);
-  const lat =
-    phi1 -
-    ((N1 * tp) / R1) *
-      ((D * D) / 2 -
-        ((5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * (e2 / (1 - e2))) * D ** 4) / 24 +
-        ((61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * (e2 / (1 - e2)) - 3 * C1 * C1) * D ** 6) / 720);
-  const lon =
-    lon0 +
-    (D - ((1 + 2 * T1 + C1) * D ** 3) / 6 +
-      ((5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * (e2 / (1 - e2)) + 24 * T1 * T1) * D ** 5) / 120) /
-      cp;
-  return {
-    lat: Math.round((lat * 180) / Math.PI * 1e6) / 1e6,
-    lon: Math.round((lon * 180) / Math.PI * 1e6) / 1e6,
-  };
+  const { latitude, longitude } = utmToWgs84Raw(easting, northing);
+  return { lat: latitude, lon: longitude };
 }
 
 interface SensorReading {
@@ -184,64 +146,46 @@ async function upsertReadings(prisma: PrismaClient, readings: SensorReading[]): 
 
 async function updateHourlyProfiles(prisma: PrismaClient, readings: SensorReading[]): Promise<void> {
   const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=Sunday
+  const dayOfWeek = now.getDay();
   const hour = now.getHours();
 
-  for (const r of readings) {
-    if (r.error || r.intensity <= 0) continue;
+  const valid = readings.filter((r) => !r.error && r.intensity > 0);
+  if (valid.length === 0) return;
 
-    try {
-      const existing = await prisma.hourlyTrafficProfile.findUnique({
-        where: {
-          sensorId_source_dayOfWeek_hour: {
-            sensorId: r.sensorId,
-            source: "MADRID",
-            dayOfWeek,
-            hour,
-          },
-        },
-      });
+  // Batch upsert: single SQL statement instead of 12,000+ sequential round-trips
+  const batchSize = 500;
+  for (let i = 0; i < valid.length; i += batchSize) {
+    const batch = valid.slice(i, i + batchSize);
+    const values = batch
+      .map(
+        (r) =>
+          `(gen_random_uuid()::text, ${r.sensorId}, 'MADRID', ${dayOfWeek}, ${hour}, ${r.intensity}, ${r.occupancy ?? "NULL"}, ${r.serviceLevel}, 1, NOW())`
+      )
+      .join(",\n");
 
-      if (existing) {
-        // Running average
-        const n = existing.sampleCount;
-        const newAvgInt = Math.round((existing.avgIntensity * n + r.intensity) / (n + 1));
-        const newAvgOcc =
-          existing.avgOccupancy != null && r.occupancy != null
-            ? Math.round((existing.avgOccupancy * n + r.occupancy) / (n + 1))
-            : existing.avgOccupancy;
-        const newAvgSL =
-          existing.avgServiceLevel != null
-            ? Math.round(((Number(existing.avgServiceLevel) * n + r.serviceLevel) / (n + 1)) * 100) / 100
-            : r.serviceLevel;
-
-        await prisma.hourlyTrafficProfile.update({
-          where: { id: existing.id },
-          data: {
-            avgIntensity: newAvgInt,
-            avgOccupancy: newAvgOcc,
-            avgServiceLevel: newAvgSL,
-            sampleCount: n + 1,
-            updatedAt: now,
-          },
-        });
-      } else {
-        await prisma.hourlyTrafficProfile.create({
-          data: {
-            sensorId: r.sensorId,
-            source: "MADRID",
-            dayOfWeek,
-            hour,
-            avgIntensity: r.intensity,
-            avgOccupancy: r.occupancy,
-            avgServiceLevel: r.serviceLevel,
-            sampleCount: 1,
-          },
-        });
-      }
-    } catch {
-      // Skip individual sensor errors
-    }
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO "HourlyTrafficProfile"
+        ("id", "sensorId", "source", "dayOfWeek", "hour", "avgIntensity", "avgOccupancy", "avgServiceLevel", "sampleCount", "updatedAt")
+      VALUES ${values}
+      ON CONFLICT ("sensorId", "source", "dayOfWeek", "hour") DO UPDATE SET
+        "avgIntensity" = ROUND(
+          ("HourlyTrafficProfile"."avgIntensity" * "HourlyTrafficProfile"."sampleCount" + EXCLUDED."avgIntensity")::numeric
+          / ("HourlyTrafficProfile"."sampleCount" + 1)
+        ),
+        "avgOccupancy" = CASE
+          WHEN EXCLUDED."avgOccupancy" IS NOT NULL THEN ROUND(
+            ("HourlyTrafficProfile"."avgOccupancy" * "HourlyTrafficProfile"."sampleCount" + EXCLUDED."avgOccupancy")::numeric
+            / ("HourlyTrafficProfile"."sampleCount" + 1)
+          )
+          ELSE "HourlyTrafficProfile"."avgOccupancy"
+        END,
+        "avgServiceLevel" = ROUND(
+          ("HourlyTrafficProfile"."avgServiceLevel" * "HourlyTrafficProfile"."sampleCount" + EXCLUDED."avgServiceLevel")
+          / ("HourlyTrafficProfile"."sampleCount" + 1), 2
+        ),
+        "sampleCount" = "HourlyTrafficProfile"."sampleCount" + 1,
+        "updatedAt" = NOW()
+    `);
   }
 }
 
@@ -264,13 +208,18 @@ export async function run(prisma: PrismaClient): Promise<void> {
     await updateHourlyProfiles(prisma, readings);
     log(TASK, "Updated hourly traffic profiles");
 
-    // Cleanup: remove raw readings older than 48h
+    // Cleanup: batch-delete old readings (max 10k per run to avoid long locks)
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
-    const deleted = await prisma.trafficIntensity.deleteMany({
-      where: { recordedAt: { lt: cutoff } },
-    });
-    if (deleted.count > 0) {
-      log(TASK, `Cleaned up ${deleted.count} old readings`);
+    const deleted = await prisma.$executeRaw`
+      DELETE FROM "TrafficIntensity"
+      WHERE id IN (
+        SELECT id FROM "TrafficIntensity"
+        WHERE "recordedAt" < ${cutoff}
+        LIMIT 10000
+      )
+    `;
+    if (deleted > 0) {
+      log(TASK, `Cleaned up ${deleted} old readings`);
     }
 
     // Stats

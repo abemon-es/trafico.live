@@ -798,8 +798,7 @@ model TrafficIntensity {
   error         Boolean  @default(false)
 
   @@unique([sensorId, source, recordedAt])
-  @@index([source])
-  @@index([recordedAt])
+  @@index([source, recordedAt])
   @@index([serviceLevel])
 }
 
@@ -949,6 +948,7 @@ model TrafficStation {
   @@index([province])
   @@index([year])
   @@index([stationType])
+  @@index([imd])
 }
 
 enum StationType {
@@ -992,6 +992,7 @@ model TrafficFlow {
   @@index([year])
   @@index([roadType])
   @@index([stationId])
+  @@index([imd])
 }
 
 // ============================================

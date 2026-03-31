@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { RoadType, Prisma } from "@prisma/client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 3600; // Cache for 1 hour
+export const revalidate = 3600; // Cache for 1 hour — IMD data is annual/static
 
 /**
  * GET /api/trafico/imd
@@ -80,7 +79,7 @@ export async function GET(request: Request) {
     });
 
     // Calculate statistics
-    const stats = await calculateStats(where);
+    const stats = await calculateStats(where, totalCount);
 
     return NextResponse.json({
       success: true,
@@ -245,17 +244,12 @@ async function handleGroupedQuery(
 /**
  * Calculate summary statistics
  */
-async function calculateStats(where: Prisma.TrafficFlowWhereInput) {
-  const [totalRecords, yearRange, roadCount, avgIMD] = await Promise.all([
-    prisma.trafficFlow.count({ where }),
+async function calculateStats(where: Prisma.TrafficFlowWhereInput, totalRecords: number) {
+  const [yearRange, avgIMD, uniqueRoadsResult] = await Promise.all([
     prisma.trafficFlow.aggregate({
       where,
       _min: { year: true },
       _max: { year: true },
-    }),
-    prisma.trafficFlow.groupBy({
-      by: ["roadNumber"],
-      where,
     }),
     prisma.trafficFlow.aggregate({
       where,
@@ -263,6 +257,9 @@ async function calculateStats(where: Prisma.TrafficFlowWhereInput) {
       _max: { imd: true },
       _min: { imd: true },
     }),
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(DISTINCT "roadNumber") as count FROM "TrafficFlow"
+    `,
   ]);
 
   return {
@@ -271,7 +268,7 @@ async function calculateStats(where: Prisma.TrafficFlowWhereInput) {
       min: yearRange._min.year,
       max: yearRange._max.year,
     },
-    uniqueRoads: roadCount.length,
+    uniqueRoads: Number(uniqueRoadsResult[0].count),
     avgIMD: Math.round(avgIMD._avg.imd || 0),
     maxIMD: avgIMD._max.imd,
     minIMD: avgIMD._min.imd,

@@ -70,7 +70,13 @@ const PROVINCE_ALIASES: Record<string, string> = {
   "asturias": "33", "principado de asturias": "33",
   "cantabria": "39",
   "murcia": "30", "region de murcia": "30",
-  "madrid": "28", "comunidad de madrid": "28"
+  "madrid": "28", "comunidad de madrid": "28",
+  // Bilingual official forms
+  "alicante/alacant": "03", "alacant": "03",
+  "castello": "12", "castello de la plana": "12", "castellon de la plana": "12",
+  "valencia/valencia": "46",
+  "balears": "07",
+  "palencia/palencia": "34",
 };
 Object.assign(PROVINCE_NAME_TO_CODE, PROVINCE_ALIASES);
 
@@ -78,5 +84,12 @@ export function normalizeProvince(province: string): string | null {
   if (!province) return null;
   if (/^\d{2}$/.test(province) && PROVINCES[province]) return province;
   const normalized = province.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-  return PROVINCE_NAME_TO_CODE[normalized] || null;
+  // Also try stripping everything after a slash (bilingual forms like "Alicante/Alacant")
+  const result = PROVINCE_NAME_TO_CODE[normalized]
+    || PROVINCE_NAME_TO_CODE[normalized.split("/")[0].trim()]
+    || null;
+  if (!result && normalized) {
+    console.warn(`[provinces] Unmapped province name: "${province}" (normalized: "${normalized}")`);
+  }
+  return result;
 }

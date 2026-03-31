@@ -10,13 +10,14 @@ Usage: python3 import-imd-remote.py | psql $DATABASE_URL
 
 import json
 import math
+import os
 import sys
 import subprocess
 import urllib.request
 import urllib.parse
 import time
 
-DB_URL = "postgresql://apps:cCrwx3nWNBsNphpzjzUpZkNYwmwlnHWCypjAqMEd@127.0.0.1:5435/le_trafico"
+DB_URL = os.environ.get("DATABASE_URL", "postgresql://apps@127.0.0.1:5435/le_trafico")
 BASE_URL = "https://mapas.fomento.gob.es/arcgis/rest/services/MapaTrafico"
 MAX_RECORDS = 1000
 YEARS = [2017, 2018, 2019]
