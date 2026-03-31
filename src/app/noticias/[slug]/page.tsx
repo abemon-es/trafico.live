@@ -5,6 +5,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { renderMarkdown } from "@/lib/insights/render-markdown";
 import {
   ArrowLeft, Calendar, ExternalLink, Clock, Tag, ChevronRight,
 } from "lucide-react";
@@ -294,43 +295,3 @@ export default async function ArticlePage({ params }: Props) {
   );
 }
 
-/** Render markdown-like body to HTML. Supports ##, ###, -, ---, bold, links. */
-function renderMarkdown(body: string): string {
-  return body
-    .split("\n\n")
-    .map((block) => {
-      if (block.startsWith("### ")) {
-        return `<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-4 mb-2">${block.slice(4)}</h3>`;
-      }
-      if (block.startsWith("## ")) {
-        return `<h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mt-6 mb-3">${block.slice(3)}</h2>`;
-      }
-      if (block.startsWith("- ")) {
-        const items = block
-          .split("\n")
-          .map((line) => `<li>${formatInline(line.slice(2))}</li>`)
-          .join("");
-        return `<ul class="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-300">${items}</ul>`;
-      }
-      if (block.startsWith("---")) {
-        return `<hr class="my-6 border-gray-200 dark:border-gray-800" />`;
-      }
-      if (block.startsWith("*") && block.endsWith("*")) {
-        return `<p class="text-sm text-gray-500 dark:text-gray-400 italic">${block.slice(1, -1)}</p>`;
-      }
-      return `<p class="text-gray-700 dark:text-gray-300">${formatInline(block)}</p>`;
-    })
-    .join("");
-}
-
-function formatInline(text: string): string {
-  return text
-    .replace(
-      /\*\*(.+?)\*\*/g,
-      '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>'
-    )
-    .replace(
-      /\[(.+?)\]\((.+?)\)/g,
-      '<a href="$2" class="text-tl-600 dark:text-tl-400 hover:underline">$1</a>'
-    );
-}
