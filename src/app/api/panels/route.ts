@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
     const dbPanels = await prisma.variablePanel.findMany({
       where: whereClause,
       orderBy: [{ hasMessage: "desc" }, { roadNumber: "asc" }],
+      take: 5000,
       select: {
         id: true,
         roadNumber: true,

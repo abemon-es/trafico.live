@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
     const dbRadars = await prisma.radar.findMany({
       where: whereClause,
       orderBy: [{ roadNumber: "asc" }, { kmPoint: "asc" }],
+      take: 5000,
     });
 
     const radars: RadarResponseItem[] = dbRadars.map((radar) => ({

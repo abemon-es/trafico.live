@@ -18,26 +18,7 @@ import {
   Fuel,
   AlertTriangle,
 } from "lucide-react";
-
-// ---------------------------------------------------------------------------
-// Data
-// ---------------------------------------------------------------------------
-
-const PROVINCES: Record<string, string> = {
-  "01": "Álava", "02": "Albacete", "03": "Alicante", "04": "Almería",
-  "05": "Ávila", "06": "Badajoz", "07": "Baleares", "08": "Barcelona",
-  "09": "Burgos", "10": "Cáceres", "11": "Cádiz", "12": "Castellón",
-  "13": "Ciudad Real", "14": "Córdoba", "15": "A Coruña", "16": "Cuenca",
-  "17": "Girona", "18": "Granada", "19": "Guadalajara", "20": "Gipuzkoa",
-  "21": "Huelva", "22": "Huesca", "23": "Jaén", "24": "León",
-  "25": "Lleida", "26": "La Rioja", "27": "Lugo", "28": "Madrid",
-  "29": "Málaga", "30": "Murcia", "31": "Navarra", "32": "Ourense",
-  "33": "Asturias", "34": "Palencia", "35": "Las Palmas", "36": "Pontevedra",
-  "37": "Salamanca", "38": "Santa Cruz de Tenerife", "39": "Cantabria",
-  "40": "Segovia", "41": "Sevilla", "42": "Soria", "43": "Tarragona",
-  "44": "Teruel", "45": "Toledo", "46": "Valencia", "47": "Valladolid",
-  "48": "Bizkaia", "49": "Zamora", "50": "Zaragoza", "51": "Ceuta", "52": "Melilla",
-};
+import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
 /** Province code → coast/region group */
 const COAST_REGIONS: Record<string, string> = {
@@ -520,7 +501,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-tl-500 dark:ring-tl-400"
               >
                 <option value="">Todas las provincias</option>
-                {Object.entries(PROVINCES).sort((a, b) => a[1].localeCompare(b[1])).map(([code, name]) => (
+                {Object.entries(PROVINCE_NAMES).sort((a, b) => a[1].localeCompare(b[1])).map(([code, name]) => (
                   <option key={code} value={code}>{name}</option>
                 ))}
               </select>
@@ -531,7 +512,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
         {province && (
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="flex items-center gap-1 px-2 py-1 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 rounded-full text-sm">
-              {PROVINCES[province]}
+              {PROVINCE_NAMES[province]}
               <button onClick={() => setProvince("")} className="hover:text-tl-900">
                 <X className="w-4 h-4" />
               </button>

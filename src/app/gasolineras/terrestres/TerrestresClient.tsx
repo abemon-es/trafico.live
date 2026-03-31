@@ -14,24 +14,9 @@ import {
   LayoutGrid,
   Table2,
 } from "lucide-react";
+import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-const PROVINCES: Record<string, string> = {
-  "01": "Álava", "02": "Albacete", "03": "Alicante", "04": "Almería",
-  "05": "Ávila", "06": "Badajoz", "07": "Baleares", "08": "Barcelona",
-  "09": "Burgos", "10": "Cáceres", "11": "Cádiz", "12": "Castellón",
-  "13": "Ciudad Real", "14": "Córdoba", "15": "A Coruña", "16": "Cuenca",
-  "17": "Girona", "18": "Granada", "19": "Guadalajara", "20": "Gipuzkoa",
-  "21": "Huelva", "22": "Huesca", "23": "Jaén", "24": "León",
-  "25": "Lleida", "26": "La Rioja", "27": "Lugo", "28": "Madrid",
-  "29": "Málaga", "30": "Murcia", "31": "Navarra", "32": "Ourense",
-  "33": "Asturias", "34": "Palencia", "35": "Las Palmas", "36": "Pontevedra",
-  "37": "Salamanca", "38": "Santa Cruz de Tenerife", "39": "Cantabria",
-  "40": "Segovia", "41": "Sevilla", "42": "Soria", "43": "Tarragona",
-  "44": "Teruel", "45": "Toledo", "46": "Valencia", "47": "Valladolid",
-  "48": "Bizkaia", "49": "Zamora", "50": "Zaragoza", "51": "Ceuta", "52": "Melilla",
-};
 
 interface GasStation {
   id: string;
@@ -318,7 +303,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500"
               >
                 <option value="">Todas las provincias</option>
-                {Object.entries(PROVINCES)
+                {Object.entries(PROVINCE_NAMES)
                   .sort((a, b) => a[1].localeCompare(b[1]))
                   .map(([code, name]) => (
                     <option key={code} value={code}>{name}</option>
@@ -399,7 +384,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
           <div className="mt-4 flex flex-wrap gap-2">
             {province && (
               <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm">
-                {PROVINCES[province]}
+                {PROVINCE_NAMES[province]}
                 <button onClick={() => setProvince("")} className="hover:text-orange-900">
                   <X className="w-4 h-4" />
                 </button>

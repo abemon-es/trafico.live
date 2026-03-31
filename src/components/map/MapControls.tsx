@@ -419,6 +419,7 @@ export function MapControls({
                 onClick={() => setShowLocationDropdown(!showLocationDropdown)}
                 className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors flex items-center gap-1"
                 title="Ir a ubicación"
+                aria-label="Ir a ubicación"
               >
                 <Navigation className="w-5 h-5" />
                 <ChevronDown className={`w-3 h-3 transition-transform ${showLocationDropdown ? "rotate-180" : ""}`} />
@@ -464,6 +465,7 @@ export function MapControls({
                   : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
               }`}
               title="Vista mapa"
+              aria-label="Vista mapa"
             >
               <MapIcon className="w-4 h-4" />
             </button>
@@ -475,6 +477,7 @@ export function MapControls({
                   : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
               }`}
               title="Vista lista"
+              aria-label="Vista lista"
             >
               <List className="w-4 h-4" />
             </button>
@@ -486,6 +489,7 @@ export function MapControls({
             disabled={isLoading}
             className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors disabled:opacity-50"
             title="Actualizar"
+            aria-label="Actualizar datos"
           >
             <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -495,6 +499,7 @@ export function MapControls({
             onClick={onFullscreenToggle}
             className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors"
             title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+            aria-label={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
           >
             {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
           </button>

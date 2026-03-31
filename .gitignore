@@ -53,3 +53,11 @@ next-env.d.ts
 # Collector node_modules
 services/v16-collector/node_modules/
 services/incident-collector/node_modules/
+
+# Brand/design assets in repo root (working files, not for version control)
+*.png
+*.svg
+!public/**/*.svg
+!public/**/*.png
+snapshot-*.md
+.wrangler/

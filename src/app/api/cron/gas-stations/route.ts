@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { invalidateCache } from "@/lib/redis";
+import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes max for Vercel/Coolify
@@ -10,21 +11,6 @@ const MINETUR_API_URL =
 
 const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
 
-const PROVINCES: Record<string, string> = {
-  "01": "Álava", "02": "Albacete", "03": "Alicante", "04": "Almería",
-  "05": "Ávila", "06": "Badajoz", "07": "Baleares", "08": "Barcelona",
-  "09": "Burgos", "10": "Cáceres", "11": "Cádiz", "12": "Castellón",
-  "13": "Ciudad Real", "14": "Córdoba", "15": "A Coruña", "16": "Cuenca",
-  "17": "Girona", "18": "Granada", "19": "Guadalajara", "20": "Gipuzkoa",
-  "21": "Huelva", "22": "Huesca", "23": "Jaén", "24": "León",
-  "25": "Lleida", "26": "La Rioja", "27": "Lugo", "28": "Madrid",
-  "29": "Málaga", "30": "Murcia", "31": "Navarra", "32": "Ourense",
-  "33": "Asturias", "34": "Palencia", "35": "Las Palmas", "36": "Pontevedra",
-  "37": "Salamanca", "38": "Santa Cruz de Tenerife", "39": "Cantabria",
-  "40": "Segovia", "41": "Sevilla", "42": "Soria", "43": "Tarragona",
-  "44": "Teruel", "45": "Toledo", "46": "Valencia", "47": "Valladolid",
-  "48": "Bizkaia", "49": "Zamora", "50": "Zaragoza", "51": "Ceuta", "52": "Melilla",
-};
 
 function parsePrice(priceStr: string): number | null {
   if (!priceStr || priceStr.trim() === "") return null;
@@ -83,7 +69,7 @@ export async function GET(request: NextRequest) {
           address: s["Dirección"] || null, postalCode: s["C.P."] || null,
           locality: s.Localidad || null, municipality: s.Municipio || null,
           municipalityCode: s.IDMunicipio || null,
-          province: pCode, provinceName: (pCode ? PROVINCES[pCode] : null) || s.Provincia,
+          province: pCode, provinceName: (pCode ? PROVINCE_NAMES[pCode] : null) || s.Provincia,
           communityCode: s.IDCCAA ? s.IDCCAA.padStart(2, "0") : null,
           pGA: parsePrice(s["Precio Gasoleo A"]), pGB: parsePrice(s["Precio Gasoleo B"]),
           pGP: parsePrice(s["Precio Gasoleo Premium"]),

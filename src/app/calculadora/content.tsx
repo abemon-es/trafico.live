@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { Fuel, MapPin, Calculator, Users, Leaf, ChevronRight, Info } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -215,7 +216,24 @@ function ComparisonRow({
 // Main component
 // ---------------------------------------------------------------------------
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export default function CalculadoraContent() {
+  // Fetch live fuel prices
+  const { data: fuelData } = useSWR<{
+    national?: {
+      avgGasoleoA: number | null;
+      avgGasolina95: number | null;
+      avgGasolina98: number | null;
+    };
+  }>("/api/fuel-prices/today", fetcher, { revalidateOnFocus: false });
+
+  const livePrices: Partial<Record<FuelType, number>> = {
+    diesel: fuelData?.national?.avgGasoleoA ?? undefined,
+    gasolina95: fuelData?.national?.avgGasolina95 ?? undefined,
+    gasolina98: fuelData?.national?.avgGasolina98 ?? undefined,
+  };
+
   // Form state
   const [origen, setOrigen] = useState("Madrid");
   const [destino, setDestino] = useState("Barcelona");
@@ -226,11 +244,11 @@ export default function CalculadoraContent() {
   const [peajes, setPeajes] = useState(0);
   const [pasajeros, setPasajeros] = useState(1);
 
-  // Update consumo/precio defaults when fuel type changes
+  // Update consumo/precio defaults when fuel type changes or live prices arrive
   useEffect(() => {
     setConsumo(FUEL_DEFAULTS[fuelType].consumo);
-    setPrecio(FUEL_DEFAULTS[fuelType].precio);
-  }, [fuelType]);
+    setPrecio(livePrices[fuelType] ?? FUEL_DEFAULTS[fuelType].precio);
+  }, [fuelType, fuelData]);
 
   const defaults = FUEL_DEFAULTS[fuelType];
   const result = calcular(distancia, consumo, precio, peajes, pasajeros, defaults.co2Factor);

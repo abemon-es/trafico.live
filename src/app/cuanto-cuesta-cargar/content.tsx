@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import {
   Zap,
@@ -100,12 +101,15 @@ const CHARGING_TYPES: ChargingType[] = [
   },
 ];
 
-// Fuel reference values for comparison
-const GASOLINE_PRICE = 1.55; // €/L
-const DIESEL_PRICE = 1.35; // €/L
+// Fuel reference values for comparison (fallbacks — overridden by live API data)
+const FALLBACK_GASOLINE_PRICE = 1.55; // €/L
+const FALLBACK_DIESEL_PRICE = 1.35; // €/L
 const GASOLINE_CONSUMPTION = 7.0; // L/100km
 const DIESEL_CONSUMPTION = 5.5; // L/100km
 const DEFAULT_EV_CONSUMPTION = 15.0; // kWh/100km (fallback)
+
+// Home charging price (used for comparison table)
+const HOME_CHARGING_PRICE = 0.15; // €/kWh — from CHARGING_TYPES[0]
 
 // EV model comparison table data
 const EV_COMPARISON: {
@@ -119,7 +123,7 @@ const EV_COMPARISON: {
   battery: ev.battery,
   consumption: ev.consumption,
   range: Math.round((ev.battery / ev.consumption) * 100),
-  homeCost: parseFloat((ev.battery * 0.15).toFixed(2)),
+  homeCost: parseFloat((ev.battery * HOME_CHARGING_PRICE).toFixed(2)),
 }));
 
 // ---------------------------------------------------------------------------
@@ -204,7 +208,20 @@ function SliderInput({
 // Main component
 // ---------------------------------------------------------------------------
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export default function CuantoCuestaCargarContent() {
+  // Fetch live fuel prices for comparison
+  const { data: fuelData } = useSWR<{
+    national?: {
+      avgGasoleoA: number | null;
+      avgGasolina95: number | null;
+    };
+  }>("/api/fuel-prices/today", fetcher, { revalidateOnFocus: false });
+
+  const GASOLINE_PRICE = fuelData?.national?.avgGasolina95 ?? FALLBACK_GASOLINE_PRICE;
+  const DIESEL_PRICE = fuelData?.national?.avgGasoleoA ?? FALLBACK_DIESEL_PRICE;
+
   // Calculator state
   const [selectedPreset, setSelectedPreset] = useState<number | "custom">(0);
   const [customBattery, setCustomBattery] = useState(60);
@@ -270,7 +287,7 @@ export default function CuantoCuestaCargarContent() {
       gasolineCostPer100km: parseFloat(gasolineCostPer100km.toFixed(2)),
       dieselCostPer100km: parseFloat(dieselCostPer100km.toFixed(2)),
     };
-  }, [batteryKwh, currentCharge, targetCharge, pricePerKwh, chargingType, evConsumption]);
+  }, [batteryKwh, currentCharge, targetCharge, pricePerKwh, chargingType, evConsumption, GASOLINE_PRICE, DIESEL_PRICE]);
 
   const chargeDelta = Math.max(0, targetCharge - currentCharge);
 

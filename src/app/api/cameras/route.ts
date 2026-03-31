@@ -77,6 +77,7 @@ export async function GET(request: NextRequest) {
       const dbCameras = await prisma.camera.findMany({
         where: whereClause,
         orderBy: { name: "asc" },
+        take: 5000,
       });
 
       if (dbCameras.length > 0) {

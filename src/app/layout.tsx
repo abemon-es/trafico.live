@@ -101,11 +101,7 @@ const organizationSchema = generateOrganizationSchema({
   url: BASE_URL,
   description: "Plataforma de inteligencia vial en tiempo real para España. Datos oficiales de la DGT incluyendo incidencias, cámaras, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones.",
   logo: `${BASE_URL}/icon.svg`,
-  sameAs: [
-    "https://twitter.com/traficolive",
-    "https://www.linkedin.com/company/traficolive",
-    "https://www.facebook.com/traficolive",
-  ],
+  sameAs: [],
   contactPoint: {
     contactType: "customer service",
     url: `${BASE_URL}/sobre`,

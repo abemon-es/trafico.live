@@ -210,19 +210,21 @@ const COMMUNITIES = [
 
 async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  // Stable date for non-realtime pages (avoids lastModified changing every request)
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE_URL, lastModified: now, changeFrequency: "hourly", priority: 1.0 },
-    { url: `${BASE_URL}/carreteras`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE_URL}/carreteras/autopistas`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE_URL}/carreteras/autovias`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE_URL}/carreteras/nacionales`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE_URL}/carreteras/regionales`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/carreteras`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/carreteras/autopistas`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/carreteras/autovias`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/carreteras/nacionales`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/carreteras/regionales`, lastModified: today, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/incidencias`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
-    { url: `${BASE_URL}/incidencias/analytics`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/incidencias/analytics`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/camaras`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
     { url: `${BASE_URL}/paneles`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
-    { url: `${BASE_URL}/radares`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE_URL}/radares`, lastModified: today, changeFrequency: "weekly", priority: 0.9 },
     // Per-road radar pages
     ...([
       "AP-7", "AP-68", "AP-1", "AP-2", "AP-4", "AP-6", "AP-9",
@@ -231,72 +233,72 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
       "N-I", "N-II", "N-III", "N-IV", "N-V", "N-VI", "N-340",
     ].map((road) => ({
       url: `${BASE_URL}/radares/${encodeURIComponent(road)}`,
-      lastModified: now,
+      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.85,
     }))),
-    { url: `${BASE_URL}/estadisticas`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/estadisticas/accidentes`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE_URL}/historico`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/espana`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-    { url: `${BASE_URL}/comunidad-autonoma`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-    { url: `${BASE_URL}/ciudad`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-    { url: `${BASE_URL}/precio-gasolina-hoy`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
-    { url: `${BASE_URL}/precio-diesel-hoy`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
+    { url: `${BASE_URL}/estadisticas`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/estadisticas/accidentes`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/historico`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/espana`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/comunidad-autonoma`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/ciudad`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/precio-gasolina-hoy`, lastModified: today, changeFrequency: "daily", priority: 0.95 },
+    { url: `${BASE_URL}/precio-diesel-hoy`, lastModified: today, changeFrequency: "daily", priority: 0.95 },
     { url: `${BASE_URL}/gasolineras`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
-    { url: `${BASE_URL}/gasolineras/terrestres`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-    { url: `${BASE_URL}/gasolineras/maritimas`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/gasolineras/cerca`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/gasolineras/terrestres`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/gasolineras/maritimas`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/gasolineras/cerca`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/gasolineras/precios`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
-    { url: `${BASE_URL}/gasolineras/mapa`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/gasolineras/marcas`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE_URL}/carga-ev`, lastModified: now, changeFrequency: "daily", priority: 0.85 },
-    { url: `${BASE_URL}/carga-ev/cerca`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/profesional`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/gasolineras/mapa`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/gasolineras/marcas`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/carga-ev`, lastModified: today, changeFrequency: "daily", priority: 0.85 },
+    { url: `${BASE_URL}/carga-ev/cerca`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/profesional`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/profesional/diesel`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
-    { url: `${BASE_URL}/profesional/areas`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${BASE_URL}/profesional/restricciones`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/calculadora`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${BASE_URL}/cuanto-cuesta-cargar`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
-    { url: `${BASE_URL}/mejor-hora`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE_URL}/puntos-negros`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
-    { url: `${BASE_URL}/ciclistas`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${BASE_URL}/municipio`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/profesional/areas`, lastModified: today, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/profesional/restricciones`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/calculadora`, lastModified: today, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE_URL}/cuanto-cuesta-cargar`, lastModified: today, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE_URL}/mejor-hora`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/puntos-negros`, lastModified: today, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE_URL}/ciclistas`, lastModified: today, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE_URL}/municipio`, lastModified: today, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/alertas-meteo`, lastModified: now, changeFrequency: "hourly", priority: 0.85 },
     { url: `${BASE_URL}/semana-santa-2026`, lastModified: now, changeFrequency: "hourly", priority: 1.0 },
     { url: `${BASE_URL}/puente-mayo-2026`, lastModified: now, changeFrequency: "hourly", priority: 0.95 },
-    { url: `${BASE_URL}/operaciones`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${BASE_URL}/restricciones`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
-    { url: `${BASE_URL}/gasolineras-24-horas`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/operaciones`, lastModified: today, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE_URL}/restricciones`, lastModified: today, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE_URL}/gasolineras-24-horas`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/atascos`, lastModified: now, changeFrequency: "hourly", priority: 0.95 },
     { url: `${BASE_URL}/cortes-trafico`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
-    { url: `${BASE_URL}/etiqueta-ambiental`, lastModified: now, changeFrequency: "monthly", priority: 0.95 },
-    { url: `${BASE_URL}/explorar`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${BASE_URL}/explorar/infraestructura`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/api-docs`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE_URL}/sobre`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE_URL}/aviso-legal`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${BASE_URL}/politica-privacidad`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${BASE_URL}/politica-cookies`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${BASE_URL}/gasolineras/baratas`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/etiqueta-ambiental`, lastModified: today, changeFrequency: "monthly", priority: 0.95 },
+    { url: `${BASE_URL}/explorar`, lastModified: today, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/explorar/infraestructura`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/api-docs`, lastModified: today, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE_URL}/sobre`, lastModified: today, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE_URL}/aviso-legal`, lastModified: today, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/politica-privacidad`, lastModified: today, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/politica-cookies`, lastModified: today, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/blog`, lastModified: today, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/gasolineras/baratas`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
   ];
 
   // City-based pages
   const cityPages = [
     ...TRAFFIC_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/trafico/${c}`, lastModified: now, changeFrequency: "hourly" as const, priority: 0.9 })),
-    ...ZBE_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/zbe/${c}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.88 })),
-    ...CITIES.map((c) => ({ url: `${BASE_URL}/ciudad/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.75 })),
-    ...CITIES.slice(0, 10).map((c) => ({ url: `${BASE_URL}/carga-ev/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
-    ...ELECTROLINERAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/electrolineras/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
-    ...BARATOS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/gasolineras/baratas/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.9 })),
-    ...CAMARAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/camaras/${c}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
+    ...ZBE_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/zbe/${c}`, lastModified: today, changeFrequency: "weekly" as const, priority: 0.88 })),
+    ...CITIES.map((c) => ({ url: `${BASE_URL}/ciudad/${c}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.75 })),
+    ...CITIES.slice(0, 10).map((c) => ({ url: `${BASE_URL}/carga-ev/${c}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.7 })),
+    ...ELECTROLINERAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/electrolineras/${c}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.8 })),
+    ...BARATOS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/gasolineras/baratas/${c}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.9 })),
+    ...CAMARAS_CITY_SLUGS.map((c) => ({ url: `${BASE_URL}/camaras/${c}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.8 })),
     // Province fuel price pages (52 provinces)
-    ...PRICE_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/gasolineras/precios/${slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
+    ...PRICE_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/gasolineras/precios/${slug}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.8 })),
     // Province gas station map pages (52 provinces)
-    ...PROVINCE_MAP_CODES.map((code) => ({ url: `${BASE_URL}/gasolineras/mapa/provincia/${code}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
+    ...PROVINCE_MAP_CODES.map((code) => ({ url: `${BASE_URL}/gasolineras/mapa/provincia/${code}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.7 })),
     // Province accident statistics pages (52 provinces)
-    ...ACCIDENTES_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/estadisticas/accidentes/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.6 })),
+    ...ACCIDENTES_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/estadisticas/accidentes/${slug}`, lastModified: today, changeFrequency: "monthly" as const, priority: 0.6 })),
   ];
 
   // Blog articles
@@ -320,7 +322,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     const pages: MetadataRoute.Sitemap = [
       {
         url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}`,
-        lastModified: now,
+        lastModified: today,
         changeFrequency: isMainRoad ? "daily" : "weekly",
         priority,
       },
@@ -331,19 +333,19 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
       pages.push(
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/camaras`,
-          lastModified: now,
+          lastModified: today,
           changeFrequency: "daily",
           priority: subPriority,
         },
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/radares`,
-          lastModified: now,
+          lastModified: today,
           changeFrequency: "weekly",
           priority: subPriority,
         },
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/estadisticas`,
-          lastModified: now,
+          lastModified: today,
           changeFrequency: "daily",
           priority: subPriority,
         }
@@ -362,7 +364,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((p) => p.province)
     .map((p) => ({
       url: `${BASE_URL}/provincias/${encodeURIComponent(p.province!)}`,
-      lastModified: now,
+      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.75,
     }));
@@ -370,7 +372,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
   // Community pages
   const communityPages = COMMUNITIES.map((community) => ({
     url: `${BASE_URL}/comunidad-autonoma/${community}`,
-    lastModified: now,
+    lastModified: today,
     changeFrequency: "daily" as const,
     priority: 0.7,
   }));
@@ -426,9 +428,11 @@ async function municipalitySitemap(
       orderBy: { slug: "asc" },
     });
 
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     return municipalities.map((m) => ({
       url: `${BASE_URL}/municipio/${m.slug}`,
-      lastModified: new Date(),
+      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.5,
     }));
@@ -454,11 +458,13 @@ async function postalCodeSitemap(
       orderBy: { postalCode: "asc" },
     });
 
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     return postalCodes
       .filter((p) => p.postalCode)
       .map((p) => ({
         url: `${BASE_URL}/codigo-postal/${p.postalCode}`,
-        lastModified: new Date(),
+        lastModified: today,
         changeFrequency: "weekly" as const,
         priority: 0.45,
       }));
@@ -482,9 +488,11 @@ async function maritimeStationSitemap(
       orderBy: { id: "asc" },
     });
 
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     return stations.map((station) => ({
       url: `${BASE_URL}/gasolineras/maritimas/${station.id}`,
-      lastModified: new Date(),
+      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.5,
     }));
