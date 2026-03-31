@@ -23,7 +23,7 @@ const VALID_TASKS = [
   // International
   "andorra", "portugal-weather", "portugal-fuel",
   // One-shot / manual
-  "historical-accidents", "imd", "portugal-accidents",
+  "historical-accidents", "imd", "portugal-accidents", "sasemar",
 ];
 
 if (!TASK) {
