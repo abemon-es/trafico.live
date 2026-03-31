@@ -29,6 +29,8 @@ import {
   Sun,
   History,
   Mountain,
+  ArrowLeftRight,
+  Activity,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -77,6 +79,12 @@ interface MapControlsProps {
   onTimelineToggle?: () => void;
   terrain3D?: boolean;
   onTerrain3DToggle?: () => void;
+  corridorActive?: boolean;
+  onCorridorToggle?: () => void;
+  flowActive?: boolean;
+  onFlowToggle?: () => void;
+  comparatorActive?: boolean;
+  onComparatorToggle?: () => void;
   counts?: {
     v16: number;
     incidents: number;
@@ -128,6 +136,12 @@ export function MapControls({
   onTimelineToggle,
   terrain3D,
   onTerrain3DToggle,
+  corridorActive,
+  onCorridorToggle,
+  flowActive,
+  onFlowToggle,
+  comparatorActive,
+  onComparatorToggle,
   counts,
 }: MapControlsProps) {
   const [showIncidentDropdown, setShowIncidentDropdown] = useState(false);
@@ -468,6 +482,39 @@ export function MapControls({
               aria-label={terrain3D ? "Desactivar terreno 3D" : "Activar terreno 3D"}
             >
               <Mountain className="w-5 h-5" />
+            </button>
+          )}
+          {/* Corridor view toggle */}
+          {onCorridorToggle && (
+            <button
+              onClick={onCorridorToggle}
+              className={`p-2 rounded-lg transition-colors ${corridorActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              title="Vista corredor"
+              aria-label="Vista corredor"
+            >
+              <Route className="w-5 h-5" />
+            </button>
+          )}
+          {/* Traffic flow toggle */}
+          {onFlowToggle && (
+            <button
+              onClick={onFlowToggle}
+              className={`p-2 rounded-lg transition-colors ${flowActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              title="Flujo de tráfico"
+              aria-label="Flujo de tráfico"
+            >
+              <Activity className="w-5 h-5" />
+            </button>
+          )}
+          {/* Comparator toggle */}
+          {onComparatorToggle && (
+            <button
+              onClick={onComparatorToggle}
+              className={`p-2 rounded-lg transition-colors ${comparatorActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              title="Comparador temporal"
+              aria-label="Comparador temporal"
+            >
+              <ArrowLeftRight className="w-5 h-5" />
             </button>
           )}
           {/* Dark mode toggle */}

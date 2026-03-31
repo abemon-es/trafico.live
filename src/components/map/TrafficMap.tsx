@@ -11,6 +11,7 @@ import {
   getIncidentPopupHTML,
   EFFECT_COLORS,
 } from "./IncidentMarker";
+import { useAnimatedFlow } from "./AnimatedFlowOverlay";
 
 export type IncidentViewMode = "heatmap" | "clusters" | "points";
 
@@ -219,6 +220,7 @@ interface TrafficMapProps {
   incidentViewMode?: IncidentViewMode;
   darkMode?: boolean;
   terrain3D?: boolean;
+  flowData?: GeoJSON.FeatureCollection | null;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
@@ -384,7 +386,7 @@ const DARK_MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/st
 const LIGHT_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, flowData = null, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -723,6 +725,13 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       m.easeTo({ pitch: 0, duration: 1000 });
     }
   }, [terrain3D, isLoaded]);
+
+  // Animated traffic flow overlay
+  useAnimatedFlow({
+    map: map.current,
+    enabled: !!flowData,
+    flowData,
+  });
 
   // Toggle highway layers visibility
   useEffect(() => {

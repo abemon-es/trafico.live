@@ -17,6 +17,9 @@ import {
 } from "./IncidentMarker";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { TimeSlider } from "./TimeSlider";
+import { CorridorView } from "./CorridorView";
+import { ZoneInsights } from "./ZoneInsights";
+import { MapComparator } from "./MapComparator";
 
 // Dynamic import for map to avoid SSR issues
 const TrafficMap = dynamic(() => import("./TrafficMap"), {
@@ -273,6 +276,11 @@ export function UnifiedMap({
   const [incidentViewMode, setIncidentViewMode] = useState<IncidentViewMode>("clusters");
   const [darkMode, setDarkMode] = useState(false);
   const [terrain3D, setTerrain3D] = useState(false);
+  const [corridorActive, setCorridorActive] = useState(false);
+  const [flowActive, setFlowActive] = useState(false);
+  const [comparatorActive, setComparatorActive] = useState(false);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapZoom, setMapZoom] = useState(6);
   const [timelineActive, setTimelineActive] = useState(false);
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [timelinePlaying, setTimelinePlaying] = useState(false);
@@ -486,7 +494,13 @@ export function UnifiedMap({
   const { data: timelineData, isLoading: timelineLoading } = useSWR<{
     success: boolean;
     data: { slots: { timestamp: string; incidents: Incident[]; count: number }[]; hours: number; totalIncidents: number };
-  }>(timelineActive ? "/api/incidents/timeline?hours=24&slots=24" : null, fetcher, { revalidateOnFocus: false });
+  }>((timelineActive || comparatorActive) ? "/api/incidents/timeline?hours=24&slots=24" : null, fetcher, { revalidateOnFocus: false });
+
+  const { data: flowData } = useSWR<{ success: boolean; data: GeoJSON.FeatureCollection }>(
+    flowActive ? "/api/roads/traffic-flow" : null,
+    fetcher,
+    { revalidateOnFocus: false, refreshInterval: 60000 }
+  );
 
   const isLoading = v16Loading || incidentsLoading;
 
@@ -558,6 +572,19 @@ export function UnifiedMap({
     }, 1500);
     return () => clearInterval(interval);
   }, [timelinePlaying, timelineData]);
+
+  // Track map center/zoom for zone insights
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    const onMoveEnd = () => {
+      const center = map.getCenter();
+      setMapCenter({ lat: center.lat, lng: center.lng });
+      setMapZoom(map.getZoom());
+    };
+    map.on("moveend", onMoveEnd);
+    return () => { map.off("moveend", onMoveEnd); };
+  }, []);
 
   const effectiveIncidents = timelineActive && timelineData?.data?.slots?.[timelineIndex]
     ? timelineData.data.slots[timelineIndex].incidents : incidentsData?.incidents;
@@ -656,14 +683,34 @@ export function UnifiedMap({
         onTerrain3DToggle={() => setTerrain3D((t) => !t)}
         timelineActive={timelineActive}
         onTimelineToggle={() => { setTimelineActive((a) => !a); setTimelineIndex(0); setTimelinePlaying(false); }}
+        corridorActive={corridorActive}
+        onCorridorToggle={() => setCorridorActive((c) => !c)}
+        flowActive={flowActive}
+        onFlowToggle={() => setFlowActive((f) => !f)}
+        comparatorActive={comparatorActive}
+        onComparatorToggle={() => setComparatorActive((c) => !c)}
         counts={counts}
       />
 
       {/* Main content area */}
       <div className={`${isFullscreen ? "flex-1 flex" : ""}`}>
-        {/* Map */}
-        {viewMode === "map" && (
+        {/* Comparator mode */}
+        {viewMode === "map" && comparatorActive && (
           <div className={`${isFullscreen ? "flex-1" : ""}`} style={{ height: isFullscreen ? "100%" : mapHeight }}>
+            <MapComparator
+              currentIncidents={filteredIncidents.map((i) => ({ lat: i.lat, lng: i.lng, effect: i.effect }))}
+              historicalIncidents={
+                timelineData?.data?.slots?.[0]?.incidents?.map((i: Incident) => ({ lat: i.lat, lng: i.lng, effect: i.effect })) || []
+              }
+              timeLabel="Hace 24h"
+              onClose={() => setComparatorActive(false)}
+            />
+          </div>
+        )}
+
+        {/* Map */}
+        {viewMode === "map" && !comparatorActive && (
+          <div className={`${isFullscreen ? "flex-1" : ""} relative`} style={{ height: isFullscreen ? "100%" : mapHeight }}>
             <TrafficMap
               ref={mapRef}
               activeLayers={activeLayers}
@@ -682,8 +729,16 @@ export function UnifiedMap({
               incidentViewMode={incidentViewMode}
               darkMode={darkMode}
               terrain3D={terrain3D}
+              flowData={flowActive ? flowData?.data || null : null}
               height="100%"
               onIncidentClick={handleIncidentClick}
+            />
+            {/* Zone insights overlay */}
+            <ZoneInsights
+              center={mapCenter}
+              zoom={mapZoom}
+              visible={!corridorActive && !comparatorActive}
+              onClose={() => {}}
             />
           </div>
         )}
@@ -723,6 +778,18 @@ export function UnifiedMap({
           </div>
         )}
       </div>
+
+      {/* Corridor view */}
+      {corridorActive && (
+        <CorridorView
+          incidents={filteredIncidents}
+          cameras={camerasData?.cameras || []}
+          radars={(radarsData?.radars || []) as any}
+          gasStations={(gasStationsData?.data || []) as any}
+          onFlyTo={(lng, lat, zoom) => mapRef.current?.flyTo(lng, lat, zoom || 14)}
+          onClose={() => setCorridorActive(false)}
+        />
+      )}
 
       {/* Stats bar */}
       {timelineActive && timelineData?.data?.slots && (
