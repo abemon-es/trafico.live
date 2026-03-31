@@ -311,7 +311,7 @@ export const footerColumns = [
       { name: "Gasolineras baratas", href: "/gasolineras/baratas" },
       { name: "24 horas", href: "/gasolineras-24-horas" },
       { name: "Mapa gasolineras", href: "/gasolineras/mapa" },
-      { name: "Marítimas", href: "/gasolineras/maritimas" },
+      { name: "Marítimas", href: "/maritimo/combustible" },
     ],
   },
   {
