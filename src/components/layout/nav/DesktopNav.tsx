@@ -59,13 +59,19 @@ export function DesktopNav() {
     }
   }, [activePanel, scheduleClose]);
 
-  // Close on click outside
+  // Close on click outside — check both navRef and any open panel
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) {
-        cancelTimers();
-        closeAll();
+      const target = event.target as Node;
+      // Check if click is inside the nav triggers
+      if (navRef.current?.contains(target)) return;
+      // Check if click is inside any mega menu panel (fixed-positioned, outside navRef bounds)
+      const panels = document.querySelectorAll('[id^="mega-panel-"]');
+      for (const panel of panels) {
+        if (panel.contains(target)) return;
       }
+      cancelTimers();
+      closeAll();
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -147,7 +153,7 @@ export function DesktopNav() {
         );
       })}
 
-      {/* Panels — full-width, share hover zone with triggers */}
+      {/* Panels — full-width, fixed positioning escapes navRef bounds */}
       {megaMenuPanels.map((panel) => (
         <div
           key={`panel-${panel.id}`}
@@ -155,10 +161,13 @@ export function DesktopNav() {
           role="region"
           aria-labelledby={`mega-trigger-${panel.id}`}
           className={activePanel === panel.id ? "" : "hidden"}
-          onPointerEnter={handleNavPointerEnter}
-          onPointerLeave={scheduleClose}
         >
-          <MegaMenuPanel panel={panel} isOpen={activePanel === panel.id} />
+          <MegaMenuPanel
+            panel={panel}
+            isOpen={activePanel === panel.id}
+            onPointerEnter={handleNavPointerEnter}
+            onPointerLeave={scheduleClose}
+          />
         </div>
       ))}
     </div>
