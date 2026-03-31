@@ -138,6 +138,84 @@ export default async function ArticlePage({ params }: Props) {
 
   const bodyHtml = renderMarkdown(article.body);
 
+  // --- Contextual cross-links ---
+  const TAG_SECTION_LINKS: Record<string, { href: string; label: string }> = {
+    "autopistas": { href: "/carreteras/autopistas", label: "Autopistas de España" },
+    "autovías": { href: "/carreteras/autovias", label: "Autovías de España" },
+    "autovias": { href: "/carreteras/autovias", label: "Autovías de España" },
+    "madrid": { href: "/provincias/28", label: "Tráfico en Madrid" },
+    "barcelona": { href: "/provincias/08", label: "Tráfico en Barcelona" },
+    "valencia": { href: "/provincias/46", label: "Tráfico en Valencia" },
+    "radares": { href: "/radares", label: "Radares DGT" },
+    "gasolineras": { href: "/gasolineras", label: "Gasolineras" },
+    "combustible": { href: "/gasolineras/precios", label: "Precios de combustible" },
+    "diesel": { href: "/precio-diesel-hoy", label: "Precio del diésel hoy" },
+    "diésel": { href: "/precio-diesel-hoy", label: "Precio del diésel hoy" },
+    "gasolina": { href: "/precio-gasolina-hoy", label: "Precio de la gasolina hoy" },
+    "cargadores": { href: "/carga-ev", label: "Cargadores eléctricos" },
+    "electrolineras": { href: "/electrolineras", label: "Electrolineras" },
+    "zbe": { href: "/zbe", label: "Zonas de Bajas Emisiones" },
+    "accidentes": { href: "/estadisticas/accidentes", label: "Estadísticas de accidentes" },
+    "meteorología": { href: "/alertas-meteo", label: "Alertas meteorológicas" },
+    "meteorologia": { href: "/alertas-meteo", label: "Alertas meteorológicas" },
+    "semana-santa": { href: "/semana-santa-2026", label: "Operación Semana Santa" },
+    "operación especial": { href: "/operaciones", label: "Operaciones especiales DGT" },
+    "operacion especial": { href: "/operaciones", label: "Operaciones especiales DGT" },
+    "marítimo": { href: "/maritimo", label: "Tráfico marítimo" },
+    "maritimo": { href: "/maritimo", label: "Tráfico marítimo" },
+  };
+
+  const CATEGORY_SECTION_LINKS: Record<string, { href: string; label: string }[]> = {
+    "FUEL_TREND": [
+      { href: "/precio-gasolina-hoy", label: "Precio gasolina hoy" },
+      { href: "/gasolineras/precios", label: "Precios por provincia" },
+    ],
+    "ROAD_ANALYSIS": [
+      { href: "/carreteras", label: "Carreteras de España" },
+      { href: "/radares", label: "Radares DGT" },
+    ],
+    "WEATHER_ALERT": [
+      { href: "/alertas-meteo", label: "Alertas meteorológicas" },
+    ],
+    "INCIDENT_DIGEST": [
+      { href: "/incidencias", label: "Incidencias activas" },
+      { href: "/atascos", label: "Atascos en tiempo real" },
+    ],
+  };
+
+  const contextLinks: { href: string; label: string }[] = [];
+
+  // From tags
+  for (const at of article.tags) {
+    const tagSlug = at.tag.slug;
+    const tagName = at.tag.name.toLowerCase();
+    const match = TAG_SECTION_LINKS[tagSlug] ?? TAG_SECTION_LINKS[tagName];
+    if (match && !contextLinks.some((l) => l.href === match.href)) {
+      contextLinks.push(match);
+    }
+  }
+
+  // From category
+  const categoryLinks = CATEGORY_SECTION_LINKS[article.category] ?? [];
+  for (const link of categoryLinks) {
+    if (!contextLinks.some((l) => l.href === link.href)) {
+      contextLinks.push(link);
+    }
+  }
+
+  // From road mentions in body (e.g. A-7, AP-7, N-340)
+  const roadPattern = /\b(A[P]?-\d+|N-[IVX]+|N-\d+|[A-Z]{1,2}-\d+)\b/g;
+  const roadMentions = [...new Set(article.body.match(roadPattern) ?? [])];
+  for (const road of roadMentions.slice(0, 3)) {
+    const link = {
+      href: `/carreteras/${encodeURIComponent(road)}`,
+      label: `Carretera ${road}`,
+    };
+    if (!contextLinks.some((l) => l.href === link.href)) {
+      contextLinks.push(link);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <StructuredData data={articleSchema} />
@@ -293,6 +371,28 @@ export default async function ArticlePage({ params }: Props) {
                   ))}
                 </ul>
               </div>
+
+              {/* Contextual section links */}
+              {contextLinks.length > 0 && (
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
+                    Páginas relacionadas
+                  </h3>
+                  <ul className="space-y-2">
+                    {contextLinks.slice(0, 4).map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className="flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                        >
+                          <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </aside>
         </div>
