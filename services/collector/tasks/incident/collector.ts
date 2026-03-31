@@ -5,6 +5,12 @@
  * - DGT (National - all of Spain)
  * - SCT (Cataluña)
  * - Euskadi (País Vasco)
+ * - Madrid (real-time traffic intensity)
+ * - Valencia (Comunitat Valenciana)
+ * - DT-GV (Basque Country DATEX II)
+ * - Navarra (Comunidad Foral de Navarra)
+ * - CyL (Castilla y León)
+ * - Barcelona (city traffic segments)
  *
  * Stores them in the TrafficIncident table for database-first API serving.
  */
@@ -16,25 +22,34 @@ import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
 import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
 import { fetchValenciaIncidents, ValenciaIncident } from "./valencia-parser.js";
+import { fetchDTGVIncidents, DTGVIncident } from "./dtgv-parser.js";
+import { fetchNavarraIncidents, NavarraIncident } from "./navarra-parser.js";
+import { fetchCyLIncidents, CyLIncident } from "./cyl-parser.js";
+import { fetchBarcelonaIncidents, BarcelonaIncident } from "./barcelona-parser.js";
 
 // Community codes
 const COMMUNITY_CATALUNA = "09";
 const COMMUNITY_PAIS_VASCO = "16";
 const COMMUNITY_MADRID = "13";
 const COMMUNITY_VALENCIA = "10";
+const COMMUNITY_NAVARRA = "15";
+const COMMUNITY_CYL = "07";
 
 // Province codes
 const PROVINCE_MADRID = "28";
 const PROVINCE_VALENCIA = "46";
+const PROVINCE_BARCELONA = "08";
 
 // Community names
 const COMMUNITIES: Record<string, string> = {
+  "07": "Castilla y León",
   "09": "Cataluña",
   "13": "Comunidad de Madrid",
+  "15": "Comunidad Foral de Navarra",
   "16": "País Vasco",
 };
 
-type IncidentData = SCTIncident | EuskadiIncident | DGTIncident | MadridIncident;
+type IncidentData = SCTIncident | EuskadiIncident | DGTIncident | MadridIncident | DTGVIncident | NavarraIncident | CyLIncident;
 
 function mapDirection(dir?: string): Direction | undefined {
   if (!dir) return undefined;
@@ -72,8 +87,8 @@ interface NormalizedIncident {
 }
 
 function normalizeIncident(
-  incident: SCTIncident | EuskadiIncident,
-  source: "SCT" | "EUSKADI",
+  incident: SCTIncident | EuskadiIncident | DTGVIncident,
+  source: "SCT" | "EUSKADI" | "DT-GV",
   communityCode: string
 ): NormalizedIncident {
   return {
@@ -153,12 +168,16 @@ export async function run(prisma: PrismaClient) {
 
   try {
     // Fetch incidents from all sources in parallel
-    const [sctResult, euskadiResult, dgtResult, madridResult, valenciaResult] = await Promise.allSettled([
+    const [sctResult, euskadiResult, dgtResult, madridResult, valenciaResult, dtgvResult, navarraResult, cylResult, barcelonaResult] = await Promise.allSettled([
       fetchSCTIncidents(),
       fetchEuskadiIncidents(),
       fetchDGTIncidents(),
       fetchMadridIncidents(),
       fetchValenciaIncidents(),
+      fetchDTGVIncidents(),
+      fetchNavarraIncidents(),
+      fetchCyLIncidents(),
+      fetchBarcelonaIncidents(),
     ]);
 
     const allIncidents: NormalizedIncident[] = [];
@@ -226,6 +245,91 @@ export async function run(prisma: PrismaClient) {
       }
     } else {
       console.error("[collector] Valencia fetch failed:", valenciaResult.reason);
+    }
+
+    // Process DT-GV incidents (Basque Country DATEX II — official feed)
+    if (dtgvResult.status === "fulfilled") {
+      console.log(`[collector] DT-GV returned ${dtgvResult.value.length} incidents`);
+      for (const incident of dtgvResult.value) {
+        allIncidents.push(normalizeIncident(incident, "DT-GV", COMMUNITY_PAIS_VASCO));
+      }
+    } else {
+      console.error("[collector] DT-GV fetch failed:", dtgvResult.reason);
+    }
+
+    // Process Navarra incidents
+    if (navarraResult.status === "fulfilled") {
+      console.log(`[collector] Navarra returned ${navarraResult.value.length} incidents`);
+      for (const incident of navarraResult.value) {
+        allIncidents.push({
+          situationId: incident.situationId,
+          type: incident.type,
+          startedAt: incident.startedAt,
+          endedAt: incident.endedAt,
+          latitude: incident.latitude,
+          longitude: incident.longitude,
+          roadNumber: incident.roadNumber,
+          roadType: inferRoadType(incident.roadNumber),
+          province: "31",
+          provinceName: "Navarra",
+          community: COMMUNITY_NAVARRA,
+          communityName: COMMUNITIES[COMMUNITY_NAVARRA],
+          description: incident.description,
+          severity: incident.severity,
+          source: "NAVARRA",
+        });
+      }
+    } else {
+      console.error("[collector] Navarra fetch failed:", navarraResult.reason);
+    }
+
+    // Process Castilla y León incidents
+    if (cylResult.status === "fulfilled") {
+      console.log(`[collector] CyL returned ${cylResult.value.length} incidents`);
+      for (const incident of cylResult.value) {
+        allIncidents.push({
+          situationId: incident.situationId,
+          type: incident.type,
+          startedAt: incident.startedAt,
+          endedAt: incident.endedAt,
+          latitude: incident.latitude,
+          longitude: incident.longitude,
+          roadNumber: incident.roadNumber,
+          roadType: inferRoadType(incident.roadNumber),
+          province: incident.province,
+          provinceName: incident.provinceName,
+          community: COMMUNITY_CYL,
+          communityName: COMMUNITIES[COMMUNITY_CYL],
+          description: incident.description,
+          severity: incident.severity,
+          source: "CYL",
+        });
+      }
+    } else {
+      console.error("[collector] CyL fetch failed:", cylResult.reason);
+    }
+
+    // Process Barcelona city incidents
+    if (barcelonaResult.status === "fulfilled") {
+      console.log(`[collector] Barcelona returned ${barcelonaResult.value.length} incidents`);
+      for (const incident of barcelonaResult.value) {
+        allIncidents.push({
+          situationId: incident.situationId,
+          type: incident.type,
+          startedAt: incident.startedAt,
+          latitude: incident.latitude,
+          longitude: incident.longitude,
+          province: PROVINCE_BARCELONA,
+          provinceName: "Barcelona",
+          community: COMMUNITY_CATALUNA,
+          communityName: COMMUNITIES[COMMUNITY_CATALUNA],
+          description: incident.description,
+          severity: incident.severity,
+          source: "BARCELONA",
+        });
+      }
+    } else {
+      console.error("[collector] Barcelona fetch failed:", barcelonaResult.reason);
     }
 
     console.log(`[collector] Total incidents to process: ${allIncidents.length}`);
@@ -339,10 +443,13 @@ export async function run(prisma: PrismaClient) {
     // Calculate durationSecs based on lifecycle tracking (lastSeenAt - firstSeenAt)
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
+    // All managed sources
+    const ALL_SOURCES = ["DGT", "SCT", "EUSKADI", "MADRID", "VALENCIA", "DT-GV", "NAVARRA", "CYL", "BARCELONA"];
+
     // Find incidents to deactivate
     const staleIncidents = await prisma.trafficIncident.findMany({
       where: {
-        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID", "VALENCIA"] },
+        source: { in: ALL_SOURCES },
         isActive: true,
         fetchedAt: { lt: oneHourAgo },
       },
@@ -360,7 +467,7 @@ export async function run(prisma: PrismaClient) {
         SET "isActive" = false,
             "durationSecs" = EXTRACT(EPOCH FROM ("lastSeenAt" - "firstSeenAt"))::int
         WHERE "isActive" = true
-          AND "source" IN ('DGT', 'SCT', 'EUSKADI', 'MADRID', 'VALENCIA')
+          AND "source" IN ('DGT', 'SCT', 'EUSKADI', 'MADRID', 'VALENCIA', 'DT-GV', 'NAVARRA', 'CYL', 'BARCELONA')
           AND "fetchedAt" < ${oneHourAgo}
       `;
       console.log(`[collector] Deactivated ${staleIncidents.length} stale incidents with duration tracking`);
@@ -371,7 +478,7 @@ export async function run(prisma: PrismaClient) {
       by: ["source", "isActive"],
       _count: true,
       where: {
-        source: { in: ["DGT", "SCT", "EUSKADI", "MADRID", "VALENCIA"] },
+        source: { in: ALL_SOURCES },
       },
     });
 
