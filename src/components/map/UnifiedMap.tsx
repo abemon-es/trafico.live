@@ -17,9 +17,11 @@ import {
 } from "./IncidentMarker";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { TimeSlider } from "./TimeSlider";
-import { CorridorView } from "./CorridorView";
-import { ZoneInsights } from "./ZoneInsights";
-import { MapComparator } from "./MapComparator";
+
+// Dynamic imports for heavy map components (avoid bloating main bundle)
+const CorridorView = dynamic(() => import("./CorridorView").then((m) => m.CorridorView), { ssr: false });
+const ZoneInsights = dynamic(() => import("./ZoneInsights").then((m) => m.ZoneInsights), { ssr: false });
+const MapComparator = dynamic(() => import("./MapComparator").then((m) => m.MapComparator), { ssr: false });
 
 // Dynamic import for map to avoid SSR issues
 const TrafficMap = dynamic(() => import("./TrafficMap"), {

@@ -125,6 +125,12 @@ export function useAnimatedFlow({ map, enabled, flowData }: AnimatedFlowOverlayP
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
       }
+      // Clean up layers and source on unmount
+      if (mapRef) {
+        if (mapRef.getLayer("flow-animated")) mapRef.removeLayer("flow-animated");
+        if (mapRef.getLayer("flow-background")) mapRef.removeLayer("flow-background");
+        if (mapRef.getSource("traffic-flow")) mapRef.removeSource("traffic-flow");
+      }
     };
   }, [map, enabled, flowData]);
 }
