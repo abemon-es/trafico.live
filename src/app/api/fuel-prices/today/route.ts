@@ -6,8 +6,9 @@ import { PROVINCE_NAMES, COMMUNITY_NAMES } from "@/lib/geo/ine-codes";
 const CACHE_KEY = "api:fuel-prices:today";
 const CACHE_TTL = 300; // 5 minutes
 
-// Cache for 10 minutes
-export const revalidate = 600;
+// No ISR cache — Redis handles caching (5 min TTL). ISR causes stale null
+// responses after deploys because the build runs with DATABASE_URL=''.
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
