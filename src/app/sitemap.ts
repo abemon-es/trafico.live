@@ -193,6 +193,17 @@ const PRICE_PROVINCE_SLUGS = [
 // Province codes 01-52 for /gasolineras/mapa/provincia/{code}
 const PROVINCE_MAP_CODES = Array.from({ length: 52 }, (_, i) => String(i + 1).padStart(2, "0"));
 
+const MARITIME_ZONE_SLUGS = [
+  "galicia",
+  "cantabrico",
+  "atlantico",
+  "mediterraneo",
+  "baleares",
+  "canarias",
+  "estrecho",
+  "levante",
+];
+
 const CAMARAS_CITY_SLUGS = [
   "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
   "malaga", "murcia", "bilbao", "alicante", "cordoba",
@@ -286,6 +297,21 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/noticias`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/informes`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/gasolineras/baratas`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
+
+    // Maritime section
+    { url: `${BASE_URL}/maritimo`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/maritimo/combustible`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/maritimo/meteorologia`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/maritimo/puertos`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/maritimo/seguridad`, lastModified: today, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/maritimo/mapa`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    // Maritime meteorology zone pages
+    ...MARITIME_ZONE_SLUGS.map((zone) => ({
+      url: `${BASE_URL}/maritimo/meteorologia/${zone}`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    })),
   ];
 
   // City-based pages
@@ -373,12 +399,41 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // Maritime port detail pages — unique port names from maritimeStation
+  let maritimePortPages: MetadataRoute.Sitemap = [];
+  try {
+    const uniquePorts = await prisma.maritimeStation.findMany({
+      select: { port: true },
+      distinct: ["port"],
+      where: { port: { not: null } },
+      orderBy: { port: "asc" },
+    });
+    maritimePortPages = uniquePorts
+      .filter((p) => p.port)
+      .map((p) => ({
+        url: `${BASE_URL}/maritimo/puertos/${encodeURIComponent(
+          p.port!
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )}`,
+        lastModified: today,
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      }));
+  } catch {
+    // DB unavailable — skip dynamic port pages
+  }
+
   return [
     ...staticPages,
     ...cityPages,
     ...roadPages,
     ...provincePages,
     ...communityPages,
+    ...maritimePortPages,
   ];
 }
 

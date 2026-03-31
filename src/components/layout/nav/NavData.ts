@@ -27,6 +27,9 @@ import {
   Radio,
   TrendingUp,
   Code2,
+  Anchor,
+  Wind,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 
@@ -212,6 +215,33 @@ export const megaMenuPanels: MegaMenuPanel[] = [
     ],
   },
   {
+    id: "maritimo",
+    label: "Marítimo",
+    categories: [
+      {
+        title: "Combustible",
+        items: [
+          { name: "Combustible Marítimo", href: "/maritimo/combustible", icon: Fuel, description: "Precios en puertos españoles" },
+          { name: "Mapa Marítimo", href: "/maritimo/mapa", icon: Map, description: "Estaciones en el litoral" },
+        ],
+      },
+      {
+        title: "Información",
+        items: [
+          { name: "Meteorología", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas costeras AEMET" },
+          { name: "Puertos", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
+          { name: "Seguridad", href: "/maritimo/seguridad", icon: ShieldAlert, description: "Avisos y normativa" },
+        ],
+      },
+      {
+        title: "Hub marítimo",
+        items: [
+          { name: "Inicio Marítimo", href: "/maritimo", icon: Anchor, description: "Panel general" },
+        ],
+      },
+    ],
+  },
+  {
     id: "profesional",
     label: "Profesional",
     categories: [
@@ -282,6 +312,17 @@ export const footerColumns = [
       { name: "24 horas", href: "/gasolineras-24-horas" },
       { name: "Mapa gasolineras", href: "/gasolineras/mapa" },
       { name: "Marítimas", href: "/gasolineras/maritimas" },
+    ],
+  },
+  {
+    title: "Marítimo",
+    links: [
+      { name: "Hub Marítimo", href: "/maritimo" },
+      { name: "Combustible Marítimo", href: "/maritimo/combustible" },
+      { name: "Meteorología costera", href: "/maritimo/meteorologia" },
+      { name: "Puertos", href: "/maritimo/puertos" },
+      { name: "Seguridad marítima", href: "/maritimo/seguridad" },
+      { name: "Mapa Marítimo", href: "/maritimo/mapa" },
     ],
   },
   {
