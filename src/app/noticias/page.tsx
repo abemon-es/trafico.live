@@ -145,7 +145,7 @@ export default async function NoticiasPage({
   const [articles, total, featuredArticle, tags] = await Promise.all([
     prisma.article.findMany({
       where,
-      orderBy: { publishedAt: "desc" },
+      orderBy: [{ editorialWeight: "desc" }, { publishedAt: "desc" }],
       take: perPage,
       skip: (page - 1) * perPage,
       include: { tags: { include: { tag: true } } },

@@ -31,11 +31,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const keywords = article.tags.map((at) => at.tag.name);
 
+  // Noindex stale daily/ephemeral reports (>90 days old) per SEO expert recommendation
+  const ageMs = Date.now() - article.publishedAt.getTime();
+  const isEphemeral = ["DAILY_REPORT", "PRICE_ALERT", "INCIDENT_DIGEST", "WEATHER_ALERT"].includes(article.category);
+  const isStale = isEphemeral && ageMs > 90 * 24 * 60 * 60 * 1000;
+
   return {
     title: article.title,
     description: article.summary,
     keywords: [...keywords, "tráfico España", "trafico.live"],
     authors: [{ name: "trafico.live" }],
+    ...(isStale && { robots: { index: false, follow: true } }),
     alternates: {
       canonical: `${BASE_URL}/noticias/${slug}`,
     },

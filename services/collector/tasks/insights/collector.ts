@@ -386,6 +386,8 @@ import {
   generateRoadIMDAnalyses,
   generateMonthlyAccidentReport,
   generateMonthlyFuelReport,
+  generateEnhancedWeatherAlert,
+  generateEnhancedIncidentSpike,
 } from "./generators";
 
 // ---------------------------------------------------------------------------
@@ -396,11 +398,12 @@ export async function run(prisma: PrismaClient): Promise<void> {
   console.log("[noticias] Starting article generation (v2 enhanced)...");
 
   const results = await Promise.allSettled([
-    // Legacy alert detectors (kept for backward compatibility)
+    // Legacy detectors (kept as fallback — low threshold, simple format)
     detectPriceChanges(prisma),
-    detectIncidentSpikes(prisma),
-    aggregateWeatherAlerts(prisma),
-    // Enhanced v2 generators — data-dense, enriched reports
+    // Enhanced v2 alert generators — severity-gated, enriched
+    generateEnhancedWeatherAlert(prisma),
+    generateEnhancedIncidentSpike(prisma),
+    // Enhanced v2 report generators — data-dense
     generateDailyReportV2(prisma),
     generateDailyFuelReport(prisma),
     generateWeeklyReportV2(prisma),
