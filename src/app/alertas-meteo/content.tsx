@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import useSWR from "swr";
 import {
   Cloud,
@@ -226,6 +226,7 @@ export function AlertasMeteoContent() {
   const [filterSeverity, setFilterSeverity] = useState<string>("");
   const [filterType, setFilterType] = useState<string>("");
   const [filterProvince, setFilterProvince] = useState<string>("");
+  const [visibleCount, setVisibleCount] = useState(60);
 
   // Build API URL with filters
   const apiUrl = useMemo(() => {
@@ -266,6 +267,14 @@ export function AlertasMeteoContent() {
       return new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime();
     });
   }, [data?.alerts]);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(60);
+  }, [filterSeverity, filterType, filterProvince]);
+
+  const visibleAlerts = sortedAlerts.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedAlerts.length;
 
   // Unique provinces from counts for filter dropdown
   const provinces = useMemo(() => {
@@ -543,11 +552,23 @@ export function AlertasMeteoContent() {
 
         {/* Alert cards grid */}
         {!isLoading && data && sortedAlerts.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {sortedAlerts.map((alert) => (
-              <AlertCard key={alert.id} alert={alert} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {visibleAlerts.map((alert) => (
+                <AlertCard key={alert.id} alert={alert} />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 60)}
+                  className="px-6 py-3 bg-tl-600 hover:bg-tl-700 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Cargar más alertas ({sortedAlerts.length - visibleCount} restantes)
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Related links */}
