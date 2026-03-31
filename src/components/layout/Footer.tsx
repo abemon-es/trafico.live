@@ -84,11 +84,13 @@ export function Footer() {
           </h3>
           <div className="flex flex-wrap gap-2">
             {footerCities.map((city) => {
-              const cityActive = pathname.startsWith(`/ciudad/${city.slug}`);
+              const cityActive =
+                pathname.startsWith(`/trafico/${city.slug}`) ||
+                pathname.startsWith(`/ciudad/${city.slug}`);
               return (
                 <Link
                   key={city.slug}
-                  href={`/ciudad/${city.slug}`}
+                  href={`/trafico/${city.slug}`}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 ${
                     cityActive
                       ? "bg-tl-600 border border-tl-500 text-white"

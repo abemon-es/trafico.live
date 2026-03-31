@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@trafico_live",
+    site: "@traficolive",
     title: "trafico.live — Tráfico España en Tiempo Real",
     description: "Inteligencia vial en tiempo real para toda España",
     images: [`${BASE_URL}/og-image.png`],

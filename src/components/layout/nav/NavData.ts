@@ -92,7 +92,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
       {
         title: "En directo",
         items: [
-          { name: "Mapa en vivo", href: "/", icon: Map, description: "Tráfico en tiempo real" },
+          { name: "Mapa en vivo", href: "/mapa", icon: Map, description: "Tráfico en tiempo real" },
           { name: "Atascos", href: "/atascos", icon: AlertTriangle, description: "Retenciones actuales" },
           { name: "Alertas meteo", href: "/alertas-meteo", icon: Cloud, description: "Avisos de AEMET" },
           { name: "Paneles PMV", href: "/paneles", icon: MonitorSmartphone, description: "Mensajes en carretera" },
@@ -209,6 +209,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Noticias", href: "/noticias", icon: BookOpen, description: "Informes, guías y alertas" },
           { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
+          { name: "Informes", href: "/informes", icon: BarChart3, description: "Informes periódicos" },
           { name: "Ciclistas", href: "/ciclistas", icon: Bike, description: "Info para ciclistas" },
         ],
       },
@@ -251,7 +252,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Diésel más barato", href: "/profesional/diesel", icon: Fuel, description: "Mejores precios para tu flota" },
           { name: "Áreas de descanso", href: "/profesional/areas", icon: MapPin, description: "Parking seguro 24h" },
-          { name: "Restricciones activas", href: "/restricciones", icon: Ban, description: "ZBE, peso y altura" },
+          { name: "Restricciones activas", href: "/profesional/restricciones", icon: Ban, description: "ZBE, peso y altura" },
           { name: "Calculadora de ruta", href: "/calculadora", icon: Calculator, description: "Coste de combustible y peajes" },
           { name: "Noticias profesionales", href: "/profesional/noticias", icon: Newspaper, description: "Informes y alertas para flotas" },
         ],
@@ -282,7 +283,8 @@ export const footerColumns = [
   {
     title: "Tráfico en vivo",
     links: [
-      { name: "Mapa en vivo", href: "/" },
+      { name: "Inicio", href: "/" },
+      { name: "Mapa en vivo", href: "/mapa" },
       { name: "Incidencias", href: "/incidencias" },
       { name: "Cámaras DGT", href: "/camaras" },
       { name: "Atascos", href: "/atascos" },
@@ -312,7 +314,6 @@ export const footerColumns = [
       { name: "Gasolineras baratas", href: "/gasolineras/baratas" },
       { name: "24 horas", href: "/gasolineras-24-horas" },
       { name: "Mapa gasolineras", href: "/gasolineras/mapa" },
-      { name: "Marítimas", href: "/maritimo/combustible" },
     ],
   },
   {
@@ -350,6 +351,8 @@ export const footerColumns = [
     title: "Info",
     links: [
       { name: "Profesional", href: "/profesional" },
+      { name: "Informes", href: "/informes" },
+      { name: "Prensa", href: "/media" },
       { name: "Sobre nosotros", href: "/sobre" },
       { name: "API", href: "/api-docs" },
       { name: "Aviso legal", href: "/aviso-legal" },
