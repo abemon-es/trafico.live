@@ -72,12 +72,16 @@ services:
     # Coolify cron: 0 */6 * * *
     # Was */30 — AEMET only updates ~2x/day, saves 46 API calls/day
 
-  # ── Content generation (3x daily) ─────────────────────────────────
+  # ── Content generation (daily fallback — insights are now triggered
+  #    automatically after data collectors via dispatcher post-ingestion hooks) ──
   collector-insights:
     <<: *collector-base
     environment:
       TASK: insights
-    # Coolify cron: 15 7,14,21 * * *
+    # Coolify cron: 30 22 * * *
+    # Runs once daily at 22:30 as a safety net. Primary trigger is now
+    # post-ingestion: gas-station → fuel reports, v16 → traffic reports,
+    # weather → alert reports. All generators are idempotent (skip if slug exists).
 
   # ── Fuel prices (3x daily) ────────────────────────────────────────
   collector-gas-station:

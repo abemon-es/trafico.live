@@ -80,6 +80,8 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    "max-image-preview": "large" as const,
+    "max-snippet": -1,
   },
   alternates: {
     canonical: BASE_URL,
