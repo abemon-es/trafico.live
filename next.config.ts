@@ -114,12 +114,6 @@ const nextConfig: NextConfig = {
         destination: "/espana",
         permanent: true,
       },
-      // Redirect /mapa to homepage (unified map now on /)
-      {
-        source: "/mapa",
-        destination: "/",
-        permanent: true,
-      },
       // 301: /blog, /insights → /noticias
       { source: "/blog", destination: "/noticias", permanent: true },
       { source: "/blog/:slug*", destination: "/noticias/:slug*", permanent: true },
