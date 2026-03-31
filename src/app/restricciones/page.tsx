@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   Ban,
@@ -18,33 +17,29 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 3600;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const metadata: Metadata = {
-  title: `Restricciones de Circulación en España ${CURRENT_YEAR}`,
-  description:
-    "Restricciones de circulación en España: vehículos pesados, Zonas de Bajas Emisiones (ZBE), túneles, restricciones estacionales y por meteorología adversa. Datos oficiales DGT.",
-  keywords: [
-    "restricciones circulación",
-    "restricciones camiones España",
-    "restricciones vehículos pesados",
-    "ZBE zonas bajas emisiones",
-    "restricciones tráfico festivos",
-    "restricciones transporte pesado DGT",
-    "restricciones domingos camiones",
-    "limitaciones circulación España",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: `Restricciones de Circulación en España ${CURRENT_YEAR}`,
     description:
-      "Todas las restricciones de circulación en España: camiones, ZBE, túneles y festivos. Datos oficiales DGT actualizados.",
-  },
-  alternates: {
-    canonical: "https://trafico.live/restricciones",
-  },
+      "Restricciones de circulación en España: vehículos pesados, Zonas de Bajas Emisiones (ZBE), túneles, restricciones estacionales y por meteorología adversa. Datos oficiales DGT.",
+    path: "/restricciones",
+    keywords: [
+      "restricciones circulación",
+      "restricciones camiones España",
+      "restricciones vehículos pesados",
+      "ZBE zonas bajas emisiones",
+      "restricciones tráfico festivos",
+      "restricciones transporte pesado DGT",
+      "restricciones domingos camiones",
+      "limitaciones circulación España",
+    ],
+  }),
 };
 
 const HEAVY_VEHICLE_RESTRICTIONS = {

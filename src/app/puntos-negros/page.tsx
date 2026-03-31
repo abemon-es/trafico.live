@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -18,32 +17,28 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 3600;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const metadata: Metadata = {
-  title: `Puntos Negros y Tramos de Concentración de Accidentes en España ${CURRENT_YEAR}`,
-  description:
-    "Consulta los puntos negros (TCAs) de las carreteras españolas: tramos con mayor concentración de accidentes, datos históricos por provincia y tipo de vía. Información oficial DGT.",
-  keywords: [
-    "puntos negros carreteras",
-    "tramos concentración accidentes",
-    "TCA carreteras España",
-    "accidentes carretera España",
-    "tramos peligrosos DGT",
-    "siniestralidad vial España",
-    "zonas riesgo carretera",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: `Puntos Negros y Tramos de Concentración de Accidentes en España ${CURRENT_YEAR}`,
     description:
-      "Mapa de puntos negros y tramos de concentración de accidentes en carreteras españolas. Datos históricos de siniestralidad por provincia y tipo de vía.",
-  },
-  alternates: {
-    canonical: "https://trafico.live/puntos-negros",
-  },
+      "Consulta los puntos negros (TCAs) de las carreteras españolas: tramos con mayor concentración de accidentes, datos históricos por provincia y tipo de vía. Información oficial DGT.",
+    path: "/puntos-negros",
+    keywords: [
+      "puntos negros carreteras",
+      "tramos concentración accidentes",
+      "TCA carreteras España",
+      "accidentes carretera España",
+      "tramos peligrosos DGT",
+      "siniestralidad vial España",
+      "zonas riesgo carretera",
+    ],
+  }),
 };
 
 const RISK_LEVEL_CONFIG: Record<

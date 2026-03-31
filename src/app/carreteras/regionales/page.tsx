@@ -1,25 +1,19 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "Carreteras Regionales y Comarcales | Tráfico y Radares",
   description:
     "Listado de carreteras regionales, comarcales y provinciales de España. Estado del tráfico, cámaras y radares en vías autonómicas.",
-  alternates: { canonical: `${BASE_URL}/carreteras/regionales` },
-  openGraph: {
-    title: "Carreteras Regionales y Comarcales de España",
-    description: "Carreteras autonómicas y provinciales con información de tráfico",
-  },
-};
+  path: "/carreteras/regionales",
+});
 
 const TYPE_LABELS: Record<string, string> = {
   COMARCAL: "Comarcal",

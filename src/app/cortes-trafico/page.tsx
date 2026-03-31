@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   Construction,
@@ -18,36 +17,31 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const metadata: Metadata = {
-  title: `Cortes de Tráfico y Obras en Carreteras España ${CURRENT_YEAR}`,
-  description:
-    "Cortes de tráfico en España hoy: cierres de carretera, obras viales, carriles cortados y desvíos activos. Información en tiempo real de incidencias DGT. Planifica tu ruta.",
-  keywords: [
-    "cortes de tráfico",
-    "cortes tráfico España",
-    "obras carretera España",
-    "cierres carretera hoy",
-    "carriles cortados España",
-    "desvíos carretera",
-    "obras autopista",
-    "cortes viales DGT",
-    "carretera cortada hoy",
-    "obras viales España",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: `Cortes de Tráfico y Obras en Carreteras España ${CURRENT_YEAR}`,
     description:
-      "Cortes de tráfico, obras y cierres de carretera en España. Datos en tiempo real de la DGT. Planifica tu ruta evitando los cierres activos.",
-    type: "website",
-  },
-  alternates: {
-    canonical: "https://trafico.live/cortes-trafico",
-  },
+      "Cortes de tráfico en España hoy: cierres de carretera, obras viales, carriles cortados y desvíos activos. Información en tiempo real de incidencias DGT. Planifica tu ruta.",
+    path: "/cortes-trafico",
+    keywords: [
+      "cortes de tráfico",
+      "cortes tráfico España",
+      "obras carretera España",
+      "cierres carretera hoy",
+      "carriles cortados España",
+      "desvíos carretera",
+      "obras autopista",
+      "cortes viales DGT",
+      "carretera cortada hoy",
+      "obras viales España",
+    ],
+  }),
 };
 
 const FAQ_ITEMS = [

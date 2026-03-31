@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -16,36 +15,31 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 120;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const metadata: Metadata = {
-  title: `Atascos y Retenciones en España Hoy ${CURRENT_YEAR}`,
-  description:
-    "Atascos en tiempo real en España: retenciones, congestiones y tráfico denso en carreteras y autopistas. Información actualizada al minuto de todas las retenciones hoy.",
-  keywords: [
-    "atascos España",
-    "retenciones hoy",
-    "atascos hoy España",
-    "retenciones tráfico",
-    "congestión tráfico España",
-    "tráfico denso carreteras",
-    "atascos autopistas España",
-    "retenciones tiempo real",
-    "atascos DGT",
-    "tráfico lento carreteras",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: `Atascos y Retenciones en España Hoy ${CURRENT_YEAR}`,
     description:
-      "Atascos en tiempo real en España. Retenciones, congestiones y tráfico lento en carreteras y autopistas. Actualizado al minuto.",
-    type: "website",
-  },
-  alternates: {
-    canonical: "https://trafico.live/atascos",
-  },
+      "Atascos en tiempo real en España: retenciones, congestiones y tráfico denso en carreteras y autopistas. Información actualizada al minuto de todas las retenciones hoy.",
+    path: "/atascos",
+    keywords: [
+      "atascos España",
+      "retenciones hoy",
+      "atascos hoy España",
+      "retenciones tráfico",
+      "congestión tráfico España",
+      "tráfico denso carreteras",
+      "atascos autopistas España",
+      "retenciones tiempo real",
+      "atascos DGT",
+      "tráfico lento carreteras",
+    ],
+  }),
 };
 
 const CITY_TRAFFIC_LINKS = [

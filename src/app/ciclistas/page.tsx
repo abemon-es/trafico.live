@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   Bike,
@@ -18,34 +17,28 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 3600;
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-
-export const metadata: Metadata = {
-  title:
-    "Seguridad Ciclista en España — Zonas de Riesgo y Datos de Siniestralidad",
-  description:
-    "Consulta las zonas de riesgo para ciclistas en carreteras españolas: tramos peligrosos, datos de accidentalidad y consejos de seguridad vial. Información basada en datos DGT.",
-  keywords: [
-    "seguridad ciclista",
-    "ciclistas carretera España",
-    "zonas riesgo ciclistas",
-    "accidentes ciclistas",
-    "carreteras seguras bicicleta",
-    "DGT ciclistas",
-    "normativa ciclistas",
-    "distancia seguridad ciclistas",
-  ],
-  openGraph: {
-    title: "Seguridad Ciclista en España — Zonas de Riesgo y Datos DGT",
+export const metadata = {
+  ...buildPageMetadata({
+    title:
+      "Seguridad Ciclista en España — Zonas de Riesgo y Datos de Siniestralidad",
     description:
-      "Zonas de riesgo para ciclistas, datos de siniestralidad y consejos de seguridad vial en carreteras españolas.",
-  },
-  alternates: {
-    canonical: `${BASE_URL}/ciclistas`,
-  },
+      "Consulta las zonas de riesgo para ciclistas en carreteras españolas: tramos peligrosos, datos de accidentalidad y consejos de seguridad vial. Información basada en datos DGT.",
+    path: "/ciclistas",
+    keywords: [
+      "seguridad ciclista",
+      "ciclistas carretera España",
+      "zonas riesgo ciclistas",
+      "accidentes ciclistas",
+      "carreteras seguras bicicleta",
+      "DGT ciclistas",
+      "normativa ciclistas",
+      "distancia seguridad ciclistas",
+    ],
+  }),
 };
 
 const SAFETY_TIPS = [

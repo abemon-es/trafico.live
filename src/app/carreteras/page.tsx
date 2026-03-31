@@ -1,23 +1,17 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Route, Car, Construction, MapPin } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 3600;
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "Carreteras de España | Tráfico en Tiempo Real",
   description:
     "Listado completo de carreteras españolas: autopistas, autovías, nacionales y regionales. Estado del tráfico, cámaras, radares y estadísticas.",
-  alternates: { canonical: `${BASE_URL}/carreteras` },
-  openGraph: {
-    title: "Carreteras de España",
-    description: "Todas las carreteras españolas con información de tráfico en tiempo real",
-  },
-};
+  path: "/carreteras",
+});
 
 const ROAD_TYPE_CONFIG = {
   AUTOPISTA: {

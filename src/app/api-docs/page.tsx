@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   Code2,
@@ -10,30 +9,26 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 const BASE_URL = "https://trafico.live";
 
-export const metadata: Metadata = {
-  title: "API de Tráfico España — Datos en Tiempo Real",
-  description:
-    "REST API para datos de tráfico en España: incidencias, cámaras DGT, radares, precios de combustible, puntos de carga eléctrica y zonas de bajas emisiones. 100 peticiones/día gratis.",
-  keywords: [
-    "API tráfico España",
-    "API DGT datos tiempo real",
-    "API incidencias tráfico",
-    "API precio combustible España",
-    "API cámaras tráfico",
-    "API radares España",
-    "datos tráfico REST API",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: "API de Tráfico España — Datos en Tiempo Real",
     description:
-      "Accede a datos de tráfico, combustible, cámaras y más vía REST API. Plan gratuito con 100 peticiones/día.",
-  },
-  alternates: {
-    canonical: `${BASE_URL}/api-docs`,
-  },
+      "REST API para datos de tráfico en España: incidencias, cámaras DGT, radares, precios de combustible, puntos de carga eléctrica y zonas de bajas emisiones. 100 peticiones/día gratis.",
+    path: "/api-docs",
+    keywords: [
+      "API tráfico España",
+      "API DGT datos tiempo real",
+      "API incidencias tráfico",
+      "API precio combustible España",
+      "API cámaras tráfico",
+      "API radares España",
+      "datos tráfico REST API",
+    ],
+  }),
 };
 
 // ---------------------------------------------------------------------------

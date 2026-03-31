@@ -1,25 +1,19 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Route, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "Autovías de España (A) | Tráfico, Cámaras y Radares",
   description:
     "Listado completo de autovías españolas (A). Estado del tráfico en tiempo real, cámaras de vigilancia, radares de velocidad y estadísticas de incidencias.",
-  alternates: { canonical: `${BASE_URL}/carreteras/autovias` },
-  openGraph: {
-    title: "Autovías de España (A)",
-    description: "Todas las autovías españolas con información de tráfico en tiempo real",
-  },
-};
+  path: "/carreteras/autovias",
+});
 
 export default async function AutoviasPage() {
 

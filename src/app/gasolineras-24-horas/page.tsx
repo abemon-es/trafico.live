@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   Clock,
@@ -12,32 +11,27 @@ import {
 } from "lucide-react";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 3600;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const metadata: Metadata = {
-  title: `Gasolineras Abiertas 24 Horas en España ${CURRENT_YEAR}`,
-  description:
-    "Todas las gasolineras abiertas 24 horas en España. Distribución por provincia, las 10 más baratas en gasóleo A y respuestas a las preguntas más frecuentes. Datos actualizados.",
-  keywords: [
-    "gasolineras 24 horas",
-    "gasolineras abiertas 24 horas España",
-    "gasolineras nocturnas España",
-    "gasolineras abiertas festivos",
-    "estaciones servicio 24h",
-    "gasolineras abiertas domingos",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: `Gasolineras Abiertas 24 Horas en España ${CURRENT_YEAR}`,
     description:
-      "Encuentra gasolineras abiertas 24 horas en España. Distribución por provincia y ranking de las más baratas.",
-    type: "website",
-  },
-  alternates: {
-    canonical: "https://trafico.live/gasolineras-24-horas",
-  },
+      "Todas las gasolineras abiertas 24 horas en España. Distribución por provincia, las 10 más baratas en gasóleo A y respuestas a las preguntas más frecuentes. Datos actualizados.",
+    path: "/gasolineras-24-horas",
+    keywords: [
+      "gasolineras 24 horas",
+      "gasolineras abiertas 24 horas España",
+      "gasolineras nocturnas España",
+      "gasolineras abiertas festivos",
+      "estaciones servicio 24h",
+      "gasolineras abiertas domingos",
+    ],
+  }),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

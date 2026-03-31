@@ -1,25 +1,19 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Car, Camera, Radar, AlertTriangle, MapPin } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "Autopistas de España (AP) | Tráfico, Cámaras y Radares",
   description:
     "Listado completo de autopistas españolas (AP). Estado del tráfico en tiempo real, cámaras de vigilancia, radares de velocidad y estadísticas de incidencias.",
-  alternates: { canonical: `${BASE_URL}/carreteras/autopistas` },
-  openGraph: {
-    title: "Autopistas de España (AP)",
-    description: "Todas las autopistas españolas con información de tráfico en tiempo real",
-  },
-};
+  path: "/carreteras/autopistas",
+});
 
 export default async function AutopistasPage() {
 

@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -18,33 +17,29 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const metadata: Metadata = {
-  title: `Operaciones Especiales de Tráfico ${CURRENT_YEAR} — DGT`,
-  description:
-    "Calendario completo de operaciones especiales de tráfico de la DGT para 2026: Semana Santa, Verano, Navidad, puentes y festivos. Horarios punta, previsión de desplazamientos y recomendaciones.",
-  keywords: [
-    "operación salida",
-    "operación retorno",
-    "tráfico semana santa",
-    "operaciones especiales DGT",
-    "operación verano tráfico",
-    "operación navidad DGT",
-    "tráfico puentes festivos",
-    "DGT operaciones 2026",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: `Operaciones Especiales de Tráfico ${CURRENT_YEAR} — DGT`,
     description:
-      "Calendario de operaciones especiales DGT 2026: previsión de desplazamientos, horarios punta y recomendaciones para circular con seguridad.",
-  },
-  alternates: {
-    canonical: "https://trafico.live/operaciones",
-  },
+      "Calendario completo de operaciones especiales de tráfico de la DGT para 2026: Semana Santa, Verano, Navidad, puentes y festivos. Horarios punta, previsión de desplazamientos y recomendaciones.",
+    path: "/operaciones",
+    keywords: [
+      "operación salida",
+      "operación retorno",
+      "tráfico semana santa",
+      "operaciones especiales DGT",
+      "operación verano tráfico",
+      "operación navidad DGT",
+      "tráfico puentes festivos",
+      "DGT operaciones 2026",
+    ],
+  }),
 };
 
 interface Operation {

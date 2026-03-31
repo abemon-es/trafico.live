@@ -1,25 +1,19 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { MapPin, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: "Carreteras Nacionales de España (N) | Tráfico y Radares",
   description:
     "Listado completo de carreteras nacionales españolas (N). Estado del tráfico, cámaras de vigilancia, radares de velocidad y estadísticas de incidencias.",
-  alternates: { canonical: `${BASE_URL}/carreteras/nacionales` },
-  openGraph: {
-    title: "Carreteras Nacionales de España (N)",
-    description: "Todas las carreteras nacionales españolas con información de tráfico",
-  },
-};
+  path: "/carreteras/nacionales",
+});
 
 export default async function NacionalesPage() {
 

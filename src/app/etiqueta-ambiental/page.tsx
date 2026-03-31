@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   Leaf,
@@ -17,36 +16,33 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const CURRENT_YEAR = new Date().getFullYear();
 
-export const metadata: Metadata = {
-  title: `Etiqueta Ambiental DGT: Consulta y Guía Completa ${CURRENT_YEAR}`,
-  description:
-    "Guía completa de la etiqueta ambiental DGT: distintivos 0, ECO, C, B y sin etiqueta. Cómo consultar tu etiqueta, qué circulación permite cada distintivo en ZBE y multas por incumplimiento.",
-  keywords: [
-    "etiqueta ambiental DGT",
-    "cómo saber etiqueta coche",
-    "distintivo ambiental DGT",
-    "etiqueta 0 emisiones",
-    "etiqueta ECO DGT",
-    "etiqueta C DGT",
-    "etiqueta B DGT",
-    "consultar etiqueta medioambiental",
-    "etiqueta ambiental vehículo",
-    "ZBE etiqueta ambiental",
-    "distintivo ambiental 2026",
-    "cómo obtener etiqueta ambiental",
-  ],
-  openGraph: {
+export const metadata = {
+  ...buildPageMetadata({
     title: `Etiqueta Ambiental DGT: Consulta y Guía Completa ${CURRENT_YEAR}`,
     description:
-      "Todo sobre la etiqueta ambiental DGT: qué distintivo corresponde a tu vehículo, cómo consultarlo y qué restricciones aplican en Zonas de Bajas Emisiones.",
-    type: "article",
-  },
-  alternates: {
-    canonical: "https://trafico.live/etiqueta-ambiental",
-  },
+      "Guía completa de la etiqueta ambiental DGT: distintivos 0, ECO, C, B y sin etiqueta. Cómo consultar tu etiqueta, qué circulación permite cada distintivo en ZBE y multas por incumplimiento.",
+    path: "/etiqueta-ambiental",
+    ogType: "article",
+    keywords: [
+      "etiqueta ambiental DGT",
+      "cómo saber etiqueta coche",
+      "distintivo ambiental DGT",
+      "etiqueta 0 emisiones",
+      "etiqueta ECO DGT",
+      "etiqueta C DGT",
+      "etiqueta B DGT",
+      "consultar etiqueta medioambiental",
+      "etiqueta ambiental vehículo",
+      "ZBE etiqueta ambiental",
+      "distintivo ambiental 2026",
+      "cómo obtener etiqueta ambiental",
+    ],
+  }),
 };
 
 // -------------------------------------------------------------------------
@@ -278,11 +274,11 @@ export default function EtiquetaAmbientalPage() {
     headline: `Etiqueta Ambiental DGT: Consulta y Guía Completa ${CURRENT_YEAR}`,
     description:
       "Guía completa sobre los distintivos ambientales DGT: tipos, vehículos, cómo consultarlos y restricciones ZBE.",
-    url: "https://trafico.live/etiqueta-ambiental",
+    url: `${BASE_URL}/etiqueta-ambiental`,
     publisher: {
       "@type": "Organization",
       name: "trafico.live",
-      url: "https://trafico.live",
+      url: BASE_URL,
     },
     dateModified: new Date().toISOString(),
   };
