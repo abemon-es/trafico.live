@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import prisma from "@/lib/db";
 import { DashboardClient } from "./DashboardClient";
 
@@ -8,6 +9,26 @@ export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
+  title: "Tráfico en Tiempo Real en España — Incidencias, Cámaras, Radares | trafico.live",
+  description:
+    "Monitorización del tráfico español con datos oficiales de la DGT, AEMET y MINETUR. Incidencias activas, cámaras de tráfico, radares, precios de combustible, estaciones de carga EV y balizas V16 en un solo mapa.",
+  keywords: [
+    "tráfico España",
+    "incidencias tráfico",
+    "cámaras DGT",
+    "radares España",
+    "precio gasolina",
+    "mapa tráfico",
+  ],
+  openGraph: {
+    title: "Tráfico en Tiempo Real en España | trafico.live",
+    description:
+      "Datos oficiales de la DGT en tiempo real: incidencias, cámaras, radares, combustible y más.",
+    url: BASE_URL,
+    siteName: "trafico.live",
+    locale: "es_ES",
+    type: "website",
+  },
   alternates: {
     canonical: BASE_URL,
   },
@@ -46,24 +67,46 @@ export default async function Dashboard() {
             combustible y balizas V16 en un solo mapa.
           </p>
           <div className="flex flex-wrap gap-3 text-sm">
-            <span className="bg-red-50 dark:bg-red-900/20 text-signal-red px-3 py-1 rounded-full font-medium">
+            <Link href="/incidencias" className="bg-red-50 dark:bg-red-900/20 text-signal-red px-3 py-1 rounded-full font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
               <span className="font-data">{stats.incidentCount.toLocaleString("es-ES")}</span> incidencias activas
-            </span>
-            <span className="bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 px-3 py-1 rounded-full font-medium">
+            </Link>
+            <Link href="/camaras" className="bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 px-3 py-1 rounded-full font-medium hover:bg-tl-100 dark:hover:bg-tl-900/40 transition-colors">
               <span className="font-data">{stats.cameraCount.toLocaleString("es-ES")}</span> cámaras de tráfico
-            </span>
-            <span className="bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300 px-3 py-1 rounded-full font-medium">
+            </Link>
+            <Link href="/radares" className="bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300 px-3 py-1 rounded-full font-medium hover:bg-tl-amber-100 dark:hover:bg-tl-amber-900/40 transition-colors">
               <span className="font-data">{stats.radarCount.toLocaleString("es-ES")}</span> radares
-            </span>
-            <span className="bg-green-50 dark:bg-green-900/20 text-signal-green px-3 py-1 rounded-full font-medium">
+            </Link>
+            <Link href="/gasolineras" className="bg-green-50 dark:bg-green-900/20 text-signal-green px-3 py-1 rounded-full font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">
               <span className="font-data">{stats.stationCount.toLocaleString("es-ES")}</span> gasolineras
-            </span>
+            </Link>
             {stats.v16Count > 0 && (
-              <span className="bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300 px-3 py-1 rounded-full font-medium">
+              <Link href="/mapa" className="bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300 px-3 py-1 rounded-full font-medium hover:bg-tl-amber-100 dark:hover:bg-tl-amber-900/40 transition-colors">
                 <span className="font-data">{stats.v16Count.toLocaleString("es-ES")}</span> balizas V16 activas
-              </span>
+              </Link>
             )}
           </div>
+
+          {/* SSR quick-nav for crawlers and users */}
+          <nav className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-sm" aria-label="Secciones principales">
+            <Link href="/mapa" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
+              <span aria-hidden="true">🗺️</span> Mapa en vivo
+            </Link>
+            <Link href="/carreteras" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
+              <span aria-hidden="true">🛣️</span> Carreteras
+            </Link>
+            <Link href="/precio-gasolina-hoy" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
+              <span aria-hidden="true">⛽</span> Precio gasolina
+            </Link>
+            <Link href="/carga-ev" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
+              <span aria-hidden="true">🔌</span> Carga EV
+            </Link>
+            <Link href="/noticias" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
+              <span aria-hidden="true">📰</span> Noticias
+            </Link>
+            <Link href="/espana" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
+              <span aria-hidden="true">📍</span> Por provincia
+            </Link>
+          </nav>
         </div>
       </section>
 
