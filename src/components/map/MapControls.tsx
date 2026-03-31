@@ -469,6 +469,7 @@ export function MapControls({
               onClick={onTimelineToggle}
               className={`p-2 rounded-lg transition-colors ${timelineActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
               title={timelineActive ? "Desactivar línea temporal" : "Línea temporal 24h"}
+              aria-label={timelineActive ? "Desactivar línea temporal" : "Línea temporal 24h"}
             >
               <History className="w-5 h-5" />
             </button>
