@@ -32,12 +32,12 @@ function todaySlug(): string {
 async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
   let created = 0;
 
-  // Get average diesel price today vs yesterday
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get average diesel price today vs yesterday (UTC midnight to match FuelPriceDailyStats)
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
   const [todayAvg, yesterdayStats] = await Promise.all([
     prisma.gasStation.aggregate({
@@ -59,7 +59,7 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
     const pctChange = yesterdayPrice
       ? ((Number(avgDiesel) - yesterdayPrice) / yesterdayPrice) * 100
       : null;
-    const isSignificant = pctChange === null || Math.abs(pctChange) >= 2;
+    const isSignificant = pctChange === null || Math.abs(pctChange) >= 0.5;
 
     if (isSignificant) {
       const slug = `precio-diesel-${todaySlug()}`;

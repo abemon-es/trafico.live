@@ -44,7 +44,7 @@ export async function GET(_request: NextRequest) {
         try {
           const [v16, incidents] = await Promise.all([
             getFromCache<CacheSnapshot>("api:v16:active"),
-            getFromCache<CacheSnapshot>("api:incidents:"),
+            getFromCache<CacheSnapshot>("api:incidents"),
           ]);
 
           const v16Hash = hashSnapshot(v16);

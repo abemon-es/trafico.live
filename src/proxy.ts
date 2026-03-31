@@ -9,7 +9,7 @@ const LEGACY_DOMAINS = [
   "trafico.abemon.es",
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const hostname = request.headers.get("host")?.replace(/:\d+$/, "") || "";
   const pathname = request.nextUrl.pathname;
   const search = request.nextUrl.search;

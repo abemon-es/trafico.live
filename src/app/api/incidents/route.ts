@@ -264,6 +264,8 @@ export async function GET(request: NextRequest) {
         severity: i.severity,
         description: i.description,
         source: i.source,
+        startedAt: i.startedAt?.toISOString(),
+        direction: i.direction,
       })),
     };
 

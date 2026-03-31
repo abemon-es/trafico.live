@@ -331,10 +331,17 @@ export async function run(prisma: PrismaClient) {
       const enriched = await prisma.$executeRaw`
         UPDATE "Radar" r
         SET "speedLimit" = sl."speedLimit"
-        FROM "SpeedLimit" sl
+        FROM (
+          SELECT DISTINCT ON (sl2."roadNumber", sl2."kmStart")
+            sl2."roadNumber", sl2."kmStart", sl2."kmEnd", sl2."speedLimit"
+          FROM "SpeedLimit" sl2
+          WHERE sl2."vehicleType" IS NULL
+          ORDER BY sl2."roadNumber", sl2."kmStart", sl2."speedLimit" DESC
+        ) sl
         WHERE r."speedLimit" IS NULL
           AND r."isActive" = true
-          AND LOWER(sl."roadNumber") = LOWER(r."roadNumber")
+          AND r."kmPoint" > 0
+          AND REPLACE(LOWER(sl."roadNumber"), '-', '') = REPLACE(LOWER(r."roadNumber"), '-', '')
           AND r."kmPoint" >= sl."kmStart"
           AND r."kmPoint" <= sl."kmEnd"
       `;

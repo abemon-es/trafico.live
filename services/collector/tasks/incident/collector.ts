@@ -39,10 +39,11 @@ type IncidentData = SCTIncident | EuskadiIncident | DGTIncident | MadridIncident
 function mapDirection(dir?: string): Direction | undefined {
   if (!dir) return undefined;
   const d = dir.toLowerCase();
-  if (d.includes("ascend") || d.includes("creciente")) return "ASCENDING";
-  if (d.includes("descend") || d.includes("decreciente")) return "DESCENDING";
+  if (d.includes("ascend") || d.includes("creciente") || d === "positive") return "ASCENDING";
+  if (d.includes("descend") || d.includes("decreciente") || d === "negative") return "DESCENDING";
   if (d.includes("both") || d.includes("ambos")) return "BOTH";
-  return "UNKNOWN";
+  // Don't return UNKNOWN for carriageway descriptions (rightHandSide, etc.)
+  return undefined;
 }
 
 interface NormalizedIncident {
@@ -303,6 +304,7 @@ export async function run(prisma: PrismaClient) {
             roadNumber: incident.roadNumber,
             roadType: incident.roadType,
             kmPoint: incident.kmPoint,
+            direction: incident.direction,
             description: incident.description,
             severity: incident.severity,
             // Update cause categorization if available
