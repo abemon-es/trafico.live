@@ -41,10 +41,6 @@ export default function AvisoLegalPage() {
                 Madrid, Tomo 45325, Folio 1, Sección 8, Hoja M-797340
               </li>
               <li>
-                <strong>Administrador único:</strong> Dirk Manuel Martens
-                Jiménez
-              </li>
-              <li>
                 <strong>Dominio:</strong> trafico.live
               </li>
               <li>
