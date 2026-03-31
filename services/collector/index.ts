@@ -15,7 +15,7 @@ const VALID_TASKS = [
   // Real-time (every 2-5 min)
   "v16", "incident", "panel", "detector", "intensity",
   // Frequent (6h-daily)
-  "weather", "camera", "radar", "charger", "gas-station", "maritime-fuel",
+  "weather", "maritime-forecast", "camera", "radar", "charger", "gas-station", "maritime-fuel",
   // Infrequent (weekly)
   "speedlimit", "risk-zones", "zbe",
   // Content generation

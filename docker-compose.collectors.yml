@@ -72,6 +72,13 @@ services:
     # Coolify cron: 0 */6 * * *
     # Was */30 — AEMET only updates ~2x/day, saves 46 API calls/day
 
+  collector-maritime-forecast:
+    <<: *collector-base
+    environment:
+      TASK: maritime-forecast
+    # Coolify cron: 0 */6 * * *
+    # AEMET coastal (8 zones) + high seas (6 areas) — wave height, wind, sea state, visibility
+
   # ── Content generation (daily fallback — insights are now triggered
   #    automatically after data collectors via dispatcher post-ingestion hooks) ──
   collector-insights:

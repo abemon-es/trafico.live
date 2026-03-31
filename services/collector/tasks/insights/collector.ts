@@ -389,6 +389,7 @@ import {
   generateEnhancedWeatherAlert,
   generateEnhancedIncidentSpike,
   generateMaritimeReport,
+  generateMaritimeFuelRanking,
 } from "./generators";
 
 // ---------------------------------------------------------------------------
@@ -418,6 +419,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
     generateMonthlyFuelReport(prisma),
     // Maritime daily report — fuel prices + coastal alerts
     generateMaritimeReport(prisma),
+    // Maritime weekly fuel price ranking — coast regions + station top 10
+    generateMaritimeFuelRanking(prisma),
   ]);
 
   let total = 0;

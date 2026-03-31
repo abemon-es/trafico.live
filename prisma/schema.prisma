@@ -1128,6 +1128,45 @@ model MaritimePriceHistory {
   @@index([recordedAt])
 }
 
+// ============================================
+// MARITIME WEATHER FORECASTS (AEMET)
+// ============================================
+
+enum MaritimeZoneType {
+  COASTAL   // Costa (8 zones: Galicia, Cantábrico, Catalano-balear, etc.)
+  HIGH_SEAS // Alta mar (6 areas: Atlántico norte/sur, Mediterráneo norte/sur, etc.)
+}
+
+model MaritimeWeatherForecast {
+  id       String          @id @default(cuid())
+  zoneId   String          // AEMET zone/area numeric ID as string
+  zoneName String          // Human-readable name (e.g. "Galicia", "Cantábrico occidental")
+  zoneType MaritimeZoneType
+
+  issuedAt   DateTime       @db.Timestamptz // When AEMET issued this forecast
+  validFrom  DateTime?      @db.Timestamptz
+  validUntil DateTime?      @db.Timestamptz
+  fetchedAt  DateTime       @db.Timestamptz
+
+  // Extracted metrics (nullable — not always parseable from prose)
+  waveHeightMin Decimal? @db.Decimal(4, 1) // metres
+  waveHeightMax Decimal? @db.Decimal(4, 1) // metres
+  windForceMin  Int?                        // Beaufort scale
+  windForceMax  Int?                        // Beaufort scale
+  windSpeedKmh  Int?                        // km/h (when given as speed)
+  seaState      String?                     // "marejadilla", "marejada", "fuerte marejada", etc.
+  visibility    String?                     // "buena", "regular", "mala"
+
+  // Full forecast text stored as JSON { "text": "...", "periods": [...] }
+  forecast Json
+
+  @@unique([zoneId, issuedAt])
+  @@index([zoneId])
+  @@index([zoneType])
+  @@index([issuedAt])
+  @@index([fetchedAt])
+}
+
 // Daily aggregated statistics for fast queries
 model FuelPriceDailyStats {
   id    String   @id @default(cuid())
@@ -1268,4 +1307,63 @@ model ArticleTag {
 
   @@id([articleId, tagId])
   @@index([tagId])
+}
+
+// ============================================
+// MARITIME EMERGENCIES — SASEMAR Historical
+// ============================================
+//
+// Source: SASEMAR Open Data Hub (opendata-sasemar.hub.arcgis.com)
+// Populated by: services/collector/tasks/sasemar/collector.ts (one-shot / manual)
+// Coverage: 2019–2024 (years published by SASEMAR)
+
+enum MaritimeEmergencyType {
+  RESCUE      // Salvamento / búsqueda y rescate
+  POLLUTION   // Contaminación marina
+  MEDICAL     // Evacuación médica / asistencia sanitaria
+  ASSISTANCE  // Auxilio / remolque / asistencia técnica
+  OTHER       // Otros servicios
+}
+
+model MaritimeEmergency {
+  id       String @id @default(cuid())
+  sourceId String @unique // External ID from SASEMAR ArcGIS (OBJECTID or constructed key)
+
+  // Temporal
+  year        Int
+  occurredAt  DateTime? @db.Timestamptz // Full datetime when available
+  reportedAt  DateTime? @db.Timestamptz // When SASEMAR received the call
+
+  // Classification
+  type        MaritimeEmergencyType @default(OTHER)
+  subtype     String? // Raw category string from source (e.g. "Persona caída al mar")
+  severity    String? // "grave", "leve", "sin víctimas", etc.
+
+  // Location
+  latitude    Decimal?  @db.Decimal(9, 6)
+  longitude   Decimal?  @db.Decimal(9, 6)
+  zone        String?   // SASEMAR maritime zone (e.g. "Estrecho", "Atlántico Norte")
+  description String?   @db.Text
+
+  // Nearest coastal province (inferred from lat/lng bounding box)
+  province     String? // INE 2-digit code
+  provinceName String?
+
+  // Vessel / rescue data (where available)
+  vesselType  String? // "velero", "motoembarcación", "buque mercante", etc.
+  personsInvolved Int?
+  personsSaved    Int?
+  personsMissing  Int?
+  personsDeceased Int?
+
+  // Ingestion metadata
+  importedAt  DateTime @default(now()) @db.Timestamptz
+  dataSource  String   @default("sasemar-arcgis") // "sasemar-arcgis" or "sasemar-local-file"
+
+  @@index([year])
+  @@index([type])
+  @@index([province])
+  @@index([occurredAt])
+  @@index([zone])
+  @@index([latitude, longitude])
 }
