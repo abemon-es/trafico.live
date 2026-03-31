@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { Loader2 } from "lucide-react";
+import { Loader2, Zap, Fuel, ShieldCheck, CircleDollarSign } from "lucide-react";
 import CargaEVContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -39,6 +41,13 @@ export default function CargaEVPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <StructuredData data={generateDatasetSchema({
+          name: "Puntos de carga para vehículos eléctricos en España",
+          description: "Directorio de puntos de carga para vehículos eléctricos en España. Incluye potencia, tipos de conectores y operadores.",
+          url: `${BASE_URL}/carga-ev`,
+          keywords: ["carga", "EV", "electrolineras", "puntos de carga"],
+          spatialCoverage: "España",
+        })} />
         <Breadcrumbs
           items={[
             { name: "Inicio", href: "/" },
@@ -48,6 +57,12 @@ export default function CargaEVPage() {
         <Suspense fallback={<LoadingFallback />}>
           <CargaEVContent />
         </Suspense>
+        <RelatedLinks links={[
+          { title: "Electrolineras en España", description: "Directorio completo de puntos de carga por provincia", href: "/electrolineras", icon: <Zap className="w-5 h-5" /> },
+          { title: "Gasolineras más baratas", description: "Precios de carburante en tiempo real en toda España", href: "/gasolineras", icon: <Fuel className="w-5 h-5" /> },
+          { title: "Zonas de Bajas Emisiones", description: "ZBE activas y restricciones de acceso por ciudad", href: "/zbe", icon: <ShieldCheck className="w-5 h-5" /> },
+          { title: "¿Cuánto cuesta cargar un coche eléctrico?", description: "Comparativa de tarifas y coste por kWh en España", href: "/cuanto-cuesta-cargar", icon: <CircleDollarSign className="w-5 h-5" /> },
+        ]} />
       </main>
     </div>
   );

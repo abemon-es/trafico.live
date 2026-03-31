@@ -3,6 +3,7 @@ import { Activity, BarChart3, Route, AlertTriangle } from "lucide-react";
 import EstacionesAforoContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -23,6 +24,13 @@ export const metadata: Metadata = {
 export default function EstacionesAforoPage() {
   return (
     <>
+      <StructuredData data={generateDatasetSchema({
+        name: "Estaciones de aforo de tráfico en España",
+        description: "Mapa interactivo con las estaciones de aforo de la Red de Carreteras del Estado. Datos de Intensidad Media Diaria (IMD) por estación, carretera y provincia.",
+        url: `${BASE_URL}/estaciones-aforo`,
+        keywords: ["estaciones aforo", "IMD", "intensidad media diaria", "conteo vehicular"],
+        spatialCoverage: "España",
+      })} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <Breadcrumbs items={[
           { name: "Inicio", href: "/" },

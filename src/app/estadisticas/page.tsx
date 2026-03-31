@@ -37,6 +37,13 @@ export default function EstadisticasPage({
 }) {
   return (
     <>
+      <StructuredData data={generateDatasetSchema({
+        name: "Estadísticas de tráfico en España",
+        description: "Estadísticas históricas de siniestralidad vial en España. Datos de accidentes, víctimas y tendencias desde 2015 hasta la actualidad. Fuente: DGT en Cifras.",
+        url: `${BASE_URL}/estadisticas`,
+        keywords: ["estadísticas", "accidentes", "siniestralidad", "V16"],
+        spatialCoverage: "España",
+      })} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <Breadcrumbs items={[
           { name: "Inicio", href: "/" },

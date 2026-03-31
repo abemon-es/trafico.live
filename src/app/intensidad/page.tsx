@@ -3,6 +3,7 @@ import { GaugeCircle, MapPin, BarChart3, Route } from "lucide-react";
 import IntensidadContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -23,6 +24,13 @@ export const metadata: Metadata = {
 export default function IntensidadPage() {
   return (
     <>
+      <StructuredData data={generateDatasetSchema({
+        name: "Intensidad media diaria (IMD) de tráfico",
+        description: "Intensidad Media Diaria (IMD) del tráfico en la Red de Carreteras del Estado. Datos por provincia, tipo de carretera y evolución anual. Fuente: Ministerio de Transportes.",
+        url: `${BASE_URL}/intensidad`,
+        keywords: ["IMD", "intensidad", "tráfico", "carreteras"],
+        spatialCoverage: "España",
+      })} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <Breadcrumbs items={[
           { name: "Inicio", href: "/" },

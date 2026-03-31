@@ -423,6 +423,13 @@ export default async function CamarasCityPage({ params }: Props) {
             </>
           )}
         </div>
+
+        <RelatedLinks links={[
+          { title: "Todas las cámaras DGT", description: "Directorio de cámaras de tráfico por ciudad", href: "/camaras", icon: <Camera className="w-5 h-5" /> },
+          { title: "Radares de la DGT", description: "Ubicación de radares fijos y tramos en España", href: "/radares", icon: <Radio className="w-5 h-5" /> },
+          { title: "Tráfico en " + cityData.name, description: "Incidencias activas en " + cityData.name + " en tiempo real", href: `/trafico/${city}`, icon: <AlertTriangle className="w-5 h-5" /> },
+          { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
+        ]} />
       </main>
     </div>
   );
