@@ -4,6 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useReducedMotion, motion, AnimatePresence } from "motion/react";
 import type { MegaMenuPanel as PanelData } from "./NavData";
+import { TrafficStatsWidget, FuelPriceWidget, ProfessionalStatsWidget } from "./MegaMenuWidgets";
+
+const PANEL_WIDGETS: Record<string, React.ComponentType> = {
+  trafico: TrafficStatsWidget,
+  combustible: FuelPriceWidget,
+  profesional: ProfessionalStatsWidget,
+};
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -155,6 +162,12 @@ export function MegaMenuPanel({
                 </div>
               </div>
             )}
+
+            {/* Live contextual widget */}
+            {(() => {
+              const Widget = PANEL_WIDGETS[panel.id];
+              return Widget ? <Widget /> : null;
+            })()}
           </div>
         </motion.div>
       )}
