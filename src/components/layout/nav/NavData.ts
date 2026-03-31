@@ -18,6 +18,7 @@ import {
   BookOpen,
   BarChart3,
   FileText,
+  Newspaper,
   Bike,
   Clock,
   Ban,
@@ -202,8 +203,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
       {
         title: "Contenido",
         items: [
-          { name: "Blog", href: "/blog", icon: BookOpen, description: "Guías y artículos" },
-          { name: "Insights", href: "/insights", icon: BarChart3, description: "Análisis de datos" },
+          { name: "Noticias", href: "/noticias", icon: BookOpen, description: "Informes, guías y alertas" },
           { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
           { name: "Ciclistas", href: "/ciclistas", icon: Bike, description: "Info para ciclistas" },
         ],
@@ -265,8 +265,7 @@ export const footerColumns = [
     links: [
       { name: "Comunidades", href: "/comunidad-autonoma" },
       { name: "Provincias", href: "/espana" },
-      { name: "Blog", href: "/blog" },
-      { name: "Insights", href: "/insights" },
+      { name: "Noticias", href: "/noticias" },
       { name: "Informe diario", href: "/informe-diario" },
     ],
   },

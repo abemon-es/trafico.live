@@ -10,7 +10,7 @@
  * Each detector creates Insight records if conditions are met.
  */
 
-import { PrismaClient, InsightCategory } from "@prisma/client";
+import { PrismaClient, ArticleCategory } from "@prisma/client";
 
 function slugify(text: string): string {
   return text
@@ -63,20 +63,20 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
 
     if (isSignificant) {
       const slug = `precio-diesel-${todaySlug()}`;
-      const existing = await prisma.insight.findUnique({ where: { slug } });
+      const existing = await prisma.article.findUnique({ where: { slug } });
 
       if (!existing) {
         const changeText = pctChange !== null
           ? `, un ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% respecto a ayer (${yesterdayPrice!.toFixed(3)} €/L)`
           : "";
 
-        await prisma.insight.create({
+        await prisma.article.create({
           data: {
             slug,
             title: `Precio medio del diésel hoy: ${price} €/L`,
             summary: `La media nacional del precio del gasóleo A se sitúa en ${price} €/L${changeText}. Datos del MITERD.`,
             body: `## Precio del diésel hoy\n\nEl precio medio nacional del **Gasóleo A** se sitúa hoy en **${price} €/L**${changeText} según los datos oficiales del Ministerio para la Transición Ecológica (MITERD).\n\nConsulta las [gasolineras más baratas](/gasolineras/baratas) para encontrar el mejor precio cerca de ti.`,
-            category: "PRICE_ALERT" as InsightCategory,
+            category: "PRICE_ALERT" as ArticleCategory,
             source: "MITERD",
             sourceUrl: "https://geoportalgasolineras.es",
           },
@@ -120,16 +120,16 @@ async function detectIncidentSpikes(prisma: PrismaClient): Promise<number> {
 
   if (isSpike) {
     const slug = `pico-incidencias-${todaySlug()}`;
-    const existing = await prisma.insight.findUnique({ where: { slug } });
+    const existing = await prisma.article.findUnique({ where: { slug } });
 
     if (!existing) {
-      await prisma.insight.create({
+      await prisma.article.create({
         data: {
           slug,
           title: `Pico de incidencias: ${todayCount} activas (media 7d: ${Math.round(weekAvg)})`,
           summary: `Se registran ${todayCount} incidencias de tráfico activas, un ${Math.round(((todayCount - weekAvg) / weekAvg) * 100)}% por encima de la media semanal.`,
           body: `## Pico de incidencias de tráfico\n\nHoy se registran **${todayCount} incidencias activas** en las carreteras españolas, significativamente por encima de la media de los últimos 7 días (**${Math.round(weekAvg)} incidencias/día**).\n\nConsulta el [mapa de incidencias](/incidencias) para ver el estado actual del tráfico.`,
-          category: "INCIDENT_DIGEST" as InsightCategory,
+          category: "INCIDENT_DIGEST" as ArticleCategory,
           source: "DGT",
         },
       });
@@ -155,7 +155,7 @@ async function aggregateWeatherAlerts(prisma: PrismaClient): Promise<number> {
 
   if (activeAlerts.length >= 3) {
     const slug = `alertas-meteo-${todaySlug()}`;
-    const existing = await prisma.insight.findUnique({ where: { slug } });
+    const existing = await prisma.article.findUnique({ where: { slug } });
 
     if (!existing) {
       const provinces = [...new Set(activeAlerts.map((a) => a.province).filter(Boolean))];
@@ -171,13 +171,13 @@ async function aggregateWeatherAlerts(prisma: PrismaClient): Promise<number> {
         .map(([s, c]) => `${c} ${s.toLowerCase()}`)
         .join(", ");
 
-      await prisma.insight.create({
+      await prisma.article.create({
         data: {
           slug,
           title: `${activeAlerts.length} alertas meteorológicas activas`,
           summary: `AEMET mantiene ${activeAlerts.length} avisos activos (${severityText}) que afectan a ${provinces.length} provincias.`,
           body: `## Alertas meteorológicas activas\n\nLa AEMET mantiene **${activeAlerts.length} avisos meteorológicos activos** que pueden afectar a la circulación.\n\n**Provincias afectadas:** ${provinces.join(", ") || "varias"}\n\n**Niveles:** ${severityText}\n\nConsulta las [alertas meteorológicas](/alertas-meteo) para más detalle y recomendaciones de conducción.`,
-          category: "WEATHER_ALERT" as InsightCategory,
+          category: "WEATHER_ALERT" as ArticleCategory,
           source: "AEMET",
           sourceUrl: "https://www.aemet.es",
         },
@@ -195,7 +195,7 @@ async function aggregateWeatherAlerts(prisma: PrismaClient): Promise<number> {
 
 async function generateDailyReport(prisma: PrismaClient): Promise<number> {
   const slug = `informe-diario-${todaySlug()}`;
-  const existing = await prisma.insight.findUnique({ where: { slug } });
+  const existing = await prisma.article.findUnique({ where: { slug } });
 
   if (existing) return 0;
 
@@ -239,13 +239,13 @@ async function generateDailyReport(prisma: PrismaClient): Promise<number> {
     year: "numeric",
   });
 
-  await prisma.insight.create({
+  await prisma.article.create({
     data: {
       slug,
       title: `Informe de tráfico — ${dateStr}`,
       summary: `${activeIncidents} incidencias activas, ${todayIncidents} nuevas hoy. Diésel: ${dieselPrice} €/L. Gasolina 95: ${gas95Price} €/L. ${activeAlerts} alertas meteorológicas.`,
       body: `## Informe de tráfico — ${dateStr}\n\n### Incidencias\n- **${activeIncidents}** incidencias activas en este momento\n- **${todayIncidents}** incidencias nuevas registradas hoy\n\n### Precios de combustible\n- **Gasóleo A:** ${dieselPrice} €/L (media nacional)\n- **Gasolina 95:** ${gas95Price} €/L (media nacional)\n\n### Meteorología\n- **${activeAlerts}** alertas meteorológicas activas\n\n---\n\n*Datos: DGT, MITERD, AEMET. Actualizado a las ${now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}.*`,
-      category: "DAILY_REPORT" as InsightCategory,
+      category: "DAILY_REPORT" as ArticleCategory,
       source: "trafico.live",
     },
   });

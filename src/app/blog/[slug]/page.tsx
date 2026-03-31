@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-/** @deprecated Use /noticias/[slug] instead */
 export default async function ArticlePage({
   params,
 }: {

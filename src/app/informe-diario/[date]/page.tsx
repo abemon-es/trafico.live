@@ -52,7 +52,7 @@ export default async function InformeDiarioPage({ params }: Props) {
 
   // Find the daily report for this date
   const slug = `informe-diario-${date}`;
-  const report = await prisma.insight.findUnique({ where: { slug } });
+  const report = await prisma.article.findUnique({ where: { slug } });
 
   if (!report) {
     notFound();
@@ -68,7 +68,7 @@ export default async function InformeDiarioPage({ params }: Props) {
 
   // Navigation: prev/next day reports
   const [prev, next] = await Promise.all([
-    prisma.insight.findFirst({
+    prisma.article.findFirst({
       where: {
         category: "DAILY_REPORT",
         publishedAt: { lt: report.publishedAt },
@@ -76,7 +76,7 @@ export default async function InformeDiarioPage({ params }: Props) {
       orderBy: { publishedAt: "desc" },
       select: { slug: true, publishedAt: true },
     }),
-    prisma.insight.findFirst({
+    prisma.article.findFirst({
       where: {
         category: "DAILY_REPORT",
         publishedAt: { gt: report.publishedAt },
