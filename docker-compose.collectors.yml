@@ -1,0 +1,93 @@
+# Unified collector services for Coolify deployment
+#
+# All collectors share one Docker image (services/collector/Dockerfile)
+# differentiated only by the TASK env var.
+#
+# Build context must be the repo root (not services/collector/) because
+# the Dockerfile copies prisma/ from root.
+#
+# Coolify setup:
+#   1. Build the image ONCE → tag as trafico-collector:latest
+#   2. Create one Coolify "scheduled task" per service below
+#   3. Each task uses the same image + its TASK env + its cron schedule
+#
+# To build locally:
+#   docker build -f services/collector/Dockerfile -t trafico-collector .
+#
+# To test a task locally:
+#   docker run --rm --env-file .env -e TASK=incident trafico-collector
+
+x-collector: &collector-base
+  build:
+    context: .
+    dockerfile: services/collector/Dockerfile
+  restart: "no"
+  env_file: .env
+  environment:
+    TZ: Europe/Madrid
+    NODE_ENV: production
+
+services:
+  # ── Real-time collectors (every 5 min) ────────────────────────────
+  collector-incident:
+    <<: *collector-base
+    environment:
+      TASK: incident
+    # Coolify cron: */5 * * * *
+
+  collector-v16:
+    <<: *collector-base
+    environment:
+      TASK: v16
+    # Coolify cron: */5 * * * *
+
+  collector-panel:
+    <<: *collector-base
+    environment:
+      TASK: panel
+    # Coolify cron: */5 * * * *
+
+  # ── Frequent collectors ───────────────────────────────────────────
+  collector-weather:
+    <<: *collector-base
+    environment:
+      TASK: weather
+    # Coolify cron: */30 * * * *
+
+  collector-insights:
+    <<: *collector-base
+    environment:
+      TASK: insights
+    # Coolify cron: 15 7,14,21 * * *
+
+  # ── Daily collectors ──────────────────────────────────────────────
+  collector-gas-station:
+    <<: *collector-base
+    environment:
+      TASK: gas-station
+    # Coolify cron: 0 6,13,20 * * *
+
+  collector-camera:
+    <<: *collector-base
+    environment:
+      TASK: camera
+    # Coolify cron: 0 4 * * *
+
+  collector-radar:
+    <<: *collector-base
+    environment:
+      TASK: radar
+    # Coolify cron: 0 3 * * *
+
+  collector-charger:
+    <<: *collector-base
+    environment:
+      TASK: charger
+    # Coolify cron: 0 6 * * *
+
+  # ── Infrequent collectors ─────────────────────────────────────────
+  collector-speedlimit:
+    <<: *collector-base
+    environment:
+      TASK: speedlimit
+    # Coolify cron: 0 3 * * 0
