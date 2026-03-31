@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { CookieConsent } from "@/components/legal/CookieConsent";
-import { StructuredData, generateOrganizationSchema, generateWebSiteSchema } from "@/components/seo/StructuredData";
+import { StructuredData, generateOrganizationSchema, generateWebSiteSchema, generateSiteNavigationSchema } from "@/components/seo/StructuredData";
 import "./globals.css";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -118,6 +118,28 @@ const webSiteSchema = generateWebSiteSchema({
   searchUrl: `${BASE_URL}/explorar?q={search_term_string}`,
 });
 
+const siteNavSchema = generateSiteNavigationSchema([
+  { name: "Mapa en vivo", url: `${BASE_URL}/` },
+  { name: "Incidencias", url: `${BASE_URL}/incidencias` },
+  { name: "Cámaras DGT", url: `${BASE_URL}/camaras` },
+  { name: "Atascos", url: `${BASE_URL}/atascos` },
+  { name: "Alertas meteo", url: `${BASE_URL}/alertas-meteo` },
+  { name: "Autopistas", url: `${BASE_URL}/carreteras/autopistas` },
+  { name: "Autovías", url: `${BASE_URL}/carreteras/autovias` },
+  { name: "Radares", url: `${BASE_URL}/radares` },
+  { name: "Estadísticas", url: `${BASE_URL}/estadisticas` },
+  { name: "Precio gasolina hoy", url: `${BASE_URL}/precio-gasolina-hoy` },
+  { name: "Precio diésel hoy", url: `${BASE_URL}/precio-diesel-hoy` },
+  { name: "Gasolineras baratas", url: `${BASE_URL}/gasolineras/baratas` },
+  { name: "Cargadores EV", url: `${BASE_URL}/carga-ev` },
+  { name: "Comunidades autónomas", url: `${BASE_URL}/comunidad-autonoma` },
+  { name: "Provincias", url: `${BASE_URL}/espana` },
+  { name: "Ciudades", url: `${BASE_URL}/ciudad` },
+  { name: "Noticias", url: `${BASE_URL}/noticias` },
+  { name: "Profesional", url: `${BASE_URL}/profesional` },
+  { name: "API", url: `${BASE_URL}/api-docs` },
+]);
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -130,7 +152,7 @@ export default function RootLayout({
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <StructuredData data={[organizationSchema, webSiteSchema]} />
+        <StructuredData data={[organizationSchema, webSiteSchema, siteNavSchema]} />
         <Header />
         {children}
         <StickyFooterAd />

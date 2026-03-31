@@ -170,6 +170,26 @@ export function DesktopNav() {
           />
         </div>
       ))}
+
+      {/* SEO: render all mega menu links in DOM for crawlers */}
+      <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
+        {megaMenuPanels.map((panel) => (
+          <div key={`seo-${panel.id}`}>
+            {panel.categories.map((cat) =>
+              cat.items.map((item) => (
+                <a key={item.href} href={item.href} tabIndex={-1}>
+                  {item.name}
+                </a>
+              ))
+            )}
+            {panel.cityStrip?.map((city) => (
+              <a key={city.slug} href={`/trafico/${city.slug}`} tabIndex={-1}>
+                {`Tráfico ${city.name}`}
+              </a>
+            ))}
+          </div>
+        ))}
+      </nav>
     </div>
   );
 }

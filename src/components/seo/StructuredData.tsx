@@ -270,3 +270,19 @@ export function generateFAQSchema({ questions }: FAQSchemaProps): BaseStructured
     })),
   };
 }
+
+export function generateSiteNavigationSchema(
+  items: { name: string; url: string }[]
+): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Navegación principal",
+    itemListElement: items.map((item, index) => ({
+      "@type": "SiteNavigationElement",
+      position: index + 1,
+      name: item.name,
+      url: item.url,
+    })),
+  };
+}

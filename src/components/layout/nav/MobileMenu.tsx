@@ -234,14 +234,6 @@ export function MobileMenu({
               />
             ))}
 
-            {/* Profesional — standalone link */}
-            <Link
-              href="/profesional"
-              className="flex items-center gap-3 px-4 py-3.5 text-sm font-semibold font-heading text-gray-800 dark:text-gray-200 transition-colors"
-            >
-              Profesional
-              <ArrowRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
-            </Link>
           </div>
         </motion.div>
       )}
