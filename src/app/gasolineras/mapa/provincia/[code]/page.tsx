@@ -9,7 +9,7 @@ import { provinceSlug } from "@/lib/geo/slugify";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

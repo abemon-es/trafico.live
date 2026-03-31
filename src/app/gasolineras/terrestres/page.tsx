@@ -3,7 +3,9 @@ import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import TerrestresClient from "./TerrestresClient";
 
-export const revalidate = 3600;
+// force-dynamic: Coolify builds with DATABASE_URL='' so ISR caches empty pages.
+// Dynamic rendering ensures live DB queries at request time.
+export const dynamic = "force-dynamic";
 
 export default async function TerrestresPage() {
   const [stations, total] = await Promise.all([

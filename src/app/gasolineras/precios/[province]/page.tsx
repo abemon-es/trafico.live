@@ -6,9 +6,8 @@ import { MapPin, ArrowLeft, Clock, Map, Tag, Fuel, BarChart3 } from "lucide-reac
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-// Render on first request, cache 1h via ISR
-// (Coolify builds with DATABASE_URL='' so generateStaticParams would pre-render empty pages)
-export const revalidate = 3600;
+// force-dynamic: Coolify builds with DATABASE_URL='' which caches empty ISR pages.
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
