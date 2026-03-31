@@ -118,6 +118,9 @@ model TrafficIncident {
   @@index([source, isActive])
 }
 
+/// @deprecated No collector writes to this table. Road-segment weather conditions
+/// were planned but AEMET only provides alert-level data (see WeatherAlert).
+/// Consider removing in a future migration if no collector is implemented.
 model WeatherCondition {
   id         String    @id @default(cuid())
   recordedAt DateTime  @db.Timestamptz
@@ -794,7 +797,7 @@ model GasStation {
   priceGNC       Decimal? @db.Decimal(5, 3) // Compressed Natural Gas
   priceGNL       Decimal? @db.Decimal(5, 3) // Liquefied Natural Gas
   priceHidrogeno Decimal? @db.Decimal(5, 3) // Hydrogen
-  priceAdblue    Decimal? @db.Decimal(5, 3) // AdBlue
+  priceAdblue    Decimal? @db.Decimal(5, 3) /// @deprecated MINETUR API does not provide AdBlue prices — always null
 
   // Station info
   schedule    String? // "L-D: 24H" or "L-S: 08:00-22:00"
@@ -933,7 +936,9 @@ model PriceAlert {
   @@index([isActive, fuelType])
 }
 
-// Historic daily rankings for trend analysis
+/// @deprecated No code writes to this table. Rankings are computed live in
+/// /api/gas-stations/[id]/ranking via SQL queries. Consider removing in a
+/// future migration if pre-computed rankings are not needed for performance.
 model StationDailyRanking {
   id         String     @id @default(cuid())
   stationId  String
