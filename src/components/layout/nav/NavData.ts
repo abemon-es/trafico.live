@@ -23,6 +23,8 @@ import {
   Ban,
   Truck,
   Timer,
+  Radio,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -134,10 +136,11 @@ export const megaMenuPanels: MegaMenuPanel[] = [
       {
         title: "Datos",
         items: [
+          { name: "Intensidad (IMD)", href: "/intensidad", icon: TrendingUp, description: "Tráfico por carretera" },
+          { name: "Estaciones de aforo", href: "/estaciones-aforo", icon: Radio, description: "3.458 puntos de medición" },
           { name: "Estadísticas", href: "/estadisticas", icon: BarChart3, description: "Cifras del tráfico" },
           { name: "Histórico", href: "/historico", icon: Clock, description: "Datos acumulados" },
           { name: "Operaciones DGT", href: "/operaciones", icon: Users, description: "Campañas especiales" },
-          { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
         ],
       },
     ],
@@ -229,10 +232,10 @@ export const footerColumns = [
       { name: "Autopistas", href: "/carreteras/autopistas" },
       { name: "Autovías", href: "/carreteras/autovias" },
       { name: "Nacionales", href: "/carreteras/nacionales" },
-      { name: "Regionales", href: "/carreteras/regionales" },
+      { name: "Intensidad (IMD)", href: "/intensidad" },
+      { name: "Estaciones de aforo", href: "/estaciones-aforo" },
       { name: "Radares", href: "/radares" },
       { name: "Puntos negros", href: "/puntos-negros" },
-      { name: "Accidentes", href: "/estadisticas/accidentes" },
     ],
   },
   {

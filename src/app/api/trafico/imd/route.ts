@@ -294,8 +294,14 @@ function formatRecord(record: {
   provinceName: string | null;
   year: number;
   imd: number;
+  imdLigeros: number | null;
   imdPesados: number | null;
   percentPesados: unknown;
+  vhKmTotal: unknown;
+  vhKmLigeros: unknown;
+  vhKmPesados: unknown;
+  segmentLength: unknown;
+  sourceId: number | null;
 }) {
   return {
     id: record.id,
@@ -307,10 +313,15 @@ function formatRecord(record: {
     provinceName: record.provinceName,
     year: record.year,
     imd: record.imd,
+    imdLigeros: record.imdLigeros,
     imdPesados: record.imdPesados,
     percentPesados: record.percentPesados ? Number(record.percentPesados) : null,
-    // Computed fields
-    segmentLength: Math.round((Number(record.kmEnd) - Number(record.kmStart)) * 100) / 100,
+    vhKmTotal: record.vhKmTotal ? Number(record.vhKmTotal) : null,
+    vhKmLigeros: record.vhKmLigeros ? Number(record.vhKmLigeros) : null,
+    vhKmPesados: record.vhKmPesados ? Number(record.vhKmPesados) : null,
+    segmentLength: record.segmentLength
+      ? Number(record.segmentLength)
+      : Math.round((Number(record.kmEnd) - Number(record.kmStart)) * 100) / 100,
     trafficCategory: categorizeTraffic(record.imd),
   };
 }

@@ -9,11 +9,11 @@ import { getPrisma, getPool } from "./shared/prisma.js";
 const TASK = process.env.TASK;
 
 if (!TASK) {
-  console.error("TASK environment variable is required. Valid tasks: v16, incident, panel, weather, camera, radar, charger, speedlimit, insights, gas-station, historical-accidents");
+  console.error("TASK environment variable is required. Valid tasks: v16, incident, panel, weather, camera, radar, charger, speedlimit, insights, gas-station, historical-accidents, imd");
   process.exit(1);
 }
 
-const VALID_TASKS = ["v16", "incident", "panel", "weather", "camera", "radar", "charger", "speedlimit", "insights", "gas-station", "historical-accidents"];
+const VALID_TASKS = ["v16", "incident", "panel", "weather", "camera", "radar", "charger", "speedlimit", "insights", "gas-station", "historical-accidents", "imd"];
 
 if (!VALID_TASKS.includes(TASK)) {
   console.error(`Unknown task: ${TASK}. Valid tasks: ${VALID_TASKS.join(", ")}`);

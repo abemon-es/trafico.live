@@ -68,6 +68,8 @@ interface IMDData {
   road: string;
   km: number;
   imd: number;
+  imdLigeros: number | null;
+  imdPesados: number | null;
   heavyVehiclesPercent: number | null;
   year: number;
   province: string | null;
@@ -408,7 +410,9 @@ export default function RoadDetailContent() {
                   <tr className="border-b border-gray-200 dark:border-gray-800">
                     <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">km</th>
                     <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Provincia</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">IMD</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">IMD total</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Ligeros</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Pesados</th>
                     <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">% Pesados</th>
                   </tr>
                 </thead>
@@ -417,10 +421,16 @@ export default function RoadDetailContent() {
                     <tr key={idx} className="border-b border-gray-100 dark:border-gray-800">
                       <td className="py-2 px-3">{flow.km}</td>
                       <td className="py-2 px-3">{flow.province || "-"}</td>
-                      <td className="py-2 px-3 text-right font-medium">
+                      <td className="py-2 px-3 text-right font-mono font-medium">
                         {flow.imd.toLocaleString("es-ES")}
                       </td>
-                      <td className="py-2 px-3 text-right">
+                      <td className="py-2 px-3 text-right font-mono text-gray-600 dark:text-gray-400">
+                        {flow.imdLigeros != null ? flow.imdLigeros.toLocaleString("es-ES") : "-"}
+                      </td>
+                      <td className="py-2 px-3 text-right font-mono text-gray-600 dark:text-gray-400">
+                        {flow.imdPesados != null ? flow.imdPesados.toLocaleString("es-ES") : "-"}
+                      </td>
+                      <td className="py-2 px-3 text-right font-mono">
                         {flow.heavyVehiclesPercent != null
                           ? `${flow.heavyVehiclesPercent.toFixed(1)}%`
                           : "-"}
