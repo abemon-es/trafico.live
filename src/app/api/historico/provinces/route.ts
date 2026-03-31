@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get("days") || "30", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);
 
     // Get V16 beacon events for the period
     const startDate = new Date();

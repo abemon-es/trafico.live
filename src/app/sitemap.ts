@@ -2,7 +2,12 @@ import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
 import { ARTICLES } from "@/app/blog/articles";
 
-export const dynamic = "force-dynamic"; // Must query DB live — build runs with DATABASE_URL=''
+// NOTE: Do NOT export `dynamic = "force-dynamic"` here.
+// generateSitemaps() is called at build time to register shard IDs for the
+// sitemap index (/sitemap.xml). force-dynamic prevents the index from being
+// registered, causing a 404 in production. Individual shard routes
+// (/sitemap/[__metadata_id__]) are already rendered dynamically at request
+// time because they query the DB — they do not need force-dynamic either.
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -16,10 +21,23 @@ const POSTAL_CODE_OFFSET = 200;
 const INSIGHTS_OFFSET = 300;
 const MARITIME_OFFSET = 400;
 
+// Fixed upper bounds used when the DB is unreachable at build time.
+// These are generous overestimates — empty shards return [] gracefully.
+// Gas stations: ~12,000 → 3 shards of 5000; municipalities ~8,200 → 2 shards;
+// postal codes ~10,000 → 2 shards; maritime ~90 → 1 shard.
+const FALLBACK_STATION_SHARDS = 3;
+const FALLBACK_MUNICIPALITY_SHARDS = 2;
+const FALLBACK_POSTAL_CODE_SHARDS = 2;
+const FALLBACK_MARITIME_SHARDS = 1;
+
 /**
  * Generates sitemap index entries.
  * Next.js automatically creates /sitemap.xml as the index,
  * with individual sitemaps at /sitemap/{id}.xml
+ *
+ * This function MUST NOT throw — it is called at build time to register routes.
+ * If the DB is unavailable (e.g., build-time proxy not running), fall back to
+ * a fixed set of shard IDs that cover all known data volumes.
  */
 export async function generateSitemaps() {
   try {
@@ -56,7 +74,24 @@ export async function generateSitemaps() {
       })),
     ];
   } catch {
-    return [{ id: 0 }];
+    // DB unavailable at build time — return fixed shard IDs so the sitemap
+    // index is always registered. Shards that return no data simply emit [].
+    return [
+      { id: 0 }, // Core pages
+      ...Array.from({ length: FALLBACK_STATION_SHARDS }, (_, i) => ({
+        id: GAS_STATION_OFFSET + i,
+      })),
+      ...Array.from({ length: FALLBACK_MUNICIPALITY_SHARDS }, (_, i) => ({
+        id: MUNICIPALITY_OFFSET + i,
+      })),
+      ...Array.from({ length: FALLBACK_POSTAL_CODE_SHARDS }, (_, i) => ({
+        id: POSTAL_CODE_OFFSET + i,
+      })),
+      { id: INSIGHTS_OFFSET },
+      ...Array.from({ length: FALLBACK_MARITIME_SHARDS }, (_, i) => ({
+        id: MARITIME_OFFSET + i,
+      })),
+    ];
   }
 }
 

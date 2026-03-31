@@ -42,7 +42,7 @@ interface StaticRiskZone {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get("days") || "30", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);
     const riskTypeFilter = searchParams.get("type") as RiskType | null;
     const roadFilter = searchParams.get("road");
     const includeStatic = searchParams.get("includeStatic") !== "false";

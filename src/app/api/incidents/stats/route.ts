@@ -33,7 +33,7 @@ type HeatmapRow = { hour: bigint; day: bigint; total: bigint };
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get("days") || "30", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);
 
     // Redis cache — 300 s TTL
     const cacheKey = `incidents:stats:${days}`;

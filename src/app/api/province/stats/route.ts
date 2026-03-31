@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const provinceName = searchParams.get("province");
     const provinceCode = searchParams.get("code");
-    const days = parseInt(searchParams.get("days") || "30", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);
 
     if (!provinceName && !provinceCode) {
       return NextResponse.json(

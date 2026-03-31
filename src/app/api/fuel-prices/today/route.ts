@@ -17,39 +17,47 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-    // Get national stats for today
-    const nationalStats = await prisma.fuelPriceDailyStats.findFirst({
-      where: {
-        scope: "national",
-        date: today,
-      },
+    // Get national stats for today — if none exist yet, fall back to the most
+    // recent available date. The gas station cron runs at 06:00/13:00/20:00 UTC
+    // so before the first daily run there's no record for today yet.
+    let nationalStats = await prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "national", date: today },
     });
 
-    // Get yesterday's stats for comparison (use UTC to avoid DST/timezone drift)
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    // Determine the effective date we're serving data for
+    let effectiveDate = today;
+    if (!nationalStats) {
+      nationalStats = await prisma.fuelPriceDailyStats.findFirst({
+        where: { scope: "national" },
+        orderBy: { date: "desc" },
+      });
+      if (nationalStats) {
+        effectiveDate = nationalStats.date;
+      }
+    }
+
+    // Get the previous day's stats for trend comparison
+    const prevDate = new Date(effectiveDate);
+    prevDate.setUTCDate(prevDate.getUTCDate() - 1);
 
     const yesterdayStats = await prisma.fuelPriceDailyStats.findFirst({
-      where: {
-        scope: "national",
-        date: yesterday,
-      },
+      where: { scope: "national", date: prevDate },
     });
 
-    // Get province stats
+    // Get province stats for the effective date
     const provinceStats = await prisma.fuelPriceDailyStats.findMany({
       where: {
         scope: { startsWith: "province:" },
-        date: today,
+        date: effectiveDate,
       },
       orderBy: { avgGasoleoA: "asc" },
     });
 
-    // Get community stats
+    // Get community stats for the effective date
     const communityStats = await prisma.fuelPriceDailyStats.findMany({
       where: {
         scope: { startsWith: "community:" },
-        date: today,
+        date: effectiveDate,
       },
       orderBy: { avgGasoleoA: "asc" },
     });
@@ -94,7 +102,7 @@ export async function GET(request: NextRequest) {
 
     const responseData = {
       success: true,
-      date: today.toISOString().split("T")[0],
+      date: effectiveDate.toISOString().split("T")[0],
       national: nationalStats
         ? {
             avgGasoleoA: nationalStats.avgGasoleoA ? Number(nationalStats.avgGasoleoA) : null,

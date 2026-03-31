@@ -18,7 +18,7 @@ const ALERT_TYPE_LABELS: Record<string, string> = {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get("days") || "90", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "90", 10) || 90, 90);
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);

@@ -35,7 +35,7 @@ const TYPE_LABELS: Record<string, string> = {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
-    const rawDays = parseInt(searchParams.get("days") || "30", 10);
+    const rawDays = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);
     const days: Period = (VALID_PERIODS.includes(rawDays as Period)
       ? rawDays
       : 30) as Period;

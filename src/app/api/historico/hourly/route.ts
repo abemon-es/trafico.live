@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get("days") || "7", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "7", 10) || 7, 90);
 
     // Get hourly stats for the specified period
     const startDate = new Date();

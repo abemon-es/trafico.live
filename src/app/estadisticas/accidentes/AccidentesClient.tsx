@@ -164,7 +164,11 @@ export function AccidentesClient({
   latestYear,
   availableYears,
 }: AccidentesClientProps) {
-  const [selectedYear, setSelectedYear] = useState<number>(latestYear);
+  const defaultYear =
+    availableYears.includes(latestYear)
+      ? latestYear
+      : availableYears[availableYears.length - 1] ?? latestYear;
+  const [selectedYear, setSelectedYear] = useState<number>(defaultYear);
   const [choroplethMetric, setChoroplethMetric] = useState<
     "accidents" | "fatalities" | "ratePer100k"
   >("accidents");

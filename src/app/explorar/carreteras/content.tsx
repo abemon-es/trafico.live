@@ -88,7 +88,7 @@ export default function CarreterasContent() {
   );
 
   const { data: incidentsData, isLoading: incidentsLoading } = useSWR<{ count: number; byRoad: Record<string, number> }>(
-    "/api/incidencias?active=true",
+    "/api/incidents",
     fetcher,
     { revalidateOnFocus: false }
   );

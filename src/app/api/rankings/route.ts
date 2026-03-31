@@ -71,7 +71,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<RankingsAP
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const days = parseInt(searchParams.get("days") || "30", 10);
+    const days = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const category = searchParams.get("category") || "all";
 

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Exo_2, DM_Sans, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Header } from "@/components/layout/Header";
@@ -85,12 +85,15 @@ export const metadata: Metadata = {
     canonical: BASE_URL,
   },
   manifest: "/manifest.json",
-  themeColor: "#1b4bd5",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "trafico.live",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1b4bd5",
 };
 
 const organizationSchema = generateOrganizationSchema({

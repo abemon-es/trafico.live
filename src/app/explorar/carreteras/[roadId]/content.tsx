@@ -112,7 +112,7 @@ export default function RoadDetailContent() {
   const roadId = decodeURIComponent(params.roadId as string);
 
   const { data: incidentsData, isLoading: incidentsLoading } = useSWR<IncidentsResponse>(
-    `/api/incidencias?road=${encodeURIComponent(roadId)}&active=true`,
+    `/api/incidents?road=${encodeURIComponent(roadId)}`,
     fetcher,
     { revalidateOnFocus: false }
   );

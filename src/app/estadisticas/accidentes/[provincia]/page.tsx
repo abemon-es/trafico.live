@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AlertTriangle, Users, Activity, TrendingDown, TrendingUp, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import * as fs from "fs";
+import * as path from "path";
 import { prisma } from "@/lib/db";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
@@ -80,11 +82,51 @@ function formatNumber(n: number): string {
   return n.toLocaleString("es-ES");
 }
 
+// ─── JSON fallback types ──────────────────────────────────────────────────────
+
+interface RawAccidentRecord {
+  year: number;
+  province: string;
+  accidents: number;
+  fatalities: number;
+  hospitalized: number;
+  nonHospitalized?: number;
+}
+
+/**
+ * Load historical accidents from the bundled JSON file.
+ * Used as a fallback when the database hasn't been seeded yet.
+ */
+function loadAccidentsFromJson(provinceCode: string): {
+  year: number;
+  accidents: number;
+  fatalities: number;
+  hospitalized: number;
+}[] {
+  try {
+    const jsonPath = path.join(process.cwd(), "data/historical-accidents.json");
+    if (!fs.existsSync(jsonPath)) return [];
+    const all = JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as RawAccidentRecord[];
+    // Group by year for this province (the JSON already has one row per year/province)
+    const provinceRows = all.filter((r) => r.province === provinceCode);
+    return provinceRows
+      .map((r) => ({
+        year: r.year,
+        accidents: r.accidents,
+        fatalities: r.fatalities,
+        hospitalized: r.hospitalized,
+      }))
+      .sort((a, b) => a.year - b.year);
+  } catch {
+    return [];
+  }
+}
+
 // ─── Data fetching ────────────────────────────────────────────────────────────
 
 async function fetchProvinceAccidents(provinceCode: string) {
   // All years for this province (all road types aggregated together)
-  const rows = await prisma.historicalAccidents.groupBy({
+  const dbRows = await prisma.historicalAccidents.groupBy({
     by: ["year"],
     where: { province: provinceCode },
     _sum: {
@@ -95,12 +137,20 @@ async function fetchProvinceAccidents(provinceCode: string) {
     orderBy: { year: "asc" },
   });
 
-  const yearly = rows.map((r) => ({
-    year: r.year,
-    accidents: r._sum.accidents ?? 0,
-    fatalities: r._sum.fatalities ?? 0,
-    hospitalized: r._sum.hospitalized ?? 0,
-  }));
+  // If DB has no data, fall back to the bundled JSON file.
+  // This handles the case where prisma db seed wasn't run in production.
+  const rows =
+    dbRows.length > 0
+      ? dbRows.map((r) => ({
+          year: r.year,
+          accidents: r._sum.accidents ?? 0,
+          fatalities: r._sum.fatalities ?? 0,
+          hospitalized: r._sum.hospitalized ?? 0,
+        }))
+      : loadAccidentsFromJson(provinceCode);
+
+  // rows is already normalized (plain {year, accidents, fatalities, hospitalized})
+  const yearly = rows;
 
   if (yearly.length === 0) return null;
 
@@ -125,19 +175,45 @@ async function fetchProvinceAccidents(provinceCode: string) {
       : "0.00";
 
   // National totals for the latest year (for comparison)
-  const nationalRow = await prisma.historicalAccidents.groupBy({
-    by: ["year"],
-    where: { year: latestYear },
-    _sum: { accidents: true, fatalities: true },
-  });
+  // Also uses JSON fallback if DB is not seeded.
+  let nationalTotals: { accidents: number; fatalities: number } | null = null;
 
-  const nationalTotals =
-    nationalRow.length > 0
-      ? {
-          accidents: nationalRow[0]._sum.accidents ?? 0,
-          fatalities: nationalRow[0]._sum.fatalities ?? 0,
+  if (dbRows.length > 0) {
+    // DB path
+    const nationalRow = await prisma.historicalAccidents.groupBy({
+      by: ["year"],
+      where: { year: latestYear },
+      _sum: { accidents: true, fatalities: true },
+    });
+    if (nationalRow.length > 0) {
+      nationalTotals = {
+        accidents: nationalRow[0]._sum.accidents ?? 0,
+        fatalities: nationalRow[0]._sum.fatalities ?? 0,
+      };
+    }
+  } else {
+    // JSON fallback path — read all provinces for latestYear and sum
+    try {
+      const jsonPath = path.join(process.cwd(), "data/historical-accidents.json");
+      if (fs.existsSync(jsonPath)) {
+        const all = JSON.parse(
+          fs.readFileSync(jsonPath, "utf-8")
+        ) as RawAccidentRecord[];
+        const forYear = all.filter((r) => r.year === latestYear);
+        if (forYear.length > 0) {
+          nationalTotals = forYear.reduce(
+            (acc, r) => ({
+              accidents: acc.accidents + r.accidents,
+              fatalities: acc.fatalities + r.fatalities,
+            }),
+            { accidents: 0, fatalities: 0 }
+          );
         }
-      : null;
+      }
+    } catch {
+      // leave nationalTotals as null
+    }
+  }
 
   const nationalFatalityRate =
     nationalTotals && nationalTotals.accidents > 0
