@@ -7,7 +7,8 @@ import dynamic from "next/dynamic";
 import { Map as MapIcon, AlertTriangle, Loader2 } from "lucide-react";
 import { MapControls, type ActiveLayers, type IncidentFilters, type LocationPreset } from "./MapControls";
 import { MapStats } from "./MapStats";
-import type { V16Beacon, Incident, Camera, TrafficMapRef, IncidentViewMode } from "./TrafficMap";
+import type { V16Beacon, Incident, Camera, PanelData, TrafficMapRef, IncidentViewMode } from "./TrafficMap";
+import { useTrafficStream } from "@/hooks/useTrafficStream";
 import { IncidentModal, type IncidentData } from "@/components/incidents/IncidentModal";
 import {
   EFFECT_LABELS,
@@ -226,6 +227,12 @@ interface MaritimeStationsResponse {
   };
 }
 
+interface PanelsResponse {
+  count: number;
+  withMessages: number;
+  panels: PanelData[];
+}
+
 interface UnifiedMapProps {
   defaultHeight?: string;
   showStats?: boolean;
@@ -240,7 +247,7 @@ interface UnifiedMapProps {
 // Valid filter values for URL parsing
 const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
 const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
-const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations"];
+const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations", "panels"];
 
 export function UnifiedMap({
   defaultHeight = "500px",
@@ -263,6 +270,10 @@ export function UnifiedMap({
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [incidentViewMode, setIncidentViewMode] = useState<IncidentViewMode>("clusters");
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Connect SSE for real-time push updates
+  useTrafficStream();
 
   // Parse initial state from URL or props
   const getInitialLayers = (): ActiveLayers => {
@@ -281,6 +292,7 @@ export function UnifiedMap({
         riskZones: initialLayers.riskZones ?? false,
         gasStations: initialLayers.gasStations ?? false,
         maritimeStations: initialLayers.maritimeStations ?? false,
+        panels: initialLayers.panels ?? false,
       };
     }
 
@@ -300,6 +312,7 @@ export function UnifiedMap({
         riskZones: urlLayers.includes("riskZones"),
         gasStations: urlLayers.includes("gasStations"),
         maritimeStations: urlLayers.includes("maritimeStations"),
+        panels: urlLayers.includes("panels"),
       };
     }
     // Default layers
@@ -316,6 +329,7 @@ export function UnifiedMap({
       riskZones: false,
       gasStations: false,
       maritimeStations: false,
+      panels: false,
     };
   };
 
@@ -458,6 +472,12 @@ export function UnifiedMap({
     { revalidateOnFocus: false, refreshInterval: 600000 }
   );
 
+  const { data: panelsData } = useSWR<PanelsResponse>(
+    activeLayers.panels ? "/api/panels" : null,
+    fetcher,
+    { revalidateOnFocus: false, refreshInterval: 300000 }
+  );
+
   const isLoading = v16Loading || incidentsLoading;
 
   // Handle fullscreen
@@ -561,6 +581,7 @@ export function UnifiedMap({
     zbe: zbeData?.data?.zones?.length || 0,
     gasStations: gasStationsData?.pagination?.total || 0,
     maritimeStations: maritimeStationsData?.pagination?.total || 0,
+    panels: panelsData?.count || 0,
   };
 
   // Height calculation
@@ -605,6 +626,8 @@ export function UnifiedMap({
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onLocationChange={handleLocationChange}
+        darkMode={darkMode}
+        onDarkModeToggle={() => setDarkMode((d) => !d)}
         counts={counts}
       />
 
@@ -626,8 +649,10 @@ export function UnifiedMap({
               zbeData={activeLayers.zbe ? zbeData?.data?.zones : undefined}
               gasStationData={activeLayers.gasStations ? gasStationsData?.data : undefined}
               maritimeStationData={activeLayers.maritimeStations ? maritimeStationsData?.data : undefined}
+              panelData={activeLayers.panels ? panelsData?.panels : undefined}
               incidentFilters={incidentFilters}
               incidentViewMode={incidentViewMode}
+              darkMode={darkMode}
               height="100%"
               onIncidentClick={handleIncidentClick}
             />
@@ -676,9 +701,11 @@ export function UnifiedMap({
           v16Count={activeLayers.v16 ? counts.v16 : 0}
           incidentCount={activeLayers.incidents ? counts.incidents : 0}
           cameraCount={activeLayers.cameras ? counts.cameras : 0}
+          panelCount={activeLayers.panels ? counts.panels : 0}
           lastUpdated={lastUpdated}
           isLoading={isLoading}
           isFullscreen={isFullscreen}
+          isStreaming={true}
         />
       )}
 

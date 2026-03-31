@@ -27,6 +27,7 @@ export interface ActiveLayers {
   riskZones: boolean;
   gasStations: boolean;
   maritimeStations: boolean;
+  panels: boolean;
 }
 
 export interface IncidentFilters {
@@ -182,6 +183,20 @@ export interface MaritimeStation {
   lastPriceUpdate: string;
 }
 
+export interface PanelData {
+  id: string;
+  roadNumber: string;
+  kmPoint: number | null;
+  direction: string | null;
+  province: string;
+  provinceName: string;
+  message: string | null;
+  hasMessage: boolean;
+  latitude: number;
+  longitude: number;
+  lastUpdated: string;
+}
+
 export interface TrafficMapRef {
   flyTo: (lng: number, lat: number, zoom?: number) => void;
   getMap: () => maplibregl.Map | null;
@@ -199,8 +214,10 @@ interface TrafficMapProps {
   zbeData?: ZBEZone[];
   gasStationData?: GasStation[];
   maritimeStationData?: MaritimeStation[];
+  panelData?: PanelData[];
   incidentFilters?: IncidentFilters;
   incidentViewMode?: IncidentViewMode;
+  darkMode?: boolean;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
@@ -362,8 +379,11 @@ function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
   };
 }
 
+const DARK_MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+const LIGHT_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, incidentFilters, incidentViewMode, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -397,6 +417,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   const zbeZones = zbeData || [];
   const gasStations = gasStationData || [];
   const maritimeStations = maritimeStationData || [];
+  const panels = panelData || [];
 
   // Filter incidents based on incidentFilters
   const incidents = (incidentData || []).filter((incident) => {
@@ -428,7 +449,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      style: darkMode ? DARK_MAP_STYLE : LIGHT_MAP_STYLE,
       center: SPAIN_CENTER,
       zoom: 6,
       attributionControl: false,
@@ -436,6 +457,14 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
     map.current.addControl(
       new maplibregl.NavigationControl({ showCompass: false }),
+      "top-right"
+    );
+
+    map.current.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+      }),
       "top-right"
     );
 
@@ -606,6 +635,69 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       map.current = null;
     };
   }, []);
+
+  // Switch map style on dark mode toggle
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const m = map.current;
+    const targetStyle = darkMode ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
+
+    // setStyle removes all custom sources/layers — mark as not loaded
+    setIsLoaded(false);
+    m.setStyle(targetStyle);
+
+    // After the new style loads, re-add base layers (highways, provinces)
+    // and mark as loaded so data useEffects re-fire
+    m.once("style.load", () => {
+      // Re-load highways
+      fetch("/geojson/highways.json")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!m.getSource("highways")) {
+            m.addSource("highways", { type: "geojson", data });
+            m.addLayer({
+              id: "highways-casing", type: "line", source: "highways",
+              layout: { "line-join": "round", "line-cap": "round", visibility: "none" },
+              paint: { "line-color": darkMode ? "#374151" : "#ffffff", "line-width": 8, "line-opacity": 0.9 },
+            });
+            m.addLayer({
+              id: "highways-line", type: "line", source: "highways",
+              layout: { "line-join": "round", "line-cap": "round", visibility: "none" },
+              paint: { "line-color": ["get", "color"], "line-width": 4, "line-opacity": 0.8 },
+            });
+            m.addLayer({
+              id: "highways-labels", type: "symbol", source: "highways",
+              layout: { "symbol-placement": "line", "text-field": ["get", "id"], "text-size": 12, "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"], visibility: "none" },
+              paint: { "text-color": darkMode ? "#d1d5db" : "#374151", "text-halo-color": darkMode ? "#1f2937" : "#ffffff", "text-halo-width": 2 },
+            });
+          }
+        })
+        .catch(() => {});
+
+      // Re-load provinces
+      fetch("/geojson/provinces.json")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!m.getSource("provinces")) {
+            m.addSource("provinces", { type: "geojson", data });
+            m.addLayer({
+              id: "provinces-circles", type: "circle", source: "provinces",
+              layout: { visibility: "none" },
+              paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 8, 8, 16], "circle-color": "#6366f1", "circle-opacity": 0.6, "circle-stroke-color": "#ffffff", "circle-stroke-width": 2 },
+            });
+            m.addLayer({
+              id: "provinces-labels", type: "symbol", source: "provinces",
+              layout: { "text-field": ["get", "name"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 14], "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"], "text-offset": [0, 1.5], visibility: "none" },
+              paint: { "text-color": darkMode ? "#d1d5db" : "#374151", "text-halo-color": darkMode ? "#1f2937" : "#ffffff", "text-halo-width": 1.5 },
+            });
+          }
+          // Mark ready — all data useEffects will re-fire
+          setIsLoaded(true);
+        })
+        .catch(() => setIsLoaded(true));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [darkMode]);
 
   // Toggle highway layers visibility
   useEffect(() => {
@@ -1625,6 +1717,54 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       });
     }
 
+    // Add variable panels (PMV)
+    if (activeLayers.panels && panels.length > 0) {
+      panels.forEach((panel) => {
+        const hasMsg = panel.hasMessage && panel.message;
+        const el = document.createElement("div");
+        el.className = "panel-marker";
+        el.innerHTML = `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="4" width="20" height="14" rx="2" fill="${hasMsg ? "#06b6d4" : "#94a3b8"}" stroke="white" stroke-width="2"/>
+            <rect x="5" y="7" width="14" height="2" rx="1" fill="white" opacity="0.8"/>
+            <rect x="5" y="11" width="10" height="2" rx="1" fill="white" opacity="0.6"/>
+            <line x1="12" y1="18" x2="12" y2="21" stroke="${hasMsg ? "#06b6d4" : "#94a3b8"}" stroke-width="2"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="${hasMsg ? "#06b6d4" : "#94a3b8"}" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        `;
+        el.style.cursor = "pointer";
+        if (hasMsg) {
+          el.style.animation = "panelGlow 3s ease-in-out infinite";
+        }
+
+        const dirLabel = panel.direction === "INCREASING" ? "Sentido creciente" : panel.direction === "DECREASING" ? "Sentido decreciente" : "";
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([panel.longitude, panel.latitude])
+          .setPopup(
+            new maplibregl.Popup({ offset: 25, maxWidth: "320px" }).setHTML(`
+              <div class="p-2 min-w-[200px]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full" style="background: ${hasMsg ? "#06b6d4" : "#94a3b8"}"></span>
+                  <span class="font-bold text-sm">Panel Variable</span>
+                  ${hasMsg ? '<span class="text-xs px-1.5 py-0.5 bg-cyan-100 text-cyan-700 rounded">Con mensaje</span>' : '<span class="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">Sin mensaje</span>'}
+                </div>
+                ${hasMsg ? `<div class="bg-gray-900 text-amber-400 font-mono text-sm p-3 rounded mb-2 leading-relaxed">${panel.message}</div>` : ""}
+                <div class="text-sm text-gray-600 space-y-1">
+                  <p><strong>Carretera:</strong> ${panel.roadNumber}${panel.kmPoint ? ` km ${panel.kmPoint}` : ""}</p>
+                  ${dirLabel ? `<p class="text-xs text-gray-500">${dirLabel}</p>` : ""}
+                  ${panel.provinceName ? `<p class="text-xs text-gray-500">${panel.provinceName}</p>` : ""}
+                  <p class="text-xs text-gray-400">Actualizado: ${new Date(panel.lastUpdated).toLocaleString("es-ES")}</p>
+                </div>
+              </div>
+            `)
+          )
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      });
+    }
+
     // Add maritime stations
     if (activeLayers.maritimeStations && maritimeStations.length > 0) {
       maritimeStations.forEach((station) => {
@@ -1685,7 +1825,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         markersRef.current.push(marker);
       });
     }
-  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, weatherData, provinceCoords, onIncidentClick, gasStations, maritimeStations, incidentViewMode]);
+  }, [activeLayers, isLoaded, beacons, incidents, cameras, chargers, weatherData, provinceCoords, onIncidentClick, gasStations, maritimeStations, panels, incidentViewMode]);
 
   return (
     <>
@@ -1701,9 +1841,58 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
           }
         }
+        @keyframes panelGlow {
+          0%, 100% {
+            filter: drop-shadow(0 0 2px rgba(6, 182, 212, 0.4));
+          }
+          50% {
+            filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.8));
+          }
+        }
         .maplibregl-popup-content {
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          padding: 0;
+          overflow: hidden;
+        }
+        .maplibregl-popup-close-button {
+          font-size: 18px;
+          padding: 4px 8px;
+          color: #6b7280;
+        }
+        .maplibregl-popup-close-button:hover {
+          background: transparent;
+          color: #111827;
+        }
+        .maplibregl-user-location-dot {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+          animation: userLocationPulse 2s infinite;
+        }
+        @keyframes userLocationPulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+          }
+          70% {
+            box-shadow: 0 0 0 16px rgba(59, 130, 246, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+          }
+        }
+        .v16-marker {
+          transition: transform 0.2s ease;
+        }
+        .v16-marker:hover {
+          transform: scale(1.3);
+        }
+        .camera-marker:hover,
+        .charger-marker:hover,
+        .radar-marker:hover,
+        .panel-marker:hover,
+        .gas-station-marker:hover,
+        .maritime-station-marker:hover {
+          transform: scale(1.15);
+          transition: transform 0.15s ease;
         }
       `}</style>
       <div

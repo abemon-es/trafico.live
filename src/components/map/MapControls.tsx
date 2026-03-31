@@ -24,6 +24,9 @@ import {
   Flame,
   Layers,
   Circle,
+  Monitor,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -44,6 +47,7 @@ export interface ActiveLayers {
   riskZones: boolean;
   gasStations: boolean;
   maritimeStations: boolean;
+  panels: boolean;
 }
 
 export interface IncidentFilters {
@@ -65,6 +69,8 @@ interface MapControlsProps {
   viewMode: "map" | "list";
   onViewModeChange: (mode: "map" | "list") => void;
   onLocationChange?: (preset: LocationPreset) => void;
+  darkMode?: boolean;
+  onDarkModeToggle?: () => void;
   counts?: {
     v16: number;
     incidents: number;
@@ -76,6 +82,7 @@ interface MapControlsProps {
     zbe: number;
     gasStations: number;
     maritimeStations: number;
+    panels: number;
   };
 }
 
@@ -109,6 +116,8 @@ export function MapControls({
   viewMode,
   onViewModeChange,
   onLocationChange,
+  darkMode,
+  onDarkModeToggle,
   counts,
 }: MapControlsProps) {
   const [showIncidentDropdown, setShowIncidentDropdown] = useState(false);
@@ -407,11 +416,30 @@ export function MapControls({
               color="purple"
               icon={<Ban className="w-4 h-4" />}
             />
+            <LayerToggle
+              label={`Paneles${counts?.panels ? ` (${counts.panels})` : ""}`}
+              active={activeLayers.panels}
+              onClick={() => onLayerToggle("panels")}
+              color="cyan"
+              icon={<Monitor className="w-4 h-4" />}
+            />
           </div>
         </div>
 
         {/* Right side: Actions */}
         <div className="flex items-center gap-2">
+          {/* Dark mode toggle */}
+          {onDarkModeToggle && (
+            <button
+              onClick={onDarkModeToggle}
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              title={darkMode ? "Mapa claro" : "Mapa oscuro"}
+              aria-label={darkMode ? "Cambiar a mapa claro" : "Cambiar a mapa oscuro"}
+            >
+              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+          )}
+
           {/* Location presets */}
           {onLocationChange && (
             <div className="relative" ref={locationDropdownRef}>
