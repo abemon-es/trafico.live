@@ -14,6 +14,7 @@ import {
   Clock,
   LocateFixed,
 } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 // --- Types ---
 
@@ -187,18 +188,11 @@ export default function GasolinerasCercaContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6">
-          <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">
-            Inicio
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">
-            Combustible
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-gray-900 dark:text-gray-100 font-medium">Cerca de mí</span>
-        </nav>
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Gasolineras", href: "/gasolineras" },
+          { name: "Cerca de mí", href: "/gasolineras/cerca" },
+        ]} />
 
         {/* Header */}
         <div className="mb-8">

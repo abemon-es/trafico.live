@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import { CamarasContent } from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -39,6 +40,12 @@ export default function CamarasPage() {
       {/* Server-rendered header — H1 present in initial HTML, crawlable without JS */}
       <div className="bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-0">
+          <Breadcrumbs
+            items={[
+              { name: "Inicio", href: "/" },
+              { name: "Cámaras de Tráfico", href: "/camaras" },
+            ]}
+          />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Cámaras de Tráfico
           </h1>

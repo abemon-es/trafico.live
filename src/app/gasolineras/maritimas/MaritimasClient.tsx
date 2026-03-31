@@ -19,6 +19,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 /** Province code → coast/region group */
 const COAST_REGIONS: Record<string, string> = {
@@ -317,14 +318,11 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Breadcrumbs */}
-      <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6">
-        <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Combustible</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-gray-900 dark:text-gray-100 font-medium">Marítimas</span>
-      </nav>
+      <Breadcrumbs items={[
+        { name: "Inicio", href: "/" },
+        { name: "Gasolineras", href: "/gasolineras" },
+        { name: "Marítimas", href: "/gasolineras/maritimas" },
+      ]} />
 
       {/* Header */}
       <div className="mb-8">

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import InfraestructuraContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -24,8 +25,17 @@ function LoadingFallback() {
 
 export default function InfraestructuraPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <InfraestructuraContent />
-    </Suspense>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Explorar", href: "/explorar" },
+          { name: "Infraestructura", href: "/explorar/infraestructura" },
+        ]} />
+      </div>
+      <Suspense fallback={<LoadingFallback />}>
+        <InfraestructuraContent />
+      </Suspense>
+    </>
   );
 }

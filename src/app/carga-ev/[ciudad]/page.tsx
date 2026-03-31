@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CiudadCargaEVContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -73,5 +74,16 @@ export default async function CiudadCargaEVPage({ params }: Props) {
     notFound();
   }
 
-  return <CiudadCargaEVContent ciudad={ciudad} cityData={cityData} />;
+  return (
+    <>
+      <Breadcrumbs
+        items={[
+          { name: "Inicio", href: "/" },
+          { name: "Puntos de Recarga", href: "/carga-ev" },
+          { name: cityData.name, href: `/carga-ev/${ciudad}` },
+        ]}
+      />
+      <CiudadCargaEVContent ciudad={ciudad} cityData={cityData} />
+    </>
+  );
 }

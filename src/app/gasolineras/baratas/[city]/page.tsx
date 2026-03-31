@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MapPin, Clock, TrendingDown, Fuel, ChevronRight, AlertCircle } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -210,16 +211,12 @@ export default async function BaratasCityPage({ params }: Props) {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6">
-          <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Combustible</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <Link href="/gasolineras/baratas" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Baratas</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-gray-900 dark:text-gray-100 font-medium">{cityData.name}</span>
-        </nav>
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Gasolineras", href: "/gasolineras" },
+          { name: "Baratas", href: "/gasolineras/baratas" },
+          { name: cityData.name, href: `/gasolineras/baratas/${city}` },
+        ]} />
 
         {/* Header */}
         <div className="mb-6">

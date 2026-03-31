@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import prisma from "@/lib/db";
 import ProvinceContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -49,6 +50,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function ProvincePage() {
-  return <ProvinceContent />;
+export default async function ProvincePage({ params }: PageProps) {
+  const { community: communitySlug, province: provinceSlug } = await params;
+  const province = await getProvince(communitySlug, provinceSlug);
+
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Comunidades", href: "/espana" },
+          { name: province?.community.name ?? communitySlug, href: `/comunidad-autonoma/${communitySlug}` },
+          { name: province?.name ?? provinceSlug, href: `/comunidad-autonoma/${communitySlug}/${provinceSlug}` },
+        ]} />
+      </div>
+      <ProvinceContent />
+    </>
+  );
 }

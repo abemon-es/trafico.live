@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 import { UnifiedMap } from "@/components/map/UnifiedMap";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -17,13 +18,14 @@ export const metadata: Metadata = {
 export default function GasolinerasMapaPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { name: "Inicio", href: "/" },
+        { name: "Gasolineras", href: "/gasolineras" },
+        { name: "Mapa", href: "/gasolineras/mapa" },
+      ]} />
+
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>
-          <span>/</span>
-          <span className="text-gray-900 dark:text-gray-100">Mapa</span>
-        </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
           <MapPin className="w-8 h-8 text-orange-600 dark:text-orange-400" />
           Mapa de Gasolineras

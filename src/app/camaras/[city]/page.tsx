@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Camera, MapPin, Video, ArrowRight } from "lucide-react";
 import prisma from "@/lib/db";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -145,18 +146,13 @@ export default async function CamarasCityPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4" aria-label="Ruta de navegación">
-          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">
-            Inicio
-          </Link>
-          <span className="mx-2">/</span>
-          <Link href="/camaras" className="hover:text-gray-700 dark:text-gray-300">
-            Cámaras
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 dark:text-gray-100">{cityData.name}</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { name: "Inicio", href: "/" },
+            { name: "Cámaras", href: "/camaras" },
+            { name: cityData.name, href: `/camaras/${city}` },
+          ]}
+        />
 
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">

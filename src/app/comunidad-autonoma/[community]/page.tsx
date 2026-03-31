@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import prisma from "@/lib/db";
 import CommunityContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -45,6 +46,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function CommunityPage() {
-  return <CommunityContent />;
+export default async function CommunityPage({ params }: PageProps) {
+  const { community: slug } = await params;
+  const community = await getCommunity(slug);
+
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Comunidades", href: "/espana" },
+          { name: community?.name ?? slug, href: `/comunidad-autonoma/${slug}` },
+        ]} />
+      </div>
+      <CommunityContent />
+    </>
+  );
 }

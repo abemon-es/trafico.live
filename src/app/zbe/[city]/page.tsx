@@ -18,6 +18,7 @@ import {
   Info,
 } from "lucide-react";
 import prisma from "@/lib/db";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -620,16 +621,13 @@ export default async function ZBECityPage({ params }: Props) {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-          {/* Breadcrumbs */}
-          <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6 flex-wrap">
-            <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/restricciones" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Restricciones</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/zbe" className="hover:text-gray-700 dark:text-gray-300 transition-colors">ZBE</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-gray-900 dark:text-gray-100 font-medium">{cfg.name}</span>
-          </nav>
+          <Breadcrumbs
+            items={[
+              { name: "Inicio", href: "/" },
+              { name: "ZBE", href: "/zbe" },
+              { name: cfg.name, href: `/zbe/${city}` },
+            ]}
+          />
 
           {/* Header */}
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">

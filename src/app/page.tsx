@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { Activity, AlertTriangle, Camera, Fuel, Newspaper, Radar, Route, Zap } from "lucide-react";
 import prisma from "@/lib/db";
 import { DashboardClient } from "./DashboardClient";
 
@@ -9,30 +10,33 @@ export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Tráfico en Tiempo Real en España — Incidencias, Cámaras, Radares | trafico.live",
+  title: "Tráfico en Tiempo Real en España — Mapa, Incidencias, Cámaras DGT",
   description:
-    "Monitorización del tráfico español con datos oficiales de la DGT, AEMET y MINETUR. Incidencias activas, cámaras de tráfico, radares, precios de combustible, estaciones de carga EV y balizas V16 en un solo mapa.",
-  keywords: [
-    "tráfico España",
-    "incidencias tráfico",
-    "cámaras DGT",
-    "radares España",
-    "precio gasolina",
-    "mapa tráfico",
-  ],
+    "Consulta el estado del tráfico en España ahora: incidencias activas, cámaras DGT en directo, radares de velocidad, precios de combustible y cargadores eléctricos. Datos oficiales actualizados cada 60 segundos.",
+  alternates: {
+    canonical: BASE_URL,
+  },
   openGraph: {
-    title: "Tráfico en Tiempo Real en España | trafico.live",
+    title: "trafico.live — Tráfico España en Tiempo Real",
     description:
-      "Datos oficiales de la DGT en tiempo real: incidencias, cámaras, radares, combustible y más.",
+      "Mapa interactivo del tráfico español: incidencias, cámaras, radares, combustible y cargadores EV. Datos oficiales DGT.",
     url: BASE_URL,
     siteName: "trafico.live",
     locale: "es_ES",
     type: "website",
   },
-  alternates: {
-    canonical: BASE_URL,
-  },
 };
+
+const SECTION_LINKS = [
+  { href: "/trafico", label: "Tráfico por ciudad", Icon: Activity },
+  { href: "/incidencias", label: "Incidencias activas", Icon: AlertTriangle },
+  { href: "/camaras", label: "Cámaras DGT", Icon: Camera },
+  { href: "/radares", label: "Radares de velocidad", Icon: Radar },
+  { href: "/gasolineras", label: "Gasolineras", Icon: Fuel },
+  { href: "/carreteras", label: "Carreteras", Icon: Route },
+  { href: "/carga-ev", label: "Cargadores EV", Icon: Zap },
+  { href: "/noticias", label: "Noticias", Icon: Newspaper },
+];
 
 async function getHomeStats() {
   try {
@@ -86,29 +90,24 @@ export default async function Dashboard() {
             )}
           </div>
 
-          {/* SSR quick-nav for crawlers and users */}
-          <nav className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-sm" aria-label="Secciones principales">
-            <Link href="/mapa" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
-              <span aria-hidden="true">🗺️</span> Mapa en vivo
-            </Link>
-            <Link href="/carreteras" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
-              <span aria-hidden="true">🛣️</span> Carreteras
-            </Link>
-            <Link href="/precio-gasolina-hoy" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
-              <span aria-hidden="true">⛽</span> Precio gasolina
-            </Link>
-            <Link href="/carga-ev" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
-              <span aria-hidden="true">🔌</span> Carga EV
-            </Link>
-            <Link href="/noticias" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
-              <span aria-hidden="true">📰</span> Noticias
-            </Link>
-            <Link href="/espana" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
-              <span aria-hidden="true">📍</span> Por provincia
-            </Link>
-          </nav>
         </div>
       </section>
+
+      {/* SSR Section Links — crawlable discovery paths */}
+      <nav aria-label="Secciones principales" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {SECTION_LINKS.map(({ href, label, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+            >
+              <Icon className="w-4 h-4 text-tl-600 shrink-0" />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </nav>
 
       {/* Client-side interactive content */}
       <DashboardClient />

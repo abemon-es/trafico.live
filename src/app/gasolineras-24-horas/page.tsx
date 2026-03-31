@@ -11,6 +11,7 @@ import {
   Info,
 } from "lucide-react";
 import prisma from "@/lib/db";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -191,14 +192,11 @@ export default async function Gasolineras24hPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-          {/* Breadcrumbs */}
-          <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6 flex-wrap">
-            <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Combustible</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-gray-900 dark:text-gray-100 font-medium">Gasolineras 24 horas</span>
-          </nav>
+          <Breadcrumbs items={[
+            { name: "Inicio", href: "/" },
+            { name: "Gasolineras", href: "/gasolineras" },
+            { name: "24 Horas", href: "/gasolineras-24-horas" },
+          ]} />
 
           {/* Header */}
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">

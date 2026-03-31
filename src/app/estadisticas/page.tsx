@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { EstadisticasContent } from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -31,8 +32,16 @@ export default function EstadisticasPage({
   searchParams: { tab?: string };
 }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">Cargando...</div>}>
-      <EstadisticasPageContent searchParams={searchParams} />
-    </Suspense>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Estadísticas", href: "/estadisticas" },
+        ]} />
+      </div>
+      <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">Cargando...</div>}>
+        <EstadisticasPageContent searchParams={searchParams} />
+      </Suspense>
+    </>
   );
 }

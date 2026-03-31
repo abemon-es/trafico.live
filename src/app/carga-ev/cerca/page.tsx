@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CercaClient from "./CercaClient";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -19,5 +20,16 @@ export const metadata: Metadata = {
 };
 
 export default function CargaEVCercaPage() {
-  return <CercaClient />;
+  return (
+    <>
+      <Breadcrumbs
+        items={[
+          { name: "Inicio", href: "/" },
+          { name: "Puntos de Recarga", href: "/carga-ev" },
+          { name: "Cerca de mí", href: "/carga-ev/cerca" },
+        ]}
+      />
+      <CercaClient />
+    </>
+  );
 }

@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import RoadDetailContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -22,6 +23,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function RoadDetailPage() {
-  return <RoadDetailContent />;
+export default async function RoadDetailPage({ params }: PageProps) {
+  const { roadId } = await params;
+  const roadName = decodeURIComponent(roadId);
+
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Explorar", href: "/explorar" },
+          { name: "Carreteras", href: "/explorar/carreteras" },
+          { name: roadName, href: `/explorar/carreteras/${roadId}` },
+        ]} />
+      </div>
+      <RoadDetailContent />
+    </>
+  );
 }

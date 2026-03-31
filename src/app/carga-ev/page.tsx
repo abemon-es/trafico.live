@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import CargaEVContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -36,8 +37,18 @@ function LoadingFallback() {
 
 export default function CargaEVPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <CargaEVContent />
-    </Suspense>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs
+          items={[
+            { name: "Inicio", href: "/" },
+            { name: "Puntos de Recarga EV", href: "/carga-ev" },
+          ]}
+        />
+        <Suspense fallback={<LoadingFallback />}>
+          <CargaEVContent />
+        </Suspense>
+      </main>
+    </div>
   );
 }

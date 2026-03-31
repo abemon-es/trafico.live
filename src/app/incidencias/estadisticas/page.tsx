@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import { IncidentStatsContent } from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -32,8 +33,17 @@ function LoadingState() {
 
 export default function IncidentStatsPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
-      <IncidentStatsContent />
-    </Suspense>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Incidencias", href: "/incidencias" },
+          { name: "Estadísticas", href: "/incidencias/estadisticas" },
+        ]} />
+      </div>
+      <Suspense fallback={<LoadingState />}>
+        <IncidentStatsContent />
+      </Suspense>
+    </>
   );
 }

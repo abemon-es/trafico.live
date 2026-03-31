@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import { IncidenciasContent } from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Incidencias de Tráfico",
@@ -37,6 +38,10 @@ export default function IncidenciasPage() {
       {/* Server-rendered header — H1 is immediately in the HTML, visible to crawlers */}
       <div className="bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-0">
+          <Breadcrumbs items={[
+            { name: "Inicio", href: "/" },
+            { name: "Incidencias", href: "/incidencias" },
+          ]} />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Incidencias de Tráfico
           </h1>

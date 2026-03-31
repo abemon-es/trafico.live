@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { MapPin, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 300;
 
@@ -71,14 +72,11 @@ export default async function NacionalesPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          <Link href="/" className="hover:text-gray-700 dark:text-gray-300">Inicio</Link>
-          <span className="mx-2">/</span>
-          <Link href="/carreteras" className="hover:text-gray-700 dark:text-gray-300">Carreteras</Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 dark:text-gray-100">Nacionales</span>
-        </nav>
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Carreteras", href: "/carreteras" },
+          { name: "Nacionales", href: "/carreteras/nacionales" },
+        ]} />
 
         {/* Header */}
         <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-6 mb-6 border border-red-200">

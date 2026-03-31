@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CiudadContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -105,6 +106,13 @@ export default async function CiudadPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(citySchema) }}
       />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Ciudades", href: "/ciudad" },
+          { name: cityData.name, href: `/ciudad/${slug}` },
+        ]} />
+      </div>
       <CiudadContent slug={slug} cityData={cityData} />
     </>
   );

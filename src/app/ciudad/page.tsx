@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, Search, ChevronRight } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -48,6 +49,10 @@ export default function CiudadesPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Ciudades", href: "/ciudad" },
+        ]} />
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">

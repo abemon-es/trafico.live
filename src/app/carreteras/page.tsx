@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Route, Car, Construction, MapPin } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -90,15 +91,13 @@ export default async function CarreterasPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Carreteras", href: "/carreteras" },
+        ]} />
+
         {/* Header */}
         <div className="mb-8">
-          <nav className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            <Link href="/" className="hover:text-gray-700 dark:text-gray-300">
-              Inicio
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900 dark:text-gray-100">Carreteras</span>
-          </nav>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Carreteras de España</h1>
           <p className="text-gray-600 dark:text-gray-400 max-w-3xl">
             Información completa de {totalRoads} carreteras españolas. Estado del tráfico en tiempo
