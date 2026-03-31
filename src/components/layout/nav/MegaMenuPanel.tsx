@@ -34,7 +34,7 @@ export function MegaMenuPanel({
               ? { duration: 0.01 }
               : { type: "spring", stiffness: 400, damping: 30 }
           }
-          className="absolute left-0 right-0 top-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-xl z-40"
+          className="fixed left-0 right-0 top-16 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-xl z-40"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div
