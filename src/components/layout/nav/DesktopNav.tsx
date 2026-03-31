@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { megaMenuPanels } from "./NavData";
 import { useNavState } from "./useNavState";
-import { MegaMenuPanel } from "./MegaMenuPanel";
+import { MegaMenuShell } from "./MegaMenuPanel";
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -65,11 +65,9 @@ export function DesktopNav() {
       const target = event.target as Node;
       // Check if click is inside the nav triggers
       if (navRef.current?.contains(target)) return;
-      // Check if click is inside any mega menu panel (fixed-positioned, outside navRef bounds)
-      const panels = document.querySelectorAll('[id^="mega-panel-"]');
-      for (const panel of panels) {
-        if (panel.contains(target)) return;
-      }
+      // Check if click is inside the mega menu shell (fixed-positioned, outside navRef bounds)
+      const shell = document.getElementById("mega-panel-shell");
+      if (shell?.contains(target)) return;
       cancelTimers();
       closeAll();
     }
@@ -119,7 +117,7 @@ export function DesktopNav() {
               id={`mega-trigger-${panel.id}`}
               type="button"
               aria-expanded={isOpen}
-              aria-controls={`mega-panel-${panel.id}`}
+              aria-controls="mega-panel-shell"
               onClick={() =>
                 setActivePanel(isOpen ? null : panel.id)
               }
@@ -153,23 +151,19 @@ export function DesktopNav() {
         );
       })}
 
-      {/* Panels — full-width, fixed positioning escapes navRef bounds */}
-      {megaMenuPanels.map((panel) => (
-        <div
-          key={`panel-${panel.id}`}
-          id={`mega-panel-${panel.id}`}
-          role="region"
-          aria-labelledby={`mega-trigger-${panel.id}`}
-          className={activePanel === panel.id ? "" : "hidden"}
-        >
-          <MegaMenuPanel
-            panel={panel}
-            isOpen={activePanel === panel.id}
-            onPointerEnter={handleNavPointerEnter}
-            onPointerLeave={scheduleClose}
-          />
-        </div>
-      ))}
+      {/* Persistent mega menu shell — stays mounted while switching panels */}
+      <div
+        id="mega-panel-shell"
+        role="region"
+        aria-label="Mega menu"
+      >
+        <MegaMenuShell
+          activePanel={activePanel}
+          panels={megaMenuPanels}
+          onPointerEnter={handleNavPointerEnter}
+          onPointerLeave={scheduleClose}
+        />
+      </div>
 
       {/* SEO: render all mega menu links in DOM for crawlers */}
       <nav aria-hidden="true" className="sr-only" tabIndex={-1}>

@@ -217,8 +217,7 @@ function parseAEMETResponse(data: CAPAlert[]): AEMETAlert[] {
         const typeText = info.event || info.headline || "";
         const alertType = detectAlertType(typeText);
 
-        // Skip coastal alerts as they don't directly impact road traffic
-        if (alertType === "COASTAL") continue;
+        // Coastal alerts are now included — relevant for maritime section and port traffic
 
         // Map severity
         const severity = CAP_SEVERITY_MAP[info.severity || "Unknown"] || "LOW";

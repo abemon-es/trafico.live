@@ -118,32 +118,204 @@ model TrafficIncident {
   @@index([source, isActive])
 }
 
-/// @deprecated No collector writes to this table. Road-segment weather conditions
-/// were planned but AEMET only provides alert-level data (see WeatherAlert).
-/// Consider removing in a future migration if no collector is implemented.
-model WeatherCondition {
-  id         String    @id @default(cuid())
-  recordedAt DateTime  @db.Timestamptz
-  expiresAt  DateTime? @db.Timestamptz
+// ============================================
+// TRAFFIC DETECTORS (Real-Time Flow Data)
+// ============================================
 
-  // Location
-  roadNumber String
-  kmStart    Decimal @db.Decimal(7, 2)
-  kmEnd      Decimal @db.Decimal(7, 2)
+model TrafficDetector {
+  id         String  @id // DGT detector ID
+  road       String
+  kmPoint    Float?
+  direction  String?
+  latitude   Float
+  longitude  Float
   province   String?
+  lanes      Int?
+  isActive   Boolean @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  readings   TrafficReading[]
 
-  // Conditions
-  conditionType WeatherType
-  severity      WeatherSeverity
-  temperature   Decimal?        @db.Decimal(4, 1)
-  windSpeed     Decimal?        @db.Decimal(5, 1)
-  visibility    Decimal?        @db.Decimal(7, 1)
-  precipitation Decimal?        @db.Decimal(5, 1)
-  description   String?
-
-  @@index([recordedAt])
-  @@index([roadNumber])
+  @@index([road])
   @@index([province])
+  @@index([isActive])
+}
+
+model TrafficReading {
+  id         String   @id @default(cuid())
+  detectorId String
+  detector   TrafficDetector @relation(fields: [detectorId], references: [id], onDelete: Cascade)
+  intensity  Int      // vehicles/hour
+  speed      Float?   // km/h average
+  occupancy  Float?   // % lane occupancy
+  measuredAt DateTime @db.Timestamptz
+  fetchedAt  DateTime @default(now()) @db.Timestamptz
+
+  @@index([detectorId, measuredAt])
+  @@index([measuredAt])
+}
+
+// ============================================
+// ROAD RISK ZONES (INVIVE, Motorcycle, Wildlife)
+// ============================================
+
+model RoadRiskZone {
+  id            String       @id
+  type          RiskZoneType
+  road          String
+  fromKm        Float
+  toKm          Float
+  startLat      Float
+  startLng      Float
+  endLat        Float?
+  endLng        Float?
+  province      String?
+  description   String?
+  severity      String?
+  sourceUpdated DateTime?
+  isActive      Boolean @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([type])
+  @@index([road])
+  @@index([province])
+}
+
+enum RiskZoneType {
+  INVIVE       // Speed enforcement intensification
+  MOTORCYCLE   // High motorcycle accident rate
+  WILDLIFE     // Wildlife-vehicle collision hotspot
+  CAMINO       // Camino de Santiago parallel/intersection risk
+}
+
+// ============================================
+// ANDORRA
+// ============================================
+
+model AndorraIncident {
+  id          String   @id @default(cuid())
+  sourceId    Int      @unique // mobilitat.ad incident ID
+  category    String   // BLAU, TARONJA, VERMELL, etc.
+  categoryId  Int
+  title       String
+  description String?  @db.Text
+  latitude    Float
+  longitude   Float
+  startedAt   DateTime @db.Timestamptz
+  endedAt     DateTime? @db.Timestamptz
+  isActive    Boolean  @default(true)
+  fetchedAt   DateTime @default(now()) @db.Timestamptz
+
+  @@index([isActive])
+  @@index([startedAt])
+}
+
+model AndorraCamera {
+  id        String  @id // camera slug from mobilitat.ad
+  name      String
+  latitude  Float
+  longitude Float
+  elevation Int?    // meters
+  route     String? // CG1, CG2, etc.
+  imageUrl  String
+  isActive  Boolean @default(true)
+  lastUpdated DateTime @default(now())
+
+  @@index([route])
+  @@index([isActive])
+}
+
+// ============================================
+// PORTUGAL
+// ============================================
+
+model PortugalWeatherAlert {
+  id          String   @id @default(cuid())
+  alertId     String   @unique // IPMA warning ID
+  type        String   // Agitação Marítima, Nevoeiro, Precipitação, etc.
+  severity    String   // green, yellow, orange, red
+  areaCode    String   // IPMA area code
+  areaName    String?
+  startedAt   DateTime @db.Timestamptz
+  endedAt     DateTime? @db.Timestamptz
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  fetchedAt   DateTime @default(now()) @db.Timestamptz
+
+  @@index([isActive])
+  @@index([severity])
+  @@index([areaCode])
+}
+
+model PortugalGasStation {
+  id            String   @id // DGEG station ID
+  name          String
+  latitude      Float
+  longitude     Float
+  address       String?
+  locality      String?
+  postalCode    String?
+  district      String?  // Portuguese district name
+  districtId    String?  // District numeric ID
+  municipality  String?
+  municipalityId String?
+  brand         String?
+
+  // Fuel prices (EUR)
+  priceGasoleoSimples   Decimal? @db.Decimal(5, 3)
+  priceGasoleoEspecial  Decimal? @db.Decimal(5, 3)
+  priceGasoleoColorido  Decimal? @db.Decimal(5, 3)
+  priceGasolina95       Decimal? @db.Decimal(5, 3)
+  priceGasolina95Especial Decimal? @db.Decimal(5, 3)
+  priceGasolina98       Decimal? @db.Decimal(5, 3)
+  priceGasolina98Especial Decimal? @db.Decimal(5, 3)
+  priceGPL              Decimal? @db.Decimal(5, 3)
+  priceGNC              Decimal? @db.Decimal(5, 3)
+
+  // Station info
+  stationType String? // road, urban
+  is24h       Boolean @default(false)
+
+  lastPriceUpdate DateTime? @db.Timestamptz
+  lastUpdated     DateTime  @default(now()) @db.Timestamptz
+
+  priceHistory PortugalGasStationPriceHistory[]
+
+  @@index([district])
+  @@index([municipality])
+  @@index([priceGasoleoSimples])
+  @@index([priceGasolina95])
+}
+
+model PortugalGasStationPriceHistory {
+  id         String   @id @default(cuid())
+  stationId  String
+  station    PortugalGasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  recordedAt DateTime @db.Date
+
+  priceGasoleoSimples Decimal? @db.Decimal(5, 3)
+  priceGasolina95     Decimal? @db.Decimal(5, 3)
+  priceGasolina98     Decimal? @db.Decimal(5, 3)
+  priceGPL            Decimal? @db.Decimal(5, 3)
+
+  @@unique([stationId, recordedAt])
+  @@index([stationId])
+  @@index([recordedAt])
+}
+
+model PortugalHistoricalAccidents {
+  id            String  @id @default(cuid())
+  year          Int
+  district      String  // Portuguese district
+  districtName  String?
+  accidents     Int
+  fatalities    Int
+  seriousInjury Int
+  minorInjury   Int
+
+  @@unique([year, district])
+  @@index([year])
+  @@index([district])
 }
 
 // AEMET weather alerts for traffic impact correlation
@@ -480,21 +652,7 @@ model HistoricalAccidents {
   @@index([province, year])
 }
 
-model VehicleFleet {
-  id           String  @id @default(cuid())
-  provinceCode String
-  provinceName String?
-  year         Int
-  month        Int? // null for annual data
-  vehicleType  String // "car", "motorcycle", "truck", "bus", "trailer", "other"
-  fuelType     String? // "gasoline", "diesel", "electric", "hybrid", "other"
-  count        Int
-
-  @@unique([provinceCode, year, month, vehicleType, fuelType])
-  @@index([provinceCode])
-  @@index([year])
-  @@index([vehicleType])
-}
+// VehicleFleet model removed — was never populated by any collector or seed
 
 // ============================================
 // REFERENCE DATA
@@ -697,23 +855,7 @@ enum IncidentType {
   OTHER
 }
 
-enum WeatherType {
-  RAIN
-  SNOW
-  ICE
-  FOG
-  WIND
-  STORM
-  HEAT
-  COLD
-}
-
-enum WeatherSeverity {
-  FAVORABLE
-  MODERATE
-  ADVERSE
-  EXTREME
-}
+// WeatherType and WeatherSeverity enums removed — WeatherCondition model was deprecated
 
 enum ChargerType {
   AC_TYPE1
@@ -864,7 +1006,6 @@ model GasStation {
 
   // Relations
   priceHistory  GasStationPriceHistory[]
-  dailyRankings StationDailyRanking[]
 
   @@index([province])
   @@index([municipality])
@@ -989,51 +1130,7 @@ model PriceAlert {
   @@index([isActive, fuelType])
 }
 
-/// @deprecated No code writes to this table. Rankings are computed live in
-/// /api/gas-stations/[id]/ranking via SQL queries. Consider removing in a
-/// future migration if pre-computed rankings are not needed for performance.
-model StationDailyRanking {
-  id         String     @id @default(cuid())
-  stationId  String
-  station    GasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
-  recordedAt DateTime   @db.Date
-
-  // Gasóleo A rankings by scope (null = not enough data in scope)
-  municipalityRankDiesel  Int?
-  municipalityTotalDiesel Int?
-  provinceRankDiesel      Int
-  provinceTotalDiesel     Int
-  nationalRankDiesel      Int
-  nationalTotalDiesel     Int
-
-  // Gasolina 95 rankings by scope
-  municipalityRank95  Int?
-  municipalityTotal95 Int?
-  provinceRank95      Int
-  provinceTotal95     Int
-  nationalRank95      Int
-  nationalTotal95     Int
-
-  // Gasolina 98 rankings by scope
-  municipalityRank98  Int?
-  municipalityTotal98 Int?
-  provinceRank98      Int?
-  provinceTotal98     Int?
-  nationalRank98      Int?
-  nationalTotal98     Int?
-
-  // GLP rankings by scope
-  municipalityRankGlp  Int?
-  municipalityTotalGlp Int?
-  provinceRankGlp      Int?
-  provinceTotalGlp     Int?
-  nationalRankGlp      Int?
-  nationalTotalGlp     Int?
-
-  @@unique([stationId, recordedAt])
-  @@index([stationId])
-  @@index([recordedAt])
-}
+// StationDailyRanking model removed — rankings are computed live via SQL
 
 // ---------------------------------------------------------------------------
 // Noticias — unified content: auto-generated reports + manual articles

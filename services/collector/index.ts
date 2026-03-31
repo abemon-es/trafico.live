@@ -8,12 +8,25 @@ import { getPrisma, getPool } from "./shared/prisma.js";
 
 const TASK = process.env.TASK;
 
+const VALID_TASKS = [
+  // Real-time (every 2-5 min)
+  "v16", "incident", "panel", "detector",
+  // Frequent (6h-daily)
+  "weather", "camera", "radar", "charger", "gas-station", "maritime-fuel",
+  // Infrequent (weekly)
+  "speedlimit", "risk-zones", "zbe",
+  // Content generation
+  "insights",
+  // International
+  "andorra", "portugal-weather", "portugal-fuel",
+  // One-shot / manual
+  "historical-accidents", "imd", "portugal-accidents",
+];
+
 if (!TASK) {
-  console.error("TASK environment variable is required. Valid tasks: v16, incident, panel, weather, camera, radar, charger, speedlimit, insights, gas-station, historical-accidents, imd");
+  console.error(`TASK environment variable is required. Valid tasks: ${VALID_TASKS.join(", ")}`);
   process.exit(1);
 }
-
-const VALID_TASKS = ["v16", "incident", "panel", "weather", "camera", "radar", "charger", "speedlimit", "insights", "gas-station", "historical-accidents", "imd"];
 
 if (!VALID_TASKS.includes(TASK)) {
   console.error(`Unknown task: ${TASK}. Valid tasks: ${VALID_TASKS.join(", ")}`);

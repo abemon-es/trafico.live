@@ -28,56 +28,76 @@ x-collector: &collector-base
     NODE_ENV: production
 
 services:
-  # ── Real-time collectors (every 5 min) ────────────────────────────
+  # ── Real-time collectors (every 2 min — matches DGT feed refresh) ──
   collector-incident:
     <<: *collector-base
     environment:
       TASK: incident
-    # Coolify cron: */5 * * * *
+    # Coolify cron: */2 * * * *
+    # Sources: DGT, SCT, Euskadi, Madrid, Valencia, DT-GV, Navarra, CyL, Barcelona
 
   collector-v16:
     <<: *collector-base
     environment:
       TASK: v16
-    # Coolify cron: */5 * * * *
+    # Coolify cron: */2 * * * *
 
+  # ── Near-real-time (every 5 min) ───────────────────────────────────
   collector-panel:
     <<: *collector-base
     environment:
       TASK: panel
     # Coolify cron: */5 * * * *
 
-  # ── Frequent collectors ───────────────────────────────────────────
+  collector-detector:
+    <<: *collector-base
+    environment:
+      TASK: detector
+    # Coolify cron: */5 * * * *
+    # DGT MeasuredDataPublication — traffic intensity, speed, occupancy
+
+  # ── Frequent (every 6 hours — AEMET updates ~2x/day) ──────────────
   collector-weather:
     <<: *collector-base
     environment:
       TASK: weather
-    # Coolify cron: */30 * * * *
+    # Coolify cron: 0 */6 * * *
+    # Was */30 — AEMET only updates ~2x/day, saves 46 API calls/day
 
+  # ── Content generation (3x daily) ─────────────────────────────────
   collector-insights:
     <<: *collector-base
     environment:
       TASK: insights
     # Coolify cron: 15 7,14,21 * * *
 
-  # ── Daily collectors ──────────────────────────────────────────────
+  # ── Fuel prices (3x daily) ────────────────────────────────────────
   collector-gas-station:
     <<: *collector-base
     environment:
       TASK: gas-station
     # Coolify cron: 0 6,13,20 * * *
 
+  collector-maritime-fuel:
+    <<: *collector-base
+    environment:
+      TASK: maritime-fuel
+    # Coolify cron: 0 7,14,21 * * *
+    # MINETUR PostesMaritimos — ~200 maritime fuel stations
+
+  collector-portugal-fuel:
+    <<: *collector-base
+    environment:
+      TASK: portugal-fuel
+    # Coolify cron: 0 8,15,22 * * *
+    # DGEG fuel prices — all Portuguese gas stations
+
+  # ── Daily collectors ──────────────────────────────────────────────
   collector-camera:
     <<: *collector-base
     environment:
       TASK: camera
     # Coolify cron: 0 4 * * *
-
-  collector-radar:
-    <<: *collector-base
-    environment:
-      TASK: radar
-    # Coolify cron: 0 3 * * *
 
   collector-charger:
     <<: *collector-base
@@ -85,9 +105,44 @@ services:
       TASK: charger
     # Coolify cron: 0 6 * * *
 
-  # ── Infrequent collectors ─────────────────────────────────────────
+  collector-andorra:
+    <<: *collector-base
+    environment:
+      TASK: andorra
+    # Coolify cron: */5 * * * *
+    # mobilitat.ad incidents + cameras
+
+  collector-portugal-weather:
+    <<: *collector-base
+    environment:
+      TASK: portugal-weather
+    # Coolify cron: 0 */6 * * *
+    # IPMA weather alerts
+
+  # ── Weekly collectors ─────────────────────────────────────────────
+  collector-radar:
+    <<: *collector-base
+    environment:
+      TASK: radar
+    # Coolify cron: 0 3 * * 0
+    # Was daily — radar positions are semi-static
+
   collector-speedlimit:
     <<: *collector-base
     environment:
       TASK: speedlimit
     # Coolify cron: 0 3 * * 0
+
+  collector-risk-zones:
+    <<: *collector-base
+    environment:
+      TASK: risk-zones
+    # Coolify cron: 0 4 * * 0
+    # INVIVE + motorcycle risk + TEFIVA wildlife zones
+
+  collector-zbe:
+    <<: *collector-base
+    environment:
+      TASK: zbe
+    # Coolify cron: 0 5 * * 0
+    # DGT ZBE ControledZonePublication — 48 cities
