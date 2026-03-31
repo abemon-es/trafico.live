@@ -96,55 +96,76 @@ function AccordionSection({
             className="overflow-hidden"
           >
             <div className="pb-3 px-2">
-              {panel.categories.map((category) => (
-                <div key={category.title} className="mb-3">
-                  {/* Category header with accent */}
-                  <div className="flex items-center gap-2 px-2 py-1.5 mb-0.5">
-                    <div className="w-0.5 h-3 rounded-full bg-tl-400/60 dark:bg-tl-500/40" />
-                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.12em] font-heading">
-                      {category.title}
-                    </p>
-                  </div>
-                  {category.items.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActiveRoute(pathname, item.href);
+              {panel.categories.map((category, catIdx) => {
+                const prevCount = panel.categories
+                  .slice(0, catIdx)
+                  .reduce((sum, c) => sum + c.items.length, 0);
 
-                    return (
-                      <Link
-                        key={item.href + item.name}
-                        href={item.href}
-                        prefetch={false}
-                        className={`
-                          flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors
-                          ${
-                            active
-                              ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-                              : "text-gray-600 dark:text-gray-400 active:bg-gray-100 dark:active:bg-gray-800"
+                return (
+                  <div key={category.title} className="mb-3">
+                    {/* Category header with accent */}
+                    <div className="flex items-center gap-2 px-2 py-1.5 mb-0.5">
+                      <div className="w-0.5 h-3 rounded-full bg-tl-400/60 dark:bg-tl-500/40" />
+                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.12em] font-heading">
+                        {category.title}
+                      </p>
+                    </div>
+                    {category.items.map((item, idx) => {
+                      const Icon = item.icon;
+                      const active = isActiveRoute(pathname, item.href);
+                      const staggerDelay = (prevCount + idx) * 0.03;
+
+                      return (
+                        <motion.div
+                          key={item.href + item.name}
+                          initial={
+                            reduceMotion
+                              ? false
+                              : { opacity: 0, x: -8 }
                           }
-                        `}
-                      >
-                        {/* Icon container — matches desktop */}
-                        <span
-                          className={`
-                            flex items-center justify-center w-8 h-8 rounded-lg shrink-0
-                            ${
-                              active
-                                ? "bg-tl-100 dark:bg-tl-800/30 text-tl-600 dark:text-tl-300"
-                                : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500"
-                            }
-                          `}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            duration: 0.15,
+                            ease: "easeOut",
+                            delay: reduceMotion ? 0 : staggerDelay,
+                          }}
                         >
-                          <Icon className="w-4 h-4" />
-                        </span>
-                        <span className="flex-1">{item.name}</span>
-                        {active && (
-                          <ArrowRight className="w-3.5 h-3.5 text-tl-400 dark:text-tl-500" />
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              ))}
+                          <Link
+                            href={item.href}
+                            prefetch={false}
+                            className={`
+                              flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors
+                              ${
+                                active
+                                  ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+                                  : "text-gray-600 dark:text-gray-400 active:bg-gray-100 dark:active:bg-gray-800"
+                              }
+                            `}
+                          >
+                            {/* Icon container — matches desktop */}
+                            <span
+                              className={`
+                                flex items-center justify-center w-8 h-8 rounded-lg shrink-0
+                                ${
+                                  active
+                                    ? "bg-tl-100 dark:bg-tl-800/30 text-tl-600 dark:text-tl-300"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500"
+                                }
+                              `}
+                            >
+                              <Icon className="w-4 h-4" />
+                            </span>
+                            <span className="flex-1">{item.name}</span>
+                            {active && (
+                              <ArrowRight className="w-3.5 h-3.5 text-tl-400 dark:text-tl-500" />
+                            )}
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
         )}

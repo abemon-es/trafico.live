@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CookieSettingsButton } from "@/components/legal/CookieConsent";
 import { Logo } from "@/components/brand/Logo";
 import { footerColumns, footerCities } from "@/components/layout/nav/NavData";
@@ -6,6 +9,7 @@ import { footerColumns, footerCities } from "@/components/layout/nav/NavData";
 const DATA_SOURCES = ["DGT NAP", "AEMET", "MITERD", "MINETUR"];
 
 export function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -58,7 +62,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-400 hover:text-gray-100 block py-1.5 transition-colors"
+                      className="text-sm text-gray-400 hover:text-gray-100 hover:translate-x-0.5 block py-1.5 transition-all duration-150"
                     >
                       {link.name}
                     </Link>
@@ -79,15 +83,22 @@ export function Footer() {
             Tráfico por ciudad
           </h3>
           <div className="flex flex-wrap gap-2">
-            {footerCities.map((city) => (
-              <Link
-                key={city.slug}
-                href={`/ciudad/${city.slug}`}
-                className="px-3 py-1.5 rounded-full text-xs font-medium bg-tl-900 border border-tl-800 text-gray-400 hover:border-tl-600 hover:text-tl-300 transition-colors"
-              >
-                {city.name}
-              </Link>
-            ))}
+            {footerCities.map((city) => {
+              const cityActive = pathname.startsWith(`/ciudad/${city.slug}`);
+              return (
+                <Link
+                  key={city.slug}
+                  href={`/ciudad/${city.slug}`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 ${
+                    cityActive
+                      ? "bg-tl-600 border border-tl-500 text-white"
+                      : "bg-tl-900 border border-tl-800 text-gray-400 hover:border-tl-600 hover:text-tl-300"
+                  }`}
+                >
+                  {city.name}
+                </Link>
+              );
+            })}
           </div>
         </nav>
 

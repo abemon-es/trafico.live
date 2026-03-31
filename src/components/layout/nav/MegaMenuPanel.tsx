@@ -90,11 +90,11 @@ export function MegaMenuPanel({
                             {/* Icon container */}
                             <span
                               className={`
-                                flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-colors
+                                flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-colors duration-150
                                 ${
                                   active
                                     ? "bg-tl-100 dark:bg-tl-800/30 text-tl-600 dark:text-tl-300"
-                                    : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 group-hover:bg-tl-50 dark:group-hover:bg-tl-900/30 group-hover:text-tl-500 dark:group-hover:text-tl-400"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 group-hover:bg-tl-100 dark:group-hover:bg-tl-800/40 group-hover:text-tl-600 dark:group-hover:text-tl-300"
                                 }
                               `}
                             >
@@ -126,16 +126,25 @@ export function MegaMenuPanel({
                   <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] shrink-0 mr-1">
                     Tráfico en:
                   </span>
-                  {panel.cityStrip.map((city) => (
-                    <Link
-                      key={city.slug}
-                      href={`/trafico/${city.slug}`}
-                      prefetch={false}
-                      className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
-                    >
-                      {city.name}
-                    </Link>
-                  ))}
+                  {panel.cityStrip.map((city) => {
+                    const cityActive =
+                      pathname.startsWith(`/trafico/${city.slug}`) ||
+                      pathname.startsWith(`/ciudad/${city.slug}`);
+                    return (
+                      <Link
+                        key={city.slug}
+                        href={`/trafico/${city.slug}`}
+                        prefetch={false}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-150 ${
+                          cityActive
+                            ? "bg-tl-500 text-white"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:text-tl-600 dark:hover:text-tl-400"
+                        }`}
+                      >
+                        {city.name}
+                      </Link>
+                    );
+                  })}
                   <Link
                     href="/ciudad"
                     prefetch={false}
