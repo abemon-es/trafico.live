@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { Map as MapIcon } from "lucide-react";
+import { useTrafficStream } from "@/hooks/useTrafficStream";
 
 const StaleDataBanner = dynamic(
   () => import("@/components/ui/StaleDataBanner").then((m) => m.StaleDataBanner),
@@ -67,6 +68,9 @@ function ChartSkeleton() {
 }
 
 export function DashboardClient() {
+  // Connect to SSE stream — triggers SWR revalidation on server-side data changes
+  useTrafficStream();
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <Suspense fallback={null}>
