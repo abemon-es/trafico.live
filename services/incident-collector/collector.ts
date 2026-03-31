@@ -7,6 +7,8 @@
  * - Euskadi (País Vasco)
  *
  * Stores them in the TrafficIncident table for database-first API serving.
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=incident
  */
 
 import { PrismaClient, IncidentType, Severity, RoadType, Direction } from "@prisma/client";

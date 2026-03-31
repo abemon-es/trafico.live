@@ -5,6 +5,8 @@
  * and stores them in PostgreSQL for fast API access.
  *
  * Run daily via Railway cron to keep camera data fresh.
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=camera
  */
 
 import { PrismaClient } from "@prisma/client";

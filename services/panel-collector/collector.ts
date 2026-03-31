@@ -9,6 +9,8 @@
  * Data sources:
  * - Predefined locations: https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/paneles/content.xml
  * - Current messages: https://infocar.dgt.es/datex2/dgt/SituationPublication/paneles/content.xml
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=panel
  */
 
 import { PrismaClient, PanelMessageType, Direction } from "@prisma/client";

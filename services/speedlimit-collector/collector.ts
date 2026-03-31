@@ -11,6 +11,8 @@
  *
  * ROSATTE (ROad Safety ATTributes Exchange) is a European standard
  * for exchanging road safety attributes including speed limits.
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=speedlimit
  */
 
 import { PrismaClient, Direction, RoadType, SpeedLimitType, VehicleCategory, LaneType } from "@prisma/client";

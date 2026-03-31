@@ -3,6 +3,8 @@
  *
  * Fetches V16 beacons from DGT NAP API every 5 minutes and stores them
  * in PostgreSQL for historical analysis.
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=v16
  */
 
 import { PrismaClient, Direction, Severity, MobilityType, RoadType } from "@prisma/client";

@@ -8,6 +8,8 @@
  *
  * Data source:
  * - https://infocar.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=charger
  */
 
 import { PrismaClient, ChargerType } from "@prisma/client";

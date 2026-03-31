@@ -3,6 +3,8 @@
  *
  * Fetches weather alerts from AEMET that could impact traffic.
  * Stores them in the WeatherAlert table for correlation with incidents.
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=weather
  */
 
 import { PrismaClient, WeatherAlertType as PrismaWeatherAlertType } from "@prisma/client";

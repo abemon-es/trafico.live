@@ -12,6 +12,8 @@
  *
  * Data source:
  * - https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=gas-station
  */
 
 import { PrismaClient } from "@prisma/client";

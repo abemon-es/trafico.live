@@ -11,6 +11,8 @@
  * Run daily via Railway cron to keep radar data fresh.
  *
  * Source: https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/radares/content.xml
+ *
+ * @deprecated Use unified collector: services/collector/ with TASK=radar
  */
 
 import { PrismaClient, RadarType, Direction } from "@prisma/client";
