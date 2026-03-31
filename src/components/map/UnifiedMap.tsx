@@ -19,6 +19,7 @@ import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { TimeSlider } from "./TimeSlider";
 import { CorridorView } from "./CorridorView";
 import { ZoneInsights } from "./ZoneInsights";
+import { MapComparator } from "./MapComparator";
 
 // Dynamic import for map to avoid SSR issues
 const TrafficMap = dynamic(() => import("./TrafficMap"), {
@@ -493,7 +494,7 @@ export function UnifiedMap({
   const { data: timelineData, isLoading: timelineLoading } = useSWR<{
     success: boolean;
     data: { slots: { timestamp: string; incidents: Incident[]; count: number }[]; hours: number; totalIncidents: number };
-  }>(timelineActive ? "/api/incidents/timeline?hours=24&slots=24" : null, fetcher, { revalidateOnFocus: false });
+  }>((timelineActive || comparatorActive) ? "/api/incidents/timeline?hours=24&slots=24" : null, fetcher, { revalidateOnFocus: false });
 
   const { data: flowData } = useSWR<{ success: boolean; data: GeoJSON.FeatureCollection }>(
     flowActive ? "/api/roads/traffic-flow" : null,
@@ -693,8 +694,22 @@ export function UnifiedMap({
 
       {/* Main content area */}
       <div className={`${isFullscreen ? "flex-1 flex" : ""}`}>
+        {/* Comparator mode */}
+        {viewMode === "map" && comparatorActive && (
+          <div className={`${isFullscreen ? "flex-1" : ""}`} style={{ height: isFullscreen ? "100%" : mapHeight }}>
+            <MapComparator
+              currentIncidents={filteredIncidents.map((i) => ({ lat: i.lat, lng: i.lng, effect: i.effect }))}
+              historicalIncidents={
+                timelineData?.data?.slots?.[0]?.incidents?.map((i: Incident) => ({ lat: i.lat, lng: i.lng, effect: i.effect })) || []
+              }
+              timeLabel="Hace 24h"
+              onClose={() => setComparatorActive(false)}
+            />
+          </div>
+        )}
+
         {/* Map */}
-        {viewMode === "map" && (
+        {viewMode === "map" && !comparatorActive && (
           <div className={`${isFullscreen ? "flex-1" : ""} relative`} style={{ height: isFullscreen ? "100%" : mapHeight }}>
             <TrafficMap
               ref={mapRef}
