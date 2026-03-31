@@ -33,6 +33,9 @@ interface AccidentRecord {
   fatalities: number;
   hospitalized: number;
   nonHospitalized: number;
+  // Optional metadata fields (not stored in DB)
+  dataNote?: string;
+  totalInjured?: number;
 }
 
 function loadRecords(): AccidentRecord[] {

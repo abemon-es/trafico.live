@@ -1,0 +1,6710 @@
+[
+  {
+    "year": 2011,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 834,
+    "fatalities": 13,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 415,
+    "fatalities": 26,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2488,
+    "fatalities": 54,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 754,
+    "fatalities": 35,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 471,
+    "fatalities": 18,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 884,
+    "fatalities": 48,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 2003,
+    "fatalities": 50,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 17342,
+    "fatalities": 145,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 876,
+    "fatalities": 41,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 481,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2474,
+    "fatalities": 33,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 704,
+    "fatalities": 34,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 556,
+    "fatalities": 34,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1138,
+    "fatalities": 36,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 916,
+    "fatalities": 63,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 404,
+    "fatalities": 25,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2271,
+    "fatalities": 71,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1403,
+    "fatalities": 40,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 295,
+    "fatalities": 20,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1735,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 649,
+    "fatalities": 21,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 380,
+    "fatalities": 29,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 827,
+    "fatalities": 43,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 823,
+    "fatalities": 41,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1164,
+    "fatalities": 40,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 651,
+    "fatalities": 22,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 366,
+    "fatalities": 35,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 13962,
+    "fatalities": 138,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 1963,
+    "fatalities": 43,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 625,
+    "fatalities": 71,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 392,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 277,
+    "fatalities": 34,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1864,
+    "fatalities": 42,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 314,
+    "fatalities": 26,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 656,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1672,
+    "fatalities": 54,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 629,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1221,
+    "fatalities": 19,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 694,
+    "fatalities": 21,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 270,
+    "fatalities": 13,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 2421,
+    "fatalities": 76,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 226,
+    "fatalities": 18,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 1998,
+    "fatalities": 61,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 172,
+    "fatalities": 10,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 1026,
+    "fatalities": 47,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4214,
+    "fatalities": 110,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 565,
+    "fatalities": 25,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 2076,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 189,
+    "fatalities": 18,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1556,
+    "fatalities": 47,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 240,
+    "fatalities": 1,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2011,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 501,
+    "fatalities": 1,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 910,
+    "fatalities": 17,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 497,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2018,
+    "fatalities": 48,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 850,
+    "fatalities": 38,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 348,
+    "fatalities": 23,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 812,
+    "fatalities": 48,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 2164,
+    "fatalities": 60,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 17836,
+    "fatalities": 181,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 799,
+    "fatalities": 26,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 472,
+    "fatalities": 14,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2261,
+    "fatalities": 37,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 707,
+    "fatalities": 31,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 484,
+    "fatalities": 35,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1144,
+    "fatalities": 41,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1077,
+    "fatalities": 55,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 367,
+    "fatalities": 21,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2435,
+    "fatalities": 61,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1635,
+    "fatalities": 43,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 297,
+    "fatalities": 17,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1792,
+    "fatalities": 18,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 542,
+    "fatalities": 24,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 368,
+    "fatalities": 24,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 823,
+    "fatalities": 22,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 814,
+    "fatalities": 43,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1163,
+    "fatalities": 55,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 638,
+    "fatalities": 13,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 469,
+    "fatalities": 33,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 13633,
+    "fatalities": 135,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 1929,
+    "fatalities": 40,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 673,
+    "fatalities": 50,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 391,
+    "fatalities": 44,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 325,
+    "fatalities": 17,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1935,
+    "fatalities": 42,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 251,
+    "fatalities": 13,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 702,
+    "fatalities": 35,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1729,
+    "fatalities": 52,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 655,
+    "fatalities": 24,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1165,
+    "fatalities": 26,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 713,
+    "fatalities": 14,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 360,
+    "fatalities": 14,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 2464,
+    "fatalities": 50,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 171,
+    "fatalities": 9,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 1934,
+    "fatalities": 39,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 165,
+    "fatalities": 14,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 1001,
+    "fatalities": 39,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4265,
+    "fatalities": 72,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 812,
+    "fatalities": 28,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1894,
+    "fatalities": 33,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 173,
+    "fatalities": 9,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1511,
+    "fatalities": 48,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 143,
+    "fatalities": 0,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2012,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 399,
+    "fatalities": 0,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 906,
+    "fatalities": 17,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 481,
+    "fatalities": 19,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2465,
+    "fatalities": 42,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 788,
+    "fatalities": 30,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 378,
+    "fatalities": 19,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 755,
+    "fatalities": 25,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3431,
+    "fatalities": 45,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 18402,
+    "fatalities": 141,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 836,
+    "fatalities": 36,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 506,
+    "fatalities": 22,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2318,
+    "fatalities": 37,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 689,
+    "fatalities": 22,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 586,
+    "fatalities": 38,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1323,
+    "fatalities": 36,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1256,
+    "fatalities": 73,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 374,
+    "fatalities": 30,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2265,
+    "fatalities": 47,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1820,
+    "fatalities": 33,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 281,
+    "fatalities": 8,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1765,
+    "fatalities": 24,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 551,
+    "fatalities": 26,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 422,
+    "fatalities": 22,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 816,
+    "fatalities": 24,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 827,
+    "fatalities": 26,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1195,
+    "fatalities": 42,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 655,
+    "fatalities": 16,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 522,
+    "fatalities": 14,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 14114,
+    "fatalities": 130,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 2711,
+    "fatalities": 49,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 863,
+    "fatalities": 57,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 396,
+    "fatalities": 31,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 313,
+    "fatalities": 14,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 2298,
+    "fatalities": 46,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 270,
+    "fatalities": 15,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 698,
+    "fatalities": 25,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1694,
+    "fatalities": 31,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 811,
+    "fatalities": 12,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1653,
+    "fatalities": 23,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 815,
+    "fatalities": 20,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 309,
+    "fatalities": 8,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 3617,
+    "fatalities": 48,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 119,
+    "fatalities": 9,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 1969,
+    "fatalities": 42,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 148,
+    "fatalities": 6,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 884,
+    "fatalities": 25,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4378,
+    "fatalities": 77,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 783,
+    "fatalities": 22,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1880,
+    "fatalities": 22,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 140,
+    "fatalities": 13,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1470,
+    "fatalities": 40,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 166,
+    "fatalities": 1,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2013,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 407,
+    "fatalities": 0,
+    "hospitalized": 0,
+    "nonHospitalized": 0,
+    "dataNote": "24h-deaths-no-hosp-split"
+  },
+  {
+    "year": 2014,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 918,
+    "fatalities": 5,
+    "hospitalized": 80,
+    "nonHospitalized": 1127
+  },
+  {
+    "year": 2014,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 616,
+    "fatalities": 23,
+    "hospitalized": 101,
+    "nonHospitalized": 725
+  },
+  {
+    "year": 2014,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2602,
+    "fatalities": 67,
+    "hospitalized": 268,
+    "nonHospitalized": 3315
+  },
+  {
+    "year": 2014,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 691,
+    "fatalities": 19,
+    "hospitalized": 94,
+    "nonHospitalized": 983
+  },
+  {
+    "year": 2014,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 464,
+    "fatalities": 12,
+    "hospitalized": 71,
+    "nonHospitalized": 577
+  },
+  {
+    "year": 2014,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 925,
+    "fatalities": 40,
+    "hospitalized": 147,
+    "nonHospitalized": 1193
+  },
+  {
+    "year": 2014,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3229,
+    "fatalities": 50,
+    "hospitalized": 340,
+    "nonHospitalized": 4062
+  },
+  {
+    "year": 2014,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 18473,
+    "fatalities": 159,
+    "hospitalized": 1172,
+    "nonHospitalized": 23427
+  },
+  {
+    "year": 2014,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 747,
+    "fatalities": 24,
+    "hospitalized": 123,
+    "nonHospitalized": 901
+  },
+  {
+    "year": 2014,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 472,
+    "fatalities": 16,
+    "hospitalized": 61,
+    "nonHospitalized": 648
+  },
+  {
+    "year": 2014,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2709,
+    "fatalities": 41,
+    "hospitalized": 202,
+    "nonHospitalized": 3974
+  },
+  {
+    "year": 2014,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 672,
+    "fatalities": 29,
+    "hospitalized": 92,
+    "nonHospitalized": 789
+  },
+  {
+    "year": 2014,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 635,
+    "fatalities": 19,
+    "hospitalized": 79,
+    "nonHospitalized": 894
+  },
+  {
+    "year": 2014,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1418,
+    "fatalities": 37,
+    "hospitalized": 151,
+    "nonHospitalized": 1809
+  },
+  {
+    "year": 2014,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1114,
+    "fatalities": 55,
+    "hospitalized": 226,
+    "nonHospitalized": 1380
+  },
+  {
+    "year": 2014,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 362,
+    "fatalities": 17,
+    "hospitalized": 44,
+    "nonHospitalized": 501
+  },
+  {
+    "year": 2014,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2329,
+    "fatalities": 27,
+    "hospitalized": 261,
+    "nonHospitalized": 2961
+  },
+  {
+    "year": 2014,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1421,
+    "fatalities": 49,
+    "hospitalized": 181,
+    "nonHospitalized": 1956
+  },
+  {
+    "year": 2014,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 222,
+    "fatalities": 14,
+    "hospitalized": 24,
+    "nonHospitalized": 257
+  },
+  {
+    "year": 2014,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1902,
+    "fatalities": 16,
+    "hospitalized": 202,
+    "nonHospitalized": 2225
+  },
+  {
+    "year": 2014,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 624,
+    "fatalities": 19,
+    "hospitalized": 67,
+    "nonHospitalized": 876
+  },
+  {
+    "year": 2014,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 387,
+    "fatalities": 24,
+    "hospitalized": 108,
+    "nonHospitalized": 431
+  },
+  {
+    "year": 2014,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 1062,
+    "fatalities": 30,
+    "hospitalized": 119,
+    "nonHospitalized": 1463
+  },
+  {
+    "year": 2014,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 609,
+    "fatalities": 32,
+    "hospitalized": 100,
+    "nonHospitalized": 784
+  },
+  {
+    "year": 2014,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1144,
+    "fatalities": 37,
+    "hospitalized": 194,
+    "nonHospitalized": 1425
+  },
+  {
+    "year": 2014,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 650,
+    "fatalities": 11,
+    "hospitalized": 66,
+    "nonHospitalized": 876
+  },
+  {
+    "year": 2014,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 546,
+    "fatalities": 33,
+    "hospitalized": 100,
+    "nonHospitalized": 646
+  },
+  {
+    "year": 2014,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 15078,
+    "fatalities": 114,
+    "hospitalized": 1416,
+    "nonHospitalized": 18412
+  },
+  {
+    "year": 2014,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 2579,
+    "fatalities": 40,
+    "hospitalized": 265,
+    "nonHospitalized": 3265
+  },
+  {
+    "year": 2014,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 826,
+    "fatalities": 61,
+    "hospitalized": 173,
+    "nonHospitalized": 1188
+  },
+  {
+    "year": 2014,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 457,
+    "fatalities": 41,
+    "hospitalized": 92,
+    "nonHospitalized": 511
+  },
+  {
+    "year": 2014,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 373,
+    "fatalities": 18,
+    "hospitalized": 88,
+    "nonHospitalized": 407
+  },
+  {
+    "year": 2014,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 2262,
+    "fatalities": 38,
+    "hospitalized": 254,
+    "nonHospitalized": 3039
+  },
+  {
+    "year": 2014,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 253,
+    "fatalities": 12,
+    "hospitalized": 58,
+    "nonHospitalized": 341
+  },
+  {
+    "year": 2014,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1239,
+    "fatalities": 31,
+    "hospitalized": 131,
+    "nonHospitalized": 1673
+  },
+  {
+    "year": 2014,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1854,
+    "fatalities": 33,
+    "hospitalized": 283,
+    "nonHospitalized": 2555
+  },
+  {
+    "year": 2014,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 664,
+    "fatalities": 13,
+    "hospitalized": 103,
+    "nonHospitalized": 866
+  },
+  {
+    "year": 2014,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1812,
+    "fatalities": 26,
+    "hospitalized": 231,
+    "nonHospitalized": 2290
+  },
+  {
+    "year": 2014,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 745,
+    "fatalities": 18,
+    "hospitalized": 56,
+    "nonHospitalized": 1058
+  },
+  {
+    "year": 2014,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 271,
+    "fatalities": 19,
+    "hospitalized": 38,
+    "nonHospitalized": 341
+  },
+  {
+    "year": 2014,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 4305,
+    "fatalities": 52,
+    "hospitalized": 266,
+    "nonHospitalized": 6100
+  },
+  {
+    "year": 2014,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 118,
+    "fatalities": 14,
+    "hospitalized": 21,
+    "nonHospitalized": 149
+  },
+  {
+    "year": 2014,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 1882,
+    "fatalities": 49,
+    "hospitalized": 224,
+    "nonHospitalized": 2381
+  },
+  {
+    "year": 2014,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 195,
+    "fatalities": 14,
+    "hospitalized": 53,
+    "nonHospitalized": 229
+  },
+  {
+    "year": 2014,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 709,
+    "fatalities": 34,
+    "hospitalized": 117,
+    "nonHospitalized": 979
+  },
+  {
+    "year": 2014,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 3914,
+    "fatalities": 71,
+    "hospitalized": 559,
+    "nonHospitalized": 4596
+  },
+  {
+    "year": 2014,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 791,
+    "fatalities": 13,
+    "hospitalized": 105,
+    "nonHospitalized": 979
+  },
+  {
+    "year": 2014,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1860,
+    "fatalities": 15,
+    "hospitalized": 105,
+    "nonHospitalized": 2487
+  },
+  {
+    "year": 2014,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 126,
+    "fatalities": 18,
+    "hospitalized": 38,
+    "nonHospitalized": 128
+  },
+  {
+    "year": 2014,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1518,
+    "fatalities": 39,
+    "hospitalized": 203,
+    "nonHospitalized": 1800
+  },
+  {
+    "year": 2014,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 289,
+    "fatalities": 0,
+    "hospitalized": 6,
+    "nonHospitalized": 395
+  },
+  {
+    "year": 2014,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 507,
+    "fatalities": 0,
+    "hospitalized": 16,
+    "nonHospitalized": 684
+  },
+  {
+    "year": 2015,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 912,
+    "fatalities": 10,
+    "hospitalized": 84,
+    "nonHospitalized": 1056
+  },
+  {
+    "year": 2015,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 605,
+    "fatalities": 22,
+    "hospitalized": 83,
+    "nonHospitalized": 732
+  },
+  {
+    "year": 2015,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2708,
+    "fatalities": 62,
+    "hospitalized": 287,
+    "nonHospitalized": 3480
+  },
+  {
+    "year": 2015,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 733,
+    "fatalities": 26,
+    "hospitalized": 111,
+    "nonHospitalized": 1058
+  },
+  {
+    "year": 2015,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 457,
+    "fatalities": 16,
+    "hospitalized": 66,
+    "nonHospitalized": 578
+  },
+  {
+    "year": 2015,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 880,
+    "fatalities": 37,
+    "hospitalized": 105,
+    "nonHospitalized": 1187
+  },
+  {
+    "year": 2015,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3460,
+    "fatalities": 53,
+    "hospitalized": 389,
+    "nonHospitalized": 4335
+  },
+  {
+    "year": 2015,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 19625,
+    "fatalities": 128,
+    "hospitalized": 1145,
+    "nonHospitalized": 24828
+  },
+  {
+    "year": 2015,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 788,
+    "fatalities": 32,
+    "hospitalized": 140,
+    "nonHospitalized": 972
+  },
+  {
+    "year": 2015,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 518,
+    "fatalities": 17,
+    "hospitalized": 50,
+    "nonHospitalized": 688
+  },
+  {
+    "year": 2015,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 3080,
+    "fatalities": 32,
+    "hospitalized": 229,
+    "nonHospitalized": 4444
+  },
+  {
+    "year": 2015,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 708,
+    "fatalities": 28,
+    "hospitalized": 97,
+    "nonHospitalized": 831
+  },
+  {
+    "year": 2015,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 640,
+    "fatalities": 27,
+    "hospitalized": 61,
+    "nonHospitalized": 864
+  },
+  {
+    "year": 2015,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1491,
+    "fatalities": 26,
+    "hospitalized": 118,
+    "nonHospitalized": 1925
+  },
+  {
+    "year": 2015,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1443,
+    "fatalities": 47,
+    "hospitalized": 234,
+    "nonHospitalized": 1771
+  },
+  {
+    "year": 2015,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 316,
+    "fatalities": 16,
+    "hospitalized": 57,
+    "nonHospitalized": 415
+  },
+  {
+    "year": 2015,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2409,
+    "fatalities": 41,
+    "hospitalized": 278,
+    "nonHospitalized": 2997
+  },
+  {
+    "year": 2015,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1251,
+    "fatalities": 43,
+    "hospitalized": 172,
+    "nonHospitalized": 1659
+  },
+  {
+    "year": 2015,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 218,
+    "fatalities": 11,
+    "hospitalized": 48,
+    "nonHospitalized": 255
+  },
+  {
+    "year": 2015,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1754,
+    "fatalities": 38,
+    "hospitalized": 199,
+    "nonHospitalized": 1972
+  },
+  {
+    "year": 2015,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 721,
+    "fatalities": 23,
+    "hospitalized": 80,
+    "nonHospitalized": 1054
+  },
+  {
+    "year": 2015,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 482,
+    "fatalities": 17,
+    "hospitalized": 111,
+    "nonHospitalized": 542
+  },
+  {
+    "year": 2015,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 1023,
+    "fatalities": 23,
+    "hospitalized": 92,
+    "nonHospitalized": 1449
+  },
+  {
+    "year": 2015,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 810,
+    "fatalities": 39,
+    "hospitalized": 170,
+    "nonHospitalized": 1025
+  },
+  {
+    "year": 2015,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1251,
+    "fatalities": 51,
+    "hospitalized": 209,
+    "nonHospitalized": 1527
+  },
+  {
+    "year": 2015,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 707,
+    "fatalities": 20,
+    "hospitalized": 71,
+    "nonHospitalized": 886
+  },
+  {
+    "year": 2015,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 549,
+    "fatalities": 22,
+    "hospitalized": 141,
+    "nonHospitalized": 653
+  },
+  {
+    "year": 2015,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 15422,
+    "fatalities": 111,
+    "hospitalized": 1314,
+    "nonHospitalized": 18689
+  },
+  {
+    "year": 2015,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 2514,
+    "fatalities": 46,
+    "hospitalized": 237,
+    "nonHospitalized": 3306
+  },
+  {
+    "year": 2015,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 1755,
+    "fatalities": 44,
+    "hospitalized": 219,
+    "nonHospitalized": 2298
+  },
+  {
+    "year": 2015,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 450,
+    "fatalities": 26,
+    "hospitalized": 112,
+    "nonHospitalized": 474
+  },
+  {
+    "year": 2015,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 403,
+    "fatalities": 11,
+    "hospitalized": 83,
+    "nonHospitalized": 467
+  },
+  {
+    "year": 2015,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 2374,
+    "fatalities": 36,
+    "hospitalized": 230,
+    "nonHospitalized": 3195
+  },
+  {
+    "year": 2015,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 264,
+    "fatalities": 6,
+    "hospitalized": 49,
+    "nonHospitalized": 336
+  },
+  {
+    "year": 2015,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1472,
+    "fatalities": 22,
+    "hospitalized": 145,
+    "nonHospitalized": 1971
+  },
+  {
+    "year": 2015,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 2068,
+    "fatalities": 43,
+    "hospitalized": 275,
+    "nonHospitalized": 2902
+  },
+  {
+    "year": 2015,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 643,
+    "fatalities": 17,
+    "hospitalized": 88,
+    "nonHospitalized": 752
+  },
+  {
+    "year": 2015,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1797,
+    "fatalities": 40,
+    "hospitalized": 202,
+    "nonHospitalized": 2351
+  },
+  {
+    "year": 2015,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 703,
+    "fatalities": 22,
+    "hospitalized": 57,
+    "nonHospitalized": 986
+  },
+  {
+    "year": 2015,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 324,
+    "fatalities": 16,
+    "hospitalized": 46,
+    "nonHospitalized": 418
+  },
+  {
+    "year": 2015,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 5371,
+    "fatalities": 43,
+    "hospitalized": 242,
+    "nonHospitalized": 7721
+  },
+  {
+    "year": 2015,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 121,
+    "fatalities": 10,
+    "hospitalized": 31,
+    "nonHospitalized": 131
+  },
+  {
+    "year": 2015,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2001,
+    "fatalities": 71,
+    "hospitalized": 244,
+    "nonHospitalized": 2447
+  },
+  {
+    "year": 2015,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 148,
+    "fatalities": 16,
+    "hospitalized": 45,
+    "nonHospitalized": 144
+  },
+  {
+    "year": 2015,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 849,
+    "fatalities": 31,
+    "hospitalized": 128,
+    "nonHospitalized": 1133
+  },
+  {
+    "year": 2015,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4227,
+    "fatalities": 64,
+    "hospitalized": 402,
+    "nonHospitalized": 5116
+  },
+  {
+    "year": 2015,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 836,
+    "fatalities": 24,
+    "hospitalized": 104,
+    "nonHospitalized": 1121
+  },
+  {
+    "year": 2015,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1884,
+    "fatalities": 19,
+    "hospitalized": 108,
+    "nonHospitalized": 2563
+  },
+  {
+    "year": 2015,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 108,
+    "fatalities": 21,
+    "hospitalized": 44,
+    "nonHospitalized": 121
+  },
+  {
+    "year": 2015,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1570,
+    "fatalities": 38,
+    "hospitalized": 229,
+    "nonHospitalized": 1891
+  },
+  {
+    "year": 2015,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 319,
+    "fatalities": 3,
+    "hospitalized": 15,
+    "nonHospitalized": 444
+  },
+  {
+    "year": 2015,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 594,
+    "fatalities": 2,
+    "hospitalized": 19,
+    "nonHospitalized": 800
+  },
+  {
+    "year": 2016,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 1006,
+    "fatalities": 13,
+    "hospitalized": 63,
+    "nonHospitalized": 1208
+  },
+  {
+    "year": 2016,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 690,
+    "fatalities": 24,
+    "hospitalized": 95,
+    "nonHospitalized": 833
+  },
+  {
+    "year": 2016,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 3028,
+    "fatalities": 68,
+    "hospitalized": 291,
+    "nonHospitalized": 3849
+  },
+  {
+    "year": 2016,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 713,
+    "fatalities": 40,
+    "hospitalized": 108,
+    "nonHospitalized": 1027
+  },
+  {
+    "year": 2016,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 442,
+    "fatalities": 12,
+    "hospitalized": 60,
+    "nonHospitalized": 568
+  },
+  {
+    "year": 2016,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 889,
+    "fatalities": 38,
+    "hospitalized": 139,
+    "nonHospitalized": 1122
+  },
+  {
+    "year": 2016,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3821,
+    "fatalities": 60,
+    "hospitalized": 344,
+    "nonHospitalized": 4932
+  },
+  {
+    "year": 2016,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 20910,
+    "fatalities": 131,
+    "hospitalized": 1102,
+    "nonHospitalized": 26523
+  },
+  {
+    "year": 2016,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 845,
+    "fatalities": 36,
+    "hospitalized": 149,
+    "nonHospitalized": 1050
+  },
+  {
+    "year": 2016,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 419,
+    "fatalities": 24,
+    "hospitalized": 55,
+    "nonHospitalized": 537
+  },
+  {
+    "year": 2016,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2757,
+    "fatalities": 41,
+    "hospitalized": 211,
+    "nonHospitalized": 3942
+  },
+  {
+    "year": 2016,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 786,
+    "fatalities": 43,
+    "hospitalized": 141,
+    "nonHospitalized": 968
+  },
+  {
+    "year": 2016,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 675,
+    "fatalities": 30,
+    "hospitalized": 77,
+    "nonHospitalized": 919
+  },
+  {
+    "year": 2016,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1359,
+    "fatalities": 22,
+    "hospitalized": 151,
+    "nonHospitalized": 1788
+  },
+  {
+    "year": 2016,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1978,
+    "fatalities": 58,
+    "hospitalized": 304,
+    "nonHospitalized": 2432
+  },
+  {
+    "year": 2016,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 294,
+    "fatalities": 15,
+    "hospitalized": 74,
+    "nonHospitalized": 370
+  },
+  {
+    "year": 2016,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2701,
+    "fatalities": 55,
+    "hospitalized": 273,
+    "nonHospitalized": 3385
+  },
+  {
+    "year": 2016,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1931,
+    "fatalities": 27,
+    "hospitalized": 196,
+    "nonHospitalized": 2591
+  },
+  {
+    "year": 2016,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 254,
+    "fatalities": 7,
+    "hospitalized": 40,
+    "nonHospitalized": 340
+  },
+  {
+    "year": 2016,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1938,
+    "fatalities": 17,
+    "hospitalized": 203,
+    "nonHospitalized": 2232
+  },
+  {
+    "year": 2016,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 644,
+    "fatalities": 19,
+    "hospitalized": 92,
+    "nonHospitalized": 895
+  },
+  {
+    "year": 2016,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 463,
+    "fatalities": 21,
+    "hospitalized": 104,
+    "nonHospitalized": 521
+  },
+  {
+    "year": 2016,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 925,
+    "fatalities": 31,
+    "hospitalized": 114,
+    "nonHospitalized": 1255
+  },
+  {
+    "year": 2016,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 899,
+    "fatalities": 25,
+    "hospitalized": 189,
+    "nonHospitalized": 1070
+  },
+  {
+    "year": 2016,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1316,
+    "fatalities": 37,
+    "hospitalized": 188,
+    "nonHospitalized": 1686
+  },
+  {
+    "year": 2016,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 712,
+    "fatalities": 25,
+    "hospitalized": 60,
+    "nonHospitalized": 898
+  },
+  {
+    "year": 2016,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 611,
+    "fatalities": 32,
+    "hospitalized": 114,
+    "nonHospitalized": 778
+  },
+  {
+    "year": 2016,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 16158,
+    "fatalities": 121,
+    "hospitalized": 1254,
+    "nonHospitalized": 19405
+  },
+  {
+    "year": 2016,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 2215,
+    "fatalities": 57,
+    "hospitalized": 252,
+    "nonHospitalized": 2940
+  },
+  {
+    "year": 2016,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 2304,
+    "fatalities": 58,
+    "hospitalized": 241,
+    "nonHospitalized": 2981
+  },
+  {
+    "year": 2016,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 731,
+    "fatalities": 26,
+    "hospitalized": 136,
+    "nonHospitalized": 808
+  },
+  {
+    "year": 2016,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 422,
+    "fatalities": 15,
+    "hospitalized": 86,
+    "nonHospitalized": 502
+  },
+  {
+    "year": 2016,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 2224,
+    "fatalities": 35,
+    "hospitalized": 232,
+    "nonHospitalized": 2924
+  },
+  {
+    "year": 2016,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 250,
+    "fatalities": 13,
+    "hospitalized": 50,
+    "nonHospitalized": 297
+  },
+  {
+    "year": 2016,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1314,
+    "fatalities": 40,
+    "hospitalized": 130,
+    "nonHospitalized": 1808
+  },
+  {
+    "year": 2016,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1726,
+    "fatalities": 36,
+    "hospitalized": 260,
+    "nonHospitalized": 2372
+  },
+  {
+    "year": 2016,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 662,
+    "fatalities": 10,
+    "hospitalized": 74,
+    "nonHospitalized": 829
+  },
+  {
+    "year": 2016,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 2257,
+    "fatalities": 31,
+    "hospitalized": 261,
+    "nonHospitalized": 2985
+  },
+  {
+    "year": 2016,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 710,
+    "fatalities": 21,
+    "hospitalized": 67,
+    "nonHospitalized": 1001
+  },
+  {
+    "year": 2016,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 312,
+    "fatalities": 16,
+    "hospitalized": 38,
+    "nonHospitalized": 406
+  },
+  {
+    "year": 2016,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 5033,
+    "fatalities": 66,
+    "hospitalized": 329,
+    "nonHospitalized": 7097
+  },
+  {
+    "year": 2016,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 143,
+    "fatalities": 19,
+    "hospitalized": 41,
+    "nonHospitalized": 166
+  },
+  {
+    "year": 2016,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2066,
+    "fatalities": 59,
+    "hospitalized": 237,
+    "nonHospitalized": 2605
+  },
+  {
+    "year": 2016,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 182,
+    "fatalities": 9,
+    "hospitalized": 61,
+    "nonHospitalized": 208
+  },
+  {
+    "year": 2016,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 906,
+    "fatalities": 42,
+    "hospitalized": 139,
+    "nonHospitalized": 1211
+  },
+  {
+    "year": 2016,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4402,
+    "fatalities": 69,
+    "hospitalized": 433,
+    "nonHospitalized": 5422
+  },
+  {
+    "year": 2016,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 904,
+    "fatalities": 24,
+    "hospitalized": 92,
+    "nonHospitalized": 1149
+  },
+  {
+    "year": 2016,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1923,
+    "fatalities": 26,
+    "hospitalized": 123,
+    "nonHospitalized": 2540
+  },
+  {
+    "year": 2016,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 124,
+    "fatalities": 20,
+    "hospitalized": 43,
+    "nonHospitalized": 161
+  },
+  {
+    "year": 2016,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1529,
+    "fatalities": 43,
+    "hospitalized": 209,
+    "nonHospitalized": 1888
+  },
+  {
+    "year": 2016,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 297,
+    "fatalities": 2,
+    "hospitalized": 16,
+    "nonHospitalized": 417
+  },
+  {
+    "year": 2016,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 562,
+    "fatalities": 1,
+    "hospitalized": 14,
+    "nonHospitalized": 794
+  },
+  {
+    "year": 2017,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 998,
+    "fatalities": 11,
+    "hospitalized": 118,
+    "nonHospitalized": 1185
+  },
+  {
+    "year": 2017,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 711,
+    "fatalities": 16,
+    "hospitalized": 99,
+    "nonHospitalized": 844
+  },
+  {
+    "year": 2017,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2954,
+    "fatalities": 64,
+    "hospitalized": 297,
+    "nonHospitalized": 3802
+  },
+  {
+    "year": 2017,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 1190,
+    "fatalities": 22,
+    "hospitalized": 137,
+    "nonHospitalized": 1745
+  },
+  {
+    "year": 2017,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 385,
+    "fatalities": 11,
+    "hospitalized": 39,
+    "nonHospitalized": 480
+  },
+  {
+    "year": 2017,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 1013,
+    "fatalities": 36,
+    "hospitalized": 139,
+    "nonHospitalized": 1283
+  },
+  {
+    "year": 2017,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3783,
+    "fatalities": 68,
+    "hospitalized": 389,
+    "nonHospitalized": 4628
+  },
+  {
+    "year": 2017,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 20986,
+    "fatalities": 145,
+    "hospitalized": 1036,
+    "nonHospitalized": 26549
+  },
+  {
+    "year": 2017,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 807,
+    "fatalities": 31,
+    "hospitalized": 120,
+    "nonHospitalized": 933
+  },
+  {
+    "year": 2017,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 478,
+    "fatalities": 26,
+    "hospitalized": 56,
+    "nonHospitalized": 659
+  },
+  {
+    "year": 2017,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2869,
+    "fatalities": 34,
+    "hospitalized": 224,
+    "nonHospitalized": 3949
+  },
+  {
+    "year": 2017,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 809,
+    "fatalities": 39,
+    "hospitalized": 118,
+    "nonHospitalized": 971
+  },
+  {
+    "year": 2017,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 563,
+    "fatalities": 33,
+    "hospitalized": 63,
+    "nonHospitalized": 717
+  },
+  {
+    "year": 2017,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1170,
+    "fatalities": 37,
+    "hospitalized": 115,
+    "nonHospitalized": 1489
+  },
+  {
+    "year": 2017,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1876,
+    "fatalities": 51,
+    "hospitalized": 312,
+    "nonHospitalized": 2337
+  },
+  {
+    "year": 2017,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 282,
+    "fatalities": 18,
+    "hospitalized": 64,
+    "nonHospitalized": 332
+  },
+  {
+    "year": 2017,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2676,
+    "fatalities": 47,
+    "hospitalized": 225,
+    "nonHospitalized": 3387
+  },
+  {
+    "year": 2017,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1839,
+    "fatalities": 33,
+    "hospitalized": 169,
+    "nonHospitalized": 2434
+  },
+  {
+    "year": 2017,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 257,
+    "fatalities": 12,
+    "hospitalized": 42,
+    "nonHospitalized": 331
+  },
+  {
+    "year": 2017,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1723,
+    "fatalities": 27,
+    "hospitalized": 186,
+    "nonHospitalized": 1981
+  },
+  {
+    "year": 2017,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 763,
+    "fatalities": 22,
+    "hospitalized": 116,
+    "nonHospitalized": 1118
+  },
+  {
+    "year": 2017,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 498,
+    "fatalities": 25,
+    "hospitalized": 108,
+    "nonHospitalized": 573
+  },
+  {
+    "year": 2017,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 928,
+    "fatalities": 35,
+    "hospitalized": 81,
+    "nonHospitalized": 1270
+  },
+  {
+    "year": 2017,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 859,
+    "fatalities": 22,
+    "hospitalized": 167,
+    "nonHospitalized": 1025
+  },
+  {
+    "year": 2017,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1391,
+    "fatalities": 40,
+    "hospitalized": 201,
+    "nonHospitalized": 1794
+  },
+  {
+    "year": 2017,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 709,
+    "fatalities": 26,
+    "hospitalized": 77,
+    "nonHospitalized": 840
+  },
+  {
+    "year": 2017,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 547,
+    "fatalities": 22,
+    "hospitalized": 107,
+    "nonHospitalized": 673
+  },
+  {
+    "year": 2017,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 16248,
+    "fatalities": 125,
+    "hospitalized": 1304,
+    "nonHospitalized": 19636
+  },
+  {
+    "year": 2017,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 2035,
+    "fatalities": 67,
+    "hospitalized": 222,
+    "nonHospitalized": 2616
+  },
+  {
+    "year": 2017,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 2480,
+    "fatalities": 85,
+    "hospitalized": 233,
+    "nonHospitalized": 3220
+  },
+  {
+    "year": 2017,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 872,
+    "fatalities": 29,
+    "hospitalized": 124,
+    "nonHospitalized": 1032
+  },
+  {
+    "year": 2017,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 446,
+    "fatalities": 13,
+    "hospitalized": 91,
+    "nonHospitalized": 508
+  },
+  {
+    "year": 2017,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 2312,
+    "fatalities": 37,
+    "hospitalized": 219,
+    "nonHospitalized": 2978
+  },
+  {
+    "year": 2017,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 239,
+    "fatalities": 13,
+    "hospitalized": 37,
+    "nonHospitalized": 297
+  },
+  {
+    "year": 2017,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1302,
+    "fatalities": 30,
+    "hospitalized": 115,
+    "nonHospitalized": 1886
+  },
+  {
+    "year": 2017,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1760,
+    "fatalities": 31,
+    "hospitalized": 181,
+    "nonHospitalized": 2507
+  },
+  {
+    "year": 2017,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 500,
+    "fatalities": 15,
+    "hospitalized": 61,
+    "nonHospitalized": 611
+  },
+  {
+    "year": 2017,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 2216,
+    "fatalities": 37,
+    "hospitalized": 298,
+    "nonHospitalized": 2834
+  },
+  {
+    "year": 2017,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 714,
+    "fatalities": 22,
+    "hospitalized": 68,
+    "nonHospitalized": 949
+  },
+  {
+    "year": 2017,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 295,
+    "fatalities": 10,
+    "hospitalized": 41,
+    "nonHospitalized": 366
+  },
+  {
+    "year": 2017,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 4592,
+    "fatalities": 55,
+    "hospitalized": 308,
+    "nonHospitalized": 6310
+  },
+  {
+    "year": 2017,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 113,
+    "fatalities": 11,
+    "hospitalized": 25,
+    "nonHospitalized": 114
+  },
+  {
+    "year": 2017,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 1999,
+    "fatalities": 51,
+    "hospitalized": 216,
+    "nonHospitalized": 2476
+  },
+  {
+    "year": 2017,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 214,
+    "fatalities": 18,
+    "hospitalized": 64,
+    "nonHospitalized": 223
+  },
+  {
+    "year": 2017,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 836,
+    "fatalities": 50,
+    "hospitalized": 107,
+    "nonHospitalized": 1184
+  },
+  {
+    "year": 2017,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4278,
+    "fatalities": 73,
+    "hospitalized": 449,
+    "nonHospitalized": 5245
+  },
+  {
+    "year": 2017,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 932,
+    "fatalities": 27,
+    "hospitalized": 116,
+    "nonHospitalized": 1154
+  },
+  {
+    "year": 2017,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 2002,
+    "fatalities": 13,
+    "hospitalized": 148,
+    "nonHospitalized": 2595
+  },
+  {
+    "year": 2017,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 215,
+    "fatalities": 24,
+    "hospitalized": 52,
+    "nonHospitalized": 239
+  },
+  {
+    "year": 2017,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1694,
+    "fatalities": 37,
+    "hospitalized": 226,
+    "nonHospitalized": 2095
+  },
+  {
+    "year": 2017,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 409,
+    "fatalities": 2,
+    "hospitalized": 22,
+    "nonHospitalized": 606
+  },
+  {
+    "year": 2017,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 466,
+    "fatalities": 2,
+    "hospitalized": 14,
+    "nonHospitalized": 606
+  },
+  {
+    "year": 2018,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 1044,
+    "fatalities": 15,
+    "hospitalized": 106,
+    "nonHospitalized": 1220
+  },
+  {
+    "year": 2018,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 708,
+    "fatalities": 11,
+    "hospitalized": 90,
+    "nonHospitalized": 846
+  },
+  {
+    "year": 2018,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 3021,
+    "fatalities": 60,
+    "hospitalized": 349,
+    "nonHospitalized": 3718
+  },
+  {
+    "year": 2018,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 1194,
+    "fatalities": 27,
+    "hospitalized": 111,
+    "nonHospitalized": 1780
+  },
+  {
+    "year": 2018,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 382,
+    "fatalities": 16,
+    "hospitalized": 52,
+    "nonHospitalized": 476
+  },
+  {
+    "year": 2018,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 951,
+    "fatalities": 32,
+    "hospitalized": 117,
+    "nonHospitalized": 1255
+  },
+  {
+    "year": 2018,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3450,
+    "fatalities": 53,
+    "hospitalized": 310,
+    "nonHospitalized": 4332
+  },
+  {
+    "year": 2018,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 20862,
+    "fatalities": 163,
+    "hospitalized": 1049,
+    "nonHospitalized": 26122
+  },
+  {
+    "year": 2018,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 749,
+    "fatalities": 32,
+    "hospitalized": 109,
+    "nonHospitalized": 953
+  },
+  {
+    "year": 2018,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 504,
+    "fatalities": 19,
+    "hospitalized": 70,
+    "nonHospitalized": 626
+  },
+  {
+    "year": 2018,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2556,
+    "fatalities": 36,
+    "hospitalized": 206,
+    "nonHospitalized": 3476
+  },
+  {
+    "year": 2018,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 885,
+    "fatalities": 35,
+    "hospitalized": 129,
+    "nonHospitalized": 1049
+  },
+  {
+    "year": 2018,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 500,
+    "fatalities": 25,
+    "hospitalized": 46,
+    "nonHospitalized": 688
+  },
+  {
+    "year": 2018,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1077,
+    "fatalities": 34,
+    "hospitalized": 122,
+    "nonHospitalized": 1420
+  },
+  {
+    "year": 2018,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1752,
+    "fatalities": 64,
+    "hospitalized": 275,
+    "nonHospitalized": 2113
+  },
+  {
+    "year": 2018,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 250,
+    "fatalities": 20,
+    "hospitalized": 65,
+    "nonHospitalized": 307
+  },
+  {
+    "year": 2018,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2550,
+    "fatalities": 55,
+    "hospitalized": 264,
+    "nonHospitalized": 3203
+  },
+  {
+    "year": 2018,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1692,
+    "fatalities": 31,
+    "hospitalized": 137,
+    "nonHospitalized": 2252
+  },
+  {
+    "year": 2018,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 327,
+    "fatalities": 10,
+    "hospitalized": 29,
+    "nonHospitalized": 443
+  },
+  {
+    "year": 2018,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1784,
+    "fatalities": 13,
+    "hospitalized": 171,
+    "nonHospitalized": 2035
+  },
+  {
+    "year": 2018,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 718,
+    "fatalities": 18,
+    "hospitalized": 128,
+    "nonHospitalized": 1010
+  },
+  {
+    "year": 2018,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 380,
+    "fatalities": 27,
+    "hospitalized": 69,
+    "nonHospitalized": 462
+  },
+  {
+    "year": 2018,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 855,
+    "fatalities": 31,
+    "hospitalized": 92,
+    "nonHospitalized": 1212
+  },
+  {
+    "year": 2018,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 819,
+    "fatalities": 35,
+    "hospitalized": 133,
+    "nonHospitalized": 1005
+  },
+  {
+    "year": 2018,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1431,
+    "fatalities": 43,
+    "hospitalized": 180,
+    "nonHospitalized": 1864
+  },
+  {
+    "year": 2018,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 602,
+    "fatalities": 10,
+    "hospitalized": 68,
+    "nonHospitalized": 751
+  },
+  {
+    "year": 2018,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 532,
+    "fatalities": 26,
+    "hospitalized": 85,
+    "nonHospitalized": 697
+  },
+  {
+    "year": 2018,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 16614,
+    "fatalities": 114,
+    "hospitalized": 1185,
+    "nonHospitalized": 20100
+  },
+  {
+    "year": 2018,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 4265,
+    "fatalities": 39,
+    "hospitalized": 224,
+    "nonHospitalized": 5573
+  },
+  {
+    "year": 2018,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 2518,
+    "fatalities": 66,
+    "hospitalized": 285,
+    "nonHospitalized": 3171
+  },
+  {
+    "year": 2018,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 825,
+    "fatalities": 35,
+    "hospitalized": 119,
+    "nonHospitalized": 948
+  },
+  {
+    "year": 2018,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 402,
+    "fatalities": 19,
+    "hospitalized": 103,
+    "nonHospitalized": 466
+  },
+  {
+    "year": 2018,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 2068,
+    "fatalities": 43,
+    "hospitalized": 204,
+    "nonHospitalized": 2669
+  },
+  {
+    "year": 2018,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 185,
+    "fatalities": 11,
+    "hospitalized": 50,
+    "nonHospitalized": 213
+  },
+  {
+    "year": 2018,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1272,
+    "fatalities": 39,
+    "hospitalized": 95,
+    "nonHospitalized": 1825
+  },
+  {
+    "year": 2018,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1694,
+    "fatalities": 35,
+    "hospitalized": 159,
+    "nonHospitalized": 2369
+  },
+  {
+    "year": 2018,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 500,
+    "fatalities": 14,
+    "hospitalized": 51,
+    "nonHospitalized": 618
+  },
+  {
+    "year": 2018,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 2167,
+    "fatalities": 29,
+    "hospitalized": 306,
+    "nonHospitalized": 2734
+  },
+  {
+    "year": 2018,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 628,
+    "fatalities": 23,
+    "hospitalized": 62,
+    "nonHospitalized": 909
+  },
+  {
+    "year": 2018,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 357,
+    "fatalities": 12,
+    "hospitalized": 40,
+    "nonHospitalized": 482
+  },
+  {
+    "year": 2018,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 4454,
+    "fatalities": 58,
+    "hospitalized": 264,
+    "nonHospitalized": 6193
+  },
+  {
+    "year": 2018,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 144,
+    "fatalities": 15,
+    "hospitalized": 32,
+    "nonHospitalized": 161
+  },
+  {
+    "year": 2018,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2064,
+    "fatalities": 65,
+    "hospitalized": 201,
+    "nonHospitalized": 2543
+  },
+  {
+    "year": 2018,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 185,
+    "fatalities": 10,
+    "hospitalized": 59,
+    "nonHospitalized": 184
+  },
+  {
+    "year": 2018,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 709,
+    "fatalities": 34,
+    "hospitalized": 109,
+    "nonHospitalized": 1026
+  },
+  {
+    "year": 2018,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4280,
+    "fatalities": 88,
+    "hospitalized": 305,
+    "nonHospitalized": 5410
+  },
+  {
+    "year": 2018,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 887,
+    "fatalities": 23,
+    "hospitalized": 86,
+    "nonHospitalized": 1095
+  },
+  {
+    "year": 2018,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1924,
+    "fatalities": 21,
+    "hospitalized": 151,
+    "nonHospitalized": 2468
+  },
+  {
+    "year": 2018,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 241,
+    "fatalities": 18,
+    "hospitalized": 50,
+    "nonHospitalized": 263
+  },
+  {
+    "year": 2018,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1585,
+    "fatalities": 48,
+    "hospitalized": 202,
+    "nonHospitalized": 1939
+  },
+  {
+    "year": 2018,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 406,
+    "fatalities": 3,
+    "hospitalized": 16,
+    "nonHospitalized": 556
+  },
+  {
+    "year": 2018,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 350,
+    "fatalities": 3,
+    "hospitalized": 15,
+    "nonHospitalized": 444
+  },
+  {
+    "year": 2019,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 1029,
+    "fatalities": 16,
+    "hospitalized": 109,
+    "nonHospitalized": 1199
+  },
+  {
+    "year": 2019,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 702,
+    "fatalities": 28,
+    "hospitalized": 103,
+    "nonHospitalized": 786
+  },
+  {
+    "year": 2019,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2853,
+    "fatalities": 80,
+    "hospitalized": 328,
+    "nonHospitalized": 3519
+  },
+  {
+    "year": 2019,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 1092,
+    "fatalities": 35,
+    "hospitalized": 109,
+    "nonHospitalized": 1503
+  },
+  {
+    "year": 2019,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 336,
+    "fatalities": 11,
+    "hospitalized": 36,
+    "nonHospitalized": 401
+  },
+  {
+    "year": 2019,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 881,
+    "fatalities": 34,
+    "hospitalized": 100,
+    "nonHospitalized": 1139
+  },
+  {
+    "year": 2019,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3356,
+    "fatalities": 49,
+    "hospitalized": 287,
+    "nonHospitalized": 4126
+  },
+  {
+    "year": 2019,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 20591,
+    "fatalities": 171,
+    "hospitalized": 1007,
+    "nonHospitalized": 25562
+  },
+  {
+    "year": 2019,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 638,
+    "fatalities": 14,
+    "hospitalized": 83,
+    "nonHospitalized": 774
+  },
+  {
+    "year": 2019,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 531,
+    "fatalities": 16,
+    "hospitalized": 69,
+    "nonHospitalized": 665
+  },
+  {
+    "year": 2019,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2765,
+    "fatalities": 36,
+    "hospitalized": 226,
+    "nonHospitalized": 3685
+  },
+  {
+    "year": 2019,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 878,
+    "fatalities": 25,
+    "hospitalized": 152,
+    "nonHospitalized": 1011
+  },
+  {
+    "year": 2019,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 463,
+    "fatalities": 22,
+    "hospitalized": 35,
+    "nonHospitalized": 610
+  },
+  {
+    "year": 2019,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 1142,
+    "fatalities": 38,
+    "hospitalized": 156,
+    "nonHospitalized": 1416
+  },
+  {
+    "year": 2019,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1816,
+    "fatalities": 53,
+    "hospitalized": 270,
+    "nonHospitalized": 2256
+  },
+  {
+    "year": 2019,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 271,
+    "fatalities": 8,
+    "hospitalized": 61,
+    "nonHospitalized": 325
+  },
+  {
+    "year": 2019,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2520,
+    "fatalities": 42,
+    "hospitalized": 236,
+    "nonHospitalized": 3152
+  },
+  {
+    "year": 2019,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1783,
+    "fatalities": 25,
+    "hospitalized": 131,
+    "nonHospitalized": 2357
+  },
+  {
+    "year": 2019,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 312,
+    "fatalities": 6,
+    "hospitalized": 30,
+    "nonHospitalized": 413
+  },
+  {
+    "year": 2019,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1799,
+    "fatalities": 23,
+    "hospitalized": 173,
+    "nonHospitalized": 2070
+  },
+  {
+    "year": 2019,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 752,
+    "fatalities": 22,
+    "hospitalized": 81,
+    "nonHospitalized": 1044
+  },
+  {
+    "year": 2019,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 441,
+    "fatalities": 29,
+    "hospitalized": 73,
+    "nonHospitalized": 519
+  },
+  {
+    "year": 2019,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 835,
+    "fatalities": 24,
+    "hospitalized": 56,
+    "nonHospitalized": 1144
+  },
+  {
+    "year": 2019,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 745,
+    "fatalities": 35,
+    "hospitalized": 105,
+    "nonHospitalized": 959
+  },
+  {
+    "year": 2019,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1352,
+    "fatalities": 39,
+    "hospitalized": 181,
+    "nonHospitalized": 1757
+  },
+  {
+    "year": 2019,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 594,
+    "fatalities": 18,
+    "hospitalized": 59,
+    "nonHospitalized": 696
+  },
+  {
+    "year": 2019,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 453,
+    "fatalities": 22,
+    "hospitalized": 70,
+    "nonHospitalized": 563
+  },
+  {
+    "year": 2019,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 16628,
+    "fatalities": 159,
+    "hospitalized": 864,
+    "nonHospitalized": 20268
+  },
+  {
+    "year": 2019,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 5006,
+    "fatalities": 56,
+    "hospitalized": 279,
+    "nonHospitalized": 6483
+  },
+  {
+    "year": 2019,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 2682,
+    "fatalities": 54,
+    "hospitalized": 259,
+    "nonHospitalized": 3530
+  },
+  {
+    "year": 2019,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 789,
+    "fatalities": 31,
+    "hospitalized": 122,
+    "nonHospitalized": 861
+  },
+  {
+    "year": 2019,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 390,
+    "fatalities": 15,
+    "hospitalized": 82,
+    "nonHospitalized": 428
+  },
+  {
+    "year": 2019,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1981,
+    "fatalities": 31,
+    "hospitalized": 192,
+    "nonHospitalized": 2528
+  },
+  {
+    "year": 2019,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 163,
+    "fatalities": 12,
+    "hospitalized": 60,
+    "nonHospitalized": 160
+  },
+  {
+    "year": 2019,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 2158,
+    "fatalities": 32,
+    "hospitalized": 99,
+    "nonHospitalized": 2998
+  },
+  {
+    "year": 2019,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1868,
+    "fatalities": 37,
+    "hospitalized": 212,
+    "nonHospitalized": 2617
+  },
+  {
+    "year": 2019,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 388,
+    "fatalities": 13,
+    "hospitalized": 44,
+    "nonHospitalized": 498
+  },
+  {
+    "year": 2019,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 2242,
+    "fatalities": 42,
+    "hospitalized": 339,
+    "nonHospitalized": 2710
+  },
+  {
+    "year": 2019,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 920,
+    "fatalities": 18,
+    "hospitalized": 77,
+    "nonHospitalized": 1255
+  },
+  {
+    "year": 2019,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 325,
+    "fatalities": 9,
+    "hospitalized": 32,
+    "nonHospitalized": 409
+  },
+  {
+    "year": 2019,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 4589,
+    "fatalities": 68,
+    "hospitalized": 310,
+    "nonHospitalized": 6291
+  },
+  {
+    "year": 2019,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 123,
+    "fatalities": 8,
+    "hospitalized": 31,
+    "nonHospitalized": 142
+  },
+  {
+    "year": 2019,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2113,
+    "fatalities": 52,
+    "hospitalized": 215,
+    "nonHospitalized": 2572
+  },
+  {
+    "year": 2019,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 185,
+    "fatalities": 7,
+    "hospitalized": 51,
+    "nonHospitalized": 202
+  },
+  {
+    "year": 2019,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 777,
+    "fatalities": 29,
+    "hospitalized": 89,
+    "nonHospitalized": 1038
+  },
+  {
+    "year": 2019,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4404,
+    "fatalities": 72,
+    "hospitalized": 423,
+    "nonHospitalized": 5349
+  },
+  {
+    "year": 2019,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 895,
+    "fatalities": 18,
+    "hospitalized": 80,
+    "nonHospitalized": 1086
+  },
+  {
+    "year": 2019,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 2024,
+    "fatalities": 26,
+    "hospitalized": 147,
+    "nonHospitalized": 2536
+  },
+  {
+    "year": 2019,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 206,
+    "fatalities": 16,
+    "hospitalized": 44,
+    "nonHospitalized": 261
+  },
+  {
+    "year": 2019,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1609,
+    "fatalities": 27,
+    "hospitalized": 201,
+    "nonHospitalized": 1973
+  },
+  {
+    "year": 2019,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 309,
+    "fatalities": 2,
+    "hospitalized": 18,
+    "nonHospitalized": 440
+  },
+  {
+    "year": 2019,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 376,
+    "fatalities": 0,
+    "hospitalized": 17,
+    "nonHospitalized": 459
+  },
+  {
+    "year": 2020,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 849,
+    "fatalities": 5,
+    "hospitalized": 101,
+    "nonHospitalized": 928
+  },
+  {
+    "year": 2020,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 557,
+    "fatalities": 10,
+    "hospitalized": 51,
+    "nonHospitalized": 643
+  },
+  {
+    "year": 2020,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 1882,
+    "fatalities": 61,
+    "hospitalized": 258,
+    "nonHospitalized": 2198
+  },
+  {
+    "year": 2020,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 861,
+    "fatalities": 38,
+    "hospitalized": 92,
+    "nonHospitalized": 1112
+  },
+  {
+    "year": 2020,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 235,
+    "fatalities": 10,
+    "hospitalized": 32,
+    "nonHospitalized": 267
+  },
+  {
+    "year": 2020,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 651,
+    "fatalities": 25,
+    "hospitalized": 73,
+    "nonHospitalized": 801
+  },
+  {
+    "year": 2020,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 2092,
+    "fatalities": 37,
+    "hospitalized": 197,
+    "nonHospitalized": 2493
+  },
+  {
+    "year": 2020,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 13403,
+    "fatalities": 115,
+    "hospitalized": 682,
+    "nonHospitalized": 16218
+  },
+  {
+    "year": 2020,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 375,
+    "fatalities": 19,
+    "hospitalized": 74,
+    "nonHospitalized": 446
+  },
+  {
+    "year": 2020,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 378,
+    "fatalities": 15,
+    "hospitalized": 71,
+    "nonHospitalized": 403
+  },
+  {
+    "year": 2020,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2125,
+    "fatalities": 22,
+    "hospitalized": 203,
+    "nonHospitalized": 2807
+  },
+  {
+    "year": 2020,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 688,
+    "fatalities": 17,
+    "hospitalized": 127,
+    "nonHospitalized": 711
+  },
+  {
+    "year": 2020,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 351,
+    "fatalities": 29,
+    "hospitalized": 43,
+    "nonHospitalized": 397
+  },
+  {
+    "year": 2020,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 809,
+    "fatalities": 14,
+    "hospitalized": 121,
+    "nonHospitalized": 954
+  },
+  {
+    "year": 2020,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1227,
+    "fatalities": 33,
+    "hospitalized": 196,
+    "nonHospitalized": 1447
+  },
+  {
+    "year": 2020,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 166,
+    "fatalities": 18,
+    "hospitalized": 34,
+    "nonHospitalized": 191
+  },
+  {
+    "year": 2020,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 1843,
+    "fatalities": 28,
+    "hospitalized": 179,
+    "nonHospitalized": 2166
+  },
+  {
+    "year": 2020,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1126,
+    "fatalities": 35,
+    "hospitalized": 108,
+    "nonHospitalized": 1367
+  },
+  {
+    "year": 2020,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 277,
+    "fatalities": 12,
+    "hospitalized": 22,
+    "nonHospitalized": 325
+  },
+  {
+    "year": 2020,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1549,
+    "fatalities": 20,
+    "hospitalized": 176,
+    "nonHospitalized": 1716
+  },
+  {
+    "year": 2020,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 509,
+    "fatalities": 23,
+    "hospitalized": 70,
+    "nonHospitalized": 679
+  },
+  {
+    "year": 2020,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 340,
+    "fatalities": 20,
+    "hospitalized": 54,
+    "nonHospitalized": 374
+  },
+  {
+    "year": 2020,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 617,
+    "fatalities": 21,
+    "hospitalized": 55,
+    "nonHospitalized": 773
+  },
+  {
+    "year": 2020,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 471,
+    "fatalities": 25,
+    "hospitalized": 87,
+    "nonHospitalized": 535
+  },
+  {
+    "year": 2020,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 995,
+    "fatalities": 21,
+    "hospitalized": 103,
+    "nonHospitalized": 1211
+  },
+  {
+    "year": 2020,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 461,
+    "fatalities": 16,
+    "hospitalized": 61,
+    "nonHospitalized": 503
+  },
+  {
+    "year": 2020,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 381,
+    "fatalities": 16,
+    "hospitalized": 64,
+    "nonHospitalized": 435
+  },
+  {
+    "year": 2020,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 10766,
+    "fatalities": 105,
+    "hospitalized": 638,
+    "nonHospitalized": 12684
+  },
+  {
+    "year": 2020,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 3544,
+    "fatalities": 51,
+    "hospitalized": 252,
+    "nonHospitalized": 4428
+  },
+  {
+    "year": 2020,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 2048,
+    "fatalities": 39,
+    "hospitalized": 200,
+    "nonHospitalized": 2589
+  },
+  {
+    "year": 2020,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 576,
+    "fatalities": 20,
+    "hospitalized": 97,
+    "nonHospitalized": 608
+  },
+  {
+    "year": 2020,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 352,
+    "fatalities": 16,
+    "hospitalized": 68,
+    "nonHospitalized": 370
+  },
+  {
+    "year": 2020,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1552,
+    "fatalities": 22,
+    "hospitalized": 147,
+    "nonHospitalized": 1875
+  },
+  {
+    "year": 2020,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 121,
+    "fatalities": 10,
+    "hospitalized": 27,
+    "nonHospitalized": 129
+  },
+  {
+    "year": 2020,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1790,
+    "fatalities": 22,
+    "hospitalized": 93,
+    "nonHospitalized": 2347
+  },
+  {
+    "year": 2020,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1491,
+    "fatalities": 38,
+    "hospitalized": 133,
+    "nonHospitalized": 1984
+  },
+  {
+    "year": 2020,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 266,
+    "fatalities": 20,
+    "hospitalized": 40,
+    "nonHospitalized": 320
+  },
+  {
+    "year": 2020,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1669,
+    "fatalities": 28,
+    "hospitalized": 264,
+    "nonHospitalized": 1961
+  },
+  {
+    "year": 2020,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 830,
+    "fatalities": 16,
+    "hospitalized": 81,
+    "nonHospitalized": 1015
+  },
+  {
+    "year": 2020,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 227,
+    "fatalities": 11,
+    "hospitalized": 19,
+    "nonHospitalized": 258
+  },
+  {
+    "year": 2020,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 3201,
+    "fatalities": 50,
+    "hospitalized": 238,
+    "nonHospitalized": 4197
+  },
+  {
+    "year": 2020,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 105,
+    "fatalities": 6,
+    "hospitalized": 20,
+    "nonHospitalized": 121
+  },
+  {
+    "year": 2020,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 1538,
+    "fatalities": 40,
+    "hospitalized": 182,
+    "nonHospitalized": 1789
+  },
+  {
+    "year": 2020,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 170,
+    "fatalities": 10,
+    "hospitalized": 41,
+    "nonHospitalized": 199
+  },
+  {
+    "year": 2020,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 595,
+    "fatalities": 27,
+    "hospitalized": 67,
+    "nonHospitalized": 738
+  },
+  {
+    "year": 2020,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 3114,
+    "fatalities": 51,
+    "hospitalized": 302,
+    "nonHospitalized": 3641
+  },
+  {
+    "year": 2020,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 616,
+    "fatalities": 13,
+    "hospitalized": 80,
+    "nonHospitalized": 712
+  },
+  {
+    "year": 2020,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1408,
+    "fatalities": 17,
+    "hospitalized": 129,
+    "nonHospitalized": 1736
+  },
+  {
+    "year": 2020,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 179,
+    "fatalities": 12,
+    "hospitalized": 45,
+    "nonHospitalized": 187
+  },
+  {
+    "year": 2020,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1169,
+    "fatalities": 38,
+    "hospitalized": 160,
+    "nonHospitalized": 1345
+  },
+  {
+    "year": 2020,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 172,
+    "fatalities": 2,
+    "hospitalized": 8,
+    "nonHospitalized": 238
+  },
+  {
+    "year": 2020,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 242,
+    "fatalities": 1,
+    "hospitalized": 16,
+    "nonHospitalized": 310
+  },
+  {
+    "year": 2021,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 877,
+    "fatalities": 13,
+    "hospitalized": 106,
+    "nonHospitalized": 1021
+  },
+  {
+    "year": 2021,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 732,
+    "fatalities": 11,
+    "hospitalized": 78,
+    "nonHospitalized": 913
+  },
+  {
+    "year": 2021,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 2404,
+    "fatalities": 66,
+    "hospitalized": 309,
+    "nonHospitalized": 2928
+  },
+  {
+    "year": 2021,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 696,
+    "fatalities": 34,
+    "hospitalized": 80,
+    "nonHospitalized": 968
+  },
+  {
+    "year": 2021,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 292,
+    "fatalities": 9,
+    "hospitalized": 38,
+    "nonHospitalized": 340
+  },
+  {
+    "year": 2021,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 777,
+    "fatalities": 28,
+    "hospitalized": 90,
+    "nonHospitalized": 987
+  },
+  {
+    "year": 2021,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 2748,
+    "fatalities": 47,
+    "hospitalized": 275,
+    "nonHospitalized": 3234
+  },
+  {
+    "year": 2021,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 16683,
+    "fatalities": 117,
+    "hospitalized": 831,
+    "nonHospitalized": 20280
+  },
+  {
+    "year": 2021,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 552,
+    "fatalities": 15,
+    "hospitalized": 65,
+    "nonHospitalized": 646
+  },
+  {
+    "year": 2021,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 497,
+    "fatalities": 12,
+    "hospitalized": 64,
+    "nonHospitalized": 594
+  },
+  {
+    "year": 2021,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2463,
+    "fatalities": 41,
+    "hospitalized": 199,
+    "nonHospitalized": 3242
+  },
+  {
+    "year": 2021,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 811,
+    "fatalities": 27,
+    "hospitalized": 148,
+    "nonHospitalized": 925
+  },
+  {
+    "year": 2021,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 385,
+    "fatalities": 24,
+    "hospitalized": 59,
+    "nonHospitalized": 493
+  },
+  {
+    "year": 2021,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 993,
+    "fatalities": 30,
+    "hospitalized": 141,
+    "nonHospitalized": 1230
+  },
+  {
+    "year": 2021,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1458,
+    "fatalities": 42,
+    "hospitalized": 219,
+    "nonHospitalized": 1753
+  },
+  {
+    "year": 2021,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 286,
+    "fatalities": 27,
+    "hospitalized": 55,
+    "nonHospitalized": 361
+  },
+  {
+    "year": 2021,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2027,
+    "fatalities": 48,
+    "hospitalized": 205,
+    "nonHospitalized": 2432
+  },
+  {
+    "year": 2021,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1416,
+    "fatalities": 38,
+    "hospitalized": 108,
+    "nonHospitalized": 1831
+  },
+  {
+    "year": 2021,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 315,
+    "fatalities": 6,
+    "hospitalized": 32,
+    "nonHospitalized": 397
+  },
+  {
+    "year": 2021,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1720,
+    "fatalities": 22,
+    "hospitalized": 175,
+    "nonHospitalized": 1941
+  },
+  {
+    "year": 2021,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 698,
+    "fatalities": 31,
+    "hospitalized": 69,
+    "nonHospitalized": 927
+  },
+  {
+    "year": 2021,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 392,
+    "fatalities": 13,
+    "hospitalized": 71,
+    "nonHospitalized": 461
+  },
+  {
+    "year": 2021,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 658,
+    "fatalities": 22,
+    "hospitalized": 65,
+    "nonHospitalized": 837
+  },
+  {
+    "year": 2021,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 496,
+    "fatalities": 30,
+    "hospitalized": 97,
+    "nonHospitalized": 591
+  },
+  {
+    "year": 2021,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1140,
+    "fatalities": 44,
+    "hospitalized": 159,
+    "nonHospitalized": 1356
+  },
+  {
+    "year": 2021,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 569,
+    "fatalities": 12,
+    "hospitalized": 70,
+    "nonHospitalized": 649
+  },
+  {
+    "year": 2021,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 412,
+    "fatalities": 12,
+    "hospitalized": 61,
+    "nonHospitalized": 485
+  },
+  {
+    "year": 2021,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 13476,
+    "fatalities": 127,
+    "hospitalized": 791,
+    "nonHospitalized": 16108
+  },
+  {
+    "year": 2021,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 4475,
+    "fatalities": 58,
+    "hospitalized": 240,
+    "nonHospitalized": 5839
+  },
+  {
+    "year": 2021,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 2523,
+    "fatalities": 49,
+    "hospitalized": 238,
+    "nonHospitalized": 3297
+  },
+  {
+    "year": 2021,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 880,
+    "fatalities": 28,
+    "hospitalized": 114,
+    "nonHospitalized": 997
+  },
+  {
+    "year": 2021,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 386,
+    "fatalities": 13,
+    "hospitalized": 64,
+    "nonHospitalized": 431
+  },
+  {
+    "year": 2021,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1831,
+    "fatalities": 30,
+    "hospitalized": 160,
+    "nonHospitalized": 2241
+  },
+  {
+    "year": 2021,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 151,
+    "fatalities": 11,
+    "hospitalized": 32,
+    "nonHospitalized": 164
+  },
+  {
+    "year": 2021,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1971,
+    "fatalities": 25,
+    "hospitalized": 112,
+    "nonHospitalized": 2463
+  },
+  {
+    "year": 2021,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1664,
+    "fatalities": 37,
+    "hospitalized": 143,
+    "nonHospitalized": 2221
+  },
+  {
+    "year": 2021,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 415,
+    "fatalities": 6,
+    "hospitalized": 53,
+    "nonHospitalized": 504
+  },
+  {
+    "year": 2021,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1994,
+    "fatalities": 35,
+    "hospitalized": 248,
+    "nonHospitalized": 2513
+  },
+  {
+    "year": 2021,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 974,
+    "fatalities": 15,
+    "hospitalized": 116,
+    "nonHospitalized": 1187
+  },
+  {
+    "year": 2021,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 221,
+    "fatalities": 7,
+    "hospitalized": 28,
+    "nonHospitalized": 286
+  },
+  {
+    "year": 2021,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 4073,
+    "fatalities": 48,
+    "hospitalized": 273,
+    "nonHospitalized": 5529
+  },
+  {
+    "year": 2021,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 93,
+    "fatalities": 13,
+    "hospitalized": 29,
+    "nonHospitalized": 101
+  },
+  {
+    "year": 2021,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2045,
+    "fatalities": 33,
+    "hospitalized": 206,
+    "nonHospitalized": 2422
+  },
+  {
+    "year": 2021,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 177,
+    "fatalities": 10,
+    "hospitalized": 52,
+    "nonHospitalized": 174
+  },
+  {
+    "year": 2021,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 681,
+    "fatalities": 36,
+    "hospitalized": 87,
+    "nonHospitalized": 855
+  },
+  {
+    "year": 2021,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4312,
+    "fatalities": 47,
+    "hospitalized": 396,
+    "nonHospitalized": 5176
+  },
+  {
+    "year": 2021,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 813,
+    "fatalities": 24,
+    "hospitalized": 107,
+    "nonHospitalized": 939
+  },
+  {
+    "year": 2021,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1862,
+    "fatalities": 22,
+    "hospitalized": 160,
+    "nonHospitalized": 2247
+  },
+  {
+    "year": 2021,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 219,
+    "fatalities": 9,
+    "hospitalized": 45,
+    "nonHospitalized": 275
+  },
+  {
+    "year": 2021,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1546,
+    "fatalities": 28,
+    "hospitalized": 202,
+    "nonHospitalized": 1814
+  },
+  {
+    "year": 2021,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 244,
+    "fatalities": 0,
+    "hospitalized": 8,
+    "nonHospitalized": 356
+  },
+  {
+    "year": 2021,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 339,
+    "fatalities": 1,
+    "hospitalized": 11,
+    "nonHospitalized": 417
+  },
+  {
+    "year": 2022,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 839,
+    "fatalities": 11,
+    "hospitalized": 135,
+    "nonHospitalized": 993
+  },
+  {
+    "year": 2022,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 650,
+    "fatalities": 13,
+    "hospitalized": 83,
+    "nonHospitalized": 753
+  },
+  {
+    "year": 2022,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 3323,
+    "fatalities": 65,
+    "hospitalized": 336,
+    "nonHospitalized": 4005
+  },
+  {
+    "year": 2022,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 1205,
+    "fatalities": 41,
+    "hospitalized": 119,
+    "nonHospitalized": 1559
+  },
+  {
+    "year": 2022,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 287,
+    "fatalities": 19,
+    "hospitalized": 47,
+    "nonHospitalized": 327
+  },
+  {
+    "year": 2022,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 1027,
+    "fatalities": 28,
+    "hospitalized": 108,
+    "nonHospitalized": 1270
+  },
+  {
+    "year": 2022,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 3078,
+    "fatalities": 38,
+    "hospitalized": 322,
+    "nonHospitalized": 3627
+  },
+  {
+    "year": 2022,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 17394,
+    "fatalities": 141,
+    "hospitalized": 930,
+    "nonHospitalized": 21236
+  },
+  {
+    "year": 2022,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 619,
+    "fatalities": 33,
+    "hospitalized": 97,
+    "nonHospitalized": 662
+  },
+  {
+    "year": 2022,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 451,
+    "fatalities": 13,
+    "hospitalized": 54,
+    "nonHospitalized": 558
+  },
+  {
+    "year": 2022,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2629,
+    "fatalities": 40,
+    "hospitalized": 204,
+    "nonHospitalized": 3435
+  },
+  {
+    "year": 2022,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 990,
+    "fatalities": 32,
+    "hospitalized": 161,
+    "nonHospitalized": 1134
+  },
+  {
+    "year": 2022,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 414,
+    "fatalities": 29,
+    "hospitalized": 48,
+    "nonHospitalized": 507
+  },
+  {
+    "year": 2022,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 927,
+    "fatalities": 36,
+    "hospitalized": 131,
+    "nonHospitalized": 1147
+  },
+  {
+    "year": 2022,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1654,
+    "fatalities": 62,
+    "hospitalized": 237,
+    "nonHospitalized": 2035
+  },
+  {
+    "year": 2022,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 288,
+    "fatalities": 23,
+    "hospitalized": 63,
+    "nonHospitalized": 373
+  },
+  {
+    "year": 2022,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2135,
+    "fatalities": 51,
+    "hospitalized": 200,
+    "nonHospitalized": 2531
+  },
+  {
+    "year": 2022,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1510,
+    "fatalities": 38,
+    "hospitalized": 128,
+    "nonHospitalized": 1905
+  },
+  {
+    "year": 2022,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 372,
+    "fatalities": 9,
+    "hospitalized": 39,
+    "nonHospitalized": 473
+  },
+  {
+    "year": 2022,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1736,
+    "fatalities": 23,
+    "hospitalized": 172,
+    "nonHospitalized": 1990
+  },
+  {
+    "year": 2022,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 685,
+    "fatalities": 24,
+    "hospitalized": 65,
+    "nonHospitalized": 935
+  },
+  {
+    "year": 2022,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 435,
+    "fatalities": 28,
+    "hospitalized": 80,
+    "nonHospitalized": 488
+  },
+  {
+    "year": 2022,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 796,
+    "fatalities": 22,
+    "hospitalized": 70,
+    "nonHospitalized": 1029
+  },
+  {
+    "year": 2022,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 477,
+    "fatalities": 21,
+    "hospitalized": 96,
+    "nonHospitalized": 539
+  },
+  {
+    "year": 2022,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1341,
+    "fatalities": 20,
+    "hospitalized": 165,
+    "nonHospitalized": 1614
+  },
+  {
+    "year": 2022,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 654,
+    "fatalities": 12,
+    "hospitalized": 71,
+    "nonHospitalized": 734
+  },
+  {
+    "year": 2022,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 449,
+    "fatalities": 20,
+    "hospitalized": 69,
+    "nonHospitalized": 523
+  },
+  {
+    "year": 2022,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 15086,
+    "fatalities": 125,
+    "hospitalized": 774,
+    "nonHospitalized": 18193
+  },
+  {
+    "year": 2022,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 4961,
+    "fatalities": 60,
+    "hospitalized": 238,
+    "nonHospitalized": 6351
+  },
+  {
+    "year": 2022,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 3136,
+    "fatalities": 59,
+    "hospitalized": 288,
+    "nonHospitalized": 4003
+  },
+  {
+    "year": 2022,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 788,
+    "fatalities": 37,
+    "hospitalized": 145,
+    "nonHospitalized": 801
+  },
+  {
+    "year": 2022,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 433,
+    "fatalities": 14,
+    "hospitalized": 57,
+    "nonHospitalized": 468
+  },
+  {
+    "year": 2022,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1762,
+    "fatalities": 34,
+    "hospitalized": 166,
+    "nonHospitalized": 2124
+  },
+  {
+    "year": 2022,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 196,
+    "fatalities": 12,
+    "hospitalized": 56,
+    "nonHospitalized": 206
+  },
+  {
+    "year": 2022,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 2068,
+    "fatalities": 31,
+    "hospitalized": 140,
+    "nonHospitalized": 2612
+  },
+  {
+    "year": 2022,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1957,
+    "fatalities": 27,
+    "hospitalized": 176,
+    "nonHospitalized": 2511
+  },
+  {
+    "year": 2022,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 546,
+    "fatalities": 18,
+    "hospitalized": 55,
+    "nonHospitalized": 616
+  },
+  {
+    "year": 2022,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 2137,
+    "fatalities": 37,
+    "hospitalized": 274,
+    "nonHospitalized": 2635
+  },
+  {
+    "year": 2022,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 1009,
+    "fatalities": 21,
+    "hospitalized": 113,
+    "nonHospitalized": 1235
+  },
+  {
+    "year": 2022,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 296,
+    "fatalities": 17,
+    "hospitalized": 36,
+    "nonHospitalized": 370
+  },
+  {
+    "year": 2022,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 3983,
+    "fatalities": 72,
+    "hospitalized": 263,
+    "nonHospitalized": 5396
+  },
+  {
+    "year": 2022,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 105,
+    "fatalities": 15,
+    "hospitalized": 25,
+    "nonHospitalized": 100
+  },
+  {
+    "year": 2022,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2189,
+    "fatalities": 52,
+    "hospitalized": 241,
+    "nonHospitalized": 2516
+  },
+  {
+    "year": 2022,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 227,
+    "fatalities": 7,
+    "hospitalized": 48,
+    "nonHospitalized": 244
+  },
+  {
+    "year": 2022,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 880,
+    "fatalities": 23,
+    "hospitalized": 86,
+    "nonHospitalized": 1194
+  },
+  {
+    "year": 2022,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 4771,
+    "fatalities": 78,
+    "hospitalized": 550,
+    "nonHospitalized": 5410
+  },
+  {
+    "year": 2022,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 790,
+    "fatalities": 23,
+    "hospitalized": 110,
+    "nonHospitalized": 921
+  },
+  {
+    "year": 2022,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1883,
+    "fatalities": 21,
+    "hospitalized": 150,
+    "nonHospitalized": 2285
+  },
+  {
+    "year": 2022,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 202,
+    "fatalities": 21,
+    "hospitalized": 46,
+    "nonHospitalized": 223
+  },
+  {
+    "year": 2022,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1589,
+    "fatalities": 45,
+    "hospitalized": 210,
+    "nonHospitalized": 1810
+  },
+  {
+    "year": 2022,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 257,
+    "fatalities": 1,
+    "hospitalized": 10,
+    "nonHospitalized": 355
+  },
+  {
+    "year": 2022,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 300,
+    "fatalities": 4,
+    "hospitalized": 15,
+    "nonHospitalized": 367
+  },
+  {
+    "year": 2023,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 889,
+    "fatalities": 9,
+    "hospitalized": 115,
+    "nonHospitalized": 1089
+  },
+  {
+    "year": 2023,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 775,
+    "fatalities": 26,
+    "hospitalized": 101,
+    "nonHospitalized": 903
+  },
+  {
+    "year": 2023,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 3887,
+    "fatalities": 60,
+    "hospitalized": 404,
+    "nonHospitalized": 4683
+  },
+  {
+    "year": 2023,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 1589,
+    "fatalities": 36,
+    "hospitalized": 149,
+    "nonHospitalized": 2034
+  },
+  {
+    "year": 2023,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 301,
+    "fatalities": 15,
+    "hospitalized": 46,
+    "nonHospitalized": 353
+  },
+  {
+    "year": 2023,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 1070,
+    "fatalities": 42,
+    "hospitalized": 123,
+    "nonHospitalized": 1279
+  },
+  {
+    "year": 2023,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 2871,
+    "fatalities": 64,
+    "hospitalized": 324,
+    "nonHospitalized": 3428
+  },
+  {
+    "year": 2023,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 17704,
+    "fatalities": 148,
+    "hospitalized": 1073,
+    "nonHospitalized": 21709
+  },
+  {
+    "year": 2023,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 625,
+    "fatalities": 26,
+    "hospitalized": 92,
+    "nonHospitalized": 701
+  },
+  {
+    "year": 2023,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 472,
+    "fatalities": 28,
+    "hospitalized": 75,
+    "nonHospitalized": 574
+  },
+  {
+    "year": 2023,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2874,
+    "fatalities": 42,
+    "hospitalized": 258,
+    "nonHospitalized": 3635
+  },
+  {
+    "year": 2023,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 1096,
+    "fatalities": 21,
+    "hospitalized": 166,
+    "nonHospitalized": 1251
+  },
+  {
+    "year": 2023,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 487,
+    "fatalities": 27,
+    "hospitalized": 40,
+    "nonHospitalized": 609
+  },
+  {
+    "year": 2023,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 922,
+    "fatalities": 24,
+    "hospitalized": 145,
+    "nonHospitalized": 1062
+  },
+  {
+    "year": 2023,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1890,
+    "fatalities": 38,
+    "hospitalized": 287,
+    "nonHospitalized": 2275
+  },
+  {
+    "year": 2023,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 264,
+    "fatalities": 21,
+    "hospitalized": 67,
+    "nonHospitalized": 322
+  },
+  {
+    "year": 2023,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2188,
+    "fatalities": 51,
+    "hospitalized": 167,
+    "nonHospitalized": 2676
+  },
+  {
+    "year": 2023,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1478,
+    "fatalities": 35,
+    "hospitalized": 136,
+    "nonHospitalized": 1877
+  },
+  {
+    "year": 2023,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 399,
+    "fatalities": 11,
+    "hospitalized": 44,
+    "nonHospitalized": 532
+  },
+  {
+    "year": 2023,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1613,
+    "fatalities": 33,
+    "hospitalized": 172,
+    "nonHospitalized": 1890
+  },
+  {
+    "year": 2023,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 756,
+    "fatalities": 23,
+    "hospitalized": 85,
+    "nonHospitalized": 1045
+  },
+  {
+    "year": 2023,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 376,
+    "fatalities": 21,
+    "hospitalized": 67,
+    "nonHospitalized": 462
+  },
+  {
+    "year": 2023,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 878,
+    "fatalities": 20,
+    "hospitalized": 83,
+    "nonHospitalized": 1129
+  },
+  {
+    "year": 2023,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 545,
+    "fatalities": 44,
+    "hospitalized": 151,
+    "nonHospitalized": 642
+  },
+  {
+    "year": 2023,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1409,
+    "fatalities": 34,
+    "hospitalized": 192,
+    "nonHospitalized": 1749
+  },
+  {
+    "year": 2023,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 686,
+    "fatalities": 12,
+    "hospitalized": 91,
+    "nonHospitalized": 804
+  },
+  {
+    "year": 2023,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 379,
+    "fatalities": 20,
+    "hospitalized": 83,
+    "nonHospitalized": 432
+  },
+  {
+    "year": 2023,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 14680,
+    "fatalities": 137,
+    "hospitalized": 893,
+    "nonHospitalized": 17881
+  },
+  {
+    "year": 2023,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 5006,
+    "fatalities": 70,
+    "hospitalized": 320,
+    "nonHospitalized": 6399
+  },
+  {
+    "year": 2023,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 3464,
+    "fatalities": 62,
+    "hospitalized": 259,
+    "nonHospitalized": 4367
+  },
+  {
+    "year": 2023,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 704,
+    "fatalities": 17,
+    "hospitalized": 141,
+    "nonHospitalized": 697
+  },
+  {
+    "year": 2023,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 407,
+    "fatalities": 27,
+    "hospitalized": 91,
+    "nonHospitalized": 424
+  },
+  {
+    "year": 2023,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1842,
+    "fatalities": 49,
+    "hospitalized": 198,
+    "nonHospitalized": 2256
+  },
+  {
+    "year": 2023,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 212,
+    "fatalities": 4,
+    "hospitalized": 35,
+    "nonHospitalized": 244
+  },
+  {
+    "year": 2023,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 2189,
+    "fatalities": 36,
+    "hospitalized": 127,
+    "nonHospitalized": 2893
+  },
+  {
+    "year": 2023,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1929,
+    "fatalities": 43,
+    "hospitalized": 201,
+    "nonHospitalized": 2494
+  },
+  {
+    "year": 2023,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 698,
+    "fatalities": 17,
+    "hospitalized": 86,
+    "nonHospitalized": 790
+  },
+  {
+    "year": 2023,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 2081,
+    "fatalities": 33,
+    "hospitalized": 257,
+    "nonHospitalized": 2573
+  },
+  {
+    "year": 2023,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 1180,
+    "fatalities": 24,
+    "hospitalized": 126,
+    "nonHospitalized": 1371
+  },
+  {
+    "year": 2023,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 322,
+    "fatalities": 13,
+    "hospitalized": 48,
+    "nonHospitalized": 429
+  },
+  {
+    "year": 2023,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 3864,
+    "fatalities": 60,
+    "hospitalized": 315,
+    "nonHospitalized": 5233
+  },
+  {
+    "year": 2023,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 144,
+    "fatalities": 17,
+    "hospitalized": 30,
+    "nonHospitalized": 170
+  },
+  {
+    "year": 2023,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2289,
+    "fatalities": 55,
+    "hospitalized": 249,
+    "nonHospitalized": 2665
+  },
+  {
+    "year": 2023,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 231,
+    "fatalities": 10,
+    "hospitalized": 51,
+    "nonHospitalized": 252
+  },
+  {
+    "year": 2023,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 1003,
+    "fatalities": 38,
+    "hospitalized": 130,
+    "nonHospitalized": 1348
+  },
+  {
+    "year": 2023,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 5237,
+    "fatalities": 73,
+    "hospitalized": 399,
+    "nonHospitalized": 6129
+  },
+  {
+    "year": 2023,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 903,
+    "fatalities": 17,
+    "hospitalized": 91,
+    "nonHospitalized": 1066
+  },
+  {
+    "year": 2023,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1965,
+    "fatalities": 14,
+    "hospitalized": 172,
+    "nonHospitalized": 2432
+  },
+  {
+    "year": 2023,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 196,
+    "fatalities": 14,
+    "hospitalized": 44,
+    "nonHospitalized": 237
+  },
+  {
+    "year": 2023,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1578,
+    "fatalities": 44,
+    "hospitalized": 229,
+    "nonHospitalized": 1800
+  },
+  {
+    "year": 2023,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 322,
+    "fatalities": 1,
+    "hospitalized": 16,
+    "nonHospitalized": 458
+  },
+  {
+    "year": 2023,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 437,
+    "fatalities": 0,
+    "hospitalized": 21,
+    "nonHospitalized": 513
+  },
+  {
+    "year": 2024,
+    "province": "01",
+    "provinceName": "Álava",
+    "accidents": 867,
+    "fatalities": 10,
+    "hospitalized": 112,
+    "nonHospitalized": 1067
+  },
+  {
+    "year": 2024,
+    "province": "02",
+    "provinceName": "Albacete",
+    "accidents": 854,
+    "fatalities": 13,
+    "hospitalized": 97,
+    "nonHospitalized": 1034
+  },
+  {
+    "year": 2024,
+    "province": "03",
+    "provinceName": "Alicante",
+    "accidents": 3758,
+    "fatalities": 67,
+    "hospitalized": 405,
+    "nonHospitalized": 4449
+  },
+  {
+    "year": 2024,
+    "province": "04",
+    "provinceName": "Almería",
+    "accidents": 1503,
+    "fatalities": 40,
+    "hospitalized": 129,
+    "nonHospitalized": 2014
+  },
+  {
+    "year": 2024,
+    "province": "05",
+    "provinceName": "Ávila",
+    "accidents": 363,
+    "fatalities": 18,
+    "hospitalized": 71,
+    "nonHospitalized": 420
+  },
+  {
+    "year": 2024,
+    "province": "06",
+    "provinceName": "Badajoz",
+    "accidents": 1075,
+    "fatalities": 26,
+    "hospitalized": 110,
+    "nonHospitalized": 1276
+  },
+  {
+    "year": 2024,
+    "province": "07",
+    "provinceName": "Baleares",
+    "accidents": 2888,
+    "fatalities": 62,
+    "hospitalized": 307,
+    "nonHospitalized": 3463
+  },
+  {
+    "year": 2024,
+    "province": "08",
+    "provinceName": "Barcelona",
+    "accidents": 17945,
+    "fatalities": 130,
+    "hospitalized": 1232,
+    "nonHospitalized": 21908
+  },
+  {
+    "year": 2024,
+    "province": "09",
+    "provinceName": "Burgos",
+    "accidents": 655,
+    "fatalities": 26,
+    "hospitalized": 98,
+    "nonHospitalized": 759
+  },
+  {
+    "year": 2024,
+    "province": "10",
+    "provinceName": "Cáceres",
+    "accidents": 517,
+    "fatalities": 18,
+    "hospitalized": 59,
+    "nonHospitalized": 664
+  },
+  {
+    "year": 2024,
+    "province": "11",
+    "provinceName": "Cádiz",
+    "accidents": 2707,
+    "fatalities": 38,
+    "hospitalized": 236,
+    "nonHospitalized": 3527
+  },
+  {
+    "year": 2024,
+    "province": "12",
+    "provinceName": "Castellón",
+    "accidents": 1066,
+    "fatalities": 30,
+    "hospitalized": 168,
+    "nonHospitalized": 1207
+  },
+  {
+    "year": 2024,
+    "province": "13",
+    "provinceName": "Ciudad Real",
+    "accidents": 546,
+    "fatalities": 28,
+    "hospitalized": 55,
+    "nonHospitalized": 683
+  },
+  {
+    "year": 2024,
+    "province": "14",
+    "provinceName": "Córdoba",
+    "accidents": 812,
+    "fatalities": 32,
+    "hospitalized": 130,
+    "nonHospitalized": 990
+  },
+  {
+    "year": 2024,
+    "province": "15",
+    "provinceName": "A Coruña",
+    "accidents": 1713,
+    "fatalities": 55,
+    "hospitalized": 237,
+    "nonHospitalized": 2106
+  },
+  {
+    "year": 2024,
+    "province": "16",
+    "provinceName": "Cuenca",
+    "accidents": 268,
+    "fatalities": 16,
+    "hospitalized": 56,
+    "nonHospitalized": 325
+  },
+  {
+    "year": 2024,
+    "province": "17",
+    "provinceName": "Girona",
+    "accidents": 2247,
+    "fatalities": 36,
+    "hospitalized": 196,
+    "nonHospitalized": 2694
+  },
+  {
+    "year": 2024,
+    "province": "18",
+    "provinceName": "Granada",
+    "accidents": 1319,
+    "fatalities": 56,
+    "hospitalized": 118,
+    "nonHospitalized": 1677
+  },
+  {
+    "year": 2024,
+    "province": "19",
+    "provinceName": "Guadalajara",
+    "accidents": 410,
+    "fatalities": 17,
+    "hospitalized": 36,
+    "nonHospitalized": 536
+  },
+  {
+    "year": 2024,
+    "province": "20",
+    "provinceName": "Guipúzcoa",
+    "accidents": 1438,
+    "fatalities": 21,
+    "hospitalized": 163,
+    "nonHospitalized": 1673
+  },
+  {
+    "year": 2024,
+    "province": "21",
+    "provinceName": "Huelva",
+    "accidents": 743,
+    "fatalities": 24,
+    "hospitalized": 83,
+    "nonHospitalized": 1062
+  },
+  {
+    "year": 2024,
+    "province": "22",
+    "provinceName": "Huesca",
+    "accidents": 437,
+    "fatalities": 20,
+    "hospitalized": 88,
+    "nonHospitalized": 526
+  },
+  {
+    "year": 2024,
+    "province": "23",
+    "provinceName": "Jaén",
+    "accidents": 959,
+    "fatalities": 32,
+    "hospitalized": 92,
+    "nonHospitalized": 1188
+  },
+  {
+    "year": 2024,
+    "province": "24",
+    "provinceName": "León",
+    "accidents": 403,
+    "fatalities": 32,
+    "hospitalized": 108,
+    "nonHospitalized": 521
+  },
+  {
+    "year": 2024,
+    "province": "25",
+    "provinceName": "Lleida",
+    "accidents": 1542,
+    "fatalities": 32,
+    "hospitalized": 190,
+    "nonHospitalized": 1905
+  },
+  {
+    "year": 2024,
+    "province": "26",
+    "provinceName": "La Rioja",
+    "accidents": 669,
+    "fatalities": 14,
+    "hospitalized": 95,
+    "nonHospitalized": 761
+  },
+  {
+    "year": 2024,
+    "province": "27",
+    "provinceName": "Lugo",
+    "accidents": 391,
+    "fatalities": 21,
+    "hospitalized": 73,
+    "nonHospitalized": 446
+  },
+  {
+    "year": 2024,
+    "province": "28",
+    "provinceName": "Madrid",
+    "accidents": 14183,
+    "fatalities": 125,
+    "hospitalized": 973,
+    "nonHospitalized": 17052
+  },
+  {
+    "year": 2024,
+    "province": "29",
+    "provinceName": "Málaga",
+    "accidents": 5185,
+    "fatalities": 65,
+    "hospitalized": 318,
+    "nonHospitalized": 6660
+  },
+  {
+    "year": 2024,
+    "province": "30",
+    "provinceName": "Murcia",
+    "accidents": 3922,
+    "fatalities": 84,
+    "hospitalized": 318,
+    "nonHospitalized": 5001
+  },
+  {
+    "year": 2024,
+    "province": "31",
+    "provinceName": "Navarra",
+    "accidents": 842,
+    "fatalities": 27,
+    "hospitalized": 155,
+    "nonHospitalized": 858
+  },
+  {
+    "year": 2024,
+    "province": "32",
+    "provinceName": "Ourense",
+    "accidents": 397,
+    "fatalities": 19,
+    "hospitalized": 74,
+    "nonHospitalized": 450
+  },
+  {
+    "year": 2024,
+    "province": "33",
+    "provinceName": "Asturias",
+    "accidents": 1945,
+    "fatalities": 44,
+    "hospitalized": 216,
+    "nonHospitalized": 2344
+  },
+  {
+    "year": 2024,
+    "province": "34",
+    "provinceName": "Palencia",
+    "accidents": 151,
+    "fatalities": 10,
+    "hospitalized": 40,
+    "nonHospitalized": 170
+  },
+  {
+    "year": 2024,
+    "province": "35",
+    "provinceName": "Las Palmas",
+    "accidents": 1920,
+    "fatalities": 36,
+    "hospitalized": 149,
+    "nonHospitalized": 2513
+  },
+  {
+    "year": 2024,
+    "province": "36",
+    "provinceName": "Pontevedra",
+    "accidents": 1737,
+    "fatalities": 35,
+    "hospitalized": 163,
+    "nonHospitalized": 2295
+  },
+  {
+    "year": 2024,
+    "province": "37",
+    "provinceName": "Salamanca",
+    "accidents": 660,
+    "fatalities": 15,
+    "hospitalized": 66,
+    "nonHospitalized": 758
+  },
+  {
+    "year": 2024,
+    "province": "38",
+    "provinceName": "S.C. Tenerife",
+    "accidents": 1937,
+    "fatalities": 33,
+    "hospitalized": 294,
+    "nonHospitalized": 2445
+  },
+  {
+    "year": 2024,
+    "province": "39",
+    "provinceName": "Cantabria",
+    "accidents": 1203,
+    "fatalities": 19,
+    "hospitalized": 117,
+    "nonHospitalized": 1474
+  },
+  {
+    "year": 2024,
+    "province": "40",
+    "provinceName": "Segovia",
+    "accidents": 345,
+    "fatalities": 12,
+    "hospitalized": 52,
+    "nonHospitalized": 428
+  },
+  {
+    "year": 2024,
+    "province": "41",
+    "provinceName": "Sevilla",
+    "accidents": 4748,
+    "fatalities": 71,
+    "hospitalized": 363,
+    "nonHospitalized": 6370
+  },
+  {
+    "year": 2024,
+    "province": "42",
+    "provinceName": "Soria",
+    "accidents": 117,
+    "fatalities": 8,
+    "hospitalized": 39,
+    "nonHospitalized": 123
+  },
+  {
+    "year": 2024,
+    "province": "43",
+    "provinceName": "Tarragona",
+    "accidents": 2381,
+    "fatalities": 58,
+    "hospitalized": 248,
+    "nonHospitalized": 2813
+  },
+  {
+    "year": 2024,
+    "province": "44",
+    "provinceName": "Teruel",
+    "accidents": 254,
+    "fatalities": 9,
+    "hospitalized": 45,
+    "nonHospitalized": 313
+  },
+  {
+    "year": 2024,
+    "province": "45",
+    "provinceName": "Toledo",
+    "accidents": 918,
+    "fatalities": 32,
+    "hospitalized": 99,
+    "nonHospitalized": 1187
+  },
+  {
+    "year": 2024,
+    "province": "46",
+    "provinceName": "Valencia",
+    "accidents": 5779,
+    "fatalities": 66,
+    "hospitalized": 477,
+    "nonHospitalized": 6556
+  },
+  {
+    "year": 2024,
+    "province": "47",
+    "provinceName": "Valladolid",
+    "accidents": 889,
+    "fatalities": 18,
+    "hospitalized": 97,
+    "nonHospitalized": 1053
+  },
+  {
+    "year": 2024,
+    "province": "48",
+    "provinceName": "Bizkaia",
+    "accidents": 1849,
+    "fatalities": 15,
+    "hospitalized": 203,
+    "nonHospitalized": 2287
+  },
+  {
+    "year": 2024,
+    "province": "49",
+    "provinceName": "Zamora",
+    "accidents": 227,
+    "fatalities": 24,
+    "hospitalized": 48,
+    "nonHospitalized": 285
+  },
+  {
+    "year": 2024,
+    "province": "50",
+    "provinceName": "Zaragoza",
+    "accidents": 1599,
+    "fatalities": 44,
+    "hospitalized": 240,
+    "nonHospitalized": 1859
+  },
+  {
+    "year": 2024,
+    "province": "51",
+    "provinceName": "Ceuta",
+    "accidents": 300,
+    "fatalities": 1,
+    "hospitalized": 11,
+    "nonHospitalized": 410
+  },
+  {
+    "year": 2024,
+    "province": "52",
+    "provinceName": "Melilla",
+    "accidents": 413,
+    "fatalities": 1,
+    "hospitalized": 12,
+    "nonHospitalized": 499
+  }
+]

@@ -47,8 +47,7 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# WIP pages (not ready for deploy)
-/data/
+# WIP scripts
 /scripts/
 
 # Collector node_modules
