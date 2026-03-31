@@ -95,9 +95,40 @@ export function CorridorView({ incidents, cameras, radars, gasStations, onFlyTo,
       });
     }
 
+    // Gas stations near the corridor (bbox of road items + margin)
+    if (items.length > 0) {
+      const lats = items.map((i) => i.lat);
+      const lngs = items.map((i) => i.lng);
+      const minLat = Math.min(...lats) - 0.05;
+      const maxLat = Math.max(...lats) + 0.05;
+      const minLng = Math.min(...lngs) - 0.05;
+      const maxLng = Math.max(...lngs) + 0.05;
+
+      for (const station of gasStations) {
+        if (
+          station.latitude >= minLat &&
+          station.latitude <= maxLat &&
+          station.longitude >= minLng &&
+          station.longitude <= maxLng
+        ) {
+          const price = station.priceGasoleoA || station.priceGasolina95E5;
+          items.push({
+            type: "gasStation",
+            km: 0, // no km info available
+            lat: station.latitude,
+            lng: station.longitude,
+            label: station.name,
+            sublabel: price ? `${price.toFixed(3)}€/L` : undefined,
+            color: "#f97316",
+            icon: <Fuel className="w-4 h-4" />,
+          });
+        }
+      }
+    }
+
     // Sort by km
     return items.sort((a, b) => a.km - b.km);
-  }, [selectedRoad, incidents, cameras, radars]);
+  }, [selectedRoad, incidents, cameras, radars, gasStations]);
 
   return (
     <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
