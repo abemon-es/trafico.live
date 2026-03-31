@@ -2,7 +2,7 @@
 
 Real-time traffic intelligence platform for Spain — live incidents, cameras, radars, fuel prices, EV chargers, ZBE zones, and weather alerts from official government sources.
 
-![Build status placeholder](#) ![License: Proprietary](#)
+**Managed by** [Certus SPV, SLU](https://trafico.live/aviso-legal) | **Developed by** [Abemon](https://abemon.es)
 
 ---
 
@@ -160,24 +160,31 @@ All data originates from official Spanish government open-data portals. No third
 
 ## Deployment
 
-The production instance runs on **Coolify** (self-hosted PaaS) on a **Hetzner** dedicated server.
-
-- DNS and CDN managed via **Cloudflare**
-- PostgreSQL and Redis run as Coolify-managed services on the same host
-- Background collector services run as separate Coolify applications, each connecting to the shared database
-
-A legacy `railway.toml` exists at the project root from the previous Railway deployment (migrated to Coolify).
+- **Compute** (hetzner-prod): Next.js app on Coolify + collector cron jobs
+- **Data** (hetzner-dev): PostgreSQL 16 via PgBouncer + Redis
+- **DNS/CDN/Email**: Cloudflare (DNS, CDN, Email Routing with catch-all)
+- **Collectors**: single Docker image (`trafico-collector:latest`), 10 cron jobs via `docker-compose.collectors.yml`
 
 ### Build command
 
 ```bash
-prisma generate && NODE_OPTIONS='--max-old-space-size=4096' NEXT_WORKER_COUNT=4 next build
+prisma generate && NODE_OPTIONS='--max-old-space-size=4096' next build
 ```
+
+---
+
+## Ownership
+
+| Role | Entity |
+|------|--------|
+| **Titular / Operator** | Certus SPV, SLU (CIF: B13852223, Madrid) |
+| **Developer / Engineering** | [Abemon](https://abemon.es) |
+| **Contact** | hola@trafico.live |
 
 ---
 
 ## License
 
-Copyright (c) 2024 abemon ([abemon.es](https://abemon.es)). All rights reserved.
+Copyright (c) 2024-2026 Certus SPV, SLU. All rights reserved.
 
-See [LICENSE](./LICENSE) for details. This software is proprietary and not open source. Unauthorised copying, modification, or distribution is prohibited.
+Developed by [Abemon](https://abemon.es). See [LICENSE](./LICENSE) for details. This software is proprietary and not open source.

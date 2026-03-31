@@ -3,8 +3,11 @@
 Real-time Spanish traffic intelligence platform. Aggregates data from DGT, AEMET, SCT, Euskadi, Madrid, Valencia, and fuel price APIs into a unified dashboard with 75+ SEO pages.
 
 **URL:** https://trafico.live
+**Managed by:** Certus SPV, SLU
+**Developed by:** [Abemon](https://abemon.es)
 **Brand:** `~/Desarrollos/.claude-brands/trafico-live.md`
-**Deployed on:** Coolify
+**Deployed on:** Coolify (hetzner-prod) | DB on hetzner-dev via PgBouncer
+**Email:** Cloudflare Email Routing → catch-all to operator
 
 ## Stack
 
@@ -48,10 +51,11 @@ npm run db:seed      # Seed database
 
 ### Data Collectors (`services/collector/`)
 - Unified dispatcher (`TASK` env var selects collector)
-- Valid tasks: `v16`, `incident`, `panel`, `weather`, `camera`, `radar`, `charger`, `speedlimit`
-- Each collector: fetch → parse → upsert to PostgreSQL
-- Legacy standalone collectors in `services/*-collector/` (being consolidated)
-- Data sources: DGT (DATEX II XML), AEMET, SCT, Euskadi, Madrid, Valencia APIs
+- Valid tasks: `v16`, `incident`, `panel`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `insights`, `historical-accidents`
+- Single Docker image: `services/collector/Dockerfile` — cron schedules in `docker-compose.collectors.yml`
+- Runs on hetzner-prod via system crontab (`/opt/trafico/run-collector.sh <task>`)
+- Legacy standalone collectors in `services/*-collector/` are @deprecated
+- Data sources: DGT (DATEX II XML), AEMET, SCT, Euskadi, Madrid, Valencia, MINETUR APIs
 
 ### Database (Prisma)
 - 961-line schema with models for: V16 beacons, traffic incidents, weather conditions/alerts, cameras, radars, panels, speed limits, gas stations (terrestrial + maritime), EV chargers, roads, IMD data
