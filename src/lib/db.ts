@@ -10,39 +10,44 @@ function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    // During build time, DATABASE_URL may not be available.
-    // Return a proxy that resolves with empty/null data instead of throwing,
-    // so pages can render empty shells at build time and fill via ISR.
-    console.warn("[db] DATABASE_URL not set — DB queries will fail at runtime");
+    // During build time (Coolify runs `DATABASE_URL='' next build`),
+    // return a lazy proxy that re-checks DATABASE_URL on each access.
+    // At runtime, DATABASE_URL is set and we create a real client.
+    console.warn("[db] DATABASE_URL not set at init — will retry at runtime");
 
-    const emptyResult = () => Promise.resolve(null);
-    const emptyArray = () => Promise.resolve([]);
-    const zeroCount = () => Promise.resolve(0);
-
-    const modelProxy = new Proxy({}, {
-      get(_target, method) {
-        if (method === "then" || method === Symbol.toPrimitive || method === Symbol.toStringTag) return undefined;
-        // Return appropriate empty values for common Prisma methods
-        if (method === "count") return zeroCount;
-        if (method === "findMany" || method === "groupBy") return emptyArray;
-        if (method === "findFirst" || method === "findUnique") return emptyResult;
-        if (method === "aggregate") return () => Promise.resolve({ _count: 0, _sum: {}, _avg: {}, _min: {}, _max: {} });
-        if (method === "create" || method === "update" || method === "delete") return emptyResult;
-        // Default: return a function that resolves to null
-        return emptyResult;
-      },
-    });
+    let realClient: PrismaClient | null = null;
 
     return new Proxy({} as PrismaClient, {
       get(_target, prop) {
+        // Check if DATABASE_URL is now available (runtime vs build time)
+        if (!realClient && process.env.DATABASE_URL) {
+          realClient = createRealClient(process.env.DATABASE_URL);
+        }
+        if (realClient) {
+          return (realClient as unknown as Record<string | symbol, unknown>)[prop];
+        }
+        // Still no DB — return safe empty stubs for build-time rendering
         if (prop === "then" || prop === Symbol.toPrimitive || prop === Symbol.toStringTag) return undefined;
         if (prop === "$connect" || prop === "$disconnect") return () => Promise.resolve();
-        if (prop === "$transaction") return (fn: unknown) => typeof fn === "function" ? fn(new Proxy({}, { get: () => modelProxy })) : Promise.resolve([]);
-        return modelProxy;
+        const emptyModel = new Proxy({}, {
+          get(_t, method) {
+            if (method === "then" || method === Symbol.toPrimitive || method === Symbol.toStringTag) return undefined;
+            if (method === "count") return () => Promise.resolve(0);
+            if (method === "findMany" || method === "groupBy") return () => Promise.resolve([]);
+            if (method === "findFirst" || method === "findUnique") return () => Promise.resolve(null);
+            if (method === "aggregate") return () => Promise.resolve({ _count: 0, _sum: {}, _avg: {}, _min: {}, _max: {} });
+            return () => Promise.resolve(null);
+          },
+        });
+        return emptyModel;
       },
     }) as PrismaClient;
   }
 
+  return createRealClient(connectionString);
+}
+
+function createRealClient(connectionString: string): PrismaClient {
   const pool = new Pool({
     connectionString,
     max: 15,
