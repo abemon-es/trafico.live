@@ -219,24 +219,25 @@ export const megaMenuPanels: MegaMenuPanel[] = [
     label: "Marítimo",
     categories: [
       {
-        title: "Combustible",
+        title: "Combustible y puertos",
         items: [
           { name: "Combustible Marítimo", href: "/maritimo/combustible", icon: Fuel, description: "Precios en puertos españoles" },
+          { name: "Puertos de España", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
           { name: "Mapa Marítimo", href: "/maritimo/mapa", icon: Map, description: "Estaciones en el litoral" },
         ],
       },
       {
-        title: "Información",
+        title: "Meteorología y seguridad",
         items: [
-          { name: "Meteorología", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas costeras AEMET" },
-          { name: "Puertos", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
-          { name: "Seguridad", href: "/maritimo/seguridad", icon: ShieldAlert, description: "Avisos y normativa" },
+          { name: "Meteorología costera", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas y previsiones AEMET" },
+          { name: "Seguridad Marítima", href: "/maritimo/seguridad", icon: ShieldAlert, description: "SASEMAR, emergencias, consejos" },
+          { name: "Noticias Marítimas", href: "/maritimo/noticias", icon: Newspaper, description: "Informes y novedades" },
         ],
       },
       {
-        title: "Hub marítimo",
+        title: "Hub",
         items: [
-          { name: "Inicio Marítimo", href: "/maritimo", icon: Anchor, description: "Panel general" },
+          { name: "Inicio Marítimo", href: "/maritimo", icon: Anchor, description: "Panel general marítimo" },
         ],
       },
     ],
@@ -322,6 +323,7 @@ export const footerColumns = [
       { name: "Meteorología costera", href: "/maritimo/meteorologia" },
       { name: "Puertos", href: "/maritimo/puertos" },
       { name: "Seguridad marítima", href: "/maritimo/seguridad" },
+      { name: "Noticias marítimas", href: "/maritimo/noticias" },
       { name: "Mapa Marítimo", href: "/maritimo/mapa" },
     ],
   },
