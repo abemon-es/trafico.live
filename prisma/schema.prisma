@@ -734,6 +734,48 @@ enum RiskType {
 }
 
 // ============================================
+// TRAFFIC COUNTING STATIONS (Estaciones de Aforo)
+// ============================================
+
+model TrafficStation {
+  id           String       @id @default(cuid())
+  stationCode  String // DGT station code (e.g., "M-301-5")
+  province     String? // INE 2-digit code
+  provinceName String?
+  roadNumber   String // "A-1", "N-340", "AP-7"
+  roadType     RoadType?
+  kmPoint      Decimal      @db.Decimal(7, 2)
+  stationType  StationType? // PERMANENT, SEMI_PERMANENT, PRIMARY, SECONDARY, COVERAGE
+  lanes        String? // Number of lanes description
+  configuration String? // Station configuration
+  population   String? // Nearest population
+  latitude     Decimal      @db.Decimal(9, 6)
+  longitude    Decimal      @db.Decimal(9, 6)
+  year         Int // Year of data
+  imd          Int? // IMD total at this station
+  imdLigeros   Int? // Light vehicles IMD
+  imdPesados   Int? // Heavy vehicles IMD
+  percentPesados Decimal?   @db.Decimal(5, 2)
+  daysRecorded Int? // Days of actual measurement
+
+  flows TrafficFlow[]
+
+  @@unique([stationCode, year])
+  @@index([roadNumber])
+  @@index([province])
+  @@index([year])
+  @@index([stationType])
+}
+
+enum StationType {
+  PERMANENT // 24h every day (permanente)
+  SEMI_PERMANENT // 84 days (semipermanente)
+  PRIMARY // 42-49 days (primaria)
+  SECONDARY // 12 days (secundaria)
+  COVERAGE // 2 working days/year (cobertura)
+}
+
+// ============================================
 // TRAFFIC FLOW DATA (IMD - Intensidad Media Diaria)
 // ============================================
 
@@ -747,14 +789,25 @@ model TrafficFlow {
   provinceName   String?
   year           Int
   imd            Int // Intensidad Media Diaria (vehicles/day)
+  imdLigeros     Int? // Light vehicles IMD
   imdPesados     Int? // IMD of heavy vehicles (trucks, buses)
   percentPesados Decimal?  @db.Decimal(5, 2) // Percentage of heavy vehicles
+  vhKmTotal      Decimal?  @db.Decimal(12, 2) // Vehicle-km total (millions)
+  vhKmLigeros    Decimal?  @db.Decimal(12, 2) // Vehicle-km light vehicles
+  vhKmPesados    Decimal?  @db.Decimal(12, 2) // Vehicle-km heavy vehicles
+  segmentLength  Decimal?  @db.Decimal(7, 2) // Segment length in km
+  sourceId       Int? // Original ArcGIS OBJECTID
+
+  // Relation to counting station (optional, not all segments have a station)
+  stationId String?
+  station   TrafficStation? @relation(fields: [stationId], references: [id])
 
   @@unique([roadNumber, kmStart, kmEnd, year])
   @@index([roadNumber])
   @@index([province])
   @@index([year])
   @@index([roadType])
+  @@index([stationId])
 }
 
 // ============================================
