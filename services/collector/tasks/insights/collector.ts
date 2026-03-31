@@ -107,6 +107,7 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
           { slug: "precio-combustible", name: "Precio combustible" },
           { slug: "diesel", name: "Di\u00e9sel" },
           { slug: "gasolina", name: "Gasolina" },
+          { slug: "profesional", name: "Profesional" },
         ]);
         created++;
       }
@@ -152,6 +153,7 @@ async function detectIncidentSpikes(prisma: PrismaClient): Promise<number> {
       await attachTags(prisma, article.id, [
         { slug: "incidencias", name: "Incidencias" },
         { slug: "dgt", name: "DGT" },
+        { slug: "profesional", name: "Profesional" },
       ]);
       created++;
     }
@@ -250,6 +252,7 @@ async function generateDailyReport(prisma: PrismaClient): Promise<number> {
     { slug: "dgt", name: "DGT" },
     { slug: "aemet", name: "AEMET" },
     { slug: "precio-combustible", name: "Precio combustible" },
+    { slug: "profesional", name: "Profesional" },
   ]);
   return 1;
 }
@@ -303,6 +306,7 @@ async function generateWeeklyReport(prisma: PrismaClient): Promise<number> {
     { slug: "estadisticas", name: "Estad\u00edsticas" },
     { slug: "dgt", name: "DGT" },
     { slug: "precio-combustible", name: "Precio combustible" },
+    { slug: "profesional", name: "Profesional" },
   ]);
   return 1;
 }
@@ -364,6 +368,7 @@ async function generateFuelTrend(prisma: PrismaClient): Promise<number> {
     { slug: "precio-combustible", name: "Precio combustible" },
     { slug: "diesel", name: "Di\u00e9sel" },
     { slug: "tendencia", name: "Tendencia" },
+    { slug: "profesional", name: "Profesional" },
   ]);
   return 1;
 }

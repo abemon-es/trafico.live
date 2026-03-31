@@ -222,6 +222,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
           { name: "Áreas de descanso", href: "/profesional/areas", icon: MapPin, description: "Parking seguro 24h" },
           { name: "Restricciones activas", href: "/restricciones", icon: Ban, description: "ZBE, peso y altura" },
           { name: "Calculadora de ruta", href: "/calculadora", icon: Calculator, description: "Coste de combustible y peajes" },
+          { name: "Noticias profesionales", href: "/profesional/noticias", icon: Newspaper, description: "Informes y alertas para flotas" },
         ],
       },
       {
