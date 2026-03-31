@@ -39,10 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export async function generateStaticParams() {
-  // Generate pages for all provinces
-  return Object.keys(PROVINCE_NAMES).map((code) => ({ code }));
-}
+// generateStaticParams removed: Coolify builds with DATABASE_URL='' causing empty pre-renders.
 
 export default async function ProvinceGasMapPage({ params }: PageProps) {
   const { code } = await params;

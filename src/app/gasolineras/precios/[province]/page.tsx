@@ -6,6 +6,8 @@ import { MapPin, ArrowLeft, Clock, Map, Tag, Fuel, BarChart3 } from "lucide-reac
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+// Render on first request, cache 1h via ISR
+// (Coolify builds with DATABASE_URL='' so generateStaticParams would pre-render empty pages)
 export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -86,9 +88,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export async function generateStaticParams() {
-  return Object.keys(PROVINCE_SLUGS).map((province) => ({ province }));
-}
+// generateStaticParams removed: Coolify builds with DATABASE_URL='' causing empty pre-renders.
+// Pages render on-demand via ISR instead.
 
 export default async function ProvincePricesPage({ params }: Props) {
   const { province } = await params;

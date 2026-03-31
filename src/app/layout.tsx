@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "trafico.live — Tráfico España en Tiempo Real",
     description: "Inteligencia vial en tiempo real para toda España",
-    images: ["/og-image.png"],
+    images: [`${BASE_URL}/og-image.png`],
   },
   robots: {
     index: true,

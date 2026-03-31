@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import TerrestresClient from "./TerrestresClient";
 
 export const revalidate = 3600;
@@ -59,5 +61,36 @@ export default async function TerrestresPage() {
     },
   };
 
-  return <TerrestresClient initialData={initialData} />;
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Gasolineras", href: "/gasolineras" },
+          { name: "Terrestres", href: "/gasolineras/terrestres" },
+        ]} />
+      </div>
+      <TerrestresClient initialData={initialData} />
+      {/* Server-rendered station links for SEO — ensures Google can discover detail pages */}
+      {serializedStations.length > 0 && (
+        <nav aria-label="Gasolineras destacadas" className="max-w-7xl mx-auto px-4 pb-8">
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">
+            Gasolineras en España — {total.toLocaleString("es-ES")} estaciones
+          </h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 dark:text-gray-500">
+            {serializedStations.map((s) => (
+              <li key={s.id}>
+                <Link
+                  href={`/gasolineras/terrestres/${s.id}`}
+                  className="hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
+                >
+                  {s.name}{s.locality ? ` · ${s.locality}` : ""}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </>
+  );
 }
