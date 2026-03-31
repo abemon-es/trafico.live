@@ -272,6 +272,7 @@ export function UnifiedMap({
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [incidentViewMode, setIncidentViewMode] = useState<IncidentViewMode>("clusters");
   const [darkMode, setDarkMode] = useState(false);
+  const [terrain3D, setTerrain3D] = useState(false);
   const [timelineActive, setTimelineActive] = useState(false);
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [timelinePlaying, setTimelinePlaying] = useState(false);
@@ -651,6 +652,8 @@ export function UnifiedMap({
         onLocationChange={handleLocationChange}
         darkMode={darkMode}
         onDarkModeToggle={() => setDarkMode((d) => !d)}
+        terrain3D={terrain3D}
+        onTerrain3DToggle={() => setTerrain3D((t) => !t)}
         timelineActive={timelineActive}
         onTimelineToggle={() => { setTimelineActive((a) => !a); setTimelineIndex(0); setTimelinePlaying(false); }}
         counts={counts}
@@ -678,6 +681,7 @@ export function UnifiedMap({
               incidentFilters={incidentFilters}
               incidentViewMode={incidentViewMode}
               darkMode={darkMode}
+              terrain3D={terrain3D}
               height="100%"
               onIncidentClick={handleIncidentClick}
             />

@@ -218,6 +218,7 @@ interface TrafficMapProps {
   incidentFilters?: IncidentFilters;
   incidentViewMode?: IncidentViewMode;
   darkMode?: boolean;
+  terrain3D?: boolean;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
@@ -383,7 +384,7 @@ const DARK_MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/st
 const LIGHT_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -456,7 +457,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     });
 
     map.current.addControl(
-      new maplibregl.NavigationControl({ showCompass: false }),
+      new maplibregl.NavigationControl({ showCompass: true }),
       "top-right"
     );
 
@@ -698,6 +699,30 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [darkMode]);
+
+  // Toggle 3D terrain
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const m = map.current;
+
+    if (terrain3D) {
+      // Add terrain source if needed
+      if (!m.getSource("terrain-source")) {
+        m.addSource("terrain-source", {
+          type: "raster-dem",
+          tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+          encoding: "terrarium",
+          tileSize: 256,
+          maxzoom: 15,
+        });
+      }
+      m.setTerrain({ source: "terrain-source", exaggeration: 1.5 });
+      m.easeTo({ pitch: 60, duration: 1000 });
+    } else {
+      m.setTerrain(null);
+      m.easeTo({ pitch: 0, duration: 1000 });
+    }
+  }, [terrain3D, isLoaded]);
 
   // Toggle highway layers visibility
   useEffect(() => {

@@ -28,6 +28,7 @@ import {
   Moon,
   Sun,
   History,
+  Mountain,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -74,6 +75,8 @@ interface MapControlsProps {
   onDarkModeToggle?: () => void;
   timelineActive?: boolean;
   onTimelineToggle?: () => void;
+  terrain3D?: boolean;
+  onTerrain3DToggle?: () => void;
   counts?: {
     v16: number;
     incidents: number;
@@ -123,6 +126,8 @@ export function MapControls({
   onDarkModeToggle,
   timelineActive,
   onTimelineToggle,
+  terrain3D,
+  onTerrain3DToggle,
   counts,
 }: MapControlsProps) {
   const [showIncidentDropdown, setShowIncidentDropdown] = useState(false);
@@ -452,6 +457,17 @@ export function MapControls({
               title={timelineActive ? "Desactivar línea temporal" : "Línea temporal 24h"}
             >
               <History className="w-5 h-5" />
+            </button>
+          )}
+          {/* 3D terrain toggle */}
+          {onTerrain3DToggle && (
+            <button
+              onClick={onTerrain3DToggle}
+              className={`p-2 rounded-lg transition-colors ${terrain3D ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              title={terrain3D ? "Desactivar terreno 3D" : "Terreno 3D"}
+              aria-label={terrain3D ? "Desactivar terreno 3D" : "Activar terreno 3D"}
+            >
+              <Mountain className="w-5 h-5" />
             </button>
           )}
           {/* Dark mode toggle */}
