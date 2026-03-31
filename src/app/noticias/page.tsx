@@ -142,14 +142,34 @@ export default async function NoticiasPage({
     ...categoryFilter,
   };
 
+  // On default "todos" view, deprioritize daily reports to show diverse content
+  const isDailyHeavy = activeFilter === "todos" && page === 1;
+
   const [articles, total, featuredArticle, tags] = await Promise.all([
-    prisma.article.findMany({
-      where,
-      orderBy: [{ editorialWeight: "desc" }, { publishedAt: "desc" }],
-      take: perPage,
-      skip: (page - 1) * perPage,
-      include: { tags: { include: { tag: true } } },
-    }),
+    isDailyHeavy
+      ? // Mix: non-daily articles first, then fill with daily reports
+        (async () => {
+          const nonDaily = await prisma.article.findMany({
+            where: { ...where, category: { not: "DAILY_REPORT" } },
+            orderBy: [{ editorialWeight: "desc" }, { publishedAt: "desc" }],
+            take: 12,
+            include: { tags: { include: { tag: true } } },
+          });
+          const daily = await prisma.article.findMany({
+            where: { ...where, category: "DAILY_REPORT" },
+            orderBy: { publishedAt: "desc" },
+            take: perPage - nonDaily.length,
+            include: { tags: { include: { tag: true } } },
+          });
+          return [...nonDaily, ...daily];
+        })()
+      : prisma.article.findMany({
+          where,
+          orderBy: [{ editorialWeight: "desc" }, { publishedAt: "desc" }],
+          take: perPage,
+          skip: (page - 1) * perPage,
+          include: { tags: { include: { tag: true } } },
+        }),
     prisma.article.count({ where }),
     prisma.article.findFirst({
       where: { status: "PUBLISHED", featured: true },
