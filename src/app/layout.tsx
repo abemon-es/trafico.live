@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     "carreteras España",
     "V16",
   ],
-  authors: [{ name: "trafico.live" }],
+  authors: [{ name: "Abemon", url: "https://abemon.es" }],
   openGraph: {
     title: "trafico.live — Tráfico España en Tiempo Real",
     description:

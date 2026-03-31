@@ -118,7 +118,7 @@ export function Footer() {
 
             {/* Credits and legal */}
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-gray-500">
-              <span>&copy; {currentYear} trafico.live</span>
+              <span>&copy; {currentYear} Certus SPV, SLU</span>
               <span
                 className="hidden sm:inline text-tl-800"
                 aria-hidden="true"

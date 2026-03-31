@@ -202,24 +202,44 @@ export default function SobrePage() {
           </div>
         </section>
 
-        {/* Technology & Operator */}
+        {/* Operator & Developer */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Equipo</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Technology */}
+            {/* Operator — Certus SPV */}
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Tecnología</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Gestión y operación</h3>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">C</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Certus SPV, SLU</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Titular y operador de trafico.live</p>
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                Certus SPV gestiona la plataforma, la infraestructura y las relaciones institucionales con las fuentes de datos oficiales.
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">
+                CIF: B13852223 · Madrid, España
+              </p>
+            </div>
+
+            {/* Developer — abemon */}
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Desarrollo e ingeniería</h3>
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-tl-600 to-tl-400 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-xl">A</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">abemonFLOW™ Engine</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Motor de procesamiento de datos</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Abemon</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Soluciones digitales</p>
                 </div>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                Plataforma de integración y procesamiento de datos en tiempo real desarrollada por Abemon.
+                Diseño, desarrollo y mantenimiento técnico de la plataforma: arquitectura, integraciones de datos en tiempo real e infraestructura cloud.
               </p>
               <a
                 href="https://abemon.es"
@@ -229,18 +249,6 @@ export default function SobrePage() {
               >
                 abemon.es <ExternalLink className="w-4 h-4" />
               </a>
-            </div>
-
-            {/* Independent */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Proyecto independiente</h3>
-              <div className="mb-4">
-                <p className="font-semibold text-gray-900 dark:text-gray-100 text-lg">trafico.live</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Inteligencia vial en tiempo real</p>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                Plataforma independiente dedicada a ofrecer la información de tráfico más completa de España, combinando múltiples fuentes oficiales en un único punto de acceso.
-              </p>
             </div>
           </div>
         </section>
