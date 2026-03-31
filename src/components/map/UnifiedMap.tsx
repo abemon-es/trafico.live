@@ -9,6 +9,8 @@ import { MapControls, type ActiveLayers, type IncidentFilters, type LocationPres
 import { MapStats } from "./MapStats";
 import type { V16Beacon, Incident, Camera, PanelData, TrafficMapRef, IncidentViewMode } from "./TrafficMap";
 import { useTrafficStream } from "@/hooks/useTrafficStream";
+import { useVoiceAlerts } from "@/hooks/useVoiceAlerts";
+import { useRouteAlerts } from "@/hooks/useRouteAlerts";
 import { IncidentModal, type IncidentData } from "@/components/incidents/IncidentModal";
 import {
   EFFECT_LABELS,
@@ -278,6 +280,8 @@ export function UnifiedMap({
   const [incidentViewMode, setIncidentViewMode] = useState<IncidentViewMode>("clusters");
   const [darkMode, setDarkMode] = useState(false);
   const [terrain3D, setTerrain3D] = useState(false);
+  const [weatherRadar, setWeatherRadar] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [corridorActive, setCorridorActive] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
   const [comparatorActive, setComparatorActive] = useState(false);
@@ -289,6 +293,14 @@ export function UnifiedMap({
 
   // Connect SSE for real-time push updates
   useTrafficStream();
+
+  // Voice alerts for new incidents
+  useVoiceAlerts(incidentsData?.incidents || [], { enabled: voiceEnabled });
+
+  // Route alert notifications
+  const { watchedRoads, watchRoad, unwatchRoad, isWatching } = useRouteAlerts({
+    incidents: incidentsData?.incidents || [],
+  });
 
   // Parse initial state from URL or props
   const getInitialLayers = (): ActiveLayers => {
@@ -691,6 +703,10 @@ export function UnifiedMap({
         onFlowToggle={() => setFlowActive((f) => !f)}
         comparatorActive={comparatorActive}
         onComparatorToggle={() => setComparatorActive((c) => !c)}
+        weatherRadar={weatherRadar}
+        onWeatherRadarToggle={() => setWeatherRadar((w) => !w)}
+        voiceEnabled={voiceEnabled}
+        onVoiceToggle={() => setVoiceEnabled((v) => !v)}
         counts={counts}
       />
 
@@ -732,6 +748,7 @@ export function UnifiedMap({
               darkMode={darkMode}
               terrain3D={terrain3D}
               flowData={flowActive ? flowData?.data || null : null}
+              weatherRadar={weatherRadar}
               height="100%"
               onIncidentClick={handleIncidentClick}
             />

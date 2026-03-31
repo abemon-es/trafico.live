@@ -31,6 +31,9 @@ import {
   Mountain,
   ArrowLeftRight,
   Activity,
+  CloudLightning,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -85,6 +88,10 @@ interface MapControlsProps {
   onFlowToggle?: () => void;
   comparatorActive?: boolean;
   onComparatorToggle?: () => void;
+  weatherRadar?: boolean;
+  onWeatherRadarToggle?: () => void;
+  voiceEnabled?: boolean;
+  onVoiceToggle?: () => void;
   counts?: {
     v16: number;
     incidents: number;
@@ -142,6 +149,10 @@ export function MapControls({
   onFlowToggle,
   comparatorActive,
   onComparatorToggle,
+  weatherRadar,
+  onWeatherRadarToggle,
+  voiceEnabled,
+  onVoiceToggle,
   counts,
 }: MapControlsProps) {
   const [showIncidentDropdown, setShowIncidentDropdown] = useState(false);
@@ -516,6 +527,26 @@ export function MapControls({
               aria-label="Comparador temporal"
             >
               <ArrowLeftRight className="w-5 h-5" />
+            </button>
+          )}
+          {onWeatherRadarToggle && (
+            <button
+              onClick={onWeatherRadarToggle}
+              className={`p-2 rounded-lg transition-colors ${weatherRadar ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              title={weatherRadar ? "Ocultar radar meteorológico" : "Radar meteorológico"}
+              aria-label={weatherRadar ? "Ocultar radar meteorológico" : "Radar meteorológico"}
+            >
+              <CloudLightning className="w-5 h-5" />
+            </button>
+          )}
+          {onVoiceToggle && (
+            <button
+              onClick={onVoiceToggle}
+              className={`p-2 rounded-lg transition-colors ${voiceEnabled ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              title={voiceEnabled ? "Desactivar alertas de voz" : "Activar alertas de voz"}
+              aria-label={voiceEnabled ? "Desactivar alertas de voz" : "Activar alertas de voz"}
+            >
+              {voiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </button>
           )}
           {/* Dark mode toggle */}
