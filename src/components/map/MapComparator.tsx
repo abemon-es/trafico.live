@@ -8,9 +8,18 @@ import { ArrowLeftRight, Clock, X } from "lucide-react";
 interface MapComparatorProps {
   currentIncidents: { lat: number; lng: number; effect: string }[];
   historicalIncidents: { lat: number; lng: number; effect: string }[];
-  timeLabel: string;
+  onTimeOffsetChange?: (hours: number) => void;
   onClose: () => void;
 }
+
+const TIME_OFFSETS = [
+  { label: "1h", hours: 1 },
+  { label: "6h", hours: 6 },
+  { label: "12h", hours: 12 },
+  { label: "24h", hours: 24 },
+  { label: "48h", hours: 48 },
+  { label: "7d", hours: 168 },
+];
 
 const EFFECT_COLORS: Record<string, string> = {
   ROAD_CLOSED: "#dc2626",
@@ -34,12 +43,14 @@ function incidentsToGeoJSON(incidents: { lat: number; lng: number; effect: strin
   };
 }
 
-export function MapComparator({ currentIncidents, historicalIncidents, timeLabel, onClose }: MapComparatorProps) {
+export function MapComparator({ currentIncidents, historicalIncidents, onTimeOffsetChange, onClose }: MapComparatorProps) {
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const leftMap = useRef<maplibregl.Map | null>(null);
   const rightMap = useRef<maplibregl.Map | null>(null);
   const [syncing, setSyncing] = useState(true);
+  const [selectedOffset, setSelectedOffset] = useState(24);
+  const timeLabel = TIME_OFFSETS.find(o => o.hours === selectedOffset)?.label || "24h";
 
   // Initialize both maps
   useEffect(() => {
@@ -142,12 +153,27 @@ export function MapComparator({ currentIncidents, historicalIncidents, timeLabel
           Comparador temporal
         </div>
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+            {TIME_OFFSETS.map((opt) => (
+              <button
+                key={opt.hours}
+                onClick={() => { setSelectedOffset(opt.hours); onTimeOffsetChange?.(opt.hours); }}
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                  selectedOffset === opt.hours
+                    ? "bg-white dark:bg-gray-700 text-tl-600 dark:text-tl-300 shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center gap-4 text-xs">
             <span className="text-gray-500 dark:text-gray-400">
               Ahora: <span className="font-mono font-medium text-gray-700 dark:text-gray-300">{currentIncidents.length}</span>
             </span>
             <span className="text-gray-500 dark:text-gray-400">
-              {timeLabel}: <span className="font-mono font-medium text-gray-700 dark:text-gray-300">{historicalIncidents.length}</span>
+              Hace {timeLabel}: <span className="font-mono font-medium text-gray-700 dark:text-gray-300">{historicalIncidents.length}</span>
             </span>
           </div>
           <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded">
