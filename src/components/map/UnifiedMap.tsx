@@ -16,6 +16,7 @@ import {
   EFFECT_COLORS,
 } from "./IncidentMarker";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
+import { TimeSlider } from "./TimeSlider";
 
 // Dynamic import for map to avoid SSR issues
 const TrafficMap = dynamic(() => import("./TrafficMap"), {
@@ -271,6 +272,9 @@ export function UnifiedMap({
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [incidentViewMode, setIncidentViewMode] = useState<IncidentViewMode>("clusters");
   const [darkMode, setDarkMode] = useState(false);
+  const [timelineActive, setTimelineActive] = useState(false);
+  const [timelineIndex, setTimelineIndex] = useState(0);
+  const [timelinePlaying, setTimelinePlaying] = useState(false);
 
   // Connect SSE for real-time push updates
   useTrafficStream();
@@ -478,6 +482,11 @@ export function UnifiedMap({
     { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
+  const { data: timelineData, isLoading: timelineLoading } = useSWR<{
+    success: boolean;
+    data: { slots: { timestamp: string; incidents: Incident[]; count: number }[]; hours: number; totalIncidents: number };
+  }>(timelineActive ? "/api/incidents/timeline?hours=24&slots=24" : null, fetcher, { revalidateOnFocus: false });
+
   const isLoading = v16Loading || incidentsLoading;
 
   // Handle fullscreen
@@ -538,6 +547,20 @@ export function UnifiedMap({
     setActiveLayers((prev) => ({ ...prev, [layer]: !prev[layer] }));
   };
 
+  useEffect(() => {
+    if (!timelinePlaying || !timelineData?.data?.slots) return;
+    const interval = setInterval(() => {
+      setTimelineIndex((prev) => {
+        if (prev + 1 >= timelineData.data.slots.length) { setTimelinePlaying(false); return prev; }
+        return prev + 1;
+      });
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [timelinePlaying, timelineData]);
+
+  const effectiveIncidents = timelineActive && timelineData?.data?.slots?.[timelineIndex]
+    ? timelineData.data.slots[timelineIndex].incidents : incidentsData?.incidents;
+
   const handleRefresh = () => {
     mutateV16();
     mutateIncidents();
@@ -558,7 +581,7 @@ export function UnifiedMap({
   };
 
   // Filter incidents for display
-  const filteredIncidents = (incidentsData?.incidents || []).filter((incident) => {
+  const filteredIncidents = (effectiveIncidents || []).filter((incident) => {
     if (incidentFilters.effects.length === 0 && incidentFilters.causes.length === 0) {
       return true;
     }
@@ -628,6 +651,8 @@ export function UnifiedMap({
         onLocationChange={handleLocationChange}
         darkMode={darkMode}
         onDarkModeToggle={() => setDarkMode((d) => !d)}
+        timelineActive={timelineActive}
+        onTimelineToggle={() => { setTimelineActive((a) => !a); setTimelineIndex(0); setTimelinePlaying(false); }}
         counts={counts}
       />
 
@@ -640,7 +665,7 @@ export function UnifiedMap({
               ref={mapRef}
               activeLayers={activeLayers}
               v16Data={activeLayers.v16 ? v16Data?.beacons : undefined}
-              incidentData={activeLayers.incidents ? incidentsData?.incidents : undefined}
+              incidentData={activeLayers.incidents ? (effectiveIncidents || undefined) : undefined}
               cameraData={activeLayers.cameras ? camerasData?.cameras : undefined}
               chargerData={activeLayers.chargers ? chargersData?.chargers : undefined}
               weatherData={activeLayers.weather ? weatherData?.alerts : undefined}
@@ -696,6 +721,17 @@ export function UnifiedMap({
       </div>
 
       {/* Stats bar */}
+      {timelineActive && timelineData?.data?.slots && (
+        <TimeSlider
+          slots={timelineData.data.slots.map((s) => ({ timestamp: s.timestamp, count: s.count }))}
+          currentIndex={timelineIndex}
+          onIndexChange={setTimelineIndex}
+          isPlaying={timelinePlaying}
+          onPlayToggle={() => setTimelinePlaying((p) => !p)}
+          isLoading={timelineLoading}
+        />
+      )}
+
       {showStats && (
         <MapStats
           v16Count={activeLayers.v16 ? counts.v16 : 0}

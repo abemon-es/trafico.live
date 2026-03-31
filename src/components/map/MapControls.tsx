@@ -27,6 +27,7 @@ import {
   Monitor,
   Moon,
   Sun,
+  History,
 } from "lucide-react";
 import { LayerToggle } from "./LayerToggle";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
@@ -71,6 +72,8 @@ interface MapControlsProps {
   onLocationChange?: (preset: LocationPreset) => void;
   darkMode?: boolean;
   onDarkModeToggle?: () => void;
+  timelineActive?: boolean;
+  onTimelineToggle?: () => void;
   counts?: {
     v16: number;
     incidents: number;
@@ -118,6 +121,8 @@ export function MapControls({
   onLocationChange,
   darkMode,
   onDarkModeToggle,
+  timelineActive,
+  onTimelineToggle,
   counts,
 }: MapControlsProps) {
   const [showIncidentDropdown, setShowIncidentDropdown] = useState(false);
@@ -439,6 +444,16 @@ export function MapControls({
 
         {/* Right side: Actions */}
         <div className="flex items-center gap-2">
+          {/* Timeline toggle */}
+          {onTimelineToggle && (
+            <button
+              onClick={onTimelineToggle}
+              className={`p-2 rounded-lg transition-colors ${timelineActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+              title={timelineActive ? "Desactivar línea temporal" : "Línea temporal 24h"}
+            >
+              <History className="w-5 h-5" />
+            </button>
+          )}
           {/* Dark mode toggle */}
           {onDarkModeToggle && (
             <button
