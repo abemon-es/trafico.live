@@ -778,6 +778,48 @@ model SpeedLimit {
   @@index([province, speedLimitType])
 }
 
+// ============================================
+// REAL-TIME TRAFFIC INTENSITY (Madrid sensors)
+// ============================================
+
+model TrafficIntensity {
+  id            String   @id @default(cuid())
+  sensorId      Int // Madrid PM sensor ID (idelem)
+  description   String? // Location description
+  intensity     Int // Vehicles/hour
+  occupancy     Int? // Occupancy percentage
+  load          Int? // Load percentage
+  serviceLevel  Int // 0=fluid, 1=slow, 2=holdups, 3=congestion
+  saturation    Int? // Saturation intensity (capacity)
+  latitude      Decimal  @db.Decimal(9, 6)
+  longitude     Decimal  @db.Decimal(9, 6)
+  source        String   @default("MADRID") // City source
+  recordedAt    DateTime @default(now()) @db.Timestamptz
+  error         Boolean  @default(false)
+
+  @@unique([sensorId, source, recordedAt])
+  @@index([source])
+  @@index([recordedAt])
+  @@index([serviceLevel])
+}
+
+// Aggregated hourly traffic profile per sensor
+model HourlyTrafficProfile {
+  id         String @id @default(cuid())
+  sensorId   Int
+  source     String @default("MADRID")
+  dayOfWeek  Int // 0=Sunday, 6=Saturday
+  hour       Int // 0-23
+  avgIntensity   Int
+  avgOccupancy   Int?
+  avgServiceLevel Decimal? @db.Decimal(3, 2) // 0.00-3.00
+  sampleCount    Int // Number of observations
+  updatedAt  DateTime @default(now()) @db.Timestamptz
+
+  @@unique([sensorId, source, dayOfWeek, hour])
+  @@index([source, dayOfWeek, hour])
+}
+
 enum SpeedLimitType {
   GENERAL // Standard speed limit
   URBAN // Urban area limit

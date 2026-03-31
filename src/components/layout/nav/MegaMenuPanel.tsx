@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useReducedMotion, motion, AnimatePresence } from "motion/react";
 import type { MegaMenuPanel as PanelData } from "./NavData";
 import { TrafficStatsWidget, FuelPriceWidget, ProfessionalStatsWidget } from "./MegaMenuWidgets";
+import { CityQuickSearch } from "./CityQuickSearch";
 
 const PANEL_WIDGETS: Record<string, React.ComponentType> = {
   trafico: TrafficStatsWidget,
@@ -128,6 +129,9 @@ function PanelContent({ panel }: { panel: PanelData }) {
           </div>
         </div>
       )}
+
+      {/* City quick search — Tráfico panel only */}
+      {panel.id === "trafico" && <CityQuickSearch />}
 
       {/* Live contextual widget */}
       {Widget && <Widget />}
