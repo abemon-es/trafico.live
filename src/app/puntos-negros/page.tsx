@@ -596,6 +596,12 @@ export default async function PuntosNegrosPage() {
             title="Más información sobre seguridad vial"
             links={[
               {
+                title: "Accidentes por provincia",
+                description: "Estadísticas históricas DGT por las 52 provincias",
+                href: "/estadisticas/accidentes",
+                icon: <BarChart3 className="w-5 h-5" />,
+              },
+              {
                 title: "Radares DGT",
                 description: "Mapa completo de radares de velocidad",
                 href: "/radares",
@@ -612,12 +618,6 @@ export default async function PuntosNegrosPage() {
                 description: "Calendario DGT 2026: Semana Santa, verano...",
                 href: "/operaciones",
                 icon: <CalendarDays className="w-5 h-5" />,
-              },
-              {
-                title: "Estadísticas de Tráfico",
-                description: "Datos históricos de siniestralidad vial",
-                href: "/estadisticas",
-                icon: <BarChart3 className="w-5 h-5" />,
               },
             ]}
           />

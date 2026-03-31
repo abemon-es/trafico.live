@@ -1646,6 +1646,23 @@ function HistoricoSection({
           />
         )}
       </div>
+
+      {/* CTA to province-level accident pages */}
+      <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex-1">
+          <p className="font-semibold text-tl-900 dark:text-tl-100">Estadísticas de accidentes por provincia</p>
+          <p className="text-sm text-tl-700 dark:text-tl-300 mt-0.5">
+            Consulta el histórico completo de siniestralidad vial desglosado para cada una de las 52 provincias españolas.
+          </p>
+        </div>
+        <a
+          href="/estadisticas/accidentes"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-600 hover:bg-tl-700 text-white text-sm font-medium transition-colors flex-shrink-0"
+        >
+          <Link2 className="w-4 h-4" />
+          Ver por provincia
+        </a>
+      </div>
     </div>
   );
 }

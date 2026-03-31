@@ -119,6 +119,30 @@ const BARATOS_CITY_SLUGS = [
   "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
 ];
 
+// All 52 province slugs for /estadisticas/accidentes/{province}
+// Generated from PROVINCES via provinceSlug() (slugify)
+const ACCIDENTES_PROVINCE_SLUGS = [
+  "almeria", "cadiz", "cordoba", "granada", "huelva", "jaen", "malaga", "sevilla",
+  "huesca", "teruel", "zaragoza",
+  "asturias",
+  "illes-balears",
+  "las-palmas", "santa-cruz-de-tenerife",
+  "cantabria",
+  "avila", "burgos", "leon", "palencia", "salamanca", "segovia", "soria", "valladolid", "zamora",
+  "albacete", "ciudad-real", "cuenca", "guadalajara", "toledo",
+  "barcelona", "girona", "lleida", "tarragona",
+  "alicante-alacant", "castellon-castello", "valencia-valencia",
+  "badajoz", "caceres",
+  "a-coruna", "lugo", "ourense", "pontevedra",
+  "madrid",
+  "murcia",
+  "navarra",
+  "alava-araba", "bizkaia", "gipuzkoa",
+  "la-rioja",
+  "ceuta",
+  "melilla",
+];
+
 // All 52 province slugs for /gasolineras/precios/{province}
 const PRICE_PROVINCE_SLUGS = [
   "alava", "albacete", "alicante", "almeria", "avila", "badajoz", "baleares",
@@ -176,6 +200,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.85,
     }))),
     { url: `${BASE_URL}/estadisticas`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/estadisticas/accidentes`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/historico`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE_URL}/espana`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/comunidad-autonoma`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
@@ -234,6 +259,8 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     ...PRICE_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/gasolineras/precios/${slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 })),
     // Province gas station map pages (52 provinces)
     ...PROVINCE_MAP_CODES.map((code) => ({ url: `${BASE_URL}/gasolineras/mapa/provincia/${code}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
+    // Province accident statistics pages (52 provinces)
+    ...ACCIDENTES_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/estadisticas/accidentes/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.6 })),
   ];
 
   // Blog articles
