@@ -32,8 +32,8 @@ const fetcher = async (): Promise<InfraResponse> => {
   return {
     cameras: { count: cameras.count || 0 },
     radars: { count: radars.count || 0, byType: radars.summary?.byType },
-    chargers: { count: chargers.count || 0 },
-    zbe: { count: zbe.count || 0 },
+    chargers: { count: chargers.totalCount || chargers.count || 0 },
+    zbe: { count: zbe.data?.zones?.length || zbe.count || 0 },
     panels: { count: panels.count || 0, withMessage: panels.withMessage || 0 },
   };
 };
