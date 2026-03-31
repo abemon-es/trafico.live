@@ -10,7 +10,7 @@ const TASK = process.env.TASK;
 
 const VALID_TASKS = [
   // Real-time (every 2-5 min)
-  "v16", "incident", "panel", "detector",
+  "v16", "incident", "panel", "detector", "intensity",
   // Frequent (6h-daily)
   "weather", "camera", "radar", "charger", "gas-station", "maritime-fuel",
   // Infrequent (weekly)
