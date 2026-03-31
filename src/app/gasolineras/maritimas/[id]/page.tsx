@@ -7,7 +7,7 @@ import { Anchor, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown,
 import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

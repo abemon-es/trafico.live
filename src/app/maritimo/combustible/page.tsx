@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import MaritimasClient from "./MaritimasClient";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function CombustibleMaritimoPage() {
   const [stations, total] = await Promise.all([

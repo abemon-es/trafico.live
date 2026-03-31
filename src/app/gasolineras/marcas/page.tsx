@@ -6,7 +6,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Fuel, TrendingDown, BarChart3, Building2, ChevronRight } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Comparativa de Precios por Marca de Gasolinera — España 2026",

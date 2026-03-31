@@ -10,7 +10,7 @@ import {
   ArrowLeft, Calendar, ExternalLink, Clock, Tag, ChevronRight,
 } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

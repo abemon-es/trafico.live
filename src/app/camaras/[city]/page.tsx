@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Camera, MapPin, Video, ArrowRight } from "lucide-react";
 import prisma from "@/lib/db";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 // City slug → province INE code + display name
 const CITY_PROVINCES: Record<string, { name: string; code: string }> = {

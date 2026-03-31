@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const PROVINCE_SLUGS: Record<string, string> = {
   "01": "alava", "02": "albacete", "03": "alicante", "04": "almeria",

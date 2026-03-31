@@ -19,7 +19,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import prisma from "@/lib/db";
 
-export const revalidate = 3600; // Refresh hourly so port count stays current
+export const revalidate = 60; // Refresh hourly so port count stays current
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

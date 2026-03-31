@@ -5,7 +5,7 @@ import prisma from "@/lib/db";
 import { Camera, ArrowLeft, MapPin, ExternalLink } from "lucide-react";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

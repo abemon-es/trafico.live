@@ -10,7 +10,7 @@ import { provinceSlug } from "@/lib/geo/slugify";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AccidentChart } from "./AccidentChart";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

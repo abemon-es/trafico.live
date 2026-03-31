@@ -8,7 +8,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const CURRENT_YEAR = new Date().getFullYear();
 

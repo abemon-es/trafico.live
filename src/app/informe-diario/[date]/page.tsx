@@ -7,7 +7,7 @@ import { StructuredData } from "@/components/seo/StructuredData";
 import { renderMarkdown } from "@/lib/insights/render-markdown";
 import { ArrowLeft, ArrowRight, Calendar } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

@@ -10,7 +10,7 @@ import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 import { FuelPriceChart } from "@/components/charts/FuelPriceChart";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 // Province code → { slug, name } for internal links
 const PROVINCE_CODES: Record<string, { slug: string; name: string }> = {

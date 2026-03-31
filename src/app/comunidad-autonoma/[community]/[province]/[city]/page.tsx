@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import prisma from "@/lib/db";
 import CityContent from "./content";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

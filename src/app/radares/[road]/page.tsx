@@ -17,7 +17,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const CURRENT_YEAR = new Date().getFullYear();
 

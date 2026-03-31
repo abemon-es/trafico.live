@@ -3,7 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Route, Car, Construction, MapPin } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

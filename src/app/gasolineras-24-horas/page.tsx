@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import prisma from "@/lib/db";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
