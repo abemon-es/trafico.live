@@ -12,6 +12,7 @@ import {
   EFFECT_COLORS,
 } from "./IncidentMarker";
 import { useAnimatedFlow } from "./AnimatedFlowOverlay";
+import { useWeatherRadar } from "./WeatherRadarOverlay";
 
 export type IncidentViewMode = "heatmap" | "clusters" | "points";
 
@@ -221,6 +222,7 @@ interface TrafficMapProps {
   darkMode?: boolean;
   terrain3D?: boolean;
   flowData?: GeoJSON.FeatureCollection | null;
+  weatherRadar?: boolean;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
@@ -386,7 +388,7 @@ const DARK_MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/st
 const LIGHT_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, flowData = null, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, flowData = null, weatherRadar = false, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -731,6 +733,12 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     map: map.current,
     enabled: !!flowData,
     flowData,
+  });
+
+  // Weather radar overlay
+  useWeatherRadar({
+    map: map.current,
+    enabled: weatherRadar,
   });
 
   // Toggle highway layers visibility
