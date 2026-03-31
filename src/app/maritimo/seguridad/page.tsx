@@ -17,8 +17,9 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import prisma from "@/lib/db";
 
-export const revalidate = 86400;
+export const revalidate = 3600; // Refresh hourly so port count stays current
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -167,7 +168,16 @@ const crossLinks = [
 // Page
 // ---------------------------------------------------------------------------
 
-export default function SeguridadMaritimaPage() {
+export default async function SeguridadMaritimaPage() {
+  // Query live port count from SpanishPort table — falls back to 0 if table is empty
+  let portCount = 0;
+  try {
+    portCount = await prisma.spanishPort.count();
+  } catch {
+    // Table may not exist yet in dev; silently fall back to 0
+    portCount = 0;
+  }
+
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -444,6 +454,76 @@ export default function SeguridadMaritimaPage() {
                   );
                 })}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Puertos con datos                                                 */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Puertos con datos de combustible">
+          <div className="rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 overflow-hidden">
+            {/* Header */}
+            <div
+              className="px-6 py-5 flex items-center justify-between gap-3"
+              style={{
+                background:
+                  "linear-gradient(90deg, var(--color-tl-sea-700) 0%, var(--color-tl-sea-600) 100%)",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <Anchor className="w-5 h-5 text-tl-sea-200 flex-shrink-0" />
+                <h2 className="font-heading font-semibold text-white">
+                  Puertos con datos de combustible
+                </h2>
+              </div>
+              {portCount > 0 && (
+                <span className="font-mono text-2xl font-bold text-white">
+                  {portCount}
+                </span>
+              )}
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 px-6 py-6">
+              {portCount > 0 ? (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="flex-1">
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                      Hay{" "}
+                      <strong className="text-gray-900 dark:text-gray-100 font-semibold font-mono">
+                        {portCount}
+                      </strong>{" "}
+                      puertos en España con estaciones de combustible náutico
+                      registradas. Los precios de gasóleo marino y gasolina se
+                      actualizan diariamente desde el Ministerio para la
+                      Transición Ecológica (MITECO).
+                    </p>
+                  </div>
+                  <Link
+                    href="/maritimo/combustible"
+                    className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg border border-tl-sea-300 dark:border-tl-sea-700 text-tl-sea-700 dark:text-tl-sea-300 text-sm font-medium hover:bg-tl-sea-50 dark:hover:bg-tl-sea-900/30 transition-colors"
+                  >
+                    <Fuel className="w-4 h-4" />
+                    Ver precios por puerto
+                  </Link>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                    style={{ background: "var(--color-tl-sea-100)" }}
+                  >
+                    <Anchor className="w-6 h-6 text-tl-sea-500" />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
+                    <strong className="text-gray-700 dark:text-gray-300">
+                      46 puertos
+                    </strong>{" "}
+                    en España disponen de estaciones de combustible náutico. Los
+                    datos se mostrarán aquí una vez completada la importación.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </section>

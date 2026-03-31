@@ -1367,3 +1367,41 @@ model MaritimeEmergency {
   @@index([zone])
   @@index([latitude, longitude])
 }
+
+// ============================================
+// SPANISH PORTS (derived from MaritimeStation data)
+// ============================================
+
+enum PortType {
+  commercial // Major commercial / cargo ports
+  fishing    // Fishing ports and fish markets (lonjas)
+  sports     // Sports and recreational marinas
+  mixed      // Multi-use ports
+}
+
+model SpanishPort {
+  id           String   @id @default(cuid())
+  slug         String   @unique // URL-friendly identifier
+  name         String   // Canonical port name (from MaritimeStation.port)
+  type         PortType @default(mixed)
+
+  // Location (centroid of station coordinates)
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+
+  // Administrative
+  province     String? // INE province code (2 digits)
+  provinceName String?
+  coastalZone  String? // AEMET coastal zone (e.g. "Galicia", "Cantábrico", "Mediterráneo")
+
+  // Derived stats (updated by seed-ports.ts)
+  stationCount Int @default(0) // Number of fuel stations in this port
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@index([province])
+  @@index([type])
+  @@index([coastalZone])
+}
