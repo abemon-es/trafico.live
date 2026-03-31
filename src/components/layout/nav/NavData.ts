@@ -296,6 +296,7 @@ export const footerColumns = [
   {
     title: "Carreteras",
     links: [
+      { name: "Todas las carreteras", href: "/carreteras" },
       { name: "Autopistas", href: "/carreteras/autopistas" },
       { name: "Autovías", href: "/carreteras/autovias" },
       { name: "Nacionales", href: "/carreteras/nacionales" },
@@ -308,6 +309,7 @@ export const footerColumns = [
   {
     title: "Combustible",
     links: [
+      { name: "Gasolineras", href: "/gasolineras" },
       { name: "Precio gasolina hoy", href: "/precio-gasolina-hoy" },
       { name: "Precio diésel hoy", href: "/precio-diesel-hoy" },
       { name: "Precios por provincia", href: "/gasolineras/precios" },
@@ -345,6 +347,8 @@ export const footerColumns = [
       { name: "Provincias", href: "/espana" },
       { name: "Noticias", href: "/noticias" },
       { name: "Informe diario", href: "/informe-diario" },
+      { name: "Informes", href: "/informes" },
+      { name: "Operaciones DGT", href: "/operaciones" },
     ],
   },
   {
