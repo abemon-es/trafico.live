@@ -374,18 +374,34 @@ async function generateFuelTrend(prisma: PrismaClient): Promise<number> {
 }
 
 // ---------------------------------------------------------------------------
+// Enhanced generators (v2) — modular, data-dense
+// ---------------------------------------------------------------------------
+
+import {
+  generateDailyReport as generateDailyReportV2,
+  generateDailyFuelReport,
+  generateWeeklyReport as generateWeeklyReportV2,
+  generateWeeklyPriceRanking,
+} from "./generators";
+
+// ---------------------------------------------------------------------------
 // Main runner
 // ---------------------------------------------------------------------------
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  console.log("[noticias] Starting article generation...");
+  console.log("[noticias] Starting article generation (v2 enhanced)...");
 
   const results = await Promise.allSettled([
+    // Legacy alert detectors (kept for backward compatibility)
     detectPriceChanges(prisma),
     detectIncidentSpikes(prisma),
     aggregateWeatherAlerts(prisma),
-    generateDailyReport(prisma),
-    generateWeeklyReport(prisma),
+    // Enhanced v2 generators — data-dense, enriched reports
+    generateDailyReportV2(prisma),
+    generateDailyFuelReport(prisma),
+    generateWeeklyReportV2(prisma),
+    generateWeeklyPriceRanking(prisma),
+    // Legacy fuel trend (kept until v2 weekly price ranking is validated)
     generateFuelTrend(prisma),
   ]);
 
