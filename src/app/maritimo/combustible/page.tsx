@@ -2,7 +2,8 @@ import { prisma } from "@/lib/db";
 import MaritimasClient from "./MaritimasClient";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function CombustibleMaritimoPage() {
   const [stations, total] = await Promise.all([

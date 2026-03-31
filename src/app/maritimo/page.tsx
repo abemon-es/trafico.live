@@ -26,7 +26,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // ---------------------------------------------------------------------------
 
 async function getStats() {
-  const [maritimeCount, coastalAlerts, avgGasoleoA] = await Promise.all([
+  const [maritimeCount, coastalAlerts, avgGasoleoA, portCount] = await Promise.all([
     prisma.maritimeStation.count(),
     prisma.weatherAlert.count({
       where: { type: "COASTAL", isActive: true },
@@ -34,9 +34,14 @@ async function getStats() {
     prisma.maritimeStation.aggregate({
       _avg: { priceGasoleoA: true },
     }),
+    prisma.maritimeStation.findMany({
+      where: { port: { not: null } },
+      distinct: ["port"],
+      select: { port: true },
+    }).then((r: { port: string | null }[]) => r.length),
   ]);
 
-  return { maritimeCount, coastalAlerts, avgGasoleoA };
+  return { maritimeCount, coastalAlerts, avgGasoleoA, portCount };
 }
 
 async function getActiveCoastalAlerts() {
@@ -266,10 +271,10 @@ export default async function MaritimoPage() {
                 </span>
               </div>
               <div className="font-mono text-3xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                46
+                {stats.portCount}
               </div>
               <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                puertos principales
+                puertos con combustible
               </div>
             </div>
 
