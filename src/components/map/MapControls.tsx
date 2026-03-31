@@ -122,6 +122,7 @@ export function MapControls({
 }: MapControlsProps) {
   const [showIncidentDropdown, setShowIncidentDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [showMoreLayers, setShowMoreLayers] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const locationDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -365,8 +366,18 @@ export function MapControls({
             icon={<MapPin className="w-4 h-4" />}
           />
 
-          {/* More layers (collapsible on mobile) */}
-          <div className="hidden sm:flex items-center gap-2">
+          {/* More layers button (mobile) */}
+          <button
+            onClick={() => setShowMoreLayers(!showMoreLayers)}
+            className="sm:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <Layers className="w-4 h-4" />
+            <span>Capas</span>
+            <ChevronDown className={`w-3 h-3 transition-transform ${showMoreLayers ? "rotate-180" : ""}`} />
+          </button>
+
+          {/* Extended layers (always visible on desktop, expandable on mobile) */}
+          <div className={`${showMoreLayers ? "flex" : "hidden"} sm:flex items-center gap-2 flex-wrap`}>
             <LayerToggle
               label={`Alertas${counts?.weather ? ` (${counts.weather})` : ""}`}
               active={activeLayers.weather}
