@@ -303,6 +303,9 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/maritimo/combustible`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/maritimo/meteorologia`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/maritimo/puertos`, lastModified: today, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/maritimo/seguridad`, lastModified: today, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/maritimo/mapa`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/maritimo/noticias`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     // Maritime meteorology zone pages
     ...MARITIME_ZONE_SLUGS.map((zone) => ({
       url: `${BASE_URL}/maritimo/meteorologia/${zone}`,
