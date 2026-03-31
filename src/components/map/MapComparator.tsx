@@ -8,6 +8,7 @@ import { ArrowLeftRight, Clock, X } from "lucide-react";
 interface MapComparatorProps {
   currentIncidents: { lat: number; lng: number; effect: string }[];
   historicalIncidents: { lat: number; lng: number; effect: string }[];
+  timeLabel?: string;
   onTimeOffsetChange?: (hours: number) => void;
   onClose: () => void;
 }
