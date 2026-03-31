@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   LineChart,
   Line,
@@ -20,6 +21,7 @@ import {
   Activity,
   ChevronDown,
 } from "lucide-react";
+import { provinceSlug } from "@/lib/geo/slugify";
 import type { ProvinceDataPoint } from "@/components/map/ProvinceHeatmap";
 
 // Dynamic import for ProvinceHeatmap — no SSR
@@ -467,7 +469,12 @@ export function AccidentesClient({
                       {i + 1}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                      {p.provinceName ?? p.province}
+                      <Link
+                        href={`/estadisticas/accidentes/${provinceSlug(p.provinceName ?? p.province)}`}
+                        className="text-tl-600 dark:text-tl-400 hover:underline hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                      >
+                        {p.provinceName ?? p.province}
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-right font-data tabular-nums text-gray-700 dark:text-gray-300">
                       {formatNumber(p.accidents)}
