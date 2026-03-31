@@ -1,5 +1,7 @@
 import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
+import { PROVINCES } from "@/lib/geo/ine-codes";
+import { provinceSlug } from "@/lib/geo/slugify";
 
 // Revalidate every 60s so shards re-render with live DB data after deploy.
 // (Coolify builds with DATABASE_URL='' → build-time renders are empty shells.)
@@ -211,6 +213,10 @@ const CAMARAS_CITY_SLUGS = [
   "san-sebastian", "vitoria", "palma", "las-palmas", "santa-cruz",
 ];
 
+const FUEL_TYPE_SLUGS = [
+  "diesel", "gasolina-95", "gasolina-98", "glp", "gnc", "hidrogeno", "adblue",
+];
+
 const COMMUNITIES = [
   "andalucia", "aragon", "asturias", "baleares", "canarias",
   "cantabria", "castilla-la-mancha", "castilla-y-leon", "cataluna",
@@ -234,6 +240,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/incidencias/analytics`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/camaras`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
     { url: `${BASE_URL}/paneles`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
+    { url: `${BASE_URL}/trafico`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
     { url: `${BASE_URL}/radares`, lastModified: today, changeFrequency: "weekly", priority: 0.9 },
     // Per-road radar pages
     ...([
@@ -262,6 +269,8 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/gasolineras/precios`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
     { url: `${BASE_URL}/gasolineras/mapa`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE_URL}/gasolineras/marcas`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/zbe`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/electrolineras`, lastModified: today, changeFrequency: "daily", priority: 0.85 },
     { url: `${BASE_URL}/carga-ev`, lastModified: today, changeFrequency: "daily", priority: 0.85 },
     { url: `${BASE_URL}/carga-ev/cerca`, lastModified: today, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE_URL}/profesional`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
@@ -330,6 +339,10 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     ...PROVINCE_MAP_CODES.map((code) => ({ url: `${BASE_URL}/gasolineras/mapa/provincia/${code}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.7 })),
     // Province accident statistics pages (52 provinces)
     ...ACCIDENTES_PROVINCE_SLUGS.map((slug) => ({ url: `${BASE_URL}/estadisticas/accidentes/${slug}`, lastModified: today, changeFrequency: "monthly" as const, priority: 0.6 })),
+    // Fuel type pages (7 types)
+    ...FUEL_TYPE_SLUGS.map((slug) => ({ url: `${BASE_URL}/gasolineras/tipo/${slug}`, lastModified: today, changeFrequency: "daily" as const, priority: 0.85 })),
+    // Radar province pages (52 provinces)
+    ...PROVINCES.map((p) => ({ url: `${BASE_URL}/radares/provincia/${provinceSlug(p.name)}`, lastModified: today, changeFrequency: "weekly" as const, priority: 0.8 })),
   ];
 
   // Dynamic road pages
@@ -376,6 +389,23 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     }
     return pages;
   });
+
+  // Camera-by-road pages (from camera data)
+  const cameraRoads = await prisma.camera.groupBy({
+    by: ["roadNumber"],
+    where: { isActive: true, roadNumber: { not: null } },
+    _count: true,
+    orderBy: { _count: { roadNumber: "desc" } },
+  });
+
+  const cameraRoadPages: MetadataRoute.Sitemap = cameraRoads
+    .filter((r) => r.roadNumber && r._count >= 2)
+    .map((r) => ({
+      url: `${BASE_URL}/camaras/carretera/${encodeURIComponent(r.roadNumber!)}`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.75,
+    }));
 
   // Province pages (from camera data)
   const provinces = await prisma.camera.findMany({
@@ -432,6 +462,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...cityPages,
     ...roadPages,
+    ...cameraRoadPages,
     ...provincePages,
     ...communityPages,
     ...maritimePortPages,
