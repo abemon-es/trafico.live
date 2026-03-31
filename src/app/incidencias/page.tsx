@@ -45,6 +45,7 @@ export default function IncidenciasPage() {
             de carretera, retenciones, obras, accidentes y alertas meteorológicas reportadas
             por la DGT, SCT, Euskadi, Madrid y Valencia.
           </p>
+          <h2 className="sr-only">Mapa y listado de incidencias activas en carreteras de España</h2>
         </div>
       </div>
 

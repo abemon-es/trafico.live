@@ -5,7 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title: "Explorar | Tráfico España",
-  description: "Explora el tráfico en España por territorios, carreteras e infraestructura.",
+  description: "Explora el tráfico en España por territorios, carreteras e infraestructura. Comunidades autónomas, provincias, autopistas, autovías y puntos de interés vial.",
   alternates: { canonical: `${BASE_URL}/explorar` },
 };
 

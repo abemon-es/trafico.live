@@ -54,6 +54,9 @@ export default function BaratasIndexPage() {
         Gasolina 95 actualizados desde la fuente oficial del Ministerio.
       </p>
 
+      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        Principales ciudades de España
+      </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {CITIES.map((city) => (
           <Link
