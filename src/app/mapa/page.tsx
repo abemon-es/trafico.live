@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { MapaClient } from "./MapaClient";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -38,5 +39,15 @@ export const metadata: Metadata = {
 };
 
 export default function MapaPage() {
-  return <MapaClient />;
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Mapa Interactivo", href: "/mapa" },
+        ]} />
+      </div>
+      <MapaClient />
+    </>
+  );
 }

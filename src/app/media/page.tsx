@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Logo } from "@/components/brand/Logo";
 import { Download } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Media Kit — Brand Assets & Guidelines",
@@ -110,6 +111,10 @@ export default function MediaPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Prensa", href: "/media" },
+        ]} />
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">

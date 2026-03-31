@@ -264,6 +264,8 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
 
   const { data, isLoading, error } = useSWR<ApiResponse>(buildUrl(), fetcher, {
     fallbackData: initialData,
+    revalidateOnMount: true,
+    refreshInterval: 300000,
   });
 
   useEffect(() => {

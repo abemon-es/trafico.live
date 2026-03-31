@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import MaritimasClient from "./MaritimasClient";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
@@ -41,5 +42,16 @@ export default async function CombustibleMaritimoPage() {
     },
   };
 
-  return <MaritimasClient initialData={initialData} />;
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Marítimo", href: "/maritimo" },
+          { name: "Combustible", href: "/maritimo/combustible" },
+        ]} />
+      </div>
+      <MaritimasClient initialData={initialData} />
+    </>
+  );
 }

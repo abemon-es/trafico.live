@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Loader2 } from "lucide-react";
 import { AlertasMeteoContent } from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -42,8 +43,16 @@ function AlertasMeteoLoading() {
 
 export default function AlertasMeteoPage() {
   return (
-    <Suspense fallback={<AlertasMeteoLoading />}>
-      <AlertasMeteoContent />
-    </Suspense>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Alertas Meteorológicas", href: "/alertas-meteo" },
+        ]} />
+      </div>
+      <Suspense fallback={<AlertasMeteoLoading />}>
+        <AlertasMeteoContent />
+      </Suspense>
+    </>
   );
 }

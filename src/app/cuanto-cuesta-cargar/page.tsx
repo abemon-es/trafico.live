@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import CuantoCuestaCargarContent from "./content";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "¿Cuánto Cuesta Cargar un Coche Eléctrico en 2026? — Calculadora",
@@ -28,5 +29,15 @@ export const metadata: Metadata = {
 };
 
 export default function CuantoCuestaCargarPage() {
-  return <CuantoCuestaCargarContent />;
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "¿Cuánto Cuesta Cargar?", href: "/cuanto-cuesta-cargar" },
+        ]} />
+      </div>
+      <CuantoCuestaCargarContent />
+    </>
+  );
 }
