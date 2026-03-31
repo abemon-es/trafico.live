@@ -1,28 +1,59 @@
 /**
- * Insights Collector
+ * Noticias Collector
  *
- * Generates insights from existing data:
- * - Price change detector: alerts when national fuel average changes >2%
+ * Generates articles from existing data:
+ * - Price change detector: alerts when national fuel average changes >0.5%
  * - Incident spike detector: compares daily count to 7-day average
  * - Weather alert aggregator: summarizes active AEMET alerts
  * - Daily report: end-of-day traffic digest
+ * - Weekly report: Monday summary with trends
+ * - Fuel trend: Friday weekly fuel price evolution
  *
- * Each detector creates Insight records if conditions are met.
+ * Each detector creates Article records with auto-assigned tags.
  */
 
 import { PrismaClient, ArticleCategory } from "@prisma/client";
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+function todaySlug(): string {
+  return new Date().toISOString().split("T")[0];
 }
 
-function todaySlug(): string {
-  return new Date().toISOString().split("T")[0]; // "2026-03-30"
+function weekSlug(): string {
+  const now = new Date();
+  const oneJan = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.ceil(
+    ((now.getTime() - oneJan.getTime()) / 86400000 + oneJan.getDay() + 1) / 7
+  );
+  return `${now.getFullYear()}-S${String(weekNum).padStart(2, "0")}`;
+}
+
+// ---------------------------------------------------------------------------
+// Tag Helper
+// ---------------------------------------------------------------------------
+
+const tagCache = new Map<string, string>();
+
+async function ensureTag(prisma: PrismaClient, slug: string, name: string): Promise<string> {
+  if (tagCache.has(slug)) return tagCache.get(slug)!;
+  const tag = await prisma.tag.upsert({
+    where: { slug },
+    update: {},
+    create: { slug, name },
+  });
+  tagCache.set(slug, tag.id);
+  return tag.id;
+}
+
+async function attachTags(
+  prisma: PrismaClient,
+  articleId: string,
+  tagDefs: { slug: string; name: string }[]
+): Promise<void> {
+  const tagIds = await Promise.all(tagDefs.map((t) => ensureTag(prisma, t.slug, t.name)));
+  await prisma.articleTag.createMany({
+    data: tagIds.map((tagId) => ({ articleId, tagId })),
+    skipDuplicates: true,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -31,61 +62,56 @@ function todaySlug(): string {
 
 async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
   let created = 0;
-
-  // Get average diesel price today vs yesterday (UTC midnight to match FuelPriceDailyStats)
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-
   const yesterday = new Date(today);
   yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-  const [todayAvg, yesterdayStats] = await Promise.all([
-    prisma.gasStation.aggregate({
-      _avg: { priceGasoleoA: true },
-      where: { priceGasoleoA: { not: null } },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { date: yesterday, scope: "national" },
-    }),
+  const [todayAvg, todayAvgGas, yesterdayStats] = await Promise.all([
+    prisma.gasStation.aggregate({ _avg: { priceGasoleoA: true }, where: { priceGasoleoA: { not: null } } }),
+    prisma.gasStation.aggregate({ _avg: { priceGasolina95E5: true }, where: { priceGasolina95E5: { not: null } } }),
+    prisma.fuelPriceDailyStats.findFirst({ where: { date: yesterday, scope: "national" } }),
   ]);
 
   const avgDiesel = todayAvg._avg.priceGasoleoA;
+  const avgGas95 = todayAvgGas._avg.priceGasolina95E5;
 
   if (avgDiesel) {
     const price = Number(avgDiesel).toFixed(3);
+    const gas95Price = avgGas95 ? Number(avgGas95).toFixed(3) : "N/D";
     const yesterdayPrice = yesterdayStats?.avgGasoleoA ? Number(yesterdayStats.avgGasoleoA) : null;
-
-    // Only create insight if price changed >2% or no yesterday data (daily report)
-    const pctChange = yesterdayPrice
-      ? ((Number(avgDiesel) - yesterdayPrice) / yesterdayPrice) * 100
-      : null;
+    const pctChange = yesterdayPrice ? ((Number(avgDiesel) - yesterdayPrice) / yesterdayPrice) * 100 : null;
     const isSignificant = pctChange === null || Math.abs(pctChange) >= 0.5;
 
     if (isSignificant) {
       const slug = `precio-diesel-${todaySlug()}`;
       const existing = await prisma.article.findUnique({ where: { slug } });
-
       if (!existing) {
         const changeText = pctChange !== null
-          ? `, un ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% respecto a ayer (${yesterdayPrice!.toFixed(3)} €/L)`
+          ? `, un ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% respecto a ayer (${yesterdayPrice!.toFixed(3)} \u20ac/L)`
           : "";
-
-        await prisma.article.create({
+        const article = await prisma.article.create({
           data: {
             slug,
-            title: `Precio medio del diésel hoy: ${price} €/L`,
-            summary: `La media nacional del precio del gasóleo A se sitúa en ${price} €/L${changeText}. Datos del MITERD.`,
-            body: `## Precio del diésel hoy\n\nEl precio medio nacional del **Gasóleo A** se sitúa hoy en **${price} €/L**${changeText} según los datos oficiales del Ministerio para la Transición Ecológica (MITERD).\n\nConsulta las [gasolineras más baratas](/gasolineras/baratas) para encontrar el mejor precio cerca de ti.`,
+            title: `Precio medio del di\u00e9sel hoy: ${price} \u20ac/L`,
+            summary: `La media nacional del precio del gas\u00f3leo A se sit\u00faa en ${price} \u20ac/L${changeText}. Gasolina 95: ${gas95Price} \u20ac/L. Datos del MITERD.`,
+            body: `## Precio del di\u00e9sel hoy\n\nEl precio medio nacional del **Gas\u00f3leo A** se sit\u00faa hoy en **${price} \u20ac/L**${changeText} seg\u00fan los datos oficiales del MITERD.\n\nLa **Gasolina 95 E5** tiene un precio medio de **${gas95Price} \u20ac/L**.\n\n## \u00bfD\u00f3nde repostar m\u00e1s barato?\n\nConsulta las [gasolineras m\u00e1s baratas](/gasolineras/baratas) o los [precios por provincia](/gasolineras/precios).\n\n---\n\n*Datos: MITERD (geoportalgasolineras.es).*`,
             category: "PRICE_ALERT" as ArticleCategory,
             source: "MITERD",
             sourceUrl: "https://geoportalgasolineras.es",
+            isAutoGenerated: true,
+            readTime: "1 min",
           },
         });
+        await attachTags(prisma, article.id, [
+          { slug: "precio-combustible", name: "Precio combustible" },
+          { slug: "diesel", name: "Di\u00e9sel" },
+          { slug: "gasolina", name: "Gasolina" },
+        ]);
         created++;
       }
     }
   }
-
   return created;
 }
 
@@ -95,48 +121,41 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
 
 async function detectIncidentSpikes(prisma: PrismaClient): Promise<number> {
   let created = 0;
-
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
 
-  // Today's active incidents
-  const todayCount = await prisma.trafficIncident.count({
-    where: { isActive: true },
-  });
-
-  // 7-day average (from incidents started in last 7 days)
+  const todayCount = await prisma.trafficIncident.count({ where: { isActive: true } });
   const weekAgo = new Date(todayStart);
   weekAgo.setDate(weekAgo.getDate() - 7);
-
-  const weekCount = await prisma.trafficIncident.count({
-    where: {
-      startedAt: { gte: weekAgo },
-    },
-  });
-
+  const weekCount = await prisma.trafficIncident.count({ where: { startedAt: { gte: weekAgo } } });
   const weekAvg = weekCount / 7;
   const isSpike = todayCount > weekAvg * 1.5 && todayCount >= 10;
 
   if (isSpike) {
     const slug = `pico-incidencias-${todaySlug()}`;
     const existing = await prisma.article.findUnique({ where: { slug } });
-
     if (!existing) {
-      await prisma.article.create({
+      const pctAbove = Math.round(((todayCount - weekAvg) / weekAvg) * 100);
+      const article = await prisma.article.create({
         data: {
           slug,
           title: `Pico de incidencias: ${todayCount} activas (media 7d: ${Math.round(weekAvg)})`,
-          summary: `Se registran ${todayCount} incidencias de tráfico activas, un ${Math.round(((todayCount - weekAvg) / weekAvg) * 100)}% por encima de la media semanal.`,
-          body: `## Pico de incidencias de tráfico\n\nHoy se registran **${todayCount} incidencias activas** en las carreteras españolas, significativamente por encima de la media de los últimos 7 días (**${Math.round(weekAvg)} incidencias/día**).\n\nConsulta el [mapa de incidencias](/incidencias) para ver el estado actual del tráfico.`,
+          summary: `Se registran ${todayCount} incidencias de tr\u00e1fico activas, un ${pctAbove}% por encima de la media semanal.`,
+          body: `## Pico de incidencias de tr\u00e1fico\n\nHoy se registran **${todayCount} incidencias activas** en las carreteras espa\u00f1olas, un **${pctAbove}% por encima** de la media de los \u00faltimos 7 d\u00edas (**${Math.round(weekAvg)} incidencias/d\u00eda**).\n\n- [Mapa de incidencias](/incidencias)\n- [Atascos](/atascos)\n- [Cortes de tr\u00e1fico](/cortes-trafico)\n\n---\n\n*Datos: DGT.*`,
           category: "INCIDENT_DIGEST" as ArticleCategory,
           source: "DGT",
+          isAutoGenerated: true,
+          readTime: "1 min",
         },
       });
+      await attachTags(prisma, article.id, [
+        { slug: "incidencias", name: "Incidencias" },
+        { slug: "dgt", name: "DGT" },
+      ]);
       created++;
     }
   }
-
   return created;
 }
 
@@ -146,7 +165,6 @@ async function detectIncidentSpikes(prisma: PrismaClient): Promise<number> {
 
 async function aggregateWeatherAlerts(prisma: PrismaClient): Promise<number> {
   let created = 0;
-
   const activeAlerts = await prisma.weatherAlert.findMany({
     where: { isActive: true },
     orderBy: { severity: "desc" },
@@ -156,36 +174,35 @@ async function aggregateWeatherAlerts(prisma: PrismaClient): Promise<number> {
   if (activeAlerts.length >= 3) {
     const slug = `alertas-meteo-${todaySlug()}`;
     const existing = await prisma.article.findUnique({ where: { slug } });
-
     if (!existing) {
       const provinces = [...new Set(activeAlerts.map((a) => a.province).filter(Boolean))];
-      const severities = activeAlerts.reduce(
-        (acc, a) => {
-          acc[a.severity] = (acc[a.severity] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>
-      );
+      const severities = activeAlerts.reduce((acc, a) => {
+        acc[a.severity] = (acc[a.severity] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      const severityText = Object.entries(severities).map(([s, c]) => `${c} ${s.toLowerCase()}`).join(", ");
 
-      const severityText = Object.entries(severities)
-        .map(([s, c]) => `${c} ${s.toLowerCase()}`)
-        .join(", ");
-
-      await prisma.article.create({
+      const article = await prisma.article.create({
         data: {
           slug,
-          title: `${activeAlerts.length} alertas meteorológicas activas`,
+          title: `${activeAlerts.length} alertas meteorol\u00f3gicas activas`,
           summary: `AEMET mantiene ${activeAlerts.length} avisos activos (${severityText}) que afectan a ${provinces.length} provincias.`,
-          body: `## Alertas meteorológicas activas\n\nLa AEMET mantiene **${activeAlerts.length} avisos meteorológicos activos** que pueden afectar a la circulación.\n\n**Provincias afectadas:** ${provinces.join(", ") || "varias"}\n\n**Niveles:** ${severityText}\n\nConsulta las [alertas meteorológicas](/alertas-meteo) para más detalle y recomendaciones de conducción.`,
+          body: `## Alertas meteorol\u00f3gicas activas\n\nLa AEMET mantiene **${activeAlerts.length} avisos meteorol\u00f3gicos activos** que pueden afectar a la circulaci\u00f3n.\n\n### Provincias afectadas\n\n${provinces.join(", ") || "varias"}\n\n### Niveles de alerta\n\n${severityText}\n\n- [Alertas meteorol\u00f3gicas](/alertas-meteo)\n- [Incidencias activas](/incidencias)\n\n---\n\n*Datos: AEMET.*`,
           category: "WEATHER_ALERT" as ArticleCategory,
           source: "AEMET",
           sourceUrl: "https://www.aemet.es",
+          isAutoGenerated: true,
+          readTime: "1 min",
         },
       });
+      await attachTags(prisma, article.id, [
+        { slug: "meteorologia", name: "Meteorolog\u00eda" },
+        { slug: "aemet", name: "AEMET" },
+        { slug: "seguridad-vial", name: "Seguridad vial" },
+      ]);
       created++;
     }
   }
-
   return created;
 }
 
@@ -196,60 +213,158 @@ async function aggregateWeatherAlerts(prisma: PrismaClient): Promise<number> {
 async function generateDailyReport(prisma: PrismaClient): Promise<number> {
   const slug = `informe-diario-${todaySlug()}`;
   const existing = await prisma.article.findUnique({ where: { slug } });
-
   if (existing) return 0;
 
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
 
-  const [
-    activeIncidents,
-    todayIncidents,
-    activeAlerts,
-    avgDiesel,
-    avgGas95,
-  ] = await Promise.all([
+  const [activeIncidents, todayIncidents, activeAlerts, avgDiesel, avgGas95] = await Promise.all([
     prisma.trafficIncident.count({ where: { isActive: true } }),
-    prisma.trafficIncident.count({
-      where: { startedAt: { gte: todayStart } },
-    }),
+    prisma.trafficIncident.count({ where: { startedAt: { gte: todayStart } } }),
     prisma.weatherAlert.count({ where: { isActive: true } }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasoleoA: true },
-      where: { priceGasoleoA: { not: null } },
-    }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasolina95E5: true },
-      where: { priceGasolina95E5: { not: null } },
-    }),
+    prisma.gasStation.aggregate({ _avg: { priceGasoleoA: true }, where: { priceGasoleoA: { not: null } } }),
+    prisma.gasStation.aggregate({ _avg: { priceGasolina95E5: true }, where: { priceGasolina95E5: { not: null } } }),
   ]);
 
-  const dieselPrice = avgDiesel._avg.priceGasoleoA
-    ? Number(avgDiesel._avg.priceGasoleoA).toFixed(3)
-    : "N/D";
-  const gas95Price = avgGas95._avg.priceGasolina95E5
-    ? Number(avgGas95._avg.priceGasolina95E5).toFixed(3)
-    : "N/D";
+  const dieselPrice = avgDiesel._avg.priceGasoleoA ? Number(avgDiesel._avg.priceGasoleoA).toFixed(3) : "N/D";
+  const gas95Price = avgGas95._avg.priceGasolina95E5 ? Number(avgGas95._avg.priceGasolina95E5).toFixed(3) : "N/D";
+  const dateStr = now.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
-  const dateStr = now.toLocaleDateString("es-ES", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  await prisma.article.create({
+  const article = await prisma.article.create({
     data: {
       slug,
-      title: `Informe de tráfico — ${dateStr}`,
-      summary: `${activeIncidents} incidencias activas, ${todayIncidents} nuevas hoy. Diésel: ${dieselPrice} €/L. Gasolina 95: ${gas95Price} €/L. ${activeAlerts} alertas meteorológicas.`,
-      body: `## Informe de tráfico — ${dateStr}\n\n### Incidencias\n- **${activeIncidents}** incidencias activas en este momento\n- **${todayIncidents}** incidencias nuevas registradas hoy\n\n### Precios de combustible\n- **Gasóleo A:** ${dieselPrice} €/L (media nacional)\n- **Gasolina 95:** ${gas95Price} €/L (media nacional)\n\n### Meteorología\n- **${activeAlerts}** alertas meteorológicas activas\n\n---\n\n*Datos: DGT, MITERD, AEMET. Actualizado a las ${now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}.*`,
+      title: `Informe de tr\u00e1fico \u2014 ${dateStr}`,
+      summary: `${activeIncidents} incidencias activas, ${todayIncidents} nuevas hoy. Di\u00e9sel: ${dieselPrice} \u20ac/L. Gasolina 95: ${gas95Price} \u20ac/L. ${activeAlerts} alertas meteorol\u00f3gicas.`,
+      body: `## Informe de tr\u00e1fico \u2014 ${dateStr}\n\n### Incidencias\n\n- **${activeIncidents}** incidencias activas en este momento\n- **${todayIncidents}** incidencias nuevas registradas hoy\n\nConsulta el [mapa de incidencias](/incidencias) o los [atascos activos](/atascos).\n\n### Precios de combustible\n\n- **Gas\u00f3leo A:** ${dieselPrice} \u20ac/L (media nacional)\n- **Gasolina 95:** ${gas95Price} \u20ac/L (media nacional)\n\nEncuentra las [gasolineras m\u00e1s baratas](/gasolineras/baratas) cerca de ti.\n\n### Meteorolog\u00eda\n\n- **${activeAlerts}** alertas meteorol\u00f3gicas activas\n\nRevisa las [alertas meteorol\u00f3gicas](/alertas-meteo) antes de viajar.\n\n---\n\n*Datos: DGT, MITERD, AEMET. Actualizado a las ${timeStr}.*`,
       category: "DAILY_REPORT" as ArticleCategory,
       source: "trafico.live",
+      isAutoGenerated: true,
+      readTime: "2 min",
     },
   });
 
+  await attachTags(prisma, article.id, [
+    { slug: "informe-diario", name: "Informe diario" },
+    { slug: "dgt", name: "DGT" },
+    { slug: "aemet", name: "AEMET" },
+    { slug: "precio-combustible", name: "Precio combustible" },
+  ]);
+  return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Weekly Report (Monday only)
+// ---------------------------------------------------------------------------
+
+async function generateWeeklyReport(prisma: PrismaClient): Promise<number> {
+  const now = new Date();
+  if (now.getDay() !== 1) return 0;
+
+  const slug = `informe-semanal-${weekSlug()}`;
+  const existing = await prisma.article.findUnique({ where: { slug } });
+  if (existing) return 0;
+
+  const weekAgo = new Date(now);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const twoWeeksAgo = new Date(now);
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+  const [thisWeekIncidents, lastWeekIncidents, avgDiesel, avgGas95] = await Promise.all([
+    prisma.trafficIncident.count({ where: { startedAt: { gte: weekAgo } } }),
+    prisma.trafficIncident.count({ where: { startedAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
+    prisma.gasStation.aggregate({ _avg: { priceGasoleoA: true }, where: { priceGasoleoA: { not: null } } }),
+    prisma.gasStation.aggregate({ _avg: { priceGasolina95E5: true }, where: { priceGasolina95E5: { not: null } } }),
+  ]);
+
+  const dieselPrice = avgDiesel._avg.priceGasoleoA ? Number(avgDiesel._avg.priceGasoleoA).toFixed(3) : "N/D";
+  const gas95Price = avgGas95._avg.priceGasolina95E5 ? Number(avgGas95._avg.priceGasolina95E5).toFixed(3) : "N/D";
+  const incidentChange = lastWeekIncidents > 0 ? Math.round(((thisWeekIncidents - lastWeekIncidents) / lastWeekIncidents) * 100) : 0;
+  const incidentTrend = incidentChange > 5 ? `un ${incidentChange}% m\u00e1s que la semana anterior`
+    : incidentChange < -5 ? `un ${Math.abs(incidentChange)}% menos que la semana anterior`
+    : "similar a la semana anterior";
+
+  const article = await prisma.article.create({
+    data: {
+      slug,
+      title: `Informe semanal de tr\u00e1fico \u2014 ${weekSlug()}`,
+      summary: `Resumen semanal: ${thisWeekIncidents} incidencias (${incidentTrend}). Di\u00e9sel: ${dieselPrice} \u20ac/L. Gasolina 95: ${gas95Price} \u20ac/L.`,
+      body: `## Informe semanal \u2014 ${weekSlug()}\n\n### Incidencias\n\n- **${thisWeekIncidents}** incidencias registradas esta semana\n- **${lastWeekIncidents}** la semana anterior\n- Tendencia: ${incidentTrend}\n\n### Precios de combustible\n\n- **Gas\u00f3leo A:** ${dieselPrice} \u20ac/L (media nacional)\n- **Gasolina 95:** ${gas95Price} \u20ac/L (media nacional)\n\n- [Evoluci\u00f3n de precios](/gasolineras/precios)\n- [Gasolineras baratas](/gasolineras/baratas)\n- [Radares DGT](/radares)\n\n---\n\n*Datos: DGT, MITERD, AEMET.*`,
+      category: "WEEKLY_REPORT" as ArticleCategory,
+      source: "trafico.live",
+      isAutoGenerated: true,
+      readTime: "2 min",
+    },
+  });
+
+  await attachTags(prisma, article.id, [
+    { slug: "informe-semanal", name: "Informe semanal" },
+    { slug: "estadisticas", name: "Estad\u00edsticas" },
+    { slug: "dgt", name: "DGT" },
+    { slug: "precio-combustible", name: "Precio combustible" },
+  ]);
+  return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Fuel Trend (Friday only)
+// ---------------------------------------------------------------------------
+
+async function generateFuelTrend(prisma: PrismaClient): Promise<number> {
+  const now = new Date();
+  if (now.getDay() !== 5) return 0;
+
+  const slug = `tendencia-combustible-${weekSlug()}`;
+  const existing = await prisma.article.findUnique({ where: { slug } });
+  if (existing) return 0;
+
+  const weekAgo = new Date(now);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  const stats = await prisma.fuelPriceDailyStats.findMany({
+    where: { scope: "national", date: { gte: weekAgo } },
+    orderBy: { date: "asc" },
+  });
+
+  if (stats.length < 2) return 0;
+
+  const first = stats[0];
+  const last = stats[stats.length - 1];
+  const dieselStart = first.avgGasoleoA ? Number(first.avgGasoleoA) : null;
+  const dieselEnd = last.avgGasoleoA ? Number(last.avgGasoleoA) : null;
+  if (!dieselStart || !dieselEnd) return 0;
+
+  const dieselChange = ((dieselEnd - dieselStart) / dieselStart) * 100;
+  const trend = dieselChange > 0.1 ? `ha subido un ${dieselChange.toFixed(1)}%`
+    : dieselChange < -0.1 ? `ha bajado un ${Math.abs(dieselChange).toFixed(1)}%`
+    : "se ha mantenido estable";
+
+  const daysData = stats.map((s) => {
+    const d = s.date.toLocaleDateString("es-ES", { weekday: "short", day: "numeric" });
+    const p = s.avgGasoleoA ? Number(s.avgGasoleoA).toFixed(3) : "N/D";
+    return `- **${d}:** ${p} \u20ac/L`;
+  }).join("\n");
+
+  const article = await prisma.article.create({
+    data: {
+      slug,
+      title: `Combustible semanal: el di\u00e9sel ${trend} (${dieselEnd.toFixed(3)} \u20ac/L)`,
+      summary: `Evoluci\u00f3n semanal: de ${dieselStart.toFixed(3)} a ${dieselEnd.toFixed(3)} \u20ac/L (${dieselChange > 0 ? "+" : ""}${dieselChange.toFixed(1)}%).`,
+      body: `## Tendencia semanal del combustible\n\nEl precio medio nacional del **Gas\u00f3leo A** ${trend} esta semana, pasando de **${dieselStart.toFixed(3)} \u20ac/L** a **${dieselEnd.toFixed(3)} \u20ac/L**.\n\n### Evoluci\u00f3n diaria\n\n${daysData}\n\n- [Gasolineras baratas](/gasolineras/baratas)\n- [Precios por provincia](/gasolineras/precios)\n- [Calculadora de coste](/calculadora)\n\n---\n\n*Datos: MITERD.*`,
+      category: "FUEL_TREND" as ArticleCategory,
+      source: "MITERD",
+      sourceUrl: "https://geoportalgasolineras.es",
+      isAutoGenerated: true,
+      readTime: "2 min",
+    },
+  });
+
+  await attachTags(prisma, article.id, [
+    { slug: "precio-combustible", name: "Precio combustible" },
+    { slug: "diesel", name: "Di\u00e9sel" },
+    { slug: "tendencia", name: "Tendencia" },
+  ]);
   return 1;
 }
 
@@ -258,13 +373,15 @@ async function generateDailyReport(prisma: PrismaClient): Promise<number> {
 // ---------------------------------------------------------------------------
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  console.log("[insights] Starting insights generation...");
+  console.log("[noticias] Starting article generation...");
 
   const results = await Promise.allSettled([
     detectPriceChanges(prisma),
     detectIncidentSpikes(prisma),
     aggregateWeatherAlerts(prisma),
     generateDailyReport(prisma),
+    generateWeeklyReport(prisma),
+    generateFuelTrend(prisma),
   ]);
 
   let total = 0;
@@ -272,9 +389,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
     if (r.status === "fulfilled") {
       total += r.value;
     } else {
-      console.error("[insights] Detector failed:", r.reason);
+      console.error("[noticias] Generator failed:", r.reason);
     }
   }
 
-  console.log(`[insights] Created ${total} new insights`);
+  console.log(`[noticias] Created ${total} new articles`);
 }
