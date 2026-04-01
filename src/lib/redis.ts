@@ -86,6 +86,44 @@ export async function setInCache<T>(
   }
 }
 
+// getOrCompute — cache-aside with lock-based stampede protection.
+//
+// When the cache is empty, a distributed lock (10s TTL) ensures only one
+// caller computes the value. Other concurrent callers wait 200ms then retry
+// the cache. If the cache is still empty after the retry (e.g. lock holder
+// crashed), they fall through and compute themselves to avoid a hard stall.
+export async function getOrCompute<T>(
+  key: string,
+  ttl: number,
+  compute: () => Promise<T>
+): Promise<T> {
+  // 1. Try cache first
+  const cached = await getFromCache<T>(key);
+  if (cached !== null) return cached;
+
+  // 2. Try to acquire a short-lived lock
+  const lockKey = `lock:${key}`;
+  const acquired = redis
+    ? await redis.set(lockKey, "1", "EX", 10, "NX")
+    : null;
+
+  if (!acquired) {
+    // Another request is computing — wait briefly and retry cache
+    await new Promise<void>((r) => setTimeout(r, 200));
+    const retried = await getFromCache<T>(key);
+    if (retried !== null) return retried;
+    // Cache still empty (lock holder may have crashed) — compute ourselves
+  }
+
+  try {
+    const result = await compute();
+    await setInCache(key, result, ttl);
+    return result;
+  } finally {
+    if (acquired && redis) await redis.del(lockKey);
+  }
+}
+
 export async function invalidateCache(pattern: string): Promise<void> {
   if (!redis) return;
   try {
