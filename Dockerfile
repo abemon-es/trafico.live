@@ -19,7 +19,9 @@ FROM node:24-slim AS runtime
 
 WORKDIR /app
 
-RUN addgroup --system --gid 1001 nodejs && \
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/.next ./.next
