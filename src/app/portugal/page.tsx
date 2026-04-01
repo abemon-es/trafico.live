@@ -109,6 +109,9 @@ function severityLabel(s: string): string {
 // ---------------------------------------------------------------------------
 
 async function getPortugalData() {
+  const { unstable_noStore: noStore } = await import("next/cache");
+  noStore();
+
   const [
     weatherAlerts,
     fuelStats,

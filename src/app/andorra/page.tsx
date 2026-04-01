@@ -104,6 +104,10 @@ function categoryLabel(category: string): string {
 // ---------------------------------------------------------------------------
 
 async function getAndorraData() {
+  // Prevent Next.js from caching the build-time (empty DB) result
+  const { unstable_noStore: noStore } = await import("next/cache");
+  noStore();
+
   const [incidents, cameras] = await Promise.all([
     prisma.andorraIncident.findMany({
       where: { isActive: true },

@@ -70,6 +70,9 @@ function diff(pt: unknown, es: unknown): { text: string; positive: boolean } | n
 // ---------------------------------------------------------------------------
 
 async function getPortugalFuelData() {
+  const { unstable_noStore: noStore } = await import("next/cache");
+  noStore();
+
   const now = new Date();
   const today = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
