@@ -53,7 +53,7 @@ async function getHomeStats() {
         prisma.radar.count(),
         prisma.gasStation.count(),
         prisma.v16BeaconEvent.count({ where: { isActive: true } }),
-        prisma.evCharger.count(),
+        prisma.eVCharger.count(),
       ]);
     return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount };
   } catch {
