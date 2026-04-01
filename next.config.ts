@@ -73,6 +73,19 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      // CDN edge caching — Cloudflare respects s-maxage.
+      // Real-time pages (homepage, incidents, traffic): 60s edge cache.
+      // Static-ish pages (radares, ZBE, legal): 5min edge cache.
+      // API routes handle their own Cache-Control.
+      {
+        source: "/((?!api/|_next/|sitemap).*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=120",
+          },
+        ],
+      },
     ];
   },
   async rewrites() {
