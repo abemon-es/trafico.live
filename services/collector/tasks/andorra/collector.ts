@@ -45,12 +45,17 @@ interface ApiIncidentsResponse {
 }
 
 interface ApiCamera {
-  id: string;           // slug e.g. "EncampN"
-  name?: string;
-  latitude?: number | string;
+  id: number | string;
+  title?: string;       // "CG1 / PK 5+307 (Margineda) / 937 metres"
+  name?: string;        // fallback if title not present
+  lat?: number | string;
+  lng?: number | string;
+  latitude?: number | string;  // fallback field names
   longitude?: number | string;
   elevation?: number | string;
-  route?: string;       // CG1, CG2, etc.
+  route?: string;
+  category_id?: number;
+  url_gif?: string;     // full URL to camera GIF
 }
 
 // ─── Fetch helpers ────────────────────────────────────────────────────────
@@ -170,35 +175,39 @@ async function collectCameras(prisma: PrismaClient): Promise<number> {
     const id = item.id != null ? String(item.id).trim() : "";
     if (!id) continue;
 
-    const latitude = parseFloat(String(item.latitude ?? 0));
-    const longitude = parseFloat(String(item.longitude ?? 0));
+    // API uses lat/lng (not latitude/longitude) and title (not name)
+    const latitude = parseFloat(String(item.lat ?? item.latitude ?? 0));
+    const longitude = parseFloat(String(item.lng ?? item.longitude ?? 0));
     if (!isFinite(latitude) || !isFinite(longitude) || (latitude === 0 && longitude === 0)) {
       continue;
     }
 
     const elevation = item.elevation != null ? Math.round(Number(item.elevation)) : null;
-    // Image URL: base/{id}.gif with a cache-busting timestamp baked in at collection time
-    const imageUrl = `${CAMERA_IMAGE_BASE}/${id}.gif?t=${now.getTime()}`;
+    const cameraName = item.title ?? item.name ?? id;
+    // Use url_gif from API if available, otherwise construct from ID
+    const imageUrl = item.url_gif ?? `${CAMERA_IMAGE_BASE}/${id}.gif?t=${now.getTime()}`;
+    // Extract route from title (e.g., "CG1 / PK 5+307 ..." → "CG1")
+    const route = item.route ?? cameraName.match(/^(CG\d+|CS\d*)/)?.[1] ?? null;
 
     await prisma.andorraCamera.upsert({
       where: { id },
       create: {
         id,
-        name: item.name ?? id,
+        name: cameraName,
         latitude,
         longitude,
         elevation: elevation ?? undefined,
-        route: item.route ?? null,
+        route,
         imageUrl,
         isActive: true,
         lastUpdated: now,
       },
       update: {
-        name: item.name ?? id,
+        name: cameraName,
         latitude,
         longitude,
         elevation: elevation ?? undefined,
-        route: item.route ?? null,
+        route,
         imageUrl,
         isActive: true,
         lastUpdated: now,
