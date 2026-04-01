@@ -1,8 +1,10 @@
 import { Metadata } from "next";
-import dynamic from "next/dynamic";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AccidentesClient } from "./AccidentesClient";
+import { PROVINCE_TO_COMMUNITY } from "@/lib/geo/province-mapping";
+import { provinceSlug } from "@/lib/geo/slugify";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -126,6 +128,14 @@ async function fetchStats() {
   };
 }
 
+// ─── Static province list (all 52) ────────────────────────────────────────────
+
+const ALL_PROVINCES: { name: string; slug: string }[] = Object.keys(
+  PROVINCE_TO_COMMUNITY
+)
+  .sort((a, b) => a.localeCompare(b, "es"))
+  .map((name) => ({ name, slug: provinceSlug(name) }));
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function AccidentesPage() {
@@ -214,6 +224,54 @@ export default async function AccidentesPage() {
               , actualizados anualmente.
             </p>
           </div>
+
+          {/* ── SSR summary (crawlable) ────────────────────────────────────── */}
+          <div className="mb-8 p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+            <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+              Datos de accidentes de tráfico en España desde{" "}
+              <strong>{stats.availableYears[0] ?? 2011}</strong> hasta{" "}
+              <strong>{stats.latestYear}</strong>. La base de datos incluye{" "}
+              <strong>
+                {stats.totals.accidents.toLocaleString("es-ES")} accidentes con
+                víctimas
+              </strong>{" "}
+              registrados en el año {stats.latestYear}, con{" "}
+              <strong>
+                {stats.totals.fatalities.toLocaleString("es-ES")} víctimas
+                mortales
+              </strong>{" "}
+              y una tasa de mortalidad del{" "}
+              <strong>{stats.fatalityRate}%</strong>. Consulta el desglose por
+              provincia seleccionando una de las 52 provincias españolas.
+            </p>
+            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+              Fuente: DGT en Cifras · Datos oficiales actualizados anualmente
+            </p>
+          </div>
+
+          {/* ── Province link grid (SSR — crawlable) ──────────────────────── */}
+          <section aria-labelledby="provincias-heading" className="mb-10">
+            <h2
+              id="provincias-heading"
+              className="text-xl font-heading font-semibold text-gray-900 dark:text-gray-100 mb-4"
+            >
+              Accidentes por provincia
+            </h2>
+            <nav aria-label="Estadísticas de accidentes por provincia">
+              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {ALL_PROVINCES.map(({ name, slug }) => (
+                  <li key={slug}>
+                    <Link
+                      href={`/estadisticas/accidentes/${slug}`}
+                      className="block px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-tl-700 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-300 dark:hover:border-tl-700 transition-colors text-center"
+                    >
+                      {name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </section>
 
           {/* Client component handles all interactive sections */}
           <AccidentesClient {...stats} />
