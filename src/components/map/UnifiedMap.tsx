@@ -290,8 +290,8 @@ export function UnifiedMap({
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [timelinePlaying, setTimelinePlaying] = useState(false);
 
-  // Connect SSE for real-time push updates
-  useTrafficStream();
+  // Connect SSE for real-time push updates — when connected, disable SWR polling
+  const { isConnected: sseConnected } = useTrafficStream();
 
   // Parse initial state from URL or props
   const getInitialLayers = (): ActiveLayers => {
@@ -404,14 +404,19 @@ export function UnifiedMap({
     updateURL(activeLayers, incidentFilters);
   }, [activeLayers, incidentFilters, updateURL]);
 
-  // Fetch data
+  // Fetch data — only when layer is active.
+  // When SSE is connected, disable polling (SSE pushes trigger SWR revalidation).
+  // When SSE disconnects, fall back to 60s polling.
+  const v16PollInterval = sseConnected ? 0 : 60000;
+  const incidentPollInterval = sseConnected ? 0 : 60000;
+
   const {
     data: v16Data,
     mutate: mutateV16,
     isLoading: v16Loading,
-  } = useSWR<V16Response>("/api/v16", fetcher, {
-    refreshInterval: 60000,
-    revalidateOnFocus: true,
+  } = useSWR<V16Response>(activeLayers.v16 ? "/api/v16" : null, fetcher, {
+    refreshInterval: v16PollInterval,
+    revalidateOnFocus: false,
     onSuccess: () => setLastUpdated(new Date()),
   });
 
@@ -419,46 +424,47 @@ export function UnifiedMap({
     data: incidentsData,
     mutate: mutateIncidents,
     isLoading: incidentsLoading,
-  } = useSWR<IncidentsResponse>("/api/incidents", fetcher, {
-    refreshInterval: 60000,
-    revalidateOnFocus: true,
+  } = useSWR<IncidentsResponse>(activeLayers.incidents ? "/api/incidents" : null, fetcher, {
+    refreshInterval: incidentPollInterval,
+    revalidateOnFocus: false,
     onSuccess: () => setLastUpdated(new Date()),
   });
 
   const { data: camerasData } = useSWR<CamerasResponse>(
     activeLayers.cameras ? "/api/cameras" : null,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 300000 }
+    { revalidateOnFocus: false, refreshInterval: 600000 }
   );
 
   const { data: chargersData } = useSWR<ChargersResponse>(
     activeLayers.chargers ? "/api/chargers" : null,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 300000 }
+    { revalidateOnFocus: false, refreshInterval: 600000 }
   );
 
   const { data: weatherData } = useSWR<WeatherResponse>(
     activeLayers.weather ? "/api/weather" : null,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 300000 }
+    { revalidateOnFocus: false, refreshInterval: 600000 }
   );
 
+  // Semi-static data — radars, risk zones, ZBE don't change frequently
   const { data: radarsData } = useSWR<RadarsResponse>(
     activeLayers.radars ? "/api/radars" : null,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 3600000 }
+    { revalidateOnFocus: false, refreshInterval: 0 }
   );
 
   const { data: riskZonesData } = useSWR<RiskZonesResponse>(
     activeLayers.riskZones ? "/api/risk-zones" : null,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 3600000 }
+    { revalidateOnFocus: false, refreshInterval: 0 }
   );
 
   const { data: zbeData } = useSWR<ZBEResponse>(
     activeLayers.zbe ? "/api/zbe" : null,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 3600000 }
+    { revalidateOnFocus: false, refreshInterval: 0 }
   );
 
   // Build gas stations URL with filters
@@ -473,7 +479,7 @@ export function UnifiedMap({
   const { data: gasStationsData } = useSWR<GasStationsResponse>(
     gasStationsUrl,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 600000 }
+    { revalidateOnFocus: false, refreshInterval: 0 }
   );
 
   // Build maritime stations URL with filters
@@ -487,13 +493,13 @@ export function UnifiedMap({
   const { data: maritimeStationsData } = useSWR<MaritimeStationsResponse>(
     maritimeStationsUrl,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 600000 }
+    { revalidateOnFocus: false, refreshInterval: 0 }
   );
 
   const { data: panelsData } = useSWR<PanelsResponse>(
     activeLayers.panels ? "/api/panels" : null,
     fetcher,
-    { revalidateOnFocus: false, refreshInterval: 300000 }
+    { revalidateOnFocus: false, refreshInterval: 600000 }
   );
 
   const { data: timelineData, isLoading: timelineLoading } = useSWR<{

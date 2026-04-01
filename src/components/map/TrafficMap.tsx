@@ -13,6 +13,7 @@ import {
 } from "./IncidentMarker";
 import { useAnimatedFlow } from "./AnimatedFlowOverlay";
 import { useWeatherRadar } from "./WeatherRadarOverlay";
+import { useWindOverlay, useCloudOverlay, useTemperatureOverlay } from "./WeatherOverlays";
 
 export type IncidentViewMode = "heatmap" | "clusters" | "points";
 
@@ -223,6 +224,9 @@ interface TrafficMapProps {
   terrain3D?: boolean;
   flowData?: GeoJSON.FeatureCollection | null;
   weatherRadar?: boolean;
+  windOverlay?: boolean;
+  cloudOverlay?: boolean;
+  tempOverlay?: boolean;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
@@ -770,9 +774,10 @@ function updateClusteredLayer(
 
 const DARK_MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 const LIGHT_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+const SATELLITE_MAP_STYLE = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, flowData = null, weatherRadar = false, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -846,6 +851,10 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       center: SPAIN_CENTER,
       zoom: 6,
       attributionControl: false,
+      // Cap pixel ratio to 2 — halves GPU work on 3x+ retina displays
+      pixelRatio: Math.min(window.devicePixelRatio, 2),
+      // Limit tile cache to reduce memory on constrained devices
+      maxTileCacheSize: 150,
     });
 
     map.current.addControl(
@@ -1128,6 +1137,11 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     map: map.current,
     enabled: weatherRadar,
   });
+
+  // Additional weather overlays (OWM raster tiles)
+  useWindOverlay({ map: map.current, enabled: windOverlay });
+  useCloudOverlay({ map: map.current, enabled: cloudOverlay });
+  useTemperatureOverlay({ map: map.current, enabled: tempOverlay });
 
   // Toggle highway layers visibility
   useEffect(() => {

@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useSWRConfig } from "swr";
 
 /**
  * Connects to /api/stream SSE endpoint and triggers SWR revalidation
  * when V16 or incident data changes server-side.
  *
- * Falls back gracefully — if SSE fails, SWR polling continues as before.
+ * Returns `isConnected` so callers can disable SWR polling when SSE is active
+ * (avoids double-fetching the same data).
  */
-export function useTrafficStream() {
+export function useTrafficStream(): { isConnected: boolean } {
   const { mutate } = useSWRConfig();
   const eventSourceRef = useRef<EventSource | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Only connect in browser
     if (typeof window === "undefined") return;
 
     let es: EventSource;
@@ -23,6 +24,10 @@ export function useTrafficStream() {
     function connect() {
       es = new EventSource("/api/stream");
       eventSourceRef.current = es;
+
+      es.onopen = () => {
+        setIsConnected(true);
+      };
 
       es.addEventListener("v16", () => {
         mutate("/api/v16");
@@ -35,7 +40,7 @@ export function useTrafficStream() {
       es.onerror = () => {
         es.close();
         eventSourceRef.current = null;
-        // Reconnect after 30s on error
+        setIsConnected(false);
         reconnectTimeout = setTimeout(connect, 30_000);
       };
     }
@@ -48,6 +53,9 @@ export function useTrafficStream() {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
+      setIsConnected(false);
     };
   }, [mutate]);
+
+  return { isConnected };
 }
