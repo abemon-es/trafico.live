@@ -10,6 +10,8 @@ interface YearlyRow {
   accidents: number;
   fatalities: number;
   hospitalized: number;
+  vehiclesInvolved: number | null;
+  pedestrians: number | null;
 }
 
 interface ProvinceRow {
@@ -18,6 +20,8 @@ interface ProvinceRow {
   accidents: number;
   fatalities: number;
   rate: number | null; // fatalities per 100 accidents
+  vehiclesInvolved: number | null;
+  pedestrians: number | null;
 }
 
 interface StatsResponse {
@@ -66,6 +70,8 @@ export async function GET(
           accidents: true,
           fatalities: true,
           hospitalized: true,
+          vehiclesInvolved: true,
+          pedestrians: true,
         },
         orderBy: { year: "asc" },
       });
@@ -75,6 +81,8 @@ export async function GET(
         accidents: r._sum.accidents ?? 0,
         fatalities: r._sum.fatalities ?? 0,
         hospitalized: r._sum.hospitalized ?? 0,
+        vehiclesInvolved: r._sum.vehiclesInvolved ?? null,
+        pedestrians: r._sum.pedestrians ?? null,
       }));
 
       await setInCache(yearlyCacheKey, yearly, 86400);
@@ -109,6 +117,8 @@ export async function GET(
           accidents: true,
           fatalities: true,
           hospitalized: true,
+          vehiclesInvolved: true,
+          pedestrians: true,
         },
         orderBy: { _sum: { accidents: "desc" } },
       });
@@ -134,6 +144,8 @@ export async function GET(
             population > 0
               ? parseFloat(((fatalities / population) * 100000).toFixed(2))
               : null,
+          vehiclesInvolved: r._sum.vehiclesInvolved ?? null,
+          pedestrians: r._sum.pedestrians ?? null,
         } as ProvinceRow & { hospitalized: number; ratePer100k: number | null };
       });
 

@@ -137,6 +137,7 @@ export async function GET(request: NextRequest) {
       latitude: Number(db.latitude),
       longitude: Number(db.longitude),
       roadNumber: db.roadNumber ?? undefined,
+      roadType: db.roadType ?? undefined,
       kmPoint: db.kmPoint ? Number(db.kmPoint) : undefined,
       direction: db.direction ?? undefined,
       province: db.province ?? undefined,
@@ -146,6 +147,9 @@ export async function GET(request: NextRequest) {
       severity: db.severity as "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH",
       description: db.description ?? undefined,
       source: db.source ?? undefined,
+      detailedCauseType: db.detailedCauseType ?? undefined,
+      managementType: db.managementType ?? undefined,
+      durationSecs: db.durationSecs ?? undefined,
     }));
 
     // Calculate counts BEFORE filtering (for filter UI badges)
@@ -207,6 +211,7 @@ export async function GET(request: NextRequest) {
           startedAt: incident.startedAt.toISOString(),
           endedAt: incident.endedAt?.toISOString() || null,
           roadNumber: incident.roadNumber,
+          roadType: incident.roadType ?? null,
           kmPoint: incident.kmPoint,
           direction: incident.direction,
           province: incident.province,
@@ -216,6 +221,9 @@ export async function GET(request: NextRequest) {
           severity: incident.severity,
           description: incident.description,
           source: incident.source,
+          detailedCauseType: incident.detailedCauseType ?? null,
+          managementType: incident.managementType ?? null,
+          durationSecs: incident.durationSecs ?? null,
         },
       })),
     };
@@ -258,6 +266,7 @@ export async function GET(request: NextRequest) {
         effect: i.effect,
         cause: i.cause,
         road: i.roadNumber,
+        roadType: i.roadType ?? null,
         km: i.kmPoint,
         province: i.provinceName || i.province,
         community: i.communityName || i.community,
@@ -266,6 +275,9 @@ export async function GET(request: NextRequest) {
         source: i.source,
         startedAt: i.startedAt?.toISOString(),
         direction: i.direction,
+        detailedCauseType: i.detailedCauseType ?? null,
+        managementType: i.managementType ?? null,
+        durationSecs: i.durationSecs ?? null,
       })),
     };
 
