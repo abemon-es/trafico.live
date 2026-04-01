@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+import { redirect, permanentRedirect, notFound } from "next/navigation";
 import { findRedirect, recordHit } from "@/lib/redirects";
 
 /**
@@ -16,7 +16,11 @@ export default async function CatchAllPage({
   const entry = await findRedirect(path);
   if (entry) {
     recordHit(path);
-    redirect(entry.destination);
+    if (entry.permanent) {
+      permanentRedirect(entry.destination);
+    } else {
+      redirect(entry.destination);
+    }
   }
 
   notFound();
