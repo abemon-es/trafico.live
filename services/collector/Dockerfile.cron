@@ -1,5 +1,5 @@
 # Collector with supercronic for scheduled execution
-# Used by docker-compose.coolify.yml — each collector tier gets its own crontab
+# CRONTAB_TIER build arg selects which crontab to bake in
 
 FROM node:22-slim AS builder
 
@@ -20,7 +20,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y openssl ca-certificates curl && rm -rf /var/lib/apt/lists/*
 
-# Install supercronic (cron for containers — no syslog, no PID 1 issues)
+# Install supercronic
 ARG SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.33/supercronic-linux-amd64
 RUN curl -fsSL "$SUPERCRONIC_URL" -o /usr/local/bin/supercronic && \
     chmod +x /usr/local/bin/supercronic
@@ -34,16 +34,16 @@ COPY --from=builder /app/prisma.config.ts ./
 
 COPY services/collector/ ./
 
+# Copy ALL crontabs, select at runtime via CRONTAB_TIER env
+COPY services/collector/crontabs/ ./crontabs/
+
 ENV TZ=Europe/Madrid
 ENV NODE_ENV=production
-
-# Crontab is mounted via docker-compose (different per tier)
-# Default: empty crontab (override with CRONTAB_FILE env)
-RUN touch /app/crontab
+ENV CRONTAB_TIER=realtime
 
 USER collector
 
 HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
   CMD test -f /tmp/collector-healthy || exit 1
 
-CMD ["supercronic", "/app/crontab"]
+CMD ["sh", "-c", "supercronic /app/crontabs/${CRONTAB_TIER}"]

@@ -1,6 +1,6 @@
 # trafico.live — Coolify Service Deployment
 #
-# Deploy as a Coolify "Docker Compose" service.
+# Deploy as a Coolify "Docker Compose" application.
 # All containers are visible in the Coolify UI.
 #
 # Architecture:
@@ -65,37 +65,57 @@ services:
   # incident, v16, panel, detector, intensity, andorra
   collector-realtime:
     <<: *collector-base
-    volumes:
-      - ./services/collector/crontabs/realtime:/app/crontab:ro
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: realtime
 
   # ─── Frequent Collectors (every 6h) ────────────────────────────────
   # weather, maritime-forecast, portugal-weather
   collector-frequent:
     <<: *collector-base
-    volumes:
-      - ./services/collector/crontabs/frequent:/app/crontab:ro
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: frequent
     mem_limit: 256m
 
   # ─── Fuel Price Collectors (3x daily) ──────────────────────────────
   # gas-station, maritime-fuel, portugal-fuel
   collector-fuel:
     <<: *collector-base
-    volumes:
-      - ./services/collector/crontabs/fuel:/app/crontab:ro
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: fuel
     mem_limit: 512m
 
   # ─── Daily Collectors ──────────────────────────────────────────────
   # camera, charger, insights
   collector-daily:
     <<: *collector-base
-    volumes:
-      - ./services/collector/crontabs/daily:/app/crontab:ro
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: daily
     mem_limit: 256m
 
   # ─── Weekly Collectors ─────────────────────────────────────────────
   # radar, speedlimit, risk-zones, zbe
   collector-weekly:
     <<: *collector-base
-    volumes:
-      - ./services/collector/crontabs/weekly:/app/crontab:ro
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: weekly
     mem_limit: 256m
