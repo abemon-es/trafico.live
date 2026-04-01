@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import dynamic from "next/dynamic";
 import { Map as MapIcon, AlertTriangle, Loader2 } from "lucide-react";
 import { MapControls, type ActiveLayers, type IncidentFilters, type LocationPreset } from "./MapControls";
@@ -34,8 +35,6 @@ const TrafficMap = dynamic(() => import("./TrafficMap"), {
     </div>
   ),
 });
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Map location presets for quick navigation
 const MAP_PRESETS: Record<LocationPreset, { center: [number, number]; zoom: number }> = {
@@ -662,15 +661,21 @@ export function UnifiedMap({
       `}
     >
       {/* Header */}
-      <div className={`p-4 border-b border-gray-200 dark:border-gray-800 ${isFullscreen ? "bg-white dark:bg-gray-900/95 backdrop-blur-sm" : ""}`}>
+      <div className={`px-4 py-3 border-b border-gray-200 dark:border-gray-800 ${isFullscreen ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm" : ""}`}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <MapIcon className="w-5 h-5" />
-            Mapa Interactivo
-          </h2>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-tl-600 flex items-center justify-center">
+              <MapIcon className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="font-heading text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">
+                Mapa Interactivo
+              </h2>
+            </div>
+          </div>
           {!isFullscreen && (
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Pulsa <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-900 rounded text-xs font-mono">F</kbd> para pantalla completa
+            <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
+              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">F</kbd> pantalla completa
             </span>
           )}
         </div>
@@ -827,6 +832,9 @@ export function UnifiedMap({
           incidentCount={activeLayers.incidents ? counts.incidents : 0}
           cameraCount={activeLayers.cameras ? counts.cameras : 0}
           panelCount={activeLayers.panels ? counts.panels : 0}
+          radarCount={activeLayers.radars ? counts.radars : 0}
+          chargerCount={activeLayers.chargers ? counts.chargers : 0}
+          gasStationCount={activeLayers.gasStations ? counts.gasStations : 0}
           lastUpdated={lastUpdated}
           isLoading={isLoading}
           isFullscreen={isFullscreen}

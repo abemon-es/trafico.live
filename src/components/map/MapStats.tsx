@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertTriangle, Camera, Loader2, Radio } from "lucide-react";
+import { AlertTriangle, Camera, Loader2, Radio, Fuel, Zap, Radar, Monitor } from "lucide-react";
 
 function useRelativeTime(date: Date | null | undefined): string {
   const [now, setNow] = useState(() => Date.now());
@@ -27,6 +27,9 @@ interface MapStatsProps {
   incidentCount?: number;
   cameraCount?: number;
   panelCount?: number;
+  radarCount?: number;
+  chargerCount?: number;
+  gasStationCount?: number;
   lastUpdated?: Date | null;
   isLoading: boolean;
   isFullscreen?: boolean;
@@ -38,6 +41,9 @@ export function MapStats({
   incidentCount = 0,
   cameraCount = 0,
   panelCount = 0,
+  radarCount = 0,
+  chargerCount = 0,
+  gasStationCount = 0,
   lastUpdated,
   isLoading,
   isFullscreen = false,
@@ -45,70 +51,58 @@ export function MapStats({
 }: MapStatsProps) {
   const relativeTime = useRelativeTime(lastUpdated);
 
+  const stats = [
+    { count: v16Count, icon: <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />, label: "V16", show: v16Count > 0 },
+    { count: incidentCount, icon: <AlertTriangle className="w-3.5 h-3.5 text-tl-amber-400" />, label: "incidencias", show: incidentCount > 0 },
+    { count: cameraCount, icon: <Camera className="w-3.5 h-3.5 text-tl-400" />, label: "cámaras", show: cameraCount > 0 },
+    { count: radarCount, icon: <Radar className="w-3.5 h-3.5 text-yellow-500" />, label: "radares", show: radarCount > 0 },
+    { count: gasStationCount, icon: <Fuel className="w-3.5 h-3.5 text-tl-amber-400" />, label: "gasolineras", show: gasStationCount > 0 },
+    { count: chargerCount, icon: <Zap className="w-3.5 h-3.5 text-green-500" />, label: "cargadores", show: chargerCount > 0 },
+    { count: panelCount, icon: <Monitor className="w-3.5 h-3.5 text-cyan-500" />, label: "paneles", show: panelCount > 0 },
+  ];
+
+  const visibleStats = stats.filter((s) => s.show);
+
   return (
     <div
       className={`
         flex items-center justify-between px-4 py-2 text-sm
         ${isFullscreen
-          ? "bg-white dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-800"
+          ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-800"
           : "bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800"
         }
       `}
     >
       {/* Counts */}
-      <div className="flex items-center gap-4 flex-wrap">
-        {v16Count > 0 && (
-          <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="font-medium font-mono">{v16Count}</span>
-            <span className="text-gray-500 dark:text-gray-400">balizas V16</span>
-          </div>
-        )}
-
-        {incidentCount > 0 && (
-          <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-            <AlertTriangle className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-            <span className="font-medium font-mono">{incidentCount}</span>
-            <span className="text-gray-500 dark:text-gray-400">incidencias</span>
-          </div>
-        )}
-
-        {cameraCount > 0 && (
-          <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-            <Camera className="w-4 h-4 text-tl-500" />
-            <span className="font-medium font-mono">{cameraCount}</span>
-            <span className="text-gray-500 dark:text-gray-400">cámaras</span>
-          </div>
-        )}
-
-        {panelCount > 0 && (
-          <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
-            <span className="font-medium font-mono">{panelCount}</span>
-            <span className="text-gray-500 dark:text-gray-400">paneles</span>
-          </div>
-        )}
-
-        {v16Count === 0 && incidentCount === 0 && cameraCount === 0 && panelCount === 0 && (
-          <span className="text-gray-500 dark:text-gray-400">Sin datos visibles</span>
+      <div className="flex items-center gap-3 md:gap-4 flex-wrap overflow-x-auto">
+        {visibleStats.length > 0 ? (
+          visibleStats.map((stat) => (
+            <div key={stat.label} className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              {stat.icon}
+              <span className="font-medium font-mono text-xs">{stat.count.toLocaleString("es-ES")}</span>
+              <span className="text-gray-400 dark:text-gray-500 text-xs hidden sm:inline">{stat.label}</span>
+            </div>
+          ))
+        ) : (
+          <span className="text-gray-400 dark:text-gray-500 text-xs">Sin datos visibles</span>
         )}
       </div>
 
-      {/* Last updated / Loading */}
-      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+      {/* Status */}
+      <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500 flex-shrink-0 ml-2">
         {isStreaming && (
           <span className="flex items-center gap-1 text-green-600 dark:text-green-400" title="Conexión en tiempo real activa">
-            <Radio className="w-3.5 h-3.5" />
-            <span className="text-xs font-medium">LIVE</span>
+            <Radio className="w-3 h-3" />
+            <span className="text-xs font-medium font-mono">LIVE</span>
           </span>
         )}
         {isLoading ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Actualizando...</span>
+          <span className="flex items-center gap-1.5">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <span className="text-xs hidden sm:inline">Actualizando...</span>
           </span>
         ) : relativeTime ? (
-          <span className="tabular-nums">{relativeTime}</span>
+          <span className="tabular-nums text-xs">{relativeTime}</span>
         ) : null}
       </div>
     </div>
