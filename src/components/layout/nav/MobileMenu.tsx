@@ -324,7 +324,7 @@ export function MobileMenu() {
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={reduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 400, damping: 32 }}
-          className="md:hidden border-t border-tl-800/50 overflow-hidden"
+          className="dark md:hidden border-t border-tl-800/50 overflow-hidden bg-tl-950"
           style={searchActive ? { height: "calc(100vh - 4rem)" } : undefined}
         >
           {/* Top accent bar */}
