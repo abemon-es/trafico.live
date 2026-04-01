@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -42,7 +43,6 @@ interface ZBEResponse {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function getZBEStatus(zone: ZBEZone): { label: string; color: string } {
   const now = new Date();

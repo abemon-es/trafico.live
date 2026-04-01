@@ -20,13 +20,18 @@ interface InfraResponse {
   panels: { count: number; withMessage?: number };
 }
 
-const fetcher = async (): Promise<InfraResponse> => {
+async function assertOk(res: Response) {
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+const fetchInfra = async (): Promise<InfraResponse> => {
   const [cameras, radars, chargers, zbe, panels] = await Promise.all([
-    fetch("/api/cameras?limit=1").then((r) => r.json()),
-    fetch("/api/radars?limit=1").then((r) => r.json()),
-    fetch("/api/chargers?limit=1").then((r) => r.json()),
-    fetch("/api/zbe").then((r) => r.json()),
-    fetch("/api/panels?limit=1").then((r) => r.json()),
+    fetch("/api/cameras?limit=1").then(assertOk),
+    fetch("/api/radars?limit=1").then(assertOk),
+    fetch("/api/chargers?limit=1").then(assertOk),
+    fetch("/api/zbe").then(assertOk),
+    fetch("/api/panels?limit=1").then(assertOk),
   ]);
 
   return {
@@ -82,7 +87,7 @@ function InfraCard({
 export function InfrastructureStatus() {
   const { data, isLoading, error } = useSWR<InfraResponse>(
     "infrastructure-status",
-    fetcher,
+    fetchInfra,
     {
       revalidateOnFocus: false,
       dedupingInterval: 60000,

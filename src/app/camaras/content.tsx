@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
@@ -14,7 +15,6 @@ interface CamerasResponse {
   communities?: string[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function CamarasContent() {
   const searchParams = useSearchParams();

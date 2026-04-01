@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -141,7 +142,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: geojson, source: "computed", stats });
   } catch (error) {
-    console.error("Traffic flow API error:", error);
+    reportApiError(error, "Traffic flow API error");
     return NextResponse.json(
       { success: false, error: "Failed to compute traffic flow" },
       { status: 500 }

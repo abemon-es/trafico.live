@@ -10,6 +10,7 @@
  *   GET /api/roads/N-340
  */
 
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -206,7 +207,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching road:", error);
+    reportApiError(error, "Error fetching road");
 
     return NextResponse.json(
       {

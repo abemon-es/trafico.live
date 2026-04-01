@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
       source: "DGV Portugal",
     });
   } catch (error) {
-    console.error("Error fetching Portugal accident stats:", error);
+    reportApiError(error, "Error fetching Portugal accident stats");
     return NextResponse.json(
       { success: false, error: "Error al obtener estadísticas de accidentes de Portugal", data: [] },
       { status: 500 }

@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -126,7 +127,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, responseData, CACHE_TTL);
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error("Error fetching weather alerts:", error);
+    reportApiError(error, "Error fetching weather alerts");
     return NextResponse.json(
       { error: "Internal server error", alerts: [], counts: {}, totalActive: 0 },
       { status: 500 }

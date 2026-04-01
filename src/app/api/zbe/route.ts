@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -150,7 +151,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ZBERespons
       },
     });
   } catch (error) {
-    console.error("ZBE API error:", error);
+    reportApiError(error, "ZBE API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch ZBE zones" },
       { status: 500 }

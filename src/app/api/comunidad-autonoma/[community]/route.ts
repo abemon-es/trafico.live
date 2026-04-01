@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -140,7 +141,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Community API error:", error);
+    reportApiError(error, "Community API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch community data" },
       { status: 500 }

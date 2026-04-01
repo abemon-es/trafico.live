@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -16,7 +17,6 @@ import {
 } from "lucide-react";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface GasStation {
   id: string;

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
@@ -93,7 +94,6 @@ const TYPE_COLORS: Record<string, string> = {
 const CHART_BLUE = "#2563eb";
 const CHART_ORANGE = "#f97316";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

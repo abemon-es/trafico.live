@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -162,7 +163,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("[historical/stats] Error:", error);
+    reportApiError(error, "historical/stats] Error");
     return NextResponse.json(
       { success: false, error: "Error al obtener estadísticas históricas" },
       { status: 500 }

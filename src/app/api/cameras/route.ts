@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -158,7 +159,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, response, CACHE_TTL);
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching cameras:", error);
+    reportApiError(error, "Error fetching cameras");
     return NextResponse.json(
       {
         error: "Failed to fetch camera data",

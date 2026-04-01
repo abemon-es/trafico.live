@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export async function GET() {
       source: data.source,
     });
   } catch (error) {
-    console.error("Road geometry warm error:", error);
+    reportApiError(error, "Road geometry warm error");
     return NextResponse.json({ success: false, error: "Failed to warm cache" }, { status: 500 });
   }
 }

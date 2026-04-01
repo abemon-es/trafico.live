@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { invalidateCache } from "@/lib/redis";
@@ -221,7 +222,7 @@ export async function GET(request: NextRequest) {
       elapsed: `${elapsed}s`,
     });
   } catch (error) {
-    console.error("[cron/gas-stations] Error:", error);
+    reportApiError(error, "cron/gas-stations] Error");
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }

@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -131,7 +132,7 @@ export async function GET(request: NextRequest) {
     }
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error("Error fetching fuel prices:", error);
+    reportApiError(error, "Error fetching fuel prices");
     return NextResponse.json(
       { success: false, error: "Failed to fetch fuel prices" },
       { status: 500 }

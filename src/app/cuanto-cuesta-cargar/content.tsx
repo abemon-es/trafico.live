@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useMemo } from "react";
 import useSWR from "swr";
 import Link from "next/link";
@@ -208,7 +209,6 @@ function SliderInput({
 // Main component
 // ---------------------------------------------------------------------------
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function CuantoCuestaCargarContent() {
   // Fetch live fuel prices for comparison

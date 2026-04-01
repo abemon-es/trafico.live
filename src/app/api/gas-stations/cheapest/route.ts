@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -112,7 +113,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, responseData, CACHE_TTL);
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error("Error fetching cheapest gas stations:", error);
+    reportApiError(error, "Error fetching cheapest gas stations");
     return NextResponse.json(
       { success: false, error: "Failed to fetch cheapest gas stations" },
       { status: 500 }

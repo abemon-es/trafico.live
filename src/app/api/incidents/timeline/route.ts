@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -144,7 +145,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, response, CACHE_TTL);
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Incidents timeline API error:", error);
+    reportApiError(error, "Incidents timeline API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch timeline data" },
       { status: 500 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
@@ -54,7 +55,6 @@ interface CamerasResponse {
   cameras: CameraItem[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function CommunityContent() {
   const params = useParams();

@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -369,7 +370,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Incident stats API error:", error);
+    reportApiError(error, "Incident stats API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch incident statistics" },
       { status: 500 }

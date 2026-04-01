@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -45,7 +46,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error("Error fetching station price history:", error);
+    reportApiError(error, "Error fetching station price history");
     return NextResponse.json(
       { success: false, error: "Failed to fetch price history" },
       { status: 500 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -47,7 +48,6 @@ interface GasStationsResponse {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function DieselContent() {
   const [searchInput, setSearchInput] = useState("");

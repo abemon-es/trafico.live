@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
       source: "mobilitat.ad",
     });
   } catch (error) {
-    console.error("Error fetching Andorra incidents:", error);
+    reportApiError(error, "Error fetching Andorra incidents");
     return NextResponse.json(
       { success: false, error: "Error al obtener incidencias de Andorra", data: [] },
       { status: 500 }

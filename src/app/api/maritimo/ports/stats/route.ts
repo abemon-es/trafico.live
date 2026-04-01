@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -213,7 +214,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, stats });
   } catch (error) {
-    console.error("[api/maritimo/ports/stats] Error:", error);
+    reportApiError(error, "api/maritimo/ports/stats] Error");
     return NextResponse.json(
       {
         success: false,

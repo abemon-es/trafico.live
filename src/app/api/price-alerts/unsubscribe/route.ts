@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
       message: "Te has dado de baja correctamente de la alerta de precio",
     });
   } catch (error) {
-    console.error("Error unsubscribing from price alert:", error);
+    reportApiError(error, "Error unsubscribing from price alert");
     return NextResponse.json(
       { error: "Error al procesar la solicitud" },
       { status: 500 }

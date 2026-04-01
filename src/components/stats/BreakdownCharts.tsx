@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr";
 import {
   BarChart,
@@ -12,7 +13,6 @@ import {
   Cell,
 } from "recharts";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Color palette for charts
 const COLORS = [

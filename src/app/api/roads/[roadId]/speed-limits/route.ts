@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { PROVINCE_TO_COMMUNITY } from "@/lib/geo/province-mapping";
@@ -171,7 +172,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching road speed limits:", error);
+    reportApiError(error, "Error fetching road speed limits");
     return NextResponse.json(
       {
         error: "Failed to fetch speed limit data",

@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -137,7 +138,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Historico roads API error:", error);
+    reportApiError(error, "Historico roads API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch road data" },
       { status: 500 }

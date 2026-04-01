@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma, StationType } from "@prisma/client";
@@ -157,7 +158,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Estaciones aforo API error:", error);
+    reportApiError(error, "Estaciones aforo API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch counting stations" },
       { status: 500 }

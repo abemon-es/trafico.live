@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -119,7 +120,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<RiskZonesA
       },
     });
   } catch (error) {
-    console.error("Risk Zones API error:", error);
+    reportApiError(error, "Risk Zones API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch risk zones" },
       { status: 500 }

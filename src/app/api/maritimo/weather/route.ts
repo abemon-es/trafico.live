@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("[api/maritimo/weather] Error:", error);
+    reportApiError(error, "api/maritimo/weather] Error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch maritime weather alerts", alerts: [], count: 0 },
       { status: 500 }

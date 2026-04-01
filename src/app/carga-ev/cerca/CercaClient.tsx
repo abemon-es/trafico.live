@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -33,7 +34,6 @@ interface ChargersResponse {
   chargers: ChargerData[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Haversine distance calculation
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {

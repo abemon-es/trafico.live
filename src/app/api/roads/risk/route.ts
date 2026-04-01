@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { RiskType, Severity } from "@prisma/client";
@@ -259,7 +260,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Road risk API error:", error);
+    reportApiError(error, "Road risk API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch road risk data" },
       { status: 500 }

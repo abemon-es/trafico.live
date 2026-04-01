@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -193,7 +194,7 @@ export async function GET(request: NextRequest) {
       source: "DGEG",
     });
   } catch (error) {
-    console.error("Error fetching Portugal gas stations:", error);
+    reportApiError(error, "Error fetching Portugal gas stations");
     return NextResponse.json(
       {
         success: false,

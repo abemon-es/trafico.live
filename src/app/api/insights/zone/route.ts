@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -130,7 +131,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, response, 120);
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Zone insights API error:", error);
+    reportApiError(error, "Zone insights API error");
     return NextResponse.json({ success: false, error: "Failed to generate insights" }, { status: 500 });
   }
 }

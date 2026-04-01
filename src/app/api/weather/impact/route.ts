@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -150,7 +151,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Weather impact API error:", error);
+    reportApiError(error, "Weather impact API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch weather impact data" },
       { status: 500 }

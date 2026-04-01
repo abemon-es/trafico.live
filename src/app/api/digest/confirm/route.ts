@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.redirect(`${BASE_URL}/informes?confirmed=true`);
   } catch (error) {
-    console.error("Error confirming subscription:", error);
+    reportApiError(error, "Error confirming subscription");
     return NextResponse.redirect(`${BASE_URL}?error=server-error`);
   }
 }

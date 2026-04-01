@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Historical accidents API error:", error);
+    reportApiError(error, "Historical accidents API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch historical accident data" },
       { status: 500 }

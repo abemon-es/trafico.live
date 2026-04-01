@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { ArticleCategory } from "@prisma/client";
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching articles:", error);
+    reportApiError(error, "Error fetching articles");
     return NextResponse.json(
       { error: "Error al obtener las noticias" },
       { status: 500 }

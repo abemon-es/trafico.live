@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -268,7 +269,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, responseBody, 300);
     return NextResponse.json(responseBody);
   } catch (error) {
-    console.error("Correlation API error:", error);
+    reportApiError(error, "Correlation API error");
     return NextResponse.json(
       { success: false, error: "Failed to calculate correlations" },
       { status: 500 }

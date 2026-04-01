@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import * as fs from "fs";
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
       elapsed: `${elapsed}s`,
     });
   } catch (error) {
-    console.error("[admin/seed-accidents] Error:", error);
+    reportApiError(error, "admin/seed-accidents] Error");
     return NextResponse.json(
       {
         success: false,

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -49,7 +50,6 @@ interface StationWithDistance extends GasStation {
 
 // --- Helpers ---
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 /** Haversine distance in km */
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {

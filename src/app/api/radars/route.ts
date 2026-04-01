@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -133,7 +134,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, response, CACHE_TTL);
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching radars:", error);
+    reportApiError(error, "Error fetching radars");
     return NextResponse.json(
       {
         error: "Failed to fetch radar data",

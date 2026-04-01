@@ -1,10 +1,10 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { Brain, TrendingUp, AlertTriangle, Shield, X, Loader2 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface ZoneInsightsProps {
   center: { lat: number; lng: number } | null;

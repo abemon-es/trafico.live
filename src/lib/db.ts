@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import * as Sentry from "@sentry/nextjs";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -50,9 +51,14 @@ function createPrismaClient(): PrismaClient {
 function createRealClient(connectionString: string): PrismaClient {
   const pool = new Pool({
     connectionString,
-    max: 15,
+    max: 25,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
+  });
+
+  pool.on("error", (err) => {
+    console.error("[db] Pool error:", err.message);
+    Sentry.captureException(err, { tags: { layer: "database" } });
   });
   const adapter = new PrismaPg(pool);
 

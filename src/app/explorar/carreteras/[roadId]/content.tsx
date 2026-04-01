@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
@@ -85,7 +86,6 @@ interface IMDResponse {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const EFFECT_LABELS: Record<string, string> = {
   ROAD_CLOSED: "Carretera cortada",

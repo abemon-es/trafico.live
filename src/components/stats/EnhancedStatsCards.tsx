@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr";
 import {
   AlertTriangle,
@@ -59,7 +60,6 @@ interface DashboardData {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Mini sparkline component
 function Sparkline({ data, color }: { data: number[]; color: string }) {

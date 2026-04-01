@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { sendEmail, isSESConfigured } from "@/lib/email/ses";
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
         tags: { type: "digest-confirmation" },
       });
     } catch (error) {
-      console.error("[digest] Failed to send confirmation:", error);
+      reportApiError(error, "digest] Failed to send confirmation");
     }
   } else {
     // SES not configured — auto-confirm for development

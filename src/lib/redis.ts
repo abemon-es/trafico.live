@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import * as Sentry from "@sentry/nextjs";
 
 const globalForRedis = globalThis as unknown as {
   redis: Redis | undefined;
@@ -34,6 +35,7 @@ function createRedisClient(): Redis | null {
 
     client.on("error", (err) => {
       console.error("[Redis] Connection error:", err.message);
+      Sentry.captureException(err, { tags: { layer: "redis" } });
     });
 
     client.on("connect", () => {

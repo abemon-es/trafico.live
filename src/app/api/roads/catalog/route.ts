@@ -23,6 +23,7 @@
  *   GET /api/roads/catalog?type=AUTOPISTA&orderBy=totalKm&order=desc
  */
 
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { RoadType, Prisma } from "@prisma/client";
@@ -284,7 +285,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching road catalog:", error);
+    reportApiError(error, "Error fetching road catalog");
 
     return NextResponse.json(
       {

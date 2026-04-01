@@ -1,9 +1,9 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr";
 import { AlertTriangle } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface HealthData {
   status: "healthy" | "degraded" | "unhealthy";

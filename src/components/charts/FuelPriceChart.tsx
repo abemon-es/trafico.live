@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import {
   LineChart,
   Line,
@@ -75,8 +76,6 @@ const COLORS = {
 // Helpers
 // ------------------------------------------------------------------
 
-const fetcher = (url: string): Promise<ApiResponse> =>
-  fetch(url).then((res) => res.json());
 
 function formatDateLabel(dateStr: string, days: Period): string {
   const d = new Date(dateStr + "T00:00:00Z");

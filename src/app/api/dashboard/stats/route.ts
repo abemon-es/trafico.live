@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -197,7 +198,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, responseBody, 60);
     return NextResponse.json(responseBody);
   } catch (error) {
-    console.error("Dashboard stats API error:", error);
+    reportApiError(error, "Dashboard stats API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch dashboard stats" },
       { status: 500 }

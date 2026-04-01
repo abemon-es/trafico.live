@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useRef, useEffect, useCallback } from "react";
 import useSWR from "swr";
 import dynamic from "next/dynamic";
@@ -22,7 +23,6 @@ const StationMap = dynamic(() => import("./station-map"), {
   ),
 });
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface Station {
   id: string;

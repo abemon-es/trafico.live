@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
       stats: { ways: features.length, nodes: nodes.size },
     });
   } catch (error) {
-    console.error("Road geometry API error:", error);
+    reportApiError(error, "Road geometry API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch road geometry" },
       { status: 500 }

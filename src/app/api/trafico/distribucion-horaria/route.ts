@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: result });
   } catch (error) {
-    console.error("Hourly distribution API error:", error);
+    reportApiError(error, "Hourly distribution API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch hourly distribution" },
       { status: 500 }

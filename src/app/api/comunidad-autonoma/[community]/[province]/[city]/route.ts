@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Municipality API error:", error);
+    reportApiError(error, "Municipality API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch municipality data" },
       { status: 500 }

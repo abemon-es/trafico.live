@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.redirect(`${BASE_URL}/informes?unsubscribed=true`);
   } catch (error) {
-    console.error("Error unsubscribing:", error);
+    reportApiError(error, "Error unsubscribing");
     return NextResponse.redirect(`${BASE_URL}?error=server-error`);
   }
 }

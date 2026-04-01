@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { IncidentType, TrafficIncident } from "@prisma/client";
@@ -284,7 +285,7 @@ export async function GET(request: NextRequest) {
     await setInCache(cacheKey, responseData, CACHE_TTL);
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error("Error fetching incidents from database:", error);
+    reportApiError(error, "Error fetching incidents from database");
     return NextResponse.json(
       { error: "Internal server error", incidents: [], counts: {} },
       { status: 500 }

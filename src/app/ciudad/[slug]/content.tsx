@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import Link from "next/link";
 import useSWR from "swr";
 import {
@@ -73,7 +74,6 @@ interface ZBEResponse {
   }>;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function CiudadContent({ slug, cityData }: CiudadContentProps) {
   // Fetch data for this city/province

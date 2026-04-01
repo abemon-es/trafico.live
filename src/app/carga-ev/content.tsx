@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -39,7 +40,6 @@ interface ChargersResponse {
   provinces: string[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Power level categories — aligned with the task spec 4-band split
 const POWER_LEVELS = [

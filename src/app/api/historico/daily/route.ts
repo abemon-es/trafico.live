@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Historico daily API error:", error);
+    reportApiError(error, "Historico daily API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch daily historical data" },
       { status: 500 }

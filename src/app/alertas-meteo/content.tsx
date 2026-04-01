@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useMemo, useEffect } from "react";
 import useSWR from "swr";
 import {
@@ -115,7 +116,6 @@ const SEVERITY_ORDER: Severity[] = ["VERY_HIGH", "HIGH", "MEDIUM", "LOW"];
 
 // ─── Fetcher ──────────────────────────────────────────────────────────────────
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 // ─── Helper components ────────────────────────────────────────────────────────
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import Link from "next/link";
 import useSWR from "swr";
 import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, AlertCircle, Radio } from "lucide-react";
@@ -41,7 +42,6 @@ interface ApiResponse {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function EspanaContent() {
   const { data, error, isLoading } = useSWR<ApiResponse>("/api/espana", fetcher, {

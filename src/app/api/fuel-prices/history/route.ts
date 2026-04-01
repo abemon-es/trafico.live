@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -147,7 +148,7 @@ export async function GET(request: NextRequest) {
       } : null,
     });
   } catch (error) {
-    console.error("Error fetching fuel price history:", error);
+    reportApiError(error, "Error fetching fuel price history");
     return NextResponse.json(
       { success: false, error: "Failed to fetch fuel price history" },
       { status: 500 }

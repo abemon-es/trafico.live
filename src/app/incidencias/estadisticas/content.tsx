@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
@@ -18,7 +19,6 @@ import {
 } from "lucide-react";
 import { BreakdownChart, type ChartDataItem } from "@/components/stats/BreakdownCharts";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Types
 interface IncidentStatsResponse {

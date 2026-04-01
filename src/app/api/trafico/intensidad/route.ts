@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Traffic intensity API error:", error);
+    reportApiError(error, "Traffic intensity API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch traffic intensity" },
       { status: 500 }

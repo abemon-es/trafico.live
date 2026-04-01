@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching V16 beacons from database:", error);
+    reportApiError(error, "Error fetching V16 beacons from database");
     return NextResponse.json(
       { error: "Internal server error", beacons: [] },
       { status: 500 }

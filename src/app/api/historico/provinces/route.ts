@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -122,7 +123,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Historico provinces API error:", error);
+    reportApiError(error, "Historico provinces API error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch province breakdown" },
       { status: 500 }

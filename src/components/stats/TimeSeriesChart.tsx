@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState } from "react";
 import useSWR from "swr";
 import {
@@ -47,7 +48,6 @@ interface TimeSeriesChartProps {
 }
 
 // Fetcher for SWR
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Day name abbreviations
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];

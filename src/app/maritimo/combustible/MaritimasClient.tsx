@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -143,7 +144,6 @@ interface ApiResponse {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 function formatPrice(price: number | null) {
   if (price == null) return "N/D";

@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -220,7 +221,7 @@ export async function GET(
       data: response,
     });
   } catch (error) {
-    console.error("Error fetching station ranking:", error);
+    reportApiError(error, "Error fetching station ranking");
     return NextResponse.json(
       { success: false, error: "Failed to fetch ranking data" },
       { status: 500 }

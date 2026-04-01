@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
@@ -24,7 +25,6 @@ import {
   Cell,
 } from "recharts";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface ProvinceData {
   province: string;

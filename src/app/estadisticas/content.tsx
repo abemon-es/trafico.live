@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import dynamic from "next/dynamic";
@@ -42,7 +43,6 @@ const HistoricalMap = dynamic(
   }
 );
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // ============================================
 // TYPES

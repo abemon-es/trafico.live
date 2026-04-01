@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
@@ -73,7 +74,6 @@ interface IncidentsResponse {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Spain center coordinates
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168];

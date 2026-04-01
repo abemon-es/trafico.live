@@ -14,6 +14,7 @@
 
 export const revalidate = 86400;
 
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
@@ -235,7 +236,7 @@ export async function GET(request: NextRequest): Promise<
       },
     });
   } catch (error) {
-    console.error("Error calculating road stats:", error);
+    reportApiError(error, "Error calculating road stats");
 
     return NextResponse.json(
       {

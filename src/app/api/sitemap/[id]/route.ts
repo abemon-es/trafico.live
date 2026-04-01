@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import {
   generateSitemapForShard,
@@ -33,7 +34,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error(`[sitemap] Shard ${id} failed:`, error);
+    reportApiError(error, "api/sitemap/[id]");
     // Return empty sitemap on error — better than 500 for crawlers
     const emptyXml = entriesToXml([]);
     return new NextResponse(emptyXml, {
