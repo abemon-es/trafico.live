@@ -32,8 +32,10 @@ COPY services/collector/ ./
 
 ENV TZ=Europe/Madrid
 ENV NODE_ENV=production
+EXPOSE 8080
 
 USER collector
 
 # Long-running mode — Coolify scheduled tasks exec commands into this container
-CMD ["sh", "-c", "echo 'Collector ready for scheduled tasks' && exec sleep infinity"]
+# Tiny HTTP health server on :8080 so Coolify detects the container as running
+CMD ["sh", "-c", "echo 'Collector ready for scheduled tasks' && node -e \"require('http').createServer((q,r)=>{r.end('ok')}).listen(8080)\" &  exec sleep infinity"]
