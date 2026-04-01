@@ -3,7 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
-import { FileText, Calendar, Newspaper, AlertTriangle, BarChart3, MapPin, FolderOpen } from "lucide-react";
+import { FileText, Calendar, Newspaper, AlertTriangle, BarChart3, MapPin, FolderOpen, ArrowRight } from "lucide-react";
 
 export const revalidate = 300;
 
@@ -19,9 +19,16 @@ export const metadata: Metadata = {
 };
 
 export default async function InformeDiarioIndexPage() {
+  // Fetch the latest published daily report for the featured section
+  const latestReport = await prisma.article.findFirst({
+    where: { status: "PUBLISHED", category: "DAILY_REPORT" },
+    orderBy: { publishedAt: "desc" },
+    select: { title: true, slug: true, summary: true, publishedAt: true },
+  });
+
   // Get all daily reports from insights
   const reports = await prisma.article.findMany({
-    where: { category: "DAILY_REPORT" },
+    where: { category: "DAILY_REPORT", status: "PUBLISHED" },
     orderBy: { publishedAt: "desc" },
     take: 90, // Last ~3 months
     select: {
@@ -62,6 +69,50 @@ export default async function InformeDiarioIndexPage() {
             Generados automáticamente a partir de datos oficiales.
           </p>
         </div>
+
+        {/* Featured: latest report */}
+        {latestReport ? (
+          <div className="mb-8 bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-tl-600 dark:text-tl-400 mb-2">
+              Último informe
+            </p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              <Link
+                href={`/noticias/${latestReport.slug}`}
+                className="hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
+              >
+                {latestReport.title}
+              </Link>
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              {latestReport.publishedAt.toLocaleDateString("es-ES", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3">
+              {latestReport.summary}
+            </p>
+            <Link
+              href={`/noticias/${latestReport.slug}`}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+            >
+              Leer informe completo
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        ) : (
+          <div className="mb-8 bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-tl-600 dark:text-tl-400 mb-2">
+              Último informe
+            </p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              El próximo informe diario se publicará a las 08:00.
+            </p>
+          </div>
+        )}
 
         {Object.keys(grouped).length > 0 ? (
           <div className="space-y-8">
