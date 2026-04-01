@@ -132,8 +132,8 @@ export function DesktopNav() {
                 flex items-center gap-1 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors
                 ${
                   isPanelActive || isOpen
-                    ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+                    ? "bg-tl-800/30 text-tl-300"
+                    : "text-gray-400 hover:bg-tl-800/20 hover:text-gray-100"
                 }
               `}
             >
@@ -148,7 +148,7 @@ export function DesktopNav() {
       })}
 
       {/* Separator + Search trigger */}
-      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" aria-hidden="true" />
+      <div className="w-px h-5 bg-tl-700/50 mx-1" aria-hidden="true" />
       <button
         type="button"
         onPointerEnter={() => scheduleOpen("search")}
@@ -158,15 +158,15 @@ export function DesktopNav() {
           flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors
           ${
             isSearchMode
-              ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-              : "text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+              ? "bg-tl-800/30 text-tl-300"
+              : "text-gray-500 hover:bg-tl-800/20 hover:text-gray-300"
           }
         `}
       >
         <Search className="w-4 h-4" />
         <kbd
           aria-hidden="true"
-          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none"
+          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-tl-700/50 bg-tl-900/50 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 leading-none"
         >
           &#8984;K
         </kbd>
