@@ -167,7 +167,7 @@ async function collectCameras(prisma: PrismaClient): Promise<number> {
   const activeIds = new Set<string>();
 
   for (const item of items) {
-    const id = item.id?.trim();
+    const id = item.id != null ? String(item.id).trim() : "";
     if (!id) continue;
 
     const latitude = parseFloat(String(item.latitude ?? 0));

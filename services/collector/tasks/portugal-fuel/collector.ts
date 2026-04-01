@@ -93,18 +93,23 @@ interface MergedStation {
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-function parsePrice(priceStr: string | undefined): number | null {
-  if (!priceStr || priceStr.trim() === "") return null;
+function parsePrice(price: string | number | undefined | null): number | null {
+  if (price == null) return null;
+  if (typeof price === "number") return isNaN(price) ? null : price;
+  const trimmed = String(price).trim();
+  if (trimmed === "") return null;
   // Format: "1,819 €" — strip euro sign, trim, replace comma decimal separator
-  const cleaned = priceStr.replace("€", "").trim().replace(",", ".");
+  const cleaned = trimmed.replace("€", "").trim().replace(",", ".");
   const value = parseFloat(cleaned);
   return isNaN(value) ? null : value;
 }
 
-function parseCoordinate(coordStr: string | undefined): number | null {
-  if (!coordStr || coordStr.trim() === "") return null;
-  // DGEG already uses dot as decimal separator
-  const value = parseFloat(coordStr.trim());
+function parseCoordinate(coord: string | number | undefined | null): number | null {
+  if (coord == null) return null;
+  if (typeof coord === "number") return isNaN(coord) ? null : coord;
+  const trimmed = String(coord).trim();
+  if (trimmed === "") return null;
+  const value = parseFloat(trimmed);
   return isNaN(value) ? null : value;
 }
 
