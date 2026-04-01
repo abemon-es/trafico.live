@@ -200,7 +200,7 @@ export async function run(prisma: PrismaClient) {
       }
 
       for (const result of data.resultado) {
-        const stationId = result.Id;
+        const stationId = result.Id != null ? String(result.Id) : "";
         if (!stationId) continue;
 
         const price = parsePrice(result.Preco);
@@ -222,9 +222,9 @@ export async function run(prisma: PrismaClient) {
             locality: result.Localidade || null,
             postalCode: result.CodPostal || null,
             district: result.Distrito || district.Nome || null,
-            districtId: result.IDDistrito || district.Id || null,
+            districtId: String(result.IDDistrito || district.Id || ""),
             municipality: result.Municipio || null,
-            municipalityId: result.IDMunicipio || null,
+            municipalityId: result.IDMunicipio != null ? String(result.IDMunicipio) : null,
             brand: result.Marca || null,
             stationType: result.TipoPosto || null,
             priceGasoleoSimples: null,
