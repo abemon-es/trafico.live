@@ -24,7 +24,7 @@ function HubColumn({ panel }: { panel: PanelData }) {
 
   return (
     <div
-      className={`w-56 shrink-0 rounded-2xl p-5 flex flex-col ${styles.hubBg}`}
+      className={`w-52 shrink-0 rounded-2xl p-5 flex flex-col ${styles.hubBg}`}
     >
       {/* Icon */}
       <div
@@ -106,7 +106,7 @@ function CategoryGrid({ panel }: { panel: PanelData }) {
                   >
                     <span
                       className={`
-                        flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors duration-150
+                        flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-colors duration-150
                         ${
                           active
                             ? "bg-tl-100 dark:bg-tl-800/30 text-tl-600 dark:text-tl-300"
@@ -114,9 +114,9 @@ function CategoryGrid({ panel }: { panel: PanelData }) {
                         }
                       `}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-4 h-4" />
                     </span>
-                    <div className="pt-0.5 min-w-0">
+                    <div className="pt-1 min-w-0">
                       <span className="font-medium leading-tight text-[13px]">
                         {item.name}
                       </span>
@@ -192,7 +192,7 @@ function PanelContent({ panel }: { panel: PanelData }) {
     <>
       {/* Accent gradient bar */}
       <div
-        className="h-0.5 -mx-4 sm:-mx-6 lg:-mx-8 -mt-7 mb-6"
+        className="h-[3px] -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 mb-5"
         style={{ background: styles.gradient }}
       />
 
@@ -248,7 +248,7 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
   return (
     <>
       {/* Gradient */}
-      <div className="h-0.5 -mx-4 sm:-mx-6 lg:-mx-8 -mt-7 mb-5" style={{ background: "linear-gradient(to right, var(--color-tl-600), var(--color-tl-400), var(--color-tl-amber-400))" }} />
+      <div className="h-[3px] -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 mb-4" style={{ background: "linear-gradient(to right, var(--color-tl-600), var(--color-tl-400), var(--color-tl-amber-400))" }} />
 
       {/* Search input */}
       <div className="relative mb-4">
@@ -280,7 +280,7 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
                 const s = ACCENT_STYLES[panel.hub.accent];
                 const HubIcon = panel.hub.icon;
                 return (
-                  <Link key={panel.id} href={panel.hub.href} prefetch={false} onClick={onNavigate} className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] ${s.hubBg}`}>
+                  <Link key={panel.id} href={panel.hub.href} prefetch={false} onClick={onNavigate} className={`flex flex-col items-center gap-2.5 p-4 rounded-xl border border-gray-100 dark:border-gray-800/50 transition-all hover:scale-[1.02] active:scale-[0.98] hover:shadow-sm ${s.hubBg}`}>
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.iconBg} ${s.iconText}`}>
                       <HubIcon className="w-4.5 h-4.5" />
                     </div>
@@ -291,14 +291,16 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2">Populares</p>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-0.5">
+            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2.5">Populares</p>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
               {results.map((r) => {
                 const Icon = r.icon;
                 return (
-                  <Link key={r.href} href={r.href} prefetch={false} onClick={onNavigate} className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
-                    <Icon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
-                    <span className="truncate">{r.title}</span>
+                  <Link key={r.href} href={r.href} prefetch={false} onClick={onNavigate} className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors group">
+                    <span className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 group-hover:bg-tl-50 dark:group-hover:bg-tl-900/30 group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors">
+                      <Icon className="w-3.5 h-3.5" />
+                    </span>
+                    <span className="truncate font-medium text-[13px]">{r.title}</span>
                   </Link>
                 );
               })}
@@ -406,7 +408,7 @@ export function MegaMenuShell({
           onPointerLeave={onPointerLeave}
           className="fixed left-0 right-0 top-16 z-40 overflow-hidden bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-2xl"
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7" style={{ minHeight: 220 }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ minHeight: 200 }}>
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={activePanel}

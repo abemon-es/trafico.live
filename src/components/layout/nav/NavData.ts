@@ -273,22 +273,18 @@ export const megaMenuPanels: MegaMenuPanel[] = [
     },
     categories: [
       {
-        title: "Puertos",
+        title: "Puertos y navegación",
         items: [
           { name: "Puertos de España", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
           { name: "Mapa marítimo", href: "/maritimo/mapa", icon: Map, description: "Estaciones en el litoral" },
+          { name: "Combustible marítimo", href: "/maritimo/combustible", icon: Fuel, description: "Precios en puertos" },
         ],
       },
       {
-        title: "Meteorología",
+        title: "Meteorología y seguridad",
         items: [
           { name: "Meteorología costera", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas y previsiones AEMET" },
           { name: "Alertas costeras", href: "/alertas-meteo", icon: Cloud, description: "Avisos meteorológicos" },
-        ],
-      },
-      {
-        title: "Seguridad",
-        items: [
           { name: "Seguridad marítima", href: "/maritimo/seguridad", icon: ShieldAlert, description: "SASEMAR, emergencias" },
           { name: "Noticias marítimas", href: "/maritimo/noticias", icon: Newspaper, description: "Informes y novedades" },
         ],

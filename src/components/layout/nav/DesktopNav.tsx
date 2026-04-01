@@ -93,7 +93,7 @@ export function DesktopNav() {
   return (
     <div
       ref={navRef}
-      className="hidden md:flex items-center gap-0.5"
+      className="hidden md:flex items-center gap-1"
       onPointerEnter={handleNavPointerEnter}
       onPointerLeave={handleNavPointerLeave}
     >
@@ -147,26 +147,27 @@ export function DesktopNav() {
         );
       })}
 
-      {/* Search trigger */}
+      {/* Separator + Search trigger */}
+      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" aria-hidden="true" />
       <button
         type="button"
         onClick={() => (isSearchMode ? closeAll() : openSearch())}
         aria-label="Buscar"
         className={`
-          flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm transition-colors ml-0.5
+          flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors
           ${
             isSearchMode
               ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-              : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300"
+              : "text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
           }
         `}
       >
         <Search className="w-4 h-4" />
         <kbd
           aria-hidden="true"
-          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none"
+          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none"
         >
-          &thinsp;&#8984;K
+          &#8984;K
         </kbd>
       </button>
 
