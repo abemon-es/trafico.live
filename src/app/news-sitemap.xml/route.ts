@@ -15,7 +15,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
-export const revalidate = 300; // 5 min
+// Always query DB at request time — ISR caches empty results from no-DB builds.
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

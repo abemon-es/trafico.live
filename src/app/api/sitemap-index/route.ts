@@ -5,10 +5,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export async function GET() {
   const shards = getSitemapShardIds();
+  const now = new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${shards.map((s) => `<sitemap><loc>${BASE_URL}/sitemap/${s.id}.xml</loc></sitemap>`).join("\n")}
+${shards.map((s) => `<sitemap><loc>${BASE_URL}/sitemap/${s.id}.xml</loc><lastmod>${now}</lastmod></sitemap>`).join("\n")}
 </sitemapindex>`;
 
   return new NextResponse(xml, {
