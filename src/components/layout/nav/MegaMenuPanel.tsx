@@ -312,12 +312,21 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
       {/* Grouped results */}
       {hasQuery && flatResults.length > 0 && (
         <>
-          <div ref={listRef} className="max-h-[50vh] overflow-y-auto overscroll-contain -mx-2 px-2" role="listbox">
+          {/* Result count */}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">
+              <span className="font-mono font-semibold text-gray-600 dark:text-gray-300">{flatResults.length}</span> resultado{flatResults.length !== 1 ? "s" : ""}
+            </p>
+            {flatResults.length > 8 && (
+              <p className="text-[10px] text-gray-400 dark:text-gray-500">Desplaza para ver más &darr;</p>
+            )}
+          </div>
+          <div ref={listRef} className="max-h-[55vh] overflow-y-auto overscroll-contain -mx-2 px-2 scroll-smooth" role="listbox">
             {groups.map(({ category, items }) => {
               const meta = CATEGORY_META[category];
               return (
-                <div key={category} className="mb-3">
-                  <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-2 py-1.5 -mx-2">
+                <div key={category} className="mb-2">
+                  <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-3 py-1.5 -mx-2 border-b border-gray-100/80 dark:border-gray-800/40">
                     <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
                     <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
                   </div>
@@ -331,9 +340,9 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
                         data-search-idx={idx} role="option" aria-selected={isActive}
                         onClick={(e) => { e.preventDefault(); navigate(result.href); }}
                         onMouseEnter={() => setActiveIndex(idx)}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${isActive ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50"}`}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${isActive ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50"}`}
                       >
-                        <span className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${isActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
+                        <span className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${isActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
                           <Icon className="w-4 h-4" />
                         </span>
                         <div className="flex-1 min-w-0">

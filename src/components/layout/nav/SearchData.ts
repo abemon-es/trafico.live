@@ -293,8 +293,7 @@ export function filterResults(query: string): SearchResult[] {
       fuzzyMatch(r.title, query) ||
       (r.subtitle ? fuzzyMatch(r.subtitle, query) : false)
   )
-    .sort((a, b) => scoreResult(b, query) - scoreResult(a, query))
-    .slice(0, 24);
+    .sort((a, b) => scoreResult(b, query) - scoreResult(a, query));
 }
 
 export function groupResults(

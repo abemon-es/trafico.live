@@ -97,11 +97,16 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
         {/* Grouped results */}
         {hasQuery && flatResults.length > 0 && (
           <div className="py-2">
+            <div className="px-4 pb-2">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500">
+                <span className="font-mono font-semibold text-gray-600 dark:text-gray-300">{flatResults.length}</span> resultado{flatResults.length !== 1 ? "s" : ""}
+              </p>
+            </div>
             {groups.map(({ category, items }) => {
               const meta = CATEGORY_META[category];
               return (
-                <div key={category} className="mb-2">
-                  <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-4 py-1.5">
+                <div key={category} className="mb-1">
+                  <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-4 py-1.5 border-b border-gray-100/80 dark:border-gray-800/40">
                     <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
                     <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
                   </div>
@@ -111,10 +116,10 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
                       <Link
                         key={result.href + result.title} href={result.href} prefetch={false}
                         onClick={(e) => { e.preventDefault(); navigate(result.href); }}
-                        className="flex items-center gap-3 mx-2 px-3 py-3 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-tl-50 dark:active:bg-tl-900/20 transition-colors"
+                        className="flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-tl-50 dark:active:bg-tl-900/20 transition-colors"
                       >
-                        <span className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                          <Icon className="w-4 h-4" />
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                          <Icon className="w-3.5 h-3.5" />
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate text-gray-900 dark:text-gray-100">{result.title}</p>
