@@ -58,16 +58,16 @@ export default async function OGImage() {
         </div>
 
         <div style={{ display: "flex", gap: "40px", marginBottom: "40px" }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", display: "flex", background: "rgba(255,255,255,0.15)", borderRadius: "16px", padding: "24px 40px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(255,255,255,0.15)", borderRadius: "16px", padding: "24px 40px" }}>
             <div style={{ fontSize: "16px", opacity: 0.7, marginBottom: "8px" }}>Media nacional</div>
             <div style={{ fontSize: "56px", fontWeight: 800 }}>{avg}€</div>
             <div style={{ fontSize: "14px", opacity: 0.6 }}>por litro</div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", display: "flex", background: "rgba(255,255,255,0.1)", borderRadius: "16px", padding: "24px 32px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(255,255,255,0.1)", borderRadius: "16px", padding: "24px 32px" }}>
             <div style={{ fontSize: "16px", opacity: 0.7, marginBottom: "8px" }}>Más barato</div>
             <div style={{ fontSize: "40px", fontWeight: 700 }}>{min}€</div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", display: "flex", background: "rgba(255,255,255,0.1)", borderRadius: "16px", padding: "24px 32px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(255,255,255,0.1)", borderRadius: "16px", padding: "24px 32px" }}>
             <div style={{ fontSize: "16px", opacity: 0.7, marginBottom: "8px" }}>Más caro</div>
             <div style={{ fontSize: "40px", fontWeight: 700 }}>{max}€</div>
           </div>
