@@ -19,6 +19,8 @@ import {
   Wind,
   ShieldAlert,
   Newspaper,
+  Globe,
+  Mountain,
   type LucideIcon,
 } from "lucide-react";
 
@@ -133,6 +135,11 @@ export const SEARCH_INDEX: SearchResult[] = [
   { title: "Informe Diario", href: "/informe-diario", category: "herramienta", icon: BookOpen },
   { title: "API Docs", href: "/api-docs", category: "herramienta", icon: Code },
   { title: "Ciclistas", href: "/ciclistas", category: "herramienta", icon: AlertCircle },
+
+  // Portugal y Andorra
+  { title: "Portugal", subtitle: "Combustible, alertas y tráfico", href: "/portugal", category: "herramienta", icon: Globe },
+  { title: "Combustible Portugal", subtitle: "3.000+ estaciones DGEG", href: "/portugal/combustible", category: "combustible", icon: Globe },
+  { title: "Andorra", subtitle: "Tráfico e incidencias", href: "/andorra", category: "herramienta", icon: Mountain },
 
   // Ciudades
   { title: "Madrid", href: "/ciudad/madrid", category: "ciudad", icon: Building2 },

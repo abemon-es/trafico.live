@@ -32,6 +32,8 @@ import {
   Wind,
   ShieldAlert,
   Ship,
+  Globe,
+  Mountain,
   type LucideIcon,
 } from "lucide-react";
 
@@ -253,6 +255,12 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         ],
       },
       {
+        title: "Portugal",
+        items: [
+          { name: "Combustible Portugal", href: "/portugal/combustible", icon: Globe, description: "3.000+ estaciones DGEG" },
+        ],
+      },
+      {
         title: "Marítimo",
         items: [
           { name: "Combustible marítimo", href: "/maritimo/combustible", icon: Ship, description: "Precios en puertos" },
@@ -296,19 +304,27 @@ export const megaMenuPanels: MegaMenuPanel[] = [
     label: "Explorar",
     hub: {
       icon: MapPinned,
-      title: "Explorar España",
-      subtitle: "Territorio, ciudades y contenido",
+      title: "Explorar la Península",
+      subtitle: "España, Portugal y Andorra",
       href: "/explorar",
       accent: "tl",
     },
     categories: [
       {
-        title: "Territorio",
+        title: "España",
         items: [
           { name: "Comunidades autónomas", href: "/comunidad-autonoma", icon: Building2, description: "19 comunidades" },
           { name: "Provincias", href: "/espana", icon: MapPinned, description: "52 provincias" },
           { name: "Ciudades", href: "/ciudad", icon: MapPin, description: "Principales urbes" },
-          { name: "Municipios", href: "/municipio", icon: MapPin, description: "Todos los municipios" },
+          { name: "Municipios", href: "/municipio", icon: MapPin, description: "8.000+ municipios" },
+        ],
+      },
+      {
+        title: "Portugal y Andorra",
+        items: [
+          { name: "Portugal", href: "/portugal", icon: Globe, description: "Combustible y alertas" },
+          { name: "Combustible Portugal", href: "/portugal/combustible", icon: Fuel, description: "3.000+ estaciones" },
+          { name: "Andorra", href: "/andorra", icon: Mountain, description: "Tráfico en directo" },
         ],
       },
       {
@@ -325,7 +341,6 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Noticias", href: "/noticias", icon: BookOpen, description: "Informes, guías y alertas" },
           { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
-          { name: "Informes", href: "/informes", icon: BarChart3, description: "Informes periódicos" },
           { name: "Ciclistas", href: "/ciclistas", icon: Bike, description: "Info para ciclistas" },
           { name: "Puente de Mayo 2026", href: "/puente-mayo-2026", icon: Users, description: "Operación especial DGT" },
         ],
@@ -429,7 +444,7 @@ export const footerColumns: FooterColumn[] = [
       { name: "Baratas", href: "/gasolineras/baratas" },
       { name: "24 horas", href: "/gasolineras-24-horas" },
       { name: "Cargadores EV", href: "/carga-ev" },
-      { name: "Electrolineras", href: "/electrolineras" },
+      { name: "Portugal combustible", href: "/portugal/combustible" },
       { name: "Etiqueta ambiental", href: "/etiqueta-ambiental" },
     ],
   },
@@ -456,11 +471,11 @@ export const footerColumns: FooterColumn[] = [
       { name: "Comunidades", href: "/comunidad-autonoma" },
       { name: "Provincias", href: "/espana" },
       { name: "Ciudades", href: "/ciudad" },
+      { name: "Municipios", href: "/municipio" },
+      { name: "Portugal", href: "/portugal" },
+      { name: "Andorra", href: "/andorra" },
       { name: "Noticias", href: "/noticias" },
       { name: "Informe diario", href: "/informe-diario" },
-      { name: "Informes", href: "/informes" },
-      { name: "Operaciones DGT", href: "/operaciones" },
-      { name: "Ciclistas", href: "/ciclistas" },
     ],
   },
   {
