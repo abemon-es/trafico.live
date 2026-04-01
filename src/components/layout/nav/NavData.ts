@@ -1,6 +1,7 @@
 import {
   Map,
   AlertTriangle,
+  Activity,
   Camera,
   Cloud,
   MonitorSmartphone,
@@ -90,6 +91,12 @@ export const megaMenuPanels: MegaMenuPanel[] = [
     cityStrip: topCities,
     categories: [
       {
+        title: "Hub",
+        items: [
+          { name: "Tráfico España", href: "/trafico", icon: Activity, description: "Estado por ciudad" },
+        ],
+      },
+      {
         title: "En directo",
         items: [
           { name: "Mapa en vivo", href: "/mapa", icon: Map, description: "Tráfico en tiempo real" },
@@ -136,6 +143,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Radares", href: "/radares", icon: Radar, description: "Ubicaciones y tipos" },
           { name: "Puntos negros", href: "/puntos-negros", icon: Skull, description: "Tramos peligrosos" },
+          { name: "Zonas ZBE", href: "/zbe", icon: Ban, description: "Zonas de bajas emisiones" },
         ],
       },
       {
@@ -170,12 +178,14 @@ export const megaMenuPanels: MegaMenuPanel[] = [
           { name: "Las más baratas", href: "/gasolineras/baratas", icon: Fuel, description: "Mejores precios" },
           { name: "24 horas", href: "/gasolineras-24-horas", icon: Clock, description: "Abiertas siempre" },
           { name: "Por marcas", href: "/gasolineras/marcas", icon: Tag, description: "Repsol, Cepsa, BP..." },
+          { name: "Por tipo de combustible", href: "/gasolineras/tipo/gasolina-95", icon: Fuel, description: "Gasolina, diésel, GLP..." },
         ],
       },
       {
         title: "Eléctricos",
         items: [
           { name: "Cargadores EV", href: "/carga-ev", icon: Zap, description: "Puntos de carga" },
+          { name: "Electrolineras", href: "/electrolineras", icon: Zap, description: "Puntos de carga rápida" },
           { name: "Cuánto cuesta cargar", href: "/cuanto-cuesta-cargar", icon: Calculator, description: "Calcula el coste" },
           { name: "Etiqueta ambiental", href: "/etiqueta-ambiental", icon: Tag, description: "Consulta tu distintivo" },
         ],
@@ -211,6 +221,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
           { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
           { name: "Informes", href: "/informes", icon: BarChart3, description: "Informes periódicos" },
           { name: "Ciclistas", href: "/ciclistas", icon: Bike, description: "Info para ciclistas" },
+          { name: "Semana Santa 2026", href: "/semana-santa-2026", icon: Users, description: "Operación especial DGT" },
         ],
       },
     ],
@@ -304,6 +315,7 @@ export const footerColumns = [
       { name: "Estaciones de aforo", href: "/estaciones-aforo" },
       { name: "Radares", href: "/radares" },
       { name: "Puntos negros", href: "/puntos-negros" },
+      { name: "Zonas ZBE", href: "/zbe" },
     ],
   },
   {
@@ -316,6 +328,7 @@ export const footerColumns = [
       { name: "Gasolineras baratas", href: "/gasolineras/baratas" },
       { name: "24 horas", href: "/gasolineras-24-horas" },
       { name: "Mapa gasolineras", href: "/gasolineras/mapa" },
+      { name: "Electrolineras", href: "/electrolineras" },
     ],
   },
   {
@@ -334,7 +347,8 @@ export const footerColumns = [
     title: "Movilidad sostenible",
     links: [
       { name: "Cargadores EV", href: "/carga-ev" },
-      { name: "Zonas ZBE", href: "/explorar/infraestructura" },
+      { name: "Electrolineras", href: "/electrolineras" },
+      { name: "Zonas ZBE", href: "/zbe" },
       { name: "Etiqueta ambiental", href: "/etiqueta-ambiental" },
       { name: "Cuánto cuesta cargar", href: "/cuanto-cuesta-cargar" },
       { name: "Ciclistas", href: "/ciclistas" },
@@ -347,8 +361,9 @@ export const footerColumns = [
       { name: "Provincias", href: "/espana" },
       { name: "Noticias", href: "/noticias" },
       { name: "Informe diario", href: "/informe-diario" },
-      { name: "Informes", href: "/informes" },
+      { name: "Explorar", href: "/explorar" },
       { name: "Operaciones DGT", href: "/operaciones" },
+      { name: "Semana Santa", href: "/semana-santa-2026" },
     ],
   },
   {
