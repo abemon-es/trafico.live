@@ -28,6 +28,7 @@ export function getClientIP(request: NextRequest): string {
 // Endpoints that skip rate limiting
 const RATE_LIMIT_EXEMPT = [
   "/api/health",
+  "/api/sitemap",
 ];
 
 /**

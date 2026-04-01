@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { generateSitemaps } from "@/app/sitemap";
+import { getSitemapShardIds } from "@/lib/sitemap-generator";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const revalidate = 3600;
-
 export async function GET() {
-  const shards = await generateSitemaps();
+  const shards = getSitemapShardIds();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

@@ -76,11 +76,14 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        // Next.js auto-generated sitemap index is broken (404) with generateSitemaps
-        // in Coolify builds. Route to our manual API handler instead.
+        // All sitemaps served via API routes — no ISR/build-time dependency.
         {
           source: "/sitemap.xml",
           destination: "/api/sitemap-index",
+        },
+        {
+          source: "/sitemap/:id(\\d+).xml",
+          destination: "/api/sitemap/:id",
         },
       ],
     };
