@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useReducedMotion, motion, AnimatePresence } from "motion/react";
-import { Search, ArrowRight, MapPin } from "lucide-react";
+import { Search, ArrowRight, X } from "lucide-react";
 import type { MegaMenuPanel as PanelData } from "./NavData";
 import { ACCENT_STYLES, megaMenuPanels } from "./NavData";
 import { HUB_WIDGETS } from "./MegaMenuWidgets";
+import { filterResults, groupResults, CATEGORY_META } from "./SearchData";
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -209,237 +210,158 @@ function PanelContent({ panel }: { panel: PanelData }) {
   );
 }
 
-// ─── Search Panel ─────────────────────────────────────────────────────────────
-
-const SEARCH_CITIES = [
-  { name: "Madrid", slug: "madrid" },
-  { name: "Barcelona", slug: "barcelona" },
-  { name: "Valencia", slug: "valencia" },
-  { name: "Sevilla", slug: "sevilla" },
-  { name: "Zaragoza", slug: "zaragoza" },
-  { name: "Málaga", slug: "malaga" },
-  { name: "Bilbao", slug: "bilbao" },
-  { name: "Murcia", slug: "murcia" },
-  { name: "Palma de Mallorca", slug: "palma" },
-  { name: "Alicante", slug: "alicante" },
-  { name: "Córdoba", slug: "cordoba" },
-  { name: "Valladolid", slug: "valladolid" },
-  { name: "Vigo", slug: "vigo" },
-  { name: "Granada", slug: "granada" },
-  { name: "A Coruña", slug: "a-coruna" },
-];
-
-function normalize(s: string) {
-  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-
-// Flatten all nav items for search
-const allSearchableItems = megaMenuPanels.flatMap((panel) =>
-  panel.categories.flatMap((cat) =>
-    cat.items.map((item) => ({
-      ...item,
-      panelId: panel.id,
-      panelLabel: panel.label,
-      categoryTitle: cat.title,
-    }))
-  )
-);
+// ─── Search Panel (full search with index, categories, keyboard nav) ──────────
 
 function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
-  const [query, setQuery] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 50); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setDebouncedQuery(query), 200); return () => clearTimeout(t); }, [query]);
+  useEffect(() => { setActiveIndex(0); }, [debouncedQuery]);
+
+  const results = filterResults(debouncedQuery);
+  const groups = groupResults(results);
+  const flatResults = groups.flatMap((g) => g.items);
+  const hasQuery = debouncedQuery.trim().length > 0;
+
+  const navigate = useCallback((href: string) => { onNavigate(); router.push(href); }, [onNavigate, router]);
 
   useEffect(() => {
-    // Auto-focus when search panel mounts
-    const timer = setTimeout(() => inputRef.current?.focus(), 50);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const normalizedQuery = normalize(query);
-
-  // Search nav items
-  const matchedItems =
-    query.length > 1
-      ? allSearchableItems.filter(
-          (item) =>
-            normalize(item.name).includes(normalizedQuery) ||
-            (item.description && normalize(item.description).includes(normalizedQuery))
-        ).slice(0, 8)
-      : [];
-
-  // Search cities
-  const matchedCities =
-    query.length > 1
-      ? SEARCH_CITIES.filter((c) => normalize(c.name).includes(normalizedQuery)).slice(0, 5)
-      : [];
-
-  const hasResults = matchedItems.length > 0 || matchedCities.length > 0;
-  const showDefault = query.length < 2;
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-search-idx="${activeIndex}"]`);
+    el?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Escape") {
-      onNavigate();
-    }
+    if (e.key === "ArrowDown") { e.preventDefault(); setActiveIndex((i) => Math.min(i + 1, flatResults.length - 1)); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setActiveIndex((i) => Math.max(i - 1, 0)); }
+    if (e.key === "Enter") { e.preventDefault(); const s = flatResults[activeIndex]; if (s) navigate(s.href); }
+    if (e.key === "Escape") { onNavigate(); }
   }
+
+  let globalIdx = 0;
 
   return (
     <>
-      {/* Gradient bar */}
-      <div
-        className="h-0.5 -mx-4 sm:-mx-6 lg:-mx-8 -mt-7 mb-5"
-        style={{
-          background:
-            "linear-gradient(to right, var(--color-tl-600), var(--color-tl-400), var(--color-tl-amber-400))",
-        }}
-      />
+      {/* Gradient */}
+      <div className="h-0.5 -mx-4 sm:-mx-6 lg:-mx-8 -mt-7 mb-5" style={{ background: "linear-gradient(to right, var(--color-tl-600), var(--color-tl-400), var(--color-tl-amber-400))" }} />
 
       {/* Search input */}
-      <div className="relative mb-5">
+      <div className="relative mb-4">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
         <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Buscar ciudad, carretera, gasolinera..."
-          className="w-full pl-12 pr-4 py-3.5 rounded-xl text-base bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-tl-300 dark:focus:ring-tl-700 transition-colors"
+          ref={inputRef} type="text" value={query}
+          onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown}
+          placeholder="Buscar carreteras, ciudades, gasolineras, herramientas..."
+          className="w-full pl-12 pr-20 py-3.5 rounded-xl text-base bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-tl-300 dark:focus:ring-tl-700 transition-colors"
+          autoComplete="off" autoCorrect="off" spellCheck={false}
         />
-        <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none">
-          ESC
-        </kbd>
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+          {query && (
+            <button onClick={() => { setQuery(""); inputRef.current?.focus(); }} className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors" aria-label="Borrar búsqueda">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <kbd className="hidden md:inline-flex items-center rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none">ESC</kbd>
+        </div>
       </div>
 
-      {/* Default: quick section cards */}
-      {showDefault && (
+      {/* Default: section cards + popular */}
+      {!hasQuery && (
         <div className="space-y-5">
-          {/* Section cards */}
-          <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
-            {megaMenuPanels.map((panel) => {
-              const styles = ACCENT_STYLES[panel.hub.accent];
-              const HubIcon = panel.hub.icon;
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-3">Secciones</p>
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+              {megaMenuPanels.map((panel) => {
+                const s = ACCENT_STYLES[panel.hub.accent];
+                const HubIcon = panel.hub.icon;
+                return (
+                  <Link key={panel.id} href={panel.hub.href} prefetch={false} onClick={onNavigate} className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] ${s.hubBg}`}>
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.iconBg} ${s.iconText}`}>
+                      <HubIcon className="w-4.5 h-4.5" />
+                    </div>
+                    <span className={`text-xs font-semibold text-center leading-tight ${s.title}`}>{panel.hub.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2">Populares</p>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-0.5">
+              {results.map((r) => {
+                const Icon = r.icon;
+                return (
+                  <Link key={r.href} href={r.href} prefetch={false} onClick={onNavigate} className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                    <Icon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
+                    <span className="truncate">{r.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grouped results */}
+      {hasQuery && flatResults.length > 0 && (
+        <>
+          <div ref={listRef} className="max-h-[50vh] overflow-y-auto overscroll-contain -mx-2 px-2" role="listbox">
+            {groups.map(({ category, items }) => {
+              const meta = CATEGORY_META[category];
               return (
-                <Link
-                  key={panel.id}
-                  href={panel.hub.href}
-                  prefetch={false}
-                  onClick={onNavigate}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all hover:scale-[1.02] ${styles.hubBg}`}
-                >
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${styles.iconBg} ${styles.iconText}`}>
-                    <HubIcon className="w-4.5 h-4.5" />
+                <div key={category} className="mb-3">
+                  <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-2 py-1.5 -mx-2">
+                    <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
+                    <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
                   </div>
-                  <span className={`text-xs font-semibold text-center ${styles.title}`}>
-                    {panel.hub.title}
-                  </span>
-                </Link>
+                  {items.map((result) => {
+                    const idx = globalIdx++;
+                    const isActive = idx === activeIndex;
+                    const Icon = result.icon;
+                    return (
+                      <Link
+                        key={result.href + result.title} href={result.href} prefetch={false}
+                        data-search-idx={idx} role="option" aria-selected={isActive}
+                        onClick={(e) => { e.preventDefault(); navigate(result.href); }}
+                        onMouseEnter={() => setActiveIndex(idx)}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${isActive ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50"}`}
+                      >
+                        <span className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${isActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
+                          <Icon className="w-4 h-4" />
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-medium truncate ${isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"}`}>{result.title}</p>
+                          {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
+                        </div>
+                        <span className={`hidden sm:inline-flex shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
-
-          {/* Quick city links */}
-          <div>
-            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2.5">
-              Ciudades populares
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {SEARCH_CITIES.slice(0, 10).map((city) => (
-                <Link
-                  key={city.slug}
-                  href={`/trafico/${city.slug}`}
-                  prefetch={false}
-                  onClick={onNavigate}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
-                >
-                  <MapPin className="w-3 h-3" />
-                  {city.name}
-                </Link>
-              ))}
-            </div>
+          {/* Keyboard hints */}
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800/50 flex items-center gap-4 text-[11px] text-gray-400 dark:text-gray-500">
+            <span className="flex items-center gap-1"><kbd className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1 py-0.5 font-mono text-[9px]">&uarr;&darr;</kbd>navegar</span>
+            <span className="flex items-center gap-1"><kbd className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1 py-0.5 font-mono text-[9px]">&crarr;</kbd>abrir</span>
+            <span className="flex items-center gap-1"><kbd className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1 py-0.5 font-mono text-[9px]">Esc</kbd>cerrar</span>
+            <span className="ml-auto font-medium text-gray-300 dark:text-gray-700">trafico.live</span>
           </div>
-        </div>
+        </>
       )}
 
-      {/* Search results */}
-      {!showDefault && hasResults && (
-        <div className="space-y-4">
-          {/* City results */}
-          {matchedCities.length > 0 && (
-            <div>
-              <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2">
-                Ciudades
-              </p>
-              <div className="space-y-0.5">
-                {matchedCities.map((city) => (
-                  <Link
-                    key={city.slug}
-                    href={`/trafico/${city.slug}`}
-                    prefetch={false}
-                    onClick={onNavigate}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
-                  >
-                    <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500">
-                      <MapPin className="w-3.5 h-3.5" />
-                    </span>
-                    <span className="font-medium">{city.name}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">Ciudad</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Nav item results */}
-          {matchedItems.length > 0 && (
-            <div>
-              <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2">
-                Páginas
-              </p>
-              <div className="space-y-0.5">
-                {matchedItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href + item.name}
-                      href={item.href}
-                      prefetch={false}
-                      onClick={onNavigate}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
-                    >
-                      <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500">
-                        <Icon className="w-3.5 h-3.5" />
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium">{item.name}</span>
-                        {item.description && (
-                          <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800">
-                        {item.panelLabel}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* No results */}
-      {!showDefault && !hasResults && (
-        <div className="text-center py-8">
-          <Search className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Sin resultados para &ldquo;{query}&rdquo;
-          </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Prueba con otro término
-          </p>
+      {/* Empty state */}
+      {hasQuery && flatResults.length === 0 && (
+        <div className="text-center py-10">
+          <Search className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sin resultados para &ldquo;{debouncedQuery}&rdquo;</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Prueba con otro término o navega las secciones</p>
         </div>
       )}
     </>
