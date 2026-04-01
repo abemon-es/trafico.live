@@ -151,6 +151,7 @@ export function DesktopNav() {
       <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" aria-hidden="true" />
       <button
         type="button"
+        onPointerEnter={() => scheduleOpen("search")}
         onClick={() => (isSearchMode ? closeAll() : openSearch())}
         aria-label="Buscar"
         className={`
