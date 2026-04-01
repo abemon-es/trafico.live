@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import {
@@ -21,6 +22,24 @@ export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
+export const metadata: Metadata = {
+  title: "Información Marítima en España — Combustible, Meteorología y Puertos",
+  description:
+    "Consulta precios de combustible marítimo, meteorología costera, puertos y seguridad marítima en España. Datos oficiales actualizados.",
+  alternates: {
+    canonical: `${BASE_URL}/maritimo`,
+  },
+  openGraph: {
+    title: "Información Marítima en España — Combustible, Meteorología y Puertos",
+    description:
+      "Precios de combustible marítimo, meteorología costera, puertos y seguridad marítima en España.",
+    url: `${BASE_URL}/maritimo`,
+    siteName: "trafico.live",
+    locale: "es_ES",
+    type: "website",
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Data fetching

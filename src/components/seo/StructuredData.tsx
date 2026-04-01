@@ -10,10 +10,13 @@ interface StructuredDataProps {
   data: BaseStructuredData | BaseStructuredData[];
 }
 
+let structuredDataCounter = 0;
+
 export function StructuredData({ data }: StructuredDataProps) {
+  const id = `structured-data-${structuredDataCounter++}`;
   return (
     <Script
-      id="structured-data"
+      id={id}
       type="application/ld+json"
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(data),

@@ -6,11 +6,10 @@ import { checkRateLimit, getRateLimitHeaders, getRateLimitType } from "./rate-li
  * Works with Cloudflare, Railway, and other proxies
  */
 export function getClientIP(request: NextRequest): string {
-  // Try various headers in order of preference
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    // x-forwarded-for can contain multiple IPs, take the first one
-    return forwardedFor.split(",")[0].trim();
+  // Cloudflare is authoritative when in use — trust cf-connecting-ip first
+  const cfConnectingIP = request.headers.get("cf-connecting-ip");
+  if (cfConnectingIP) {
+    return cfConnectingIP;
   }
 
   const realIP = request.headers.get("x-real-ip");
@@ -18,12 +17,11 @@ export function getClientIP(request: NextRequest): string {
     return realIP;
   }
 
-  const cfConnectingIP = request.headers.get("cf-connecting-ip");
-  if (cfConnectingIP) {
-    return cfConnectingIP;
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
   }
 
-  // Fallback - this may not be the real client IP behind proxies
   return request.headers.get("x-client-ip") || "unknown";
 }
 
@@ -99,8 +97,6 @@ export async function withRateLimitHeaders(
  */
 const ALLOWED_ORIGINS = [
   "https://trafico.live",
-  "https://trafico.logisticsexpress.es",
-  "https://trafico.abemon.es",
   "http://localhost:3000",
   "http://localhost:3001",
 ];

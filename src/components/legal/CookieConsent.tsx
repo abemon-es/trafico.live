@@ -34,10 +34,14 @@ function setConsent(analytics: boolean) {
   localStorage.setItem(CONSENT_KEY, JSON.stringify(state));
 }
 
-/** Load GA4 script dynamically only after consent */
-function loadGA4() {
+/** Signal consent granted and load GA4 script */
+function grantAnalytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  if (!gaId || document.querySelector(`script[src*="googletagmanager"]`)) return;
+  if (!gaId) return;
+
+  window.gtag?.("consent", "update", { analytics_storage: "granted" });
+
+  if (document.querySelector(`script[src*="googletagmanager"]`)) return;
 
   const script = document.createElement("script");
   script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
@@ -50,6 +54,11 @@ function loadGA4() {
       anonymize_ip: true,
     });
   };
+}
+
+/** Signal consent denied */
+function denyAnalytics() {
+  window.gtag?.("consent", "update", { analytics_storage: "denied" });
 }
 
 /** Remove GA4 cookies when consent is revoked */
@@ -79,18 +88,19 @@ export function CookieConsent() {
     if (!consent) {
       setVisible(true);
     } else if (consent.analytics) {
-      loadGA4();
+      grantAnalytics();
     }
   }, []);
 
   const handleAccept = useCallback(() => {
     setConsent(true);
-    loadGA4();
+    grantAnalytics();
     setVisible(false);
   }, []);
 
   const handleReject = useCallback(() => {
     setConsent(false);
+    denyAnalytics();
     removeGA4Cookies();
     setVisible(false);
   }, []);

@@ -29,7 +29,6 @@ export default function robots(): MetadataRoute.Robots {
     ],
     sitemap: [
       `${BASE_URL}/sitemap.xml`,
-      `${BASE_URL}/sitemap/0.xml`,
       `${BASE_URL}/news-sitemap.xml`,
     ],
   };

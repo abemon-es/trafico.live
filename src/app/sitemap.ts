@@ -23,10 +23,10 @@ const MARITIME_OFFSET = 400;
 
 // Fixed upper bounds used when the DB is unreachable at build time.
 // These are generous overestimates — empty shards return [] gracefully.
-// Gas stations: ~12,000 → 3 shards of 5000; municipalities ~8,200 → 2 shards;
+// Gas stations: ~12,000 → 3 shards of 5000; municipalities ~11,170 → 3 shards;
 // postal codes ~10,000 → 2 shards; maritime ~90 → 1 shard.
 const FALLBACK_STATION_SHARDS = 3;
-const FALLBACK_MUNICIPALITY_SHARDS = 2;
+const FALLBACK_MUNICIPALITY_SHARDS = 3;
 const FALLBACK_POSTAL_CODE_SHARDS = 2;
 const FALLBACK_MARITIME_SHARDS = 1;
 
@@ -284,7 +284,7 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/ciclistas`, lastModified: today, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/media`, lastModified: today, changeFrequency: "monthly", priority: 0.4 },
     { url: `${BASE_URL}/alertas-meteo`, lastModified: now, changeFrequency: "hourly", priority: 0.85 },
-    { url: `${BASE_URL}/semana-santa-2026`, lastModified: now, changeFrequency: "hourly", priority: 1.0 },
+    { url: `${BASE_URL}/semana-santa-2026`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
     { url: `${BASE_URL}/puente-mayo-2026`, lastModified: now, changeFrequency: "hourly", priority: 0.95 },
     { url: `${BASE_URL}/operaciones`, lastModified: today, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE_URL}/restricciones`, lastModified: today, changeFrequency: "weekly", priority: 0.85 },
@@ -303,7 +303,6 @@ async function coreSitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/aviso-legal`, lastModified: today, changeFrequency: "yearly", priority: 0.3 },
     { url: `${BASE_URL}/politica-privacidad`, lastModified: today, changeFrequency: "yearly", priority: 0.3 },
     { url: `${BASE_URL}/politica-cookies`, lastModified: today, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${BASE_URL}/noticias`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/informes`, lastModified: today, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/gasolineras/baratas`, lastModified: today, changeFrequency: "daily", priority: 0.9 },
 
@@ -573,7 +572,7 @@ async function maritimeStationSitemap(
     const now = new Date();
     const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     return stations.map((station) => ({
-      url: `${BASE_URL}/gasolineras/maritimas/${station.id}`,
+      url: `${BASE_URL}/maritimo/combustible/${station.id}`,
       lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.5,
@@ -607,6 +606,9 @@ async function insightsSitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     ]);
 
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
     // Evergreen categories get higher priority
     const evergreenCategories = new Set(["ANNUAL_REPORT", "ROAD_ANALYSIS", "MONTHLY_REPORT"]);
 
@@ -632,14 +634,14 @@ async function insightsSitemap(): Promise<MetadataRoute.Sitemap> {
       // Evergreen analysis pages: accident history per province
       ...provinces.map((p) => ({
         url: `${BASE_URL}/analisis/accidentes/${p.slug}`,
-        lastModified: new Date(),
+        lastModified: today,
         changeFrequency: "monthly" as const,
         priority: 0.8,
       })),
       // Evergreen analysis pages: road IMD
       ...roads.map((r) => ({
         url: `${BASE_URL}/analisis/carreteras/${r.roadNumber.toLowerCase()}`,
-        lastModified: new Date(),
+        lastModified: today,
         changeFrequency: "monthly" as const,
         priority: 0.7,
       })),
