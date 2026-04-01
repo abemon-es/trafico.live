@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,9 @@ function classifyCause(causeType: string | null, type: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const hours = Math.min(parseInt(searchParams.get("hours") || "24", 10) || 24, 72);

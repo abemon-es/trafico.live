@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,10 @@ type HourlyRow = { hour: bigint; total: bigint; days_count: bigint };
 type WeeklyRow = { dow: bigint; total: bigint; days_count: bigint };
 type HeatmapRow = { hour: bigint; day: bigint; total: bigint };
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const days = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);

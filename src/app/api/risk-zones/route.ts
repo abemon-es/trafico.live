@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const revalidate = 3600; // Cache for 1 hour
 
@@ -43,6 +44,9 @@ interface RiskZonesAPIResponse {
  * - includeGeometry: Include geometry data ("true" or "false", default "true")
  */
 export async function GET(request: NextRequest): Promise<NextResponse<RiskZonesAPIResponse>> {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse as NextResponse<RiskZonesAPIResponse>;
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const filterType = searchParams.get("type");

@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,10 @@ function getFlowLevel(incidentCount: number): string {
   return "congested";
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const cached = await getFromCache<GeoJSON.FeatureCollection>(CACHE_KEY);
     if (cached) {

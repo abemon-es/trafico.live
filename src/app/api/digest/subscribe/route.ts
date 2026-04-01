@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { sendEmail, isSESConfigured } from "@/lib/email/ses";
 import { confirmationHtml } from "@/lib/email/templates";
+import { applyRateLimit } from "@/lib/api-utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   let body: { email?: string; province?: string; provinceName?: string };
   try {
     body = await request.json();

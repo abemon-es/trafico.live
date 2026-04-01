@@ -14,9 +14,10 @@
 
 export const revalidate = 86400;
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 const CACHE_KEY = "roads:stats";
 const CACHE_TTL = 3600; // 1 hour
@@ -124,9 +125,12 @@ interface ErrorResponse {
   error: string;
 }
 
-export async function GET(): Promise<
+export async function GET(request: NextRequest): Promise<
   NextResponse<StatsResponse | ErrorResponse>
 > {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse as NextResponse<StatsResponse | ErrorResponse>;
+
   try {
     // Serve from Redis cache if available
     const cached = await getFromCache<StatsResponse>(CACHE_KEY);

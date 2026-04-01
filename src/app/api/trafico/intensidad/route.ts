@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,10 @@ export const dynamic = "force-dynamic";
  *   - profile: "hourly" to get aggregated hourly profiles instead of live data
  *   - dayOfWeek: Filter profiles by day (0=Sunday, 6=Saturday)
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const source = searchParams.get("source") || "MADRID";

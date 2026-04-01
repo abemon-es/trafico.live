@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { RiskType, Severity } from "@prisma/client";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,10 @@ interface SummaryByType {
  * - animal: Filter animal zones by animal type (deer, wild_boar, etc.)
  * - includeGeometry: Include geometry data ("true" or "false", default "true")
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const typeFilter = searchParams.get("type") as RiskType | null;

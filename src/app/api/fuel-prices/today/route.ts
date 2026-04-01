@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { PROVINCE_NAMES, COMMUNITY_NAMES } from "@/lib/geo/ine-codes";
+import { applyRateLimit } from "@/lib/api-utils";
 
 const CACHE_KEY = "api:fuel-prices:today";
 const CACHE_TTL = 300; // 5 minutes
@@ -11,6 +12,9 @@ const CACHE_TTL = 300; // 5 minutes
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const cached = await getFromCache(CACHE_KEY);
     if (cached) return NextResponse.json(cached);

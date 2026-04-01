@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { PROVINCE_TO_COMMUNITY } from "@/lib/geo/province-mapping";
+import { applyRateLimit } from "@/lib/api-utils";
 
 // Cache the response for 1 hour (speed limits rarely change)
 export const revalidate = 3600;
@@ -35,6 +36,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ roadId: string }> }
 ) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { roadId } = await params;
     const roadNumber = decodeURIComponent(roadId).toUpperCase();

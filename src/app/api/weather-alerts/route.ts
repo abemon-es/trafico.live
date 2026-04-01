@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 const CACHE_KEY_PREFIX = "api:weather-alerts";
 const CACHE_TTL = 300; // 5 minutes
@@ -8,6 +9,9 @@ const CACHE_TTL = 300; // 5 minutes
 export const revalidate = 300;
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const provinceFilter = searchParams.get("province");

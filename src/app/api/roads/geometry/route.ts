@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,10 @@ interface OverpassElement {
   lon?: number;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     // Check cache first
     const cached = await getFromCache<GeoJSON.FeatureCollection>(CACHE_KEY);

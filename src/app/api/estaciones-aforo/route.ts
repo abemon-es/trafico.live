@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma, StationType } from "@prisma/client";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const revalidate = 3600;
 
@@ -19,7 +20,10 @@ export const revalidate = 3600;
  *   - offset: Pagination offset
  *   - format: "geojson" for GeoJSON FeatureCollection output
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
 

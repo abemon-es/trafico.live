@@ -5,6 +5,7 @@ import {
   PROVINCE_TO_COMMUNITY,
 } from "@/lib/geo/province-mapping";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 const CACHE_KEY_PREFIX = "api:chargers";
 const CACHE_TTL = 300; // 5 min — aligned with ISR revalidate to prevent stale Redis overriding ISR
@@ -50,6 +51,9 @@ interface ChargersResponse {
 }
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const searchParams = request.nextUrl.searchParams;
 

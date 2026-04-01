@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getFromCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,8 @@ interface CacheSnapshot {
 
 export async function GET(_request: NextRequest) {
   // Auth is handled by middleware for all /api/* routes
+  const rateLimitResponse = await applyRateLimit(_request);
+  if (rateLimitResponse) return rateLimitResponse;
 
   let closed = false;
   let pollTimer: ReturnType<typeof setInterval> | null = null;

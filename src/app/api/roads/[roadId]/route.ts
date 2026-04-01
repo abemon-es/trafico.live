@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 
 // Province code to name mapping
 const PROVINCE_NAMES: Record<string, string> = {
@@ -144,6 +145,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ roadId: string }> }
 ): Promise<NextResponse<RoadResponse | ErrorResponse>> {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse as NextResponse<RoadResponse | ErrorResponse>;
+
   try {
     const { roadId } = await params;
 

@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,10 @@ interface ZBEResponse {
  * - active: Filter by active status ("true" or "false")
  * - includePolygons: Include polygon data in response ("true" or "false", default "true")
  */
-export async function GET(request: Request): Promise<NextResponse<ZBEResponse>> {
+export async function GET(request: NextRequest): Promise<NextResponse<ZBEResponse>> {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse as NextResponse<ZBEResponse>;
+
   try {
     const { searchParams } = new URL(request.url);
     const city = searchParams.get("city");

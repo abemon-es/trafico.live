@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { RiskType, Severity } from "@prisma/client";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,10 @@ interface StaticRiskZone {
  * - road: Filter by specific road number
  * - includeStatic: Include static risk zones ("true" or "false", default "true")
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const days = Math.min(parseInt(searchParams.get("days") || "30", 10) || 30, 90);

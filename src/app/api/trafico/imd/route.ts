@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { RoadType, Prisma } from "@prisma/client";
+import { applyRateLimit } from "@/lib/api-utils";
 
 export const revalidate = 3600; // Cache for 1 hour — IMD data is annual/static
 
@@ -25,7 +26,10 @@ export const revalidate = 3600; // Cache for 1 hour — IMD data is annual/stati
  *   GET /api/trafico/imd?roadNumber=A-1&limit=50
  *   GET /api/trafico/imd?groupBy=province&year=2023
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
 

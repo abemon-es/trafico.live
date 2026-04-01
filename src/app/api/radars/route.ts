@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { applyRateLimit } from "@/lib/api-utils";
 
 const CACHE_KEY_PREFIX = "api:radars";
 const CACHE_TTL = 3600; // 1 hour — radars are semi-static
@@ -34,6 +35,9 @@ interface RadarsResponse {
 }
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await applyRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const filterProvince = searchParams.get("province");
