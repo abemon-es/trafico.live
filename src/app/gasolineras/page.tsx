@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock, HelpCircle } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
@@ -29,6 +30,23 @@ export const revalidate = 300;
 
 // Provincias con fiscalidad especial
 const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
+
+// Slugs para URLs de provincias en /gasolineras/precios/{slug}
+const PROVINCE_SLUGS: Record<string, string> = {
+  "01": "alava", "02": "albacete", "03": "alicante", "04": "almeria",
+  "05": "avila", "06": "badajoz", "07": "baleares", "08": "barcelona",
+  "09": "burgos", "10": "caceres", "11": "cadiz", "12": "castellon",
+  "13": "ciudad-real", "14": "cordoba", "15": "a-coruna", "16": "cuenca",
+  "17": "girona", "18": "granada", "19": "guadalajara", "20": "gipuzkoa",
+  "21": "huelva", "22": "huesca", "23": "jaen", "24": "leon",
+  "25": "lleida", "26": "la-rioja", "27": "lugo", "28": "madrid",
+  "29": "malaga", "30": "murcia", "31": "navarra", "32": "ourense",
+  "33": "asturias", "34": "palencia", "35": "las-palmas", "36": "pontevedra",
+  "37": "salamanca", "38": "santa-cruz-de-tenerife", "39": "cantabria",
+  "40": "segovia", "41": "sevilla", "42": "soria", "43": "tarragona",
+  "44": "teruel", "45": "toledo", "46": "valencia", "47": "valladolid",
+  "48": "bizkaia", "49": "zamora", "50": "zaragoza", "51": "ceuta", "52": "melilla",
+};
 
 async function getStats() {
   // Use UTC date to ensure consistency across timezones
@@ -557,6 +575,28 @@ export default async function GasolinerasPage() {
           <div className="text-xs text-gray-500 dark:text-gray-400">Con geolocalización</div>
         </Link>
       </div>
+
+      {/* SSR Province Links for crawlers */}
+      <section className="max-w-7xl mx-auto py-8">
+        <h2 className="text-lg font-heading font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Precios por provincia
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {Object.entries(PROVINCE_NAMES).sort(([, a], [, b]) => a.localeCompare(b, "es")).map(([code, name]) => {
+            const slug = PROVINCE_SLUGS[code];
+            if (!slug) return null;
+            return (
+              <Link
+                key={code}
+                href={`/gasolineras/precios/${slug}`}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:hover:text-tl-400 py-1 transition-colors"
+              >
+                {name}
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Info Box */}
       <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
