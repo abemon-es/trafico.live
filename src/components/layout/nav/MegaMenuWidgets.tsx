@@ -5,8 +5,8 @@ import { AlertTriangle, Fuel, Activity, TrendingDown, TrendingUp, Minus } from "
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-// ─── Traffic stats widget (for Tráfico panel) ───────────────────────────────
-export function TrafficStatsWidget() {
+// ─── Traffic hub stats (for Tráfico panel hub column) ─────────────────────────
+export function TrafficHubStats() {
   const { data } = useSWR("/api/stats", fetcher, {
     refreshInterval: 60_000,
     revalidateOnFocus: false,
@@ -15,57 +15,51 @@ export function TrafficStatsWidget() {
   if (!data || data.isError) return null;
 
   return (
-    <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-800/50">
-      <div className="flex items-center gap-6">
-        {/* Live incidents count */}
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-red opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-signal-red" />
-          </span>
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-            <span className="font-mono font-semibold text-gray-900 dark:text-gray-100">
-              {data.incidents}
-            </span>{" "}
-            incidencias
-          </span>
-        </div>
-
-        {/* Active V16 beacons */}
-        <div className="flex items-center gap-1.5">
-          <AlertTriangle className="w-3 h-3 text-signal-amber" />
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-            <span className="font-mono font-semibold text-gray-900 dark:text-gray-100">
-              {data.v16Active}
-            </span>{" "}
-            V16
-          </span>
-        </div>
-
-        {/* Cameras */}
-        <div className="flex items-center gap-1.5">
-          <Activity className="w-3 h-3 text-tl-500" />
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-            <span className="font-mono font-semibold text-gray-900 dark:text-gray-100">
-              {data.cameras}
-            </span>{" "}
-            cámaras
-          </span>
-        </div>
-
-        {/* Last updated — relative time */}
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto">
-          {formatRelativeTime(data.lastUpdated)}
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-red opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-signal-red" />
+        </span>
+        <span className="text-xs text-gray-600 dark:text-gray-300">
+          <span className="font-mono font-bold text-gray-900 dark:text-gray-50">
+            {data.incidents}
+          </span>{" "}
+          incidencias
         </span>
       </div>
+
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="w-3.5 h-3.5 text-signal-amber" />
+        <span className="text-xs text-gray-600 dark:text-gray-300">
+          <span className="font-mono font-bold text-gray-900 dark:text-gray-50">
+            {data.v16Active}
+          </span>{" "}
+          balizas V16
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Activity className="w-3.5 h-3.5 text-tl-500" />
+        <span className="text-xs text-gray-600 dark:text-gray-300">
+          <span className="font-mono font-bold text-gray-900 dark:text-gray-50">
+            {data.cameras}
+          </span>{" "}
+          cámaras
+        </span>
+      </div>
+
+      <p className="text-[10px] text-gray-400 dark:text-gray-500 pt-1">
+        {formatRelativeTime(data.lastUpdated)}
+      </p>
     </div>
   );
 }
 
-// ─── Fuel price ticker (for Combustible panel) ──────────────────────────────
-export function FuelPriceWidget() {
+// ─── Fuel hub stats (for Combustible panel hub column) ────────────────────────
+export function FuelHubStats() {
   const { data } = useSWR("/api/fuel-prices/today", fetcher, {
-    refreshInterval: 300_000, // 5 min
+    refreshInterval: 300_000,
     revalidateOnFocus: false,
   });
 
@@ -75,29 +69,17 @@ export function FuelPriceWidget() {
     data.national;
 
   return (
-    <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-800/50">
-      <div className="flex items-center gap-6">
-        <PricePill
-          label="Gasolina 95"
-          price={avgGasolina95}
-          change={gasolina95Change}
-        />
-
-        <PricePill
-          label="Diésel"
-          price={avgGasoleoA}
-          change={gasoleoAChange}
-        />
-
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto">
-          Media nacional
-        </span>
-      </div>
+    <div className="space-y-2.5">
+      <HubPriceLine label="Gasolina 95" price={avgGasolina95} change={gasolina95Change} />
+      <HubPriceLine label="Diésel A" price={avgGasoleoA} change={gasoleoAChange} />
+      <p className="text-[10px] text-gray-400 dark:text-gray-500 pt-1">
+        Media nacional hoy
+      </p>
     </div>
   );
 }
 
-function PricePill({
+function HubPriceLine({
   label,
   price,
   change,
@@ -116,19 +98,23 @@ function PricePill({
         : "text-gray-400";
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Fuel className="w-3 h-3 text-tl-amber-500" />
-      <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
-      <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
-        {price.toFixed(3)} €
-      </span>
-      <TrendIcon className={`w-3 h-3 ${trendColor}`} />
+    <div className="flex items-center gap-2">
+      <Fuel className="w-3.5 h-3.5 text-tl-amber-500" />
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">{label}</p>
+        <div className="flex items-center gap-1">
+          <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-50">
+            {price.toFixed(3)} €
+          </span>
+          <TrendIcon className={`w-3 h-3 ${trendColor}`} />
+        </div>
+      </div>
     </div>
   );
 }
 
-// ─── Professional stats widget (for Profesional panel) ──────────────────────
-export function ProfessionalStatsWidget() {
+// ─── Professional hub stats ───────────────────────────────────────────────────
+export function ProfessionalHubStats() {
   const { data } = useSWR("/api/stats", fetcher, {
     refreshInterval: 60_000,
     revalidateOnFocus: false,
@@ -137,36 +123,70 @@ export function ProfessionalStatsWidget() {
   if (!data || data.isError) return null;
 
   return (
-    <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-800/50">
-      <div className="flex items-center gap-5">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-signal-green" />
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-            API operativa
-          </span>
-        </div>
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-signal-green" />
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+          API operativa
+        </span>
+      </div>
 
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          <span className="font-mono font-semibold text-gray-900 dark:text-gray-100">
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="w-3.5 h-3.5 text-signal-amber" />
+        <span className="text-xs text-gray-600 dark:text-gray-300">
+          <span className="font-mono font-bold text-gray-900 dark:text-gray-50">
             {data.incidents + data.v16Active}
           </span>{" "}
           alertas activas
         </span>
-
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto">
-          Actualizado {formatRelativeTime(data.lastUpdated)}
-        </span>
       </div>
+
+      <p className="text-[10px] text-gray-400 dark:text-gray-500 pt-1">
+        {formatRelativeTime(data.lastUpdated)}
+      </p>
     </div>
   );
 }
+
+// ─── Maritime hub stats ───────────────────────────────────────────────────────
+export function MaritimeHubStats() {
+  const { data } = useSWR("/api/stats", fetcher, {
+    refreshInterval: 60_000,
+    revalidateOnFocus: false,
+  });
+
+  if (!data || data.isError) return null;
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-tl-sea-500" />
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+          Datos costeros en tiempo real
+        </span>
+      </div>
+
+      <p className="text-[10px] text-gray-400 dark:text-gray-500 pt-1">
+        Fuente: AEMET · SASEMAR
+      </p>
+    </div>
+  );
+}
+
+// ─── Widget map — keyed by panel id ───────────────────────────────────────────
+export const HUB_WIDGETS: Record<string, React.ComponentType> = {
+  trafico: TrafficHubStats,
+  combustible: FuelHubStats,
+  profesional: ProfessionalHubStats,
+  maritimo: MaritimeHubStats,
+};
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "ahora";
-  if (mins < 60) return `hace ${mins} min`;
+  if (mins < 1) return "Actualizado ahora";
+  if (mins < 60) return `Hace ${mins} min`;
   const hours = Math.floor(mins / 60);
-  return `hace ${hours}h`;
+  return `Hace ${hours}h`;
 }

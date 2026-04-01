@@ -1,7 +1,6 @@
 "use client";
 
-import { Menu, X, Search } from "lucide-react";
-import { SearchOverlay, useSearchOverlay } from "@/components/search/SearchOverlay";
+import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Logo } from "@/components/brand/Logo";
 import { DesktopNav } from "@/components/layout/nav/DesktopNav";
@@ -10,7 +9,6 @@ import { NavStateContext, useNavStateValue } from "@/components/layout/nav/useNa
 
 export function Header() {
   const navState = useNavStateValue();
-  const search = useSearchOverlay();
 
   return (
     <NavStateContext value={navState}>
@@ -23,30 +21,11 @@ export function Header() {
             {/* Logo */}
             <Logo variant="horizontal" size="sm" />
 
-            {/* Desktop Navigation — mega menu triggers */}
+            {/* Desktop Navigation — mega menu triggers + search */}
             <DesktopNav />
 
-            {/* Right-side actions */}
+            {/* Right-side actions — only theme toggle + mobile hamburger */}
             <div className="flex items-center gap-1.5">
-              {/* Search trigger */}
-              <button
-                type="button"
-                onClick={search.open}
-                aria-label="Abrir búsqueda rápida"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
-              >
-                <Search className="w-4 h-4" />
-                <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-500">
-                  Buscar
-                </span>
-                <kbd
-                  aria-hidden="true"
-                  className="hidden md:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none"
-                >
-                  ⌘K
-                </kbd>
-              </button>
-
               <ThemeToggle />
 
               {/* Mobile menu button */}
@@ -73,7 +52,7 @@ export function Header() {
         </nav>
 
         {/* Mobile menu — accordion */}
-        <MobileMenu onSearchOpen={search.open} />
+        <MobileMenu />
 
         {/* Backdrop overlay when mega menu is open */}
         {navState.activePanel && (
@@ -83,8 +62,6 @@ export function Header() {
             aria-hidden="true"
           />
         )}
-
-        <SearchOverlay isOpen={search.isOpen} onClose={search.close} />
       </header>
     </NavStateContext>
   );
