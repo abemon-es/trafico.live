@@ -431,6 +431,31 @@ export function MapControls({
             <ChevronRight className="w-3.5 h-3.5 ml-auto shrink-0 opacity-50" />
           </button>
 
+          {/* Global visualization mode toggle (heatmap / clusters / points) */}
+          {onIncidentViewModeChange && (
+            <div className="flex rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shrink-0">
+              {([
+                { mode: "heatmap" as const, icon: <Flame className="w-4 h-4" />, label: "Calor" },
+                { mode: "clusters" as const, icon: <Layers className="w-4 h-4" />, label: "Grupos" },
+                { mode: "points" as const, icon: <Circle className="w-4 h-4" />, label: "Puntos" },
+              ]).map(({ mode, icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => onIncidentViewModeChange(mode)}
+                  className={`w-11 h-11 flex items-center justify-center transition-colors ${
+                    incidentViewMode === mode
+                      ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+                      : "bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400"
+                  }`}
+                  title={label}
+                  aria-label={label}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* View mode toggle */}
           <div className="flex rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shrink-0">
             <button
@@ -625,6 +650,33 @@ export function MapControls({
           </div>
 
           {/* Separator */}
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 shrink-0" />
+
+          {/* Global visualization mode toggle */}
+          {onIncidentViewModeChange && (
+            <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-800/50 rounded-lg p-0.5 shrink-0">
+              {([
+                { mode: "heatmap" as IncidentViewMode, icon: <Flame className="w-3.5 h-3.5" />, label: "Calor" },
+                { mode: "clusters" as IncidentViewMode, icon: <Layers className="w-3.5 h-3.5" />, label: "Grupos" },
+                { mode: "points" as IncidentViewMode, icon: <Circle className="w-3.5 h-3.5" />, label: "Puntos" },
+              ]).map(({ mode, icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => onIncidentViewModeChange(mode)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                    incidentViewMode === mode
+                      ? "bg-white dark:bg-gray-900 text-tl-600 dark:text-tl-400 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  }`}
+                  title={label}
+                >
+                  {icon}
+                  <span className="hidden lg:inline">{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 shrink-0" />
 
           {/* Right: Tools */}
@@ -912,13 +964,16 @@ export function MapControls({
 
                           {/* Expand arrow for incidents */}
                           {isIncidents && isActive && (
-                            <button
+                            <span
+                              role="button"
+                              tabIndex={0}
                               onClick={(e) => { e.stopPropagation(); setIncidentExpanded(!incidentExpanded); }}
-                              className="shrink-0 text-gray-400 dark:text-gray-500 p-1 -mr-1"
+                              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); setIncidentExpanded(!incidentExpanded); } }}
+                              className="shrink-0 text-gray-400 dark:text-gray-500 p-1 -mr-1 cursor-pointer"
                               aria-label={incidentExpanded ? "Ocultar filtros" : "Mostrar filtros"}
                             >
                               <ChevronDown className={`w-4 h-4 transition-transform motion-reduce:transition-none ${incidentExpanded ? "rotate-180" : ""}`} />
-                            </button>
+                            </span>
                           )}
 
                           {/* Active dot */}

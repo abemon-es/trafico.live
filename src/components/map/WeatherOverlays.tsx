@@ -51,8 +51,10 @@ function useRasterOverlay(
     }
 
     return () => {
-      if (map.getLayer(layerId)) map.removeLayer(layerId);
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
+      try {
+        if (map?.getLayer(layerId)) map.removeLayer(layerId);
+        if (map?.getSource(sourceId)) map.removeSource(sourceId);
+      } catch { /* map already destroyed */ }
     };
   }, [map, enabled, id, tileUrl, opacity]);
 }

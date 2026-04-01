@@ -671,6 +671,30 @@ function addClusteredLayer(
     clusterRadius,
   });
 
+  // Heatmap layer (hidden by default — shown when viewMode === "heatmap")
+  m.addLayer({
+    id: `${id}-heatmap`,
+    type: "heatmap",
+    source: id,
+    layout: { visibility: "none" },
+    paint: {
+      "heatmap-weight": 1,
+      "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.5, 5, 1, 9, 2],
+      "heatmap-color": [
+        "interpolate", ["linear"], ["heatmap-density"],
+        0, "rgba(0,0,0,0)",
+        0.1, `${color}33`,
+        0.3, `${color}66`,
+        0.5, `${color}99`,
+        0.7, `${color}cc`,
+        1, color,
+      ],
+      "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 4, 5, 15, 9, 25],
+      "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 7, 1, 9, 0.7],
+    },
+  });
+
+  // Cluster circles (default view)
   m.addLayer({
     id: `${id}-clusters`,
     type: "circle",
@@ -748,27 +772,34 @@ function addClusteredLayer(
   m.on("mouseleave", `${id}-clusters`, () => { m.getCanvas().style.cursor = ""; });
 }
 
-// Helper to update a clustered layer's data and visibility
+// Helper to update a clustered layer's data, visibility, and view mode
 function updateClusteredLayer(
   m: maplibregl.Map,
   id: string,
   active: boolean,
-  data: GeoJSON
+  data: GeoJSON,
+  viewMode: IncidentViewMode = "clusters"
 ) {
   const source = m.getSource(id) as maplibregl.GeoJSONSource;
   if (!source) return;
 
-  const visibility = active ? "visible" : "none";
-  for (const suffix of ["-clusters", "-cluster-count", "-unclustered"]) {
-    if (m.getLayer(`${id}${suffix}`)) {
-      m.setLayoutProperty(`${id}${suffix}`, "visibility", visibility);
-    }
-  }
-
   if (active) {
     source.setData(data as maplibregl.GeoJSONSourceSpecification["data"]);
+
+    // Toggle layers based on viewMode
+    const showHeatmap = viewMode === "heatmap";
+    const showClusters = viewMode === "clusters";
+    const showPoints = viewMode === "points";
+
+    if (m.getLayer(`${id}-heatmap`)) m.setLayoutProperty(`${id}-heatmap`, "visibility", showHeatmap ? "visible" : "none");
+    if (m.getLayer(`${id}-clusters`)) m.setLayoutProperty(`${id}-clusters`, "visibility", showClusters ? "visible" : "none");
+    if (m.getLayer(`${id}-cluster-count`)) m.setLayoutProperty(`${id}-cluster-count`, "visibility", showClusters ? "visible" : "none");
+    if (m.getLayer(`${id}-unclustered`)) m.setLayoutProperty(`${id}-unclustered`, "visibility", showPoints || showClusters ? "visible" : "none");
   } else {
     source.setData({ type: "FeatureCollection", features: [] } as maplibregl.GeoJSONSourceSpecification["data"]);
+    for (const suffix of ["-heatmap", "-clusters", "-cluster-count", "-unclustered"]) {
+      if (m.getLayer(`${id}${suffix}`)) m.setLayoutProperty(`${id}${suffix}`, "visibility", "none");
+    }
   }
 }
 
@@ -1605,41 +1636,44 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     }
   }, [activeLayers.zbe, isLoaded, zbeZones]);
 
+  // Global view mode for all clustered layers
+  const globalViewMode = incidentViewMode || "clusters";
+
   // Update GeoJSON layer data — cameras
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "cameras-layer", activeLayers.cameras && cameras.length > 0, camerasToGeoJSON(cameras));
-  }, [activeLayers.cameras, cameras, isLoaded]);
+    updateClusteredLayer(map.current, "cameras-layer", activeLayers.cameras && cameras.length > 0, camerasToGeoJSON(cameras), globalViewMode);
+  }, [activeLayers.cameras, cameras, isLoaded, globalViewMode]);
 
   // Update GeoJSON layer data — chargers
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "chargers-layer", activeLayers.chargers && chargers.length > 0, chargersToGeoJSON(chargers));
-  }, [activeLayers.chargers, chargers, isLoaded]);
+    updateClusteredLayer(map.current, "chargers-layer", activeLayers.chargers && chargers.length > 0, chargersToGeoJSON(chargers), globalViewMode);
+  }, [activeLayers.chargers, chargers, isLoaded, globalViewMode]);
 
   // Update GeoJSON layer data — gas stations
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "gas-stations-layer", activeLayers.gasStations && gasStations.length > 0, gasStationsToGeoJSON(gasStations));
-  }, [activeLayers.gasStations, gasStations, isLoaded]);
+    updateClusteredLayer(map.current, "gas-stations-layer", activeLayers.gasStations && gasStations.length > 0, gasStationsToGeoJSON(gasStations), globalViewMode);
+  }, [activeLayers.gasStations, gasStations, isLoaded, globalViewMode]);
 
   // Update GeoJSON layer data — radars
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "radars-layer", activeLayers.radars && radars.length > 0, radarsToGeoJSON(radars));
-  }, [activeLayers.radars, radars, isLoaded]);
+    updateClusteredLayer(map.current, "radars-layer", activeLayers.radars && radars.length > 0, radarsToGeoJSON(radars), globalViewMode);
+  }, [activeLayers.radars, radars, isLoaded, globalViewMode]);
 
   // Update GeoJSON layer data — panels
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "panels-layer", activeLayers.panels && panels.length > 0, panelsToGeoJSON(panels));
-  }, [activeLayers.panels, panels, isLoaded]);
+    updateClusteredLayer(map.current, "panels-layer", activeLayers.panels && panels.length > 0, panelsToGeoJSON(panels), globalViewMode);
+  }, [activeLayers.panels, panels, isLoaded, globalViewMode]);
 
   // Update GeoJSON layer data — maritime stations
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "maritime-layer", activeLayers.maritimeStations && maritimeStations.length > 0, maritimeToGeoJSON(maritimeStations));
-  }, [activeLayers.maritimeStations, maritimeStations, isLoaded]);
+    updateClusteredLayer(map.current, "maritime-layer", activeLayers.maritimeStations && maritimeStations.length > 0, maritimeToGeoJSON(maritimeStations), globalViewMode);
+  }, [activeLayers.maritimeStations, maritimeStations, isLoaded, globalViewMode]);
 
   // V16 individual markers (only when ≤50 beacons — provides pulse animation)
   useEffect(() => {
