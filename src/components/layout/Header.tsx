@@ -12,7 +12,7 @@ export function Header() {
 
   return (
     <NavStateContext value={navState}>
-      <header className="dark bg-tl-950 border-b border-tl-800/50 sticky top-0 z-50">
+      <header className="dark bg-gradient-to-r from-tl-900 via-tl-950 to-tl-900 border-b border-tl-700/30 sticky top-0 z-50">
         <nav
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
           aria-label="Navegación principal"

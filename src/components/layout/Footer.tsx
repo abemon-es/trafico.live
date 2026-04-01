@@ -11,22 +11,22 @@ const DATA_SOURCES = ["DGT NAP", "AEMET", "MITERD", "MINETUR"];
 // Dark-mode footer accent mapping
 const FOOTER_ACCENT = {
   tl: {
-    iconBg: "bg-tl-800/40",
-    iconText: "text-tl-400",
-    bar: "bg-tl-600",
-    hubBg: "hover:bg-tl-900/40",
+    iconBg: "bg-tl-700/30",
+    iconText: "text-tl-300",
+    bar: "bg-tl-500",
+    hubBg: "bg-white/[0.03] hover:bg-white/[0.06]",
   },
   "tl-amber": {
-    iconBg: "bg-tl-amber-800/40",
-    iconText: "text-tl-amber-400",
-    bar: "bg-tl-amber-500",
-    hubBg: "hover:bg-tl-amber-900/30",
+    iconBg: "bg-tl-amber-700/30",
+    iconText: "text-tl-amber-300",
+    bar: "bg-tl-amber-400",
+    hubBg: "bg-white/[0.03] hover:bg-white/[0.06]",
   },
   "tl-sea": {
-    iconBg: "bg-tl-sea-800/40",
-    iconText: "text-tl-sea-400",
-    bar: "bg-tl-sea-500",
-    hubBg: "hover:bg-tl-sea-900/30",
+    iconBg: "bg-tl-sea-700/30",
+    iconText: "text-tl-sea-300",
+    bar: "bg-tl-sea-400",
+    hubBg: "bg-white/[0.03] hover:bg-white/[0.06]",
   },
 } as const;
 
@@ -80,7 +80,7 @@ export function Footer() {
               <Link
                 key={col.title}
                 href={col.hub}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border border-tl-800/50 transition-all ${accent.hubBg}`}
+                className={`flex flex-col items-center gap-2.5 p-4 rounded-xl border border-white/[0.06] transition-all ${accent.hubBg}`}
               >
                 <div
                   className={`w-9 h-9 rounded-lg flex items-center justify-center ${accent.iconBg} ${accent.iconText}`}
@@ -103,7 +103,7 @@ export function Footer() {
             return (
               <div key={column.title}>
                 {/* Column header with icon — matches mega menu category headers */}
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-400 mb-4 flex items-center gap-2.5 font-heading">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-300 mb-4 flex items-center gap-2.5 font-heading">
                   <span className={`w-1 h-4 rounded-full ${accent.bar}`} />
                   <span className={`flex items-center justify-center w-5 h-5 rounded ${accent.iconBg} ${accent.iconText}`}>
                     <Icon className="w-3 h-3" />
@@ -115,7 +115,7 @@ export function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-sm text-gray-400 hover:text-gray-100 block py-1.5 transition-colors duration-150"
+                        className="text-sm text-gray-400 hover:text-white block py-1.5 transition-colors duration-150"
                       >
                         {link.name}
                       </Link>
@@ -132,8 +132,8 @@ export function Footer() {
           aria-label="Tráfico por ciudad"
           className="mb-8 pt-8 border-t border-tl-800/50"
         >
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-400 mb-4 flex items-center gap-2.5 font-heading">
-            <span className="w-1 h-4 rounded-full bg-tl-600" />
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-300 mb-4 flex items-center gap-2.5 font-heading">
+            <span className="w-1 h-4 rounded-full bg-tl-500" />
             Tráfico por ciudad
           </h3>
           <div className="flex flex-wrap gap-2">
