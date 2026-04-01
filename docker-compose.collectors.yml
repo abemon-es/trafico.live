@@ -23,9 +23,9 @@ x-collector: &collector-base
     dockerfile: services/collector/Dockerfile
   restart: "no"
   env_file: .env
-  environment:
-    TZ: Europe/Madrid
-    NODE_ENV: production
+  # Note: TZ and NODE_ENV are set in the Dockerfile (ENV directives).
+  # Do NOT put them in `environment:` here — YAML anchor merge replaces
+  # the entire `environment:` block when services override it with TASK.
 
 services:
   # ── Real-time collectors (every 2 min — matches DGT feed refresh) ──
