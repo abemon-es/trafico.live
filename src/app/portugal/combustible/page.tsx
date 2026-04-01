@@ -12,7 +12,8 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 
-export const revalidate = 3600; // 1 hour
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

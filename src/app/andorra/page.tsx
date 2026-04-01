@@ -15,7 +15,8 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 
-export const revalidate = 300; // 5 min — live incident data
+export const dynamic = "force-dynamic"; // SSR on every request (no ISR cache)
+export const revalidate = 0;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
