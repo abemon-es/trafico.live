@@ -25,10 +25,12 @@ interface ChargerResponseItem {
   provinceName: string | null;
   community: string;
   operator: string | null;
+  network: string | null;
   totalPowerKw: number;
   connectorCount: number;
   connectorTypes: string[];
   is24h: boolean;
+  isPublic: boolean;
   paymentMethods: string[];
 }
 
@@ -156,10 +158,12 @@ export async function GET(request: NextRequest) {
         provinceName: charger.provinceName,
         community,
         operator: charger.operator,
+        network: charger.network,
         totalPowerKw: Math.round(Number(charger.powerKw || 0) * 10) / 10,
         connectorCount: charger.connectors || 0,
         connectorTypes: charger.chargerTypes,
         is24h: charger.is24h,
+        isPublic: charger.isPublic,
         paymentMethods: charger.paymentMethods,
       };
     });

@@ -588,12 +588,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily",
       priority: 0.9,
     },
-    {
-      url: `${BASE_URL}/electrolineras`,
-      lastModified: today,
-      changeFrequency: "daily",
-      priority: 0.85,
-    },
+    // NOTE: /electrolineras is 301-redirected to /carga-ev — excluded from sitemap.
     {
       url: `${BASE_URL}/carga-ev`,
       lastModified: today,
@@ -744,24 +739,8 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly",
       priority: 0.85,
     },
-    {
-      url: `${BASE_URL}/explorar`,
-      lastModified: today,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/explorar/territorios`,
-      lastModified: today,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/explorar/carreteras`,
-      lastModified: today,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
+    // NOTE: /explorar, /explorar/territorios, /explorar/carreteras are 301-redirected
+    //       to /comunidad-autonoma and /carreteras — excluded from sitemap.
     {
       url: `${BASE_URL}/explorar/infraestructura`,
       lastModified: today,
@@ -798,12 +777,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "yearly",
       priority: 0.3,
     },
-    {
-      url: `${BASE_URL}/informes`,
-      lastModified: today,
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+    // NOTE: /informes is 301-redirected to /noticias — excluded from sitemap.
     {
       url: `${BASE_URL}/gasolineras/baratas`,
       lastModified: today,
@@ -862,13 +836,8 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   ];
 
   // City-based pages
+  // NOTE: /trafico/:city is 301-redirected to /ciudad/:city — excluded from sitemap.
   const cityPages: SitemapEntry[] = [
-    ...TRAFFIC_CITY_SLUGS.map((c) => ({
-      url: `${BASE_URL}/trafico/${c}`,
-      lastModified: now,
-      changeFrequency: "hourly" as const,
-      priority: 0.9,
-    })),
     ...ZBE_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/zbe/${c}`,
       lastModified: today,
@@ -887,12 +856,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily" as const,
       priority: 0.7,
     })),
-    ...ELECTROLINERAS_CITY_SLUGS.map((c) => ({
-      url: `${BASE_URL}/electrolineras/${c}`,
-      lastModified: today,
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    })),
+    // NOTE: /electrolineras/:city is 301-redirected to /carga-ev/:city — excluded from sitemap.
     ...BARATOS_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/gasolineras/baratas/${c}`,
       lastModified: today,
@@ -911,12 +875,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily" as const,
       priority: 0.8,
     })),
-    ...PROVINCE_MAP_CODES.map((code) => ({
-      url: `${BASE_URL}/gasolineras/mapa/provincia/${code}`,
-      lastModified: today,
-      changeFrequency: "daily" as const,
-      priority: 0.7,
-    })),
+    // NOTE: /gasolineras/mapa/provincia/:code is 301-redirected to /gasolineras/mapa — excluded from sitemap.
     ...ACCIDENTES_PROVINCE_SLUGS.map((slug) => ({
       url: `${BASE_URL}/estadisticas/accidentes/${slug}`,
       lastModified: today,
@@ -965,19 +924,10 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
 
     if (isMainRoad) {
       const subPriority = Number((priority - 0.1).toFixed(1));
+      // NOTE: /carreteras/:road/camaras → /camaras/carretera/:road (301)
+      // NOTE: /carreteras/:road/radares → /radares/:road (301)
+      // Both excluded from sitemap. Only /estadisticas sub-page kept.
       pages.push(
-        {
-          url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/camaras`,
-          lastModified: today,
-          changeFrequency: "daily",
-          priority: subPriority,
-        },
-        {
-          url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/radares`,
-          lastModified: today,
-          changeFrequency: "weekly",
-          priority: subPriority,
-        },
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/estadisticas`,
           lastModified: today,

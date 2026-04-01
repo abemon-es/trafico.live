@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { Anchor, Ship, MapPin, Fuel, Navigation } from "lucide-react";
+import { Anchor, Ship, MapPin, Fuel, Navigation, Trophy, BarChart3 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
@@ -175,11 +175,105 @@ async function getPortData(): Promise<{
 }
 
 // ---------------------------------------------------------------------------
+// Port stats (from SpanishPort model)
+// ---------------------------------------------------------------------------
+
+interface PortTypeCount {
+  type: string;
+  count: number;
+}
+
+interface PortStatsSummary {
+  byType: PortTypeCount[];
+  byZone: Array<{ zone: string; count: number }>;
+  mostStations: { name: string; slug: string; count: number } | null;
+  cheapestGasoleoA: { portName: string; portSlug: string; avgPrice: number } | null;
+}
+
+async function getPortStats(): Promise<PortStatsSummary> {
+  const [byTypeRaw, byZoneRaw, topByStations, stationAggregates] = await Promise.all([
+    // Ports by type (uses SpanishPort model)
+    prisma.spanishPort.groupBy({
+      by: ["type"],
+      _count: { type: true },
+      orderBy: { _count: { type: "desc" } },
+    }),
+
+    // Ports by coastal zone
+    prisma.spanishPort.groupBy({
+      by: ["coastalZone"],
+      where: { coastalZone: { not: null } },
+      _count: { coastalZone: true },
+      orderBy: { _count: { coastalZone: "desc" } },
+      take: 6,
+    }),
+
+    // Port with most fuel stations
+    prisma.spanishPort.findFirst({
+      orderBy: { stationCount: "desc" },
+      select: { name: true, slug: true, stationCount: true },
+    }),
+
+    // Cheapest port for Gasóleo A (via MaritimeStation group by port)
+    prisma.maritimeStation.groupBy({
+      by: ["port"],
+      where: { port: { not: null }, priceGasoleoA: { not: null } },
+      _avg: { priceGasoleoA: true },
+      orderBy: { _avg: { priceGasoleoA: "asc" } },
+      take: 1,
+    }),
+  ]);
+
+  const byType: PortTypeCount[] = byTypeRaw.map((r) => ({
+    type: r.type,
+    count: r._count.type,
+  }));
+
+  const byZone = byZoneRaw.map((r) => ({
+    zone: r.coastalZone ?? "Otras",
+    count: r._count.coastalZone,
+  }));
+
+  const mostStations = topByStations
+    ? { name: topByStations.name, slug: topByStations.slug, count: topByStations.stationCount }
+    : null;
+
+  // Resolve slug for cheapest port
+  let cheapestGasoleoA: PortStatsSummary["cheapestGasoleoA"] = null;
+  if (stationAggregates.length > 0 && stationAggregates[0].port) {
+    const portName = stationAggregates[0].port;
+    const portRecord = await prisma.spanishPort.findFirst({
+      where: { name: portName },
+      select: { slug: true },
+    });
+    if (stationAggregates[0]._avg.priceGasoleoA != null) {
+      cheapestGasoleoA = {
+        portName,
+        portSlug: portRecord?.slug ?? slugify(portName),
+        avgPrice: Number(stationAggregates[0]._avg.priceGasoleoA),
+      };
+    }
+  }
+
+  return { byType, byZone, mostStations, cheapestGasoleoA };
+}
+
+const PORT_TYPE_LABEL: Record<string, string> = {
+  commercial: "Comerciales",
+  fishing: "Pesqueros",
+  sports: "Deportivos",
+  mixed: "Mixtos",
+};
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default async function PuertosPage() {
-  const { ports, totalStations } = await getPortData();
+  const [{ ports, totalStations }, portStats] = await Promise.all([
+    getPortData(),
+    getPortStats(),
+  ]);
 
   // Group ports by region
   const portsByRegion: Record<string, PortEntry[]> = {};
@@ -263,6 +357,109 @@ export default async function PuertosPage() {
 
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
+
+          {/* Port stats summary */}
+          {(portStats.byType.length > 0 || portStats.cheapestGasoleoA || portStats.mostStations) && (
+            <section aria-label="Resumen estadístico de puertos">
+              <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-tl-sea-500" />
+                Estadísticas de puertos
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                {/* Ports by type */}
+                {portStats.byType.length > 0 && (
+                  <div className="bg-white dark:bg-gray-900 rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Ship className="w-4 h-4 text-tl-sea-500" />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Por tipo</span>
+                    </div>
+                    <ul className="space-y-2">
+                      {portStats.byType.map((item) => (
+                        <li key={item.type} className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            {PORT_TYPE_LABEL[item.type] ?? item.type}
+                          </span>
+                          <span className="font-mono font-semibold text-tl-sea-700 dark:text-tl-sea-300">
+                            {item.count}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Most stations port */}
+                {portStats.mostStations && (
+                  <div className="bg-white dark:bg-gray-900 rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="w-4 h-4 text-tl-amber-500" />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Más estaciones</span>
+                    </div>
+                    <Link
+                      href={`/maritimo/puertos/${portStats.mostStations.slug}`}
+                      className="block group"
+                    >
+                      <div className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-sea-700 dark:group-hover:text-tl-sea-300 transition-colors">
+                        {portStats.mostStations.name}
+                      </div>
+                      <div className="font-mono text-3xl font-bold text-tl-sea-700 dark:text-tl-sea-300 mt-1">
+                        {portStats.mostStations.count}
+                      </div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                        estaciones de combustible
+                      </div>
+                    </Link>
+                  </div>
+                )}
+
+                {/* Cheapest port */}
+                {portStats.cheapestGasoleoA && (
+                  <div className="bg-white dark:bg-gray-900 rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Fuel className="w-4 h-4 text-tl-sea-500" />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Gasóleo A más barato</span>
+                    </div>
+                    <Link
+                      href={`/maritimo/puertos/${portStats.cheapestGasoleoA.portSlug}`}
+                      className="block group"
+                    >
+                      <div className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-sea-700 dark:group-hover:text-tl-sea-300 transition-colors">
+                        {portStats.cheapestGasoleoA.portName}
+                      </div>
+                      <div className="font-mono text-3xl font-bold text-tl-sea-700 dark:text-tl-sea-300 mt-1">
+                        {portStats.cheapestGasoleoA.avgPrice.toFixed(3)} €
+                      </div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                        precio medio Gasóleo A
+                      </div>
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Coastal zones */}
+              {portStats.byZone.length > 0 && (
+                <div className="mt-4 bg-white dark:bg-gray-900 rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Navigation className="w-4 h-4 text-tl-sea-500" />
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Por zona costera</span>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {portStats.byZone.map((z) => (
+                      <div key={z.zone} className="flex items-center gap-1.5 text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">{z.zone}</span>
+                        <span className="font-mono font-semibold text-tl-sea-700 dark:text-tl-sea-300 bg-tl-sea-50 dark:bg-tl-sea-900/30 px-1.5 py-0.5 rounded text-xs">
+                          {z.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
           {ports.length === 0 ? (
             <div className="text-center py-20">
               <Anchor className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-4" />

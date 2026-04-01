@@ -381,58 +381,159 @@ export default async function RoadDetailPage({ params }: PageProps) {
             )}
 
             {/* Speed Limits */}
-            {speedLimits.length > 0 && (
-              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  Límites de velocidad ({speedLimits.length})
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Km inicio</th>
-                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Km fin</th>
-                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Velocidad (km/h)</th>
-                        <th className="text-left py-2 text-gray-600 dark:text-gray-400">Dirección</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {speedLimits.slice(0, 20).map((sl) => {
-                        const speed = sl.speedLimit;
-                        const speedBadge =
-                          speed <= 60
-                            ? "bg-red-100 dark:bg-red-900/30 text-red-800"
-                            : speed <= 80
-                            ? "bg-tl-amber-100 text-tl-amber-800"
-                            : speed <= 100
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-800"
-                            : "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200";
+            {speedLimits.length > 0 && (() => {
+              // Compute summary stats from fetched segments
+              const kmBySpeed: Record<number, { segments: number; km: number }> = {};
+              let totalSpeedKm = 0;
+              for (const sl of speedLimits) {
+                const km = Number(sl.kmEnd) - Number(sl.kmStart);
+                if (!kmBySpeed[sl.speedLimit]) {
+                  kmBySpeed[sl.speedLimit] = { segments: 0, km: 0 };
+                }
+                kmBySpeed[sl.speedLimit].segments += 1;
+                kmBySpeed[sl.speedLimit].km += km;
+                totalSpeedKm += km;
+              }
+              // Default speed = most km covered
+              let defaultSpeed = 0;
+              let maxKm = 0;
+              for (const [speed, stats] of Object.entries(kmBySpeed)) {
+                if (stats.km > maxKm) {
+                  maxKm = stats.km;
+                  defaultSpeed = Number(speed);
+                }
+              }
+              const speedEntries = Object.entries(kmBySpeed)
+                .map(([s, v]) => ({ speed: Number(s), ...v }))
+                .sort((a, b) => b.km - a.km);
+
+              return (
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    Límites de velocidad ({speedLimits.length})
+                  </h2>
+
+                  {/* Summary stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    {/* Default speed */}
+                    <div className="p-3 rounded-lg bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 text-center">
+                      <div className="font-data text-2xl font-bold text-tl-700 dark:text-tl-300">
+                        {defaultSpeed}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">km/h predominante</div>
+                    </div>
+                    {/* Total km */}
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-center">
+                      <div className="font-data text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {Math.round(totalSpeedKm).toLocaleString("es-ES")}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">km mapeados</div>
+                    </div>
+                    {/* Conditional limits */}
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-center">
+                      <div className="font-data text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {speedLimits.filter((sl) => sl.isConditional).length}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">límites condicionales</div>
+                    </div>
+                    {/* Distinct speed values */}
+                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-center">
+                      <div className="font-data text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {speedEntries.length}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">velocidades distintas</div>
+                    </div>
+                  </div>
+
+                  {/* Km breakdown by speed bar */}
+                  {speedEntries.length > 1 && totalSpeedKm > 0 && (
+                    <div className="mb-5 space-y-2">
+                      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        Kilómetros por velocidad
+                      </h3>
+                      {speedEntries.map(({ speed, km, segments }) => {
+                        const pct = totalSpeedKm > 0 ? (km / totalSpeedKm) * 100 : 0;
+                        const barColor =
+                          speed <= 60 ? "bg-red-400"
+                          : speed <= 80 ? "bg-amber-400"
+                          : speed <= 100 ? "bg-green-400"
+                          : "bg-tl-400";
                         return (
-                          <tr key={sl.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950">
-                            <td className="py-2 font-data">{Number(sl.kmStart).toFixed(1)}</td>
-                            <td className="py-2 font-data">{Number(sl.kmEnd).toFixed(1)}</td>
-                            <td className="py-2">
-                              <span className={`px-2 py-0.5 rounded text-xs font-semibold font-data ${speedBadge}`}>
-                                {speed}
-                              </span>
-                            </td>
-                            <td className="py-2 text-gray-500 dark:text-gray-400 text-xs">
-                              {sl.direction ?? "-"}
-                            </td>
-                          </tr>
+                          <div key={speed} className="flex items-center gap-2 text-xs">
+                            <span className="w-16 font-data font-semibold text-gray-700 dark:text-gray-300 text-right flex-shrink-0">
+                              {speed} km/h
+                            </span>
+                            <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
+                              <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.max(pct, 1)}%` }} />
+                            </div>
+                            <span className="w-20 font-data text-gray-500 dark:text-gray-400 flex-shrink-0">
+                              {Math.round(km * 10) / 10} km · {segments} seg.
+                            </span>
+                          </div>
                         );
                       })}
-                    </tbody>
-                  </table>
+                    </div>
+                  )}
+
+                  {/* Segments table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2 text-gray-600 dark:text-gray-400">Km inicio</th>
+                          <th className="text-left py-2 text-gray-600 dark:text-gray-400">Km fin</th>
+                          <th className="text-left py-2 text-gray-600 dark:text-gray-400">Velocidad</th>
+                          <th className="text-left py-2 text-gray-600 dark:text-gray-400">Tipo</th>
+                          <th className="text-left py-2 text-gray-600 dark:text-gray-400">Dirección</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {speedLimits.slice(0, 25).map((sl) => {
+                          const speed = sl.speedLimit;
+                          const speedBadge =
+                            speed <= 60
+                              ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200"
+                              : speed <= 80
+                              ? "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200"
+                              : speed <= 100
+                              ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200"
+                              : "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200";
+                          return (
+                            <tr key={sl.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                              <td className="py-2 font-data">{Number(sl.kmStart).toFixed(1)}</td>
+                              <td className="py-2 font-data">{Number(sl.kmEnd).toFixed(1)}</td>
+                              <td className="py-2">
+                                <span className={`px-2 py-0.5 rounded text-xs font-semibold font-data ${speedBadge}`}>
+                                  {speed}
+                                </span>
+                              </td>
+                              <td className="py-2">
+                                {sl.isConditional ? (
+                                  <span className="px-1.5 py-0.5 rounded text-xs bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300">
+                                    {sl.conditionType ?? "Condicional"}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-gray-400 dark:text-gray-500">General</span>
+                                )}
+                              </td>
+                              <td className="py-2 text-gray-500 dark:text-gray-400 text-xs">
+                                {sl.direction ?? "—"}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {speedLimits.length > 25 && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
+                      Y {speedLimits.length - 25} tramos más...
+                    </p>
+                  )}
                 </div>
-                {speedLimits.length > 20 && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
-                    Y {speedLimits.length - 20} tramos más...
-                  </p>
-                )}
-              </div>
-            )}
+              );
+            })()}
 
             {/* Gas Stations */}
             {gasStations.length > 0 && (

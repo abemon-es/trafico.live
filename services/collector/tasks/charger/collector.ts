@@ -45,6 +45,36 @@ interface ChargerData {
   authMethods: string[];
 }
 
+/**
+ * Infer the charging network brand from the operator name.
+ * The DGT feed provides an operator field but no separate network/brand field.
+ * We derive the network by matching known operator names.
+ */
+function inferNetwork(operator: string | undefined): string | undefined {
+  if (!operator) return undefined;
+
+  const op = operator.toLowerCase();
+
+  if (op.includes("iberdrola")) return "Iberdrola";
+  if (op.includes("tesla")) return "Tesla Supercharger";
+  if (op.includes("endesa")) return "Endesa X";
+  if (op.includes("repsol") || op.includes("waylet")) return "Waylet/Repsol";
+  if (op.includes("wenea")) return "Wenea";
+  if (op.includes("easycharger") || op.includes("easy charger")) return "EasyCharger";
+  if (op.includes("zunder")) return "Zunder";
+  if (op.includes("ionity")) return "IONITY";
+  if (op.includes("cargapoint") || op.includes("chargepoint")) return "ChargePoint";
+  if (op.includes("e.on") || op.includes("eon")) return "E.ON Drive";
+  if (op.includes("bp pulse") || op.includes("bpcharging")) return "BP Pulse";
+  if (op.includes("electromaps")) return "Electromaps";
+  if (op.includes("naturgy")) return "Naturgy";
+  if (op.includes("uflex") || op.includes("ufleet")) return "uFlex";
+  if (op.includes("etecnic") || op.includes("e-tec")) return "eTecnic";
+
+  // Fallback: use the operator name as-is (it IS the network in most cases)
+  return operator;
+}
+
 // XML Parser
 const parser = createXMLParser({
   isArray: (name) =>
@@ -319,14 +349,15 @@ export async function run(prisma: PrismaClient) {
     let updated = 0;
 
     const BATCH = 500;
-    const COLS = 16;
+    const COLS = 17; // id, name, lat, lng, address, city, postalCode, province, provinceName,
+                     // chargerTypes, powerKw, connectors, operator, network, is24h, paymentMethods, lastUpdated
 
     for (let i = 0; i < chargers.length; i += BATCH) {
       const batch = chargers.slice(i, i + BATCH);
 
       const values = batch.map((_, idx) => {
         const b = idx * COLS;
-        return `($${b+1}, $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6}, $${b+7}, $${b+8}, $${b+9}, $${b+10}::"ChargerType"[], $${b+11}, $${b+12}, $${b+13}, $${b+14}, $${b+15}::text[], $${b+16})`;
+        return `($${b+1}, $${b+2}, $${b+3}, $${b+4}, $${b+5}, $${b+6}, $${b+7}, $${b+8}, $${b+9}, $${b+10}::"ChargerType"[], $${b+11}, $${b+12}, $${b+13}, $${b+14}, $${b+15}, $${b+16}::text[], $${b+17})`;
       }).join(", ");
 
       const params = batch.flatMap(charger => {
@@ -335,6 +366,9 @@ export async function run(prisma: PrismaClient) {
         const paymentMethods = charger.authMethods.filter(m =>
           m.includes("payment") || m.includes("card") || m.includes("app") || m.includes("rfid")
         );
+
+        // Infer network brand from operator name
+        const network = inferNetwork(charger.operator);
 
         fetchedIds.add(charger.id);
         if (existingIds.has(charger.id)) updated++; else created++;
@@ -345,7 +379,8 @@ export async function run(prisma: PrismaClient) {
           provinceCode, provinceCode ? PROVINCES[provinceCode] || null : null,
           chargerTypes, // ChargerType[] — cast in SQL
           Math.min(charger.totalPowerKw, 9999.99), charger.connectorCount,
-          charger.operator || null, charger.is24h,
+          charger.operator || null, network || null,
+          charger.is24h,
           paymentMethods, // String[] — cast in SQL
           now
         ];
@@ -355,7 +390,7 @@ export async function run(prisma: PrismaClient) {
         INSERT INTO "EVCharger" (
           id, name, latitude, longitude, address, city, "postalCode",
           province, "provinceName", "chargerTypes", "powerKw", connectors,
-          operator, "is24h", "paymentMethods", "lastUpdated"
+          operator, network, "is24h", "paymentMethods", "lastUpdated"
         ) VALUES ${values}
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
@@ -363,6 +398,7 @@ export async function run(prisma: PrismaClient) {
           province = EXCLUDED.province, "provinceName" = EXCLUDED."provinceName",
           "chargerTypes" = EXCLUDED."chargerTypes", "powerKw" = EXCLUDED."powerKw",
           connectors = EXCLUDED.connectors, operator = EXCLUDED.operator,
+          network = EXCLUDED.network,
           "is24h" = EXCLUDED."is24h", "paymentMethods" = EXCLUDED."paymentMethods",
           "lastUpdated" = EXCLUDED."lastUpdated"
       `, ...params);

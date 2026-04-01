@@ -5,7 +5,6 @@ import { authenticateRequest } from "./lib/auth";
 const CANONICAL_DOMAIN = "trafico.live";
 const CANONICAL_ORIGIN = "https://trafico.live";
 const LEGACY_DOMAINS = [
-  "trafico.logisticsexpress.es",
   "trafico.abemon.es",
 ];
 

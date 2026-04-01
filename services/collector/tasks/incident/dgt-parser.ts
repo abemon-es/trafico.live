@@ -150,9 +150,20 @@ function parseRecord(
     const causeType = cause?.causeType as string | undefined;
     const detailedCause = cause?.detailedCauseType as Record<string, unknown> | undefined;
     // detailedCauseType is usually an object like { fog: {} } - extract the key
-    const detailedCauseType = detailedCause
+    let detailedCauseType = detailedCause
       ? Object.keys(detailedCause)[0]
       : undefined;
+
+    // Also check for accidentType directly on the record (Accident situationRecord)
+    // DATEX II Accident element has accidentType as a direct child field
+    if (!detailedCauseType && record.accidentType) {
+      detailedCauseType = extractAccidentType(record.accidentType);
+    }
+
+    // Also check AbnormalTraffic for abnormalTrafficType as detailed cause
+    if (!detailedCauseType && record.abnormalTrafficType) {
+      detailedCauseType = String(record.abnormalTrafficType);
+    }
 
     // Extract management type from roadOrCarriagewayOrLaneManagementType
     const managementType = extractManagementType(record);
@@ -385,7 +396,7 @@ function extractDescription(record: Record<string, unknown>): string | undefined
 }
 
 function extractManagementType(record: Record<string, unknown>): string | undefined {
-  // Check for road/carriageway/lane management type
+  // Check for road/carriageway/lane management type (direct DATEX II field)
   const managementType = record.roadOrCarriagewayOrLaneManagementType as string | undefined;
   if (managementType) return managementType;
 
@@ -395,16 +406,78 @@ function extractManagementType(record: Record<string, unknown>): string | undefi
     return String(management.roadManagementType);
   }
 
-  // Check for lane closures info
-  const laneClosures = record.numberOfLanesRestricted as number | undefined;
-  if (laneClosures && laneClosures > 0) {
-    return "laneClosures";
+  // Check numberOfLanesRestricted at record level and under operatorAction/networkManagement
+  const lanesRestricted = extractNumberOfLanesRestricted(record);
+  if (lanesRestricted !== undefined && lanesRestricted > 0) {
+    // Return "laneClosures:N" to capture the count precisely
+    return `laneClosures:${lanesRestricted}`;
   }
 
   // Check for diversion
   const diversion = record.diversionInForce as boolean | undefined;
   if (diversion) {
     return "diversion";
+  }
+
+  return undefined;
+}
+
+/**
+ * Extract numberOfLanesRestricted from various DATEX II nesting levels.
+ * The field appears at:
+ *   - record.numberOfLanesRestricted (direct, older format)
+ *   - record.networkManagement.numberOfLanesRestricted
+ *   - record.operatorAction.numberOfLanesRestricted
+ */
+function extractNumberOfLanesRestricted(record: Record<string, unknown>): number | undefined {
+  // Direct field
+  const direct = record.numberOfLanesRestricted;
+  if (direct !== undefined && direct !== null) {
+    const n = parseInt(String(direct), 10);
+    if (!isNaN(n)) return n;
+  }
+
+  // Under networkManagement
+  const networkManagement = record.networkManagement as Record<string, unknown> | undefined;
+  if (networkManagement?.numberOfLanesRestricted !== undefined) {
+    const n = parseInt(String(networkManagement.numberOfLanesRestricted), 10);
+    if (!isNaN(n)) return n;
+  }
+
+  // Under operatorAction
+  const operatorAction = record.operatorAction as Record<string, unknown> | undefined;
+  if (operatorAction?.numberOfLanesRestricted !== undefined) {
+    const n = parseInt(String(operatorAction.numberOfLanesRestricted), 10);
+    if (!isNaN(n)) return n;
+  }
+
+  return undefined;
+}
+
+/**
+ * Extract a normalized accidentType string from the DATEX II accidentType element.
+ * The value may be:
+ *   - A plain string: "headOnCollision"
+ *   - An object with a single key: { "headOnCollision": {} }
+ *   - An object with @_xsi:type attribute
+ */
+function extractAccidentType(accidentTypeValue: unknown): string | undefined {
+  if (!accidentTypeValue) return undefined;
+
+  if (typeof accidentTypeValue === "string") {
+    return accidentTypeValue;
+  }
+
+  if (typeof accidentTypeValue === "object" && accidentTypeValue !== null) {
+    const obj = accidentTypeValue as Record<string, unknown>;
+
+    // xsi:type attribute carries the type name in DATEX II
+    const xsiType = obj["@_xsi:type"] || obj["@_type"];
+    if (xsiType) return String(xsiType);
+
+    // Object key approach: { headOnCollision: {} }
+    const keys = Object.keys(obj).filter(k => !k.startsWith("@_") && !k.startsWith("#"));
+    if (keys.length > 0) return keys[0];
   }
 
   return undefined;

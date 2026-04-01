@@ -90,7 +90,10 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // 301: /combustible → /gasolineras (was a rewrite — duplicate content)
+      // -----------------------------------------------------------------------
+      // Legacy rewrite-turned-redirects (duplicate content)
+      // -----------------------------------------------------------------------
+      // 301: /combustible → /gasolineras
       {
         source: "/combustible",
         destination: "/gasolineras",
@@ -101,7 +104,7 @@ const nextConfig: NextConfig = {
         destination: "/gasolineras/:path*",
         permanent: true,
       },
-      // 301: /alertas → /incidencias (was a rewrite — duplicate content)
+      // 301: /alertas → /incidencias
       {
         source: "/alertas",
         destination: "/incidencias",
@@ -112,18 +115,27 @@ const nextConfig: NextConfig = {
         destination: "/incidencias/:path*",
         permanent: true,
       },
-      // Redirect old /provincias to /espana
+      // 301: /provincias → /espana
       {
         source: "/provincias",
         destination: "/espana",
         permanent: true,
       },
-      // 301: /blog, /insights → /noticias
+      // -----------------------------------------------------------------------
+      // Content duplicates: /blog, /insights, /informes → /noticias
+      // -----------------------------------------------------------------------
       { source: "/blog", destination: "/noticias", permanent: true },
       { source: "/blog/:slug*", destination: "/noticias/:slug*", permanent: true },
       { source: "/insights", destination: "/noticias", permanent: true },
       { source: "/insights/:slug*", destination: "/noticias/:slug*", permanent: true },
-      // 301: /gasolineras/maritimas → /maritimo/combustible
+      { source: "/informes", destination: "/noticias", permanent: true },
+      { source: "/informes/:slug*", destination: "/noticias/:slug*", permanent: true },
+      // -----------------------------------------------------------------------
+      // Maritime fuel: /gasolineras/maritimas is canonical — redirect old path
+      // NOTE: /maritimo/combustible is kept in sitemap as-is (it has real content).
+      //       Do NOT redirect /maritimo/combustible → /gasolineras/maritimas
+      //       as that would create a loop with the rewrite below.
+      // -----------------------------------------------------------------------
       {
         source: "/gasolineras/maritimas",
         destination: "/maritimo/combustible",
@@ -134,8 +146,109 @@ const nextConfig: NextConfig = {
         destination: "/maritimo/combustible/:path*",
         permanent: true,
       },
-      // Note: /provincias/[code] redirects would need middleware
-      // since we need to look up the slug from the code
+      // -----------------------------------------------------------------------
+      // Geographic duplicates
+      // -----------------------------------------------------------------------
+      // /trafico/:city → /ciudad/:city  (city-level traffic pages consolidated)
+      {
+        source: "/trafico/:city",
+        destination: "/ciudad/:city",
+        permanent: true,
+      },
+      // /explorar/territorios/:slug → /comunidad-autonoma/:slug
+      {
+        source: "/explorar/territorios/:slug",
+        destination: "/comunidad-autonoma/:slug",
+        permanent: true,
+      },
+      // /explorar/carreteras/:road → /carreteras/:road
+      {
+        source: "/explorar/carreteras/:road",
+        destination: "/carreteras/:road",
+        permanent: true,
+      },
+      // /explorar → /comunidad-autonoma (base redirect)
+      // Must come AFTER the more-specific /explorar/territorios and /explorar/carreteras
+      {
+        source: "/explorar",
+        destination: "/comunidad-autonoma",
+        permanent: true,
+      },
+      // TODO: /comunidad-autonoma/:community/:province → /provincias/:code
+      //       Requires province-slug→INE-code mapping lookup (not feasible in
+      //       next.config.ts static redirects — handle in middleware if needed)
+      // /comunidad-autonoma/:community/:province/:city → /municipio/:city
+      {
+        source: "/comunidad-autonoma/:community/:province/:city",
+        destination: "/municipio/:city",
+        permanent: true,
+      },
+      // -----------------------------------------------------------------------
+      // Road sub-page consolidation
+      // -----------------------------------------------------------------------
+      // /carreteras/:road/camaras → /camaras/carretera/:road
+      {
+        source: "/carreteras/:road/camaras",
+        destination: "/camaras/carretera/:road",
+        permanent: true,
+      },
+      // /carreteras/:road/radares → /radares/:road
+      {
+        source: "/carreteras/:road/radares",
+        destination: "/radares/:road",
+        permanent: true,
+      },
+      // /analisis/carreteras/:road → /carreteras/:road
+      {
+        source: "/analisis/carreteras/:road",
+        destination: "/carreteras/:road",
+        permanent: true,
+      },
+      // -----------------------------------------------------------------------
+      // Stats / analysis duplicates
+      // -----------------------------------------------------------------------
+      // /analisis/accidentes/:provincia → /estadisticas/accidentes/:provincia
+      {
+        source: "/analisis/accidentes/:provincia",
+        destination: "/estadisticas/accidentes/:provincia",
+        permanent: true,
+      },
+      // /incidencias/estadisticas → /incidencias/analytics
+      {
+        source: "/incidencias/estadisticas",
+        destination: "/incidencias/analytics",
+        permanent: true,
+      },
+      // /historico → /estadisticas
+      {
+        source: "/historico",
+        destination: "/estadisticas",
+        permanent: true,
+      },
+      // -----------------------------------------------------------------------
+      // EV duplicates: /electrolineras → /carga-ev
+      // -----------------------------------------------------------------------
+      {
+        source: "/electrolineras",
+        destination: "/carga-ev",
+        permanent: true,
+      },
+      {
+        source: "/electrolineras/:city",
+        destination: "/carga-ev/:city",
+        permanent: true,
+      },
+      // -----------------------------------------------------------------------
+      // Fuel map province pages
+      // /gasolineras/mapa/provincia/:code → /gasolineras/mapa
+      // (Query-param rewrites not supported in next.config.ts redirects)
+      // -----------------------------------------------------------------------
+      {
+        source: "/gasolineras/mapa/provincia/:code",
+        destination: "/gasolineras/mapa",
+        permanent: true,
+      },
+      // Note: /provincias/[code] redirects require middleware DB lookup
     ];
   },
 };

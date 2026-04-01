@@ -8,12 +8,16 @@ const CACHE_TTL = 300; // 5 minutes — panels update every ~5 min
 
 export interface PanelResponseItem {
   id: string;
+  panelId: string;
+  name: string | null;
   roadNumber: string;
   kmPoint: number | null;
   direction: string | null;
   province: string;
   provinceName: string;
   message: string | null;
+  messageType: string | null;
+  messageStartAt: string | null;
   hasMessage: boolean;
   latitude: number;
   longitude: number;
@@ -72,12 +76,16 @@ export async function GET(request: NextRequest) {
       take: 5000,
       select: {
         id: true,
+        panelId: true,
+        name: true,
         roadNumber: true,
         kmPoint: true,
         direction: true,
         province: true,
         provinceName: true,
         message: true,
+        messageType: true,
+        messageStartAt: true,
         hasMessage: true,
         latitude: true,
         longitude: true,
@@ -87,12 +95,16 @@ export async function GET(request: NextRequest) {
 
     const panels: PanelResponseItem[] = dbPanels.map((panel) => ({
       id: panel.id,
+      panelId: panel.panelId,
+      name: panel.name,
       roadNumber: panel.roadNumber || "",
       kmPoint: panel.kmPoint ? Number(panel.kmPoint) : null,
       direction: panel.direction,
       province: panel.province || "",
       provinceName: panel.provinceName || "",
       message: panel.message,
+      messageType: panel.messageType ?? null,
+      messageStartAt: panel.messageStartAt ? panel.messageStartAt.toISOString() : null,
       hasMessage: panel.hasMessage,
       latitude: Number(panel.latitude),
       longitude: Number(panel.longitude),

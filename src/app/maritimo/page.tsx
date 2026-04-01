@@ -46,13 +46,17 @@ export const metadata: Metadata = {
 // ---------------------------------------------------------------------------
 
 async function getStats() {
-  const [maritimeCount, coastalAlerts, avgGasoleoA, portCount] = await Promise.all([
+  const [maritimeCount, coastalAlerts, priceAggregates, portCount] = await Promise.all([
     prisma.maritimeStation.count(),
     prisma.weatherAlert.count({
       where: { type: "COASTAL", isActive: true },
     }),
     prisma.maritimeStation.aggregate({
-      _avg: { priceGasoleoA: true },
+      _avg: {
+        priceGasoleoA: true,
+        priceGasoleoB: true,
+        priceGasolina95E5: true,
+      },
     }),
     prisma.maritimeStation.findMany({
       where: { port: { not: null } },
@@ -61,7 +65,22 @@ async function getStats() {
     }).then((r: { port: string | null }[]) => r.length),
   ]);
 
-  return { maritimeCount, coastalAlerts, avgGasoleoA, portCount };
+  // Normalize priceGasoleoB: bulk pricing is per 1000L → convert to per-litre
+  const rawAvgB = priceAggregates._avg.priceGasoleoB
+    ? Number(priceAggregates._avg.priceGasoleoB)
+    : null;
+  const avgGasoleoB = rawAvgB && rawAvgB > 10 ? rawAvgB / 1000 : rawAvgB;
+
+  return {
+    maritimeCount,
+    coastalAlerts,
+    avgGasoleoA: priceAggregates._avg.priceGasoleoA,
+    avgGasoleoB,
+    avgGasolina95: priceAggregates._avg.priceGasolina95E5
+      ? Number(priceAggregates._avg.priceGasolina95E5)
+      : null,
+    portCount,
+  };
 }
 
 async function getActiveCoastalAlerts() {
@@ -307,13 +326,49 @@ export default async function MaritimoPage() {
                 </span>
               </div>
               <div className="font-mono text-3xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                {formatPrice(stats.avgGasoleoA._avg.priceGasoleoA)}
+                {formatPrice(stats.avgGasoleoA)}
               </div>
               <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 estaciones marítimas
               </div>
             </div>
           </div>
+
+          {/* Extended fuel price stats */}
+          {(stats.avgGasoleoB != null || stats.avgGasolina95 != null) && (
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {stats.avgGasoleoB != null && (
+                <div className="rounded-xl border p-4 bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: "var(--color-tl-sea-100)" }}>
+                    <Fuel className="w-5 h-5 text-tl-sea-600 dark:text-tl-sea-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Precio medio Gasóleo B</div>
+                    <div className="font-mono text-xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
+                      {formatPrice(stats.avgGasoleoB)}
+                    </div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">uso profesional (flota pesquera)</div>
+                  </div>
+                </div>
+              )}
+              {stats.avgGasolina95 != null && (
+                <div className="rounded-xl border p-4 bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: "var(--color-tl-sea-100)" }}>
+                    <Fuel className="w-5 h-5 text-tl-sea-600 dark:text-tl-sea-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Precio medio Gasolina 95</div>
+                    <div className="font-mono text-xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
+                      {formatPrice(stats.avgGasolina95)}
+                    </div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">embarcaciones de recreo</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* ---------------------------------------------------------------- */}

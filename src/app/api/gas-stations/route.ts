@@ -20,9 +20,15 @@ interface GasStationResponse {
   nearestRoad: string | null;
   roadKm: number | null;
   priceGasoleoA: number | null;
+  priceGasoleoB: number | null;
   priceGasolina95E5: number | null;
+  priceGasolina95E10: number | null;
   priceGasolina98E5: number | null;
+  priceGasolina98E10: number | null;
   priceGLP: number | null;
+  priceGNC: number | null;
+  priceGNL: number | null;
+  priceHidrogeno: number | null;
   schedule: string | null;
   is24h: boolean;
   lastPriceUpdate: string;
@@ -170,9 +176,15 @@ export async function GET(request: NextRequest) {
       nearestRoad: s.nearestRoad,
       roadKm: s.roadKm ? Number(s.roadKm) : null,
       priceGasoleoA: s.priceGasoleoA ? Number(s.priceGasoleoA) : null,
+      priceGasoleoB: s.priceGasoleoB ? Number(s.priceGasoleoB) : null,
       priceGasolina95E5: s.priceGasolina95E5 ? Number(s.priceGasolina95E5) : null,
+      priceGasolina95E10: s.priceGasolina95E10 ? Number(s.priceGasolina95E10) : null,
       priceGasolina98E5: s.priceGasolina98E5 ? Number(s.priceGasolina98E5) : null,
+      priceGasolina98E10: s.priceGasolina98E10 ? Number(s.priceGasolina98E10) : null,
       priceGLP: s.priceGLP ? Number(s.priceGLP) : null,
+      priceGNC: s.priceGNC ? Number(s.priceGNC) : null,
+      priceGNL: s.priceGNL ? Number(s.priceGNL) : null,
+      priceHidrogeno: s.priceHidrogeno ? Number(s.priceHidrogeno) : null,
       schedule: s.schedule,
       is24h: s.is24h,
       lastPriceUpdate: s.lastPriceUpdate.toISOString(),
