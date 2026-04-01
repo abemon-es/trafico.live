@@ -46,6 +46,12 @@ interface APIStation {
   "Precio Gas Natural Comprimido": string;
   "Precio Gas Natural Licuado": string;
   "Precio Hidrogeno": string;
+  // Biofuel fields available in the API response but not yet stored:
+  // TODO: add priceGasoleoNuevoA, priceBioetanol, priceBiodiesel to GasStation schema
+  // before enabling these fields in the upsert query.
+  "Precio Nuevo Gasóleo A": string;  // TODO: store when schema adds priceGasoleoNuevoA
+  "Precio Bioetanol": string;        // TODO: store when schema adds priceBioetanol
+  "Precio Biodiesel": string;        // TODO: store when schema adds priceBiodiesel
 }
 
 interface APIResponse {
@@ -175,6 +181,10 @@ export async function run(prisma: PrismaClient) {
         priceGNC: parsePrice(station["Precio Gas Natural Comprimido"]),
         priceGNL: parsePrice(station["Precio Gas Natural Licuado"]),
         priceHidrogeno: parsePrice(station["Precio Hidrogeno"]),
+        // TODO: store biofuel prices once GasStation schema is extended:
+        //   priceGasoleoNuevoA: parsePrice(station["Precio Nuevo Gasóleo A"]),
+        //   priceBioetanol:     parsePrice(station["Precio Bioetanol"]),
+        //   priceBiodiesel:     parsePrice(station["Precio Biodiesel"]),
         nearestRoad: roadInfo.road,
         roadKm: roadInfo.km,
         schedule: station.Horario || null,
