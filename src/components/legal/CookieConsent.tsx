@@ -34,26 +34,9 @@ function setConsent(analytics: boolean) {
   localStorage.setItem(CONSENT_KEY, JSON.stringify(state));
 }
 
-/** Signal consent granted and load GA4 script */
+/** Signal consent granted — gtag.js is already loaded by layout */
 function grantAnalytics() {
-  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  if (!gaId) return;
-
   window.gtag?.("consent", "update", { analytics_storage: "granted" });
-
-  if (document.querySelector(`script[src*="googletagmanager"]`)) return;
-
-  const script = document.createElement("script");
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-  script.async = true;
-  document.head.appendChild(script);
-
-  script.onload = () => {
-    window.gtag?.("js", new Date());
-    window.gtag?.("config", gaId, {
-      anonymize_ip: true,
-    });
-  };
 }
 
 /** Signal consent denied */
