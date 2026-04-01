@@ -1,3 +1,6 @@
+# Coolify-managed collector — long-running container for scheduled tasks
+# Each collector runs via Coolify's Scheduled Tasks: TASK=X npx tsx index.ts
+
 # Stage 1: Install deps + generate Prisma client
 FROM node:20-slim AS builder
 
@@ -5,11 +8,9 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Copy package files first (layer cache)
 COPY services/collector/package.json services/collector/package-lock.json* ./
 RUN npm ci --omit=dev
 
-# Generate Prisma client
 COPY prisma/schema.prisma ./prisma/
 COPY prisma.config.ts ./
 RUN npx prisma generate
@@ -23,12 +24,10 @@ RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/
 RUN addgroup --system --gid 1001 collector && \
     adduser --system --uid 1001 collector
 
-# Copy deps + prisma from builder
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./
 
-# Copy source code (changes often — last layer)
 COPY services/collector/ ./
 
 ENV TZ=Europe/Madrid
@@ -36,7 +35,5 @@ ENV NODE_ENV=production
 
 USER collector
 
-ENTRYPOINT []
-# Default: run once and exit (for docker run --rm -e TASK=X)
-# Override with CMD ["sleep", "infinity"] for Coolify scheduled tasks mode
-CMD ["npx", "tsx", "index.ts"]
+# Long-running mode — Coolify scheduled tasks exec commands into this container
+CMD ["sh", "-c", "echo 'Collector ready for scheduled tasks' && exec sleep infinity"]
