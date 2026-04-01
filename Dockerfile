@@ -19,7 +19,7 @@ FROM node:24-slim AS runtime
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+RUN apt-get update && apt-get install -y --no-install-recommends curl wget && \
     rm -rf /var/lib/apt/lists/* && \
     addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
