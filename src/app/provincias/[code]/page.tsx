@@ -28,7 +28,8 @@ import {
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { provinceDescription } from "@/lib/seo/text-generators";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

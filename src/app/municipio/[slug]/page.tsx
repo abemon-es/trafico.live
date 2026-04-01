@@ -25,8 +25,9 @@ import {
   V16Section,
 } from "@/components/location/sections";
 
-// On-demand ISR — pages generated at request time, cached for 10 minutes
-export const revalidate = 600;
+// Force dynamic SSR (builds run without DATABASE_URL, ISR caches empty results)
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 // Allow any slug to be served dynamically (8000+ municipalities)
 export const dynamicParams = true;
 
