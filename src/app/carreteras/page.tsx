@@ -1,6 +1,6 @@
 import Link from "next/link";
 import prisma from "@/lib/db";
-import { Route, Car, Construction, MapPin } from "lucide-react";
+import { Route, Car, Construction, MapPin, TrendingUp, Globe } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
@@ -53,6 +53,25 @@ const ROAD_TYPE_CONFIG = {
   },
 };
 
+// Type labels for the network stats section
+const ROAD_TYPE_STAT_LABEL: Record<string, string> = {
+  AUTOPISTA: "Autopistas",
+  AUTOVIA: "Autovías",
+  NACIONAL: "Nacionales",
+  COMARCAL: "Comarcales",
+  PROVINCIAL: "Provinciales",
+  OTHER: "Otras",
+};
+
+const ROAD_TYPE_COLOR: Record<string, string> = {
+  AUTOPISTA: "bg-purple-500",
+  AUTOVIA: "bg-tl-500",
+  NACIONAL: "bg-red-500",
+  COMARCAL: "bg-orange-500",
+  PROVINCIAL: "bg-yellow-500",
+  OTHER: "bg-gray-400",
+};
+
 export default async function CarreterasPage() {
   // Get roads grouped by type with counts
   const roadsByType = await prisma.road.groupBy({
@@ -74,14 +93,38 @@ export default async function CarreterasPage() {
     })
   );
 
-  // Get infrastructure counts
-  const [cameraCount, radarCount, incidentCount] = await Promise.all([
+  // Get infrastructure counts + road network km stats
+  const [cameraCount, radarCount, incidentCount, totalKmAgg, longestRoadsRaw] = await Promise.all([
     prisma.camera.count({ where: { isActive: true } }),
     prisma.radar.count({ where: { isActive: true } }),
     prisma.trafficIncident.count({ where: { isActive: true } }),
+    prisma.road.aggregate({ _sum: { totalKm: true } }),
+    prisma.road.findMany({
+      orderBy: { totalKm: "desc" },
+      take: 5,
+      select: { id: true, name: true, type: true, totalKm: true },
+    }),
   ]);
 
   const totalRoads = roadsByType.reduce((acc, r) => acc + r._count, 0);
+  const totalKm = Math.round(Number(totalKmAgg._sum.totalKm ?? 0));
+
+  // Build type stats with km totals — reuse groupBy with _sum
+  const roadsByTypeWithKm = await prisma.road.groupBy({
+    by: ["type"],
+    _count: true,
+    _sum: { totalKm: true },
+    orderBy: { _sum: { totalKm: "desc" } },
+  });
+
+  const longestRoads = longestRoadsRaw
+    .filter((r) => r.totalKm != null)
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      type: r.type,
+      totalKm: Number(r.totalKm),
+    }));
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -170,6 +213,104 @@ export default async function CarreterasPage() {
             );
           })}
         </div>
+
+        {/* Road Network Stats */}
+        {totalKm > 0 && (
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+              Red viaria española
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Estadísticas de la red de carreteras del Estado (RCE), fuente: MITMA.
+            </p>
+
+            {/* Main KPI row */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              <div className="text-center p-4 rounded-lg bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800">
+                <div className="font-data text-3xl font-bold text-tl-700 dark:text-tl-300">
+                  {totalKm.toLocaleString("es-ES")}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">km totales</div>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                <div className="font-data text-3xl font-bold text-purple-700 dark:text-purple-300">
+                  {(roadsByTypeWithKm.find((r) => r.type === "AUTOPISTA")?._count ?? 0) +
+                   (roadsByTypeWithKm.find((r) => r.type === "AUTOVIA")?._count ?? 0)}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">autopistas + autovías</div>
+              </div>
+              <div className="col-span-2 md:col-span-1 text-center p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                <div className="flex items-center justify-center gap-2">
+                  <Globe className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <div className="font-data text-3xl font-bold text-amber-700 dark:text-amber-300">
+                    #1 Europa
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">mayor red de autovías en Europa</div>
+              </div>
+            </div>
+
+            {/* Breakdown by type */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                Desglose por tipo de vía
+              </h3>
+              {roadsByTypeWithKm.map((row) => {
+                const km = Math.round(Number(row._sum.totalKm ?? 0));
+                const pct = totalKm > 0 ? Math.round((km / totalKm) * 100) : 0;
+                const colorClass = ROAD_TYPE_COLOR[row.type] ?? "bg-gray-400";
+                return (
+                  <div key={row.type} className="flex items-center gap-3">
+                    <div className="w-32 text-sm text-gray-600 dark:text-gray-400 flex-shrink-0">
+                      {ROAD_TYPE_STAT_LABEL[row.type] ?? row.type}
+                    </div>
+                    <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${colorClass}`}
+                        style={{ width: `${Math.max(pct, 1)}%` }}
+                      />
+                    </div>
+                    <div className="w-24 text-right font-data text-sm font-semibold text-gray-900 dark:text-gray-100 flex-shrink-0">
+                      {km.toLocaleString("es-ES")} km
+                    </div>
+                    <div className="w-10 text-right font-data text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                      {pct}%
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Top 5 longest roads */}
+            {longestRoads.length > 0 && (
+              <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
+                  Las 5 carreteras más largas
+                </h3>
+                <div className="space-y-2">
+                  {longestRoads.map((road, i) => (
+                    <div key={road.id} className="flex items-center gap-3">
+                      <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 font-data">
+                        {i + 1}
+                      </span>
+                      <Link
+                        href={`/carreteras/${road.id}`}
+                        className="flex-1 font-semibold text-sm text-gray-900 dark:text-gray-100 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                      >
+                        {road.id}
+                        {road.name && <span className="font-normal text-gray-500 dark:text-gray-400 ml-1.5">— {road.name}</span>}
+                      </Link>
+                      <span className="font-data text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">
+                        {road.totalKm.toLocaleString("es-ES", { maximumFractionDigits: 0 })} km
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* SEO Content */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
