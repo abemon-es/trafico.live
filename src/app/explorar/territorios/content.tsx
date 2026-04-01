@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import Link from "next/link";
 import useSWR from "swr";
 import { MapPin, Users, ChevronRight, AlertTriangle, Loader2, AlertCircle, Radio } from "lucide-react";
@@ -40,7 +41,6 @@ interface ApiResponse {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function TerritoriosContent() {
   const { data, error, isLoading } = useSWR<ApiResponse>("/api/espana", fetcher, {
@@ -77,6 +77,7 @@ export default function TerritoriosContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="sr-only">Explorar Territorios de España</h1>
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {/* Real-time - highlighted first */}

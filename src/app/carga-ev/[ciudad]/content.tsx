@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -40,7 +41,6 @@ interface CiudadCargaEVContentProps {
   cityData: { name: string; province: string };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const POWER_LEVELS = [
   { id: "slow", label: "Lenta (<22 kW)", min: 0, max: 22, color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" },

@@ -84,6 +84,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `${BASE_URL}/gasolineras/precios/${province}`,
     },
+    openGraph: {
+      title: `Precios Combustible en ${provinceData.name} | Tráfico España`,
+      description: `Consulta los precios de combustible en las gasolineras de ${provinceData.name}. Encuentra la gasolinera más barata.`,
+      url: `${BASE_URL}/gasolineras/precios/${province}`,
+      images: [`${BASE_URL}/og-image.webp`],
+    },
   };
 }
 

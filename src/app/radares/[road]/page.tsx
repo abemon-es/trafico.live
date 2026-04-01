@@ -19,6 +19,8 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const revalidate = 3600;
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 const CURRENT_YEAR = new Date().getFullYear();
 
 // Major roads pre-generated at build time
@@ -129,7 +131,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `${countText} con ubicación exacta y límite de velocidad en la ${roadId}. Consulta la lista completa de radares DGT.`,
     },
     alternates: {
-      canonical: `https://trafico.live/radares/${encodeURIComponent(roadId)}`,
+      canonical: `${BASE_URL}/radares/${encodeURIComponent(roadId)}`,
     },
   };
 }
@@ -206,8 +208,6 @@ export default async function RadaresRoadPage({ params }: PageProps) {
       acceptedAnswer: { "@type": "Answer", text: item.answer },
     })),
   };
-
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
   const webPageSchema = {
     "@context": "https://schema.org",

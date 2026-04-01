@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -6,6 +7,22 @@ import TerrestresClient from "./TerrestresClient";
 // force-dynamic: Coolify builds with DATABASE_URL='' so ISR caches empty pages.
 // Dynamic rendering ensures live DB queries at request time.
 export const dynamic = "force-dynamic";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
+export const metadata: Metadata = {
+  title: "Gasolineras Terrestres en España — Precios y Directorio",
+  description: "Directorio completo de gasolineras terrestres en España. Consulta precios de Gasóleo A, Gasolina 95 y otros combustibles. Datos actualizados del Ministerio.",
+  alternates: {
+    canonical: `${BASE_URL}/gasolineras/terrestres`,
+  },
+  openGraph: {
+    title: "Gasolineras Terrestres en España — Precios y Directorio",
+    description: "Directorio completo de gasolineras terrestres en España. Consulta precios de Gasóleo A, Gasolina 95 y otros combustibles. Datos actualizados del Ministerio.",
+    url: `${BASE_URL}/gasolineras/terrestres`,
+    images: [`${BASE_URL}/og-image.webp`],
+  },
+};
 
 export default async function TerrestresPage() {
   const [stations, total] = await Promise.all([

@@ -11,16 +11,16 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
   const schema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      // Implicit "Inicio" is always index 0 if not included, but we include all items
       ...items.map((item, index) => ({
         "@type": "ListItem",
         position: index + 1,
         name: item.name,
-        item: `https://trafico.live${item.href}`,
+        item: `${baseUrl}${item.href}`,
       })),
     ],
   };

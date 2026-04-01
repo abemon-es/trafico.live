@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: "%s | trafico.live",
   },
   description:
-    "Tráfico en tiempo real en España: incidencias, cámaras DGT, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones. Datos oficiales actualizados cada 60 segundos.",
+    "Tráfico en tiempo real en España: incidencias, cámaras DGT, radares, precios de combustible y cargadores eléctricos. Datos oficiales actualizados.",
   keywords: [
     "tráfico",
     "tráfico en tiempo real",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${BASE_URL}/og-image.png`,
+        url: `${BASE_URL}/og-image.webp`,
         width: 1200,
         height: 630,
         alt: "trafico.live — Tráfico España en Tiempo Real",
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     site: "@traficolive",
     title: "trafico.live — Tráfico España en Tiempo Real",
     description: "Inteligencia vial en tiempo real para toda España",
-    images: [`${BASE_URL}/og-image.png`],
+    images: [`${BASE_URL}/og-image.webp`],
   },
   robots: {
     index: true,

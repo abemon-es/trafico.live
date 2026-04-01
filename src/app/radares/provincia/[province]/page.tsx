@@ -19,6 +19,7 @@ import { provinceSlug } from "@/lib/geo/slugify";
 
 export const dynamic = "force-dynamic";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const CURRENT_YEAR = new Date().getFullYear();
 
 const RADAR_TYPE_LABELS: Record<string, { label: string; color: string }> = {
@@ -71,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: `${count} radares activos en ${province.name} con ubicación, tipo y límite de velocidad. Fuente: DGT.`,
     },
     alternates: {
-      canonical: `https://trafico.live/radares/provincia/${provinceSlugParam}`,
+      canonical: `${BASE_URL}/radares/provincia/${provinceSlugParam}`,
     },
   };
 }
@@ -98,8 +99,6 @@ export default async function RadaresProvinciaPage({ params }: Props) {
       orderBy: { _count: { roadNumber: "desc" } },
     }),
   ]);
-
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
   const sectionCount = byType.find((t) => t.type === "SECTION")?._count ?? 0;
 

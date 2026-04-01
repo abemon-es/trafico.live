@@ -59,6 +59,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `${BASE_URL}/carga-ev/${ciudad}`,
     },
+    openGraph: {
+      title: `Cargadores Eléctricos en ${cityData.name}`,
+      description: `Encuentra puntos de carga para vehículos eléctricos en ${cityData.name}. Mapa de cargadores, potencia disponible y tipos de conectores.`,
+      url: `${BASE_URL}/carga-ev/${ciudad}`,
+      images: [`${BASE_URL}/og-image.webp`],
+    },
   };
 }
 

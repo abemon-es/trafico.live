@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
@@ -94,7 +95,6 @@ interface ZBEResponse {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Sub-tabs
 const SUB_TABS = [
@@ -202,6 +202,7 @@ export default function InfraestructuraContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="sr-only">Explorar Infraestructura de Tráfico</h1>
       {/* Sub-tab navigation */}
       <div className="flex flex-wrap gap-2 mb-6">
         {SUB_TABS.map((tab) => {

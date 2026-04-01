@@ -16,6 +16,8 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 // -------------------------------------------------------------------------
 // City registry — 20 cities targeting "electrolineras [city]" (2-6K/mo each)
 // provinceCode matches EVCharger.province (INE 2-digit code, zero-padded)
@@ -118,13 +120,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "mapa electrolineras",
     ],
     alternates: {
-      canonical: `https://trafico.live/electrolineras/${city}`,
+      canonical: `${BASE_URL}/electrolineras/${city}`,
     },
     openGraph: {
       title,
       description,
       type: "website",
-      url: `https://trafico.live/electrolineras/${city}`,
+      url: `${BASE_URL}/electrolineras/${city}`,
     },
   };
 }

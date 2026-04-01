@@ -23,6 +23,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const revalidate = 3600;
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const CURRENT_YEAR = new Date().getFullYear();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -543,12 +544,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `ZBE ${cfg.name} — Zona de Bajas Emisiones ${CURRENT_YEAR}`,
       description: `Restricciones de acceso, etiquetas permitidas, horarios y multas de la Zona de Bajas Emisiones de ${cfg.name}.`,
-      url: `https://trafico.live/zbe/${city}`,
+      url: `${BASE_URL}/zbe/${city}`,
       type: "website",
       locale: "es_ES",
     },
     alternates: {
-      canonical: `https://trafico.live/zbe/${city}`,
+      canonical: `${BASE_URL}/zbe/${city}`,
     },
   };
 }
@@ -600,7 +601,7 @@ export default async function ZBECityPage({ params }: Props) {
     "@type": "AdministrativeArea",
     name: `Zona de Bajas Emisiones de ${cfg.name}`,
     description: cfg.description,
-    url: `https://trafico.live/zbe/${city}`,
+    url: `${BASE_URL}/zbe/${city}`,
     containedInPlace: {
       "@type": "City",
       name: cfg.name,

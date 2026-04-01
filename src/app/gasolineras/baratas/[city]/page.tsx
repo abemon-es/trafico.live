@@ -8,6 +8,8 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 3600;
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
 const CITIES: Record<string, { name: string; province: string; provinceCode: string; provinceSlug: string }> = {
   madrid: { name: "Madrid", province: "Madrid", provinceCode: "28", provinceSlug: "madrid" },
   barcelona: { name: "Barcelona", province: "Barcelona", provinceCode: "08", provinceSlug: "barcelona" },
@@ -51,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `Gasolineras Baratas en ${cityData.name} — Precios Hoy`,
     description: `Las gasolineras más baratas de ${cityData.name} hoy. Top 10 con precios de Gasóleo A y Gasolina 95 actualizados. Ahorra en tu próximo repostaje.`,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live"}/gasolineras/baratas/${city}`,
+      canonical: `${BASE_URL}/gasolineras/baratas/${city}`,
     },
     openGraph: {
       title: `Gasolineras Baratas en ${cityData.name} — Precios Hoy`,
@@ -179,7 +181,7 @@ export default async function BaratasCityPage({ params }: Props) {
     "@type": "ItemList",
     name: `Gasolineras más baratas en ${cityData.name}`,
     description: `Las 10 gasolineras con el gasóleo A más barato en ${cityData.province} hoy`,
-    url: `https://trafico.live/gasolineras/baratas/${city}`,
+    url: `${BASE_URL}/gasolineras/baratas/${city}`,
     numberOfItems: cheapestDiesel.length,
     itemListElement: cheapestDiesel.slice(0, 5).map((station, idx) => ({
       "@type": "ListItem",

@@ -8,6 +8,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 export const dynamic = "force-dynamic";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const CURRENT_YEAR = new Date().getFullYear();
 
 const FUEL_TYPES: Record<
@@ -87,7 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
     },
     alternates: {
-      canonical: `https://trafico.live/gasolineras/tipo/${fuelType}`,
+      canonical: `${BASE_URL}/gasolineras/tipo/${fuelType}`,
     },
   };
 }
@@ -206,7 +207,7 @@ export default async function FuelTypePage({ params }: Props) {
         "@type": "ItemList",
         name: `Gasolineras con ${fuel.label} más baratas en España`,
         description: `Las 20 estaciones de servicio con ${fuel.name} más barato en toda España`,
-        url: `https://trafico.live/gasolineras/tipo/${fuelType}`,
+        url: `${BASE_URL}/gasolineras/tipo/${fuelType}`,
         numberOfItems: stations.length,
         itemListElement: stations.slice(0, 5).map((s, i) => ({
           "@type": "ListItem",

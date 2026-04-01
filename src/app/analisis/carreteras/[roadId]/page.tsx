@@ -20,6 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `Intensidad de tráfico ${road} — Análisis IMD | trafico.live`,
     description: `Análisis de la Intensidad Media Diaria (IMD) en la ${road}: vehículos/día, porcentaje de pesados y evolución anual. Datos del Ministerio de Transportes.`,
     alternates: { canonical: `${BASE_URL}/analisis/carreteras/${roadId}` },
+    openGraph: {
+      title: `Intensidad de tráfico ${road} — Análisis IMD | trafico.live`,
+      description: `Análisis de la Intensidad Media Diaria (IMD) en la ${road}: vehículos/día, porcentaje de pesados y evolución anual. Datos del Ministerio de Transportes.`,
+      url: `${BASE_URL}/analisis/carreteras/${roadId}`,
+      images: [`${BASE_URL}/og-image.webp`],
+    },
   };
 }
 

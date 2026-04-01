@@ -105,7 +105,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
     },
     alternates: {
-      canonical: `https://trafico.live/camaras/${city}`,
+      canonical: `${BASE_URL}/camaras/${city}`,
     },
   };
 }

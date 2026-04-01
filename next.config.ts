@@ -35,8 +35,8 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://www.googletagmanager.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com https://fonts.openmaptiles.org",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' https://fonts.openmaptiles.org",
       "img-src 'self' data: https: blob:",
       "connect-src 'self' https://*.cartocdn.com https://*.carto.com https://fonts.openmaptiles.org https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
       "worker-src 'self' blob:",
@@ -46,7 +46,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       // DGT camera feeds (NAP portal)
       {
