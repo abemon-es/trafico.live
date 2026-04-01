@@ -54,6 +54,21 @@ export default function CargaEVPage() {
             { name: "Puntos de Recarga EV", href: "/carga-ev" },
           ]}
         />
+
+        {/* Server-rendered subpage links for SEO — visually hidden, fully crawlable */}
+        <h2 className="sr-only">Puntos de carga para vehículos eléctricos en España</h2>
+        <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
+          <div>
+            <a href="/carga-ev/cerca" tabIndex={-1}>Cargadores eléctricos cerca de mí</a>
+            <a href="/electrolineras" tabIndex={-1}>Electrolineras en España</a>
+            <a href="/electrolineras/madrid" tabIndex={-1}>Electrolineras en Madrid</a>
+            <a href="/electrolineras/barcelona" tabIndex={-1}>Electrolineras en Barcelona</a>
+            <a href="/electrolineras/valencia" tabIndex={-1}>Electrolineras en Valencia</a>
+            <a href="/cuanto-cuesta-cargar" tabIndex={-1}>¿Cuánto cuesta cargar un coche eléctrico?</a>
+            <a href="/etiqueta-ambiental" tabIndex={-1}>Etiqueta ambiental DGT</a>
+          </div>
+        </nav>
+
         <Suspense fallback={<LoadingFallback />}>
           <CargaEVContent />
         </Suspense>

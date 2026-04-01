@@ -63,7 +63,7 @@ export default function CamarasPage() {
             autopistas, autovías y carreteras nacionales de toda España. Busca por
             carretera, kilómetro o provincia.
           </p>
-          <h2 className="sr-only">Buscar y filtrar cámaras DGT por provincia y carretera</h2>
+          <h2 className="sr-only">Cámaras de tráfico en directo de la DGT en toda España</h2>
         </div>
       </div>
 
@@ -75,12 +75,10 @@ export default function CamarasPage() {
             { city: "barcelona", label: "Cámaras de tráfico en Barcelona" },
             { city: "valencia", label: "Cámaras de tráfico en Valencia" },
             { city: "sevilla", label: "Cámaras de tráfico en Sevilla" },
-            { city: "zaragoza", label: "Cámaras de tráfico en Zaragoza" },
-            { city: "malaga", label: "Cámaras de tráfico en Málaga" },
             { city: "bilbao", label: "Cámaras de tráfico en Bilbao" },
-            { city: "alicante", label: "Cámaras de tráfico en Alicante" },
+            { city: "malaga", label: "Cámaras de tráfico en Málaga" },
+            { city: "zaragoza", label: "Cámaras de tráfico en Zaragoza" },
             { city: "murcia", label: "Cámaras de tráfico en Murcia" },
-            { city: "granada", label: "Cámaras de tráfico en Granada" },
           ].map(({ city, label }) => (
             <li key={city}>
               <Link href={`/camaras/${city}`}>{label}</Link>

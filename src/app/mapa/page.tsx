@@ -49,6 +49,22 @@ export default function MapaPage() {
           { name: "Mapa Interactivo", href: "/mapa" },
         ]} />
       </div>
+
+      {/* Server-rendered subpage links for SEO — visually hidden, fully crawlable */}
+      <h2 className="sr-only">Mapa de tráfico interactivo con incidencias, radares y cámaras en España</h2>
+      <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
+        <div>
+          <a href="/trafico/madrid" tabIndex={-1}>Tráfico en Madrid</a>
+          <a href="/trafico/barcelona" tabIndex={-1}>Tráfico en Barcelona</a>
+          <a href="/trafico/valencia" tabIndex={-1}>Tráfico en Valencia</a>
+          <a href="/camaras" tabIndex={-1}>Cámaras de tráfico DGT</a>
+          <a href="/radares" tabIndex={-1}>Radares de tráfico</a>
+          <a href="/gasolineras/mapa" tabIndex={-1}>Mapa de gasolineras</a>
+          <a href="/carga-ev" tabIndex={-1}>Cargadores eléctricos</a>
+          <a href="/maritimo/mapa" tabIndex={-1}>Mapa marítimo</a>
+        </div>
+      </nav>
+
       <MapaClient />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
         <RelatedLinks links={[

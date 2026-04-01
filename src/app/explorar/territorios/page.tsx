@@ -19,6 +19,17 @@ export default function TerritoriosPage() {
           { name: "Explorar", href: "/explorar" },
           { name: "Territorios", href: "/explorar/territorios" },
         ]} />
+
+        {/* Server-rendered section links — visible, crawlable without JS */}
+        <nav aria-label="Explorar por sección" className="mt-4 mb-2 flex flex-wrap gap-3 text-sm">
+          <a href="/explorar/territorios" className="text-tl-600 dark:text-tl-400 hover:underline">Territorios</a>
+          <a href="/explorar/carreteras" className="text-tl-600 dark:text-tl-400 hover:underline">Carreteras</a>
+          <a href="/explorar/infraestructura" className="text-tl-600 dark:text-tl-400 hover:underline">Infraestructura</a>
+          <a href="/comunidad-autonoma" className="text-tl-600 dark:text-tl-400 hover:underline">Comunidades autónomas</a>
+          <a href="/espana" className="text-tl-600 dark:text-tl-400 hover:underline">España</a>
+          <a href="/ciudad" className="text-tl-600 dark:text-tl-400 hover:underline">Ciudades</a>
+          <a href="/municipio" className="text-tl-600 dark:text-tl-400 hover:underline">Municipios</a>
+        </nav>
       </div>
       <TerritoriosContent />
     </>

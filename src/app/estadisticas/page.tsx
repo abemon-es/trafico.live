@@ -52,11 +52,15 @@ export default function EstadisticasPage({
       </div>
 
       {/* Server-rendered subpage links for SEO — visually hidden, fully crawlable */}
+      <h2 className="sr-only">Estadísticas de accidentes y siniestralidad vial en España</h2>
       <nav aria-label="Estadísticas de tráfico" className="sr-only">
         <ul>
           <li><Link href="/estadisticas/accidentes">Accidentes de tráfico en España</Link></li>
-          <li><Link href="/estaciones-aforo">Estaciones de aforo</Link></li>
+          <li><Link href="/estadisticas/accidentes/madrid">Accidentes de tráfico en Madrid</Link></li>
+          <li><Link href="/estadisticas/accidentes/barcelona">Accidentes de tráfico en Barcelona</Link></li>
+          <li><Link href="/estadisticas/accidentes/valencia">Accidentes de tráfico en Valencia</Link></li>
           <li><Link href="/intensidad">Intensidad de tráfico</Link></li>
+          <li><Link href="/estaciones-aforo">Estaciones de aforo</Link></li>
         </ul>
       </nav>
 
