@@ -197,6 +197,23 @@ export default async function NoticiasPage({
       name: "trafico.live",
       url: BASE_URL,
     },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: articles.slice(0, 10).map((article, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "NewsArticle",
+          headline: article.title,
+          description: article.summary,
+          datePublished: article.publishedAt.toISOString(),
+          dateModified: article.updatedAt.toISOString(),
+          url: `${BASE_URL}/noticias/${article.slug}`,
+          author: { "@type": "Organization", name: "trafico.live" },
+          publisher: { "@type": "Organization", name: "trafico.live", url: BASE_URL },
+        },
+      })),
+    },
   };
 
   return (

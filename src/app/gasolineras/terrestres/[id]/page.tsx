@@ -178,6 +178,7 @@ export default async function StationDetailPage({ params }: Props) {
     ...(station.schedule ? { openingHours: station.schedule } : {}),
     ...(station.is24h ? { openingHours: "Mo-Su 00:00-24:00" } : {}),
     priceRange: "€",
+    image: `${BASE_URL}/icon-512.png`,
     url: `${BASE_URL}/gasolineras/terrestres/${station.id}`,
     ...(station.priceGasoleoA || station.priceGasolina95E5
       ? {

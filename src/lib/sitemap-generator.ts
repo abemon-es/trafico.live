@@ -17,7 +17,7 @@ const MARITIME_OFFSET = 400;
 // Fixed upper bounds — generous overestimates, empty shards return [] gracefully.
 const FALLBACK_STATION_SHARDS = 3;
 const FALLBACK_MUNICIPALITY_SHARDS = 3;
-const FALLBACK_POSTAL_CODE_SHARDS = 2;
+const FALLBACK_POSTAL_CODE_SHARDS = 1;
 const FALLBACK_MARITIME_SHARDS = 1;
 
 export interface SitemapEntry {
