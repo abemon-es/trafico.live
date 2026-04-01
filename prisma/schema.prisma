@@ -1484,3 +1484,20 @@ model LocationStats {
   @@index([scopeType])
   @@index([scopeCode])
 }
+
+// ============================================
+// URL REDIRECTS (SEO)
+// ============================================
+
+model Redirect {
+  id          String   @id @default(cuid())
+  source      String   @unique // URL path, e.g. "/old-page"
+  destination String   // Target path or full URL
+  permanent   Boolean  @default(true) // true = 301, false = 302
+  hits        Int      @default(0) // Track usage for cleanup
+  lastHitAt   DateTime? @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  note        String?  // Why this redirect exists
+
+  @@index([source])
+}
