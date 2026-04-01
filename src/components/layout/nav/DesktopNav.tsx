@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { megaMenuPanels } from "./NavData";
 import { useNavState } from "./useNavState";
 import { MegaMenuShell } from "./MegaMenuPanel";
@@ -13,13 +13,12 @@ function isActiveRoute(pathname: string, href: string) {
 }
 
 export function DesktopNav() {
-  const { activePanel, setActivePanel, closeAll } = useNavState();
+  const { activePanel, setActivePanel, closeAll, openSearch, isSearchMode } = useNavState();
   const pathname = usePathname();
   const navRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Shared hover intent — covers triggers AND panels as one zone
   const cancelTimers = useCallback(() => {
     if (closeTimer.current) {
       clearTimeout(closeTimer.current);
@@ -44,7 +43,6 @@ export function DesktopNav() {
     closeTimer.current = setTimeout(() => closeAll(), 500);
   }, [closeAll, cancelTimers]);
 
-  // Entering any trigger or panel cancels the close
   const handleNavPointerEnter = useCallback(() => {
     if (closeTimer.current) {
       clearTimeout(closeTimer.current);
@@ -52,20 +50,17 @@ export function DesktopNav() {
     }
   }, []);
 
-  // Leaving the entire nav area (triggers + panels) schedules close
   const handleNavPointerLeave = useCallback(() => {
-    if (activePanel) {
+    if (activePanel && !isSearchMode) {
       scheduleClose();
     }
-  }, [activePanel, scheduleClose]);
+  }, [activePanel, isSearchMode, scheduleClose]);
 
-  // Close on click outside — check both navRef and any open panel
+  // Close on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      // Check if click is inside the nav triggers
       if (navRef.current?.contains(target)) return;
-      // Check if click is inside the mega menu shell (fixed-positioned, outside navRef bounds)
       const shell = document.getElementById("mega-panel-shell");
       if (shell?.contains(target)) return;
       cancelTimers();
@@ -75,21 +70,22 @@ export function DesktopNav() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [closeAll, cancelTimers]);
 
-  // Close on Escape globally
+  // Close on Escape
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
       if (e.key === "Escape" && activePanel) {
         cancelTimers();
         closeAll();
-        const trigger = document.getElementById(`mega-trigger-${activePanel}`);
-        trigger?.focus();
+        if (!isSearchMode) {
+          const trigger = document.getElementById(`mega-trigger-${activePanel}`);
+          trigger?.focus();
+        }
       }
     }
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [activePanel, closeAll, cancelTimers]);
+  }, [activePanel, isSearchMode, closeAll, cancelTimers]);
 
-  // Cleanup timers on unmount
   useEffect(() => {
     return () => cancelTimers();
   }, [cancelTimers]);
@@ -101,7 +97,7 @@ export function DesktopNav() {
       onPointerEnter={handleNavPointerEnter}
       onPointerLeave={handleNavPointerLeave}
     >
-      {/* Trigger buttons */}
+      {/* Panel trigger buttons */}
       {megaMenuPanels.map((panel) => {
         const isOpen = activePanel === panel.id;
         const isPanelActive = panel.categories.some((cat) =>
@@ -133,7 +129,7 @@ export function DesktopNav() {
                 }
               }}
               className={`
-                flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                flex items-center gap-1 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors
                 ${
                   isPanelActive || isOpen
                     ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
@@ -151,21 +147,41 @@ export function DesktopNav() {
         );
       })}
 
-      {/* Persistent mega menu shell — stays mounted while switching panels */}
-      <div
-        id="mega-panel-shell"
-        role="region"
-        aria-label="Mega menu"
+      {/* Search trigger */}
+      <button
+        type="button"
+        onClick={() => (isSearchMode ? closeAll() : openSearch())}
+        aria-label="Buscar"
+        className={`
+          flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm transition-colors ml-0.5
+          ${
+            isSearchMode
+              ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+              : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300"
+          }
+        `}
       >
+        <Search className="w-4 h-4" />
+        <kbd
+          aria-hidden="true"
+          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none"
+        >
+          &thinsp;&#8984;K
+        </kbd>
+      </button>
+
+      {/* Persistent mega menu shell */}
+      <div id="mega-panel-shell" role="region" aria-label="Mega menu">
         <MegaMenuShell
           activePanel={activePanel}
           panels={megaMenuPanels}
           onPointerEnter={handleNavPointerEnter}
-          onPointerLeave={scheduleClose}
+          onPointerLeave={isSearchMode ? undefined : scheduleClose}
+          onClose={closeAll}
         />
       </div>
 
-      {/* SEO: render all mega menu links in DOM for crawlers */}
+      {/* SEO: render all links in DOM for crawlers */}
       <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
         {megaMenuPanels.map((panel) => (
           <div key={`seo-${panel.id}`}>

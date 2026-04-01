@@ -9,6 +9,8 @@ type NavStateContextType = {
   closeAll: () => void;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
+  openSearch: () => void;
+  isSearchMode: boolean;
 };
 
 export const NavStateContext = createContext<NavStateContextType | null>(null);
@@ -29,10 +31,33 @@ export function useNavStateValue(): NavStateContextType {
     setMobileMenuOpen(false);
   }, []);
 
+  const openSearch = useCallback(() => {
+    setActivePanel("search");
+    setMobileMenuOpen(false);
+  }, []);
+
+  const isSearchMode = activePanel === "search";
+
   // Close everything on route change
   useEffect(() => {
     closeAll();
   }, [pathname, closeAll]);
+
+  // Global ⌘K / Ctrl+K shortcut → open search panel
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        if (isSearchMode) {
+          closeAll();
+        } else {
+          openSearch();
+        }
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isSearchMode, openSearch, closeAll]);
 
   return {
     activePanel,
@@ -40,5 +65,7 @@ export function useNavStateValue(): NavStateContextType {
     closeAll,
     mobileMenuOpen,
     setMobileMenuOpen,
+    openSearch,
+    isSearchMode,
   };
 }
