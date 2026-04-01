@@ -160,25 +160,27 @@ model TrafficReading {
 // ============================================
 
 model RoadRiskZone {
-  id            String       @id
-  type          RiskZoneType
-  road          String
-  fromKm        Float
-  toKm          Float
-  startLat      Float
-  startLng      Float
-  endLat        Float?
-  endLng        Float?
-  province      String?
-  description   String?
-  severity      String?
-  sourceUpdated DateTime?
-  isActive      Boolean @default(true)
-  createdAt     DateTime @default(now())
+  id               String       @id
+  type             RiskZoneType
+  road             String
+  fromKm           Float
+  toKm             Float
+  startLat         Float
+  startLng         Float
+  endLat           Float?
+  endLng           Float?
+  province         String?
+  municipalityCode String? // INE 5-digit code
+  description      String?
+  severity         String?
+  sourceUpdated    DateTime?
+  isActive         Boolean @default(true)
+  createdAt        DateTime @default(now())
 
   @@index([type])
   @@index([road])
   @@index([province])
+  @@index([municipalityCode])
 }
 
 enum RiskZoneType {
@@ -372,8 +374,9 @@ model Camera {
   kmPoint    Decimal? @db.Decimal(7, 2)
 
   // Administrative
-  province     String?
-  provinceName String?
+  province         String?
+  provinceName     String?
+  municipalityCode String? // INE 5-digit code
 
   // Feed info
   feedUrl      String?
@@ -386,6 +389,8 @@ model Camera {
   @@index([province])
   @@index([roadNumber])
   @@index([isActive])
+  @@index([municipalityCode])
+  @@index([latitude, longitude])
 }
 
 model VariablePanel {
@@ -401,8 +406,9 @@ model VariablePanel {
   direction  Direction?
 
   // Administrative
-  province     String?
-  provinceName String?
+  province         String?
+  provinceName     String?
+  municipalityCode String? // INE 5-digit code
 
   // Current message
   message     String?           @db.Text // Current display text
@@ -422,6 +428,8 @@ model VariablePanel {
   @@index([roadNumber])
   @@index([isActive])
   @@index([hasMessage, isActive])
+  @@index([municipalityCode])
+  @@index([latitude, longitude])
 }
 
 enum PanelMessageType {
@@ -446,8 +454,9 @@ model EVCharger {
   postalCode String?
 
   // Administrative
-  province     String?
-  provinceName String?
+  province         String?
+  provinceName     String?
+  municipalityCode String? // INE 5-digit code
 
   // Technical
   chargerTypes ChargerType[]
@@ -470,6 +479,8 @@ model EVCharger {
   @@index([province])
   @@index([city])
   @@index([isPublic])
+  @@index([municipalityCode])
+  @@index([latitude, longitude])
 }
 
 model Radar {
@@ -484,8 +495,9 @@ model Radar {
   direction  Direction?
 
   // Administrative
-  province     String?
-  provinceName String?
+  province         String?
+  provinceName     String?
+  municipalityCode String? // INE 5-digit code
 
   // Technical
   type            RadarType
@@ -500,6 +512,8 @@ model Radar {
   @@index([roadNumber])
   @@index([type])
   @@index([isActive])
+  @@index([municipalityCode])
+  @@index([latitude, longitude])
 }
 
 enum RadarType {
@@ -762,8 +776,9 @@ model SpeedLimit {
   weatherType   String? // "rain", "fog", "snow"
 
   // Administrative
-  province     String?
-  provinceName String?
+  province         String?
+  provinceName     String?
+  municipalityCode String? // INE 5-digit code
 
   // Source metadata
   sourceId    String? // ROSATTE segment ID
@@ -776,6 +791,7 @@ model SpeedLimit {
   @@index([speedLimitType])
   @@index([roadNumber, direction])
   @@index([province, speedLimitType])
+  @@index([municipalityCode])
 }
 
 // ============================================
@@ -925,6 +941,7 @@ model TrafficStation {
   stationCode  String // DGT station code (e.g., "M-301-5")
   province     String? // INE 2-digit code
   provinceName String?
+  municipalityCode String? // INE 5-digit code
   roadNumber   String // "A-1", "N-340", "AP-7"
   roadType     RoadType?
   kmPoint      Decimal      @db.Decimal(7, 2)
@@ -949,6 +966,8 @@ model TrafficStation {
   @@index([year])
   @@index([stationType])
   @@index([imd])
+  @@index([municipalityCode])
+  @@index([latitude, longitude])
 }
 
 enum StationType {
@@ -1058,6 +1077,7 @@ model GasStation {
   @@index([is24h])
   @@index([communityCode])
   @@index([lastPriceUpdate])
+  @@index([latitude, longitude])
 }
 
 model MaritimeStation {
@@ -1404,4 +1424,63 @@ model SpanishPort {
   @@index([province])
   @@index([type])
   @@index([coastalZone])
+}
+
+// ============================================
+// LOCATION STATS (Cached aggregates per geo scope)
+// ============================================
+
+model LocationStats {
+  id                    String   @id @default(cuid())
+
+  // Geographic scope
+  scopeType             String   // "community", "province", "municipality"
+  scopeCode             String   // INE code
+  scopeName             String   // Human-readable name
+
+  // Static infrastructure counts
+  cameraCount           Int      @default(0)
+  radarCount            Int      @default(0)
+  gasStationCount       Int      @default(0)
+  evChargerCount        Int      @default(0)
+  speedLimitCount       Int      @default(0)
+  trafficStationCount   Int      @default(0)
+  trafficFlowCount      Int      @default(0)
+  roadCount             Int      @default(0)
+  riskZoneCount         Int      @default(0)
+  panelCount            Int      @default(0)
+  zbeCount              Int      @default(0)
+  articleCount          Int      @default(0)
+
+  // Real-time counts
+  activeIncidentCount   Int      @default(0)
+  activeV16Count        Int      @default(0)
+  activeWeatherAlerts   Int      @default(0)
+
+  // Fuel price aggregates
+  avgDieselPrice        Decimal? @db.Decimal(5, 3)
+  avgGasoline95Price    Decimal? @db.Decimal(5, 3)
+  minDieselPrice        Decimal? @db.Decimal(5, 3)
+  minGasoline95Price    Decimal? @db.Decimal(5, 3)
+
+  // Historical accidents (latest year)
+  accidentsLatestYear   Int?
+  fatalitiesLatestYear  Int?
+  accidentYear          Int?
+
+  // IMD summary
+  avgIMD                Int?
+  maxIMD                Int?
+
+  // Freshness tracking
+  staticUpdatedAt       DateTime  @default(now()) @db.Timestamptz
+  realtimeUpdatedAt     DateTime  @default(now()) @db.Timestamptz
+  pricesUpdatedAt       DateTime? @db.Timestamptz
+
+  createdAt             DateTime  @default(now()) @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @db.Timestamptz
+
+  @@unique([scopeType, scopeCode])
+  @@index([scopeType])
+  @@index([scopeCode])
 }
