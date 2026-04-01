@@ -1054,7 +1054,12 @@ model GasStation {
   priceGNC       Decimal? @db.Decimal(5, 3) // Compressed Natural Gas
   priceGNL       Decimal? @db.Decimal(5, 3) // Liquefied Natural Gas
   priceHidrogeno Decimal? @db.Decimal(5, 3) // Hydrogen
-  priceAdblue    Decimal? @db.Decimal(5, 3) /// @deprecated MINETUR API does not provide AdBlue prices — always null
+  priceAdblue    Decimal? @db.Decimal(5, 3) // AdBlue (DEF)
+
+  // Biofuels
+  priceGasoleoNuevoA Decimal? @db.Decimal(5, 3) // New diesel A (higher biofuel content)
+  priceBioetanol     Decimal? @db.Decimal(5, 3) // Bioethanol
+  priceBiodiesel     Decimal? @db.Decimal(5, 3) // Biodiesel
 
   // Station info
   schedule    String? // "L-D: 24H" or "L-S: 08:00-22:00"

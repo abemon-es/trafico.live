@@ -1,3 +1,4 @@
+import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -63,6 +64,9 @@ export async function GET(
         priceGNL: station.priceGNL ? Number(station.priceGNL) : null,
         priceHidrogeno: station.priceHidrogeno ? Number(station.priceHidrogeno) : null,
         priceAdblue: station.priceAdblue ? Number(station.priceAdblue) : null,
+        priceGasoleoNuevoA: station.priceGasoleoNuevoA ? Number(station.priceGasoleoNuevoA) : null,
+        priceBioetanol: station.priceBioetanol ? Number(station.priceBioetanol) : null,
+        priceBiodiesel: station.priceBiodiesel ? Number(station.priceBiodiesel) : null,
 
         // Station info
         schedule: station.schedule,
@@ -85,7 +89,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching gas station:", error);
+    reportApiError(error, "Error fetching gas station");
     return NextResponse.json(
       { success: false, error: "Failed to fetch gas station" },
       { status: 500 }

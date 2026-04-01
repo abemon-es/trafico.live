@@ -70,6 +70,27 @@ const FUEL_TYPES: Record<
     description: "Solución de urea para sistemas SCR de vehículos diésel",
     unit: "€/L",
   },
+  "gasoleo-nuevo-a": {
+    name: "Nuevo Gasóleo A",
+    dbField: "priceGasoleoNuevoA",
+    label: "Nuevo Gasóleo A",
+    description: "Diésel A con mayor contenido de biocombustible",
+    unit: "€/L",
+  },
+  bioetanol: {
+    name: "Bioetanol",
+    dbField: "priceBioetanol",
+    label: "Bioetanol",
+    description: "Bioetanol para vehículos de gasolina compatibles",
+    unit: "€/L",
+  },
+  biodiesel: {
+    name: "Biodiésel",
+    dbField: "priceBiodiesel",
+    label: "Biodiésel",
+    description: "Biodiésel para vehículos diésel compatibles",
+    unit: "€/L",
+  },
 };
 
 type Props = { params: Promise<{ fuelType: string }> };

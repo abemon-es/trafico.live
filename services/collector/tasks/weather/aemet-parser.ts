@@ -131,6 +131,83 @@ export interface AEMETAlert {
   endedAt?: Date;
   description?: string;
   headline?: string;
+  windSpeedKmh?: number;
+  windGustKmh?: number;
+  tempMinC?: number;
+  tempMaxC?: number;
+  rainfallMm?: number;
+  snowLevelM?: number;
+  waveHeightM?: number;
+}
+
+interface QuantitativeData {
+  windSpeedKmh?: number;
+  windGustKmh?: number;
+  tempMinC?: number;
+  tempMaxC?: number;
+  rainfallMm?: number;
+  snowLevelM?: number;
+  waveHeightM?: number;
+}
+
+function parseSpanishNumber(str: string): number | null {
+  const cleaned = str.replace(",", ".");
+  const val = parseFloat(cleaned);
+  return isNaN(val) ? null : val;
+}
+
+function extractQuantitativeData(description: string, parameters: CAPParameter[]): QuantitativeData {
+  const data: QuantitativeData = {};
+
+  // 1. Try structured CAP parameters first
+  for (const param of parameters) {
+    const name = param.valueName.toLowerCase();
+    const val = parseSpanishNumber(param.value);
+    if (val === null) continue;
+
+    if (name.includes("rachas") || name.includes("gust")) data.windGustKmh = val;
+    else if (name.includes("viento") || name.includes("wind")) data.windSpeedKmh = val;
+    else if (name.includes("precipitac") || name.includes("rain")) data.rainfallMm = val;
+    else if (name.includes("temperatura") && name.includes("max")) data.tempMaxC = val;
+    else if (name.includes("temperatura") && name.includes("min")) data.tempMinC = val;
+    else if (name.includes("nieve") || name.includes("snow")) data.snowLevelM = val;
+    else if (name.includes("oleaje") || name.includes("ola") || name.includes("wave")) data.waveHeightM = val;
+  }
+
+  // 2. Fallback: regex extraction from description text
+  if (!description) return data;
+  const text = description.toLowerCase();
+
+  if (!data.windGustKmh) {
+    const match = text.match(/rachas\s+(?:de\s+)?(?:hasta\s+)?(\d+(?:[.,]\d+)?)\s*km/);
+    if (match) data.windGustKmh = parseSpanishNumber(match[1]) ?? undefined;
+  }
+  if (!data.windSpeedKmh) {
+    const match = text.match(/vientos?\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*km/);
+    if (match) data.windSpeedKmh = parseSpanishNumber(match[1]) ?? undefined;
+  }
+  if (!data.rainfallMm) {
+    const match = text.match(/(\d+(?:[.,]\d+)?)\s*(?:mm|l\/m2|litros)/);
+    if (match) data.rainfallMm = parseSpanishNumber(match[1]) ?? undefined;
+  }
+  if (!data.tempMaxC) {
+    const match = text.match(/(?:máxima|maxima)\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*°?/);
+    if (match) data.tempMaxC = parseSpanishNumber(match[1]) ?? undefined;
+  }
+  if (!data.tempMinC) {
+    const match = text.match(/(?:mínima|minima)\s+(?:de\s+)?(-?\d+(?:[.,]\d+)?)\s*°?/);
+    if (match) data.tempMinC = parseSpanishNumber(match[1]) ?? undefined;
+  }
+  if (!data.snowLevelM) {
+    const match = text.match(/(?:cota\s+(?:de\s+)?nieve|nieve\s+a)\s+(\d+(?:[.,]\d+)?)\s*m/);
+    if (match) data.snowLevelM = parseSpanishNumber(match[1]) ?? undefined;
+  }
+  if (!data.waveHeightM) {
+    const match = text.match(/(?:olas?|oleaje)\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*m/);
+    if (match) data.waveHeightM = parseSpanishNumber(match[1]) ?? undefined;
+  }
+
+  return data;
 }
 
 interface CAPAlert {
@@ -231,6 +308,10 @@ function parseAEMETResponse(data: CAPAlert[]): AEMETAlert[] {
           .filter(Boolean)
           .join(" - ");
 
+        // Extract quantitative data from CAP parameters and description text
+        const params = Array.isArray(info.parameter) ? info.parameter : info.parameter ? [info.parameter] : [];
+        const quantitative = extractQuantitativeData(description || "", params);
+
         // Generate unique ID combining alert ID and area
         const areaId = area.areaDesc?.replace(/\s+/g, "-").substring(0, 20) || "unknown";
         const alertId = `AEMET-${alert.identifier}-${areaId}`;
@@ -245,6 +326,7 @@ function parseAEMETResponse(data: CAPAlert[]): AEMETAlert[] {
           endedAt,
           description: description || undefined,
           headline: info.headline,
+          ...quantitative,
         });
       }
     }
@@ -315,6 +397,16 @@ function parseCAPXml(xml: string): CAPAlert | null {
         areas.push({ areaDesc: areaDesc || undefined, geocode: geocodes });
       }
 
+      const paramBlocks = getAllTagContents("parameter", infoXml);
+      const parameters: CAPParameter[] = [];
+      for (const paramXml of paramBlocks) {
+        const valueName = getTagContent("valueName", paramXml);
+        const value = getTagContent("value", paramXml);
+        if (valueName && value) {
+          parameters.push({ valueName, value });
+        }
+      }
+
       infos.push({
         language: language || undefined,
         event: event || undefined,
@@ -325,6 +417,7 @@ function parseCAPXml(xml: string): CAPAlert | null {
         headline: headline || undefined,
         description: description || undefined,
         area: areas,
+        parameter: parameters,
       });
     }
 

@@ -215,7 +215,7 @@ export async function run(prisma: PrismaClient) {
   console.log("[maritime-fuel] Saving daily price history...");
 
   const stationsWithPrices = validStations.filter(
-    (s) => s.priceGasoleoA !== null || s.priceGasolina95E5 !== null
+    (s) => s.priceGasoleoA !== null || s.priceGasoleoB !== null || s.priceGasolina95E5 !== null || s.priceGasolina98E5 !== null
   );
 
   const historyResult = await prisma.maritimePriceHistory.createMany({
@@ -223,7 +223,9 @@ export async function run(prisma: PrismaClient) {
       stationId: s.id,
       recordedAt: today,
       priceGasoleoA: s.priceGasoleoA,
+      priceGasoleoB: s.priceGasoleoB,
       priceGasolina95E5: s.priceGasolina95E5,
+      priceGasolina98E5: s.priceGasolina98E5,
     })),
     skipDuplicates: true,
   });

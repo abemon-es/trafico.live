@@ -24,12 +24,17 @@ const BASE_URL = "https://precoscombustiveis.dgeg.gov.pt/api/PrecoComb";
 const FETCH_TIMEOUT_MS = 30_000;
 const RATE_LIMIT_MS = 200;
 
-// Fuel type IDs — only the main 4, as per spec
+// Fuel type IDs — all 9 types from DGEG
 const FUEL_TYPES = [
-  { id: "2101", field: "priceGasoleoSimples" as const,  label: "Gasóleo simples" },
-  { id: "3201", field: "priceGasolina95"    as const,   label: "Gasolina 95" },
-  { id: "3400", field: "priceGasolina98"    as const,   label: "Gasolina 98" },
-  { id: "1120", field: "priceGPL"           as const,   label: "GPL" },
+  { id: "2101", field: "priceGasoleoSimples" as const,    label: "Gasóleo simples" },
+  { id: "2102", field: "priceGasoleoEspecial" as const,   label: "Gasóleo especial" },
+  { id: "2103", field: "priceGasoleoColorido" as const,   label: "Gasóleo colorido" },
+  { id: "3201", field: "priceGasolina95" as const,        label: "Gasolina 95" },
+  { id: "3202", field: "priceGasolina95Especial" as const, label: "Gasolina 95 especial" },
+  { id: "3400", field: "priceGasolina98" as const,        label: "Gasolina 98" },
+  { id: "3401", field: "priceGasolina98Especial" as const, label: "Gasolina 98 especial" },
+  { id: "1120", field: "priceGPL" as const,               label: "GPL" },
+  { id: "4100", field: "priceGNC" as const,               label: "GNC" },
 ] as const;
 
 type FuelPriceField = typeof FUEL_TYPES[number]["field"];
@@ -85,9 +90,14 @@ interface MergedStation {
   brand: string | null;
   stationType: string | null;
   priceGasoleoSimples: number | null;
+  priceGasoleoEspecial: number | null;
+  priceGasoleoColorido: number | null;
   priceGasolina95: number | null;
+  priceGasolina95Especial: number | null;
   priceGasolina98: number | null;
+  priceGasolina98Especial: number | null;
   priceGPL: number | null;
+  priceGNC: number | null;
   lastPriceUpdate: Date | null;
 }
 
@@ -228,9 +238,14 @@ export async function run(prisma: PrismaClient) {
             brand: result.Marca || null,
             stationType: result.TipoPosto || null,
             priceGasoleoSimples: null,
+            priceGasoleoEspecial: null,
+            priceGasoleoColorido: null,
             priceGasolina95: null,
+            priceGasolina95Especial: null,
             priceGasolina98: null,
+            priceGasolina98Especial: null,
             priceGPL: null,
+            priceGNC: null,
             lastPriceUpdate: parseDGEGDate(result.DataAtualizacao),
           });
         }
@@ -254,9 +269,14 @@ export async function run(prisma: PrismaClient) {
   const withPrices = stations.filter(
     (s) =>
       s.priceGasoleoSimples !== null ||
+      s.priceGasoleoEspecial !== null ||
+      s.priceGasoleoColorido !== null ||
       s.priceGasolina95 !== null ||
+      s.priceGasolina95Especial !== null ||
       s.priceGasolina98 !== null ||
-      s.priceGPL !== null
+      s.priceGasolina98Especial !== null ||
+      s.priceGPL !== null ||
+      s.priceGNC !== null
   );
 
   log(TASK, `Portugal fuel: ${stations.length} stations, ${withPrices.length} with prices`);
@@ -291,9 +311,14 @@ export async function run(prisma: PrismaClient) {
           brand: station.brand,
           stationType: station.stationType,
           priceGasoleoSimples: station.priceGasoleoSimples,
+          priceGasoleoEspecial: station.priceGasoleoEspecial,
+          priceGasoleoColorido: station.priceGasoleoColorido,
           priceGasolina95: station.priceGasolina95,
+          priceGasolina95Especial: station.priceGasolina95Especial,
           priceGasolina98: station.priceGasolina98,
+          priceGasolina98Especial: station.priceGasolina98Especial,
           priceGPL: station.priceGPL,
+          priceGNC: station.priceGNC,
           is24h: false,
           lastPriceUpdate: station.lastPriceUpdate,
           lastUpdated: now,
@@ -312,9 +337,14 @@ export async function run(prisma: PrismaClient) {
           brand: station.brand,
           stationType: station.stationType,
           priceGasoleoSimples: station.priceGasoleoSimples,
+          priceGasoleoEspecial: station.priceGasoleoEspecial,
+          priceGasoleoColorido: station.priceGasoleoColorido,
           priceGasolina95: station.priceGasolina95,
+          priceGasolina95Especial: station.priceGasolina95Especial,
           priceGasolina98: station.priceGasolina98,
+          priceGasolina98Especial: station.priceGasolina98Especial,
           priceGPL: station.priceGPL,
+          priceGNC: station.priceGNC,
           lastPriceUpdate: station.lastPriceUpdate,
           lastUpdated: now,
         },
@@ -337,9 +367,14 @@ export async function run(prisma: PrismaClient) {
       stationId: s.id,
       recordedAt: today,
       priceGasoleoSimples: s.priceGasoleoSimples,
+      priceGasoleoEspecial: s.priceGasoleoEspecial,
+      priceGasoleoColorido: s.priceGasoleoColorido,
       priceGasolina95: s.priceGasolina95,
+      priceGasolina95Especial: s.priceGasolina95Especial,
       priceGasolina98: s.priceGasolina98,
+      priceGasolina98Especial: s.priceGasolina98Especial,
       priceGPL: s.priceGPL,
+      priceGNC: s.priceGNC,
     })),
     skipDuplicates: true,
   });

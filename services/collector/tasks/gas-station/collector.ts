@@ -46,12 +46,9 @@ interface APIStation {
   "Precio Gas Natural Comprimido": string;
   "Precio Gas Natural Licuado": string;
   "Precio Hidrogeno": string;
-  // Biofuel fields available in the API response but not yet stored:
-  // TODO: add priceGasoleoNuevoA, priceBioetanol, priceBiodiesel to GasStation schema
-  // before enabling these fields in the upsert query.
-  "Precio Nuevo Gasóleo A": string;  // TODO: store when schema adds priceGasoleoNuevoA
-  "Precio Bioetanol": string;        // TODO: store when schema adds priceBioetanol
-  "Precio Biodiesel": string;        // TODO: store when schema adds priceBiodiesel
+  "Precio Nuevo Gasóleo A": string;
+  "Precio Bioetanol": string;
+  "Precio Biodiesel": string;
 }
 
 interface APIResponse {
@@ -181,10 +178,9 @@ export async function run(prisma: PrismaClient) {
         priceGNC: parsePrice(station["Precio Gas Natural Comprimido"]),
         priceGNL: parsePrice(station["Precio Gas Natural Licuado"]),
         priceHidrogeno: parsePrice(station["Precio Hidrogeno"]),
-        // TODO: store biofuel prices once GasStation schema is extended:
-        //   priceGasoleoNuevoA: parsePrice(station["Precio Nuevo Gasóleo A"]),
-        //   priceBioetanol:     parsePrice(station["Precio Bioetanol"]),
-        //   priceBiodiesel:     parsePrice(station["Precio Biodiesel"]),
+        priceGasoleoNuevoA: parsePrice(station["Precio Nuevo Gasóleo A"]),
+        priceBioetanol: parsePrice(station["Precio Bioetanol"]),
+        priceBiodiesel: parsePrice(station["Precio Biodiesel"]),
         nearestRoad: roadInfo.road,
         roadKm: roadInfo.km,
         schedule: station.Horario || null,
@@ -209,8 +205,8 @@ export async function run(prisma: PrismaClient) {
     const batch = validStations.slice(i, i + BATCH_SIZE);
 
     const values = batch.map((_, idx) => {
-      const base = idx * 31;
-      return `(${Array.from({ length: 31 }, (__, j) => `$${base + j + 1}`).join(", ")})`;
+      const base = idx * 34;
+      return `(${Array.from({ length: 34 }, (__, j) => `$${base + j + 1}`).join(", ")})`;
     }).join(", ");
 
     const params = batch.flatMap((s) => [
@@ -219,8 +215,8 @@ export async function run(prisma: PrismaClient) {
       s.provinceName, s.communityCode, s.priceGasoleoA, s.priceGasoleoB,
       s.priceGasoleoPremium, s.priceGasolina95E5, s.priceGasolina95E10,
       s.priceGasolina98E5, s.priceGasolina98E10, s.priceGLP, s.priceGNC,
-      s.priceGNL, s.priceHidrogeno, s.nearestRoad, s.roadKm,
-      s.schedule, s.is24h, s.margin, s.saleType,
+      s.priceGNL, s.priceHidrogeno, s.priceGasoleoNuevoA, s.priceBioetanol, s.priceBiodiesel,
+      s.nearestRoad, s.roadKm, s.schedule, s.is24h, s.margin, s.saleType,
       s.lastPriceUpdate, s.lastUpdated,
     ]);
 
@@ -231,8 +227,8 @@ export async function run(prisma: PrismaClient) {
         "provinceName", "communityCode", "priceGasoleoA", "priceGasoleoB",
         "priceGasoleoPremium", "priceGasolina95E5", "priceGasolina95E10",
         "priceGasolina98E5", "priceGasolina98E10", "priceGLP", "priceGNC",
-        "priceGNL", "priceHidrogeno", "nearestRoad", "roadKm",
-        schedule, "is24h", margin, "saleType",
+        "priceGNL", "priceHidrogeno", "priceGasoleoNuevoA", "priceBioetanol", "priceBiodiesel",
+        "nearestRoad", "roadKm", schedule, "is24h", margin, "saleType",
         "lastPriceUpdate", "lastUpdated"
       ) VALUES ${values}
       ON CONFLICT (id) DO UPDATE SET
@@ -258,6 +254,9 @@ export async function run(prisma: PrismaClient) {
         "priceGNC" = EXCLUDED."priceGNC",
         "priceGNL" = EXCLUDED."priceGNL",
         "priceHidrogeno" = EXCLUDED."priceHidrogeno",
+        "priceGasoleoNuevoA" = EXCLUDED."priceGasoleoNuevoA",
+        "priceBioetanol" = EXCLUDED."priceBioetanol",
+        "priceBiodiesel" = EXCLUDED."priceBiodiesel",
         "nearestRoad" = COALESCE(EXCLUDED."nearestRoad", "GasStation"."nearestRoad"),
         "roadKm" = COALESCE(EXCLUDED."roadKm", "GasStation"."roadKm"),
         schedule = EXCLUDED.schedule,
@@ -286,9 +285,19 @@ export async function run(prisma: PrismaClient) {
       stationId: s.id,
       recordedAt: today,
       priceGasoleoA: s.priceGasoleoA,
+      priceGasoleoB: s.priceGasoleoB,
+      priceGasoleoPremium: s.priceGasoleoPremium,
       priceGasolina95E5: s.priceGasolina95E5,
+      priceGasolina95E10: s.priceGasolina95E10,
       priceGasolina98E5: s.priceGasolina98E5,
+      priceGasolina98E10: s.priceGasolina98E10,
       priceGLP: s.priceGLP,
+      priceGNC: s.priceGNC,
+      priceGNL: s.priceGNL,
+      priceHidrogeno: s.priceHidrogeno,
+      priceGasoleoNuevoA: s.priceGasoleoNuevoA,
+      priceBioetanol: s.priceBioetanol,
+      priceBiodiesel: s.priceBiodiesel,
     })),
     skipDuplicates: true,
   });
