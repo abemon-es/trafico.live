@@ -100,6 +100,22 @@ export default function IncidenciasPage() {
         </ul>
       </nav>
 
+      {/* SSR crawlable related-page links — hidden from sighted users, indexed by crawlers */}
+      <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
+        <div>
+          <a href="/incidencias/estadisticas" tabIndex={-1}>Estadísticas de incidencias</a>
+          <a href="/cortes-trafico" tabIndex={-1}>Cortes de tráfico</a>
+          <a href="/restricciones" tabIndex={-1}>Restricciones</a>
+          <a href="/atascos" tabIndex={-1}>Atascos</a>
+          <a href="/alertas-meteo" tabIndex={-1}>Alertas meteorológicas</a>
+          <a href="/trafico/madrid" tabIndex={-1}>Tráfico Madrid</a>
+          <a href="/trafico/barcelona" tabIndex={-1}>Tráfico Barcelona</a>
+          <a href="/trafico/valencia" tabIndex={-1}>Tráfico Valencia</a>
+          <a href="/operaciones" tabIndex={-1}>Operaciones DGT</a>
+          <a href="/puntos-negros" tabIndex={-1}>Puntos negros</a>
+        </div>
+      </nav>
+
       {/* Client component with interactive map, filters, and live SWR data */}
       <Suspense fallback={<IncidenciasLoading />}>
         <IncidenciasContent />
