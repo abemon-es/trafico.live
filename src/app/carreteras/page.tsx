@@ -4,7 +4,8 @@ import { Route, Car, Construction, MapPin } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata = buildPageMetadata({
   title: "Carreteras de España | Tráfico en Tiempo Real",

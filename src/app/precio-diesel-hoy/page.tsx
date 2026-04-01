@@ -12,7 +12,8 @@ import { FuelPriceChart } from "@/components/charts/FuelPriceChart";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 // Province code → { slug, name } for internal links
 const PROVINCE_CODES: Record<string, { slug: string; name: string }> = {

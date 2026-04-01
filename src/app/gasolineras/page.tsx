@@ -24,7 +24,8 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 // Provincias con fiscalidad especial
 const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
