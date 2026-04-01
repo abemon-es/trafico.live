@@ -14,13 +14,6 @@ RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/db" npx pr
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Push schema changes to DB if DATABASE_URL is available (Coolify injects it as ARG).
-# --skip-generate: client already generated above. --accept-data-loss: safe for additive DDL.
-ARG DATABASE_URL=""
-RUN if [ -n "$DATABASE_URL" ] && [ "$DATABASE_URL" != "postgresql://placeholder:placeholder@localhost:5432/db" ]; then \
-      DATABASE_URL="$DATABASE_URL" npx prisma db push --skip-generate --accept-data-loss 2>&1 || true; \
-    fi
-
 RUN npm run build
 
 FROM node:24-slim AS runtime
@@ -38,7 +31,8 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 
-RUN chown -R nextjs:nodejs .next
+RUN chown -R nextjs:nodejs .next && \
+    chown -R nextjs:nodejs node_modules/.prisma node_modules/@prisma
 
 ENV NODE_ENV=production
 ENV PORT=3000
