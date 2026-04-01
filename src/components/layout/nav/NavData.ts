@@ -374,94 +374,109 @@ export const megaMenuPanels: MegaMenuPanel[] = [
   },
 ];
 
-// ─── Footer columns ──────────────────────────────────────────
-export const footerColumns = [
+// ─── Footer columns (aligned with mega menu panels) ─────────
+export type FooterColumn = {
+  title: string;
+  icon: LucideIcon;
+  accent: "tl" | "tl-amber" | "tl-sea";
+  hub: string;
+  links: { name: string; href: string }[];
+};
+
+export const footerColumns: FooterColumn[] = [
   {
-    title: "Tráfico en vivo",
+    title: "Tráfico",
+    icon: Activity,
+    accent: "tl",
+    hub: "/trafico",
     links: [
-      { name: "Inicio", href: "/" },
       { name: "Mapa en vivo", href: "/mapa" },
       { name: "Incidencias", href: "/incidencias" },
       { name: "Cámaras DGT", href: "/camaras" },
       { name: "Atascos", href: "/atascos" },
       { name: "Cortes de tráfico", href: "/cortes-trafico" },
       { name: "Alertas meteo", href: "/alertas-meteo" },
-      { name: "Mejor hora para viajar", href: "/mejor-hora" },
+      { name: "Mejor hora", href: "/mejor-hora" },
+      { name: "Paneles PMV", href: "/paneles" },
     ],
   },
   {
     title: "Carreteras",
+    icon: Route,
+    accent: "tl",
+    hub: "/carreteras",
     links: [
-      { name: "Todas las carreteras", href: "/carreteras" },
       { name: "Autopistas", href: "/carreteras/autopistas" },
       { name: "Autovías", href: "/carreteras/autovias" },
       { name: "Nacionales", href: "/carreteras/nacionales" },
-      { name: "Intensidad (IMD)", href: "/intensidad" },
-      { name: "Estaciones de aforo", href: "/estaciones-aforo" },
       { name: "Radares", href: "/radares" },
       { name: "Puntos negros", href: "/puntos-negros" },
       { name: "Zonas ZBE", href: "/zbe" },
+      { name: "Intensidad (IMD)", href: "/intensidad" },
+      { name: "Estaciones de aforo", href: "/estaciones-aforo" },
+      { name: "Estadísticas", href: "/estadisticas" },
     ],
   },
   {
     title: "Combustible",
+    icon: Fuel,
+    accent: "tl-amber",
+    hub: "/gasolineras",
     links: [
-      { name: "Gasolineras", href: "/gasolineras" },
-      { name: "Precio gasolina hoy", href: "/precio-gasolina-hoy" },
-      { name: "Precio diésel hoy", href: "/precio-diesel-hoy" },
-      { name: "Precios por provincia", href: "/gasolineras/precios" },
-      { name: "Gasolineras baratas", href: "/gasolineras/baratas" },
+      { name: "Gasolina hoy", href: "/precio-gasolina-hoy" },
+      { name: "Diésel hoy", href: "/precio-diesel-hoy" },
+      { name: "Por provincia", href: "/gasolineras/precios" },
+      { name: "Baratas", href: "/gasolineras/baratas" },
       { name: "24 horas", href: "/gasolineras-24-horas" },
-      { name: "Mapa gasolineras", href: "/gasolineras/mapa" },
+      { name: "Cargadores EV", href: "/carga-ev" },
       { name: "Electrolineras", href: "/electrolineras" },
+      { name: "Etiqueta ambiental", href: "/etiqueta-ambiental" },
     ],
   },
   {
     title: "Marítimo",
+    icon: Anchor,
+    accent: "tl-sea",
+    hub: "/maritimo",
     links: [
-      { name: "Hub Marítimo", href: "/maritimo" },
-      { name: "Combustible Marítimo", href: "/maritimo/combustible" },
-      { name: "Meteorología costera", href: "/maritimo/meteorologia" },
+      { name: "Combustible marítimo", href: "/maritimo/combustible" },
       { name: "Puertos", href: "/maritimo/puertos" },
-      { name: "Seguridad marítima", href: "/maritimo/seguridad" },
-      { name: "Noticias marítimas", href: "/maritimo/noticias" },
-      { name: "Mapa Marítimo", href: "/maritimo/mapa" },
+      { name: "Mapa marítimo", href: "/maritimo/mapa" },
+      { name: "Meteorología", href: "/maritimo/meteorologia" },
+      { name: "Seguridad", href: "/maritimo/seguridad" },
+      { name: "Noticias", href: "/maritimo/noticias" },
     ],
   },
   {
-    title: "Movilidad sostenible",
+    title: "Explorar",
+    icon: MapPinned,
+    accent: "tl",
+    hub: "/explorar",
     links: [
-      { name: "Cargadores EV", href: "/carga-ev" },
-      { name: "Electrolineras", href: "/electrolineras" },
-      { name: "Zonas ZBE", href: "/zbe" },
-      { name: "Etiqueta ambiental", href: "/etiqueta-ambiental" },
-      { name: "Cuánto cuesta cargar", href: "/cuanto-cuesta-cargar" },
+      { name: "Comunidades", href: "/comunidad-autonoma" },
+      { name: "Provincias", href: "/espana" },
+      { name: "Ciudades", href: "/ciudad" },
+      { name: "Noticias", href: "/noticias" },
+      { name: "Informe diario", href: "/informe-diario" },
+      { name: "Informes", href: "/informes" },
+      { name: "Operaciones DGT", href: "/operaciones" },
       { name: "Ciclistas", href: "/ciclistas" },
     ],
   },
   {
-    title: "Descubre",
+    title: "Profesional",
+    icon: Truck,
+    accent: "tl",
+    hub: "/profesional",
     links: [
-      { name: "Comunidades", href: "/comunidad-autonoma" },
-      { name: "Provincias", href: "/espana" },
-      { name: "Noticias", href: "/noticias" },
-      { name: "Informe diario", href: "/informe-diario" },
-      { name: "Explorar", href: "/explorar" },
-      { name: "Operaciones DGT", href: "/operaciones" },
-      { name: "Puente de Mayo", href: "/puente-mayo-2026" },
-    ],
-  },
-  {
-    title: "Info",
-    links: [
-      { name: "Profesional", href: "/profesional" },
-      { name: "Informes", href: "/informes" },
-      { name: "Prensa", href: "/media" },
+      { name: "Diésel flotas", href: "/profesional/diesel" },
+      { name: "Áreas descanso", href: "/profesional/areas" },
+      { name: "Restricciones", href: "/profesional/restricciones" },
+      { name: "API REST", href: "/api-docs" },
       { name: "Sobre nosotros", href: "/sobre" },
-      { name: "API", href: "/api-docs" },
+      { name: "Prensa", href: "/media" },
       { name: "Aviso legal", href: "/aviso-legal" },
       { name: "Privacidad", href: "/politica-privacidad" },
-      { name: "Cookies", href: "/politica-cookies" },
     ],
   },
 ];

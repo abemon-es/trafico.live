@@ -4,9 +4,31 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CookieSettingsButton } from "@/components/legal/CookieConsent";
 import { Logo } from "@/components/brand/Logo";
-import { footerColumns, footerCities } from "@/components/layout/nav/NavData";
+import { footerColumns, footerCities, ACCENT_STYLES } from "@/components/layout/nav/NavData";
 
 const DATA_SOURCES = ["DGT NAP", "AEMET", "MITERD", "MINETUR"];
+
+// Dark-mode footer accent mapping
+const FOOTER_ACCENT = {
+  tl: {
+    iconBg: "bg-tl-800/40",
+    iconText: "text-tl-400",
+    bar: "bg-tl-600",
+    hubBg: "hover:bg-tl-900/40",
+  },
+  "tl-amber": {
+    iconBg: "bg-tl-amber-800/40",
+    iconText: "text-tl-amber-400",
+    bar: "bg-tl-amber-500",
+    hubBg: "hover:bg-tl-amber-900/30",
+  },
+  "tl-sea": {
+    iconBg: "bg-tl-sea-800/40",
+    iconText: "text-tl-sea-400",
+    bar: "bg-tl-sea-500",
+    hubBg: "hover:bg-tl-sea-900/30",
+  },
+} as const;
 
 export function Footer() {
   const pathname = usePathname();
@@ -14,9 +36,9 @@ export function Footer() {
 
   return (
     <footer className="dark bg-tl-950">
-      {/* Gradient top accent */}
+      {/* Gradient top accent — matches header mega menu bar */}
       <div
-        className="h-px"
+        className="h-[3px]"
         style={{
           background:
             "linear-gradient(to right, var(--color-tl-600), var(--color-tl-400), var(--color-tl-amber-400))",
@@ -25,7 +47,7 @@ export function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
         {/* Brand + Data Sources */}
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-12">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-10">
           <div className="max-w-md">
             <div className="mb-3">
               <Logo variant="horizontal" size="sm" href={undefined} />
@@ -49,28 +71,60 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Main Footer Columns */}
+        {/* Section Hub Cards — mirrors mega menu search default view */}
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 mb-10">
+          {footerColumns.map((col) => {
+            const accent = FOOTER_ACCENT[col.accent];
+            const Icon = col.icon;
+            return (
+              <Link
+                key={col.title}
+                href={col.hub}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border border-tl-800/50 transition-all ${accent.hubBg}`}
+              >
+                <div
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${accent.iconBg} ${accent.iconText}`}
+                >
+                  <Icon className="w-4.5 h-4.5" />
+                </div>
+                <span className="text-xs font-semibold text-gray-300 text-center leading-tight">
+                  {col.title}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Main Footer Columns — 6 columns matching mega menu panels */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10 mb-12">
-          {footerColumns.map((column) => (
-            <div key={column.title}>
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-tl-400 mb-4 flex items-center gap-2 font-heading">
-                <span className="w-4 h-px bg-tl-700" />
-                {column.title}
-              </h3>
-              <ul className="space-y-0.5">
-                {column.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-gray-400 hover:text-gray-100 hover:translate-x-0.5 block py-1.5 transition-all duration-150"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {footerColumns.map((column) => {
+            const accent = FOOTER_ACCENT[column.accent];
+            const Icon = column.icon;
+            return (
+              <div key={column.title}>
+                {/* Column header with icon — matches mega menu category headers */}
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-400 mb-4 flex items-center gap-2.5 font-heading">
+                  <span className={`w-1 h-4 rounded-full ${accent.bar}`} />
+                  <span className={`flex items-center justify-center w-5 h-5 rounded ${accent.iconBg} ${accent.iconText}`}>
+                    <Icon className="w-3 h-3" />
+                  </span>
+                  {column.title}
+                </h3>
+                <ul className="space-y-0.5">
+                  {column.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-gray-400 hover:text-gray-100 block py-1.5 transition-colors duration-150"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
         {/* City Strip — pill badges */}
@@ -78,8 +132,8 @@ export function Footer() {
           aria-label="Tráfico por ciudad"
           className="mb-8 pt-8 border-t border-tl-800/50"
         >
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-tl-400 mb-4 flex items-center gap-2 font-heading">
-            <span className="w-4 h-px bg-tl-700" />
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-400 mb-4 flex items-center gap-2.5 font-heading">
+            <span className="w-1 h-4 rounded-full bg-tl-600" />
             Tráfico por ciudad
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -125,7 +179,7 @@ export function Footer() {
                 className="hidden sm:inline text-tl-800"
                 aria-hidden="true"
               >
-                ·
+                &middot;
               </span>
               <span>
                 Desarrollado por{" "}
@@ -142,7 +196,7 @@ export function Footer() {
                 className="hidden sm:inline text-tl-800"
                 aria-hidden="true"
               >
-                ·
+                &middot;
               </span>
               <CookieSettingsButton />
             </div>
