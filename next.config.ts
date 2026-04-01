@@ -74,16 +74,18 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
       // CDN edge caching — Cloudflare respects s-maxage.
-      // Real-time pages (homepage, incidents, traffic): 60s edge cache.
-      // Static-ish pages (radares, ZBE, legal): 5min edge cache.
-      // API routes handle their own Cache-Control.
+      // Tier 1: static-ish pages (5min edge cache)
+      {
+        source: "/(radares|zbe|etiqueta-ambiental|sobre|aviso-legal|politica-privacidad|politica-cookies|api-docs|ciclistas|puntos-negros|calculadora|cuanto-cuesta-cargar|mejor-hora|media|operaciones|restricciones)/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, s-maxage=300, stale-while-revalidate=600" },
+        ],
+      },
+      // Tier 2: all other pages (60s edge cache)
       {
         source: "/((?!api/|_next/|sitemap).*)",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "public, s-maxage=60, stale-while-revalidate=120",
-          },
+          { key: "Cache-Control", value: "public, s-maxage=60, stale-while-revalidate=120" },
         ],
       },
     ];
@@ -273,8 +275,14 @@ export default withSentryConfig(nextConfig, {
   project: process.env.SENTRY_PROJECT,
   silent: true,
   widenClientFileUpload: true,
+  // Tunnel route proxies Sentry events through our domain — avoids ad blockers
   tunnelRoute: "/monitoring",
+  // GlitchTip doesn't support Sentry source map upload API,
+  // so only upload when SENTRY_AUTH_TOKEN is explicitly set
   sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
     filesToDeleteAfterUpload: [".next/static/**/*.map"],
   },
+  // Disable telemetry to Sentry (we use GlitchTip)
+  telemetry: false,
 });

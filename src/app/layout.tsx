@@ -5,7 +5,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { CookieConsent } from "@/components/legal/CookieConsent";
+import { WebVitals } from "@/components/analytics/WebVitals";
 import { StructuredData, generateOrganizationSchema, generateWebSiteSchema, generateSiteNavigationSchema } from "@/components/seo/StructuredData";
+import { SWRProvider } from "@/components/providers/SWRProvider";
 import "./globals.css";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -152,14 +154,22 @@ export default function RootLayout({
 
   return (
     <html lang="es">
+      <head>
+        <link rel="preconnect" href="https://a.basemaps.cartocdn.com" />
+        <link rel="preconnect" href="https://b.basemaps.cartocdn.com" />
+        <link rel="preconnect" href="https://fonts.openmaptiles.org" crossOrigin="anonymous" />
+      </head>
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <StructuredData data={[organizationSchema, webSiteSchema, siteNavSchema]} />
-        <Header />
-        {children}
-        <StickyFooterAd />
-        <Footer />
+        <SWRProvider>
+          <Header />
+          {children}
+          <StickyFooterAd />
+          <Footer />
+        </SWRProvider>
+        <WebVitals />
         <CookieConsent />
         {gaId && (
           <>

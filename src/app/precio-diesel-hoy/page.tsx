@@ -288,9 +288,21 @@ export default async function PrecioDieselHoyPage() {
     (p) => !top10CheapestScopes.has(p.scope) && !top10ExpensiveScopes.has(p.scope)
   );
 
+  const datasetSchema = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Precio del Gasóleo A en España",
+    description: "Precio medio diario del gasóleo A en España. Datos del Ministerio de Industria actualizados diariamente.",
+    url: `${BASE_URL}/precio-diesel-hoy`,
+    temporalCoverage: new Date().toISOString().split("T")[0],
+    creator: { "@type": "Organization", name: "trafico.live", url: BASE_URL },
+    license: "https://datos.gob.es/es/aviso-legal",
+  };
+
   return (
     <>
       <StructuredData data={faqSchema} />
+      <StructuredData data={datasetSchema} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Breadcrumbs

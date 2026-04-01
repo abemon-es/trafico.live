@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect, useCallback } from "react";
 import useSWR from "swr";
 import Link from "next/link";
@@ -216,7 +217,6 @@ function ComparisonRow({
 // Main component
 // ---------------------------------------------------------------------------
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function CalculadoraContent() {
   // Fetch live fuel prices

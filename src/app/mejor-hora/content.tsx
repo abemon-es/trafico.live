@@ -1,5 +1,6 @@
 "use client";
 
+import { fetcher } from "@/lib/fetcher";
 import { useMemo } from "react";
 import useSWR from "swr";
 import {
@@ -60,7 +61,6 @@ const DAYS_ORDER = [
   "Domingo",
 ];
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 // ─── FAQ data ───────────────────────────────────────────────────────────────
 

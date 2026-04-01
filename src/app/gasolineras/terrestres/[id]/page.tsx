@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus, ChevronRight, Tag } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { RelatedByArea } from "@/components/seo/RelatedByArea";
 import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
@@ -605,6 +606,12 @@ export default async function StationDetailPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      <RelatedByArea
+        province={station.provinceName ?? undefined}
+        city={station.locality ?? station.municipality ?? undefined}
+        currentPath={`/gasolineras/terrestres/${station.id}`}
+      />
     </div>
   );
 }
