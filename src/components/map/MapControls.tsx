@@ -283,118 +283,102 @@ export function MapControls({
     );
   };
 
-  // ─── Desktop incident dropdown ────────────────────────────────────────────
-  const IncidentDropdownPanel = () => (
-    <div className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 z-[100] p-4 max-h-[80vh] overflow-y-auto">
-      {/* Toggle */}
-      <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100 dark:border-gray-800">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Mostrar incidencias</span>
-        <button
-          onClick={() => onLayerToggle("incidents")}
-          className={`relative w-10 h-6 rounded-full transition-all ${
-            activeLayers.incidents
-              ? "bg-orange-500"
-              : "bg-gray-200 dark:bg-gray-700"
-          }`}
-        >
-          <span
-            className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-              activeLayers.incidents ? "translate-x-5" : "translate-x-1"
-            }`}
-          />
-        </button>
-      </div>
-
-      {/* Visualization mode */}
-      {activeLayers.incidents && onIncidentViewModeChange && (
-        <div className="mb-3 pb-3 border-b border-gray-100 dark:border-gray-800">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Visualización</p>
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            {([
-              { mode: "heatmap" as IncidentViewMode, label: "Calor", icon: <Flame className="w-3.5 h-3.5" /> },
-              { mode: "clusters" as IncidentViewMode, label: "Grupos", icon: <Layers className="w-3.5 h-3.5" /> },
-              { mode: "points" as IncidentViewMode, label: "Puntos", icon: <Circle className="w-3.5 h-3.5" /> },
-            ] as const).map(({ mode, label, icon }) => (
-              <button
-                key={mode}
-                onClick={() => onIncidentViewModeChange(mode)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors flex-1 justify-center ${
-                  incidentViewMode === mode
-                    ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+  // ─── Shared filter panel (used by both desktop dropdown and mobile sheet) ──
+  const FilterCheckboxes = () => (
+    <div className="space-y-4">
+      {/* Effects — multi-select checkboxes */}
+      <div>
+        <p className="text-xs font-mono font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Tipo de afección</p>
+        <div className="space-y-1">
+          {EFFECT_OPTIONS.map((opt) => {
+            const checked = incidentFilters.effects.includes(opt.value);
+            return (
+              <label
+                key={opt.value}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                  checked ? "bg-gray-100 dark:bg-gray-800" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                 }`}
               >
-                {icon}
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Effect filters */}
-      <div className="mb-3">
-        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Tipo de afección</p>
-        <div className="flex flex-wrap gap-1.5">
-          {EFFECT_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleEffectToggle(opt.value)}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all ${
-                incidentFilters.effects.includes(opt.value)
-                  ? "text-white"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-              style={{
-                backgroundColor: incidentFilters.effects.includes(opt.value) ? opt.color : undefined,
-              }}
-            >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: incidentFilters.effects.includes(opt.value) ? "white" : opt.color }}
-              />
-              {opt.label}
-            </button>
-          ))}
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => handleEffectToggle(opt.value)}
+                  className="sr-only"
+                />
+                <span
+                  className="w-3 h-3 rounded-full shrink-0 border-2 flex items-center justify-center"
+                  style={{ borderColor: opt.color, backgroundColor: checked ? opt.color : "transparent" }}
+                >
+                  {checked && (
+                    <svg className="w-2 h-2 text-white" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                <span className={`text-sm ${checked ? "font-medium text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-400"}`}>
+                  {opt.label}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
-      {/* Cause filters */}
-      <div className="mb-3">
-        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Causa</p>
-        <div className="flex flex-wrap gap-1.5">
-          {CAUSE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleCauseToggle(opt.value)}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all ${
-                incidentFilters.causes.includes(opt.value)
-                  ? "text-white"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-              style={{
-                backgroundColor: incidentFilters.causes.includes(opt.value) ? opt.color : undefined,
-              }}
-            >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: incidentFilters.causes.includes(opt.value) ? "white" : opt.color }}
-              />
-              {opt.label}
-            </button>
-          ))}
+      {/* Causes — multi-select checkboxes */}
+      <div>
+        <p className="text-xs font-mono font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Causa</p>
+        <div className="space-y-1">
+          {CAUSE_OPTIONS.map((opt) => {
+            const checked = incidentFilters.causes.includes(opt.value);
+            return (
+              <label
+                key={opt.value}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                  checked ? "bg-gray-100 dark:bg-gray-800" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => handleCauseToggle(opt.value)}
+                  className="sr-only"
+                />
+                <span
+                  className="w-3 h-3 rounded-full shrink-0 border-2 flex items-center justify-center"
+                  style={{ borderColor: opt.color, backgroundColor: checked ? opt.color : "transparent" }}
+                >
+                  {checked && (
+                    <svg className="w-2 h-2 text-white" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                <span className={`text-sm ${checked ? "font-medium text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-400"}`}>
+                  {opt.label}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
+      {/* Clear all */}
       {activeFilterCount > 0 && (
         <button
           onClick={clearAllFilters}
-          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+          className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors w-full justify-center py-2 border-t border-gray-100 dark:border-gray-800"
         >
           <X className="w-3 h-3" />
-          Limpiar filtros
+          Limpiar {activeFilterCount} filtro{activeFilterCount !== 1 ? "s" : ""}
         </button>
       )}
+    </div>
+  );
+
+  // ─── Desktop incident dropdown ────────────────────────────────────────────
+  const IncidentDropdownPanel = () => (
+    <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 z-[100] p-4 max-h-[80vh] overflow-y-auto">
+      <FilterCheckboxes />
     </div>
   );
 
@@ -528,31 +512,40 @@ export function MapControls({
               icon={<AlertTriangle className="w-4 h-4" />}
             />
 
-            {/* Incidents with dropdown */}
-            <div className="relative z-[110]" ref={dropdownRef}>
-              <button
-                onClick={() => {
-                  if (!activeLayers.incidents) onLayerToggle("incidents");
-                  setShowIncidentDropdown(!showIncidentDropdown);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all cursor-pointer ${
-                  activeLayers.incidents
-                    ? "bg-orange-100 dark:bg-orange-900/30 border-orange-500 text-orange-700 dark:text-orange-400"
-                    : "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
-              >
-                <AlertTriangle className="w-4 h-4" />
-                <span>Incidencias{counts?.incidents ? ` (${counts.incidents})` : ""}</span>
-                {activeFilterCount > 0 && (
-                  <span className="bg-orange-600 text-white text-xs px-1.5 rounded-full leading-none py-0.5">
-                    {activeFilterCount}
-                  </span>
-                )}
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showIncidentDropdown ? "rotate-180" : ""}`} />
-              </button>
+            {/* Incidents toggle */}
+            <LayerToggle
+              label={`Incidencias${counts?.incidents ? ` (${counts.incidents})` : ""}`}
+              active={activeLayers.incidents}
+              onClick={() => onLayerToggle("incidents")}
+              color="orange"
+              icon={<AlertTriangle className="w-4 h-4" />}
+            />
 
-              {showIncidentDropdown && <IncidentDropdownPanel />}
-            </div>
+            {/* Incident filter dropdown */}
+            {activeLayers.incidents && (
+              <div className="relative z-[110]" ref={dropdownRef}>
+                <button
+                  onClick={() => setShowIncidentDropdown(!showIncidentDropdown)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                    activeFilterCount > 0
+                      ? "bg-tl-amber-100 dark:bg-tl-amber-900/20 border-tl-amber-400 text-tl-amber-700 dark:text-tl-amber-300"
+                      : "bg-gray-50 dark:bg-gray-950 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                  title="Filtrar incidencias"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>Filtros</span>
+                  {activeFilterCount > 0 && (
+                    <span className="bg-tl-amber-500 text-white text-[10px] px-1.5 rounded-full leading-none py-0.5">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showIncidentDropdown ? "rotate-180" : ""}`} />
+                </button>
+
+                {showIncidentDropdown && <IncidentDropdownPanel />}
+              </div>
+            )}
 
             <LayerToggle
               label={`Cámaras${counts?.cameras ? ` (${counts.cameras})` : ""}`}
@@ -931,12 +924,7 @@ export function MapControls({
                     return (
                       <div key={def.key} className="flex flex-col">
                         <button
-                          onClick={() => {
-                            onLayerToggle(def.key);
-                            if (isIncidents && !activeLayers.incidents) {
-                              setIncidentExpanded(true);
-                            }
-                          }}
+                          onClick={() => onLayerToggle(def.key)}
                           className={`flex items-center gap-3 px-3 py-3 rounded-xl border transition-colors min-h-[56px] ${
                             isActive
                               ? "bg-tl-50 dark:bg-tl-900/20 border-tl-300 dark:border-tl-700"
@@ -962,111 +950,16 @@ export function MapControls({
                             )}
                           </div>
 
-                          {/* Expand arrow for incidents */}
-                          {isIncidents && isActive && (
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={(e) => { e.stopPropagation(); setIncidentExpanded(!incidentExpanded); }}
-                              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); setIncidentExpanded(!incidentExpanded); } }}
-                              className="shrink-0 text-gray-400 dark:text-gray-500 p-1 -mr-1 cursor-pointer"
-                              aria-label={incidentExpanded ? "Ocultar filtros" : "Mostrar filtros"}
-                            >
-                              <ChevronDown className={`w-4 h-4 transition-transform motion-reduce:transition-none ${incidentExpanded ? "rotate-180" : ""}`} />
-                            </span>
-                          )}
-
                           {/* Active dot */}
-                          {isActive && !isIncidents && (
+                          {isActive && (
                             <span className="shrink-0 w-2 h-2 rounded-full bg-tl-500 dark:bg-tl-400" />
                           )}
                         </button>
 
-                        {/* Incident expanded sub-filters */}
-                        {isIncidents && isActive && incidentExpanded && (
-                          <div className="mt-1 px-3 py-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/50 rounded-xl space-y-3">
-                            {/* Visualization mode */}
-                            {onIncidentViewModeChange && (
-                              <div>
-                                <p className="text-[10px] font-mono font-medium text-orange-600 dark:text-orange-500 uppercase tracking-wider mb-1.5">
-                                  Visualización
-                                </p>
-                                <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/20 rounded-lg p-0.5">
-                                  {([
-                                    { mode: "heatmap" as IncidentViewMode, label: "Calor", icon: <Flame className="w-3 h-3" /> },
-                                    { mode: "clusters" as IncidentViewMode, label: "Grupos", icon: <Layers className="w-3 h-3" /> },
-                                    { mode: "points" as IncidentViewMode, label: "Puntos", icon: <Circle className="w-3 h-3" /> },
-                                  ] as const).map(({ mode, label, icon }) => (
-                                    <button
-                                      key={mode}
-                                      onClick={() => onIncidentViewModeChange(mode)}
-                                      className={`flex items-center gap-1 px-2 py-1.5 rounded text-[11px] font-medium flex-1 justify-center transition-colors ${
-                                        incidentViewMode === mode
-                                          ? "bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 shadow-sm"
-                                          : "text-orange-700 dark:text-orange-400"
-                                      }`}
-                                    >
-                                      {icon}
-                                      {label}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Effect chips */}
-                            <div>
-                              <p className="text-[10px] font-mono font-medium text-orange-600 dark:text-orange-500 uppercase tracking-wider mb-1.5">
-                                Afección
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {EFFECT_OPTIONS.map((opt) => (
-                                  <button
-                                    key={opt.value}
-                                    onClick={() => handleEffectToggle(opt.value)}
-                                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                                      incidentFilters.effects.includes(opt.value) ? "text-white" : "bg-white/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-400"
-                                    }`}
-                                    style={{ backgroundColor: incidentFilters.effects.includes(opt.value) ? opt.color : undefined }}
-                                  >
-                                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: incidentFilters.effects.includes(opt.value) ? "white" : opt.color }} />
-                                    {opt.label}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Cause chips */}
-                            <div>
-                              <p className="text-[10px] font-mono font-medium text-orange-600 dark:text-orange-500 uppercase tracking-wider mb-1.5">
-                                Causa
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {CAUSE_OPTIONS.map((opt) => (
-                                  <button
-                                    key={opt.value}
-                                    onClick={() => handleCauseToggle(opt.value)}
-                                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                                      incidentFilters.causes.includes(opt.value) ? "text-white" : "bg-white/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-400"
-                                    }`}
-                                    style={{ backgroundColor: incidentFilters.causes.includes(opt.value) ? opt.color : undefined }}
-                                  >
-                                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: incidentFilters.causes.includes(opt.value) ? "white" : opt.color }} />
-                                    {opt.label}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-
-                            {activeFilterCount > 0 && (
-                              <button
-                                onClick={clearAllFilters}
-                                className="flex items-center gap-1 text-[11px] text-orange-600 dark:text-orange-500 hover:text-orange-800 dark:hover:text-orange-300"
-                              >
-                                <X className="w-3 h-3" />
-                                Limpiar filtros
-                              </button>
-                            )}
+                        {/* Incident filters — shown below the layer toggle when incidents active */}
+                        {isIncidents && isActive && (
+                          <div className="mt-1 px-3 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-700 rounded-xl">
+                            <FilterCheckboxes />
                           </div>
                         )}
                       </div>
