@@ -1,7 +1,19 @@
 # Weekly collectors — Sunday early morning
+# Staggered 30-min intervals. Heaviest: transit-gtfs (15 GTFS feeds, some 50MB+)
+
 0 3 * * 0 TASK=radar npx tsx index.ts 2>&1 && touch /tmp/last-run
 30 3 * * 0 TASK=speedlimit npx tsx index.ts 2>&1
 0 4 * * 0 TASK=risk-zones npx tsx index.ts 2>&1
 30 4 * * 0 TASK=zbe npx tsx index.ts 2>&1
+
 # Renfe GTFS static (weekly — timetables)
 0 5 * * 0 TASK=renfe-gtfs NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
+
+# Ferry GTFS — Fred. Olsen, Baleària, Vizcaya (3 small feeds)
+30 5 * * 0 TASK=ferry-gtfs npx tsx index.ts 2>&1
+
+# Transit GTFS — 15 metro/bus/tram operators (some feeds 50MB+, needs heap room)
+0 6 * * 0 TASK=transit-gtfs NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
+
+# DGT extras — roadworks/connected cones (placeholder, probes NAP endpoints)
+30 6 * * 0 TASK=dgt-extras npx tsx index.ts 2>&1

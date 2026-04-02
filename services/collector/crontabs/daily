@@ -1,12 +1,30 @@
 # Daily collectors
+# Staggered schedule — no two heavy tasks overlap.
+# Heaviest: charger (768MB heap), mobilitydata-sync (ZIP parsing, ~512MB peak)
+
 30 0 * * * TASK=daily-stats npx tsx index.ts 2>&1
+
 # CNMC provincial fuel price history (daily, before MINETUR morning fetch)
 0 2 * * * TASK=cnmc-fuel npx tsx index.ts 2>&1
+
+# MobilityData GTFS catalog sync + historical snapshots (downloads ~2MB CSV + optional ZIPs)
+30 2 * * * TASK=mobilitydata-sync NODE_OPTIONS=--max-old-space-size=512 npx tsx index.ts 2>&1
+
 # Renfe GTFS static timetables
 0 3 * * * TASK=renfe-gtfs NODE_OPTIONS=--max-old-space-size=384 npx tsx index.ts 2>&1
+
+# INE transport statistics (light — JSON API calls, ~50MB)
+30 3 * * * TASK=ine-stats npx tsx index.ts 2>&1
+
 0 4 * * * TASK=camera npx tsx index.ts 2>&1 && touch /tmp/last-run
+
+# AENA airport seeding + stats (placeholder — Excel parsing TBD)
+30 4 * * * TASK=aena-stats npx tsx index.ts 2>&1
+
 0 5 * * * TASK=typesense-sync npx tsx index.ts 2>&1
 0 6 * * * TASK=charger NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
+
 # AEMET daily climate update (after station data stabilizes for previous day)
 0 8 * * * TASK=aemet-historical npx tsx index.ts 2>&1
+
 30 22 * * * TASK=insights npx tsx index.ts 2>&1

@@ -4,11 +4,14 @@
 # Independent from the web app — collector deploys don't restart the site.
 #
 # 5 cron tiers + 1 always-on WebSocket service:
-#   collector-realtime — incident, v16, panel, detector, intensity, andorra, renfe-alerts, city-traffic, renfe-positions (every 2-5 min)
-#   collector-frequent — weather, maritime-forecast, portugal-weather (every 6h)
-#   collector-fuel     — gas-station, maritime-fuel, portugal-fuel (3x daily)
-#   collector-daily    — camera, charger, insights, typesense-sync, opensky, aena-stats (daily)
-#   collector-weekly   — radar, speedlimit, risk-zones, zbe, renfe-gtfs, ferry-gtfs, transit-gtfs, mobilitydata-sync, ine-stats, dgt-extras (weekly)
+#   collector-realtime — incident, v16, panel, detector, intensity, city-traffic,
+#                        andorra, renfe-alerts, renfe-ld-realtime, renfe-positions, opensky
+#   collector-frequent — weather, maritime-forecast, portugal-weather
+#   collector-fuel     — gas-station, maritime-fuel, portugal-fuel
+#   collector-daily    — daily-stats, cnmc-fuel, mobilitydata-sync, renfe-gtfs, ine-stats,
+#                        camera, aena-stats, typesense-sync, charger, aemet-historical, insights
+#   collector-weekly   — radar, speedlimit, risk-zones, zbe, renfe-gtfs,
+#                        ferry-gtfs, transit-gtfs, dgt-extras
 #   collector-ais      — ais-stream (always-on WebSocket, real-time vessel tracking)
 
 x-collector: &collector-base
@@ -37,9 +40,25 @@ x-collector: &collector-base
       max-size: "10m"
       max-file: "3"
 
+# ─────────────────────────────────────────────────────────────────────
+# Resource Allocation (total: ~5.2 GB limit / ~1.1 GB reserved)
+#
+#   Container          Tasks  Peak concurrent  Mem limit  Reserve  CPU
+#   realtime           11     11 (worst case)  1536m      384m     1.5
+#   frequent            3      1               256m        64m     0.5
+#   fuel                3      1               512m       128m     0.5
+#   daily              11      1 (staggered)   1536m      256m     1.0
+#   weekly              8      1 (staggered)   1024m      192m     1.0
+#   ais (always-on)     1      1               192m        64m     0.25
+#
+# Each Node.js process: ~60-80MB baseline.
+# Heavy tasks set NODE_OPTIONS heap limits in their crontab entries.
+# ─────────────────────────────────────────────────────────────────────
+
 services:
   # ─── Realtime (every 2-5 min) ──────────────────────────────────────
-  # incident, v16, panel, detector, intensity, andorra, renfe-alerts
+  # 11 tasks via supercronic. At :00/:10/:20/:30/:40/:50 all fire together.
+  # Budget: 80MB × 11 concurrent = ~880MB + overhead → 1536m
   collector-realtime:
     <<: *collector-base
     environment:
@@ -47,14 +66,17 @@ services:
       REDIS_URL: ${REDIS_URL}
       SENTRY_DSN: ${SENTRY_DSN}
       AEMET_API_KEY: ${AEMET_API_KEY}
+      OPENSKY_USERNAME: ${OPENSKY_USERNAME:-}
+      OPENSKY_PASSWORD: ${OPENSKY_PASSWORD:-}
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: realtime
-    mem_limit: 1024m
-    mem_reservation: 256m
+    mem_limit: 1536m
+    mem_reservation: 384m
+    cpus: 1.5
 
-  # ─── Frequent (every 6h) ──────────────────────────────────────────
-  # weather, maritime-forecast, portugal-weather
+  # ─── Frequent (every 1-6h) ────────────────────────────────────────
+  # 3 tasks, max 1 concurrent. Weather is lightest (~60MB).
   collector-frequent:
     <<: *collector-base
     environment:
@@ -66,9 +88,11 @@ services:
       NODE_ENV: production
       CRONTAB_TIER: frequent
     mem_limit: 256m
+    mem_reservation: 64m
+    cpus: 0.5
 
   # ─── Fuel (3x daily) ──────────────────────────────────────────────
-  # gas-station, maritime-fuel, portugal-fuel
+  # 3 tasks staggered hourly. gas-station heaviest (~11K records, ~200MB).
   collector-fuel:
     <<: *collector-base
     environment:
@@ -79,9 +103,12 @@ services:
       NODE_ENV: production
       CRONTAB_TIER: fuel
     mem_limit: 512m
+    mem_reservation: 128m
+    cpus: 0.5
 
   # ─── Daily ─────────────────────────────────────────────────────────
-  # camera, charger, insights, typesense-sync
+  # 11 tasks staggered 30-min intervals. Max 1 concurrent.
+  # Heaviest: charger (768MB heap), mobilitydata-sync (512MB heap for ZIP parsing)
   collector-daily:
     <<: *collector-base
     environment:
@@ -90,13 +117,17 @@ services:
       SENTRY_DSN: ${SENTRY_DSN}
       TYPESENSE_URL: ${TYPESENSE_URL}
       TYPESENSE_API_KEY: ${TYPESENSE_API_KEY}
+      MOBILITYDATA_REFRESH_TOKEN: ${MOBILITYDATA_REFRESH_TOKEN:-}
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: daily
-    mem_limit: 1024m
+    mem_limit: 1536m
+    mem_reservation: 256m
+    cpus: 1.0
 
   # ─── Weekly ────────────────────────────────────────────────────────
-  # radar, speedlimit, risk-zones, zbe, renfe-gtfs, ferry-gtfs, transit-gtfs, mobilitydata-sync, ine-stats, dgt-extras
+  # 8 tasks staggered 30-min intervals (Sunday 03:00-07:00).
+  # Heaviest: transit-gtfs (15 GTFS feeds, some 50MB+, 768MB heap)
   collector-weekly:
     <<: *collector-base
     environment:
@@ -106,10 +137,14 @@ services:
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: weekly
-    mem_limit: 512m
+    mem_limit: 1024m
+    mem_reservation: 192m
+    cpus: 1.0
 
-  # ─── AIS Stream (always-on WebSocket) ──────────────────────────────────────
-  # Real-time vessel tracking via aisstream.io
+  # ─── AIS Stream (always-on WebSocket) ──────────────────────────────
+  # Single Node.js process, persistent WebSocket to aisstream.io.
+  # Batches ~500 positions in memory (10s flush interval).
+  # Budget: 1 process (~80MB) + WS buffer + batch → 192m
   collector-ais:
     <<: *collector-base
     environment:
@@ -121,7 +156,8 @@ services:
       NODE_ENV: production
       TASK: ais-stream
       COLLECTOR_DURATION: "0"
-    mem_limit: 256m
+    mem_limit: 192m
     mem_reservation: 64m
+    cpus: 0.25
     restart: always
     command: ["node", "--import", "tsx", "services/collector/index.ts"]
