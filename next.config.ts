@@ -38,7 +38,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' https://fonts.openmaptiles.org",
       "img-src 'self' data: https: blob:",
-      "connect-src 'self' https://*.cartocdn.com https://*.carto.com https://fonts.openmaptiles.org https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.openseamap.org https://tiles.openseamap.org https://tile.openweathermap.org https://server.arcgisonline.com",
+      "connect-src 'self' https://*.cartocdn.com https://*.carto.com https://fonts.openmaptiles.org https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.openseamap.org https://tiles.openseamap.org https://tile.openweathermap.org https://server.arcgisonline.com https://marine-api.open-meteo.com https://api.open-meteo.com",
       "worker-src 'self' blob:",
       "frame-ancestors 'self'",
     ].join("; "),
