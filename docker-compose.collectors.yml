@@ -24,8 +24,13 @@ x-collector: &collector-base
   mem_limit: 512m
   mem_reservation: 128m
   logging:
-    driver: json-file
+    driver: loki
     options:
+      loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
+      loki-batch-size: "400"
+      loki-retries: "2"
+      loki-max-backoff: "1s"
+      labels: "app=trafico-collector"
       max-size: "10m"
       max-file: "3"
 
