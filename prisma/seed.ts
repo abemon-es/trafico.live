@@ -392,6 +392,46 @@ async function main() {
     console.log("Skipping road catalog (no data file found)\n");
   }
 
+  // Seed toll roads
+  const tollJsonPath = path.join(process.cwd(), "data/tolls.json");
+  if (fs.existsSync(tollJsonPath)) {
+    console.log("Seeding toll roads...");
+    const tollData = JSON.parse(fs.readFileSync(tollJsonPath, "utf-8"));
+    await prisma.tollSegment.deleteMany({});
+    await prisma.tollRoad.deleteMany({});
+    for (const road of tollData.roads) {
+      const fullSeg = road.segments.reduce((max: { price: number }, s: { price: number }) => s.price > max.price ? s : max, road.segments[0]);
+      const minSeg = road.segments.reduce((min: { price: number }, s: { price: number }) => s.price < min.price ? s : min, road.segments[0]);
+      const matchingRoad = await prisma.road.findUnique({ where: { id: road.id.replace(/-malaga|-alicante|-cartagena-vera/, "") } });
+      await prisma.tollRoad.create({
+        data: {
+          id: road.id,
+          name: road.name,
+          slug: slugify(road.id),
+          operator: road.operator,
+          isSeitt: !!road.isSeitt,
+          expires: road.expires,
+          fromCity: road.segments[0].from,
+          toCity: fullSeg.to,
+          totalKm: fullSeg.km,
+          minPrice: minSeg.price,
+          maxPrice: fullSeg.price,
+          roadId: matchingRoad?.id || null,
+          year: 2026,
+          source: tollData.source,
+          segments: {
+            create: road.segments.map((s: { from: string; to: string; km: number; price: number }, i: number) => ({
+              fromPoint: s.from, toPoint: s.to, km: s.km, priceLigeros: s.price, sortOrder: i,
+            })),
+          },
+        },
+      });
+    }
+    console.log(`   ${tollData.roads.length} toll roads seeded\n`);
+  } else {
+    console.log("Skipping toll roads (no data file found)\n");
+  }
+
   console.log("Database seed completed successfully!");
 
   // Print summary
