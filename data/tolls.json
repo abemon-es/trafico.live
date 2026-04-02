@@ -1,0 +1,189 @@
+{
+  "lastUpdated": "2026-01-01",
+  "source": "Ministerio de Transportes, SEITT, BOE-A-2024-26469",
+  "notes": "Rates for light vehicles (Ligeros). Tag/electronic payment rates shown. 2026 tariffs.",
+  "seittPerKm": {
+    "ligeros": { "tag": 0.0827, "cash": 0.0927 },
+    "pesados1": { "tag": 0.1194, "cash": 0.1298 },
+    "pesados2": { "tag": 0.1671, "cash": 0.1854 },
+    "freeHours": "00:00-06:00",
+    "roads": ["R-2", "R-3", "R-5", "R-4", "M-12", "AP-36", "AP-41", "AP-7-cartagena-vera"]
+  },
+  "roads": [
+    {
+      "id": "AP-6",
+      "name": "AP-6 Villalba – Adanero",
+      "operator": "Abertis (Iberpistas)",
+      "expires": "2029",
+      "segments": [
+        { "from": "Villalba", "to": "Adanero", "km": 87, "price": 8.60 },
+        { "from": "Villalba", "to": "San Rafael", "km": 52, "price": 5.80 },
+        { "from": "San Rafael", "to": "Adanero", "km": 35, "price": 3.95 }
+      ]
+    },
+    {
+      "id": "AP-51",
+      "name": "AP-51 Villacastín – Ávila",
+      "operator": "Abertis (Iberpistas)",
+      "expires": "2029",
+      "segments": [
+        { "from": "Villacastín", "to": "Ávila", "km": 24, "price": 3.70 }
+      ]
+    },
+    {
+      "id": "AP-61",
+      "name": "AP-61 Conexión AP-6 – Segovia",
+      "operator": "Abertis (Iberpistas)",
+      "expires": "2029",
+      "segments": [
+        { "from": "AP-6", "to": "Segovia", "km": 18, "price": 3.25 }
+      ]
+    },
+    {
+      "id": "AP-53",
+      "name": "AP-53 Santiago – Alto de Santo Domingo",
+      "operator": "Acega",
+      "expires": "2043",
+      "segments": [
+        { "from": "Santiago", "to": "Alto de Santo Domingo", "km": 57, "price": 5.90 }
+      ]
+    },
+    {
+      "id": "AP-66",
+      "name": "AP-66 León – Campomanes",
+      "operator": "Aucalsa (Itínere)",
+      "expires": "2050",
+      "segments": [
+        { "from": "León", "to": "Campomanes", "km": 78, "price": 9.20 },
+        { "from": "León", "to": "La Robla", "km": 28, "price": 3.45 },
+        { "from": "La Robla", "to": "Campomanes", "km": 50, "price": 6.30 }
+      ]
+    },
+    {
+      "id": "AP-68",
+      "name": "AP-68 Bilbao – Zaragoza",
+      "operator": "Avasa (Abertis)",
+      "expires": "2026-11",
+      "segments": [
+        { "from": "Bilbao", "to": "Zaragoza", "km": 295, "price": 22.65 },
+        { "from": "Bilbao", "to": "Miranda de Ebro", "km": 85, "price": 7.10 },
+        { "from": "Miranda de Ebro", "to": "Logroño", "km": 60, "price": 5.35 },
+        { "from": "Logroño", "to": "Tudela", "km": 80, "price": 6.20 },
+        { "from": "Tudela", "to": "Zaragoza", "km": 70, "price": 5.45 }
+      ]
+    },
+    {
+      "id": "AP-71",
+      "name": "AP-71 León – Astorga",
+      "operator": "Aulesa",
+      "expires": "2055",
+      "segments": [
+        { "from": "León", "to": "Astorga", "km": 42, "price": 4.10 }
+      ]
+    },
+    {
+      "id": "AP-9",
+      "name": "AP-9 Ferrol – Frontera Portuguesa",
+      "operator": "Audasa (Itínere)",
+      "expires": "2048",
+      "segments": [
+        { "from": "Ferrol", "to": "A Coruña", "km": 52, "price": 4.85 },
+        { "from": "A Coruña", "to": "Santiago", "km": 65, "price": 5.60 },
+        { "from": "Santiago", "to": "Pontevedra", "km": 55, "price": 5.20 },
+        { "from": "Pontevedra", "to": "Vigo", "km": 25, "price": 2.95 },
+        { "from": "Vigo", "to": "Frontera Portuguesa", "km": 28, "price": 3.10 },
+        { "from": "Ferrol", "to": "Frontera Portuguesa", "km": 225, "price": 21.30 }
+      ]
+    },
+    {
+      "id": "AP-46",
+      "name": "AP-46 Málaga – Alto de las Pedrizas",
+      "operator": "Guadalcesa",
+      "expires": "2044",
+      "segments": [
+        { "from": "Málaga", "to": "Alto de las Pedrizas", "km": 24, "price": 4.95 }
+      ]
+    },
+    {
+      "id": "AP-7-malaga",
+      "name": "AP-7 Málaga – Guadiaro (Costa del Sol)",
+      "operator": "Ausol",
+      "expires": "2054",
+      "segments": [
+        { "from": "Málaga", "to": "Estepona", "km": 70, "price": 7.80 },
+        { "from": "Estepona", "to": "Guadiaro", "km": 12, "price": 1.90 },
+        { "from": "Málaga", "to": "Guadiaro", "km": 82, "price": 9.50 }
+      ]
+    },
+    {
+      "id": "AP-7-alicante",
+      "name": "AP-7 Alicante – Cartagena",
+      "operator": "Aucosta",
+      "expires": "2042",
+      "segments": [
+        { "from": "Alicante", "to": "Cartagena", "km": 90, "price": 7.45 }
+      ]
+    },
+    {
+      "id": "R-2",
+      "name": "R-2 Madrid – Guadalajara",
+      "operator": "SEITT",
+      "expires": "2032",
+      "isSeitt": true,
+      "segments": [
+        { "from": "Madrid (M-40)", "to": "Guadalajara", "km": 42, "price": 3.47 }
+      ]
+    },
+    {
+      "id": "R-3",
+      "name": "R-3/R-5 Madrid Sur",
+      "operator": "SEITT",
+      "expires": "2032",
+      "isSeitt": true,
+      "segments": [
+        { "from": "Madrid (M-40)", "to": "Arganda", "km": 25, "price": 2.07 },
+        { "from": "Madrid (M-40)", "to": "Navalcarnero", "km": 30, "price": 2.48 }
+      ]
+    },
+    {
+      "id": "R-4",
+      "name": "R-4 Madrid – Ocaña",
+      "operator": "SEITT",
+      "expires": "2032",
+      "isSeitt": true,
+      "segments": [
+        { "from": "Madrid (M-50)", "to": "Ocaña", "km": 52, "price": 4.30 }
+      ]
+    },
+    {
+      "id": "M-12",
+      "name": "M-12 Eje Aeropuerto Madrid",
+      "operator": "SEITT",
+      "expires": "2032",
+      "isSeitt": true,
+      "segments": [
+        { "from": "M-40", "to": "Aeropuerto T4", "km": 9, "price": 0.74 }
+      ]
+    },
+    {
+      "id": "AP-36",
+      "name": "AP-36 Ocaña – La Roda",
+      "operator": "SEITT",
+      "expires": "2032",
+      "isSeitt": true,
+      "segments": [
+        { "from": "Ocaña", "to": "La Roda", "km": 177, "price": 14.64 }
+      ]
+    },
+    {
+      "id": "AP-41",
+      "name": "AP-41 Madrid – Toledo",
+      "operator": "SEITT",
+      "expires": "2032",
+      "isSeitt": true,
+      "segments": [
+        { "from": "Madrid (M-40)", "to": "Toledo", "km": 60, "price": 4.96 }
+      ]
+    }
+  ]
+}
