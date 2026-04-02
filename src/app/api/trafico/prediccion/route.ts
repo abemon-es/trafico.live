@@ -47,10 +47,9 @@ function getMadridTime(): { dayOfWeek: number; hour: number; madridNow: Date } {
 /** Classify intensity deviation as a label. */
 function classifyDeviation(pct: number): string {
   const abs = Math.abs(pct);
-  if (pct < 0 && abs >= 10) return "below_normal";
   if (abs < 10) return "normal";
-  if (abs < 25) return "normal";
-  if (abs < 50) return "above_normal";
+  if (pct < 0) return "below_normal";
+  if (abs < 30) return "above_normal";
   return "much_above_normal";
 }
 

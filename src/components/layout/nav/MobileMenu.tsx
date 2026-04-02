@@ -140,6 +140,7 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
                       )}
                       {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
                     </div>
+                    {result.distance != null && <span className="shrink-0 text-[10px] font-mono text-gray-400">{result.distance < 1 ? `${Math.round(result.distance * 1000)} m` : `${result.distance.toFixed(1)} km`}</span>}
                     {result.price != null && <span className="shrink-0 text-[10px] font-mono font-medium text-tl-amber-600 dark:text-tl-amber-400">{result.price.toFixed(3)}&nbsp;€/L</span>}
                     <span className={`shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
                   </Link>

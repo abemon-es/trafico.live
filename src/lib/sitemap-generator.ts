@@ -663,6 +663,24 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.8,
     },
     {
+      url: `${BASE_URL}/peajes`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/peajes/gratis-2026`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/peajes/radiales-madrid`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    {
       url: `${BASE_URL}/cuanto-cuesta-cargar`,
       lastModified: today,
       changeFrequency: "monthly",
@@ -762,6 +780,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       url: `${BASE_URL}/intensidad`,
       lastModified: today,
       changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/prediccion-trafico`,
+      lastModified: today,
+      changeFrequency: "daily",
       priority: 0.85,
     },
     {

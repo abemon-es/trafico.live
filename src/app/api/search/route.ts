@@ -613,6 +613,13 @@ async function performSearch(
           if (titleHighlight?.snippet) {
             result.highlightedTitle = titleHighlight.snippet;
           }
+          // Extract geo distance when proximity sorting is active
+          const geoDistanceM = (hit as unknown as Record<string, unknown>).geo_distance_meters;
+          if (typeof geoDistanceM === "object" && geoDistanceM !== null) {
+            const distMap = geoDistanceM as Record<string, number>;
+            const distM = distMap.location ?? Object.values(distMap)[0];
+            if (distM != null) result.distance = Math.round(distM / 10) / 100; // meters → km, 2 decimals
+          }
           results.push(result);
         }
       }

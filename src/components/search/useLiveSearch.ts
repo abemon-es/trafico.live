@@ -186,6 +186,8 @@ export interface UseLiveSearchReturn {
   hasQuery: boolean;
   /** Smart filter labels detected from query keywords */
   filterLabels: string[];
+  /** True when resolving a location name to coordinates */
+  isResolvingLocation: boolean;
   /** Call when user navigates to a result — saves to recent searches */
   onNavigate: (query: string) => void;
 }
@@ -226,15 +228,39 @@ export function useLiveSearch(): UseLiveSearchReturn {
     dedupingInterval: 2000,
   });
 
-  const results: SearchResult[] = useMemo(() => data?.results ?? [], [data]);
-  const filterLabels: string[] = useMemo(() => data?.filters?.labels ?? [], [data]);
+  // Location resolution — when API says it needs coordinates for proximity search
+  const needsResolution = !!(data?.filters?.needsLocationResolution && data?.filters?.locationHint);
+  const locationHint = data?.filters?.locationHint;
+
+  const { data: locationData } = useSWR<{ resolved: boolean; location?: { lat: number; lng: number; name: string } }>(
+    needsResolution ? `/api/search/resolve-location?q=${encodeURIComponent(locationHint!)}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // Re-fetch with resolved coordinates
+  const resolvedGeoParam = locationData?.resolved && locationData.location
+    ? `&lat=${locationData.location.lat}&lng=${locationData.location.lng}`
+    : null;
+  const enhancedSwrKey = resolvedGeoParam && debouncedQuery.trim()
+    ? `/api/search?q=${encodeURIComponent(debouncedQuery.trim())}&limit=25${resolvedGeoParam}`
+    : null;
+
+  const { data: enhancedData } = useSWR<SearchAPIResponse>(enhancedSwrKey, fetcher, {
+    revalidateOnFocus: false,
+  });
+
+  const activeData = enhancedData || data;
+  const results: SearchResult[] = useMemo(() => activeData?.results ?? [], [activeData]);
+  const filterLabels: string[] = useMemo(() => activeData?.filters?.labels ?? [], [activeData]);
   const groups = useMemo(() => groupResults(results), [results]);
   const flatResults = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+  const isResolvingLocation = needsResolution && !locationData?.resolved;
   const hasQuery = debouncedQuery.trim().length > 0;
 
   // GA4 tracking
   useEffect(() => {
-    if (debouncedQuery.trim() && data) {
+    if (debouncedQuery.trim() && activeData) {
       trackSearch(debouncedQuery.trim(), results.length);
     }
   }, [debouncedQuery, data, results.length]);
@@ -253,6 +279,7 @@ export function useLiveSearch(): UseLiveSearchReturn {
     isLoading,
     hasQuery,
     filterLabels,
+    isResolvingLocation,
     onNavigate,
   };
 }

@@ -1,4 +1,4 @@
-import { GaugeCircle, MapPin, BarChart3, Route } from "lucide-react";
+import { GaugeCircle, MapPin, BarChart3, Route, Clock } from "lucide-react";
 import IntensidadContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
@@ -33,6 +33,7 @@ export default function IntensidadPage() {
       <IntensidadContent />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
         <RelatedLinks links={[
+          { title: "Predicción de tráfico", description: "Mapa de calor: cuándo hay más tráfico en Madrid por hora y día", href: "/prediccion-trafico", icon: <Clock className="w-5 h-5" /> },
           { title: "Estaciones de aforo", description: "Mapa interactivo con los 3.458 puntos de aforo nacionales", href: "/estaciones-aforo", icon: <GaugeCircle className="w-5 h-5" /> },
           { title: "Estado del tráfico en tiempo real", description: "Incidencias y mapa de tráfico de España", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
           { title: "Estadísticas de tráfico", description: "Histórico de siniestralidad y datos DGT", href: "/estadisticas", icon: <BarChart3 className="w-5 h-5" /> },
