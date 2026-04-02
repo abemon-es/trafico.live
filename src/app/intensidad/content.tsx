@@ -24,6 +24,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { TrafficComparison } from "@/components/stats/TrafficComparison";
 
 
 interface ProvinceData {
@@ -134,6 +135,9 @@ export default function IntensidadContent() {
           Datos oficiales del Ministerio de Transportes y Movilidad Sostenible.
         </p>
       </div>
+
+      {/* Live vs normal comparison */}
+      <TrafficComparison className="mb-6" />
 
       {/* Year filter */}
       <div className="flex items-center gap-3 mb-6">
