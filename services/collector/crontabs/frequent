@@ -1,5 +1,5 @@
-# Frequent collectors — every 6 hours
-# Weather data from AEMET, IPMA
-0 */6 * * * TASK=weather npx tsx index.ts 2>&1 && touch /tmp/last-run
+# Frequent collectors — hourly weather, 6h maritime/portugal
+# Weather hourly for storm freshness (AEMET alerts change within minutes)
+0 * * * * TASK=weather npx tsx index.ts 2>&1 && touch /tmp/last-run
 0 */6 * * * TASK=maritime-forecast npx tsx index.ts 2>&1
 0 */6 * * * TASK=portugal-weather npx tsx index.ts 2>&1
