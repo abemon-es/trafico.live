@@ -1282,6 +1282,20 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       },
     });
 
+    // Unclustered incident points (visible when zoomed in past cluster threshold)
+    map.current.addLayer({
+      id: "incident-unclustered",
+      type: "circle",
+      source: "incidents-cluster",
+      filter: ["!", ["has", "point_count"]],
+      paint: {
+        "circle-color": ["get", "color"],
+        "circle-radius": 8,
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff",
+      },
+    });
+
     // Add incidents heatmap source (separate from cluster source)
     map.current.addSource("incidents-heatmap", {
       type: "geojson",
@@ -1508,7 +1522,35 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       }
     });
 
-    // Cursor change on cluster hover
+    // Click unclustered incident → popup with details
+    map.current.on("click", "incident-unclustered", (e) => {
+      if (!e.features?.length) return;
+      const props = e.features[0].properties || {};
+      const coords = (e.features[0].geometry as GeoJSON.Point).coordinates.slice() as [number, number];
+
+      new maplibregl.Popup({ offset: 15, maxWidth: "280px" })
+        .setLngLat(coords)
+        .setHTML(getIncidentPopupHTML({
+          effect: props.effect as IncidentEffect,
+          cause: props.cause as IncidentCause,
+          roadNumber: props.road || undefined,
+          kmPoint: props.km ? Number(props.km) : undefined,
+          province: props.province || undefined,
+          description: props.description || undefined,
+          severity: props.severity || undefined,
+          laneInfo: props.laneInfo || undefined,
+          startedAt: props.startedAt || undefined,
+        }))
+        .addTo(map.current!);
+    });
+
+    // Cursor change on cluster/unclustered hover
+    map.current.on("mouseenter", "incident-unclustered", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "pointer";
+    });
+    map.current.on("mouseleave", "incident-unclustered", () => {
+      if (map.current) map.current.getCanvas().style.cursor = "";
+    });
     map.current.on("mouseenter", "incident-clusters", () => {
       if (map.current) map.current.getCanvas().style.cursor = "pointer";
     });
@@ -1541,6 +1583,11 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     }
     if (map.current.getLayer("incident-cluster-count")) {
       map.current.setLayoutProperty("incident-cluster-count", "visibility", showClusters ? "visible" : "none");
+    }
+    // Unclustered incident points (visible in clusters + points mode)
+    if (map.current.getLayer("incident-unclustered")) {
+      const showUnclustered = activeLayers.incidents && (mode === "clusters" || mode === "points");
+      map.current.setLayoutProperty("incident-unclustered", "visibility", showUnclustered ? "visible" : "none");
     }
 
     // Heatmap layer visibility
