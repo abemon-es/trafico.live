@@ -115,7 +115,11 @@ export default function MaritimeMap() {
     waves: true,
     wind: true,
     fuel: true,
+    emergencies: true,
+    coastalWeather: true,
   });
+  const [emergencies, setEmergencies] = useState<Array<{ id: string; latitude: number; longitude: number; type: string; description: string | null; year: number }>>([]);
+  const [coastalAlerts, setCoastalAlerts] = useState<Array<{ id: string; province: string; provinceName: string | null; type: string; severity: string; description: string | null }>>([]);
 
   const toggleLayer = useCallback((key: keyof typeof layers) => {
     setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -259,6 +263,60 @@ export default function MaritimeMap() {
       const img = new Image();
       img.onload = () => { map.addImage("wind-arrow", img); };
       img.src = arrowCanvas.toDataURL();
+
+      // ── SASEMAR emergencies ──
+      map.addSource("emergencies", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "emergency-points",
+        type: "circle",
+        source: "emergencies",
+        paint: {
+          "circle-color": "#dc2626",
+          "circle-radius": 8,
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "#ffffff",
+          "circle-opacity": 0.9,
+        },
+      });
+
+      map.addLayer({
+        id: "emergency-pulse",
+        type: "circle",
+        source: "emergencies",
+        paint: {
+          "circle-color": "#dc2626",
+          "circle-radius": 16,
+          "circle-stroke-width": 0,
+          "circle-opacity": 0.2,
+        },
+      });
+
+      map.on("click", "emergency-points", (e) => {
+        if (!e.features?.length) return;
+        const p = e.features[0].properties || {};
+        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates.slice() as [number, number];
+        new maplibregl.Popup({ offset: 15, maxWidth: "260px" })
+          .setLngLat(coords)
+          .setHTML(`
+            <div class="p-3">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="font-bold text-sm">Emergencia SASEMAR</span>
+              </div>
+              <p class="text-sm text-gray-700">${p.type || "Rescate"}</p>
+              ${p.description ? `<p class="text-xs text-gray-500 mt-1">${p.description}</p>` : ""}
+              <p class="text-xs text-gray-400 mt-1">${p.year}</p>
+            </div>
+          `)
+          .addTo(map);
+      });
+
+      map.on("mouseenter", "emergency-points", () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", "emergency-points", () => { map.getCanvas().style.cursor = ""; });
 
       // ── Maritime fuel stations ──
       map.addSource("maritime-fuel", {
@@ -526,6 +584,18 @@ export default function MaritimeMap() {
       .then((r) => r.json())
       .then((data) => { if (data.success && data.data) setStations(data.data); })
       .catch(() => {});
+
+    // Fetch SASEMAR emergencies
+    fetch("/api/maritimo/emergencies")
+      .then((r) => r.json())
+      .then((data) => { if (data.success && data.data?.emergencies) setEmergencies(data.data.emergencies); })
+      .catch(() => {});
+
+    // Fetch coastal weather alerts
+    fetch("/api/maritimo/weather")
+      .then((r) => r.json())
+      .then((data) => { if (data.success && data.alerts) setCoastalAlerts(data.alerts); })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -549,6 +619,29 @@ export default function MaritimeMap() {
       } as GeoJSON.FeatureCollection);
     }
   }, [stations, layers.fuel, isLoaded]);
+
+  // ─── Update emergency layer ─────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!mapRef.current || !isLoaded) return;
+    const source = mapRef.current.getSource("emergencies") as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    const vis = layers.emergencies ? "visible" : "none";
+    if (mapRef.current.getLayer("emergency-points")) mapRef.current.setLayoutProperty("emergency-points", "visibility", vis);
+    if (mapRef.current.getLayer("emergency-pulse")) mapRef.current.setLayoutProperty("emergency-pulse", "visibility", vis);
+
+    if (layers.emergencies && emergencies.length > 0) {
+      source.setData({
+        type: "FeatureCollection",
+        features: emergencies.map((e) => ({
+          type: "Feature" as const,
+          geometry: { type: "Point" as const, coordinates: [e.longitude, e.latitude] },
+          properties: { id: e.id, type: e.type, description: e.description || "", year: e.year },
+        })),
+      } as GeoJSON.FeatureCollection);
+    }
+  }, [emergencies, layers.emergencies, isLoaded]);
 
   // ─── Layer toggle button ────────────────────────────────────────────────
 
@@ -583,7 +676,9 @@ export default function MaritimeMap() {
         <div className="flex flex-wrap gap-1.5">
           <LayerBtn layerKey="waves" icon={<Waves className="w-3.5 h-3.5" />} label="Oleaje" count={waveData.length} />
           <LayerBtn layerKey="wind" icon={<Wind className="w-3.5 h-3.5" />} label="Viento" />
+          <LayerBtn layerKey="emergencies" icon={<ShieldAlert className="w-3.5 h-3.5" />} label="SASEMAR" count={emergencies.length} />
           <LayerBtn layerKey="fuel" icon={<Fuel className="w-3.5 h-3.5" />} label="Combustible" count={stations.length} />
+          <LayerBtn layerKey="coastalWeather" icon={<CloudRain className="w-3.5 h-3.5" />} label="Meteo" count={coastalAlerts.length} />
         </div>
       </div>
 
