@@ -22,7 +22,7 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
   const { closeAll } = useNavState();
   const inputRef = useRef<HTMLInputElement>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const { query, setQuery, debouncedQuery, groups, flatResults, isLoading, hasQuery, onNavigate: saveRecent } = useLiveSearch();
+  const { query, setQuery, debouncedQuery, groups, flatResults, isLoading, hasQuery, filterLabels, onNavigate: saveRecent } = useLiveSearch();
 
   useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 100); return () => clearTimeout(t); }, []);
   useEffect(() => { setRecentSearches(getRecentSearches()); }, []);
@@ -98,6 +98,16 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
           </div>
         )}
 
+        {/* Smart filter chips */}
+        {filterLabels.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 px-4 py-2">
+            <span className="text-[10px] text-gray-400 mr-1">Filtros:</span>
+            {filterLabels.map((label) => (
+              <span key={label} className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800">{label}</span>
+            ))}
+          </div>
+        )}
+
         {/* Grouped results */}
         {hasQuery && flatResults.length > 0 && (
           <div className="py-2">
@@ -130,6 +140,7 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
                       )}
                       {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
                     </div>
+                    {result.price != null && <span className="shrink-0 text-[10px] font-mono font-medium text-tl-amber-600 dark:text-tl-amber-400">{result.price.toFixed(3)}&nbsp;€/L</span>}
                     <span className={`shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
                   </Link>
                 ))}

@@ -219,7 +219,7 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
   const listRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const { query, setQuery, debouncedQuery, groups, flatResults, isLoading, hasQuery, onNavigate: saveRecent } = useLiveSearch();
+  const { query, setQuery, debouncedQuery, groups, flatResults, isLoading, hasQuery, filterLabels, onNavigate: saveRecent } = useLiveSearch();
 
   useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 50); return () => clearTimeout(t); }, []);
   useEffect(() => { setActiveIndex(0); }, [debouncedQuery]);
@@ -273,6 +273,16 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
           <kbd className="hidden md:inline-flex items-center rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 leading-none">ESC</kbd>
         </div>
       </div>
+
+      {/* Smart filter chips */}
+      {filterLabels.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          <span className="text-[10px] text-gray-400 mr-1">Filtros:</span>
+          {filterLabels.map((label) => (
+            <span key={label} className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800">{label}</span>
+          ))}
+        </div>
+      )}
 
       {/* Default: section cards + recent searches */}
       {!hasQuery && (
@@ -353,6 +363,7 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
                         )}
                         {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
                       </div>
+                      {result.price != null && <span className="shrink-0 text-xs font-mono font-medium text-tl-amber-600 dark:text-tl-amber-400">{result.price.toFixed(3)}&nbsp;€/L</span>}
                       <span className={`hidden sm:inline-flex shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
                     </Link>
                   );

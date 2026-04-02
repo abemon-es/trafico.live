@@ -30,6 +30,7 @@ function createPrismaClient(): PrismaClient {
         // Still no DB — return safe empty stubs for build-time rendering
         if (prop === "then" || prop === Symbol.toPrimitive || prop === Symbol.toStringTag) return undefined;
         if (prop === "$connect" || prop === "$disconnect") return () => Promise.resolve();
+        if (prop === "$queryRaw" || prop === "$queryRawUnsafe" || prop === "$executeRaw" || prop === "$executeRawUnsafe") return () => Promise.resolve([]);
         const emptyModel = new Proxy({}, {
           get(_t, method) {
             if (method === "then" || method === Symbol.toPrimitive || method === Symbol.toStringTag) return undefined;

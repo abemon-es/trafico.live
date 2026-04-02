@@ -14,12 +14,22 @@ export interface SearchResult {
   category: string;
   icon: string;
   highlightedTitle?: string;
+  price?: number;
+  distance?: number;
+}
+
+interface SearchFilters {
+  applied: Record<string, unknown>;
+  labels: string[];
+  needsLocationResolution?: boolean;
+  locationHint?: string;
 }
 
 interface SearchAPIResponse {
   results: SearchResult[];
   query: string;
   total: number;
+  filters?: SearchFilters;
 }
 
 export type SearchCategory =
@@ -174,6 +184,8 @@ export interface UseLiveSearchReturn {
   flatResults: SearchResult[];
   isLoading: boolean;
   hasQuery: boolean;
+  /** Smart filter labels detected from query keywords */
+  filterLabels: string[];
   /** Call when user navigates to a result — saves to recent searches */
   onNavigate: (query: string) => void;
 }
@@ -215,6 +227,7 @@ export function useLiveSearch(): UseLiveSearchReturn {
   });
 
   const results: SearchResult[] = useMemo(() => data?.results ?? [], [data]);
+  const filterLabels: string[] = useMemo(() => data?.filters?.labels ?? [], [data]);
   const groups = useMemo(() => groupResults(results), [results]);
   const flatResults = useMemo(() => groups.flatMap((g) => g.items), [groups]);
   const hasQuery = debouncedQuery.trim().length > 0;
@@ -239,6 +252,7 @@ export function useLiveSearch(): UseLiveSearchReturn {
     flatResults,
     isLoading,
     hasQuery,
+    filterLabels,
     onNavigate,
   };
 }
