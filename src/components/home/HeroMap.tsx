@@ -105,18 +105,22 @@ const LEGEND_ITEMS = [
 // ---------------------------------------------------------------------------
 
 const MAJOR_CITIES = [
-  { name: "Madrid", slug: "madrid", lng: -3.7038, lat: 40.4168 },
-  { name: "Barcelona", slug: "barcelona", lng: 2.1734, lat: 41.3851 },
-  { name: "Valencia", slug: "valencia", lng: -0.3763, lat: 39.4699 },
-  { name: "Sevilla", slug: "sevilla", lng: -5.9845, lat: 37.3891 },
-  { name: "Zaragoza", slug: "zaragoza", lng: -0.8773, lat: 41.6488 },
-  { name: "Málaga", slug: "malaga", lng: -4.4214, lat: 36.7213 },
-  { name: "Murcia", slug: "murcia", lng: -1.1307, lat: 37.9922 },
-  { name: "Bilbao", slug: "bilbao", lng: -2.9350, lat: 43.2630 },
-  { name: "Palma", slug: "palma-de-mallorca", lng: 2.6502, lat: 39.5696 },
-  { name: "Valladolid", slug: "valladolid", lng: -4.7245, lat: 41.6523 },
-  { name: "Alicante", slug: "alicante", lng: -0.4907, lat: 38.3452 },
-  { name: "Córdoba", slug: "cordoba", lng: -4.7794, lat: 37.8882 },
+  { name: "Madrid", slug: "madrid", lng: -3.7038, lat: 40.4168, type: "city" },
+  { name: "Barcelona", slug: "barcelona", lng: 2.1734, lat: 41.3851, type: "city" },
+  { name: "Valencia", slug: "valencia", lng: -0.3763, lat: 39.4699, type: "city" },
+  { name: "Sevilla", slug: "sevilla", lng: -5.9845, lat: 37.3891, type: "city" },
+  { name: "Zaragoza", slug: "zaragoza", lng: -0.8773, lat: 41.6488, type: "city" },
+  { name: "Málaga", slug: "malaga", lng: -4.4214, lat: 36.7213, type: "city" },
+  { name: "Murcia", slug: "murcia", lng: -1.1307, lat: 37.9922, type: "city" },
+  { name: "Bilbao", slug: "bilbao", lng: -2.9350, lat: 43.2630, type: "city" },
+  { name: "Palma", slug: "palma-de-mallorca", lng: 2.6502, lat: 39.5696, type: "city" },
+  { name: "Valladolid", slug: "valladolid", lng: -4.7245, lat: 41.6523, type: "city" },
+  { name: "Alicante", slug: "alicante", lng: -0.4907, lat: 38.3452, type: "city" },
+  { name: "Córdoba", slug: "cordoba", lng: -4.7794, lat: 37.8882, type: "city" },
+  // Cross-border territories
+  { name: "Portugal", slug: "/portugal", lng: -8.2245, lat: 39.3999, type: "country" },
+  { name: "Andorra", slug: "/andorra", lng: 1.5218, lat: 42.5063, type: "country" },
+  { name: "Gibraltar", slug: "/gibraltar", lng: -5.3536, lat: 36.1408, type: "country" },
 ];
 
 export function HeroMap({ initialStats }: HeroMapProps) {
@@ -125,6 +129,8 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   const mapInstanceRef = useRef<MapInstance | null>(null);
   const [legendVisible, setLegendVisible] = useState(false);
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
+  const [selectedProvince, setSelectedProvince] = useState<{ name: string; code: string } | null>(null);
+  const [mapFocused, setMapFocused] = useState(false);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -147,12 +153,14 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         center: [-3.7038, 40.4168],
         zoom: 5.5,
         interactive: true,
-        scrollZoom: false,
+        scrollZoom: true,
         boxZoom: false,
         dragRotate: false,
-        doubleClickZoom: false,
-        touchZoomRotate: false,
-        dragPan: false,
+        doubleClickZoom: true,
+        touchZoomRotate: true,
+        dragPan: true,
+        minZoom: 4,
+        maxZoom: 12,
         attributionControl: false,
       });
 
@@ -210,11 +218,31 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             setHoveredProvince(null);
           });
 
-          // Province click → navigate
+          // Province click → zoom in + select
           map.on("click", "province-fill", (e) => {
             if (!e.features?.length) return;
             const code = e.features[0].properties?.cod_prov;
-            if (code) router.push(`/provincias/${code}`);
+            const name = e.features[0].properties?.nombre;
+            if (!code) return;
+
+            // Calculate bounds of the clicked province
+            const geometry = e.features[0].geometry;
+            if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+              const coords = geometry.type === "Polygon"
+                ? geometry.coordinates.flat()
+                : geometry.coordinates.flat(2);
+              const lngs = coords.map((c: number[]) => c[0]);
+              const lats = coords.map((c: number[]) => c[1]);
+              const bounds: [[number, number], [number, number]] = [
+                [Math.min(...lngs), Math.min(...lats)],
+                [Math.max(...lngs), Math.max(...lats)],
+              ];
+              map.fitBounds(bounds, { padding: 60, duration: 800 });
+            }
+
+            setSelectedProvince({ name: name ?? code, code });
+            setMapFocused(true);
+            map.setFilter("province-hover", ["==", "cod_prov", code]);
           });
         } catch {
           // Province boundaries optional — continue without them
@@ -226,7 +254,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
           features: MAJOR_CITIES.map((c) => ({
             type: "Feature" as const,
             geometry: { type: "Point" as const, coordinates: [c.lng, c.lat] },
-            properties: { name: c.name, slug: c.slug },
+            properties: { name: c.name, slug: c.slug, type: c.type },
           })),
         };
         map.addSource("cities", { type: "geojson", data: citiesGeoJSON });
@@ -235,8 +263,8 @@ export function HeroMap({ initialStats }: HeroMapProps) {
           type: "circle",
           source: "cities",
           paint: {
-            "circle-radius": 4,
-            "circle-color": "#1b4bd5",
+            "circle-radius": ["match", ["get", "type"], "country", 6, 4],
+            "circle-color": ["match", ["get", "type"], "country", "#092ea8", "#1b4bd5"],
             "circle-stroke-color": "#ffffff",
             "circle-stroke-width": 1.5,
             "circle-opacity": 0,
@@ -278,7 +306,9 @@ export function HeroMap({ initialStats }: HeroMapProps) {
           e.originalEvent.stopPropagation();
           if (!e.features?.length) return;
           const slug = e.features[0].properties?.slug;
-          if (slug) router.push(`/trafico/${slug}`);
+          if (!slug) return;
+          // Country slugs start with / (absolute path), city slugs are relative
+          router.push(slug.startsWith("/") ? slug : `/trafico/${slug}`);
         });
         map.on("mouseenter", "city-dots", () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", "city-dots", () => { map.getCanvas().style.cursor = ""; });
@@ -407,8 +437,10 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       {/* Full-width MapLibre background — light Positron style */}
       <div ref={mapRef} className="absolute inset-0 w-full h-full opacity-90" />
 
-      {/* White gradient scrim — heavier at bottom for text, light at top to show map */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white from-5% via-white/70 via-40% to-transparent dark:from-gray-950 dark:from-5% dark:via-gray-950/70 dark:via-40% dark:to-transparent pointer-events-none" />
+      {/* White gradient scrim — fades when map is focused */}
+      <div className={`absolute inset-0 transition-opacity duration-500 pointer-events-none ${mapFocused ? "opacity-20" : "opacity-100"}`}>
+        <div className="absolute inset-0 bg-gradient-to-t from-white from-5% via-white/70 via-40% to-transparent dark:from-gray-950 dark:from-5% dark:via-gray-950/70 dark:via-40% dark:to-transparent" />
+      </div>
 
       {/* Top bar — technical data feed look */}
       {/* Province hover tooltip */}
@@ -454,15 +486,12 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         </div>
       </div>
 
-      {/* Main content overlay — bottom aligned */}
-      <div className="relative h-full flex flex-col justify-end pb-10 px-4 sm:px-6 lg:px-8">
+      {/* Main content overlay — bottom aligned, hides when map focused */}
+      <div className={`relative h-full flex flex-col justify-end pb-10 px-4 sm:px-6 lg:px-8 transition-all duration-500 ${mapFocused ? "opacity-0 translate-y-4 pointer-events-none" : "opacity-100 translate-y-0"}`}>
         <div className="max-w-7xl mx-auto w-full">
-          {/* Heading */}
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-gray-50 leading-tight mb-3 max-w-2xl tracking-tight">
             Inteligencia vial en tiempo real para toda España
           </h2>
-
-          {/* Description — SEO-rich */}
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-5 max-w-2xl">
             Plataforma de datos de tráfico con cobertura de toda la Península Ibérica.
             Agregamos {detectorCount.toLocaleString("es-ES")} detectores de velocidad DGT, {cameraCount.toLocaleString("es-ES")} cámaras
@@ -470,8 +499,6 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             con precios MINETUR y {chargerCount.toLocaleString("es-ES")} puntos de carga eléctrica.
             Datos de 12 fuentes oficiales actualizados cada 60 segundos.
           </p>
-
-          {/* Technical stat pills */}
           <div className="flex items-center gap-3 mb-6 flex-wrap">
             {[
               { v: incidentCount, l: "incidencias activas" },
@@ -480,40 +507,53 @@ export function HeroMap({ initialStats }: HeroMapProps) {
               { v: radarCount, l: "radares" },
               { v: chargerCount, l: "cargadores EV" },
             ].map((s) => (
-              <span
-                key={s.l}
-                className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1 text-xs"
-              >
+              <span key={s.l} className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1 text-xs">
                 <span className="font-data font-bold text-gray-900 dark:text-gray-100">{s.v.toLocaleString("es-ES")}</span>
                 <span className="text-gray-500 dark:text-gray-400">{s.l}</span>
               </span>
             ))}
           </div>
-
-          {/* CTA buttons */}
           <div className="flex items-center gap-3 flex-wrap">
-            <Link
-              href="/mapa"
-              className="inline-flex items-center gap-2 bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold rounded-lg px-6 py-3 transition-colors shadow-sm"
-            >
+            <Link href="/mapa" className="inline-flex items-center gap-2 bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold rounded-lg px-6 py-3 transition-colors shadow-sm">
               <Map className="w-4 h-4" />
               Mapa en vivo
             </Link>
-            <Link
-              href="/explorar"
-              className="inline-flex items-center gap-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:border-tl-300 text-gray-700 dark:text-gray-300 font-heading font-medium rounded-lg px-6 py-3 transition-colors"
-            >
+            <Link href="/explorar" className="inline-flex items-center gap-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:border-tl-300 text-gray-700 dark:text-gray-300 font-heading font-medium rounded-lg px-6 py-3 transition-colors">
               Explorar datos
             </Link>
-            <Link
-              href="/profesional"
-              className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-tl-600 transition-colors"
-            >
+            <Link href="/profesional" className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-tl-600 transition-colors">
               Acceso profesional &rarr;
             </Link>
           </div>
         </div>
       </div>
+
+      {/* Selected province panel — appears when map is focused */}
+      {selectedProvince && (
+        <div className="absolute bottom-6 left-4 sm:left-6 lg:left-8 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-lg max-w-sm">
+          <p className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{selectedProvince.name}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Provincia · Código INE: {selectedProvince.code}</p>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/provincias/${selectedProvince.code}`}
+              className="inline-flex items-center gap-1.5 bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold text-sm rounded-lg px-4 py-2 transition-colors"
+            >
+              Ver tráfico en {selectedProvince.name}
+            </Link>
+            <button
+              onClick={() => {
+                setSelectedProvince(null);
+                setMapFocused(false);
+                mapInstanceRef.current?.flyTo({ center: [-3.7038, 40.4168], zoom: 5.5, duration: 800 });
+                if (mapInstanceRef.current) mapInstanceRef.current.setFilter?.("province-hover", ["==", "cod_prov", ""]);
+              }}
+              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors px-3 py-2"
+            >
+              Volver
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
