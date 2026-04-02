@@ -82,6 +82,24 @@ function StatCard({ icon, label, value, unit, highlight }: StatCard) {
         </span>
         {unit && <span className="text-xs text-gray-400 font-data">{unit}</span>}
       </div>
+      {/* Mini visual indicator: pulse for real-time, bars for infrastructure */}
+      {highlight ? (
+        <span className="w-1.5 h-1.5 rounded-full bg-tl-amber-400 animate-pulse mt-1" />
+      ) : typeof value === "number" && value > 0 ? (
+        <svg
+          className="w-full h-2 mt-1.5"
+          viewBox="0 0 60 8"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <rect x="0" y="2" width="8" height="6" rx="1" fill="#dde8ff" />
+          <rect x="10" y="1" width="8" height="7" rx="1" fill="#dde8ff" />
+          <rect x="20" y="3" width="8" height="5" rx="1" fill="#c0d5ff" />
+          <rect x="30" y="0" width="8" height="8" rx="1" fill="#c0d5ff" />
+          <rect x="40" y="2" width="8" height="6" rx="1" fill="#94b6ff" />
+          <rect x="50" y="1" width="8" height="7" rx="1" fill="#1b4bd5" opacity="0.3" />
+        </svg>
+      ) : null}
     </div>
   );
 }

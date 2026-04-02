@@ -108,3 +108,17 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
+
+/* Gauge draw-in animation for health score arc */
+@keyframes gauge-draw {
+  from {
+    stroke-dasharray: 0 213.6;
+  }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .gauge-arc {
+    animation: none !important;
+  }
+}

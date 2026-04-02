@@ -36,18 +36,13 @@ export async function ProvinceContextBanner({
   const entityIncidents = entityStats?.activeIncidentCount ?? 0;
 
   // Calculate percentage difference vs provincial average
-  let comparisonText: string | null = null;
+  let comparisonDiff: number | null = null;
   if (municipalityCount > 0 && provinceStats && entityStats) {
     const avgPerMunicipality = provinceIncidents / municipalityCount;
     if (avgPerMunicipality > 0) {
-      const diff = Math.round(
+      comparisonDiff = Math.round(
         ((avgPerMunicipality - entityIncidents) / avgPerMunicipality) * 100
       );
-      if (diff > 0) {
-        comparisonText = `${entity.name} tiene un ${diff}% menos incidencias que la media provincial`;
-      } else if (diff < 0) {
-        comparisonText = `${entity.name} tiene un ${Math.abs(diff)}% más incidencias que la media provincial`;
-      }
     }
   }
 
@@ -69,8 +64,21 @@ export async function ProvinceContextBanner({
             activa{provinceIncidents !== 1 ? "s" : ""}
           </span>
         </div>
-        {comparisonText && (
-          <p className="text-xs text-gray-500 mt-1">{comparisonText}</p>
+        {comparisonDiff != null && comparisonDiff !== 0 && (
+          <p className="mt-1.5 flex items-center gap-1.5">
+            {comparisonDiff > 0 ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-signal-green/10 text-signal-green text-xs font-data font-bold">
+                <span aria-hidden="true">{"\u2193"}</span> {comparisonDiff}% menos
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-signal-red/10 text-signal-red text-xs font-data font-bold">
+                <span aria-hidden="true">{"\u2191"}</span> {Math.abs(comparisonDiff)}% más
+              </span>
+            )}
+            <span className="text-xs text-gray-500">
+              incidencias que la media provincial
+            </span>
+          </p>
         )}
       </div>
       <a

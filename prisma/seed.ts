@@ -140,7 +140,7 @@ const fallbackMunicipalities = [
 function loadMunicipalities(): MunicipalityData[] {
   const jsonPath = path.join(process.cwd(), "data/municipalities.json");
   if (!fs.existsSync(jsonPath)) {
-    console.warn("Warning: data/municipalities.json not found. Using fallback data (52 capitals).");
+    console.warn("Warning: data/municipalities.json not found. Using fallback data (10 largest cities).");
     console.warn("Run: npx tsx scripts/generate-municipalities.ts");
     return fallbackMunicipalities.map(m => ({
       ...m,

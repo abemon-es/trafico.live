@@ -151,8 +151,11 @@ export async function HeroSection({ entity }: HeroSectionProps) {
                 fill="none"
                 strokeWidth="6"
                 strokeLinecap="round"
-                className={scoreBg}
-                strokeDasharray={dashArray}
+                className={`${scoreBg} gauge-arc`}
+                style={{
+                  strokeDasharray: dashArray,
+                  animation: "gauge-draw 1s ease-out forwards",
+                }}
               />
             </svg>
             <span
