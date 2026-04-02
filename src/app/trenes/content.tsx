@@ -433,10 +433,11 @@ export default function TrainesContent() {
       </div>
 
       {/* Attribution */}
-      <p className="flex items-center gap-1.5 text-[11px] text-gray-400">
+      <p className="flex items-center gap-1.5 text-[11px] text-gray-400 pb-4">
         <Info className="w-3 h-3" />
-        Origen de los datos: Renfe Operadora (CC-BY 4.0). Posiciones cada 15 s. Analytics cada 2 min. Estaciones GTFS semanales.
+        Origen de los datos: Renfe Operadora (CC-BY 4.0). Posiciones cada 15s. Analytics cada 2 min.
       </p>
+      </div>{/* close content section */}
     </div>
   );
 }
