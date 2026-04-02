@@ -46,6 +46,7 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "description", type: "string", optional: true },
       { name: "location", type: "geopoint", optional: true },
       { name: "source", type: "string", optional: true, facet: true },
+      { name: "causeType", type: "string", optional: true, facet: true },
       { name: "startedAt", type: "int64", sort: true },
     ] as CollectionFieldSchema[],
     default_sorting_field: "startedAt",
@@ -307,6 +308,24 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     ] as CollectionFieldSchema[],
     token_separators: ["-"],
     default_sorting_field: "year",
+  },
+  toll_roads: {
+    name: "toll_roads",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "title", type: "string" },
+      { name: "subtitle", type: "string", optional: true },
+      { name: "href", type: "string" },
+      { name: "category", type: "string", facet: true },
+      { name: "icon", type: "string" },
+      { name: "keywords", type: "string[]", optional: true },
+      { name: "operator", type: "string", facet: true },
+      { name: "maxPrice", type: "float", sort: true },
+      { name: "totalKm", type: "float", optional: true },
+      { name: "isSeitt", type: "bool", facet: true },
+    ] as CollectionFieldSchema[],
+    token_separators: ["-"],
+    default_sorting_field: "maxPrice",
   },
 };
 
@@ -701,7 +720,7 @@ async function loadIncidents(prisma: PrismaClient) {
     where: { isActive: true },
     select: { id: true, type: true, severity: true, roadNumber: true, province: true,
       provinceName: true, municipality: true, description: true, latitude: true,
-      longitude: true, source: true, startedAt: true },
+      longitude: true, source: true, causeType: true, startedAt: true },
     orderBy: { startedAt: "desc" },
     take: 5000,
   });
@@ -710,7 +729,8 @@ async function loadIncidents(prisma: PrismaClient) {
     province: r.province || "", provinceName: r.provinceName || "",
     municipality: r.municipality || "", description: r.description || "",
     location: [Number(r.latitude), Number(r.longitude)],
-    source: r.source || "", startedAt: Math.floor(r.startedAt.getTime() / 1000),
+    source: r.source || "", causeType: r.causeType || "",
+    startedAt: Math.floor(r.startedAt.getTime() / 1000),
   }));
 }
 
@@ -727,6 +747,30 @@ async function loadWeatherAlerts(prisma: PrismaClient) {
   }));
 }
 
+async function loadTollRoads(prisma: PrismaClient) {
+  const roads = await prisma.tollRoad.findMany({
+    include: { segments: { orderBy: { sortOrder: "asc" } } },
+  });
+  return roads.map((r) => ({
+    id: r.id,
+    title: `Peaje ${r.id} — ${r.fromCity} a ${r.toCity}`,
+    subtitle: `${r.operator} · ${Number(r.maxPrice).toFixed(2)}€ · ${Number(r.totalKm)} km`,
+    href: `/peajes/${r.slug}`,
+    category: "Peajes",
+    icon: "Route",
+    keywords: [
+      r.id, r.name, r.operator, r.fromCity, r.toCity,
+      "peaje", "autopista", "toll",
+      ...(r.isSeitt ? ["SEITT", "radial"] : []),
+      ...r.segments.map((s) => `${s.fromPoint} ${s.toPoint}`),
+    ],
+    operator: r.operator,
+    maxPrice: Number(r.maxPrice),
+    totalKm: Number(r.totalKm),
+    isSeitt: r.isSeitt,
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // Loader registry
 // ---------------------------------------------------------------------------
@@ -740,7 +784,7 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
   railway_routes: loadRailwayRoutes, railway_alerts: loadRailwayAlerts,
   zbe_zones: loadZBEZones, risk_zones: loadRiskZones, variable_panels: loadVariablePanels,
   maritime_stations: loadMaritimeStations, portugal_stations: loadPortugalStations,
-  traffic_stations: loadTrafficStations,
+  traffic_stations: loadTrafficStations, toll_roads: loadTollRoads,
 };
 
 // ---------------------------------------------------------------------------

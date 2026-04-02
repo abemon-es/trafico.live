@@ -85,6 +85,7 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "description", type: "string", optional: true },
       { name: "location", type: "geopoint", optional: true },
       { name: "source", type: "string", optional: true, facet: true },
+      { name: "causeType", type: "string", optional: true, facet: true },
       { name: "startedAt", type: "int64", sort: true },
     ] as CollectionFieldSchema[],
     default_sorting_field: "startedAt",
@@ -354,6 +355,25 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     token_separators: ["-"],
     default_sorting_field: "year",
   },
+
+  toll_roads: {
+    name: "toll_roads",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "title", type: "string" },
+      { name: "subtitle", type: "string", optional: true },
+      { name: "href", type: "string" },
+      { name: "category", type: "string", facet: true },
+      { name: "icon", type: "string" },
+      { name: "keywords", type: "string[]", optional: true },
+      { name: "operator", type: "string", facet: true },
+      { name: "maxPrice", type: "float", sort: true },
+      { name: "totalKm", type: "float", optional: true },
+      { name: "isSeitt", type: "bool", facet: true },
+    ] as CollectionFieldSchema[],
+    token_separators: ["-"],
+    default_sorting_field: "maxPrice",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -388,6 +408,10 @@ export const SYNONYMS: Record<string, TypesenseSynonym[]> = {
   ],
   radars: [
     { id: "radar-cinemometro", synonyms: ["radar", "cinemómetro", "control de velocidad"] },
+  ],
+  toll_roads: [
+    { id: "peaje-autopista", synonyms: ["peaje", "autopista de peaje", "toll", "tarifa"] },
+    { id: "radial-seitt", synonyms: ["radial", "SEITT", "radiales de Madrid"] },
   ],
 };
 

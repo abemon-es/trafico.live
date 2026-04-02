@@ -89,8 +89,8 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   },
   {
     collection: "incidents",
-    queryBy: "description,roadNumber,provinceName,municipality,type",
-    queryByWeights: "2,3,1,1,1",
+    queryBy: "description,roadNumber,provinceName,municipality,type,causeType",
+    queryByWeights: "2,3,1,1,1,1",
     category: "Incidencias",
     icon: "AlertTriangle",
     mapHit: (doc) => ({
@@ -145,8 +145,8 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   },
   {
     collection: "gas_stations",
-    queryBy: "name,locality,provinceName,address,fuelTypes",
-    queryByWeights: "3,2,1,1,1",
+    queryBy: "name,locality,provinceName,address,nearestRoad,fuelTypes",
+    queryByWeights: "3,2,1,1,2,1",
     category: "Gasolineras",
     icon: "Fuel",
     mapHit: (doc, fuelType) => {
@@ -212,8 +212,8 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   },
   {
     collection: "ev_chargers",
-    queryBy: "name,city,provinceName,address,operator",
-    queryByWeights: "3,2,1,1,1",
+    queryBy: "name,city,provinceName,address,operator,network,chargerTypes",
+    queryByWeights: "3,2,1,1,1,1,1",
     category: "Cargadores EV",
     icon: "Zap",
     mapHit: (doc) => ({
@@ -226,8 +226,8 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   },
   {
     collection: "radars",
-    queryBy: "roadNumber,provinceName",
-    queryByWeights: "3,1",
+    queryBy: "roadNumber,provinceName,type",
+    queryByWeights: "3,1,1",
     category: "Radares",
     icon: "Radar",
     mapHit: (doc) => ({
@@ -310,8 +310,8 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   },
   {
     collection: "variable_panels",
-    queryBy: "name,roadNumber,provinceName,message",
-    queryByWeights: "2,2,1,1",
+    queryBy: "message,name,roadNumber,provinceName",
+    queryByWeights: "3,2,2,1",
     category: "Paneles",
     icon: "MonitorDot",
     mapHit: (doc) => ({
@@ -435,6 +435,10 @@ export async function GET(request: NextRequest) {
     hasGeo ? `${lat.toFixed(2)}:${lng.toFixed(2)}` : "",
     radius,
     appliedFilters.targetCollection ?? "",
+    appliedFilters.roadFilter ?? "",
+    appliedFilters.provinceFilter ?? "",
+    appliedFilters.is24hFilter ? "24h" : "",
+    appliedFilters.priceThreshold ?? "",
   ].join(":");
 
   const data = await getOrCompute<SearchAPIResponse>(cacheKey, 60, async () => {
@@ -538,6 +542,50 @@ async function performSearch(
           req.sort_by = `${filters.fuelType}:${filters.priceSort}`;
         }
 
+        // Road filter — restrict to entities on a specific road
+        if (filters.roadFilter) {
+          const roadCollections = new Set(["radars", "cameras", "gas_stations", "incidents", "risk_zones", "variable_panels", "traffic_stations"]);
+          if (roadCollections.has(config.collection)) {
+            const field = config.collection === "gas_stations" ? "nearestRoad" : "roadNumber";
+            const existingFilter = req.filter_by as string | undefined;
+            const roadFilterClause = `${field}:=${filters.roadFilter}`;
+            req.filter_by = existingFilter ? `${existingFilter} && ${roadFilterClause}` : roadFilterClause;
+          }
+        }
+
+        // Province filter — restrict to entities in a specific province
+        if (filters.provinceFilter) {
+          const provinceCollections = new Set([
+            "gas_stations", "cameras", "radars", "ev_chargers", "incidents",
+            "weather_alerts", "risk_zones", "variable_panels", "maritime_stations",
+            "railway_stations", "traffic_stations",
+          ]);
+          if (provinceCollections.has(config.collection)) {
+            const existingFilter = req.filter_by as string | undefined;
+            const provFilterClause = `provinceName:=${filters.provinceFilter}`;
+            req.filter_by = existingFilter ? `${existingFilter} && ${provFilterClause}` : provFilterClause;
+          }
+        }
+
+        // 24h filter — only for gas stations
+        if (filters.is24hFilter && config.collection === "gas_stations") {
+          const existingFilter = req.filter_by as string | undefined;
+          const h24Clause = "is24h:=true";
+          req.filter_by = existingFilter ? `${existingFilter} && ${h24Clause}` : h24Clause;
+        }
+
+        // Price threshold — filter gas stations below a price
+        if (filters.priceThreshold && config.collection === "gas_stations") {
+          const fuelField = filters.fuelType || "priceGasoleoA";
+          const existingFilter = req.filter_by as string | undefined;
+          const priceClause = `${fuelField}:[0..${filters.priceThreshold}]`;
+          req.filter_by = existingFilter ? `${existingFilter} && ${priceClause}` : priceClause;
+          // Sort by price ascending when threshold is set
+          if (!filters.priceSort) {
+            req.sort_by = `${fuelField}:asc`;
+          }
+        }
+
         return req;
       }),
     };
@@ -570,9 +618,19 @@ async function performSearch(
       }
     }
 
-    // Sort by text relevance (provinces/cities first for short queries)
-    // Then trim to requested limit
-    const trimmed = results.slice(0, limit);
+    // Smart ranking: if we have entity results, demote pages to the end
+    // so users see real data before navigation links
+    let ranked = results;
+    if (filters.targetCollection) {
+      // Collection targeting active — results are already filtered, keep order
+      ranked = results;
+    } else {
+      const entityResults = results.filter((r) => r.category !== "Páginas");
+      const pageResults = results.filter((r) => r.category === "Páginas");
+      // Keep max 3 pages, interleave at the end
+      ranked = [...entityResults, ...pageResults.slice(0, 3)];
+    }
+    const trimmed = ranked.slice(0, limit);
 
     return {
       results: trimmed,

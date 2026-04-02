@@ -13,6 +13,11 @@ export interface ParsedSearchQuery {
     targetCollection?: string;
     proximityMode?: boolean;
     locationHint?: string; // extracted location name
+    // NEW fields:
+    roadFilter?: string;       // e.g. "A-6" — filter entities by roadNumber
+    provinceFilter?: string;   // e.g. "Madrid" — filter by province
+    is24hFilter?: boolean;     // true when user wants 24h stations
+    priceThreshold?: number;   // e.g. 1.40 from "gasolina menos de 1.40"
   };
   activeFilterLabels: string[];
 }
@@ -163,6 +168,61 @@ const COLLECTION_KEYWORD_MAP: Array<{ phrases: string[]; collection: string; lab
 // Proximity keywords
 const PROXIMITY_KEYWORDS = ["próximo", "proximo", "próxima", "proxima", "cercano", "cercana", "cerca"];
 
+const IS_24H_KEYWORDS = ["24 horas", "24h", "abierta ahora", "abierta", "nocturna", "noche"];
+
+const PROVINCE_NAMES: Record<string, string> = {
+  "madrid": "Madrid", "barcelona": "Barcelona", "valencia": "Valencia",
+  "sevilla": "Sevilla", "zaragoza": "Zaragoza", "malaga": "Málaga",
+  "murcia": "Murcia", "bilbao": "Bizkaia", "vizcaya": "Bizkaia",
+  "alicante": "Alicante/Alacant", "granada": "Granada", "cordoba": "Córdoba",
+  "valladolid": "Valladolid", "vigo": "Pontevedra", "gijon": "Asturias",
+  "palma": "Balears, Illes", "las palmas": "Las Palmas",
+  "tenerife": "Santa Cruz de Tenerife", "cadiz": "Cádiz",
+  "santander": "Cantabria", "cantabria": "Cantabria",
+  "pamplona": "Navarra", "navarra": "Navarra",
+  "toledo": "Toledo", "burgos": "Burgos", "salamanca": "Salamanca",
+  "leon": "León", "albacete": "Albacete", "castellon": "Castellón/Castelló",
+  "badajoz": "Badajoz", "huelva": "Huelva", "jaen": "Jaén",
+  "gerona": "Girona", "girona": "Girona", "lleida": "Lleida",
+  "tarragona": "Tarragona", "huesca": "Huesca", "teruel": "Teruel",
+  "cuenca": "Cuenca", "guadalajara": "Guadalajara", "avila": "Ávila",
+  "segovia": "Segovia", "soria": "Soria", "zamora": "Zamora",
+  "palencia": "Palencia", "caceres": "Cáceres", "lugo": "Lugo",
+  "orense": "Ourense", "ourense": "Ourense", "pontevedra": "Pontevedra",
+  "la rioja": "La Rioja", "logrono": "La Rioja",
+  "almeria": "Almería", "ciudad real": "Ciudad Real",
+  "san sebastian": "Gipuzkoa", "donostia": "Gipuzkoa",
+  "vitoria": "Araba/Álava", "alava": "Araba/Álava",
+  "ceuta": "Ceuta", "melilla": "Melilla",
+  "asturias": "Asturias", "oviedo": "Asturias",
+  "a coruna": "A Coruña", "coruna": "A Coruña",
+};
+
+// Question prefixes to strip — users type questions but we need the noun phrase
+const QUESTION_PREFIXES = [
+  "dónde puedo encontrar",
+  "donde puedo encontrar",
+  "dónde hay",
+  "donde hay",
+  "dónde está",
+  "donde esta",
+  "cuánto cuesta",
+  "cuanto cuesta",
+  "cómo llegar a",
+  "como llegar a",
+  "hay alguna",
+  "hay algún",
+  "hay algun",
+  "cuál es el precio",
+  "cual es el precio",
+  "qué tal el tráfico",
+  "que tal el trafico",
+  "cuántas",
+  "cuantas",
+  "cuántos",
+  "cuantos",
+];
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -268,6 +328,17 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
   }
   q = normalise(q);
 
+  // ── 0.5. Question prefix stripping ──────────────────────────────────────
+  for (const prefix of QUESTION_PREFIXES) {
+    const re = new RegExp(`^\\s*¿?\\s*${prefix}\\s+`, "i");
+    if (re.test(q)) {
+      q = q.replace(re, "");
+      break;
+    }
+  }
+  // Strip trailing question mark
+  q = q.replace(/\?\s*$/, "").trim();
+
   // ── 1. Proximity / location ──────────────────────────────────────────────
 
   // "cerca de {location}" — extract location hint first so we can strip it
@@ -289,6 +360,17 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
         labels.push("Cercano");
         break;
       }
+    }
+  }
+
+  // ── 1.5. 24h filter ─────────────────────────────────────────────────────
+  for (const kw of IS_24H_KEYWORDS) {
+    const stripped = stripPhrase(q, kw);
+    if (stripped !== q) {
+      filters.is24hFilter = true;
+      q = stripped;
+      labels.push("24H");
+      break;
     }
   }
 
@@ -345,6 +427,15 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
     }
   }
 
+  // ── 4.5. Price threshold ────────────────────────────────────────────────
+  // "gasolina menos de 1.40" or "diesel por debajo de 1.35"
+  const thresholdMatch = q.match(/(?:menos de|por debajo de|bajo|under)\s+(\d+[.,]\d{2,3})/i);
+  if (thresholdMatch) {
+    filters.priceThreshold = parseFloat(thresholdMatch[1].replace(",", "."));
+    q = q.replace(thresholdMatch[0], " ");
+    labels.push(`< ${filters.priceThreshold}€`);
+  }
+
   // ── 5. Collection targeting (if not already set) ─────────────────────────
 
   if (!filters.targetCollection) {
@@ -359,6 +450,32 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
         }
       }
     }
+  }
+
+  // ── 5.5. Province scoping ───────────────────────────────────────────────
+  // Check if query contains a province/city name → extract as filter
+  if (!filters.provinceFilter) {
+    const qNorm = stripAccents(normalise(q).toLowerCase());
+    // Check longer names first (2-word provinces like "ciudad real", "la rioja")
+    const sortedProvinces = Object.entries(PROVINCE_NAMES).sort((a, b) => b[0].length - a[0].length);
+    for (const [key, canonical] of sortedProvinces) {
+      if (qNorm.includes(key)) {
+        filters.provinceFilter = canonical;
+        // Don't strip the province from the query — Typesense should still
+        // use it for text matching. But record it for filter_by.
+        labels.push(canonical);
+        break;
+      }
+    }
+  }
+
+  // ── 5.6. Road+entity detection ──────────────────────────────────────────
+  // If query has a road ID (A-6, AP-7, M-30) AND a collection target,
+  // extract the road as a filter_by rather than a text query
+  const roadInQuery = q.match(/\b((?:AP|A|N|M|C|CT|AG|RM|EX|CM|MA|CA|SE|GR|CO)\s*-\s*\d{1,4}[A-Za-z]?)\b/i);
+  if (roadInQuery && filters.targetCollection) {
+    filters.roadFilter = roadInQuery[1].replace(/\s/g, "").toUpperCase();
+    // Keep road in query for text matching but record for filter_by
   }
 
   // ── 6. Clean up ─────────────────────────────────────────────────────────
