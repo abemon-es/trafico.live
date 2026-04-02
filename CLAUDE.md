@@ -63,6 +63,20 @@ npm run db:seed      # Seed database
   - `/api/trenes/estaciones` — Railway station catalog (GeoJSON output)
   - `/api/trenes/rutas` — Railway routes with shape geometry
   - `/api/trenes/alertas` — Active Renfe service alerts
+  - `/api/trenes/flota` — Real-time LD fleet positions (GeoJSON, history mode)
+- Data platform endpoints (2026-04):
+  - `/api/movilidad` — Province-level O-D mobility flows (Ministerio BigData)
+  - `/api/movilidad/corredores` — Top traffic corridors by trip volume
+  - `/api/accidentes/microdata` — DGT per-accident records (2019-2023, paginated)
+  - `/api/accidentes/hotspots` — Accident black spots clustered by road+km
+  - `/api/combustible/historico` — CNMC provincial price history since 2016
+  - `/api/combustible/tendencia` — Fuel price trend analysis (7d/30d/90d/1y)
+  - `/api/clima/estaciones` — AEMET weather station catalog (GeoJSON)
+  - `/api/clima/historico` — Daily climate records with temporal aggregation
+- Billing & API key management:
+  - `/api/billing` — Stripe checkout + subscription status
+  - `/api/billing/webhook` — Stripe webhook handler
+  - `/api/keys` — API key CRUD (FREE/PRO/ENTERPRISE tiers)
 
 ### Typesense Search (`src/lib/typesense.ts`)
 - **14 collections** with geo-search: gas_stations, roads, cameras, articles, provinces, cities, ev_chargers, radars, railway_stations, zbe_zones, risk_zones, variable_panels, maritime_stations, traffic_stations
@@ -74,14 +88,14 @@ npm run db:seed      # Seed database
 
 ### Data Collectors (`services/collector/`)
 - Unified dispatcher (`TASK` env var selects collector)
-- Valid tasks: `v16`, `incident`, `panel`, `detector`, `intensity`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `maritime-fuel`, `insights`, `risk-zones`, `zbe`, `imd`, `andorra`, `portugal-weather`, `portugal-fuel`, `historical-accidents`, `portugal-accidents`, `renfe-gtfs`, `renfe-alerts`, `maritime-forecast`, `sasemar`, `typesense-sync`
+- Valid tasks: `v16`, `incident`, `panel`, `detector`, `intensity`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `maritime-fuel`, `insights`, `risk-zones`, `zbe`, `imd`, `andorra`, `portugal-weather`, `portugal-fuel`, `historical-accidents`, `portugal-accidents`, `renfe-gtfs`, `renfe-alerts`, `renfe-ld-realtime`, `maritime-forecast`, `sasemar`, `typesense-sync`, `cnmc-fuel`, `aemet-historical`, `mobility-od`, `accident-microdata`
 - Single Docker image: `services/collector/Dockerfile` — cron schedules in `docker-compose.collectors.yml`
 - Runs on hetzner-prod via Coolify (separate app from web)
 - IMD data also collected monthly from hetzner-dev cron (`/opt/trafico/imd-import.sh`)
-- Data sources: DGT (DATEX II XML), AEMET, SCT, Euskadi, Madrid (informo.madrid.es), Valencia, MINETUR, Ministry ArcGIS REST API, Andorra, Portugal (IPMA, DGEG), Renfe (GTFS + GTFS-RT)
+- Data sources: DGT (DATEX II XML + accident microdata XLSX), AEMET (alerts + historical climate), SCT, Euskadi, Madrid (informo.madrid.es), Valencia, MINETUR, CNMC (fuel price history), Ministry ArcGIS REST API + BigData O-D matrices, Andorra, Portugal (IPMA, DGEG), Renfe (GTFS + GTFS-RT + undocumented LD fleet API)
 
 ### Database (Prisma)
-- Schema with models for: V16 beacons, traffic incidents, weather conditions/alerts, cameras, radars, panels, speed limits, gas stations (terrestrial + maritime), EV chargers, roads, IMD data, traffic counting stations, real-time traffic intensity, hourly traffic profiles, articles/tags, risk zones, ZBE, railway stations/routes/alerts
+- Schema with models for: V16 beacons, traffic incidents, weather conditions/alerts, cameras, radars, panels, speed limits, gas stations (terrestrial + maritime), EV chargers, roads, IMD data, traffic counting stations, real-time traffic intensity, hourly traffic profiles, articles/tags, risk zones, ZBE, railway stations/routes/alerts/fleet positions, mobility O-D flows, accident microdata, CNMC fuel prices, climate stations/records, API keys/usage
 - Heavy indexing for time-series queries
 - Province/community/municipality administrative hierarchy
 - Enums: RoadType, Direction, Severity, IncidentType, WeatherType, FuelType, StationType, etc.
@@ -126,10 +140,26 @@ npm run db:seed      # Seed database
 - **Source (real-time):** Renfe GTFS-RT — `gtfsrt.renfe.com/alerts.json`, `trip_updates.json`, `trip_updates_LD.json`
   - Service alerts, cancellations, significant delays (>5 min)
   - 20-second cadence, no auth
-- **Tables:** `RailwayStation`, `RailwayRoute` (with GeoJSON shapes), `RailwayAlert`
-- **Collectors:** `TASK=renfe-gtfs` (weekly), `TASK=renfe-alerts` (every 2 min, realtime tier)
-- **APIs:** `/api/trenes/estaciones`, `/api/trenes/rutas`, `/api/trenes/alertas`
+- **Source (LD fleet):** Renfe undocumented API — `tiempo-real.largorecorrido.renfe.com/renfe-visor/flotaLD.json`
+  - GPS positions + delay for all active AVE/Alvia/Avant trains, every 2 min, no auth
+- **Tables:** `RailwayStation`, `RailwayRoute` (with GeoJSON shapes), `RailwayAlert`, `RenfeFleetPosition` (rolling 48h)
+- **Collectors:** `TASK=renfe-gtfs` (weekly), `TASK=renfe-alerts` (every 2 min), `TASK=renfe-ld-realtime` (every 2 min)
+- **APIs:** `/api/trenes/estaciones`, `/api/trenes/rutas`, `/api/trenes/alertas`, `/api/trenes/flota`
 - **Page:** `/trenes` — MapLibre map with lines, stations, live alerts, service type filters
+
+### Data Platform (2026-04)
+- **Mobility O-D:** Province-level daily trip flows from Ministerio de Transportes BigData study (2022+)
+  - Collector: `TASK=mobility-od` (one-shot backfill), Table: `MobilityODFlow`
+- **Accident Microdata:** Per-accident records from DGT annual XLSX (2019-2023, ~500K records)
+  - Collector: `TASK=accident-microdata` (one-shot), Table: `AccidentMicrodata`
+- **CNMC Fuel History:** Provincial daily fuel prices with pre-tax (PAI) since 2016
+  - Collector: `TASK=cnmc-fuel` (daily 02:00), Table: `CNMCFuelPrice`
+- **AEMET Climate:** ~900 weather stations + daily records from 2019 (temp, precip, wind, sun, pressure)
+  - Collector: `TASK=aemet-historical` (daily 08:00), Tables: `ClimateStation`, `ClimateRecord`
+- **MCP Server:** Exposes 12+ tools via Model Context Protocol (traffic, fuel, railway, weather, search)
+  - Standalone: `services/mcp-server/`, Integrated: `src/mcp/`
+- **API Premium:** Stripe billing with FREE/PRO/ENTERPRISE tiers, API key management
+  - Tables: `ApiKey`, `ApiUsage`, Lib: `src/lib/stripe.ts`, `src/lib/api-tiers.ts`
 
 ## Key Files
 
@@ -158,6 +188,15 @@ npm run db:seed      # Seed database
 | `services/collector/tasks/intensity/` | Madrid real-time intensity collector |
 | `services/collector/tasks/renfe-gtfs/` | Renfe GTFS static collector (stations, routes, shapes) |
 | `services/collector/tasks/renfe-alerts/` | Renfe GTFS-RT alerts collector (real-time) |
+| `services/collector/tasks/renfe-ld-realtime/` | Renfe LD fleet GPS collector (every 2 min) |
+| `services/collector/tasks/mobility-od/` | Ministerio BigData O-D matrices collector |
+| `services/collector/tasks/accident-microdata/` | DGT per-accident XLSX parser |
+| `services/collector/tasks/cnmc-fuel/` | CNMC CKAN fuel price history collector |
+| `services/collector/tasks/aemet-historical/` | AEMET climate station + daily records collector |
+| `src/lib/api-tiers.ts` | FREE/PRO/ENTERPRISE tier definitions |
+| `src/lib/stripe.ts` | Stripe client + checkout/webhook helpers |
+| `services/mcp-server/` | Standalone MCP server for AI assistants |
+| `src/mcp/` | Integrated MCP server (Prisma-backed tools) |
 | `src/app/trenes/` | Railway network map page |
 | `src/app/estaciones-aforo/` | Counting stations map page |
 | `src/app/intensidad/` | National IMD overview page |
@@ -196,8 +235,12 @@ npm run db:seed      # Seed database
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry/GlitchTip DSN (client-side) |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics |
 | `NEXT_PUBLIC_BASE_URL` | Canonical URL (https://trafico.live) |
-| `AEMET_API_KEY` | AEMET weather API key (collectors) |
+| `AEMET_API_KEY` | AEMET weather + climate API key (collectors) |
 | `TASK` | Collector task name (for services) |
+| `STRIPE_SECRET_KEY` | Stripe API secret key (billing) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature secret |
+| `STRIPE_PRO_PRICE_ID` | Stripe price ID for PRO tier |
+| `STRIPE_ENTERPRISE_PRICE_ID` | Stripe price ID for ENTERPRISE tier |
 
 ## Security
 
