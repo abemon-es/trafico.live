@@ -1,12 +1,30 @@
 # Realtime collectors — every 2-5 minutes
-# DGT + regional traffic feeds
+# Supercronic runs each line as a separate process.
+# Peak concurrency: ~11 tasks at :00/:10/:20/:30/:40/:50 marks
+# Budget: ~80MB per Node process × 11 concurrent = ~880MB peak → 1536m limit
+
+# DGT + regional traffic feeds (every 2 min)
 */2 * * * * TASK=incident npx tsx index.ts 2>&1 && touch /tmp/last-run
 */2 * * * * TASK=v16 npx tsx index.ts 2>&1
+
+# DGT infrastructure (every 5 min)
 */5 * * * * TASK=panel npx tsx index.ts 2>&1
 */5 * * * * TASK=detector npx tsx index.ts 2>&1
+
+# Madrid intensity sensors (every 5 min, ~6K measurement points)
 */5 * * * * TASK=intensity npx tsx index.ts 2>&1
+
+# City traffic sensors — Barcelona/Valencia/Zaragoza (every 5 min)
+*/5 * * * * TASK=city-traffic npx tsx index.ts 2>&1
+
+# Andorra cross-border (every 5 min)
 */5 * * * * TASK=andorra npx tsx index.ts 2>&1
-# Renfe GTFS-RT alerts (every 2 min)
+
+# Renfe GTFS-RT alerts + fleet positions (every 2 min)
 */2 * * * * TASK=renfe-alerts npx tsx index.ts 2>&1
-# Renfe LD fleet positions (every 2 min)
 */2 * * * * TASK=renfe-ld-realtime npx tsx index.ts 2>&1
+*/2 * * * * TASK=renfe-positions npx tsx index.ts 2>&1
+
+# OpenSky aircraft positions (every 5 min with auth, 30 min without)
+# Uses OPENSKY_USERNAME/PASSWORD for higher rate limits if set
+*/5 * * * * TASK=opensky npx tsx index.ts 2>&1
