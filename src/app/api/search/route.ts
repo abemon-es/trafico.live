@@ -301,6 +301,11 @@ async function performSearch(
         query_by: config.queryBy,
         per_page: perCollection,
         highlight_full_fields: config.queryBy,
+        num_typos: 2,
+        typo_tokens_threshold: 1,
+        min_len_1typo: 4,
+        min_len_2typos: 7,
+        prefix: true,
       })),
     };
 
