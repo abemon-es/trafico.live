@@ -80,6 +80,7 @@ const LEGEND_ITEMS = [
   { label: "Lento", color: "#eab308" },
   { label: "Congestionado", color: "#dc2626" },
   { label: "Alerta", color: "#dc2626" },
+  { label: "V16", color: "#f59e0b" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -645,6 +646,32 @@ export function HeroMap({ initialStats }: HeroMapProps) {
           setLegendVisible(true);
         }
 
+        // ── V16 emergency beacons ──
+        try {
+          const v16Res = await fetch("/api/v16?limit=50");
+          const v16Data = await v16Res.json();
+          if (!cancelled && Array.isArray(v16Data?.beacons)) {
+            const v16GeoJSON = toGeoJSON(v16Data.beacons);
+            if (v16GeoJSON.features.length > 0) {
+              map.addSource("v16-beacons", { type: "geojson", data: v16GeoJSON });
+              map.addLayer({ id: "v16-glow", type: "circle", source: "v16-beacons", paint: { "circle-radius": 10, "circle-color": "#f59e0b", "circle-opacity": 0.3, "circle-blur": 0.6 } });
+              map.addLayer({ id: "v16-dot", type: "circle", source: "v16-beacons", paint: { "circle-radius": 3.5, "circle-color": "#f59e0b", "circle-stroke-color": "#ffffff", "circle-stroke-width": 1 } });
+            }
+          }
+        } catch { /* V16 optional */ }
+
+        // ── Road click → navigate to /carreteras/{road} ──
+        if (map.getLayer("traffic-flow")) {
+          map.on("click", "traffic-flow", (e) => { e.originalEvent.stopPropagation(); const road = e.features?.[0]?.properties?.road; if (road) router.push(`/carreteras/${encodeURIComponent(road)}`); });
+          map.on("mouseenter", "traffic-flow", () => { map.getCanvas().style.cursor = "pointer"; });
+          map.on("mouseleave", "traffic-flow", () => { map.getCanvas().style.cursor = ""; });
+        }
+        if (map.getLayer("traffic-lines")) {
+          map.on("click", "traffic-lines", (e) => { e.originalEvent.stopPropagation(); const road = e.features?.[0]?.properties?.road; if (road) router.push(`/carreteras/${encodeURIComponent(road)}`); });
+          map.on("mouseenter", "traffic-lines", () => { map.getCanvas().style.cursor = "pointer"; });
+          map.on("mouseleave", "traffic-lines", () => { map.getCanvas().style.cursor = ""; });
+        }
+
         if (prefersReducedMotion) {
           setLegendVisible(true);
         }
@@ -663,6 +690,10 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   }, []);
 
   const { incidentCount, cameraCount, radarCount, chargerCount, detectorCount, stationCount } = initialStats;
+
+  // Time-based greeting
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Buenos días" : hour < 20 ? "Buenas tardes" : "Buenas noches";
 
   return (
     <section className="relative h-[60vh] md:h-[80vh] min-h-[420px] md:min-h-[580px] max-h-[760px] overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -732,6 +763,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       {/* Main content overlay — bottom aligned, hides when map focused */}
       <div className={`relative h-full flex flex-col justify-end pb-10 px-4 sm:px-6 lg:px-8 transition-all duration-500 ${mapFocused ? "opacity-0 translate-y-4 pointer-events-none" : "opacity-100 translate-y-0"}`}>
         <div className="max-w-7xl mx-auto w-full">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{greeting}</p>
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-gray-50 leading-tight mb-3 max-w-2xl tracking-tight">
             Inteligencia vial en tiempo real para toda España
           </h2>
