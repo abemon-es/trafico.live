@@ -625,6 +625,40 @@ async function performSearch(
       }
     }
 
+    // Sparse result fallback — if filtered search returns < 5 results,
+    // retry without filters (keep text query) to fill the gap
+    if (results.length < 5 && (filters.roadFilter || filters.provinceFilter || filters.is24hFilter || filters.priceThreshold)) {
+      try {
+        const fallbackReq = {
+          searches: SEARCH_CONFIGS.slice(0, 6).map((config) => ({
+            collection: config.collection,
+            q: query || "*",
+            query_by: config.queryBy,
+            ...(config.queryByWeights && { query_by_weights: config.queryByWeights }),
+            per_page: 3,
+            num_typos: 2,
+            prefix: true,
+            split_join_tokens: "fallback" as const,
+          })),
+        };
+        const fallbackResponse = await typesenseClient.multiSearch.perform(fallbackReq, {});
+        const fallbackResults = (fallbackResponse as { results: SearchResponse<DocumentSchema>[] }).results;
+        const existingIds = new Set(results.map((r) => r.href));
+        for (let i = 0; i < fallbackResults.length; i++) {
+          const config = SEARCH_CONFIGS[i];
+          if (fallbackResults[i].hits) {
+            for (const hit of fallbackResults[i].hits!) {
+              const result = config.mapHit(hit.document, filters.fuelType);
+              if (!existingIds.has(result.href)) {
+                results.push(result);
+                existingIds.add(result.href);
+              }
+            }
+          }
+        }
+      } catch { /* fallback failure is not critical */ }
+    }
+
     // Smart ranking: if we have entity results, demote pages to the end
     // so users see real data before navigation links
     let ranked = results;

@@ -165,6 +165,14 @@ const COLLECTION_KEYWORD_MAP: Array<{ phrases: string[]; collection: string; lab
   },
 ];
 
+// Gas station brand names → filter by name prefix
+const GAS_BRANDS = [
+  "repsol", "cepsa", "bp", "shell", "galp", "petronor", "bonarea", "bon area",
+  "plenoil", "ballenoil", "eroski", "alcampo", "carrefour", "costco",
+  "disa", "meroil", "avia", "campsa", "tamoil", "q8", "low cost",
+  "esclat", "prio", "saras", "galpenergia",
+];
+
 // Proximity keywords
 const PROXIMITY_KEYWORDS = ["próximo", "proximo", "próxima", "proxima", "cercano", "cercana", "cerca"];
 
@@ -197,6 +205,48 @@ const PROVINCE_NAMES: Record<string, string> = {
   "asturias": "Asturias", "oviedo": "Asturias",
   "a coruna": "A Coruña", "coruna": "A Coruña",
 };
+
+// Common Spanish misspellings/typos → correct form
+// Applied at query level before Typesense (catches systematic errors beyond typo tolerance)
+const MISSPELLING_MAP: Array<[RegExp, string]> = [
+  // Double letters / extra letters
+  [/\bgasolinerra\b/gi, "gasolinera"],
+  [/\bgasolinra\b/gi, "gasolinera"],
+  [/\bgasolinea\b/gi, "gasolinera"],
+  [/\bgazolinera\b/gi, "gasolinera"],
+  [/\bgaoslinera\b/gi, "gasolinera"],
+  [/\bcammara\b/gi, "cámara"],
+  [/\bcamra\b/gi, "cámara"],
+  [/\bradarr?\b/gi, "radar"],
+  [/\belectrolinea\b/gi, "electrolinera"],
+  [/\belectrilinera\b/gi, "electrolinera"],
+  [/\bcargadro\b/gi, "cargador"],
+  [/\bcargadr\b/gi, "cargador"],
+  [/\bincidecia\b/gi, "incidencia"],
+  [/\bincidncia\b/gi, "incidencia"],
+  [/\baccidnte\b/gi, "accidente"],
+  [/\baccidete\b/gi, "accidente"],
+  [/\bretrasso\b/gi, "retraso"],
+  [/\bretrasoo\b/gi, "retraso"],
+  [/\bcercanias\b/gi, "cercanías"],
+  [/\bcercanías\b/gi, "cercanías"],
+  [/\bcarrtera\b/gi, "carretera"],
+  [/\bcarretrea\b/gi, "carretera"],
+  [/\bautopsta\b/gi, "autopista"],
+  [/\bautopita\b/gi, "autopista"],
+  [/\bautobia\b/gi, "autovía"],
+  [/\bautovai\b/gi, "autovía"],
+  [/\bprovinica\b/gi, "provincia"],
+  [/\bprovncia\b/gi, "provincia"],
+  [/\btraffico\b/gi, "tráfico"],
+  [/\btraifco\b/gi, "tráfico"],
+  [/\bgaosleo\b/gi, "gasóleo"],
+  [/\bgaoselo\b/gi, "gasóleo"],
+  [/\bdiesl\b/gi, "diesel"],
+  [/\bdisel\b/gi, "diesel"],
+  [/\bvelocidd\b/gi, "velocidad"],
+  [/\bvelociad\b/gi, "velocidad"],
+];
 
 // Question prefixes to strip — users type questions but we need the noun phrase
 const QUESTION_PREFIXES = [
@@ -309,6 +359,11 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
   let q = rawQuery;
   const labels: string[] = [];
   const filters: ParsedSearchQuery["detectedFilters"] = {};
+
+  // ── -1. Misspelling correction ─────────────────────────────────────────
+  for (const [pattern, replacement] of MISSPELLING_MAP) {
+    q = q.replace(pattern, replacement);
+  }
 
   // ── 0. Road ID normalization ───────────────────────────────────────────
   // Must run before keyword stripping — "autopista a6" → "A-6"
@@ -464,6 +519,21 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
         // Don't strip the province from the query — Typesense should still
         // use it for text matching. But record it for filter_by.
         labels.push(canonical);
+        break;
+      }
+    }
+  }
+
+  // ── 5.7. Brand detection for gas stations ───────────────────────────────
+  if (!filters.targetCollection || filters.targetCollection === "gas_stations") {
+    const qLowerBrand = stripAccents(normalise(q).toLowerCase());
+    for (const brand of GAS_BRANDS) {
+      if (qLowerBrand.includes(brand)) {
+        if (!filters.targetCollection) {
+          filters.targetCollection = "gas_stations";
+          labels.push("Gasolineras");
+        }
+        // Don't strip brand — it's the name field in Typesense, keep for text match
         break;
       }
     }

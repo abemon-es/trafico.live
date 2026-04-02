@@ -339,9 +339,6 @@ const SYNONYM_RULES: Record<string, Array<{ id: string; synonyms: string[] }>> =
     { id: "diesel-gasoleo", synonyms: ["diesel", "gasóleo", "gasoleo", "gasoil"] },
     { id: "glp-autogas", synonyms: ["glp", "autogas", "gas licuado"] },
   ],
-  ev_chargers: [
-    { id: "cargador-electrolinera", synonyms: ["cargador", "electrolinera", "punto de carga", "estación de carga"] },
-  ],
   roads: [
     { id: "autovia-autopista", synonyms: ["autovía", "autopista", "autovia"] },
     { id: "carretera-nacional", synonyms: ["nacional", "carretera nacional", "N-"] },
@@ -356,6 +353,38 @@ const SYNONYM_RULES: Record<string, Array<{ id: string; synonyms: string[] }>> =
   ],
   radars: [
     { id: "radar-cinemometro", synonyms: ["radar", "cinemómetro", "control de velocidad"] },
+  ],
+  incidents: [
+    { id: "accidente-siniestro", synonyms: ["accidente", "siniestro", "colisión", "choque"] },
+    { id: "obras-mantenimiento", synonyms: ["obras", "mantenimiento", "reparación", "trabajos"] },
+    { id: "corte-cierre", synonyms: ["corte", "cierre", "cortado", "cerrada"] },
+    { id: "retencion-atasco", synonyms: ["retención", "atasco", "cola", "embotellamiento", "congestión"] },
+  ],
+  cameras: [
+    { id: "camara-webcam", synonyms: ["cámara", "webcam", "camara", "videovigilancia"] },
+  ],
+  ev_chargers: [
+    { id: "cargador-electrolinera", synonyms: ["cargador", "electrolinera", "punto de carga", "estación de carga"] },
+    { id: "ccs-mennekes", synonyms: ["ccs", "combo", "ccs2", "tipo 2", "mennekes"] },
+    { id: "chademo-rapida", synonyms: ["chademo", "carga rápida", "fast charge"] },
+    { id: "supercharger-tesla", synonyms: ["supercharger", "tesla", "destination charger"] },
+  ],
+  maritime_stations: [
+    { id: "puerto-marina", synonyms: ["puerto", "marina", "muelle", "embarcadero"] },
+    { id: "nautico-maritimo", synonyms: ["náutico", "marítimo", "barco", "embarcación"] },
+  ],
+  railway_routes: [
+    { id: "cercanias-rodalies", synonyms: ["cercanías", "rodalies", "commuter"] },
+    { id: "ave-altavelocidad", synonyms: ["ave", "alta velocidad", "tav", "bullet train"] },
+    { id: "alvia-larga", synonyms: ["alvia", "larga distancia", "talgo"] },
+  ],
+  railway_alerts: [
+    { id: "retraso-demora", synonyms: ["retraso", "demora", "retardo", "tardanza"] },
+    { id: "cancelacion-supresion", synonyms: ["cancelación", "supresión", "suprimido", "anulado"] },
+    { id: "averia-incidencia", synonyms: ["avería", "incidencia", "fallo", "problema técnico"] },
+  ],
+  portugal_stations: [
+    { id: "gasoleo-diesel-pt", synonyms: ["gasóleo", "gasoleo simples", "diesel"] },
   ],
 };
 
