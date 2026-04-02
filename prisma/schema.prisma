@@ -295,10 +295,15 @@ model PortugalGasStationPriceHistory {
   station    PortugalGasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
   recordedAt DateTime @db.Date
 
-  priceGasoleoSimples Decimal? @db.Decimal(5, 3)
-  priceGasolina95     Decimal? @db.Decimal(5, 3)
-  priceGasolina98     Decimal? @db.Decimal(5, 3)
-  priceGPL            Decimal? @db.Decimal(5, 3)
+  priceGasoleoSimples    Decimal? @db.Decimal(5, 3)
+  priceGasoleoEspecial   Decimal? @db.Decimal(5, 3)
+  priceGasoleoColorido   Decimal? @db.Decimal(5, 3)
+  priceGasolina95        Decimal? @db.Decimal(5, 3)
+  priceGasolina95Especial Decimal? @db.Decimal(5, 3)
+  priceGasolina98        Decimal? @db.Decimal(5, 3)
+  priceGasolina98Especial Decimal? @db.Decimal(5, 3)
+  priceGPL               Decimal? @db.Decimal(5, 3)
+  priceGNC               Decimal? @db.Decimal(5, 3)
 
   @@unique([stationId, recordedAt])
   @@index([stationId])
@@ -1128,11 +1133,20 @@ model GasStationPriceHistory {
   station    GasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
   recordedAt DateTime   @db.Date // One record per day
 
-  // Main prices only (to control table size)
-  priceGasoleoA     Decimal? @db.Decimal(5, 3)
-  priceGasolina95E5 Decimal? @db.Decimal(5, 3)
-  priceGasolina98E5 Decimal? @db.Decimal(5, 3)
-  priceGLP          Decimal? @db.Decimal(5, 3)
+  priceGasoleoA        Decimal? @db.Decimal(5, 3)
+  priceGasoleoB        Decimal? @db.Decimal(5, 3)
+  priceGasoleoPremium  Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5    Decimal? @db.Decimal(5, 3)
+  priceGasolina95E10   Decimal? @db.Decimal(5, 3)
+  priceGasolina98E5    Decimal? @db.Decimal(5, 3)
+  priceGasolina98E10   Decimal? @db.Decimal(5, 3)
+  priceGLP             Decimal? @db.Decimal(5, 3)
+  priceGNC             Decimal? @db.Decimal(5, 3)
+  priceGNL             Decimal? @db.Decimal(5, 3)
+  priceHidrogeno       Decimal? @db.Decimal(5, 3)
+  priceGasoleoNuevoA   Decimal? @db.Decimal(5, 3)
+  priceBioetanol       Decimal? @db.Decimal(5, 3)
+  priceBiodiesel       Decimal? @db.Decimal(5, 3)
 
   @@unique([stationId, recordedAt])
   @@index([stationId])
@@ -1146,7 +1160,9 @@ model MaritimePriceHistory {
   recordedAt DateTime        @db.Date
 
   priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasoleoB     Decimal? @db.Decimal(5, 3)
   priceGasolina95E5 Decimal? @db.Decimal(5, 3)
+  priceGasolina98E5 Decimal? @db.Decimal(5, 3)
 
   @@unique([stationId, recordedAt])
   @@index([stationId])

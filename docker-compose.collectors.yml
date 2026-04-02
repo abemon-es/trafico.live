@@ -43,9 +43,12 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       SENTRY_DSN: ${SENTRY_DSN}
+      AEMET_API_KEY: ${AEMET_API_KEY}
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: realtime
+    mem_limit: 1024m
+    mem_reservation: 256m
 
   # ─── Frequent (every 6h) ──────────────────────────────────────────
   # weather, maritime-forecast, portugal-weather
@@ -55,6 +58,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       SENTRY_DSN: ${SENTRY_DSN}
+      AEMET_API_KEY: ${AEMET_API_KEY}
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: frequent
