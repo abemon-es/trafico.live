@@ -123,12 +123,12 @@ function CardGridSkeleton() {
 export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
   return (
     <>
-      <Suspense fallback={<StripSkeleton />}>
-        <LiveCounterStrip initialStats={initialStats} />
-      </Suspense>
-
       <Suspense fallback={<HeroSkeleton />}>
         <HeroMap initialStats={initialStats} />
+      </Suspense>
+
+      <Suspense fallback={<StripSkeleton />}>
+        <LiveCounterStrip initialStats={initialStats} />
       </Suspense>
 
       <Suspense fallback={<CardGridSkeleton />}>

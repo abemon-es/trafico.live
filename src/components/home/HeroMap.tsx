@@ -253,114 +253,84 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   const { incidentCount, cameraCount, radarCount, chargerCount } = initialStats;
 
   return (
-    <section className="py-14 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-14">
-        {/* ---------------------------------------------------------------- */}
-        {/* Left — text content */}
-        {/* ---------------------------------------------------------------- */}
-        <div className="max-w-lg w-full">
+    <section className="relative h-[75vh] min-h-[520px] max-h-[700px] overflow-hidden">
+      {/* Full-width MapLibre background */}
+      <div ref={mapRef} className="absolute inset-0 w-full h-full" />
+
+      {/* Gradient scrim — bottom-heavy for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-white/30 dark:from-gray-950 dark:via-gray-950/80 dark:to-gray-950/30 pointer-events-none" />
+
+      {/* Content overlay */}
+      <div className="relative h-full flex flex-col justify-end pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto w-full">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-tl-50 border border-tl-200 mb-6">
-            <span className="w-2 h-2 rounded-full bg-signal-green animate-pulse flex-shrink-0" />
-            <span className="text-xs font-medium text-tl-600 tracking-wide">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 backdrop-blur-sm mb-5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-green opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-signal-green" />
+            </span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300 tracking-wide">
               Datos en tiempo real · 12 fuentes oficiales
             </span>
           </div>
 
           {/* Heading */}
-          <h1 className="font-heading text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-50 leading-tight mb-5">
+          <h2 className="font-heading text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-gray-50 leading-tight mb-4 max-w-2xl">
             Inteligencia vial para toda España
-          </h1>
+          </h2>
 
           {/* Description */}
-          <p className="font-body text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
-            Incidencias de tráfico, cámaras, radares, precios de combustible y puntos de carga
-            eléctrica actualizados al minuto desde DGT, AEMET, SCT y Euskadi.
+          <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-6 max-w-xl">
+            Incidencias, cámaras DGT, radares, precios de combustible, cargadores eléctricos y alertas
+            meteorológicas. Datos oficiales actualizados cada 60 segundos.
           </p>
 
           {/* Stats row */}
-          <div className="flex items-center gap-6 mb-8 text-sm text-gray-500 dark:text-gray-400">
-            <span>
-              <strong className="font-semibold text-gray-900 dark:text-gray-100 font-data tabular-nums">
-                {incidentCount.toLocaleString("es-ES")}
-              </strong>{" "}
-              incidencias
-            </span>
-            <span>
-              <strong className="font-semibold text-gray-900 dark:text-gray-100 font-data tabular-nums">
-                {cameraCount.toLocaleString("es-ES")}
-              </strong>{" "}
-              cámaras
-            </span>
-            <span>
-              <strong className="font-semibold text-gray-900 dark:text-gray-100 font-data tabular-nums">
-                {chargerCount.toLocaleString("es-ES")}
-              </strong>{" "}
-              puntos EV
-            </span>
+          <div className="flex items-center gap-5 mb-7 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
+            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{incidentCount.toLocaleString("es-ES")}</span> incidencias</span>
+            <span className="w-px h-4 bg-gray-300 dark:bg-gray-700" />
+            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{cameraCount.toLocaleString("es-ES")}</span> cámaras</span>
+            <span className="w-px h-4 bg-gray-300 dark:bg-gray-700" />
+            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{radarCount.toLocaleString("es-ES")}</span> radares</span>
+            <span className="w-px h-4 bg-gray-300 dark:bg-gray-700" />
+            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{chargerCount.toLocaleString("es-ES")}</span> cargadores EV</span>
           </div>
 
           {/* CTA buttons */}
           <div className="flex items-center gap-3 flex-wrap">
             <Link
-              href="/"
-              className="inline-flex items-center gap-2 bg-tl-600 hover:bg-tl-700 text-white font-medium rounded-lg px-6 py-3 transition-colors"
+              href="/mapa"
+              className="inline-flex items-center gap-2 bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold rounded-lg px-6 py-3 transition-colors shadow-sm"
             >
               <Map className="w-4 h-4" />
               Mapa en vivo
             </Link>
             <Link
-              href="/estaciones-aforo"
-              className="inline-flex items-center gap-2 border border-gray-200 dark:border-gray-700 hover:border-tl-300 dark:hover:border-tl-600 text-gray-600 dark:text-gray-300 font-medium rounded-lg px-6 py-3 transition-colors"
+              href="/explorar"
+              className="inline-flex items-center gap-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:border-tl-300 dark:hover:border-tl-600 text-gray-700 dark:text-gray-300 font-heading font-medium rounded-lg px-6 py-3 transition-colors"
             >
               Explorar datos
             </Link>
           </div>
         </div>
+      </div>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Right — animated map card */}
-        {/* ---------------------------------------------------------------- */}
-        <div className="flex-1 max-w-xl w-full">
-          <div className="relative bg-tl-950 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden aspect-video">
-            {/* MapLibre container */}
-            <div ref={mapRef} className="absolute inset-0 w-full h-full" />
-
-            {/* Legend */}
-            <div
-              className={[
-                "absolute bottom-3 left-1/2 -translate-x-1/2",
-                "flex items-center gap-3 px-3 py-1.5 rounded-full",
-                "bg-black/60 backdrop-blur-sm border border-white/10",
-                "transition-opacity duration-700",
-                legendVisible ? "opacity-100" : "opacity-0",
-              ].join(" ")}
-            >
-              {LEGEND_ITEMS.map((item) => (
-                <div key={item.label} className="flex items-center gap-1.5">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-xs text-white/70 whitespace-nowrap">{item.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Live indicator */}
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-white/10">
-              <span className="w-1.5 h-1.5 rounded-full bg-signal-green animate-pulse" />
-              <span className="text-xs text-white/70 font-medium">En vivo</span>
-            </div>
-
-            {/* Stat overlay — bottom right */}
-            <div className="absolute bottom-3 right-3 text-right hidden sm:block">
-              <p className="text-xs text-white/40 font-data tabular-nums leading-relaxed">
-                {radarCount.toLocaleString("es-ES")} radares
-              </p>
-            </div>
+      {/* Legend — top right */}
+      <div
+        className={[
+          "absolute top-4 right-4",
+          "flex items-center gap-3 px-3 py-1.5 rounded-full",
+          "bg-white/80 dark:bg-black/60 backdrop-blur-sm border border-gray-200 dark:border-white/10",
+          "transition-opacity duration-700",
+          legendVisible ? "opacity-100" : "opacity-0",
+        ].join(" ")}
+      >
+        {LEGEND_ITEMS.map((item) => (
+          <div key={item.label} className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+            <span className="text-xs text-gray-600 dark:text-white/70 whitespace-nowrap">{item.label}</span>
           </div>
-        </div>
+        ))}
       </div>
     </section>
   );
