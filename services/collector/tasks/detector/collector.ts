@@ -145,7 +145,9 @@ function parseLocations(xml: string): Map<string, DetectorLocation> {
           let longitude = 0;
 
           // Try TPEG format first (current DGT feed)
-          const innerLoc = locObj.predefinedLocation as Record<string, unknown> | undefined;
+          // Inner predefinedLocation is an array due to isArray config — take first element
+          const innerLocRaw = locObj.predefinedLocation;
+          const innerLoc = (Array.isArray(innerLocRaw) ? innerLocRaw[0] : innerLocRaw) as Record<string, unknown> | undefined;
           const tpeg = (innerLoc?.tpegpointLocation ?? locObj.tpegpointLocation) as Record<string, unknown> | undefined;
           const tpegPoint = tpeg?.point as Record<string, unknown> | undefined;
           const tpegCoords = tpegPoint?.pointCoordinates as Record<string, unknown> | undefined;
