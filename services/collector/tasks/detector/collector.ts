@@ -59,7 +59,7 @@ const locationsParser = createXMLParser({
 
 const measurementsParser = createXMLParser({
   isArray: (name) =>
-    ["siteMeasurements", "measuredValue"].includes(name),
+    ["siteMeasurements", "measuredValue", "basicDataValue"].includes(name),
 });
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
@@ -264,7 +264,7 @@ function parseMeasurements(xml: string): Map<string, DetectorMeasurement> {
     }
 
     // Publication-level fallback timestamp
-    const pubTime = publication.measurementTimeDefault;
+    const pubTime = publication.publicationTime ?? publication.measurementTimeDefault;
     const fallbackTime = pubTime ? new Date(String(pubTime)) : new Date();
 
     const siteMeasurementsList = ensureArray(publication.siteMeasurements);
@@ -272,9 +272,11 @@ function parseMeasurements(xml: string): Map<string, DetectorMeasurement> {
     for (const site of siteMeasurementsList) {
       const siteObj = site as Record<string, unknown>;
 
-      // Detector ID comes from the measurementSiteReference attribute
-      const siteRef = siteObj.measurementSiteReference as Record<string, unknown>;
-      const detectorId = String(siteRef?.["@_id"] ?? siteRef?.["@_idref"] ?? "").trim();
+      // Detector ID — DGT uses plain text element, not an attributed object
+      const siteRefRaw = siteObj.measurementSiteReference;
+      const detectorId = typeof siteRefRaw === "string"
+        ? siteRefRaw.trim()
+        : String((siteRefRaw as Record<string, unknown>)?.["@_id"] ?? "").trim();
       if (!detectorId) continue;
 
       // Per-site timestamp (overrides publication-level)
@@ -292,33 +294,34 @@ function parseMeasurements(xml: string): Map<string, DetectorMeasurement> {
 
       for (const mv of measuredValues) {
         const mvObj = mv as Record<string, unknown>;
-        const basicData = mvObj.basicData as Record<string, unknown>;
-        if (!basicData) continue;
+        // DGT uses basicDataValue with xsi:type (TrafficSpeed/TrafficFlow/TrafficHeadway)
+        const bdv = (mvObj.basicDataValue ?? mvObj.basicData) as Record<string, unknown> | undefined;
+        if (!bdv) continue;
 
-        // vehicleFlowRate block
-        const flowBlock = basicData.vehicleFlowRate as Record<string, unknown>;
-        if (flowBlock?.vehicleFlowRate != null) {
-          const val = parseFloat(String(flowBlock.vehicleFlowRate));
+        // TrafficFlow — vehicleFlow is a direct number child
+        const flowVal = bdv.vehicleFlow ?? (bdv.vehicleFlowRate as Record<string, unknown>)?.vehicleFlowRate;
+        if (flowVal != null) {
+          const val = parseFloat(String(flowVal));
           if (!isNaN(val) && val >= 0) intensity = Math.round(val);
         }
 
-        // averageVehicleSpeed block
-        const speedBlock = basicData.averageVehicleSpeed as Record<string, unknown>;
-        if (speedBlock?.speed != null) {
-          const val = parseFloat(String(speedBlock.speed));
+        // TrafficSpeed — averageVehicleSpeed is a direct number child
+        const speedVal = bdv.averageVehicleSpeed;
+        if (speedVal != null && typeof speedVal !== "object") {
+          const val = parseFloat(String(speedVal));
           if (!isNaN(val) && val >= 0 && val < 300) speed = Math.round(val * 10) / 10;
         }
 
-        // occupancy block
-        const occBlock = basicData.occupancy as Record<string, unknown>;
-        if (occBlock?.percentage != null) {
-          const val = parseFloat(String(occBlock.percentage));
+        // Occupancy — direct number child
+        const occVal = bdv.occupancy;
+        if (occVal != null && typeof occVal !== "object") {
+          const val = parseFloat(String(occVal));
           if (!isNaN(val) && val >= 0 && val <= 100) occupancy = Math.round(val * 10) / 10;
         }
       }
 
-      // Only store if we got at least intensity
-      if (intensity === null) continue;
+      // Only store if we got at least intensity or speed
+      if (intensity === null && speed === null) continue;
 
       measurements.set(detectorId, {
         detectorId,

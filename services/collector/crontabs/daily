@@ -1,7 +1,6 @@
 # Daily collectors
-0 3 * * * TASK=renfe-gtfs npx tsx index.ts 2>&1
+30 0 * * * TASK=daily-stats npx tsx index.ts 2>&1
 0 4 * * * TASK=camera npx tsx index.ts 2>&1 && touch /tmp/last-run
-30 4 * * * TASK=daily-stats npx tsx index.ts 2>&1
 0 5 * * * TASK=typesense-sync npx tsx index.ts 2>&1
-0 6 * * * TASK=charger NODE_OPTIONS=--max-old-space-size=384 npx tsx index.ts 2>&1
+0 6 * * * TASK=charger NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
 30 22 * * * TASK=insights npx tsx index.ts 2>&1
