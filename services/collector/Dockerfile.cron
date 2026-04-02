@@ -8,11 +8,15 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY services/collector/package.json services/collector/package-lock.json* ./
-RUN npm ci --omit=dev
+RUN npm ci
 
+# Generate Prisma client from current schema
 COPY prisma/schema.prisma ./prisma/
 COPY prisma.config.ts ./
-RUN npx prisma generate
+RUN npx prisma generate --no-hints
+
+# Remove devDependencies after generate
+RUN npm prune --omit=dev
 
 FROM node:22-slim
 
