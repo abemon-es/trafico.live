@@ -83,6 +83,11 @@ export function EditorialSection() {
             </Link>
           ))}
         </div>
+
+        {/* SEO paragraph */}
+        <p className="mt-6 text-xs text-gray-400 dark:text-gray-500 leading-relaxed max-w-3xl">
+          trafico.live publica informes diarios de tráfico, análisis de precios de combustible, reportajes de seguridad vial y noticias sobre movilidad urbana y zonas de bajas emisiones. Nuestro contenido se genera a partir de datos oficiales de la DGT, AEMET y el Ministerio de Transportes.
+        </p>
       </div>
     </section>
   );

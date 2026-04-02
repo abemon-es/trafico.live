@@ -16,13 +16,12 @@ interface LiveTrafficFlowProps {
 }
 
 function formatDetectors(n: number): string {
-  // Format as "4.247" style (Spanish thousands separator)
   return n.toLocaleString("es-ES");
 }
 
 function Bar({ pct, color }: { pct: number; color: string }) {
   return (
-    <div className="h-1 rounded-full bg-gray-100 dark:bg-gray-800 mt-3 overflow-hidden">
+    <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 mt-3 overflow-hidden">
       <div
         className="h-full rounded-full transition-all duration-500"
         style={{ width: `${Math.min(100, Math.max(0, pct))}%`, background: color }}
@@ -38,14 +37,12 @@ export function LiveTrafficFlow({ detectorCount }: LiveTrafficFlowProps) {
     { refreshInterval: 300000 }
   );
 
-  // Fallback to static design values if endpoint absent / null
   const speed = data?.avgSpeed ?? 104;
   const intensity = data?.avgIntensity ?? 1842;
   const occupancy = data?.avgOccupancy ?? 23;
 
-  // Progress bar percentages
-  const speedPct = Math.round((speed / 130) * 100); // 130 km/h = 100%
-  const intensityPct = Math.round((intensity / 3000) * 100); // 3000 veh/h = 100%
+  const speedPct = Math.round((speed / 130) * 100);
+  const intensityPct = Math.round((intensity / 3000) * 100);
   const occupancyPct = occupancy;
 
   const cards = [
@@ -55,9 +52,8 @@ export function LiveTrafficFlow({ detectorCount }: LiveTrafficFlowProps) {
       value: Math.round(speed).toLocaleString("es-ES"),
       unit: "km/h · Red de alta capacidad",
       pct: speedPct,
-      color: "var(--color-signal-green, #059669)",
-      textColor: "text-signal-green",
-      labelColor: "text-signal-green",
+      barColor: "var(--color-signal-green, #059669)",
+      valueColor: "text-tl-600 dark:text-tl-400",
     },
     {
       key: "intensity",
@@ -65,9 +61,8 @@ export function LiveTrafficFlow({ detectorCount }: LiveTrafficFlowProps) {
       value: Math.round(intensity).toLocaleString("es-ES"),
       unit: "vehículos/hora · Promedio nacional",
       pct: intensityPct,
-      color: "var(--color-tl-600, #1b4bd5)",
-      textColor: "text-tl-600 dark:text-tl-400",
-      labelColor: "text-tl-600 dark:text-tl-400",
+      barColor: "var(--color-tl-600, #1b4bd5)",
+      valueColor: "text-tl-600 dark:text-tl-400",
     },
     {
       key: "occupancy",
@@ -75,35 +70,32 @@ export function LiveTrafficFlow({ detectorCount }: LiveTrafficFlowProps) {
       value: `${Math.round(occupancy)}%`,
       unit: "ocupación media de carril",
       pct: occupancyPct,
-      color: "var(--color-tl-amber-500, #b56200)",
-      textColor: "text-tl-amber-500 dark:text-tl-amber-400",
-      labelColor: "text-tl-amber-500 dark:text-tl-amber-400",
+      barColor: "var(--color-tl-amber-500, #b56200)",
+      valueColor: "text-tl-amber-500 dark:text-tl-amber-400",
     },
   ];
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-tl-950 relative overflow-hidden">
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-      <div className="max-w-7xl mx-auto relative">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950 border-t border-gray-200 dark:border-gray-800">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-end justify-between mb-8">
           <div>
-            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-white/50 mb-1">
+            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-tl-600 dark:text-tl-400 mb-1">
               Flujo de tráfico en vivo
             </p>
-            <h2 className="font-heading text-2xl font-bold tracking-tight text-white">
+            <h2 className="font-heading text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
               <span className="font-data">{formatDetectors(detectorCount)}</span>{" "}
               detectores DGT · cada 5 minutos
             </h2>
-            <p className="mt-1.5 text-sm text-white/40 max-w-lg leading-relaxed">
+            <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400 max-w-lg leading-relaxed">
               Velocidad, intensidad y ocupación en toda la red de carreteras. Datos
               DATEX II del NAP de la DGT.
             </p>
           </div>
           <Link
             href="/mapa"
-            className="text-xs text-tl-300 font-medium whitespace-nowrap hover:text-white transition-colors"
+            className="text-xs text-tl-600 dark:text-tl-400 font-medium whitespace-nowrap hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
           >
             Ver mapa de flujo &rarr;
           </Link>
@@ -114,26 +106,34 @@ export function LiveTrafficFlow({ detectorCount }: LiveTrafficFlowProps) {
           {cards.map((card) => (
             <div
               key={card.key}
-              className="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-white/20 transition-colors backdrop-blur-sm"
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
             >
-              <div className="text-[0.6rem] font-semibold uppercase tracking-wider mb-3 text-white/50">
+              <div className="text-[0.6rem] font-semibold uppercase tracking-wider mb-3 text-gray-400 dark:text-gray-500">
                 {card.label}
               </div>
-              <div className="font-data text-5xl font-bold text-white">
+              <div className={`font-data text-5xl font-bold ${card.valueColor}`}>
                 {card.value}
               </div>
-              <div className="text-[0.7rem] text-white/30 mt-1">
+              <div className="text-[0.7rem] text-gray-400 dark:text-gray-500 mt-1">
                 {card.unit}
               </div>
-              <div className="h-1 rounded-full bg-white/10 mt-4 overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, Math.max(0, card.pct))}%`, background: card.color }}
-                />
-              </div>
+              <Bar pct={card.pct} color={card.barColor} />
             </div>
           ))}
         </div>
+
+        {/* SEO paragraph */}
+        <p className="mt-8 text-xs text-gray-400 dark:text-gray-500 leading-relaxed max-w-3xl">
+          Los detectores de tráfico de la DGT son sensores instalados en calzada que miden la velocidad, intensidad (vehículos por hora) y ocupación del carril en tiempo real. trafico.live agrega estos datos cada 5 minutos para ofrecer una visión instantánea del estado de la red viaria española. Consulta el detalle de cada sensor en la página de{" "}
+          <Link href="/intensidad" className="text-tl-600 dark:text-tl-400 hover:underline">
+            intensidad IMD
+          </Link>{" "}
+          o explora los{" "}
+          <Link href="/estaciones-aforo" className="text-tl-600 dark:text-tl-400 hover:underline">
+            14.400 puntos de aforo
+          </Link>{" "}
+          de la red nacional.
+        </p>
       </div>
     </section>
   );

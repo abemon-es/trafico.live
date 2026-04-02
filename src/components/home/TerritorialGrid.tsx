@@ -53,7 +53,7 @@ export function TerritorialGrid() {
     <section className="py-18 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-end justify-between mb-7">
+        <div className="flex items-end justify-between mb-4">
           <div>
             <p className="font-heading text-xs font-semibold uppercase tracking-widest text-tl-600 mb-1">
               Cobertura territorial
@@ -69,6 +69,11 @@ export function TerritorialGrid() {
             Ver todas &rarr;
           </Link>
         </div>
+
+        {/* SEO intro paragraph */}
+        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-7 max-w-3xl">
+          Cada comunidad autónoma, provincia y ciudad de España cuenta con su propia página de inteligencia de tráfico. Consulta incidencias en tiempo real, cámaras DGT, radares, precios de combustible, cargadores eléctricos, alertas meteorológicas y datos históricos de accidentalidad para tu zona.
+        </p>
 
         {/* Communities 4-column grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 mb-4">
@@ -98,6 +103,11 @@ export function TerritorialGrid() {
             </Link>
           ))}
         </div>
+
+        {/* SEO footer paragraph */}
+        <p className="mt-6 text-xs text-gray-400 dark:text-gray-500 leading-relaxed max-w-3xl">
+          Además de las principales ciudades, trafico.live ofrece datos de tráfico para los 8.131 municipios de España, así como cobertura en Portugal (más de 3.000 gasolineras y meteorología IPMA) y Andorra (incidencias y cámaras de Mobilitat).
+        </p>
       </div>
     </section>
   );
