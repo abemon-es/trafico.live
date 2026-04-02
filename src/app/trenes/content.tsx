@@ -23,6 +23,7 @@ import {
   List,
   BarChart3,
 } from "lucide-react";
+import HeroOverlay from "./hero-overlay";
 
 const RailwayMap = dynamic(() => import("./railway-map"), {
   ssr: false,
@@ -129,8 +130,20 @@ export default function TrainesContent() {
     try { return JSON.parse(String(selectedTrain.stopsJson)); } catch { return []; }
   }, [selectedTrain]);
 
+  const punctuality = current?.punctualityRate ?? 0;
+
   return (
-    <div className="space-y-6">
+    <div>
+      {/* HERO MAP — full viewport */}
+      <section className="relative" style={{ height: "85vh", minHeight: 600, maxHeight: 900 }}>
+        <div className="absolute inset-0">
+          <RailwayMap stationsGeoJSON={enrichedStations} cercaniaLines={cercaniaLines} trainRoutes={trainRoutes} trainPoints={trainPoints} onTrainClick={(p) => { setSelectedStation(null); setSelectedTrain(p); }} onStationClick={(p) => { setSelectedTrain(null); setSelectedStation(p); }} />
+        </div>
+        <HeroOverlay trainCount={trainCount} totalStations={totalStations} totalRoutes={totalRoutes} alerts={alerts} punctuality={Number(punctuality)} avgDelay={Number(liveStats.avgDelay || 0)} maxDelay={current?.maxDelay ?? null} p50Delay={current?.p50Delay ?? null} loading={loadingTrains} />
+      </section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* OLD sections hidden */}
+      <div className="hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -210,7 +223,8 @@ export default function TrainesContent() {
           ))}
         </div>
       </div>
-      </div>{/* end hidden old sections */}
+      </div>
+      {/* end hidden old sections */}
 
       {/* Train Detail Panel */}
       {selectedTrain && (
