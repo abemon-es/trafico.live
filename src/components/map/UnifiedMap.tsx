@@ -675,31 +675,10 @@ export function UnifiedMap({
       ref={containerRef}
       id={id}
       className={`
-        bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800
-        ${isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 flex flex-col" : "overflow-hidden"}
+        bg-white dark:bg-gray-900 flex flex-col
+        ${isFullscreen ? "fixed inset-0 z-50" : "h-full overflow-hidden"}
       `}
     >
-      {/* Header */}
-      <div className={`px-4 py-3 border-b border-gray-200 dark:border-gray-800 ${isFullscreen ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm" : ""}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-tl-600 flex items-center justify-center">
-              <MapIcon className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h2 className="font-heading text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">
-                Mapa Interactivo
-              </h2>
-            </div>
-          </div>
-          {!isFullscreen && (
-            <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
-              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">F</kbd> pantalla completa
-            </span>
-          )}
-        </div>
-      </div>
-
       {/* Controls */}
       <MapControls
         activeLayers={activeLayers}
@@ -745,10 +724,10 @@ export function UnifiedMap({
       />
 
       {/* Main content area */}
-      <div className={`${isFullscreen ? "flex-1 flex" : ""}`}>
+      <div className="flex-1 min-h-0 relative">
         {/* Comparator mode */}
         {viewMode === "map" && comparatorActive && (
-          <div className={`${isFullscreen ? "flex-1" : ""}`} style={{ height: isFullscreen ? "100%" : mapHeight }}>
+          <div className="h-full">
             <MapComparator
               currentIncidents={filteredIncidents.map((i) => ({ lat: i.lat, lng: i.lng, effect: i.effect }))}
               historicalIncidents={
@@ -761,7 +740,7 @@ export function UnifiedMap({
 
         {/* Map */}
         {viewMode === "map" && !comparatorActive && (
-          <div className={`${isFullscreen ? "flex-1" : ""} relative`} style={{ height: isFullscreen ? "100%" : mapHeight }}>
+          <div className="h-full relative">
             <TrafficMap
               ref={mapRef}
               activeLayers={activeLayers}
@@ -801,10 +780,7 @@ export function UnifiedMap({
 
         {/* List view */}
         {viewMode === "list" && (
-          <div
-            className={`overflow-y-auto ${isFullscreen ? "flex-1" : ""}`}
-            style={{ height: isFullscreen ? "100%" : mapHeight }}
-          >
+          <div className="overflow-y-auto h-full">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="w-8 h-8 text-tl-600 dark:text-tl-400 animate-spin" />
