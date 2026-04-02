@@ -116,8 +116,8 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   const [userLocated, setUserLocated] = useState(false);
   // Change 4: Incident hover popup state
   const [hoveredIncident, setHoveredIncident] = useState<{ x: number; y: number; road: string; type: string; severity: string } | null>(null);
-  // Change 7: Weather toggle state
   const [weatherVisible, setWeatherVisible] = useState(false);
+  const [weatherAlerts, setWeatherAlerts] = useState<Array<{ province: string; type: string; severity: string; description: string }>>([]);
 
   // Fly to a specific location on the map
   const flyTo = useCallback((lng: number, lat: number, zoom: number) => {
@@ -758,6 +758,36 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         </div>
       </div>
 
+      {/* Weather alerts panel */}
+      {weatherVisible && weatherAlerts.length > 0 && !selected && (
+        <div className="absolute top-14 right-4 sm:right-6 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 shadow-lg max-w-xs">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-heading font-semibold text-gray-900 dark:text-gray-100">Alertas meteorológicas</p>
+            <button onClick={() => { setWeatherVisible(false); setWeatherAlerts([]); }} className="text-[0.6rem] text-gray-400 hover:text-gray-600">Cerrar</button>
+          </div>
+          <div className="space-y-1.5">
+            {weatherAlerts.map((a, i) => (
+              <div key={i} className="flex items-start gap-2 text-xs">
+                <span className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${a.severity === "RED" || a.severity === "EXTREME" ? "bg-signal-red" : a.severity === "ORANGE" ? "bg-tl-amber-400" : "bg-tl-amber-300"}`} />
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">{a.province}</span>
+                  <span className="text-gray-400"> · </span>
+                  <span className="text-gray-500 dark:text-gray-400">{a.type} ({a.severity})</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {weatherAlerts.length === 0 && (
+            <p className="text-xs text-gray-400">Sin alertas activas</p>
+          )}
+        </div>
+      )}
+      {weatherVisible && weatherAlerts.length === 0 && !selected && (
+        <div className="absolute top-14 right-4 sm:right-6 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 shadow-lg">
+          <p className="text-xs text-gray-500">Sin alertas meteorológicas activas</p>
+        </div>
+      )}
+
       {/* Rich sidebar panel — province or territory details */}
       {selected && (
         <div className="absolute top-0 left-0 bottom-0 w-full sm:w-[340px] z-20 bg-white/97 dark:bg-gray-950/97 backdrop-blur-md border-r border-gray-200 dark:border-gray-700 shadow-2xl overflow-y-auto">
@@ -901,7 +931,14 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             } else {
               try {
                 const res = await fetch("/api/weather");
-                await res.json();
+                const data = await res.json();
+                const alerts = (data.alerts ?? []).slice(0, 8).map((a: Record<string, unknown>) => ({
+                  province: String(a.provinceName ?? a.province ?? ""),
+                  type: String(a.type ?? ""),
+                  severity: String(a.severity ?? ""),
+                  description: String(a.description ?? ""),
+                }));
+                setWeatherAlerts(alerts);
                 setWeatherVisible(true);
               } catch {}
             }

@@ -16,6 +16,13 @@ interface IncidentsResponse {
   incidents?: Incident[];
 }
 
+const TYPE_ES: Record<string, string> = {
+  ACCIDENT: "Accidente", ROADWORK: "Obras", CONGESTION: "Congestión",
+  ROAD_CLOSED: "Vía cortada", SLOW_TRAFFIC: "Tráfico lento", HAZARD: "Peligro",
+  WEATHER: "Meteorológico", VEHICLE_BREAKDOWN: "Avería", RESTRICTION: "Restricción",
+  DIVERSION: "Desvío", EVENT: "Evento", CLOSURE: "Cierre", OTHER: "Incidencia",
+};
+
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -81,7 +88,7 @@ export function IncidentTicker() {
                 <span className="font-data font-medium text-gray-900 dark:text-gray-100">
                   {inc.roadNumber ?? "Vía"}
                 </span>
-                <span>{inc.type ?? inc.description ?? "Incidencia"}</span>
+                <span>{TYPE_ES[inc.type ?? ""] ?? inc.description ?? "Incidencia"}</span>
                 {inc.startedAt && (
                   <span className="text-gray-400 dark:text-gray-500">
                     {timeAgo(inc.startedAt)}
