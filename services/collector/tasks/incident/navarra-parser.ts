@@ -1,30 +1,32 @@
 /**
  * Navarra Traffic Parser
- * Road status from Navarra open data portal (OpenDataSoft platform)
+ * Road status from Navarra open data portal (CKAN platform)
  *
- * API: https://datosabiertos.navarra.es/api/explore/v2.1/catalog/datasets/informacion-estado-carreteras-navarra/records
+ * API: https://datosabiertos.navarra.es/api/3/action/datastore_search?resource_id=9323f68f-9c8f-47e1-884c-d6985b957606
  * Data: Road incident and status information for Navarra roads
  * Updates: Every 15 minutes
- * Format: JSON (OpenDataSoft API v2.1)
+ * Format: JSON (CKAN Datastore API)
+ * Coordinates: ETRS89 UTM Zone 30N (EPSG:25830) — converted to WGS84
  * Province: Navarra (31)
  * Community: Comunidad Foral de Navarra (15)
- * License: Open data
+ * License: CC BY 4.0
  */
 
 import { IncidentType, Severity } from "@prisma/client";
 
 const NAVARRA_URL =
-  "https://datosabiertos.navarra.es/api/explore/v2.1/catalog/datasets/informacion-estado-carreteras-navarra/records";
+  "https://datosabiertos.navarra.es/api/3/action/datastore_search";
 
-// Map Navarra incident/estado field values to IncidentType and Severity
-// The dataset uses Spanish terms for road status descriptions
+const RESOURCE_ID = "9323f68f-9c8f-47e1-884c-d6985b957606";
+
+// Map Navarra incident fields to IncidentType and Severity
 const ESTADO_TYPE_MAP: Array<{
   pattern: RegExp;
   type: IncidentType;
   severity: Severity;
 }> = [
   { pattern: /accidente/i, type: "ACCIDENT", severity: "HIGH" },
-  { pattern: /obra|construcci/i, type: "ROADWORK", severity: "LOW" },
+  { pattern: /obra|construcci|trabajo/i, type: "ROADWORK", severity: "LOW" },
   { pattern: /corte|cortada|cerrad/i, type: "CLOSURE", severity: "HIGH" },
   { pattern: /retenci|congesti|dens/i, type: "CONGESTION", severity: "MEDIUM" },
   { pattern: /nieve|hielo|temporal|niebla|lluvia|viento/i, type: "WEATHER", severity: "MEDIUM" },
@@ -32,24 +34,106 @@ const ESTADO_TYPE_MAP: Array<{
   { pattern: /peligro|obstáculo|obstaculo/i, type: "HAZARD", severity: "LOW" },
 ];
 
-function mapEstadoToIncident(estado: string | null | undefined, descripcion?: string): { type: IncidentType; severity: Severity } | null {
-  const text = [estado, descripcion].filter(Boolean).join(" ").trim();
+// Map Gravedad (severity) to our severity enum
+const GRAVEDAD_MAP: Record<string, Severity> = {
+  grave: "HIGH",
+  medio: "MEDIUM",
+  leve: "LOW",
+};
+
+interface NavarraRecord {
+  _id: number;
+  Ultima_actualizacion: string;
+  Titulo: string;
+  Ubicacion: string;
+  Fecha_incidencia: string;
+  Gravedad: string;
+  Afeccion: string;
+  Categoria: string;
+  Tipo: string;
+  Otros_datos: string;
+  Coord_X_en_EPSG_25830: string;
+  Coord_Y_en_EPSG_25830: string;
+  Carretera: string;
+  PK: string;
+}
+
+function mapToIncident(record: NavarraRecord): { type: IncidentType; severity: Severity } | null {
+  const text = [record.Titulo, record.Afeccion, record.Tipo, record.Categoria]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
   if (!text) return null;
 
+  let type: IncidentType = "OTHER";
   for (const entry of ESTADO_TYPE_MAP) {
     if (entry.pattern.test(text)) {
-      return { type: entry.type, severity: entry.severity };
+      type = entry.type;
+      break;
     }
   }
 
-  // If estado contains a non-null/non-normal status but doesn't match patterns,
-  // treat as a general hazard
-  const normalPatterns = /normal|libre|fluido|sin incidencia/i;
-  if (!normalPatterns.test(text)) {
-    return { type: "OTHER", severity: "LOW" };
-  }
+  // Use the Gravedad field for severity, fallback to pattern-based
+  const severity = GRAVEDAD_MAP[record.Gravedad?.toLowerCase()] || "LOW";
 
-  return null;
+  return { type, severity };
+}
+
+/**
+ * Convert UTM Zone 30N (EPSG:25830) to WGS84 (lat/lon).
+ */
+function utmToWgs84(easting: number, northing: number): { lat: number; lon: number } {
+  const k0 = 0.9996;
+  const a = 6378137;
+  const e = 0.0818192;
+  const e2 = e * e;
+  const ep2 = e2 / (1 - e2);
+  const lon0 = (-3 * Math.PI) / 180;
+
+  const x = easting - 500000;
+  const y = northing;
+
+  const M = y / k0;
+  const mu = M / (a * (1 - e2 / 4 - (3 * e2 * e2) / 64 - (5 * e2 * e2 * e2) / 256));
+  const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+
+  const phi1 =
+    mu +
+    ((3 * e1) / 2 - (27 * e1 * e1 * e1) / 32) * Math.sin(2 * mu) +
+    ((21 * e1 * e1) / 16 - (55 * e1 * e1 * e1 * e1) / 32) * Math.sin(4 * mu) +
+    ((151 * e1 * e1 * e1) / 96) * Math.sin(6 * mu);
+
+  const sinPhi1 = Math.sin(phi1);
+  const cosPhi1 = Math.cos(phi1);
+  const tanPhi1 = Math.tan(phi1);
+  const N1 = a / Math.sqrt(1 - e2 * sinPhi1 * sinPhi1);
+  const T1 = tanPhi1 * tanPhi1;
+  const C1 = ep2 * cosPhi1 * cosPhi1;
+  const R1 = (a * (1 - e2)) / Math.pow(1 - e2 * sinPhi1 * sinPhi1, 1.5);
+  const D = x / (N1 * k0);
+
+  const lat =
+    phi1 -
+    ((N1 * tanPhi1) / R1) *
+      (D * D / 2 -
+        ((5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * D * D * D * D) / 24 +
+        ((61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) *
+          D * D * D * D * D * D) /
+          720);
+
+  const lon =
+    lon0 +
+    (D -
+      ((1 + 2 * T1 + C1) * D * D * D) / 6 +
+      ((5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) *
+        D * D * D * D * D) /
+        120) /
+      cosPhi1;
+
+  return {
+    lat: Math.round((lat * 180) / Math.PI * 1e6) / 1e6,
+    lon: Math.round((lon * 180) / Math.PI * 1e6) / 1e6,
+  };
 }
 
 export interface NavarraIncident {
@@ -64,130 +148,62 @@ export interface NavarraIncident {
   severity: Severity;
 }
 
-interface NavarraRecord {
-  // OpenDataSoft standard fields
-  geo_point_2d?: { lat: number; lon: number };
-  // Dataset-specific fields (field names vary; use flexible approach)
-  [key: string]: unknown;
-}
-
-function extractCoordinates(record: NavarraRecord): { lat: number; lon: number } | undefined {
-  if (record.geo_point_2d?.lat && record.geo_point_2d?.lon) {
-    return { lat: record.geo_point_2d.lat, lon: record.geo_point_2d.lon };
-  }
-
-  // Try common alternative coordinate field names
-  const latFields = ["latitud", "lat", "latitude", "y_etrs89", "coord_y"];
-  const lonFields = ["longitud", "lon", "longitude", "x_etrs89", "coord_x"];
-
-  let lat: number | undefined;
-  let lon: number | undefined;
-
-  for (const field of latFields) {
-    const val = parseFloat(String(record[field] || ""));
-    if (!isNaN(val) && val !== 0) { lat = val; break; }
-  }
-  for (const field of lonFields) {
-    const val = parseFloat(String(record[field] || ""));
-    if (!isNaN(val) && val !== 0) { lon = val; break; }
-  }
-
-  if (lat && lon) return { lat, lon };
-  return undefined;
-}
-
-function extractStringField(record: NavarraRecord, ...fieldNames: string[]): string | undefined {
-  for (const field of fieldNames) {
-    const val = record[field];
-    if (val !== null && val !== undefined && String(val).trim()) {
-      return String(val).trim();
-    }
-  }
-  return undefined;
-}
-
 export async function fetchNavarraIncidents(): Promise<NavarraIncident[]> {
-  console.log("[NAVARRA] Fetching from OpenDataSoft API");
+  console.log("[NAVARRA] Fetching from CKAN Datastore API");
 
-  const response = await fetch(`${NAVARRA_URL}?limit=100&offset=0`, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(15000),
-  });
+  const response = await fetch(
+    `${NAVARRA_URL}?resource_id=${RESOURCE_ID}&limit=500`,
+    {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(15000),
+    }
+  );
 
   if (!response.ok) {
     throw new Error(`Navarra API error: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
-  const total = data.total_count || 0;
-  let records: NavarraRecord[] = data.results || [];
-
-  // Fetch remaining pages if needed
-  if (total > 100) {
-    const pages = Math.ceil(total / 100);
-    for (let page = 1; page < pages; page++) {
-      const pageResp = await fetch(`${NAVARRA_URL}?limit=100&offset=${page * 100}`, {
-        headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(15000),
-      });
-      if (pageResp.ok) {
-        const pageData = await pageResp.json();
-        records = records.concat(pageData.results || []);
-      }
-    }
+  if (!data.success) {
+    throw new Error(`Navarra API returned error: ${JSON.stringify(data.error)}`);
   }
 
+  const records: NavarraRecord[] = data.result?.records || [];
   console.log(`[NAVARRA] API returned ${records.length} road status records`);
 
   const incidents: NavarraIncident[] = [];
   const now = new Date();
 
   for (const record of records) {
-    // Extract estado/status from common field names used in Navarra dataset
-    const estado = extractStringField(record, "estado", "estado_carretera", "incidencia", "tipo_incidencia", "tipo");
-    const descripcion = extractStringField(record, "descripcion", "descripcion_incidencia", "observaciones", "texto");
+    const mapped = mapToIncident(record);
+    if (!mapped) continue;
 
-    const mapped = mapEstadoToIncident(estado, descripcion);
-    if (!mapped) continue; // Normal/free-flowing, no incident to report
+    const coordX = parseFloat(record.Coord_X_en_EPSG_25830);
+    const coordY = parseFloat(record.Coord_Y_en_EPSG_25830);
+    if (isNaN(coordX) || isNaN(coordY) || coordX === 0 || coordY === 0) continue;
 
-    const coords = extractCoordinates(record);
-    if (!coords) continue;
+    const coords = utmToWgs84(coordX, coordY);
 
-    // Extract road number from common field names
-    const roadNumber = extractStringField(record, "carretera", "road", "via", "pk_carretera", "denominacion");
-
-    // Extract date fields
-    const fechaStr = extractStringField(record, "fecha", "fecha_inicio", "fecha_actualizacion", "timestamp");
-    let startedAt: Date;
-    if (fechaStr) {
-      const parsed = new Date(fechaStr);
-      startedAt = isNaN(parsed.getTime()) ? now : parsed;
-    } else {
-      startedAt = now;
+    // Parse dates
+    let startedAt = now;
+    if (record.Fecha_incidencia) {
+      // Format: "02 Apr 2026" or "01 Apr 2026"
+      const parsed = new Date(record.Fecha_incidencia);
+      if (!isNaN(parsed.getTime())) startedAt = parsed;
     }
 
-    const endFechaStr = extractStringField(record, "fecha_fin", "fecha_prevista_fin");
-    let endedAt: Date | undefined;
-    if (endFechaStr) {
-      const parsed = new Date(endFechaStr);
-      endedAt = isNaN(parsed.getTime()) ? undefined : parsed;
-    }
-
-    // Build a unique ID from available identifiers
-    const idField = extractStringField(record, "id", "identificador", "pk_id", "objectid");
-    const situationId = `NAVARRA-${idField || `${Math.round(coords.lat * 1e4)}-${Math.round(coords.lon * 1e4)}`}`;
-
-    const descriptionText = [estado, descripcion].filter(Boolean).join(" | ") || undefined;
+    const description = [record.Titulo, record.Afeccion, record.Tipo]
+      .filter(Boolean)
+      .join(" | ");
 
     incidents.push({
-      situationId,
+      situationId: `NAVARRA-${record._id}`,
       type: mapped.type,
       startedAt,
-      endedAt,
-      latitude: Math.round(coords.lat * 1e6) / 1e6,
-      longitude: Math.round(coords.lon * 1e6) / 1e6,
-      roadNumber,
-      description: descriptionText,
+      latitude: coords.lat,
+      longitude: coords.lon,
+      roadNumber: record.Carretera || undefined,
+      description: description || record.Ubicacion || undefined,
       severity: mapped.severity,
     });
   }
