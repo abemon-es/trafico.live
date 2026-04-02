@@ -59,6 +59,19 @@ if (process.env.NODE_ENV !== "production" && typesenseClient) {
 // ---------------------------------------------------------------------------
 
 export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
+  pages: {
+    name: "pages",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "title", type: "string" },
+      { name: "subtitle", type: "string", optional: true },
+      { name: "href", type: "string" },
+      { name: "category", type: "string", facet: true },
+      { name: "icon", type: "string" },
+      { name: "keywords", type: "string[]", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+
   gas_stations: {
     name: "gas_stations",
     fields: [

@@ -21,6 +21,18 @@ import { getTypesenseClient } from "../../shared/typesense.js";
 // ---------------------------------------------------------------------------
 
 const COLLECTIONS: Record<string, CollectionCreateSchema> = {
+  pages: {
+    name: "pages",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "title", type: "string" },
+      { name: "subtitle", type: "string", optional: true },
+      { name: "href", type: "string" },
+      { name: "category", type: "string", facet: true },
+      { name: "icon", type: "string" },
+      { name: "keywords", type: "string[]", optional: true },
+    ] as CollectionFieldSchema[],
+  },
   gas_stations: {
     name: "gas_stations",
     fields: [
@@ -335,6 +347,56 @@ async function upsertCollection(
 // Data loaders
 // ---------------------------------------------------------------------------
 
+async function loadPages(_prisma: PrismaClient) {
+  return [
+    // Combustible
+    { id: "p-precio-gasolina", title: "Precio Gasolina Hoy", subtitle: "Precios actualizados", href: "/precio-gasolina-hoy", category: "Combustible", icon: "Fuel", keywords: ["gasolina", "precio", "hoy", "95", "98"] },
+    { id: "p-precio-diesel", title: "Precio Diésel Hoy", subtitle: "Precios actualizados", href: "/precio-diesel-hoy", category: "Combustible", icon: "Fuel", keywords: ["diesel", "gasoleo", "precio", "hoy"] },
+    { id: "p-mapa-gasolineras", title: "Mapa de Gasolineras", href: "/gasolineras/mapa", category: "Combustible", icon: "MapPin", keywords: ["mapa", "gasolinera", "estacion"] },
+    { id: "p-gasolineras-baratas", title: "Gasolineras Baratas", subtitle: "Mejores precios", href: "/gasolineras/baratas", category: "Combustible", icon: "Fuel", keywords: ["barata", "barato", "precio", "economica"] },
+    { id: "p-gasolineras-24h", title: "Gasolineras 24 Horas", href: "/gasolineras-24-horas", category: "Combustible", icon: "Fuel", keywords: ["24h", "abierta", "nocturna"] },
+    { id: "p-precios-provincia", title: "Precios por Provincia", subtitle: "Comparar 52 provincias", href: "/gasolineras/precios", category: "Combustible", icon: "MapPin", keywords: ["provincia", "comparar", "ranking"] },
+    { id: "p-gasolineras-marcas", title: "Gasolineras por Marcas", subtitle: "Repsol, Cepsa, BP...", href: "/gasolineras/marcas", category: "Combustible", icon: "Fuel", keywords: ["repsol", "cepsa", "bp", "shell", "marca"] },
+    { id: "p-cargadores-ev", title: "Cargadores Eléctricos", subtitle: "Puntos de carga EV", href: "/carga-ev", category: "Combustible", icon: "Zap", keywords: ["electrico", "carga", "ev", "punto"] },
+    { id: "p-electrolineras", title: "Electrolineras", subtitle: "Carga rápida", href: "/electrolineras", category: "Combustible", icon: "Zap", keywords: ["electrolinera", "rapida", "ccs", "chademo"] },
+    { id: "p-cuanto-cuesta-cargar", title: "Cuánto Cuesta Cargar", href: "/cuanto-cuesta-cargar", category: "Combustible", icon: "Calculator", keywords: ["coste", "precio", "kwh", "carga"] },
+    { id: "p-etiqueta-ambiental", title: "Etiqueta Ambiental", href: "/etiqueta-ambiental", category: "Combustible", icon: "Fuel", keywords: ["etiqueta", "dgt", "eco", "c", "b", "cero"] },
+    { id: "p-combustible-portugal", title: "Combustible Portugal", subtitle: "3.000+ estaciones DGEG", href: "/portugal/combustible", category: "Combustible", icon: "Fuel", keywords: ["portugal", "dgeg", "gasoleo"] },
+
+    // Marítimo
+    { id: "p-combustible-maritimo", title: "Combustible Marítimo", subtitle: "Precios en puertos", href: "/maritimo/combustible", category: "Marítimo", icon: "Anchor", keywords: ["maritimo", "puerto", "barco", "nautico"] },
+    { id: "p-puertos", title: "Puertos de España", subtitle: "Directorio", href: "/maritimo/puertos", category: "Marítimo", icon: "Anchor", keywords: ["puerto", "directorio", "maritimo"] },
+    { id: "p-mapa-maritimo", title: "Mapa Marítimo", href: "/maritimo/mapa", category: "Marítimo", icon: "Map", keywords: ["mapa", "maritimo", "costa"] },
+    { id: "p-meteo-costera", title: "Meteorología Costera", subtitle: "AEMET", href: "/maritimo/meteorologia", category: "Marítimo", icon: "Wind", keywords: ["meteo", "costa", "aemet", "viento", "oleaje"] },
+    { id: "p-seguridad-maritima", title: "Seguridad Marítima", subtitle: "SASEMAR", href: "/maritimo/seguridad", category: "Marítimo", icon: "ShieldAlert", keywords: ["sasemar", "salvamento", "rescate"] },
+    { id: "p-noticias-maritimas", title: "Noticias Marítimas", href: "/maritimo/noticias", category: "Marítimo", icon: "Newspaper", keywords: ["noticias", "maritimo"] },
+
+    // Herramientas
+    { id: "p-radares", title: "Radares DGT", subtitle: "737 radares fijos", href: "/radares", category: "Herramientas", icon: "Radar", keywords: ["radar", "dgt", "fijo", "multa", "velocidad"] },
+    { id: "p-camaras", title: "Cámaras de Tráfico", subtitle: "1.917 cámaras", href: "/camaras", category: "Herramientas", icon: "Camera", keywords: ["camara", "trafico", "dgt", "webcam"] },
+    { id: "p-operaciones", title: "Operaciones Especiales", href: "/operaciones", category: "Herramientas", icon: "Calendar", keywords: ["operacion", "especial", "dgt", "puente", "navidad"] },
+    { id: "p-restricciones", title: "Restricciones", href: "/restricciones", category: "Herramientas", icon: "Ban", keywords: ["restriccion", "camion", "pesado", "prohibido"] },
+    { id: "p-puntos-negros", title: "Puntos Negros", href: "/puntos-negros", category: "Herramientas", icon: "AlertCircle", keywords: ["punto negro", "peligroso", "accidente", "siniestro"] },
+    { id: "p-calculadora", title: "Calculadora de Ruta", href: "/calculadora", category: "Herramientas", icon: "Calculator", keywords: ["calculadora", "ruta", "distancia", "peaje"] },
+    { id: "p-incidencias", title: "Incidencias", subtitle: "En tiempo real", href: "/incidencias", category: "Herramientas", icon: "AlertTriangle", keywords: ["incidencia", "accidente", "corte", "retención"] },
+    { id: "p-mapa", title: "Mapa en Vivo", subtitle: "Tráfico en tiempo real", href: "/mapa", category: "Herramientas", icon: "Map", keywords: ["mapa", "vivo", "directo", "trafico"] },
+    { id: "p-atascos", title: "Atascos", subtitle: "Retenciones actuales", href: "/atascos", category: "Herramientas", icon: "AlertTriangle", keywords: ["atasco", "retencion", "cola", "embotellamiento"] },
+    { id: "p-alertas-meteo", title: "Alertas Meteo", subtitle: "Avisos AEMET", href: "/alertas-meteo", category: "Herramientas", icon: "AlertTriangle", keywords: ["alerta", "meteo", "aemet", "lluvia", "nieve", "viento"] },
+    { id: "p-cortes-trafico", title: "Cortes de Tráfico", href: "/cortes-trafico", category: "Herramientas", icon: "Ban", keywords: ["corte", "carretera", "obra", "cerrada"] },
+    { id: "p-mejor-hora", title: "Mejor Hora para Viajar", href: "/mejor-hora", category: "Herramientas", icon: "Calendar", keywords: ["hora", "viajar", "salir", "trafico"] },
+    { id: "p-zbe", title: "Zonas ZBE", subtitle: "Bajas emisiones", href: "/zbe", category: "Herramientas", icon: "Ban", keywords: ["zbe", "baja emision", "madrid", "barcelona"] },
+    { id: "p-imd", title: "Intensidad (IMD)", subtitle: "Tráfico por carretera", href: "/intensidad", category: "Herramientas", icon: "Route", keywords: ["imd", "intensidad", "aforo", "trafico"] },
+    { id: "p-estaciones-aforo", title: "Estaciones de Aforo", subtitle: "14.400+ puntos", href: "/estaciones-aforo", category: "Herramientas", icon: "Activity", keywords: ["estacion", "aforo", "imd", "contador"] },
+    { id: "p-estadisticas", title: "Estadísticas", href: "/estadisticas", category: "Herramientas", icon: "AlertCircle", keywords: ["estadistica", "dato", "grafico"] },
+    { id: "p-historico", title: "Histórico", href: "/historico", category: "Herramientas", icon: "Calendar", keywords: ["historico", "pasado", "archivo"] },
+    { id: "p-noticias", title: "Noticias", href: "/noticias", category: "Herramientas", icon: "Newspaper", keywords: ["noticia", "articulo", "blog"] },
+    { id: "p-informe-diario", title: "Informe Diario", href: "/informe-diario", category: "Herramientas", icon: "BookOpen", keywords: ["informe", "diario", "resumen"] },
+    { id: "p-trenes", title: "Red Ferroviaria", subtitle: "Cercanías, AVE, Larga Distancia", href: "/trenes", category: "Herramientas", icon: "TrainFront", keywords: ["tren", "renfe", "cercanias", "ave", "ferrocarril"] },
+    { id: "p-portugal", title: "Portugal", subtitle: "Combustible, alertas y tráfico", href: "/portugal", category: "Herramientas", icon: "Globe", keywords: ["portugal", "lisboa", "porto"] },
+    { id: "p-andorra", title: "Andorra", subtitle: "Tráfico e incidencias", href: "/andorra", category: "Herramientas", icon: "Mountain", keywords: ["andorra", "pirineos"] },
+  ];
+}
+
 async function loadGasStations(prisma: PrismaClient) {
   const rows = await prisma.gasStation.findMany({
     select: { id: true, name: true, address: true, locality: true, province: true,
@@ -515,6 +577,7 @@ async function loadTrafficStations(prisma: PrismaClient) {
 // ---------------------------------------------------------------------------
 
 const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknown>[]>> = {
+  pages: loadPages,
   gas_stations: loadGasStations, roads: loadRoads, cameras: loadCameras,
   articles: loadArticles, provinces: loadProvinces, cities: loadCities,
   ev_chargers: loadEVChargers, radars: loadRadars, railway_stations: loadRailwayStations,

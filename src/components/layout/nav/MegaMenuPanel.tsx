@@ -4,11 +4,12 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useReducedMotion, motion, AnimatePresence } from "motion/react";
-import { Search, ArrowRight, X } from "lucide-react";
+import { Search, ArrowRight, X, Loader2, Clock } from "lucide-react";
 import type { MegaMenuPanel as PanelData } from "./NavData";
 import { ACCENT_STYLES, megaMenuPanels } from "./NavData";
 import { HUB_WIDGETS } from "./MegaMenuWidgets";
-import { filterResults, groupResults, CATEGORY_META } from "./SearchData";
+import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSearch";
+import { SearchIcon } from "@/components/search/SearchIcon";
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -216,20 +217,19 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const { query, setQuery, debouncedQuery, groups, flatResults, isLoading, hasQuery, onNavigate: saveRecent } = useLiveSearch();
 
   useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 50); return () => clearTimeout(t); }, []);
-  useEffect(() => { const t = setTimeout(() => setDebouncedQuery(query), 200); return () => clearTimeout(t); }, [query]);
   useEffect(() => { setActiveIndex(0); }, [debouncedQuery]);
+  useEffect(() => { setRecentSearches(getRecentSearches()); }, []);
 
-  const results = filterResults(debouncedQuery);
-  const groups = groupResults(results);
-  const flatResults = groups.flatMap((g) => g.items);
-  const hasQuery = debouncedQuery.trim().length > 0;
-
-  const navigate = useCallback((href: string) => { onNavigate(); router.push(href); }, [onNavigate, router]);
+  const navigate = useCallback((href: string) => {
+    saveRecent(debouncedQuery);
+    onNavigate();
+    router.push(href);
+  }, [onNavigate, router, debouncedQuery, saveRecent]);
 
   useEffect(() => {
     const el = listRef.current?.querySelector<HTMLElement>(`[data-search-idx="${activeIndex}"]`);
@@ -252,7 +252,11 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
 
       {/* Search input */}
       <div className="relative mb-4">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
+        {isLoading ? (
+          <Loader2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tl-500 pointer-events-none animate-spin" />
+        ) : (
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
+        )}
         <input
           ref={inputRef} type="text" value={query}
           onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown}
@@ -270,7 +274,7 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
         </div>
       </div>
 
-      {/* Default: section cards + popular */}
+      {/* Default: section cards + recent searches */}
       {!hasQuery && (
         <div className="space-y-5">
           <div>
@@ -290,29 +294,27 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
               })}
             </div>
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2.5">Populares</p>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
-              {results.map((r) => {
-                const Icon = r.icon;
-                return (
-                  <Link key={r.href} href={r.href} prefetch={false} onClick={onNavigate} className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors group">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 group-hover:bg-tl-50 dark:group-hover:bg-tl-900/30 group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors">
-                      <Icon className="w-3.5 h-3.5" />
-                    </span>
-                    <span className="truncate font-medium text-[13px]">{r.title}</span>
-                  </Link>
-                );
-              })}
+          {recentSearches.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2 flex items-center gap-1.5">
+                <Clock className="w-3 h-3" /> Busquedas recientes
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {recentSearches.map((q) => (
+                  <button key={q} onClick={() => setQuery(q)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <Clock className="w-3 h-3 text-gray-400" />
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
       {/* Grouped results */}
       {hasQuery && flatResults.length > 0 && (
         <>
-          {/* Result count */}
           <div className="flex items-center justify-between mb-2">
             <p className="text-[11px] text-gray-400 dark:text-gray-500">
               <span className="font-mono font-semibold text-gray-600 dark:text-gray-300">{flatResults.length}</span> resultado{flatResults.length !== 1 ? "s" : ""}
@@ -322,42 +324,42 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
             )}
           </div>
           <div ref={listRef} className="max-h-[55vh] overflow-y-auto overscroll-contain -mx-2 px-2 scroll-smooth" role="listbox">
-            {groups.map(({ category, items }) => {
-              const meta = CATEGORY_META[category];
-              return (
-                <div key={category} className="mb-2">
-                  <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-3 py-1.5 -mx-2 border-b border-gray-100/80 dark:border-gray-800/40">
-                    <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
-                    <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
-                  </div>
-                  {items.map((result) => {
-                    const idx = globalIdx++;
-                    const isActive = idx === activeIndex;
-                    const Icon = result.icon;
-                    return (
-                      <Link
-                        key={result.href + result.title} href={result.href} prefetch={false}
-                        data-search-idx={idx} role="option" aria-selected={isActive}
-                        onClick={(e) => { e.preventDefault(); navigate(result.href); }}
-                        onMouseEnter={() => setActiveIndex(idx)}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${isActive ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50"}`}
-                      >
-                        <span className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${isActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
-                          <Icon className="w-4 h-4" />
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className={`font-medium truncate ${isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"}`}>{result.title}</p>
-                          {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
-                        </div>
-                        <span className={`hidden sm:inline-flex shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
-                      </Link>
-                    );
-                  })}
+            {groups.map(({ category, meta, items }) => (
+              <div key={category} className="mb-2">
+                <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-3 py-1.5 -mx-2 border-b border-gray-100/80 dark:border-gray-800/40">
+                  <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
+                  <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
                 </div>
-              );
-            })}
+                {items.map((result) => {
+                  const idx = globalIdx++;
+                  const isActive = idx === activeIndex;
+                  return (
+                    <Link
+                      key={result.href + result.title} href={result.href} prefetch={false}
+                      data-search-idx={idx} role="option" aria-selected={isActive}
+                      onClick={(e) => { e.preventDefault(); navigate(result.href); }}
+                      onMouseEnter={() => setActiveIndex(idx)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${isActive ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/50"}`}
+                    >
+                      <span className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${isActive ? "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"}`}>
+                        <SearchIcon name={result.icon} className="w-4 h-4" />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        {result.highlightedTitle ? (
+                          <p className={`font-medium truncate ${isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"} [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm`}
+                            dangerouslySetInnerHTML={{ __html: result.highlightedTitle }} />
+                        ) : (
+                          <p className={`font-medium truncate ${isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"}`}>{result.title}</p>
+                        )}
+                        {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
+                      </div>
+                      <span className={`hidden sm:inline-flex shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-          {/* Keyboard hints */}
           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800/50 flex items-center gap-4 text-[11px] text-gray-400 dark:text-gray-500">
             <span className="flex items-center gap-1"><kbd className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1 py-0.5 font-mono text-[9px]">&uarr;&darr;</kbd>navegar</span>
             <span className="flex items-center gap-1"><kbd className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1 py-0.5 font-mono text-[9px]">&crarr;</kbd>abrir</span>
@@ -367,8 +369,16 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
         </>
       )}
 
+      {/* Loading state */}
+      {hasQuery && isLoading && flatResults.length === 0 && (
+        <div className="text-center py-10">
+          <Loader2 className="w-8 h-8 text-tl-400 mx-auto mb-3 animate-spin" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Buscando...</p>
+        </div>
+      )}
+
       {/* Empty state */}
-      {hasQuery && flatResults.length === 0 && (
+      {hasQuery && !isLoading && flatResults.length === 0 && (
         <div className="text-center py-10">
           <Search className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sin resultados para &ldquo;{debouncedQuery}&rdquo;</p>

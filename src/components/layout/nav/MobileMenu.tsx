@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Search, ArrowRight, ArrowLeft, X } from "lucide-react";
+import { ChevronDown, Search, ArrowRight, ArrowLeft, X, Loader2, Clock } from "lucide-react";
 import { useReducedMotion, motion, AnimatePresence } from "motion/react";
 import { megaMenuPanels, ACCENT_STYLES } from "./NavData";
 import { useNavState } from "./useNavState";
-import { filterResults, groupResults, CATEGORY_META } from "./SearchData";
+import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSearch";
+import { SearchIcon } from "@/components/search/SearchIcon";
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -20,18 +21,17 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const { closeAll } = useNavState();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const { query, setQuery, debouncedQuery, groups, flatResults, isLoading, hasQuery, onNavigate: saveRecent } = useLiveSearch();
 
   useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 100); return () => clearTimeout(t); }, []);
-  useEffect(() => { const t = setTimeout(() => setDebouncedQuery(query), 200); return () => clearTimeout(t); }, [query]);
+  useEffect(() => { setRecentSearches(getRecentSearches()); }, []);
 
-  const results = filterResults(debouncedQuery);
-  const groups = groupResults(results);
-  const flatResults = groups.flatMap((g) => g.items);
-  const hasQuery = debouncedQuery.trim().length > 0;
-
-  const navigate = useCallback((href: string) => { closeAll(); router.push(href); }, [closeAll, router]);
+  const navigate = useCallback((href: string) => {
+    saveRecent(debouncedQuery);
+    closeAll();
+    router.push(href);
+  }, [closeAll, router, debouncedQuery, saveRecent]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -41,7 +41,11 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          {isLoading ? (
+            <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-tl-500 pointer-events-none animate-spin" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          )}
           <input ref={inputRef} type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar..."
             className="w-full pl-9 pr-8 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-tl-300 dark:focus:ring-tl-700"
             autoComplete="off" autoCorrect="off" spellCheck={false}
@@ -56,7 +60,7 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
 
       {/* Full remaining viewport for results */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
-        {/* Default: sections + popular */}
+        {/* Default: sections + recent searches */}
         {!hasQuery && (
           <div className="p-4 space-y-5">
             <div>
@@ -76,21 +80,21 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
                 })}
               </div>
             </div>
-            <div>
-              <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2">Populares</p>
-              <div className="space-y-0.5">
-                {results.map((r) => {
-                  const Icon = r.icon;
-                  return (
-                    <Link key={r.href} href={r.href} prefetch={false} onClick={() => closeAll()} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
-                      <Icon className="w-4 h-4 text-gray-400 shrink-0" />
-                      <span className="truncate">{r.title}</span>
-                      {r.subtitle && <span className="text-[10px] text-gray-400 ml-auto shrink-0">{r.subtitle}</span>}
-                    </Link>
-                  );
-                })}
+            {recentSearches.length > 0 && (
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-2 flex items-center gap-1.5">
+                  <Clock className="w-3 h-3" /> Recientes
+                </p>
+                <div className="space-y-0.5">
+                  {recentSearches.map((q) => (
+                    <button key={q} onClick={() => setQuery(q)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
+                      <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+                      <span className="truncate">{q}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -102,41 +106,48 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
                 <span className="font-mono font-semibold text-gray-600 dark:text-gray-300">{flatResults.length}</span> resultado{flatResults.length !== 1 ? "s" : ""}
               </p>
             </div>
-            {groups.map(({ category, items }) => {
-              const meta = CATEGORY_META[category];
-              return (
-                <div key={category} className="mb-1">
-                  <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-4 py-1.5 border-b border-gray-100/80 dark:border-gray-800/40">
-                    <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
-                    <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
-                  </div>
-                  {items.map((result) => {
-                    const Icon = result.icon;
-                    return (
-                      <Link
-                        key={result.href + result.title} href={result.href} prefetch={false}
-                        onClick={(e) => { e.preventDefault(); navigate(result.href); }}
-                        className="flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-tl-50 dark:active:bg-tl-900/20 transition-colors"
-                      >
-                        <span className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                          <Icon className="w-3.5 h-3.5" />
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate text-gray-900 dark:text-gray-100">{result.title}</p>
-                          {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
-                        </div>
-                        <span className={`shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
-                      </Link>
-                    );
-                  })}
+            {groups.map(({ category, meta, items }) => (
+              <div key={category} className="mb-1">
+                <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-4 py-1.5 border-b border-gray-100/80 dark:border-gray-800/40">
+                  <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
+                  <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
                 </div>
-              );
-            })}
+                {items.map((result) => (
+                  <Link
+                    key={result.href + result.title} href={result.href} prefetch={false}
+                    onClick={(e) => { e.preventDefault(); navigate(result.href); }}
+                    className="flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-tl-50 dark:active:bg-tl-900/20 transition-colors"
+                  >
+                    <span className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                      <SearchIcon name={result.icon} className="w-3.5 h-3.5" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      {result.highlightedTitle ? (
+                        <p className="font-medium truncate text-gray-900 dark:text-gray-100 [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm"
+                          dangerouslySetInnerHTML={{ __html: result.highlightedTitle }} />
+                      ) : (
+                        <p className="font-medium truncate text-gray-900 dark:text-gray-100">{result.title}</p>
+                      )}
+                      {result.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{result.subtitle}</p>}
+                    </div>
+                    <span className={`shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded-full ${meta.badgeClass}`}>{meta.label}</span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Loading state */}
+        {hasQuery && isLoading && flatResults.length === 0 && (
+          <div className="text-center py-16">
+            <Loader2 className="w-8 h-8 text-tl-400 mx-auto mb-3 animate-spin" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">Buscando...</p>
           </div>
         )}
 
         {/* Empty state */}
-        {hasQuery && flatResults.length === 0 && (
+        {hasQuery && !isLoading && flatResults.length === 0 && (
           <div className="text-center py-16">
             <Search className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sin resultados para &ldquo;{debouncedQuery}&rdquo;</p>

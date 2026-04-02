@@ -68,6 +68,20 @@ interface CollectionSearchConfig {
 
 const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
+    collection: "pages",
+    queryBy: "title,subtitle,keywords",
+    queryByWeights: "3,2,1",
+    category: "Páginas",
+    icon: "FileText",
+    mapHit: (doc) => ({
+      title: doc.title as string,
+      subtitle: (doc.subtitle as string) || null,
+      href: doc.href as string,
+      category: doc.category as string,
+      icon: doc.icon as string,
+    }),
+  },
+  {
     collection: "provinces",
     queryBy: "name,community",
     queryByWeights: "3,1",
