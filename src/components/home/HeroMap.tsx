@@ -15,6 +15,7 @@ export interface HeroMapProps {
     radarCount: number;
     chargerCount: number;
     detectorCount: number;
+    stationCount: number;
   };
 }
 
@@ -122,7 +123,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
 
       const map = new maplibregl.Map({
         container: mapRef.current,
-        style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+        style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
         center: [-3.7038, 40.4168],
         zoom: 5.5,
         interactive: false,
@@ -250,50 +251,85 @@ export function HeroMap({ initialStats }: HeroMapProps) {
     };
   }, []);
 
-  const { incidentCount, cameraCount, radarCount, chargerCount } = initialStats;
+  const { incidentCount, cameraCount, radarCount, chargerCount, detectorCount, stationCount } = initialStats;
 
   return (
-    <section className="relative h-[75vh] min-h-[520px] max-h-[700px] overflow-hidden">
-      {/* Full-width MapLibre background */}
-      <div ref={mapRef} className="absolute inset-0 w-full h-full" />
+    <section className="relative h-[80vh] min-h-[580px] max-h-[760px] overflow-hidden bg-gray-50 dark:bg-gray-950">
+      {/* Full-width MapLibre background — light Positron style */}
+      <div ref={mapRef} className="absolute inset-0 w-full h-full opacity-90" />
 
-      {/* Gradient scrim — bottom-heavy for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-white/30 dark:from-gray-950 dark:via-gray-950/80 dark:to-gray-950/30 pointer-events-none" />
+      {/* White gradient scrim — heavier at bottom for text, light at top to show map */}
+      <div className="absolute inset-0 bg-gradient-to-t from-white from-5% via-white/70 via-40% to-transparent dark:from-gray-950 dark:from-5% dark:via-gray-950/70 dark:via-40% dark:to-transparent pointer-events-none" />
 
-      {/* Content overlay */}
-      <div className="relative h-full flex flex-col justify-end pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto w-full">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 backdrop-blur-sm mb-5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-green opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-signal-green" />
+      {/* Top bar — technical data feed look */}
+      <div className="absolute top-0 inset-x-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4 text-[0.65rem] font-data text-gray-500 dark:text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-green opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-signal-green" />
+              </span>
+              LIVE
             </span>
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300 tracking-wide">
-              Datos en tiempo real · 12 fuentes oficiales
-            </span>
+            <span className="text-gray-300 dark:text-gray-700">|</span>
+            <span>DGT NAP · AEMET · MINETUR · SCT · Euskadi</span>
+            <span className="text-gray-300 dark:text-gray-700">|</span>
+            <span>Refresh: 60s</span>
           </div>
+          {/* Legend */}
+          <div
+            className={[
+              "flex items-center gap-3 px-3 py-1 rounded-full",
+              "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700",
+              "transition-opacity duration-700",
+              legendVisible ? "opacity-100" : "opacity-0",
+            ].join(" ")}
+          >
+            {LEGEND_ITEMS.map((item) => (
+              <div key={item.label} className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                <span className="text-[0.6rem] text-gray-500 dark:text-gray-400 whitespace-nowrap">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
+      {/* Main content overlay — bottom aligned */}
+      <div className="relative h-full flex flex-col justify-end pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto w-full">
           {/* Heading */}
-          <h2 className="font-heading text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-gray-50 leading-tight mb-4 max-w-2xl">
-            Inteligencia vial para toda España
+          <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-gray-50 leading-tight mb-3 max-w-2xl tracking-tight">
+            Inteligencia vial en tiempo real para toda España
           </h2>
 
-          {/* Description */}
-          <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-6 max-w-xl">
-            Incidencias, cámaras DGT, radares, precios de combustible, cargadores eléctricos y alertas
-            meteorológicas. Datos oficiales actualizados cada 60 segundos.
+          {/* Description — SEO-rich */}
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-5 max-w-2xl">
+            Plataforma de datos de tráfico con cobertura de toda la Península Ibérica.
+            Agregamos {detectorCount.toLocaleString("es-ES")} detectores de velocidad DGT, {cameraCount.toLocaleString("es-ES")} cámaras
+            en directo, {radarCount.toLocaleString("es-ES")} radares, {stationCount.toLocaleString("es-ES")} gasolineras
+            con precios MINETUR y {chargerCount.toLocaleString("es-ES")} puntos de carga eléctrica.
+            Datos de 12 fuentes oficiales actualizados cada 60 segundos.
           </p>
 
-          {/* Stats row */}
-          <div className="flex items-center gap-5 mb-7 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
-            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{incidentCount.toLocaleString("es-ES")}</span> incidencias</span>
-            <span className="w-px h-4 bg-gray-300 dark:bg-gray-700" />
-            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{cameraCount.toLocaleString("es-ES")}</span> cámaras</span>
-            <span className="w-px h-4 bg-gray-300 dark:bg-gray-700" />
-            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{radarCount.toLocaleString("es-ES")}</span> radares</span>
-            <span className="w-px h-4 bg-gray-300 dark:bg-gray-700" />
-            <span><span className="font-data font-semibold text-gray-900 dark:text-gray-100">{chargerCount.toLocaleString("es-ES")}</span> cargadores EV</span>
+          {/* Technical stat pills */}
+          <div className="flex items-center gap-3 mb-6 flex-wrap">
+            {[
+              { v: incidentCount, l: "incidencias activas" },
+              { v: detectorCount, l: "detectores DGT" },
+              { v: cameraCount, l: "cámaras DGT" },
+              { v: radarCount, l: "radares" },
+              { v: chargerCount, l: "cargadores EV" },
+            ].map((s) => (
+              <span
+                key={s.l}
+                className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1 text-xs"
+              >
+                <span className="font-data font-bold text-gray-900 dark:text-gray-100">{s.v.toLocaleString("es-ES")}</span>
+                <span className="text-gray-500 dark:text-gray-400">{s.l}</span>
+              </span>
+            ))}
           </div>
 
           {/* CTA buttons */}
@@ -307,30 +343,18 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             </Link>
             <Link
               href="/explorar"
-              className="inline-flex items-center gap-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:border-tl-300 dark:hover:border-tl-600 text-gray-700 dark:text-gray-300 font-heading font-medium rounded-lg px-6 py-3 transition-colors"
+              className="inline-flex items-center gap-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:border-tl-300 text-gray-700 dark:text-gray-300 font-heading font-medium rounded-lg px-6 py-3 transition-colors"
             >
               Explorar datos
             </Link>
+            <Link
+              href="/profesional"
+              className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-tl-600 transition-colors"
+            >
+              Acceso profesional &rarr;
+            </Link>
           </div>
         </div>
-      </div>
-
-      {/* Legend — top right */}
-      <div
-        className={[
-          "absolute top-4 right-4",
-          "flex items-center gap-3 px-3 py-1.5 rounded-full",
-          "bg-white/80 dark:bg-black/60 backdrop-blur-sm border border-gray-200 dark:border-white/10",
-          "transition-opacity duration-700",
-          legendVisible ? "opacity-100" : "opacity-0",
-        ].join(" ")}
-      >
-        {LEGEND_ITEMS.map((item) => (
-          <div key={item.label} className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-            <span className="text-xs text-gray-600 dark:text-white/70 whitespace-nowrap">{item.label}</span>
-          </div>
-        ))}
       </div>
     </section>
   );
