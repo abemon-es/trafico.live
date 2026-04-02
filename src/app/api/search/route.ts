@@ -461,9 +461,11 @@ async function performSearch(
           highlight_full_fields: config.queryBy,
           num_typos: 2,
           typo_tokens_threshold: 1,
-          min_len_1typo: 4,
-          min_len_2typos: 7,
+          min_len_1typo: 3,
+          min_len_2typos: 6,
           prefix: true,
+          drop_tokens_threshold: 1,
+          split_join_tokens: "fallback",
           // Geo-bias sort for location-aware collections (no filter, just boosting)
           ...(geo && GEO_COLLECTIONS.has(config.collection) && {
             sort_by: `_text_match:desc,location(${geo.lat}, ${geo.lng}):asc`,
