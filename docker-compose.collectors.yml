@@ -3,12 +3,13 @@
 # Deploy as a separate Coolify "Docker Compose" application.
 # Independent from the web app — collector deploys don't restart the site.
 #
-# 5 tiers grouped by update frequency:
-#   collector-realtime — incident, v16, panel, detector, intensity, andorra (every 2-5 min)
+# 5 cron tiers + 1 always-on WebSocket service:
+#   collector-realtime — incident, v16, panel, detector, intensity, andorra, renfe-alerts, city-traffic, renfe-positions (every 2-5 min)
 #   collector-frequent — weather, maritime-forecast, portugal-weather (every 6h)
 #   collector-fuel     — gas-station, maritime-fuel, portugal-fuel (3x daily)
-#   collector-daily    — camera, charger, insights (daily)
-#   collector-weekly   — radar, speedlimit, risk-zones, zbe (weekly)
+#   collector-daily    — camera, charger, insights, typesense-sync, opensky, aena-stats (daily)
+#   collector-weekly   — radar, speedlimit, risk-zones, zbe, renfe-gtfs, ferry-gtfs, transit-gtfs, mobilitydata-sync, ine-stats, dgt-extras (weekly)
+#   collector-ais      — ais-stream (always-on WebSocket, real-time vessel tracking)
 
 x-collector: &collector-base
   build:
@@ -95,7 +96,7 @@ services:
     mem_limit: 1024m
 
   # ─── Weekly ────────────────────────────────────────────────────────
-  # radar, speedlimit, risk-zones, zbe, renfe-gtfs
+  # radar, speedlimit, risk-zones, zbe, renfe-gtfs, ferry-gtfs, transit-gtfs, mobilitydata-sync, ine-stats, dgt-extras
   collector-weekly:
     <<: *collector-base
     environment:
@@ -106,3 +107,21 @@ services:
       NODE_ENV: production
       CRONTAB_TIER: weekly
     mem_limit: 512m
+
+  # ─── AIS Stream (always-on WebSocket) ──────────────────────────────────────
+  # Real-time vessel tracking via aisstream.io
+  collector-ais:
+    <<: *collector-base
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SENTRY_DSN: ${SENTRY_DSN}
+      AISSTREAM_API_KEY: ${AISSTREAM_API_KEY}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      TASK: ais-stream
+      COLLECTOR_DURATION: "0"
+    mem_limit: 256m
+    mem_reservation: 64m
+    restart: always
+    command: ["node", "--import", "tsx", "services/collector/index.ts"]

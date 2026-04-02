@@ -47,6 +47,16 @@ const VALID_TASKS = [
   "historical-accidents", "imd", "sasemar",
   // Search index
   "typesense-sync",
+  // Maritime
+  "ais-stream", "ferry-gtfs",
+  // Transit
+  "transit-gtfs", "renfe-positions",
+  // City traffic
+  "city-traffic", "dgt-extras",
+  // Historical
+  "mobilitydata-sync", "ine-stats",
+  // Aviation
+  "opensky", "aena-stats",
 ];
 
 if (!TASK) {
@@ -143,6 +153,10 @@ const TYPESENSE_SYNC_MAP: Record<string, string[]> = {
   incident: ["incidents"],
   v16: ["incidents"],
   weather: ["weather_alerts"],
+  "ais-stream": ["vessels"],
+  "ferry-gtfs": ["ferry_routes"],
+  "transit-gtfs": ["transit_stops", "transit_routes"],
+  "opensky": ["airports"],
 };
 
 async function runTypesenseSync(
