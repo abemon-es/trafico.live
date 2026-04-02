@@ -129,7 +129,6 @@ async function handleGroupedQuery(
       });
 
       return NextResponse.json({
-      return NextResponse.json({
         success: true,
         data: {
           groupBy: "year",
@@ -158,7 +157,6 @@ async function handleGroupedQuery(
         orderBy: { _avg: { imd: "desc" } },
       });
 
-      return NextResponse.json({
       return NextResponse.json({
         success: true,
         data: {
@@ -191,7 +189,6 @@ async function handleGroupedQuery(
       });
 
       return NextResponse.json({
-      return NextResponse.json({
         success: true,
         data: {
           groupBy: "road",
@@ -220,7 +217,6 @@ async function handleGroupedQuery(
         orderBy: { _avg: { imd: "desc" } },
       });
 
-      return NextResponse.json({
       return NextResponse.json({
         success: true,
         data: {
