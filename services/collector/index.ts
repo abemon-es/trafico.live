@@ -137,6 +137,9 @@ const TYPESENSE_SYNC_MAP: Record<string, string[]> = {
   "renfe-gtfs": ["railway_stations"],
   imd: ["traffic_stations"],
   insights: ["articles"],
+  incident: ["incidents"],
+  v16: ["incidents"],
+  weather: ["weather_alerts"],
 };
 
 async function runTypesenseSync(

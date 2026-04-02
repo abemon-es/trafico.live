@@ -33,6 +33,37 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "keywords", type: "string[]", optional: true },
     ] as CollectionFieldSchema[],
   },
+  incidents: {
+    name: "incidents",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "type", type: "string", facet: true },
+      { name: "severity", type: "string", facet: true },
+      { name: "roadNumber", type: "string", optional: true },
+      { name: "province", type: "string", optional: true, facet: true },
+      { name: "provinceName", type: "string", optional: true, facet: true },
+      { name: "municipality", type: "string", optional: true },
+      { name: "description", type: "string", optional: true },
+      { name: "location", type: "geopoint", optional: true },
+      { name: "source", type: "string", optional: true, facet: true },
+      { name: "startedAt", type: "int64", sort: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "startedAt",
+    token_separators: ["-"],
+  },
+  weather_alerts: {
+    name: "weather_alerts",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "type", type: "string", facet: true },
+      { name: "severity", type: "string", facet: true },
+      { name: "province", type: "string", facet: true },
+      { name: "provinceName", type: "string", optional: true, facet: true },
+      { name: "description", type: "string", optional: true },
+      { name: "startedAt", type: "int64", sort: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "startedAt",
+  },
   gas_stations: {
     name: "gas_stations",
     fields: [
@@ -347,8 +378,8 @@ async function upsertCollection(
 // Data loaders
 // ---------------------------------------------------------------------------
 
-async function loadPages(_prisma: PrismaClient) {
-  return [
+async function loadPages(prisma: PrismaClient) {
+  const staticPages = [
     // Combustible
     { id: "p-precio-gasolina", title: "Precio Gasolina Hoy", subtitle: "Precios actualizados", href: "/precio-gasolina-hoy", category: "Combustible", icon: "Fuel", keywords: ["gasolina", "precio", "hoy", "95", "98"] },
     { id: "p-precio-diesel", title: "Precio Diésel Hoy", subtitle: "Precios actualizados", href: "/precio-diesel-hoy", category: "Combustible", icon: "Fuel", keywords: ["diesel", "gasoleo", "precio", "hoy"] },
@@ -391,10 +422,40 @@ async function loadPages(_prisma: PrismaClient) {
     { id: "p-historico", title: "Histórico", href: "/historico", category: "Herramientas", icon: "Calendar", keywords: ["historico", "pasado", "archivo"] },
     { id: "p-noticias", title: "Noticias", href: "/noticias", category: "Herramientas", icon: "Newspaper", keywords: ["noticia", "articulo", "blog"] },
     { id: "p-informe-diario", title: "Informe Diario", href: "/informe-diario", category: "Herramientas", icon: "BookOpen", keywords: ["informe", "diario", "resumen"] },
-    { id: "p-trenes", title: "Red Ferroviaria", subtitle: "Cercanías, AVE, Larga Distancia", href: "/trenes", category: "Herramientas", icon: "TrainFront", keywords: ["tren", "renfe", "cercanias", "ave", "ferrocarril"] },
+
+    // Seasonal / temporal
+    { id: "p-semana-santa", title: "Tráfico Semana Santa", subtitle: "Operación especial", href: "/operaciones/semana-santa", category: "Herramientas", icon: "Calendar", keywords: ["semana santa", "operacion", "vacaciones"] },
+    { id: "p-verano", title: "Tráfico Verano", subtitle: "Operación salida", href: "/operaciones/verano", category: "Herramientas", icon: "Calendar", keywords: ["verano", "operacion", "salida", "agosto"] },
+    { id: "p-navidad", title: "Tráfico Navidad", subtitle: "Operación Navidad", href: "/operaciones/navidad", category: "Herramientas", icon: "Calendar", keywords: ["navidad", "operacion", "diciembre"] },
+    { id: "p-puente", title: "Tráfico Puentes", subtitle: "Festivos nacionales", href: "/operaciones/puentes", category: "Herramientas", icon: "Calendar", keywords: ["puente", "festivo", "operacion"] },
+
+    // Trenes
+    { id: "p-trenes", title: "Red Ferroviaria", subtitle: "Cercanías, AVE, Larga Distancia", href: "/trenes", category: "Transporte", icon: "TrainFront", keywords: ["tren", "renfe", "cercanias", "ave", "ferrocarril"] },
+    { id: "p-trenes-cercanias", title: "Cercanías", subtitle: "12 núcleos", href: "/trenes/cercanias", category: "Transporte", icon: "TrainFront", keywords: ["cercanias", "commuter", "renfe"] },
+
     { id: "p-portugal", title: "Portugal", subtitle: "Combustible, alertas y tráfico", href: "/portugal", category: "Herramientas", icon: "Globe", keywords: ["portugal", "lisboa", "porto"] },
     { id: "p-andorra", title: "Andorra", subtitle: "Tráfico e incidencias", href: "/andorra", category: "Herramientas", icon: "Mountain", keywords: ["andorra", "pirineos"] },
   ];
+
+  // Dynamic municipality pages — top cities by population/relevance
+  const municipalities = await prisma.municipality.findMany({
+    where: { slug: { not: null } },
+    select: { code: true, name: true, slug: true, provinceCode: true, province: { select: { name: true } } },
+    orderBy: { name: "asc" },
+    take: 300,
+  });
+
+  const municipalityPages = municipalities.map((m) => ({
+    id: `p-ciudad-${m.code}`,
+    title: `Tráfico ${m.name}`,
+    subtitle: m.province.name,
+    href: `/ciudad/${m.slug}`,
+    category: "Ciudades",
+    icon: "Building2",
+    keywords: [m.name.toLowerCase(), "trafico", "ciudad", m.province.name.toLowerCase()],
+  }));
+
+  return [...staticPages, ...municipalityPages];
 }
 
 async function loadGasStations(prisma: PrismaClient) {
@@ -572,12 +633,44 @@ async function loadTrafficStations(prisma: PrismaClient) {
     location: [Number(s.latitude), Number(s.longitude)], imd: s.imd ?? undefined, year: s.year }));
 }
 
+async function loadIncidents(prisma: PrismaClient) {
+  const rows = await prisma.trafficIncident.findMany({
+    where: { isActive: true },
+    select: { id: true, type: true, severity: true, roadNumber: true, province: true,
+      provinceName: true, municipality: true, description: true, latitude: true,
+      longitude: true, source: true, startedAt: true },
+    orderBy: { startedAt: "desc" },
+    take: 5000,
+  });
+  return rows.map((r) => ({
+    id: r.id, type: r.type, severity: r.severity, roadNumber: r.roadNumber || "",
+    province: r.province || "", provinceName: r.provinceName || "",
+    municipality: r.municipality || "", description: r.description || "",
+    location: [Number(r.latitude), Number(r.longitude)],
+    source: r.source || "", startedAt: Math.floor(r.startedAt.getTime() / 1000),
+  }));
+}
+
+async function loadWeatherAlerts(prisma: PrismaClient) {
+  const rows = await prisma.weatherAlert.findMany({
+    where: { isActive: true },
+    select: { id: true, type: true, severity: true, province: true, provinceName: true,
+      description: true, startedAt: true },
+  });
+  return rows.map((r) => ({
+    id: r.id, type: r.type, severity: r.severity, province: r.province,
+    provinceName: r.provinceName || "", description: r.description || "",
+    startedAt: Math.floor(r.startedAt.getTime() / 1000),
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // Loader registry
 // ---------------------------------------------------------------------------
 
 const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknown>[]>> = {
   pages: loadPages,
+  incidents: loadIncidents, weather_alerts: loadWeatherAlerts,
   gas_stations: loadGasStations, roads: loadRoads, cameras: loadCameras,
   articles: loadArticles, provinces: loadProvinces, cities: loadCities,
   ev_chargers: loadEVChargers, radars: loadRadars, railway_stations: loadRailwayStations,

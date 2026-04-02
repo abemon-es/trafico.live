@@ -181,6 +181,7 @@ export interface UseLiveSearchReturn {
 export function useLiveSearch(): UseLiveSearchReturn {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [geoCoords, setGeoCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   // 150ms debounce
   useEffect(() => {
@@ -188,8 +189,23 @@ export function useLiveSearch(): UseLiveSearchReturn {
     return () => clearTimeout(id);
   }, [query]);
 
+  // Passive geolocation — only reads position if permission already granted (no prompt)
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.permissions?.query({ name: "geolocation" }).then((result) => {
+      if (result.state === "granted") {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => setGeoCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => {}, // silently fail
+          { maximumAge: 300000, timeout: 3000 }
+        );
+      }
+    }).catch(() => {}); // permissions API not available
+  }, []);
+
+  const geoParam = geoCoords ? `&lat=${geoCoords.lat.toFixed(4)}&lng=${geoCoords.lng.toFixed(4)}` : "";
   const swrKey = debouncedQuery.trim()
-    ? `/api/search?q=${encodeURIComponent(debouncedQuery.trim())}&limit=25`
+    ? `/api/search?q=${encodeURIComponent(debouncedQuery.trim())}&limit=25${geoParam}`
     : null;
 
   const { data, isLoading } = useSWR<SearchAPIResponse>(swrKey, fetcher, {

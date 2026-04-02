@@ -27,6 +27,7 @@ import {
   Mountain,
   Wind,
   FileText,
+  CloudRain,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -55,6 +56,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Mountain,
   Wind,
   FileText,
+  CloudRain,
   Search,
 };
 

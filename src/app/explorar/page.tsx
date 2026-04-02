@@ -1,15 +1,12 @@
-import { Metadata } from "next";
-import { redirect } from "next/navigation";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+import type { Metadata } from "next";
+import { ExplorarContent } from "./content";
 
 export const metadata: Metadata = {
-  title: "Explorar | Tráfico España",
-  description: "Explora el tráfico en España por territorios, carreteras e infraestructura. Comunidades autónomas, provincias, autopistas, autovías y puntos de interés vial.",
-  alternates: { canonical: `${BASE_URL}/explorar` },
+  title: "Explorar — trafico.live",
+  description: "Busca carreteras, ciudades, gasolineras, cámaras, radares y más en toda España.",
+  alternates: { canonical: "/explorar" },
 };
 
 export default function ExplorarPage() {
-  // Redirect to the default tab (territorios)
-  redirect("/explorar/territorios");
+  return <ExplorarContent />;
 }

@@ -35,6 +35,11 @@ export default function ExplorarLayout({
 }) {
   const pathname = usePathname();
 
+  // The root /explorar route is the full-page search results page — render bare
+  if (pathname === "/explorar") {
+    return <>{children}</>;
+  }
+
   // Determine active tab from pathname
   const getActiveTab = () => {
     if (pathname.startsWith("/explorar/carreteras")) return "carreteras";

@@ -66,6 +66,12 @@ interface CollectionSearchConfig {
   mapHit: (doc: Record<string, unknown>, fuelType?: string) => SearchResult;
 }
 
+const GEO_COLLECTIONS = new Set([
+  "gas_stations", "cameras", "ev_chargers", "radars", "railway_stations",
+  "variable_panels", "maritime_stations", "traffic_stations", "risk_zones",
+  "incidents", "portugal_stations", "cities",
+]);
+
 const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "pages",
@@ -79,6 +85,34 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
       href: doc.href as string,
       category: doc.category as string,
       icon: doc.icon as string,
+    }),
+  },
+  {
+    collection: "incidents",
+    queryBy: "description,roadNumber,provinceName,municipality,type",
+    queryByWeights: "2,3,1,1,1",
+    category: "Incidencias",
+    icon: "AlertTriangle",
+    mapHit: (doc) => ({
+      title: `${doc.type as string} — ${doc.roadNumber || doc.municipality || ""}`,
+      subtitle: [doc.description, doc.provinceName].filter(Boolean).join(" · ") as string | null,
+      href: `/incidencias?type=${encodeURIComponent(doc.type as string)}`,
+      category: "Incidencias",
+      icon: "AlertTriangle",
+    }),
+  },
+  {
+    collection: "weather_alerts",
+    queryBy: "description,provinceName,type",
+    queryByWeights: "2,2,1",
+    category: "Alertas Meteo",
+    icon: "CloudRain",
+    mapHit: (doc) => ({
+      title: `${doc.type as string} — ${doc.provinceName as string}`,
+      subtitle: (doc.description as string)?.slice(0, 100) || null,
+      href: `/alertas-meteo?province=${encodeURIComponent(doc.province as string)}`,
+      category: "Alertas Meteo",
+      icon: "CloudRain",
     }),
   },
   {
@@ -310,11 +344,10 @@ export async function GET(request: NextRequest) {
   const explicitFuel = searchParams.get("fuel") ?? undefined;
   const explicitCollection = searchParams.get("collection") ?? undefined;
   const near = searchParams.get("near") ?? undefined;
-  const latStr = searchParams.get("lat");
-  const lngStr = searchParams.get("lng");
+  const lat = parseFloat(searchParams.get("lat") ?? "");
+  const lng = parseFloat(searchParams.get("lng") ?? "");
+  const hasGeo = !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
   const radiusStr = searchParams.get("radius");
-  const lat = latStr ? parseFloat(latStr) : undefined;
-  const lng = lngStr ? parseFloat(lngStr) : undefined;
   const radius = radiusStr ? parseFloat(radiusStr) : 20;
 
   if (!rawQuery) {
@@ -349,20 +382,19 @@ export async function GET(request: NextRequest) {
     limit,
     appliedFilters.priceSort ?? "",
     appliedFilters.fuelType ?? "",
-    lat ?? "",
-    lng ?? "",
+    hasGeo ? `${lat.toFixed(2)}:${lng.toFixed(2)}` : "",
     radius,
     appliedFilters.targetCollection ?? "",
   ].join(":");
 
   const data = await getOrCompute<SearchAPIResponse>(cacheKey, 60, async () => {
-    return performSearch(effectiveQuery, limit, appliedFilters, lat, lng, radius);
+    return performSearch(effectiveQuery, limit, appliedFilters, hasGeo ? { lat, lng } : undefined, radius);
   });
 
   // Attach filter metadata outside the cache so labels always reflect the
   // parsed query even when results come from cache
   const needsLocationResolution =
-    !!(appliedFilters.proximityMode && appliedFilters.locationHint && lat == null);
+    !!(appliedFilters.proximityMode && appliedFilters.locationHint && !hasGeo);
 
   const response: SearchAPIResponse = {
     ...data,
@@ -390,8 +422,7 @@ async function performSearch(
   query: string,
   limit: number,
   filters: ParsedSearchQuery["detectedFilters"] = {},
-  lat?: number,
-  lng?: number,
+  geo?: { lat: number; lng: number },
   radius = 20
 ): Promise<SearchAPIResponse> {
   if (!typesenseClient) {
@@ -411,8 +442,7 @@ async function performSearch(
       : Math.max(3, Math.ceil(limit / SEARCH_CONFIGS.length));
 
     const isShortQuery = query.length <= 3;
-    const hasGeo = lat != null && lng != null;
-    const hasProximity = !!(filters.proximityMode && hasGeo);
+    const hasProximity = !!(filters.proximityMode && geo);
     const hasPriceFilter = !!(filters.priceSort && filters.fuelType);
 
     const searchRequests = {
@@ -434,12 +464,16 @@ async function performSearch(
           min_len_1typo: 4,
           min_len_2typos: 7,
           prefix: true,
+          // Geo-bias sort for location-aware collections (no filter, just boosting)
+          ...(geo && GEO_COLLECTIONS.has(config.collection) && {
+            sort_by: `_text_match:desc,location(${geo.lat}, ${geo.lng}):asc`,
+          }),
         };
 
-        // Geo proximity — applies to geopoint-aware collections
-        if (hasProximity) {
-          req.filter_by = `location:(${lat}, ${lng}, ${radius} km)`;
-          req.sort_by = `location(${lat}, ${lng}):asc`;
+        // Geo proximity — applies to geopoint-aware collections (overrides geo-bias sort)
+        if (hasProximity && geo) {
+          req.filter_by = `location:(${geo.lat}, ${geo.lng}, ${radius} km)`;
+          req.sort_by = `location(${geo.lat}, ${geo.lng}):asc`;
         }
 
         // Price sort + fuel type filter — gas_stations only

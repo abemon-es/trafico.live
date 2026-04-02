@@ -72,6 +72,39 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     ] as CollectionFieldSchema[],
   },
 
+  incidents: {
+    name: "incidents",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "type", type: "string", facet: true },
+      { name: "severity", type: "string", facet: true },
+      { name: "roadNumber", type: "string", optional: true },
+      { name: "province", type: "string", optional: true, facet: true },
+      { name: "provinceName", type: "string", optional: true, facet: true },
+      { name: "municipality", type: "string", optional: true },
+      { name: "description", type: "string", optional: true },
+      { name: "location", type: "geopoint", optional: true },
+      { name: "source", type: "string", optional: true, facet: true },
+      { name: "startedAt", type: "int64", sort: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "startedAt",
+    token_separators: ["-"],
+  },
+
+  weather_alerts: {
+    name: "weather_alerts",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "type", type: "string", facet: true },
+      { name: "severity", type: "string", facet: true },
+      { name: "province", type: "string", facet: true },
+      { name: "provinceName", type: "string", optional: true, facet: true },
+      { name: "description", type: "string", optional: true },
+      { name: "startedAt", type: "int64", sort: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "startedAt",
+  },
+
   gas_stations: {
     name: "gas_stations",
     fields: [
