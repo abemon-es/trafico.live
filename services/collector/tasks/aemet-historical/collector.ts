@@ -59,12 +59,25 @@ function dmsToDecimal(raw: string): number | null {
       return null;
     }
   } else {
-    // Longitude: DDDMM or DDDMMSS
-    if (digits.length === 5) {
+    // Longitude: DDMM, DDDMM, DDMMSS, DDDMMSS
+    // AEMET uses variable length — degrees can be 2 or 3 digits
+    if (digits.length === 4) {
+      // DDMM (degrees < 100, no seconds)
+      degrees = parseInt(digits.slice(0, 2), 10);
+      minutes = parseInt(digits.slice(2, 4), 10);
+      seconds = 0;
+    } else if (digits.length === 5) {
+      // DDDMM (degrees >= 100, no seconds)
       degrees = parseInt(digits.slice(0, 3), 10);
       minutes = parseInt(digits.slice(3, 5), 10);
       seconds = 0;
+    } else if (digits.length === 6) {
+      // DDMMSS (degrees < 100, with seconds)
+      degrees = parseInt(digits.slice(0, 2), 10);
+      minutes = parseInt(digits.slice(2, 4), 10);
+      seconds = parseInt(digits.slice(4, 6), 10);
     } else if (digits.length === 7) {
+      // DDDMMSS (degrees >= 100, with seconds)
       degrees = parseInt(digits.slice(0, 3), 10);
       minutes = parseInt(digits.slice(3, 5), 10);
       seconds = parseInt(digits.slice(5, 7), 10);
