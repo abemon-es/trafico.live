@@ -1706,3 +1706,54 @@ model RailwayAlert {
   @@index([source, isActive])
   @@index([serviceType])
 }
+
+// Periodic snapshots of fleet-wide delay stats (every 2 min from renfe-alerts collector)
+model RailwayDelaySnapshot {
+  id           String   @id @default(cuid())
+  recordedAt   DateTime @db.Timestamptz // Snapshot timestamp (rounded to 2 min)
+
+  // Fleet stats
+  totalTrains  Int      // Trains in circulation
+  onTimeCount  Int      // Trains with delay <= 0
+  slightCount  Int      // Trains with delay 1-5 min
+  moderateCount Int     // Trains with delay 6-15 min
+  severeCount  Int      // Trains with delay > 15 min
+  avgDelay     Decimal  @db.Decimal(5, 1) // Average delay in minutes
+  maxDelay     Int      // Maximum delay in minutes
+  p50Delay     Int?     // Median delay
+  p90Delay     Int?     // 90th percentile delay
+
+  // Punctuality rate (% on-time or <=5 min)
+  punctualityRate Decimal @db.Decimal(5, 2) // 0.00 - 100.00
+
+  // Per-brand breakdown (JSON for flexibility)
+  brandStats   Json?    // { "AVE": { total, onTime, avgDelay }, "Alvia": { ... } }
+
+  @@unique([recordedAt])
+  @@index([recordedAt])
+}
+
+// Daily aggregated railway KPIs (computed from snapshots)
+model RailwayDailyStats {
+  id           String   @id @default(cuid())
+  date         DateTime @db.Date
+
+  // Fleet averages
+  avgTrains    Int      // Average trains in circulation
+  avgDelay     Decimal  @db.Decimal(5, 1)
+  maxDelay     Int
+  punctualityRate Decimal @db.Decimal(5, 2) // Daily average punctuality %
+
+  // Totals
+  totalAlerts  Int      @default(0) // Alerts created during this day
+  totalCancellations Int @default(0)
+
+  // Per-brand JSON
+  brandStats   Json?
+
+  // Snapshot count (for averaging)
+  snapshotCount Int     @default(0)
+
+  @@unique([date])
+  @@index([date])
+}

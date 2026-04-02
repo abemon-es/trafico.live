@@ -21,6 +21,14 @@ const TASK = "renfe-alerts";
 const ALERTS_URL = "https://gtfsrt.renfe.com/alerts.json";
 const TRIP_UPDATES_URL = "https://gtfsrt.renfe.com/trip_updates.json";
 const TRIP_UPDATES_LD_URL = "https://gtfsrt.renfe.com/trip_updates_LD.json";
+const FLOTA_URL = "https://tiempo-real.largorecorrido.renfe.com/renfe-visor/flotaLD.json";
+
+const PRODUCT_BRANDS: Record<number, string> = {
+  1: "AVE", 2: "AVE", 3: "Avant", 4: "Alvia", 5: "Alvia",
+  6: "Altaria", 7: "Euromed", 8: "Trenhotel", 10: "Talgo",
+  11: "Alvia", 12: "AV City", 13: "Intercity", 16: "MD",
+  17: "Regional", 18: "REG.EXP", 19: "Intercity",
+};
 
 interface GTFSRTFeed {
   header: {
@@ -299,8 +307,143 @@ export async function run(prisma: PrismaClient): Promise<void> {
     });
     log(TASK, `Active railway alerts: ${activeCount}`);
 
+    // ── Delay snapshot from live fleet ──
+    await captureDelaySnapshot(prisma);
+
   } catch (error) {
     logError(TASK, "Failed:", error);
     throw error;
+  }
+}
+
+async function captureDelaySnapshot(prisma: PrismaClient): Promise<void> {
+  try {
+    const res = await fetch(`${FLOTA_URL}?v=${Date.now()}`, {
+      headers: { "User-Agent": "trafico.live-collector/1.0" },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) { log(TASK, `Fleet API returned ${res.status}, skipping snapshot`); return; }
+
+    const data = await res.json() as { trenes?: Array<{ codProduct: number; ultRetraso: string; latitud: number }> };
+    const trenes = data.trenes || [];
+    const valid = trenes.filter((t) => t.latitud && t.latitud !== 0);
+    if (valid.length === 0) { log(TASK, "No valid trains for snapshot"); return; }
+
+    // Compute delays
+    const delays = valid.map((t) => parseInt(t.ultRetraso) || 0);
+    delays.sort((a, b) => a - b);
+
+    const onTimeCount = delays.filter((d) => d <= 0).length;
+    const slightCount = delays.filter((d) => d > 0 && d <= 5).length;
+    const moderateCount = delays.filter((d) => d > 5 && d <= 15).length;
+    const severeCount = delays.filter((d) => d > 15).length;
+    const avgDelay = delays.reduce((s, d) => s + d, 0) / delays.length;
+    const maxDelay = Math.max(...delays);
+    const p50Delay = delays[Math.floor(delays.length * 0.5)] || 0;
+    const p90Delay = delays[Math.floor(delays.length * 0.9)] || 0;
+    const punctualityRate = ((onTimeCount + slightCount) / delays.length) * 100;
+
+    // Per-brand breakdown
+    const brandMap: Record<string, { total: number; onTime: number; totalDelay: number; maxDelay: number }> = {};
+    for (const t of valid) {
+      const brand = PRODUCT_BRANDS[t.codProduct] || "Otro";
+      if (!brandMap[brand]) brandMap[brand] = { total: 0, onTime: 0, totalDelay: 0, maxDelay: 0 };
+      const delay = parseInt(t.ultRetraso) || 0;
+      brandMap[brand].total++;
+      if (delay <= 5) brandMap[brand].onTime++;
+      brandMap[brand].totalDelay += delay;
+      brandMap[brand].maxDelay = Math.max(brandMap[brand].maxDelay, delay);
+    }
+    const brandStats: Record<string, { total: number; onTime: number; avgDelay: number; punctuality: number }> = {};
+    for (const [brand, s] of Object.entries(brandMap)) {
+      brandStats[brand] = {
+        total: s.total,
+        onTime: s.onTime,
+        avgDelay: Math.round((s.totalDelay / s.total) * 10) / 10,
+        punctuality: Math.round((s.onTime / s.total) * 1000) / 10,
+      };
+    }
+
+    // Round timestamp to nearest 2 minutes for dedup
+    const now = new Date();
+    now.setSeconds(0, 0);
+    now.setMinutes(Math.floor(now.getMinutes() / 2) * 2);
+
+    await prisma.railwayDelaySnapshot.upsert({
+      where: { recordedAt: now },
+      create: {
+        recordedAt: now,
+        totalTrains: valid.length,
+        onTimeCount,
+        slightCount,
+        moderateCount,
+        severeCount,
+        avgDelay: Math.round(avgDelay * 10) / 10,
+        maxDelay,
+        p50Delay,
+        p90Delay,
+        punctualityRate: Math.round(punctualityRate * 100) / 100,
+        brandStats,
+      },
+      update: {
+        totalTrains: valid.length,
+        onTimeCount,
+        slightCount,
+        moderateCount,
+        severeCount,
+        avgDelay: Math.round(avgDelay * 10) / 10,
+        maxDelay,
+        p50Delay,
+        p90Delay,
+        punctualityRate: Math.round(punctualityRate * 100) / 100,
+        brandStats,
+      },
+    });
+
+    log(TASK, `Snapshot: ${valid.length} trains, avg delay ${avgDelay.toFixed(1)}min, punctuality ${punctualityRate.toFixed(1)}%`);
+
+    // ── Aggregate into daily stats (upsert running averages) ──
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await prisma.railwayDailyStats.findUnique({ where: { date: today } });
+
+    if (existing) {
+      const n = existing.snapshotCount + 1;
+      await prisma.railwayDailyStats.update({
+        where: { date: today },
+        data: {
+          avgTrains: Math.round(((Number(existing.avgTrains) * existing.snapshotCount) + valid.length) / n),
+          avgDelay: Math.round(((Number(existing.avgDelay) * existing.snapshotCount) + avgDelay) / n * 10) / 10,
+          maxDelay: Math.max(existing.maxDelay, maxDelay),
+          punctualityRate: Math.round(((Number(existing.punctualityRate) * existing.snapshotCount) + punctualityRate) / n * 100) / 100,
+          brandStats,
+          snapshotCount: n,
+        },
+      });
+    } else {
+      const alertsToday = await prisma.railwayAlert.count({
+        where: { firstSeenAt: { gte: today }, source: { startsWith: "RENFE" } },
+      });
+      const cancellations = await prisma.railwayAlert.count({
+        where: { firstSeenAt: { gte: today }, effect: "NO_SERVICE", source: { startsWith: "RENFE" } },
+      });
+
+      await prisma.railwayDailyStats.create({
+        data: {
+          date: today,
+          avgTrains: valid.length,
+          avgDelay: Math.round(avgDelay * 10) / 10,
+          maxDelay,
+          punctualityRate: Math.round(punctualityRate * 100) / 100,
+          totalAlerts: alertsToday,
+          totalCancellations: cancellations,
+          brandStats,
+          snapshotCount: 1,
+        },
+      });
+    }
+  } catch (error) {
+    logError(TASK, "Delay snapshot failed (non-fatal):", error);
   }
 }
