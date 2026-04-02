@@ -88,7 +88,7 @@ services:
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: daily
-    mem_limit: 256m
+    mem_limit: 512m
 
   # ─── Weekly ────────────────────────────────────────────────────────
   # radar, speedlimit, risk-zones, zbe, renfe-gtfs
@@ -101,4 +101,4 @@ services:
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: weekly
-    mem_limit: 256m
+    mem_limit: 512m
