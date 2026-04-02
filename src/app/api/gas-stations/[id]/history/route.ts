@@ -30,7 +30,7 @@ export async function GET(
     });
 
     if (history.length === 0) {
-      return NextResponse.json({ success: true, data: [] });
+      return NextResponse.json({ success: true, data: [] }, { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=3600" } });
     }
 
     // Return oldest-first for chart rendering

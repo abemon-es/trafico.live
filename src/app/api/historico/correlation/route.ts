@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = `correlation:${days}:${maxDistanceKm}:${maxTimeDiffMinutes}`;
     const cached = await getFromCache<object>(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
     }
 
     const startDate = new Date();
@@ -267,7 +267,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, responseBody, 300);
-    return NextResponse.json(responseBody);
+    return NextResponse.json(responseBody, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
   } catch (error) {
     reportApiError(error, "Correlation API error");
     return NextResponse.json(

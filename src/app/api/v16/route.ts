@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = "api:v16:active";
     const cached = await getFromCache<object>(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
     }
 
     // Query active V16 beacons from database (stored by v16-collector every 5 min)
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     // Cache for 60s — matches ISR revalidate
     await setInCache(cacheKey, response, 60);
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
   } catch (error) {
     reportApiError(error, "Error fetching V16 beacons from database");
     return NextResponse.json(

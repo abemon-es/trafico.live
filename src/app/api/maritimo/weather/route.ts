@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = `api:maritimo:weather:${zone ?? "all"}:${severity ?? "all"}`;
     const cached = await getFromCache<object>(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
     }
 
     // Build where clause
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     // Cache for 5 minutes
     await setInCache(cacheKey, response, 300);
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
   } catch (error) {
     reportApiError(error, "api/maritimo/weather] Error");
     return NextResponse.json(

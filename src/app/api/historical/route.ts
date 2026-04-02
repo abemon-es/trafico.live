@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = "historical:accidents:summary";
     const cached = await getFromCache(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
     }
 
     // Get all years available
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
     // Cache for 24 hours — historical data changes very rarely
     await setInCache(cacheKey, result, 86400);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
   } catch (error) {
     reportApiError(error, "Historical accidents API error");
     return NextResponse.json(

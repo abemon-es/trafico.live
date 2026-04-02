@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = `api:maritimo:emergencies:${type ?? "all"}:${zone ?? "all"}:${province ?? "all"}:${severity ?? "all"}`;
     const cached = await getFromCache<object>(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
     }
 
     const since = new Date(Date.now() - THIRTY_DAYS_MS);
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     // Cache for 10 minutes
     await setInCache(cacheKey, response, 600);
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
   } catch (error) {
     reportApiError(error, "api/maritimo/emergencies] Error");
     return NextResponse.json(

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     // Check cache first
     const cached = await getFromCache<GeoJSON.FeatureCollection>(CACHE_KEY);
     if (cached) {
-      return NextResponse.json({ success: true, data: cached, source: "cache" });
+      return NextResponse.json({ success: true, data: cached, source: "cache" }, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
     }
 
     // Fetch from Overpass

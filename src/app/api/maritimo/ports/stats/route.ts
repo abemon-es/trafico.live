@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = `api:maritimo:ports:stats:${typeFilter ?? "all"}:${zoneFilter ?? "all"}:${provinceFilter ?? "all"}`;
     const cached = await getFromCache<PortStats>(cacheKey);
     if (cached) {
-      return NextResponse.json({ success: true, stats: cached });
+      return NextResponse.json({ success: true, stats: cached }, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
     }
 
     // Build base where clause

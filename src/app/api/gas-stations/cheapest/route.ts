@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, responseData, CACHE_TTL);
-    return NextResponse.json(responseData);
+    return NextResponse.json(responseData, { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=3600" } });
   } catch (error) {
     reportApiError(error, "Error fetching cheapest gas stations");
     return NextResponse.json(

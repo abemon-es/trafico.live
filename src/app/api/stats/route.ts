@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = "api:stats:all";
     const cached = await getFromCache<Stats>(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
     }
 
     // Query current counts from database in parallel
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
     // Cache for 60s — saves 13 DB queries per request
     await setInCache(cacheKey, stats, 60);
 
-    return NextResponse.json(stats);
+    return NextResponse.json(stats, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
   } catch (error) {
     reportApiError(error, "Error fetching stats from database");
     return NextResponse.json(

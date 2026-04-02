@@ -170,7 +170,7 @@ export async function GET(
       },
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
   } catch (error) {
     reportApiError(error, "Error fetching road speed limits");
     return NextResponse.json(

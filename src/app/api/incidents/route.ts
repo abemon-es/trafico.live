@@ -283,7 +283,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, responseData, CACHE_TTL);
-    return NextResponse.json(responseData);
+    return NextResponse.json(responseData, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
   } catch (error) {
     reportApiError(error, "Error fetching incidents from database");
     return NextResponse.json(

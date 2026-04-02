@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = `incidents:timeline:${hours}h:${slots}s`;
     const cached = await getFromCache<{ success: boolean; data: { slots: TimelineSlot[]; hours: number } }>(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
     }
 
     const now = new Date();
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, response, CACHE_TTL);
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
   } catch (error) {
     reportApiError(error, "Incidents timeline API error");
     return NextResponse.json(

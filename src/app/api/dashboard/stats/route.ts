@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, responseBody, 60);
-    return NextResponse.json(responseBody);
+    return NextResponse.json(responseBody, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
   } catch (error) {
     reportApiError(error, "Dashboard stats API error");
     return NextResponse.json(

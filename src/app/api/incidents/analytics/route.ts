@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = `${CACHE_KEY_PREFIX}:${days}d`;
     const cached = await getFromCache(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
     }
 
     // Use a Date-based cutoff instead of raw INTERVAL interpolation.
@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
 
     await setInCache(cacheKey, responseData, CACHE_TTL);
 
-    return NextResponse.json(responseData);
+    return NextResponse.json(responseData, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
   } catch (error) {
     reportApiError(error, "analytics] Error fetching incident analytics");
     return NextResponse.json(

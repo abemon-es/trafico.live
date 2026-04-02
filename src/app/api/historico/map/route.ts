@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       };
     }>(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
     }
 
     // Get V16 beacon events for the period
@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, response, 300);
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
   } catch (error) {
     reportApiError(error, "Historico map API error");
     return NextResponse.json(

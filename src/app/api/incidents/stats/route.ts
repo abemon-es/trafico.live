@@ -368,7 +368,7 @@ export async function GET(request: NextRequest) {
 
     await setInCache(cacheKey, result, 300);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } });
   } catch (error) {
     reportApiError(error, "Incident stats API error");
     return NextResponse.json(

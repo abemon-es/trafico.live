@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = "api:maritimo:stats";
     const cached = await getFromCache<MaritimeStats>(cacheKey);
     if (cached) {
-      return NextResponse.json({ success: true, stats: cached });
+      return NextResponse.json({ success: true, stats: cached }, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
     }
 
     // Run all queries in parallel

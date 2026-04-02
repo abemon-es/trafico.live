@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, response, CACHE_TTL);
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=3600" } });
   } catch (error) {
     reportApiError(error, "Error fetching radars");
     return NextResponse.json(

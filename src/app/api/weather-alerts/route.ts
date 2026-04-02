@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, responseData, CACHE_TTL);
-    return NextResponse.json(responseData);
+    return NextResponse.json(responseData, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
   } catch (error) {
     reportApiError(error, "Error fetching weather alerts");
     return NextResponse.json(

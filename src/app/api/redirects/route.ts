@@ -14,7 +14,7 @@ export async function GET() {
   const redirects = await prisma.redirect.findMany({
     orderBy: { createdAt: "desc" },
   });
-  return NextResponse.json(redirects);
+  return NextResponse.json(redirects, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
 }
 
 export async function POST(request: NextRequest) {

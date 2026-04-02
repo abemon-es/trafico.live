@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
     };
 
     await setInCache(cacheKey, response, 120);
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
   } catch (error) {
     reportApiError(error, "Zone insights API error");
     return NextResponse.json({ success: false, error: "Failed to generate insights" }, { status: 500 });

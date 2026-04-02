@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       await setInCache(cacheKey, responseBody, 3600);
     }
 
-    return NextResponse.json(responseBody);
+    return NextResponse.json(responseBody, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
   } catch (error) {
     reportApiError(error, "Risk zones API error");
     return NextResponse.json(
