@@ -2008,3 +2008,57 @@ model ClimateRecord {
   @@index([date])
   @@index([precipitation])
 }
+
+// ============================================
+// API KEY MANAGEMENT (Premium Tiers)
+// ============================================
+
+enum ApiTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model ApiKey {
+  id                   String   @id @default(cuid())
+  key                  String   @unique // "tl_pro_..." or "tl_ent_..."
+  name                 String   // Human-readable label
+  email                String
+  tier                 ApiTier  @default(FREE)
+
+  // Stripe billing
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+
+  // Rate limits (denormalized for fast lookup)
+  rateLimitPerMinute   Int      @default(10)
+  rateLimitPerDay      Int      @default(1000)
+
+  // Status
+  isActive             Boolean  @default(true)
+  lastUsedAt           DateTime? @db.Timestamptz
+  expiresAt            DateTime? @db.Timestamptz
+  createdAt            DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  usage ApiUsage[]
+
+  @@index([key])
+  @@index([email])
+  @@index([tier])
+  @@index([stripeCustomerId])
+  @@index([isActive])
+}
+
+model ApiUsage {
+  id           String   @id @default(cuid())
+  keyId        String
+  key          ApiKey   @relation(fields: [keyId], references: [id], onDelete: Cascade)
+  endpoint     String   // "/api/movilidad", "/api/combustible/historico", etc.
+  date         DateTime @db.Date
+  requestCount Int      @default(0)
+
+  @@unique([keyId, endpoint, date])
+  @@index([keyId])
+  @@index([date])
+}
