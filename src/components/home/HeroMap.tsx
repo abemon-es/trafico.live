@@ -118,15 +118,50 @@ export function HeroMap({ initialStats }: HeroMapProps) {
     setMapFocused(true);
   }, []);
 
-  // Geolocate user and fly to their province
+  // Geolocate user → fly to location → auto-select their province
   const locateUser = useCallback(() => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { longitude, latitude } = pos.coords;
         setUserLocated(true);
-        mapInstanceRef.current?.flyTo({ center: [longitude, latitude], zoom: 9, duration: 1500, essential: true });
-        setMapFocused(true);
+        const map = mapInstanceRef.current;
+        if (!map) return;
+        map.flyTo({ center: [longitude, latitude], zoom: 9, duration: 1500, essential: true });
+        // After fly completes, query province under user's coords and auto-select it
+        map.once("moveend", () => {
+          const point = map.project([longitude, latitude]);
+          const features = map.queryRenderedFeatures(point, { layers: ["province-fill"] });
+          if (features.length > 0) {
+            const code = features[0].properties?.cod_prov;
+            const name = features[0].properties?.nombre;
+            if (code && name) {
+              setSelected({ name, code, type: "province", href: `/provincias/${code}` });
+              setMapFocused(true);
+              setSelectedData(null);
+              try { map.setFilter("province-hover", ["==", "cod_prov", code]); } catch {}
+              Promise.allSettled([
+                fetch(`/api/incidents?province=${encodeURIComponent(name)}&limit=1`).then((r) => r.json()),
+                fetch(`/api/cameras?province=${encodeURIComponent(name)}&limit=1`).then((r) => r.json()),
+                fetch(`/api/radars?province=${encodeURIComponent(name)}&limit=1`).then((r) => r.json()),
+                fetch(`/api/gas-stations?province=${encodeURIComponent(name)}&limit=1`).then((r) => r.json()),
+                fetch(`/api/chargers?province=${encodeURIComponent(name)}&limit=1`).then((r) => r.json()),
+                fetch(`/api/weather?province=${encodeURIComponent(name)}`).then((r) => r.json()),
+              ]).then(([inc, cam, rad, gas, ev, meteo]) => {
+                setSelectedData({
+                  "Incidencias": inc.status === "fulfilled" ? (inc.value.count ?? inc.value.incidents?.length ?? 0) : 0,
+                  "Cámaras": cam.status === "fulfilled" ? (cam.value.count ?? 0) : 0,
+                  "Radares": rad.status === "fulfilled" ? (rad.value.count ?? 0) : 0,
+                  "Gasolineras": gas.status === "fulfilled" ? (gas.value.count ?? gas.value.total ?? 0) : 0,
+                  "Cargadores EV": ev.status === "fulfilled" ? (ev.value.totalCount ?? ev.value.count ?? 0) : 0,
+                  "Alertas meteo": meteo.status === "fulfilled" ? (meteo.value.count ?? 0) : 0,
+                });
+              }).catch(() => {});
+            }
+          } else {
+            setMapFocused(true);
+          }
+        });
       },
       () => { /* silently fail */ },
       { enableHighAccuracy: false, timeout: 5000 }
