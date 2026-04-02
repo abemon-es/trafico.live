@@ -185,9 +185,9 @@ export function HeroMap({ initialStats }: HeroMapProps) {
 
       const map = new maplibregl.Map({
         container: mapRef.current,
-        style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-        center: [-3.7038, 40.4168],
-        zoom: 5.5,
+        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        center: [-4.0, 39.6],
+        zoom: 5.2,
         interactive: true,
         scrollZoom: true,
         boxZoom: false,
@@ -226,7 +226,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             source: "provinces",
             paint: {
               "line-color": "#c0d5ff",
-              "line-width": 0.5,
+              "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 8, 1.5, 12, 2.5],
               "line-opacity": 0.6,
             },
           });
@@ -235,7 +235,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             id: "province-hover",
             type: "fill",
             source: "provinces",
-            paint: { "fill-color": "#1b4bd5", "fill-opacity": 0.1 },
+            paint: { "fill-color": "#1b4bd5", "fill-opacity": 0.15 },
             filter: ["==", "cod_prov", ""],
           });
 
@@ -273,7 +273,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
                 [Math.min(...lngs), Math.min(...lats)],
                 [Math.max(...lngs), Math.max(...lats)],
               ];
-              map.fitBounds(bounds, { padding: 60, duration: 800 });
+              const cLng = (Math.min(...lngs) + Math.max(...lngs)) / 2; const cLat = (Math.min(...lats) + Math.max(...lats)) / 2; const span = Math.max(Math.max(...lngs) - Math.min(...lngs), Math.max(...lats) - Math.min(...lats)); const z = span > 3 ? 7 : span > 1.5 ? 8 : span > 0.5 ? 9 : 10; map.flyTo({ center: [cLng, cLat], zoom: z, duration: 1200, essential: true });
             }
 
             setSelected({ name: name ?? code, code, type: "province", href: `/provincias/${code}` });
@@ -302,6 +302,20 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         } catch {
           // Province boundaries optional — continue without them
         }
+
+        // ── Territory polygons (Portugal, Andorra, Gibraltar) ──
+        const territoriesGeoJSON = { type: "FeatureCollection" as const, features: [
+          { type: "Feature" as const, properties: { name: "Portugal", slug: "/portugal", dataUrl: "/api/portugal/gas-stations?limit=1" }, geometry: { type: "Polygon" as const, coordinates: [[[-9.5,36.96],[-6.19,36.96],[-6.19,42.15],[-9.5,42.15],[-9.5,36.96]]] } },
+          { type: "Feature" as const, properties: { name: "Andorra", slug: "/andorra", dataUrl: "/api/andorra/incidents" }, geometry: { type: "Polygon" as const, coordinates: [[[1.41,42.43],[1.79,42.43],[1.79,42.66],[1.41,42.66],[1.41,42.43]]] } },
+          { type: "Feature" as const, properties: { name: "Gibraltar", slug: "/gibraltar", dataUrl: "" }, geometry: { type: "Polygon" as const, coordinates: [[[-5.37,36.10],[-5.33,36.10],[-5.33,36.16],[-5.37,36.16],[-5.37,36.10]]] } },
+        ] };
+        map.addSource("territories", { type: "geojson", data: territoriesGeoJSON });
+        map.addLayer({ id: "territory-fill", type: "fill", source: "territories", paint: { "fill-color": "#1b4bd5", "fill-opacity": 0 } });
+        map.addLayer({ id: "territory-outline", type: "line", source: "territories", paint: { "line-color": "#94b6ff", "line-width": 1.5, "line-opacity": 0.6, "line-dasharray": [4, 3] } });
+        map.addLayer({ id: "territory-hover", type: "fill", source: "territories", paint: { "fill-color": "#1b4bd5", "fill-opacity": 0.12 }, filter: ["==", "name", ""] });
+        map.on("mousemove", "territory-fill", (e) => { if (!e.features?.length) return; map.getCanvas().style.cursor = "pointer"; const n = e.features[0].properties?.name; if (n) { map.setFilter("territory-hover", ["==", "name", n]); setHoveredProvince(n); } });
+        map.on("mouseleave", "territory-fill", () => { map.getCanvas().style.cursor = ""; map.setFilter("territory-hover", ["==", "name", ""]); setHoveredProvince(null); });
+        map.on("click", "territory-fill", (e) => { e.originalEvent.stopPropagation(); if (!e.features?.length) return; const props = e.features[0].properties; if (!props?.name) return; const geo = e.features[0].geometry; if (geo.type === "Polygon") { const coords = geo.coordinates[0]; const lngs = coords.map((c: number[]) => c[0]); const lats = coords.map((c: number[]) => c[1]); map.flyTo({ center: [(Math.min(...lngs)+Math.max(...lngs))/2,(Math.min(...lats)+Math.max(...lats))/2], zoom: props.name === "Andorra" ? 11 : props.name === "Gibraltar" ? 14 : 7, duration: 1200, essential: true }); } setSelected({ name: props.name, code: props.slug, type: "country", href: props.slug }); setMapFocused(true); setSelectedData(null); if (props.dataUrl) { fetch(props.dataUrl).then(r=>r.json()).then(d=>{ if (props.slug==="/portugal") setSelectedData({"Gasolineras":d.count??d.total??"3.000+","Fuente":"DGEG","Meteo":"IPMA","Accidentes":"ANSR"}); else if (props.slug==="/andorra") setSelectedData({"Incidencias":d.incidents?.length??d.count??0,"Fuente":"Mobilitat","Cámaras":"En vivo"}); }).catch(()=>{}); } else { setSelectedData({"Territorio":"Británico","Frontera":"España","Acceso":"La Línea"}); } });
 
         // ── Major cities ──
         const citiesGeoJSON = {
@@ -632,7 +646,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
                   setSelected(null);
                   setSelectedData(null);
                   setMapFocused(false);
-                  mapInstanceRef.current?.flyTo({ center: [-3.7038, 40.4168], zoom: 5.5, duration: 800 });
+                  mapInstanceRef.current?.flyTo({ center: [-4.0, 39.6], zoom: 5.2, duration: 800 });
                   try { mapInstanceRef.current?.setFilter("province-hover", ["==", "cod_prov", ""]); } catch {}
                 }}
                 className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors shrink-0 mt-1 bg-gray-100 dark:bg-gray-800 rounded-lg px-2.5 py-1"
