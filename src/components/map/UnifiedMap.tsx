@@ -20,6 +20,8 @@ import {
 } from "./IncidentMarker";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { TimeSlider } from "./TimeSlider";
+import { useRadarProximity } from "@/hooks/useRadarProximity";
+import { RadarHUD } from "./RadarHUD";
 
 // Dynamic imports for heavy map components (avoid bloating main bundle)
 const CorridorView = dynamic(() => import("./CorridorView").then((m) => m.CorridorView), { ssr: false });
@@ -281,6 +283,10 @@ export function UnifiedMap({
   const [terrain3D, setTerrain3D] = useState(false);
   const [weatherRadar, setWeatherRadar] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [drivingMode, setDrivingMode] = useState(false);
+  const [windOverlay, setWindOverlay] = useState(false);
+  const [cloudOverlay, setCloudOverlay] = useState(false);
+  const [tempOverlay, setTempOverlay] = useState(false);
   const [corridorActive, setCorridorActive] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
   const [comparatorActive, setComparatorActive] = useState(false);
@@ -523,6 +529,12 @@ export function UnifiedMap({
     incidents: incidentsData?.incidents || [],
   });
 
+  // Radar proximity (driving mode)
+  const radarProximity = useRadarProximity({
+    enabled: drivingMode,
+    voiceEnabled: drivingMode,
+  });
+
   // Handle fullscreen
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
@@ -718,6 +730,14 @@ export function UnifiedMap({
         onWeatherRadarToggle={() => setWeatherRadar((w) => !w)}
         voiceEnabled={voiceEnabled}
         onVoiceToggle={() => setVoiceEnabled((v) => !v)}
+        windOverlay={windOverlay}
+        onWindOverlayToggle={() => setWindOverlay((w) => !w)}
+        cloudOverlay={cloudOverlay}
+        onCloudOverlayToggle={() => setCloudOverlay((c) => !c)}
+        tempOverlay={tempOverlay}
+        onTempOverlayToggle={() => setTempOverlay((t) => !t)}
+        drivingMode={drivingMode}
+        onDrivingModeToggle={() => setDrivingMode((d) => !d)}
         counts={counts}
       />
 
@@ -759,6 +779,9 @@ export function UnifiedMap({
               terrain3D={terrain3D}
               flowData={flowActive ? flowData?.data || null : null}
               weatherRadar={weatherRadar}
+              windOverlay={windOverlay}
+              cloudOverlay={cloudOverlay}
+              tempOverlay={tempOverlay}
               height="100%"
               onIncidentClick={handleIncidentClick}
             />
@@ -847,6 +870,9 @@ export function UnifiedMap({
           isStreaming={true}
         />
       )}
+
+      {/* Radar HUD (driving mode) */}
+      <RadarHUD proximityState={radarProximity} enabled={drivingMode} />
 
       {/* Incident Modal */}
       {selectedIncident && (

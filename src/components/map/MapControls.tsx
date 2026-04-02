@@ -16,6 +16,7 @@ import {
   X,
   CloudRain,
   Navigation,
+  Wind,
   Radar,
   ShieldAlert,
   Fuel,
@@ -90,6 +91,16 @@ interface MapControlsProps {
   onWeatherRadarToggle?: () => void;
   voiceEnabled?: boolean;
   onVoiceToggle?: () => void;
+  // Weather overlays
+  windOverlay?: boolean;
+  onWindOverlayToggle?: () => void;
+  cloudOverlay?: boolean;
+  onCloudOverlayToggle?: () => void;
+  tempOverlay?: boolean;
+  onTempOverlayToggle?: () => void;
+  // Driving mode
+  drivingMode?: boolean;
+  onDrivingModeToggle?: () => void;
   counts?: {
     v16: number;
     incidents: number;
@@ -224,6 +235,14 @@ export function MapControls({
   onWeatherRadarToggle,
   voiceEnabled,
   onVoiceToggle,
+  windOverlay,
+  onWindOverlayToggle,
+  cloudOverlay,
+  onCloudOverlayToggle,
+  tempOverlay,
+  onTempOverlayToggle,
+  drivingMode,
+  onDrivingModeToggle,
   counts,
 }: MapControlsProps) {
   const [panelOpen, setPanelOpen] = useState(false);
@@ -543,6 +562,8 @@ export function MapControls({
           <ToolBtn onClick={onWeatherRadarToggle} active={weatherRadar} icon={<CloudLightning className="w-4 h-4" />} title="Radar meteo" />
           <ToolBtn onClick={onVoiceToggle} active={voiceEnabled} icon={voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />} title="Voz" activeColor="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" />
           <ToolBtn onClick={onDarkModeToggle} active={darkMode} icon={darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />} title={darkMode ? "Mapa claro" : "Mapa oscuro"} />
+          <ToolBtn onClick={onWindOverlayToggle} active={windOverlay} icon={<Wind className="w-4 h-4" />} title="Viento" />
+          <ToolBtn onClick={onDrivingModeToggle} active={drivingMode} icon={<Navigation className="w-4 h-4" />} title="Modo conducción" activeColor="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" />
         </div>
 
         {/* Divider */}
