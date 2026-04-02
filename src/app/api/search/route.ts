@@ -227,6 +227,19 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
       icon: "Activity",
     }),
   },
+  {
+    collection: "portugal_stations",
+    queryBy: "name,locality,district,address",
+    category: "Gasolineras Portugal",
+    icon: "Fuel",
+    mapHit: (doc) => ({
+      title: doc.name as string,
+      subtitle: [doc.locality, doc.district].filter(Boolean).join(", ") || null,
+      href: `/portugal/combustible/${doc.id}`,
+      category: "Gasolineras Portugal",
+      icon: "Fuel",
+    }),
+  },
 ];
 
 // ---------------------------------------------------------------------------

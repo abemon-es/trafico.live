@@ -32,9 +32,21 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "provinceName", type: "string", optional: true, facet: true },
       { name: "location", type: "geopoint", optional: true },
       { name: "priceGasoleoA", type: "float", optional: true, sort: true },
+      { name: "priceGasoleoB", type: "float", optional: true },
+      { name: "priceGasoleoPremium", type: "float", optional: true, sort: true },
       { name: "priceGasolina95", type: "float", optional: true, sort: true },
+      { name: "priceGasolina95E10", type: "float", optional: true },
+      { name: "priceGasolina98", type: "float", optional: true, sort: true },
+      { name: "priceGasolina98E10", type: "float", optional: true },
+      { name: "priceGLP", type: "float", optional: true, sort: true },
+      { name: "priceGNC", type: "float", optional: true },
+      { name: "priceGNL", type: "float", optional: true },
+      { name: "priceHidrogeno", type: "float", optional: true },
+      { name: "priceBioetanol", type: "float", optional: true },
+      { name: "priceBiodiesel", type: "float", optional: true },
       { name: "is24h", type: "bool", optional: true, facet: true },
       { name: "nearestRoad", type: "string", optional: true },
+      { name: "fuelTypes", type: "string[]", optional: true, facet: true },
     ] as CollectionFieldSchema[],
     token_separators: ["-", "/"],
   },
@@ -187,7 +199,25 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "provinceName", type: "string", optional: true, facet: true },
       { name: "location", type: "geopoint", optional: true },
       { name: "priceGasoleoA", type: "float", optional: true, sort: true },
+      { name: "priceGasoleoB", type: "float", optional: true },
       { name: "priceGasolina95", type: "float", optional: true, sort: true },
+      { name: "priceGasolina98", type: "float", optional: true },
+    ] as CollectionFieldSchema[],
+    token_separators: ["-", "/"],
+  },
+  portugal_stations: {
+    name: "portugal_stations",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "name", type: "string" },
+      { name: "address", type: "string", optional: true },
+      { name: "locality", type: "string", optional: true, facet: true },
+      { name: "district", type: "string", optional: true, facet: true },
+      { name: "location", type: "geopoint", optional: true },
+      { name: "priceGasoleoSimples", type: "float", optional: true, sort: true },
+      { name: "priceGasolina95", type: "float", optional: true, sort: true },
+      { name: "priceGPL", type: "float", optional: true },
+      { name: "fuelTypes", type: "string[]", optional: true, facet: true },
     ] as CollectionFieldSchema[],
     token_separators: ["-", "/"],
   },
@@ -260,17 +290,40 @@ async function upsertCollection(
 async function loadGasStations(prisma: PrismaClient) {
   const rows = await prisma.gasStation.findMany({
     select: { id: true, name: true, address: true, locality: true, province: true,
-      provinceName: true, latitude: true, longitude: true, priceGasoleoA: true,
-      priceGasolina95E5: true, is24h: true, nearestRoad: true },
+      provinceName: true, latitude: true, longitude: true, is24h: true, nearestRoad: true,
+      priceGasoleoA: true, priceGasoleoB: true, priceGasoleoPremium: true,
+      priceGasolina95E5: true, priceGasolina95E10: true, priceGasolina98E5: true, priceGasolina98E10: true,
+      priceGLP: true, priceGNC: true, priceGNL: true, priceHidrogeno: true,
+      priceBioetanol: true, priceBiodiesel: true },
   });
-  return rows.map((s) => ({
-    id: s.id, name: s.name, address: s.address || "", locality: s.locality || "",
-    province: s.province || "", provinceName: s.provinceName || "",
-    location: s.latitude && s.longitude ? [Number(s.latitude), Number(s.longitude)] : undefined,
-    priceGasoleoA: s.priceGasoleoA ? Number(s.priceGasoleoA) : undefined,
-    priceGasolina95: s.priceGasolina95E5 ? Number(s.priceGasolina95E5) : undefined,
-    is24h: s.is24h, nearestRoad: s.nearestRoad || "",
-  }));
+  const toF = (v: unknown) => v ? Number(v) : undefined;
+  return rows.map((s) => {
+    const ft: string[] = [];
+    if (s.priceGasoleoA) ft.push("Gasoleo A");
+    if (s.priceGasoleoB) ft.push("Gasoleo B");
+    if (s.priceGasoleoPremium) ft.push("Gasoleo Premium");
+    if (s.priceGasolina95E5) ft.push("Gasolina 95");
+    if (s.priceGasolina98E5) ft.push("Gasolina 98");
+    if (s.priceGLP) ft.push("GLP");
+    if (s.priceGNC) ft.push("GNC");
+    if (s.priceGNL) ft.push("GNL");
+    if (s.priceHidrogeno) ft.push("Hidrogeno");
+    if (s.priceBioetanol) ft.push("Bioetanol");
+    if (s.priceBiodiesel) ft.push("Biodiesel");
+    return {
+      id: s.id, name: s.name, address: s.address || "", locality: s.locality || "",
+      province: s.province || "", provinceName: s.provinceName || "",
+      location: s.latitude && s.longitude ? [Number(s.latitude), Number(s.longitude)] : undefined,
+      priceGasoleoA: toF(s.priceGasoleoA), priceGasoleoB: toF(s.priceGasoleoB),
+      priceGasoleoPremium: toF(s.priceGasoleoPremium),
+      priceGasolina95: toF(s.priceGasolina95E5), priceGasolina95E10: toF(s.priceGasolina95E10),
+      priceGasolina98: toF(s.priceGasolina98E5), priceGasolina98E10: toF(s.priceGasolina98E10),
+      priceGLP: toF(s.priceGLP), priceGNC: toF(s.priceGNC), priceGNL: toF(s.priceGNL),
+      priceHidrogeno: toF(s.priceHidrogeno), priceBioetanol: toF(s.priceBioetanol),
+      priceBiodiesel: toF(s.priceBiodiesel),
+      is24h: s.is24h, nearestRoad: s.nearestRoad || "", fuelTypes: ft,
+    };
+  });
 }
 
 async function loadRoads(prisma: PrismaClient) {
@@ -369,12 +422,35 @@ async function loadVariablePanels(prisma: PrismaClient) {
 async function loadMaritimeStations(prisma: PrismaClient) {
   const rows = await prisma.maritimeStation.findMany({
     select: { id: true, name: true, port: true, locality: true, province: true, provinceName: true,
-      latitude: true, longitude: true, priceGasoleoA: true, priceGasolina95E5: true } });
+      latitude: true, longitude: true, priceGasoleoA: true, priceGasoleoB: true,
+      priceGasolina95E5: true, priceGasolina98E5: true } });
+  const toF = (v: unknown) => v ? Number(v) : undefined;
   return rows.map((s) => ({ id: s.id, name: s.name, port: s.port || "", locality: s.locality || "",
     province: s.province || "", provinceName: s.provinceName || "",
     location: [Number(s.latitude), Number(s.longitude)],
-    priceGasoleoA: s.priceGasoleoA ? Number(s.priceGasoleoA) : undefined,
-    priceGasolina95: s.priceGasolina95E5 ? Number(s.priceGasolina95E5) : undefined }));
+    priceGasoleoA: toF(s.priceGasoleoA), priceGasoleoB: toF(s.priceGasoleoB),
+    priceGasolina95: toF(s.priceGasolina95E5), priceGasolina98: toF(s.priceGasolina98E5) }));
+}
+
+async function loadPortugalStations(prisma: PrismaClient) {
+  const rows = await prisma.portugalGasStation.findMany({
+    select: { id: true, name: true, address: true, locality: true, district: true,
+      latitude: true, longitude: true, priceGasoleoSimples: true, priceGasolina95: true,
+      priceGPL: true, priceGasolina98: true, priceGNC: true } });
+  const toF = (v: unknown) => v ? Number(v) : undefined;
+  return rows.map((s) => {
+    const ft: string[] = [];
+    if (s.priceGasoleoSimples) ft.push("Gasoleo");
+    if (s.priceGasolina95) ft.push("Gasolina 95");
+    if (s.priceGasolina98) ft.push("Gasolina 98");
+    if (s.priceGPL) ft.push("GPL");
+    if (s.priceGNC) ft.push("GNC");
+    return { id: s.id, name: s.name, address: s.address || "", locality: s.locality || "",
+      district: s.district || "",
+      location: s.latitude && s.longitude ? [Number(s.latitude), Number(s.longitude)] : undefined,
+      priceGasoleoSimples: toF(s.priceGasoleoSimples), priceGasolina95: toF(s.priceGasolina95),
+      priceGPL: toF(s.priceGPL), fuelTypes: ft };
+  });
 }
 
 async function loadTrafficStations(prisma: PrismaClient) {
@@ -395,7 +471,8 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
   articles: loadArticles, provinces: loadProvinces, cities: loadCities,
   ev_chargers: loadEVChargers, radars: loadRadars, railway_stations: loadRailwayStations,
   zbe_zones: loadZBEZones, risk_zones: loadRiskZones, variable_panels: loadVariablePanels,
-  maritime_stations: loadMaritimeStations, traffic_stations: loadTrafficStations,
+  maritime_stations: loadMaritimeStations, portugal_stations: loadPortugalStations,
+  traffic_stations: loadTrafficStations,
 };
 
 // ---------------------------------------------------------------------------
