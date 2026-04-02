@@ -295,7 +295,9 @@ function parseMeasurements(xml: string): Map<string, DetectorMeasurement> {
       for (const mv of measuredValues) {
         const mvObj = mv as Record<string, unknown>;
         // DGT uses basicDataValue with xsi:type (TrafficSpeed/TrafficFlow/TrafficHeadway)
-        const bdv = (mvObj.basicDataValue ?? mvObj.basicData) as Record<string, unknown> | undefined;
+        // isArray config wraps it in an array — unwrap single element
+        const bdvRaw = mvObj.basicDataValue ?? mvObj.basicData;
+        const bdv = (Array.isArray(bdvRaw) ? bdvRaw[0] : bdvRaw) as Record<string, unknown> | undefined;
         if (!bdv) continue;
 
         // TrafficFlow — vehicleFlow is a direct number child
