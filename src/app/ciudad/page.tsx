@@ -78,7 +78,7 @@ export default function CiudadesPage() {
                 provincia
               </Link>{" "}
               o{" "}
-              <Link href="/comunidad-autonoma" className="text-tl-600 dark:text-tl-400 hover:underline">
+              <Link href="/espana" className="text-tl-600 dark:text-tl-400 hover:underline">
                 comunidad autónoma
               </Link>
             </p>
@@ -90,7 +90,7 @@ export default function CiudadesPage() {
           {CITIES.map((city) => (
             <Link
               key={city.slug}
-              href={`/ciudad/${city.slug}`}
+              href={`/municipio/${city.slug}`}
               className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-tl-300 hover:shadow-md transition-all group"
             >
               <div className="flex items-start justify-between">

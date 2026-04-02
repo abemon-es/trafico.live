@@ -64,7 +64,7 @@ export default function EspanaPage() {
               {COMMUNITIES.map((community) => (
                 <li key={community.slug}>
                   <Link
-                    href={`/comunidad-autonoma/${community.slug}`}
+                    href={`/espana/${community.slug}`}
                     className="block px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
                   >
                     {community.name}

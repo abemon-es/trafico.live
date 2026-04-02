@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import {
   Search,
   X,
@@ -21,9 +23,11 @@ import {
   Route,
   AlertCircle,
   Map,
+  Newspaper,
+  Loader2,
 } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
 export type SearchCategory =
   | "carretera"
@@ -40,9 +44,24 @@ export interface SearchResult {
   icon: string;
 }
 
-// ─── Icon map ─────────────────────────────────────────────────────────────────
+// ── API response shape ───────────────────────────────────────────────────────
+
+interface SearchAPIResponse {
+  results: Array<{
+    title: string;
+    subtitle?: string | null;
+    href: string;
+    category: string;
+    icon: string;
+  }>;
+  query: string;
+  total: number;
+}
+
+// ── Icon map ─────────────────────────────────────────────────────────────────
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  // kebab-case keys (legacy / internal)
   fuel: Fuel,
   radar: Radar,
   camera: Camera,
@@ -58,6 +77,15 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   building: Building2,
   route: Route,
   map: Map,
+  newspaper: Newspaper,
+  // PascalCase keys (from Typesense API)
+  Fuel: Fuel,
+  Radar: Radar,
+  Camera: Camera,
+  MapPin: MapPin,
+  Building2: Building2,
+  Route: Route,
+  Newspaper: Newspaper,
 };
 
 function ResultIcon({
@@ -71,7 +99,7 @@ function ResultIcon({
   return <Icon className={className} />;
 }
 
-// ─── Category labels & colours ────────────────────────────────────────────────
+// ── Category labels & colours ────────────────────────────────────────────────
 
 const CATEGORY_META: Record<
   SearchCategory,
@@ -79,915 +107,59 @@ const CATEGORY_META: Record<
 > = {
   herramienta: {
     label: "Herramientas",
-    badgeClass: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+    badgeClass:
+      "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
   },
   combustible: {
     label: "Combustible",
     badgeClass: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300",
   },
-  ciudad: { label: "Ciudades", badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" },
+  ciudad: {
+    label: "Ciudades",
+    badgeClass:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+  },
   provincia: {
     label: "Provincias",
-    badgeClass: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
+    badgeClass:
+      "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   },
   carretera: {
     label: "Carreteras",
-    badgeClass: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
+    badgeClass:
+      "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   },
 };
 
-// ─── Search index ─────────────────────────────────────────────────────────────
+// ── Map API categories to SearchCategory ─────────────────────────────────────
 
-const SEARCH_INDEX: SearchResult[] = [
-  // Combustible
-  {
-    title: "Precio Gasolina Hoy",
-    subtitle: "Precios actualizados",
-    href: "/precio-gasolina-hoy",
-    category: "combustible",
-    icon: "fuel",
-  },
-  {
-    title: "Precio Diésel Hoy",
-    subtitle: "Precios actualizados",
-    href: "/precio-diesel-hoy",
-    category: "combustible",
-    icon: "fuel",
-  },
-  {
-    title: "Mapa de Gasolineras",
-    href: "/gasolineras/mapa",
-    category: "combustible",
-    icon: "map-pin",
-  },
-  // Herramientas
-  {
-    title: "Radares DGT",
-    subtitle: "737 radares fijos",
-    href: "/radares",
-    category: "herramienta",
-    icon: "radar",
-  },
-  {
-    title: "Cámaras de Tráfico",
-    subtitle: "1.917 cámaras",
-    href: "/camaras",
-    category: "herramienta",
-    icon: "camera",
-  },
-  {
-    title: "Operaciones Especiales",
-    href: "/operaciones",
-    category: "herramienta",
-    icon: "calendar",
-  },
-  {
-    title: "Restricciones",
-    href: "/restricciones",
-    category: "herramienta",
-    icon: "ban",
-  },
-  {
-    title: "Puntos Negros",
-    href: "/puntos-negros",
-    category: "herramienta",
-    icon: "alert",
-  },
-  {
-    title: "Calculadora de Ruta",
-    href: "/calculadora",
-    category: "herramienta",
-    icon: "calculator",
-  },
-  {
-    title: "Cargadores Eléctricos",
-    href: "/carga-ev",
-    category: "herramienta",
-    icon: "zap",
-  },
-  {
-    title: "Incidencias",
-    subtitle: "En tiempo real",
-    href: "/incidencias",
-    category: "herramienta",
-    icon: "alert-triangle",
-  },
-  {
-    title: "Blog",
-    href: "/blog",
-    category: "herramienta",
-    icon: "book-open",
-  },
-  {
-    title: "API Docs",
-    href: "/api-docs",
-    category: "herramienta",
-    icon: "code",
-  },
-  // Ciudades
-  {
-    title: "Madrid",
-    href: "/ciudad/madrid",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Barcelona",
-    href: "/ciudad/barcelona",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Valencia",
-    href: "/ciudad/valencia",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Sevilla",
-    href: "/ciudad/sevilla",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Zaragoza",
-    href: "/ciudad/zaragoza",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Málaga",
-    href: "/ciudad/malaga",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Murcia",
-    href: "/ciudad/murcia",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Bilbao",
-    href: "/ciudad/bilbao",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Alicante",
-    href: "/ciudad/alicante",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Granada",
-    href: "/ciudad/granada",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Valladolid",
-    href: "/ciudad/valladolid",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Palma de Mallorca",
-    href: "/ciudad/palma",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Las Palmas de Gran Canaria",
-    href: "/ciudad/las-palmas",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Córdoba",
-    href: "/ciudad/cordoba",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Alicante",
-    href: "/ciudad/alicante",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Vigo",
-    href: "/ciudad/vigo",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "Gijón",
-    href: "/ciudad/gijon",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "A Coruña",
-    href: "/ciudad/a-coruna",
-    category: "ciudad",
-    icon: "building",
-  },
-  {
-    title: "San Sebastián",
-    href: "/ciudad/san-sebastian",
-    category: "ciudad",
-    icon: "building",
-  },
-  // Provincias (52)
-  {
-    title: "Álava",
-    href: "/provincia/alava",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Albacete",
-    href: "/provincia/albacete",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Alicante",
-    href: "/provincia/alicante",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Almería",
-    href: "/provincia/almeria",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Asturias",
-    href: "/provincia/asturias",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Ávila",
-    href: "/provincia/avila",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Badajoz",
-    href: "/provincia/badajoz",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Baleares",
-    href: "/provincia/baleares",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Barcelona",
-    href: "/provincia/barcelona",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Burgos",
-    href: "/provincia/burgos",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Cáceres",
-    href: "/provincia/caceres",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Cádiz",
-    href: "/provincia/cadiz",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Cantabria",
-    href: "/provincia/cantabria",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Castellón",
-    href: "/provincia/castellon",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Ciudad Real",
-    href: "/provincia/ciudad-real",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Córdoba",
-    href: "/provincia/cordoba",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Cuenca",
-    href: "/provincia/cuenca",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Gerona",
-    href: "/provincia/gerona",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Granada",
-    href: "/provincia/granada",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Guadalajara",
-    href: "/provincia/guadalajara",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Guipúzcoa",
-    href: "/provincia/guipuzcoa",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Huelva",
-    href: "/provincia/huelva",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Huesca",
-    href: "/provincia/huesca",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Jaén",
-    href: "/provincia/jaen",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "La Rioja",
-    href: "/provincia/la-rioja",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Las Palmas",
-    href: "/provincia/las-palmas",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "León",
-    href: "/provincia/leon",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Lérida",
-    href: "/provincia/lerida",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Lugo",
-    href: "/provincia/lugo",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Madrid",
-    href: "/provincia/madrid",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Málaga",
-    href: "/provincia/malaga",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Melilla",
-    href: "/provincia/melilla",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Murcia",
-    href: "/provincia/murcia",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Navarra",
-    href: "/provincia/navarra",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Orense",
-    href: "/provincia/orense",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Palencia",
-    href: "/provincia/palencia",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Pontevedra",
-    href: "/provincia/pontevedra",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Salamanca",
-    href: "/provincia/salamanca",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Santa Cruz de Tenerife",
-    href: "/provincia/santa-cruz-de-tenerife",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Segovia",
-    href: "/provincia/segovia",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Sevilla",
-    href: "/provincia/sevilla",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Soria",
-    href: "/provincia/soria",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Tarragona",
-    href: "/provincia/tarragona",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Teruel",
-    href: "/provincia/teruel",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Toledo",
-    href: "/provincia/toledo",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Valencia",
-    href: "/provincia/valencia",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Valladolid",
-    href: "/provincia/valladolid",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Vizcaya",
-    href: "/provincia/vizcaya",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Zamora",
-    href: "/provincia/zamora",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Zaragoza",
-    href: "/provincia/zaragoza",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  {
-    title: "Ceuta",
-    href: "/provincia/ceuta",
-    category: "provincia",
-    icon: "map-pin",
-  },
-  // Carreteras — Autopistas de peaje (AP)
-  {
-    title: "AP-1 Autopista del Norte",
-    href: "/carreteras/AP-1",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-2 Autopista del Nordeste",
-    href: "/carreteras/AP-2",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-4 Autopista del Sur",
-    href: "/carreteras/AP-4",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-6 Autopista de Villalba",
-    href: "/carreteras/AP-6",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-7 Autopista del Mediterráneo",
-    href: "/carreteras/AP-7",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-8 Autopista del Cantábrico",
-    href: "/carreteras/AP-8",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-9 Autopista del Atlántico",
-    href: "/carreteras/AP-9",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-15 Autopista de Navarra",
-    href: "/carreteras/AP-15",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-36 Autopista de Ocaña",
-    href: "/carreteras/AP-36",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-41 Autopista Madrid-Toledo",
-    href: "/carreteras/AP-41",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-51 Autopista de Ávila",
-    href: "/carreteras/AP-51",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-61 Autopista de Segovia",
-    href: "/carreteras/AP-61",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-68 Autopista del Ebro",
-    href: "/carreteras/AP-68",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "AP-71 Autopista de León",
-    href: "/carreteras/AP-71",
-    category: "carretera",
-    icon: "route",
-  },
-  // Autovías (A)
-  {
-    title: "A-1 Autovía del Norte",
-    href: "/carreteras/A-1",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-2 Autovía del Nordeste",
-    href: "/carreteras/A-2",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-3 Autovía del Este",
-    href: "/carreteras/A-3",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-4 Autovía del Sur",
-    href: "/carreteras/A-4",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-5 Autovía del Suroeste",
-    href: "/carreteras/A-5",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-6 Autovía del Noroeste",
-    href: "/carreteras/A-6",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-7 Autovía del Mediterráneo",
-    href: "/carreteras/A-7",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-8 Autovía del Cantábrico",
-    href: "/carreteras/A-8",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-10 Autovía de los Viñedos",
-    href: "/carreteras/A-10",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-11 Autovía del Duero",
-    href: "/carreteras/A-11",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-12 Autovía del Camino",
-    href: "/carreteras/A-12",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-15 Autovía de Navarra",
-    href: "/carreteras/A-15",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-21 Autovía de los Pirineos",
-    href: "/carreteras/A-21",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-23 Autovía de Aragón",
-    href: "/carreteras/A-23",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-30 Autovía Murcia-Cartagena",
-    href: "/carreteras/A-30",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-31 Autovía de Alicante",
-    href: "/carreteras/A-31",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-38 Autovía del Sur de Tenerife",
-    href: "/carreteras/A-38",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-40 Autovía de Castilla",
-    href: "/carreteras/A-40",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-41 Autovía de Andalucía",
-    href: "/carreteras/A-41",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-42 Autovía de Toledo",
-    href: "/carreteras/A-42",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-43 Autovía de Manzanares",
-    href: "/carreteras/A-43",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-44 Autovía de Sierra Nevada",
-    href: "/carreteras/A-44",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-45 Autovía de Málaga",
-    href: "/carreteras/A-45",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-48 Autovía de Cádiz",
-    href: "/carreteras/A-48",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-49 Autovía del Quinto Centenario",
-    href: "/carreteras/A-49",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-52 Autovía de las Rías Bajas",
-    href: "/carreteras/A-52",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-55 Autovía do Atlántico",
-    href: "/carreteras/A-55",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-57 Autovía de Pontevedra",
-    href: "/carreteras/A-57",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-62 Autovía de Castilla",
-    href: "/carreteras/A-62",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-63 Autovía de Burgos",
-    href: "/carreteras/A-63",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-66 Autovía de la Plata",
-    href: "/carreteras/A-66",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-67 Autovía de la Meseta",
-    href: "/carreteras/A-67",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-68 Autovía del Ebro",
-    href: "/carreteras/A-68",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "A-92 Autovía de Andalucía",
-    href: "/carreteras/A-92",
-    category: "carretera",
-    icon: "route",
-  },
-  // Nacionales (N)
-  {
-    title: "N-I Carretera de Irún",
-    href: "/carreteras/N-I",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "N-II Carretera de Francia",
-    href: "/carreteras/N-II",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "N-III Carretera de Valencia",
-    href: "/carreteras/N-III",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "N-IV Carretera de Cádiz",
-    href: "/carreteras/N-IV",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "N-V Carretera de Portugal",
-    href: "/carreteras/N-V",
-    category: "carretera",
-    icon: "route",
-  },
-  {
-    title: "N-VI Carretera de La Coruña",
-    href: "/carreteras/N-VI",
-    category: "carretera",
-    icon: "route",
-  },
-];
+const API_CATEGORY_MAP: Record<string, SearchCategory> = {
+  Gasolineras: "combustible",
+  Carreteras: "carretera",
+  Camaras: "herramienta",
+  Noticias: "herramienta",
+  Provincias: "provincia",
+  Ciudades: "ciudad",
+};
 
-// ─── Fuzzy search helper ──────────────────────────────────────────────────────
-
-function fuzzyMatch(text: string, query: string): boolean {
-  const normalised = (s: string) =>
-    s
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-
-  const t = normalised(text);
-  const q = normalised(query);
-
-  if (t.includes(q)) return true;
-
-  // Check if all chars appear in order (very loose fuzzy)
-  let idx = 0;
-  for (const ch of q) {
-    const pos = t.indexOf(ch, idx);
-    if (pos === -1) return false;
-    idx = pos + 1;
-  }
-  return true;
+function mapApiCategory(apiCategory: string): SearchCategory {
+  return API_CATEGORY_MAP[apiCategory] ?? "herramienta";
 }
 
-function scoreResult(result: SearchResult, query: string): number {
-  const normalised = (s: string) =>
-    s
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
+// ── Transform API results ────────────────────────────────────────────────────
 
-  const title = normalised(result.title);
-  const q = normalised(query);
-
-  if (title.startsWith(q)) return 3;
-  if (title.includes(q)) return 2;
-  if (result.subtitle && normalised(result.subtitle).includes(q)) return 1;
-  return 0;
+function transformResults(data: SearchAPIResponse | undefined): SearchResult[] {
+  if (!data?.results) return [];
+  return data.results.map((r) => ({
+    title: r.title,
+    subtitle: r.subtitle ?? undefined,
+    href: r.href,
+    category: mapApiCategory(r.category),
+    icon: r.icon,
+  }));
 }
 
-function filterResults(query: string): SearchResult[] {
-  if (!query.trim()) return SEARCH_INDEX.slice(0, 8);
-
-  return SEARCH_INDEX.filter(
-    (r) =>
-      fuzzyMatch(r.title, query) ||
-      (r.subtitle ? fuzzyMatch(r.subtitle, query) : false)
-  )
-    .sort((a, b) => scoreResult(b, query) - scoreResult(a, query))
-    .slice(0, 20);
-}
-
-// ─── Category order for grouping ─────────────────────────────────────────────
+// ── Category order for grouping ──────────────────────────────────────────────
 
 const CATEGORY_ORDER: SearchCategory[] = [
   "herramienta",
@@ -1011,7 +183,7 @@ function groupResults(
   }));
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ── Component ────────────────────────────────────────────────────────────────
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -1028,11 +200,32 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  // Debounce query
+  // Debounce query (300ms)
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(id);
   }, [query]);
+
+  // SWR fetch — only when overlay is open and there's a query
+  const swrKey =
+    isOpen && debouncedQuery.trim()
+      ? `/api/search?q=${encodeURIComponent(debouncedQuery.trim())}&limit=20`
+      : null;
+
+  const { data, isLoading } = useSWR<SearchAPIResponse>(swrKey, fetcher, {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    dedupingInterval: 2000,
+  });
+
+  const results = useMemo(() => transformResults(data), [data]);
+  const groups = useMemo(() => groupResults(results), [results]);
+
+  // Flat list for keyboard navigation
+  const flatResults = useMemo(
+    () => groups.flatMap((g) => g.items),
+    [groups]
+  );
 
   // Reset on open/close
   useEffect(() => {
@@ -1059,12 +252,6 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-
-  const results = filterResults(debouncedQuery);
-  const groups = groupResults(results);
-
-  // Flat list for keyboard navigation
-  const flatResults = groups.flatMap((g) => g.items);
 
   const navigate = useCallback(
     (href: string) => {
@@ -1117,6 +304,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   if (!isOpen) return null;
 
+  const hasQuery = debouncedQuery.trim().length > 0;
   let globalIdx = 0;
 
   return (
@@ -1126,7 +314,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       }`}
       role="dialog"
       aria-modal="true"
-      aria-label="Búsqueda global"
+      aria-label="Busqueda global"
     >
       {/* Backdrop */}
       <div
@@ -1143,13 +331,17 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       >
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-          <Search className="w-5 h-5 text-gray-400 shrink-0" />
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 text-tl-500 shrink-0 animate-spin" />
+          ) : (
+            <Search className="w-5 h-5 text-gray-400 shrink-0" />
+          )}
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar carreteras, ciudades, herramientas..."
+            placeholder="Buscar en trafico.live..."
             className="flex-1 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-transparent outline-none"
             autoComplete="off"
             autoCorrect="off"
@@ -1163,7 +355,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 inputRef.current?.focus();
               }}
               className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-900 transition-colors"
-              aria-label="Borrar búsqueda"
+              aria-label="Borrar busqueda"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1179,12 +371,29 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
           className="max-h-[60vh] overflow-y-auto overscroll-contain"
           role="listbox"
         >
-          {flatResults.length === 0 ? (
+          {!hasQuery ? (
+            /* Empty state — no query yet */
+            <div className="py-12 text-center text-gray-500 dark:text-gray-400 text-sm">
+              <Search className="w-8 h-8 mx-auto mb-3 text-gray-300" />
+              <p>Buscar carreteras, ciudades, gasolineras...</p>
+              <p className="mt-1 text-xs text-gray-400">
+                Escribe para buscar
+              </p>
+            </div>
+          ) : isLoading && flatResults.length === 0 ? (
+            /* Loading state (only when no cached results) */
+            <div className="py-12 text-center text-gray-500 dark:text-gray-400 text-sm">
+              <Loader2 className="w-8 h-8 mx-auto mb-3 text-tl-400 animate-spin" />
+              <p>Cargando...</p>
+            </div>
+          ) : flatResults.length === 0 ? (
+            /* No results */
             <div className="py-12 text-center text-gray-500 dark:text-gray-400 text-sm">
               <Search className="w-8 h-8 mx-auto mb-3 text-gray-300" />
               <p>Sin resultados para &ldquo;{debouncedQuery}&rdquo;</p>
             </div>
           ) : (
+            /* Grouped results */
             <>
               {groups.map(({ category, items }) => {
                 const meta = CATEGORY_META[category];
@@ -1239,7 +448,9 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                           <div className="flex-1 min-w-0">
                             <p
                               className={`text-sm font-medium truncate ${
-                                isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"
+                                isActive
+                                  ? "text-tl-700 dark:text-tl-300"
+                                  : "text-gray-900 dark:text-gray-100"
                               }`}
                             >
                               {result.title}
@@ -1271,13 +482,13 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 flex items-center gap-4 text-xs text-gray-400">
           <span className="flex items-center gap-1">
             <kbd className="rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-1 py-0.5 font-mono text-[10px]">
-              ↑↓
+              {"\u2191\u2193"}
             </kbd>
             navegar
           </span>
           <span className="flex items-center gap-1">
             <kbd className="rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-1 py-0.5 font-mono text-[10px]">
-              ↵
+              {"\u21B5"}
             </kbd>
             abrir
           </span>
@@ -1296,7 +507,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   );
 }
 
-// ─── Keyboard shortcut hook (for external use) ────────────────────────────────
+// ── Keyboard shortcut hook (for external use) ────────────────────────────────
 
 export function useSearchOverlay() {
   const [isOpen, setIsOpen] = useState(false);
