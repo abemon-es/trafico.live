@@ -255,13 +255,22 @@ export function HeroMap({ initialStats }: HeroMapProps) {
 
             setSelected({ name: name ?? code, code, type: "province", href: `/provincias/${code}` });
             setSelectedData(null);
-            // Fetch province stats
-            fetch(`/api/province/stats?code=${code}`).then((r) => r.json()).then((d) => {
+            // Fetch real data from multiple APIs in parallel
+            Promise.allSettled([
+              fetch(`/api/incidents?province=${encodeURIComponent(name ?? code)}&limit=1`).then((r) => r.json()),
+              fetch(`/api/cameras?province=${encodeURIComponent(name ?? code)}&limit=1`).then((r) => r.json()),
+              fetch(`/api/radars?province=${encodeURIComponent(name ?? code)}&limit=1`).then((r) => r.json()),
+              fetch(`/api/gas-stations?province=${encodeURIComponent(name ?? code)}&limit=1`).then((r) => r.json()),
+              fetch(`/api/chargers?province=${encodeURIComponent(name ?? code)}&limit=1`).then((r) => r.json()),
+              fetch(`/api/weather?province=${encodeURIComponent(name ?? code)}`).then((r) => r.json()),
+            ]).then(([inc, cam, rad, gas, ev, meteo]) => {
               setSelectedData({
-                "Incidencias": d.incidents ?? 0,
-                "Cámaras": d.cameras ?? 0,
-                "Radares": d.radars ?? 0,
-                "Gasolineras": d.gasStations ?? 0,
+                "Incidencias": inc.status === "fulfilled" ? (inc.value.count ?? inc.value.incidents?.length ?? 0) : 0,
+                "Cámaras": cam.status === "fulfilled" ? (cam.value.count ?? 0) : 0,
+                "Radares": rad.status === "fulfilled" ? (rad.value.count ?? 0) : 0,
+                "Gasolineras": gas.status === "fulfilled" ? (gas.value.count ?? gas.value.total ?? 0) : 0,
+                "Cargadores EV": ev.status === "fulfilled" ? (ev.value.totalCount ?? ev.value.count ?? 0) : 0,
+                "Alertas meteo": meteo.status === "fulfilled" ? (meteo.value.count ?? 0) : 0,
               });
             }).catch(() => {});
             setMapFocused(true);
@@ -588,54 +597,118 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         </div>
       </div>
 
-      {/* Selected zone panel — province or territory */}
+      {/* Rich sidebar panel — province or territory details */}
       {selected && (
-        <div className="absolute bottom-6 left-4 sm:left-6 lg:left-8 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-lg max-w-md">
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <div>
-              <p className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">{selected.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {selected.type === "province" ? `Provincia · INE ${selected.code}` : "Territorio · Cobertura internacional"}
-              </p>
+        <div className="absolute top-0 left-0 bottom-0 w-[340px] z-20 bg-white/97 dark:bg-gray-950/97 backdrop-blur-md border-r border-gray-200 dark:border-gray-700 shadow-2xl overflow-y-auto">
+          <div className="p-5">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100">{selected.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {selected.type === "province" ? `Provincia · INE ${selected.code}` : "Territorio · Cobertura internacional"}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelected(null);
+                  setSelectedData(null);
+                  setMapFocused(false);
+                  mapInstanceRef.current?.flyTo({ center: [-3.7038, 40.4168], zoom: 5.5, duration: 800 });
+                  try { mapInstanceRef.current?.setFilter("province-hover", ["==", "cod_prov", ""]); } catch {}
+                }}
+                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors shrink-0 mt-1 bg-gray-100 dark:bg-gray-800 rounded-lg px-2.5 py-1"
+              >
+                Volver
+              </button>
             </div>
-            <button
-              onClick={() => {
-                setSelected(null);
-                setSelectedData(null);
-                setMapFocused(false);
-                mapInstanceRef.current?.flyTo({ center: [-3.7038, 40.4168], zoom: 5.5, duration: 800 });
-                try { mapInstanceRef.current?.setFilter("province-hover", ["==", "cod_prov", ""]); } catch {}
-              }}
-              className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors shrink-0 mt-1"
+
+            {/* Infrastructure stats grid */}
+            {selectedData ? (
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {Object.entries(selectedData).map(([key, val]) => (
+                  <div key={key} className="bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg px-3 py-2">
+                    <p className="text-[0.6rem] text-gray-400 dark:text-gray-500 uppercase tracking-wider">{key}</p>
+                    <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100 leading-tight">
+                      {typeof val === "number" ? val.toLocaleString("es-ES") : val}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-14 bg-gray-50 dark:bg-gray-900 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            )}
+
+            {/* Risk & traffic health (province only) */}
+            {selected.type === "province" && selectedData && (
+              <div className="mb-4 bg-tl-50 dark:bg-tl-950/30 border border-tl-200 dark:border-tl-800 rounded-lg px-3 py-2.5">
+                <p className="text-[0.6rem] text-tl-600 dark:text-tl-400 uppercase tracking-wider font-semibold mb-1">Estado del tráfico</p>
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-green opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-signal-green" />
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {Number(selectedData["Incidencias"] ?? 0) < 5 ? "Fluido" : Number(selectedData["Incidencias"] ?? 0) < 15 ? "Moderado" : "Congestionado"}
+                  </span>
+                </div>
+                <p className="text-[0.65rem] text-gray-500 dark:text-gray-400 mt-1">
+                  {Number(selectedData["Incidencias"] ?? 0)} incidencias activas · {Number(selectedData["Radares"] ?? 0)} radares en vigilancia
+                </p>
+              </div>
+            )}
+
+            {/* Quick links for the province */}
+            <div className="space-y-1 mb-4">
+              <p className="text-[0.6rem] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold mb-1.5">Secciones disponibles</p>
+              {(selected.type === "province"
+                ? [
+                    { label: "Incidencias en vivo", href: `${selected.href}#incidencias` },
+                    { label: "Cámaras DGT", href: `${selected.href}#camaras` },
+                    { label: "Radares", href: `${selected.href}#radares` },
+                    { label: "Gasolineras y precios", href: `${selected.href}#combustible` },
+                    { label: "Cargadores EV", href: `${selected.href}#carga-ev` },
+                    { label: "Meteorología", href: `${selected.href}#meteo` },
+                    { label: "Carreteras", href: `${selected.href}#carreteras` },
+                    { label: "Accidentalidad histórica", href: `${selected.href}#accidentes` },
+                    { label: "Zonas de riesgo", href: `${selected.href}#riesgo` },
+                  ]
+                : selected.code === "/portugal"
+                  ? [
+                      { label: "Combustible Portugal", href: "/portugal/combustible" },
+                      { label: "Meteorología IPMA", href: "/portugal" },
+                      { label: "Accidentes ANSR", href: "/portugal" },
+                    ]
+                  : selected.code === "/andorra"
+                    ? [
+                        { label: "Incidencias Mobilitat", href: "/andorra" },
+                        { label: "Cámaras en vivo", href: "/andorra" },
+                      ]
+                    : [{ label: "Información general", href: selected.href }]
+              ).map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="flex items-center justify-between py-1.5 px-2 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
+                >
+                  {link.label}
+                  <span className="text-gray-300 dark:text-gray-600">&rarr;</span>
+                </Link>
+              ))}
+            </div>
+
+            {/* Main CTA */}
+            <Link
+              href={selected.href}
+              className="flex items-center justify-center gap-1.5 w-full bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold text-sm rounded-lg px-4 py-2.5 transition-colors"
             >
-              Volver al mapa
-            </button>
+              Ver todo sobre {selected.name}
+            </Link>
           </div>
-
-          {/* Data pills — show real stats */}
-          {selectedData ? (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {Object.entries(selectedData).map(([key, val]) => (
-                <span key={key} className="inline-flex items-center gap-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-[0.65rem]">
-                  <span className="text-gray-500 dark:text-gray-400">{key}</span>
-                  <span className="font-data font-semibold text-gray-900 dark:text-gray-100">{typeof val === "number" ? val.toLocaleString("es-ES") : val}</span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            <div className="flex gap-1.5 mb-3">
-              {[1, 2, 3].map((i) => (
-                <span key={i} className="h-6 w-20 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
-              ))}
-            </div>
-          )}
-
-          <Link
-            href={selected.href}
-            className="inline-flex items-center gap-1.5 bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold text-sm rounded-lg px-4 py-2 transition-colors"
-          >
-            Ver tráfico en {selected.name}
-          </Link>
         </div>
       )}
     </section>
