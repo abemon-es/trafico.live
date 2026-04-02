@@ -2062,3 +2062,299 @@ model ApiUsage {
   @@index([keyId])
   @@index([date])
 }
+
+// ============================================
+// MARITIME — Vessel Tracking (AIS)
+// ============================================
+
+model Vessel {
+  id        String   @id @default(cuid())
+  mmsi      Int      @unique
+  imo       Int?
+  name      String?
+  callsign  String?
+  shipType  Int?
+  flag      String?
+  length    Int?
+  beam      Int?
+  draught   Float?
+  destination String?
+  eta       DateTime?   @db.Timestamptz
+  updatedAt DateTime    @default(now()) @updatedAt @db.Timestamptz
+
+  positions VesselPosition[]
+
+  @@index([shipType])
+  @@index([flag])
+}
+
+model VesselPosition {
+  id        String   @id @default(cuid())
+  mmsi      Int
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+  sog       Float?
+  cog       Float?
+  heading   Int?
+  navStatus Int?
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  vessel    Vessel   @relation(fields: [mmsi], references: [mmsi], onDelete: Cascade)
+
+  @@index([mmsi, createdAt(sort: Desc)])
+  @@index([createdAt])
+}
+
+model FerryRoute {
+  id          String  @id @default(cuid())
+  operator    String
+  routeId     String
+  routeName   String
+  routeType   Int?
+  routeColor  String?
+  geometry    Json?
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  stops       FerryStop[]
+  trips       FerryTrip[]
+
+  @@unique([operator, routeId])
+  @@index([operator])
+}
+
+model FerryStop {
+  id        String  @id @default(cuid())
+  stopId    String
+  stopName  String
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  routeId   String
+
+  route     FerryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@unique([routeId, stopId])
+}
+
+model FerryTrip {
+  id          String  @id @default(cuid())
+  tripId      String
+  routeId     String
+  headsign    String?
+  departsAt   String?
+  arrivesAt   String?
+  serviceDay  String?
+
+  route       FerryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId])
+}
+
+// ============================================
+// PUBLIC TRANSIT — Metro, Bus, Tram (GTFS)
+// ============================================
+
+model TransitOperator {
+  id          String  @id @default(cuid())
+  mdbId       String  @unique
+  name        String
+  city        String?
+  province    String?
+  mode        String
+  feedUrl     String?
+  feedHash    String?
+  isOfficial  Boolean @default(true)
+  hasRealtime Boolean @default(false)
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  routes      TransitRoute[]
+  stops       TransitStop[]
+
+  @@index([mode])
+  @@index([province])
+}
+
+model TransitRoute {
+  id          String  @id @default(cuid())
+  operatorId  String
+  routeId     String
+  shortName   String?
+  longName    String?
+  routeType   Int
+  routeColor  String?
+  geometry    Json?
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  operator    TransitOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@unique([operatorId, routeId])
+  @@index([routeType])
+}
+
+model TransitStop {
+  id         String  @id @default(cuid())
+  operatorId String
+  stopId     String
+  stopName   String
+  latitude   Decimal @db.Decimal(9, 6)
+  longitude  Decimal @db.Decimal(9, 6)
+  parentId   String?
+  locationType Int @default(0)
+  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  operator   TransitOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@unique([operatorId, stopId])
+  @@index([latitude, longitude])
+}
+
+// ============================================
+// CITY TRAFFIC SENSORS
+// ============================================
+
+model CityTrafficSensor {
+  id          String  @id @default(cuid())
+  city        String
+  sensorId    String
+  streetName  String?
+  latitude    Decimal @db.Decimal(9, 6)
+  longitude   Decimal @db.Decimal(9, 6)
+  direction   String?
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  readings    CityTrafficReading[]
+
+  @@unique([city, sensorId])
+  @@index([city])
+}
+
+model CityTrafficReading {
+  id          String   @id @default(cuid())
+  sensorId    String
+  intensity   Int?
+  occupancy   Float?
+  speed       Float?
+  serviceLevel Int?
+  prediction  Int?
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  sensor      CityTrafficSensor @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+
+  @@index([sensorId, createdAt(sort: Desc)])
+  @@index([createdAt])
+}
+
+model RoadworksZone {
+  id          String   @id @default(cuid())
+  sourceId    String   @unique
+  roadNumber  String?
+  roadType    RoadType?
+  kmStart     Decimal? @db.Decimal(7, 2)
+  kmEnd       Decimal? @db.Decimal(7, 2)
+  direction   Direction?
+  latitude    Decimal  @db.Decimal(9, 6)
+  longitude   Decimal  @db.Decimal(9, 6)
+  description String?
+  startDate   DateTime? @db.Timestamptz
+  endDate     DateTime? @db.Timestamptz
+  isActive    Boolean  @default(true)
+  province    String?
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  @@index([isActive])
+  @@index([province])
+  @@index([roadNumber])
+}
+
+// ============================================
+// HISTORICAL DATA & STATISTICS
+// ============================================
+
+model GTFSArchive {
+  id          String   @id @default(cuid())
+  mdbId       String
+  operator    String
+  downloadedAt DateTime @db.Timestamptz
+  hash        String
+  serviceStart DateTime? @db.Timestamptz
+  serviceEnd   DateTime? @db.Timestamptz
+  routeCount  Int?
+  stopCount   Int?
+  tripCount   Int?
+  fileSize    Int?
+
+  @@unique([mdbId, hash])
+  @@index([mdbId, downloadedAt(sort: Desc)])
+}
+
+model TransportStatistic {
+  id          String   @id @default(cuid())
+  source      String
+  mode        String
+  metric      String
+  province    String?
+  operator    String?
+  value       Decimal  @db.Decimal(15, 2)
+  unit        String
+  periodType  String
+  periodStart DateTime @db.Timestamptz
+  periodEnd   DateTime @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  @@unique([source, mode, metric, province, operator, periodStart])
+  @@index([source, mode, periodStart])
+  @@index([province, mode])
+}
+
+// ============================================
+// AVIATION
+// ============================================
+
+model Airport {
+  id        String  @id @default(cuid())
+  icao      String  @unique
+  iata      String? @unique
+  name      String
+  city      String?
+  province  String?
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  elevation Int?
+  isAena    Boolean @default(true)
+
+  statistics AirportStatistic[]
+
+  @@index([province])
+}
+
+model AirportStatistic {
+  id          String   @id @default(cuid())
+  airportId   String
+  metric      String
+  value       Decimal  @db.Decimal(15, 2)
+  periodType  String
+  periodStart DateTime @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  airport     Airport  @relation(fields: [airportId], references: [id], onDelete: Cascade)
+
+  @@unique([airportId, metric, periodStart])
+  @@index([airportId, periodStart(sort: Desc)])
+}
+
+model AircraftPosition {
+  id          String   @id @default(cuid())
+  icao24      String
+  callsign    String?
+  latitude    Decimal  @db.Decimal(9, 6)
+  longitude   Decimal  @db.Decimal(9, 6)
+  altitude    Int?
+  velocity    Float?
+  heading     Float?
+  verticalRate Float?
+  onGround    Boolean  @default(false)
+  originCountry String?
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  @@index([icao24, createdAt(sort: Desc)])
+  @@index([createdAt])
+}

@@ -385,6 +385,64 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     token_separators: ["-"],
     default_sorting_field: "maxPrice",
   },
+
+  // ─── Data Expansion collections ─────────────────────────────────
+
+  vessels: {
+    name: "vessels",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "mmsi", type: "int32" },
+      { name: "name", type: "string", optional: true },
+      { name: "shipType", type: "int32", optional: true },
+      { name: "flag", type: "string", optional: true, facet: true },
+      { name: "destination", type: "string", optional: true },
+      { name: "length", type: "int32", optional: true },
+      { name: "location", type: "geopoint", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+  ferry_routes: {
+    name: "ferry_routes",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "operator", type: "string", facet: true },
+      { name: "routeName", type: "string" },
+      { name: "routeType", type: "int32", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+  transit_stops: {
+    name: "transit_stops",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "operatorName", type: "string", facet: true },
+      { name: "stopName", type: "string" },
+      { name: "mode", type: "string", facet: true },
+      { name: "city", type: "string", optional: true, facet: true },
+      { name: "location", type: "geopoint", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+  transit_routes: {
+    name: "transit_routes",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "operatorName", type: "string", facet: true },
+      { name: "shortName", type: "string", optional: true },
+      { name: "longName", type: "string", optional: true },
+      { name: "routeType", type: "int32", facet: true },
+      { name: "mode", type: "string", facet: true },
+    ] as CollectionFieldSchema[],
+  },
+  airports: {
+    name: "airports",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "icao", type: "string" },
+      { name: "iata", type: "string", optional: true },
+      { name: "name", type: "string" },
+      { name: "city", type: "string", optional: true, facet: true },
+      { name: "location", type: "geopoint", optional: true },
+    ] as CollectionFieldSchema[],
+  },
 };
 
 // Strip embedding fields when vector search is disabled (prevents Typesense errors
