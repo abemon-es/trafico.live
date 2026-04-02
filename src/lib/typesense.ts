@@ -253,6 +253,7 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     fields: [
       { name: "id", type: "string" },
       { name: "name", type: "string" },
+      { name: "address", type: "string", optional: true },
       { name: "locality", type: "string", optional: true, facet: true },
       { name: "district", type: "string", optional: true, facet: true },
       { name: "location", type: "geopoint", optional: true },
@@ -278,6 +279,41 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     token_separators: ["-"],
     default_sorting_field: "year",
   },
+};
+
+// ---------------------------------------------------------------------------
+// Search synonyms
+// ---------------------------------------------------------------------------
+
+export interface TypesenseSynonym {
+  id: string;
+  synonyms: string[];
+}
+
+export const SYNONYMS: Record<string, TypesenseSynonym[]> = {
+  gas_stations: [
+    { id: "gasolinera-estacion", synonyms: ["gasolinera", "estación de servicio", "gasinera", "surtidor"] },
+    { id: "diesel-gasoleo", synonyms: ["diesel", "gasóleo", "gasoleo", "gasoil"] },
+    { id: "glp-autogas", synonyms: ["glp", "autogas", "gas licuado"] },
+  ],
+  ev_chargers: [
+    { id: "cargador-electrolinera", synonyms: ["cargador", "electrolinera", "punto de carga", "estación de carga"] },
+  ],
+  roads: [
+    { id: "autovia-autopista", synonyms: ["autovía", "autopista", "autovia"] },
+    { id: "carretera-nacional", synonyms: ["nacional", "carretera nacional", "N-"] },
+  ],
+  zbe_zones: [
+    { id: "zbe-bajas-emisiones", synonyms: ["zbe", "zona de bajas emisiones", "zona bajas emisiones"] },
+  ],
+  railway_stations: [
+    { id: "tren-ferrocarril", synonyms: ["tren", "ferrocarril", "estación de tren", "renfe"] },
+    { id: "cercanias-commuter", synonyms: ["cercanías", "cercanias", "commuter"] },
+    { id: "ave-alta-velocidad", synonyms: ["ave", "alta velocidad", "tav"] },
+  ],
+  radars: [
+    { id: "radar-cinemometro", synonyms: ["radar", "cinemómetro", "control de velocidad"] },
+  ],
 };
 
 // ---------------------------------------------------------------------------

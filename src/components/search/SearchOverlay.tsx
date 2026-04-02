@@ -26,6 +26,12 @@ import {
   Map,
   Newspaper,
   Loader2,
+  TrainFront,
+  ShieldAlert,
+  MonitorDot,
+  Anchor,
+  Activity,
+  Clock,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -35,7 +41,10 @@ export type SearchCategory =
   | "ciudad"
   | "provincia"
   | "herramienta"
-  | "combustible";
+  | "combustible"
+  | "transporte"
+  | "seguridad"
+  | "infraestructura";
 
 export interface SearchResult {
   title: string;
@@ -43,6 +52,7 @@ export interface SearchResult {
   href: string;
   category: SearchCategory;
   icon: string;
+  highlightedTitle?: string;
 }
 
 // ── API response shape ───────────────────────────────────────────────────────
@@ -54,6 +64,7 @@ interface SearchAPIResponse {
     href: string;
     category: string;
     icon: string;
+    highlightedTitle?: string;
   }>;
   query: string;
   total: number;
@@ -87,6 +98,13 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Building2: Building2,
   Route: Route,
   Newspaper: Newspaper,
+  Zap: Zap,
+  TrainFront: TrainFront,
+  ShieldAlert: ShieldAlert,
+  AlertTriangle: AlertTriangle,
+  MonitorDot: MonitorDot,
+  Anchor: Anchor,
+  Activity: Activity,
 };
 
 function ResultIcon({
@@ -106,41 +124,65 @@ const CATEGORY_META: Record<
   SearchCategory,
   { label: string; badgeClass: string }
 > = {
-  herramienta: {
-    label: "Herramientas",
+  provincia: {
+    label: "Provincias",
     badgeClass:
-      "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-  },
-  combustible: {
-    label: "Combustible",
-    badgeClass: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300",
+      "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   },
   ciudad: {
     label: "Ciudades",
     badgeClass:
       "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
   },
-  provincia: {
-    label: "Provincias",
-    badgeClass:
-      "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
+  combustible: {
+    label: "Combustible",
+    badgeClass: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300",
   },
   carretera: {
     label: "Carreteras",
     badgeClass:
       "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
   },
+  transporte: {
+    label: "Transporte",
+    badgeClass:
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+  },
+  seguridad: {
+    label: "Seguridad",
+    badgeClass:
+      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+  },
+  infraestructura: {
+    label: "Infraestructura",
+    badgeClass:
+      "bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400",
+  },
+  herramienta: {
+    label: "Herramientas",
+    badgeClass:
+      "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+  },
 };
 
 // ── Map API categories to SearchCategory ─────────────────────────────────────
 
 const API_CATEGORY_MAP: Record<string, SearchCategory> = {
-  Gasolineras: "combustible",
-  Carreteras: "carretera",
-  Camaras: "herramienta",
-  Noticias: "herramienta",
   Provincias: "provincia",
   Ciudades: "ciudad",
+  Gasolineras: "combustible",
+  "Gasolineras Portugal": "combustible",
+  "Gasolineras maritimas": "combustible",
+  Carreteras: "carretera",
+  Camaras: "infraestructura",
+  "Cargadores EV": "combustible",
+  Radares: "seguridad",
+  "Estaciones de tren": "transporte",
+  "Zonas ZBE": "seguridad",
+  "Zonas de riesgo": "seguridad",
+  Paneles: "infraestructura",
+  "Estaciones de aforo": "infraestructura",
+  Noticias: "herramienta",
 };
 
 function mapApiCategory(apiCategory: string): SearchCategory {
@@ -157,17 +199,21 @@ function transformResults(data: SearchAPIResponse | undefined): SearchResult[] {
     href: r.href,
     category: mapApiCategory(r.category),
     icon: r.icon,
+    highlightedTitle: r.highlightedTitle,
   }));
 }
 
 // ── Category order for grouping ──────────────────────────────────────────────
 
 const CATEGORY_ORDER: SearchCategory[] = [
-  "herramienta",
+  "provincia",
+  "ciudad",
   "combustible",
   "carretera",
-  "ciudad",
-  "provincia",
+  "transporte",
+  "seguridad",
+  "infraestructura",
+  "herramienta",
 ];
 
 function groupResults(
@@ -182,6 +228,30 @@ function groupResults(
     category: c,
     items: acc[c]!,
   }));
+}
+
+// ── Recent searches (localStorage) ──────────────────────────────────────────
+
+const RECENT_KEY = "tl-recent-searches";
+const MAX_RECENT = 5;
+
+function getRecentSearches(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    return raw ? (JSON.parse(raw) as string[]).slice(0, MAX_RECENT) : [];
+  } catch {
+    return [];
+  }
+}
+
+function addRecentSearch(query: string): void {
+  if (typeof window === "undefined" || !query.trim()) return;
+  try {
+    const existing = getRecentSearches().filter((q) => q !== query.trim());
+    existing.unshift(query.trim());
+    localStorage.setItem(RECENT_KEY, JSON.stringify(existing.slice(0, MAX_RECENT)));
+  } catch { /* quota exceeded or private browsing */ }
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -200,10 +270,11 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  // Debounce query (300ms)
+  // Debounce query (150ms — Typesense is fast enough)
   useEffect(() => {
-    const id = setTimeout(() => setDebouncedQuery(query), 300);
+    const id = setTimeout(() => setDebouncedQuery(query), 150);
     return () => clearTimeout(id);
   }, [query]);
 
@@ -242,6 +313,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       setDebouncedQuery("");
       setActiveIndex(0);
       setMounted(false);
+      setRecentSearches(getRecentSearches());
       // Trigger enter animation on next frame
       requestAnimationFrame(() => setMounted(true));
       // Focus input after the DOM paints
@@ -263,10 +335,11 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   const navigate = useCallback(
     (href: string) => {
+      if (debouncedQuery.trim()) addRecentSearch(debouncedQuery.trim());
       onClose();
       router.push(href);
     },
-    [onClose, router]
+    [onClose, router, debouncedQuery]
   );
 
   // Keyboard handler
@@ -380,13 +453,33 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
           role="listbox"
         >
           {!hasQuery ? (
-            /* Empty state — no query yet */
-            <div className="py-12 text-center text-gray-500 dark:text-gray-400 text-sm">
-              <Search className="w-8 h-8 mx-auto mb-3 text-gray-300" />
-              <p>Buscar carreteras, ciudades, gasolineras...</p>
-              <p className="mt-1 text-xs text-gray-400">
-                Escribe para buscar
-              </p>
+            /* Empty state — show recent searches or hint */
+            <div className="py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+              {recentSearches.length > 0 ? (
+                <div className="text-left px-4">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Clock className="w-3 h-3" /> Busquedas recientes
+                  </p>
+                  {recentSearches.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => { setQuery(q); setDebouncedQuery(q); }}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+                      <span className="truncate text-sm">{q}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <Search className="w-8 h-8 mx-auto mb-3 text-gray-300" />
+                  <p>Buscar carreteras, ciudades, gasolineras...</p>
+                  <p className="mt-1 text-xs text-gray-400">
+                    Escribe para buscar
+                  </p>
+                </>
+              )}
             </div>
           ) : isLoading && flatResults.length === 0 ? (
             /* Loading state (only when no cached results) */
@@ -454,15 +547,26 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
                           {/* Text */}
                           <div className="flex-1 min-w-0">
-                            <p
-                              className={`text-sm font-medium truncate ${
-                                isActive
-                                  ? "text-tl-700 dark:text-tl-300"
-                                  : "text-gray-900 dark:text-gray-100"
-                              }`}
-                            >
-                              {result.title}
-                            </p>
+                            {result.highlightedTitle ? (
+                              <p
+                                className={`text-sm font-medium truncate ${
+                                  isActive
+                                    ? "text-tl-700 dark:text-tl-300"
+                                    : "text-gray-900 dark:text-gray-100"
+                                } [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm`}
+                                dangerouslySetInnerHTML={{ __html: result.highlightedTitle }}
+                              />
+                            ) : (
+                              <p
+                                className={`text-sm font-medium truncate ${
+                                  isActive
+                                    ? "text-tl-700 dark:text-tl-300"
+                                    : "text-gray-900 dark:text-gray-100"
+                                }`}
+                              >
+                                {result.title}
+                              </p>
+                            )}
                             {result.subtitle && (
                               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                 {result.subtitle}

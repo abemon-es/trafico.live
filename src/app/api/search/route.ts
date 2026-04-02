@@ -24,6 +24,8 @@ interface SearchResult {
   category: string;
   /** Lucide icon name */
   icon: string;
+  /** Title with <mark> tags for matched terms */
+  highlightedTitle?: string;
 }
 
 interface SearchAPIResponse {
@@ -39,6 +41,7 @@ interface SearchAPIResponse {
 interface CollectionSearchConfig {
   collection: string;
   queryBy: string;
+  queryByWeights?: string;
   category: string;
   icon: string;
   mapHit: (doc: Record<string, unknown>) => SearchResult;
@@ -48,6 +51,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "provinces",
     queryBy: "name,community",
+    queryByWeights: "3,1",
     category: "Provincias",
     icon: "MapPin",
     mapHit: (doc) => ({
@@ -61,6 +65,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "cities",
     queryBy: "name,province",
+    queryByWeights: "3,1",
     category: "Ciudades",
     icon: "Building2",
     mapHit: (doc) => ({
@@ -74,6 +79,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "gas_stations",
     queryBy: "name,locality,provinceName,address",
+    queryByWeights: "3,2,1,1",
     category: "Gasolineras",
     icon: "Fuel",
     mapHit: (doc) => ({
@@ -87,6 +93,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "roads",
     queryBy: "roadNumber,name",
+    queryByWeights: "3,1",
     category: "Carreteras",
     icon: "Route",
     mapHit: (doc) => ({
@@ -100,6 +107,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "cameras",
     queryBy: "name,roadNumber,provinceName",
+    queryByWeights: "2,2,1",
     category: "Camaras",
     icon: "Camera",
     mapHit: (doc) => ({
@@ -113,6 +121,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "articles",
     queryBy: "title,summary,tags",
+    queryByWeights: "3,1,1",
     category: "Noticias",
     icon: "Newspaper",
     mapHit: (doc) => ({
@@ -126,6 +135,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "ev_chargers",
     queryBy: "name,city,provinceName,address,operator",
+    queryByWeights: "3,2,1,1,1",
     category: "Cargadores EV",
     icon: "Zap",
     mapHit: (doc) => ({
@@ -139,6 +149,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "radars",
     queryBy: "roadNumber,provinceName",
+    queryByWeights: "3,1",
     category: "Radares",
     icon: "Radar",
     mapHit: (doc) => ({
@@ -152,6 +163,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "railway_stations",
     queryBy: "name,provinceName,municipality",
+    queryByWeights: "3,1,2",
     category: "Estaciones de tren",
     icon: "TrainFront",
     mapHit: (doc) => ({
@@ -165,6 +177,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "zbe_zones",
     queryBy: "name,cityName",
+    queryByWeights: "3,2",
     category: "Zonas ZBE",
     icon: "ShieldAlert",
     mapHit: (doc) => ({
@@ -178,6 +191,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "risk_zones",
     queryBy: "road,province,description",
+    queryByWeights: "3,1,1",
     category: "Zonas de riesgo",
     icon: "AlertTriangle",
     mapHit: (doc) => ({
@@ -191,6 +205,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "variable_panels",
     queryBy: "name,roadNumber,provinceName,message",
+    queryByWeights: "2,2,1,1",
     category: "Paneles",
     icon: "MonitorDot",
     mapHit: (doc) => ({
@@ -204,6 +219,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "maritime_stations",
     queryBy: "name,port,locality,provinceName",
+    queryByWeights: "3,2,1,1",
     category: "Gasolineras maritimas",
     icon: "Anchor",
     mapHit: (doc) => ({
@@ -217,6 +233,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "traffic_stations",
     queryBy: "stationCode,roadNumber,provinceName",
+    queryByWeights: "3,2,1",
     category: "Estaciones de aforo",
     icon: "Activity",
     mapHit: (doc) => ({
@@ -230,6 +247,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "portugal_stations",
     queryBy: "name,locality,district,address",
+    queryByWeights: "3,2,1,1",
     category: "Gasolineras Portugal",
     icon: "Fuel",
     mapHit: (doc) => ({
@@ -294,12 +312,16 @@ async function performSearch(
   try {
     const perCollection = Math.max(3, Math.ceil(limit / SEARCH_CONFIGS.length));
 
+    const isShortQuery = query.length <= 3;
     const searchRequests = {
       searches: SEARCH_CONFIGS.map((config) => ({
         collection: config.collection,
         q: query,
         query_by: config.queryBy,
-        per_page: perCollection,
+        ...(config.queryByWeights && { query_by_weights: config.queryByWeights }),
+        per_page: isShortQuery && (config.collection === "provinces" || config.collection === "cities")
+          ? perCollection * 2
+          : perCollection,
         highlight_full_fields: config.queryBy,
         num_typos: 2,
         typo_tokens_threshold: 1,
@@ -326,7 +348,16 @@ async function performSearch(
 
       if (collectionResult.hits) {
         for (const hit of collectionResult.hits) {
-          results.push(config.mapHit(hit.document));
+          const result = config.mapHit(hit.document);
+          // Extract highlighted title from Typesense highlights
+          const highlights = hit.highlights as Array<{ field: string; snippet?: string }> | undefined;
+          const titleHighlight = highlights?.find(
+            (h) => h.field === config.queryBy.split(",")[0]
+          );
+          if (titleHighlight?.snippet) {
+            result.highlightedTitle = titleHighlight.snippet;
+          }
+          results.push(result);
         }
       }
     }

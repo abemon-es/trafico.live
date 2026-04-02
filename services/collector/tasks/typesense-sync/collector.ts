@@ -239,6 +239,36 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
 };
 
 // ---------------------------------------------------------------------------
+// Search synonyms (mirror of src/lib/typesense.ts SYNONYMS)
+// ---------------------------------------------------------------------------
+
+const SYNONYM_RULES: Record<string, Array<{ id: string; synonyms: string[] }>> = {
+  gas_stations: [
+    { id: "gasolinera-estacion", synonyms: ["gasolinera", "estación de servicio", "gasinera", "surtidor"] },
+    { id: "diesel-gasoleo", synonyms: ["diesel", "gasóleo", "gasoleo", "gasoil"] },
+    { id: "glp-autogas", synonyms: ["glp", "autogas", "gas licuado"] },
+  ],
+  ev_chargers: [
+    { id: "cargador-electrolinera", synonyms: ["cargador", "electrolinera", "punto de carga", "estación de carga"] },
+  ],
+  roads: [
+    { id: "autovia-autopista", synonyms: ["autovía", "autopista", "autovia"] },
+    { id: "carretera-nacional", synonyms: ["nacional", "carretera nacional", "N-"] },
+  ],
+  zbe_zones: [
+    { id: "zbe-bajas-emisiones", synonyms: ["zbe", "zona de bajas emisiones", "zona bajas emisiones"] },
+  ],
+  railway_stations: [
+    { id: "tren-ferrocarril", synonyms: ["tren", "ferrocarril", "estación de tren", "renfe"] },
+    { id: "cercanias-commuter", synonyms: ["cercanías", "cercanias", "commuter"] },
+    { id: "ave-alta-velocidad", synonyms: ["ave", "alta velocidad", "tav"] },
+  ],
+  radars: [
+    { id: "radar-cinemometro", synonyms: ["radar", "cinemómetro", "control de velocidad"] },
+  ],
+};
+
+// ---------------------------------------------------------------------------
 // Sync engine
 // ---------------------------------------------------------------------------
 
@@ -264,13 +294,31 @@ async function importBatched(
   return count;
 }
 
+async function applySynonyms(
+  client: Typesense.Client,
+  name: string,
+  synonyms: Array<{ id: string; synonyms: string[] }>
+): Promise<void> {
+  for (const syn of synonyms) {
+    try {
+      await client.collections(name).synonyms().upsert(syn.id, { synonyms: syn.synonyms });
+    } catch (error) {
+      console.error(`[typesense-sync] Failed to upsert synonym ${syn.id} for ${name}:`, error);
+    }
+  }
+}
+
 async function replaceCollection(
   client: Typesense.Client, name: string, schema: CollectionCreateSchema,
   documents: Record<string, unknown>[]
 ): Promise<number> {
   try { await client.collections(name).delete(); } catch { /* ok */ }
   await client.collections().create(schema);
-  return importBatched(client, name, documents, "create");
+  const count = await importBatched(client, name, documents, "create");
+  // Apply synonyms if defined
+  const syns = SYNONYM_RULES[name];
+  if (syns) await applySynonyms(client, name, syns);
+  return count;
 }
 
 async function upsertCollection(
