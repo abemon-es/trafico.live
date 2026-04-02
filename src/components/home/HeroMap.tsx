@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Map } from "lucide-react";
 import type maplibregl from "maplibre-gl";
@@ -91,6 +92,8 @@ const LAYERS = [
 ];
 
 const LEGEND_ITEMS = [
+  { label: "Provincias", color: "#c0d5ff" },
+  { label: "Ciudades", color: "#1b4bd5" },
   { label: "Incidencias", color: "#dc2626" },
   { label: "Cámaras", color: "#6393ff" },
   { label: "Radares", color: "#d48139" },
@@ -101,10 +104,27 @@ const LEGEND_ITEMS = [
 // Component
 // ---------------------------------------------------------------------------
 
+const MAJOR_CITIES = [
+  { name: "Madrid", slug: "madrid", lng: -3.7038, lat: 40.4168 },
+  { name: "Barcelona", slug: "barcelona", lng: 2.1734, lat: 41.3851 },
+  { name: "Valencia", slug: "valencia", lng: -0.3763, lat: 39.4699 },
+  { name: "Sevilla", slug: "sevilla", lng: -5.9845, lat: 37.3891 },
+  { name: "Zaragoza", slug: "zaragoza", lng: -0.8773, lat: 41.6488 },
+  { name: "Málaga", slug: "malaga", lng: -4.4214, lat: 36.7213 },
+  { name: "Murcia", slug: "murcia", lng: -1.1307, lat: 37.9922 },
+  { name: "Bilbao", slug: "bilbao", lng: -2.9350, lat: 43.2630 },
+  { name: "Palma", slug: "palma-de-mallorca", lng: 2.6502, lat: 39.5696 },
+  { name: "Valladolid", slug: "valladolid", lng: -4.7245, lat: 41.6523 },
+  { name: "Alicante", slug: "alicante", lng: -0.4907, lat: 38.3452 },
+  { name: "Córdoba", slug: "cordoba", lng: -4.7794, lat: 37.8882 },
+];
+
 export function HeroMap({ initialStats }: HeroMapProps) {
+  const router = useRouter();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<MapInstance | null>(null);
   const [legendVisible, setLegendVisible] = useState(false);
+  const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -126,7 +146,13 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
         center: [-3.7038, 40.4168],
         zoom: 5.5,
-        interactive: false,
+        interactive: true,
+        scrollZoom: false,
+        boxZoom: false,
+        dragRotate: false,
+        doubleClickZoom: false,
+        touchZoomRotate: false,
+        dragPan: false,
         attributionControl: false,
       });
 
@@ -135,6 +161,129 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       map.on("load", async () => {
         if (cancelled) return;
 
+        // ── Province boundaries ──
+        try {
+          const provRes = await fetch("/geo/spain-provinces.geojson");
+          const provData = await provRes.json();
+          if (cancelled) return;
+
+          map.addSource("provinces", { type: "geojson", data: provData });
+
+          map.addLayer({
+            id: "province-fill",
+            type: "fill",
+            source: "provinces",
+            paint: { "fill-color": "#1b4bd5", "fill-opacity": 0 },
+          });
+
+          map.addLayer({
+            id: "province-outline",
+            type: "line",
+            source: "provinces",
+            paint: {
+              "line-color": "#c0d5ff",
+              "line-width": 0.5,
+              "line-opacity": 0.6,
+            },
+          });
+
+          map.addLayer({
+            id: "province-hover",
+            type: "fill",
+            source: "provinces",
+            paint: { "fill-color": "#1b4bd5", "fill-opacity": 0.1 },
+            filter: ["==", "cod_prov", ""],
+          });
+
+          // Province hover
+          map.on("mousemove", "province-fill", (e) => {
+            if (!e.features?.length) return;
+            map.getCanvas().style.cursor = "pointer";
+            const code = e.features[0].properties?.cod_prov;
+            const name = e.features[0].properties?.nombre;
+            if (code) map.setFilter("province-hover", ["==", "cod_prov", code]);
+            setHoveredProvince(name ?? null);
+          });
+          map.on("mouseleave", "province-fill", () => {
+            map.getCanvas().style.cursor = "";
+            map.setFilter("province-hover", ["==", "cod_prov", ""]);
+            setHoveredProvince(null);
+          });
+
+          // Province click → navigate
+          map.on("click", "province-fill", (e) => {
+            if (!e.features?.length) return;
+            const code = e.features[0].properties?.cod_prov;
+            if (code) router.push(`/provincias/${code}`);
+          });
+        } catch {
+          // Province boundaries optional — continue without them
+        }
+
+        // ── Major cities ──
+        const citiesGeoJSON = {
+          type: "FeatureCollection" as const,
+          features: MAJOR_CITIES.map((c) => ({
+            type: "Feature" as const,
+            geometry: { type: "Point" as const, coordinates: [c.lng, c.lat] },
+            properties: { name: c.name, slug: c.slug },
+          })),
+        };
+        map.addSource("cities", { type: "geojson", data: citiesGeoJSON });
+        map.addLayer({
+          id: "city-dots",
+          type: "circle",
+          source: "cities",
+          paint: {
+            "circle-radius": 4,
+            "circle-color": "#1b4bd5",
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 1.5,
+            "circle-opacity": 0,
+            "circle-opacity-transition": { duration: 600, delay: 0 },
+            "circle-stroke-opacity": 0,
+            "circle-stroke-opacity-transition": { duration: 600, delay: 0 },
+          },
+        });
+        map.addLayer({
+          id: "city-labels",
+          type: "symbol",
+          source: "cities",
+          layout: {
+            "text-field": ["get", "name"],
+            "text-font": ["Open Sans Semibold"],
+            "text-size": 11,
+            "text-offset": [0, 1.2],
+            "text-anchor": "top",
+          },
+          paint: {
+            "text-color": "#374151",
+            "text-halo-color": "#ffffff",
+            "text-halo-width": 1.5,
+            "text-opacity": 0,
+            "text-opacity-transition": { duration: 600, delay: 0 },
+          },
+        });
+
+        // Reveal cities early
+        setTimeout(() => {
+          if (cancelled) return;
+          map.setPaintProperty("city-dots", "circle-opacity", 1);
+          map.setPaintProperty("city-dots", "circle-stroke-opacity", 1);
+          map.setPaintProperty("city-labels", "text-opacity", 1);
+        }, prefersReducedMotion ? 0 : 500);
+
+        // City click → navigate
+        map.on("click", "city-dots", (e) => {
+          e.originalEvent.stopPropagation();
+          if (!e.features?.length) return;
+          const slug = e.features[0].properties?.slug;
+          if (slug) router.push(`/trafico/${slug}`);
+        });
+        map.on("mouseenter", "city-dots", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "city-dots", () => { map.getCanvas().style.cursor = ""; });
+
+        // ── Data layers (existing) ──
         // Fetch all data sources in parallel
         const [incidentsData, camerasData, radarsData, chargersData] = await Promise.allSettled([
           fetch("/api/incidents?limit=200").then((r) => r.json()),
@@ -262,6 +411,15 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-white from-5% via-white/70 via-40% to-transparent dark:from-gray-950 dark:from-5% dark:via-gray-950/70 dark:via-40% dark:to-transparent pointer-events-none" />
 
       {/* Top bar — technical data feed look */}
+      {/* Province hover tooltip */}
+      {hoveredProvince && (
+        <div className="absolute top-14 left-4 sm:left-6 lg:left-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 pointer-events-none z-20 shadow-sm">
+          <p className="text-sm font-heading font-semibold text-gray-900 dark:text-gray-100">{hoveredProvince}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Clic para ver tráfico en esta provincia</p>
+        </div>
+      )}
+
+      {/* Technical data feed bar */}
       <div className="absolute top-0 inset-x-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4 text-[0.65rem] font-data text-gray-500 dark:text-gray-400">
