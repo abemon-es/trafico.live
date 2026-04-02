@@ -210,6 +210,7 @@ export default function TrainesContent() {
           ))}
         </div>
       </div>
+      </div>{/* end hidden old sections */}
 
       {/* Train Detail Panel */}
       {selectedTrain && (
@@ -437,7 +438,8 @@ export default function TrainesContent() {
         <Info className="w-3 h-3" />
         Origen de los datos: Renfe Operadora (CC-BY 4.0). Posiciones cada 15s. Analytics cada 2 min.
       </p>
-      </div>{/* close content section */}
+      </div>
+      {/* close content section */}
     </div>
   );
 }
