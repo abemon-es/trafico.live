@@ -3,3 +3,5 @@
 30 3 * * 0 TASK=speedlimit npx tsx index.ts 2>&1
 0 4 * * 0 TASK=risk-zones npx tsx index.ts 2>&1
 30 4 * * 0 TASK=zbe npx tsx index.ts 2>&1
+# Renfe GTFS static (weekly — timetables update daily but weekly is enough)
+0 5 * * 0 TASK=renfe-gtfs npx tsx index.ts 2>&1

@@ -6,3 +6,5 @@
 */5 * * * * TASK=detector npx tsx index.ts 2>&1
 */5 * * * * TASK=intensity npx tsx index.ts 2>&1
 */5 * * * * TASK=andorra npx tsx index.ts 2>&1
+# Renfe GTFS-RT alerts (every 2 min)
+*/2 * * * * TASK=renfe-alerts npx tsx index.ts 2>&1

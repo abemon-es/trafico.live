@@ -33,6 +33,8 @@ const VALID_TASKS = [
   "insights",
   // International
   "andorra", "portugal-weather", "portugal-fuel",
+  // Railway
+  "renfe-gtfs", "renfe-alerts",
   // One-shot / manual
   "historical-accidents", "imd", "portugal-accidents", "sasemar",
   // Search index

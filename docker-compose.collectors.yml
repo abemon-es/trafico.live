@@ -36,7 +36,7 @@ x-collector: &collector-base
 
 services:
   # ─── Realtime (every 2-5 min) ──────────────────────────────────────
-  # incident, v16, panel, detector, intensity, andorra
+  # incident, v16, panel, detector, intensity, andorra, renfe-alerts
   collector-realtime:
     <<: *collector-base
     environment:
@@ -91,7 +91,7 @@ services:
     mem_limit: 256m
 
   # ─── Weekly ────────────────────────────────────────────────────────
-  # radar, speedlimit, risk-zones, zbe
+  # radar, speedlimit, risk-zones, zbe, renfe-gtfs
   collector-weekly:
     <<: *collector-base
     environment:
