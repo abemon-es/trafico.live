@@ -195,6 +195,35 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "serviceTypes", type: "string[]", optional: true, facet: true },
     ] as CollectionFieldSchema[],
   },
+  railway_routes: {
+    name: "railway_routes",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "shortName", type: "string", optional: true },
+      { name: "longName", type: "string", optional: true },
+      { name: "brand", type: "string", optional: true, facet: true },
+      { name: "serviceType", type: "string", facet: true },
+      { name: "network", type: "string", optional: true, facet: true },
+      { name: "originName", type: "string", optional: true },
+      { name: "destName", type: "string", optional: true },
+      { name: "stopNames", type: "string[]", optional: true },
+      { name: "stopsCount", type: "int32", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+  railway_alerts: {
+    name: "railway_alerts",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "headerText", type: "string", optional: true },
+      { name: "description", type: "string" },
+      { name: "cause", type: "string", optional: true, facet: true },
+      { name: "effect", type: "string", facet: true },
+      { name: "serviceType", type: "string", optional: true, facet: true },
+      { name: "routeNames", type: "string[]", optional: true },
+      { name: "startedAt", type: "int64", sort: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "startedAt",
+  },
   zbe_zones: {
     name: "zbe_zones",
     fields: [
@@ -563,6 +592,40 @@ async function loadRailwayStations(prisma: PrismaClient) {
     location: [Number(s.latitude), Number(s.longitude)], serviceTypes: s.serviceTypes || [] }));
 }
 
+async function loadRailwayRoutes(prisma: PrismaClient) {
+  const rows = await prisma.railwayRoute.findMany({
+    select: { id: true, shortName: true, longName: true, brand: true, serviceType: true,
+      network: true, originName: true, destName: true, stopNames: true, stopsCount: true },
+  });
+  return rows.map((r) => ({
+    id: r.id, shortName: r.shortName || "", longName: r.longName || "",
+    brand: r.brand || "", serviceType: r.serviceType, network: r.network || "",
+    originName: r.originName || "", destName: r.destName || "",
+    stopNames: r.stopNames || [], stopsCount: r.stopsCount ?? undefined,
+  }));
+}
+
+async function loadRailwayAlerts(prisma: PrismaClient) {
+  const rows = await prisma.railwayAlert.findMany({
+    where: { isActive: true },
+    select: { id: true, headerText: true, description: true, cause: true, effect: true,
+      serviceType: true, routeIds: true, activePeriodStart: true },
+    orderBy: { activePeriodStart: "desc" },
+  });
+  // Resolve route names from routeIds
+  const allRoutes = await prisma.railwayRoute.findMany({
+    select: { routeId: true, shortName: true, brand: true },
+  });
+  const routeMap = new Map(allRoutes.map((r) => [r.routeId, `${r.brand || ""} ${r.shortName || ""}`.trim()]));
+
+  return rows.map((r) => ({
+    id: r.id, headerText: r.headerText || "", description: r.description,
+    cause: r.cause || "", effect: r.effect, serviceType: r.serviceType || "",
+    routeNames: r.routeIds.map((id) => routeMap.get(id) || id).filter(Boolean),
+    startedAt: Math.floor(r.activePeriodStart.getTime() / 1000),
+  }));
+}
+
 async function loadZBEZones(prisma: PrismaClient) {
   const rows = await prisma.zBEZone.findMany({ select: { id: true, name: true, cityName: true, centroid: true, activeAllYear: true } });
   return rows.map((z) => {
@@ -674,6 +737,7 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
   gas_stations: loadGasStations, roads: loadRoads, cameras: loadCameras,
   articles: loadArticles, provinces: loadProvinces, cities: loadCities,
   ev_chargers: loadEVChargers, radars: loadRadars, railway_stations: loadRailwayStations,
+  railway_routes: loadRailwayRoutes, railway_alerts: loadRailwayAlerts,
   zbe_zones: loadZBEZones, risk_zones: loadRiskZones, variable_panels: loadVariablePanels,
   maritime_stations: loadMaritimeStations, portugal_stations: loadPortugalStations,
   traffic_stations: loadTrafficStations,

@@ -241,6 +241,35 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "serviceTypes", type: "string[]", optional: true, facet: true },
     ] as CollectionFieldSchema[],
   },
+  railway_routes: {
+    name: "railway_routes",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "shortName", type: "string", optional: true },
+      { name: "longName", type: "string", optional: true },
+      { name: "brand", type: "string", optional: true, facet: true },
+      { name: "serviceType", type: "string", facet: true },
+      { name: "network", type: "string", optional: true, facet: true },
+      { name: "originName", type: "string", optional: true },
+      { name: "destName", type: "string", optional: true },
+      { name: "stopNames", type: "string[]", optional: true },
+      { name: "stopsCount", type: "int32", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+  railway_alerts: {
+    name: "railway_alerts",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "headerText", type: "string", optional: true },
+      { name: "description", type: "string" },
+      { name: "cause", type: "string", optional: true, facet: true },
+      { name: "effect", type: "string", facet: true },
+      { name: "serviceType", type: "string", optional: true, facet: true },
+      { name: "routeNames", type: "string[]", optional: true },
+      { name: "startedAt", type: "int64", sort: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "startedAt",
+  },
   zbe_zones: {
     name: "zbe_zones",
     fields: [

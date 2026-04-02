@@ -28,6 +28,10 @@ const PRICE_ASC_KEYWORDS = [
   "más barata",
   "mas barata",
   "precio bajo",
+  "más económica",
+  "mas economica",
+  "low cost",
+  "descuento",
   "económica",
   "economica",
   "económico",
@@ -98,16 +102,21 @@ const EV_KEYWORDS = [
 // Collection targeting (when no fuel keyword matched)
 const COLLECTION_KEYWORD_MAP: Array<{ phrases: string[]; collection: string; label: string }> = [
   {
-    phrases: ["estación de servicio", "estacion de servicio", "gasolineras", "gasolinera", "surtidor"],
+    phrases: ["estación de servicio", "estacion de servicio", "gasolineras", "gasolinera", "surtidor de gasolina", "estación gasolina", "estacion gasolina", "surtidor", "gasinera", "tanque lleno", "repostar"],
     collection: "gas_stations",
     label: "Gasolineras",
   },
   { phrases: ["cámaras de tráfico", "camaras de trafico", "cámaras", "camaras", "cámara", "camara", "webcam"], collection: "cameras", label: "Cámaras" },
   { phrases: ["radares fijos", "cinemómetro", "radares", "radar", "multa velocidad"], collection: "radars", label: "Radares" },
   {
-    phrases: ["estación de tren", "estacion de tren", "ferrocarril", "cercanías", "cercanias", "trenes", "tren", "renfe", "ave"],
+    phrases: ["estación de tren", "estacion de tren", "ferrocarril", "cercanías", "cercanias", "trenes", "tren", "renfe", "ave", "alvia", "avant", "retraso tren", "cancelación tren", "línea", "linea"],
     collection: "railway_stations",
     label: "Trenes",
+  },
+  {
+    phrases: ["retraso", "cancelación", "cancelacion", "avería", "averia", "suprimido", "demora"],
+    collection: "railway_alerts",
+    label: "Alertas tren",
   },
   {
     phrases: ["zona de bajas emisiones", "zona baja emisiones", "zona bajas emisiones", "zbe"],

@@ -145,18 +145,28 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   },
   {
     collection: "gas_stations",
-    queryBy: "name,locality,provinceName,address",
-    queryByWeights: "3,2,1,1",
+    queryBy: "name,locality,provinceName,address,fuelTypes",
+    queryByWeights: "3,2,1,1,1",
     category: "Gasolineras",
     icon: "Fuel",
-    mapHit: (doc, fuelType) => ({
-      title: doc.name as string,
-      subtitle: [doc.locality, doc.provinceName].filter(Boolean).join(", ") || null,
-      href: `/gasolineras/terrestres/${doc.id}`,
-      category: "Gasolineras",
-      icon: "Fuel",
-      ...(fuelType && doc[fuelType] != null ? { price: doc[fuelType] as number } : {}),
-    }),
+    mapHit: (doc, fuelType) => {
+      const location = [doc.locality, doc.provinceName].filter(Boolean).join(", ");
+      // Show price when a fuel filter is active
+      const price = fuelType && doc[fuelType] != null
+        ? `${Number(doc[fuelType]).toFixed(3)} €/L`
+        : doc.priceGasoleoA != null
+          ? `Diésel ${Number(doc.priceGasoleoA).toFixed(3)} €`
+          : null;
+      const subtitle = [price, location].filter(Boolean).join(" · ");
+      return {
+        title: doc.name as string,
+        subtitle: subtitle || null,
+        href: `/gasolineras/terrestres/${doc.id}`,
+        category: "Gasolineras",
+        icon: "Fuel",
+        ...(fuelType && doc[fuelType] != null ? { price: doc[fuelType] as number } : {}),
+      };
+    },
   },
   {
     collection: "roads",
@@ -243,6 +253,34 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
     }),
   },
   {
+    collection: "railway_routes",
+    queryBy: "shortName,longName,brand,network,originName,destName,stopNames",
+    queryByWeights: "3,2,2,1,2,2,1",
+    category: "Líneas de tren",
+    icon: "TrainFront",
+    mapHit: (doc) => ({
+      title: `${doc.brand || ""} ${doc.shortName || doc.longName || ""}`.trim(),
+      subtitle: [doc.originName, doc.destName].filter(Boolean).join(" → ") || (doc.network as string) || null,
+      href: `/trenes/lineas/${doc.id}`,
+      category: "Líneas de tren",
+      icon: "TrainFront",
+    }),
+  },
+  {
+    collection: "railway_alerts",
+    queryBy: "description,headerText,routeNames,cause,effect",
+    queryByWeights: "2,3,2,1,1",
+    category: "Alertas ferroviarias",
+    icon: "TrainFront",
+    mapHit: (doc) => ({
+      title: (doc.headerText as string) || `${doc.effect as string} — ${(doc.routeNames as string[])?.slice(0, 2).join(", ") || ""}`,
+      subtitle: (doc.description as string)?.slice(0, 100) || null,
+      href: `/trenes?alerts=true`,
+      category: "Alertas ferroviarias",
+      icon: "TrainFront",
+    }),
+  },
+  {
     collection: "zbe_zones",
     queryBy: "name,cityName",
     queryByWeights: "3,2",
@@ -290,13 +328,19 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
     queryByWeights: "3,2,1,1",
     category: "Gasolineras maritimas",
     icon: "Anchor",
-    mapHit: (doc) => ({
-      title: doc.name as string,
-      subtitle: [doc.port, doc.provinceName].filter(Boolean).join(", ") || null,
-      href: `/gasolineras/maritimas/${doc.id}`,
-      category: "Gasolineras maritimas",
-      icon: "Anchor",
-    }),
+    mapHit: (doc) => {
+      const location = [doc.port, doc.provinceName].filter(Boolean).join(", ");
+      const price = doc.priceGasoleoA != null
+        ? `Gasóleo ${Number(doc.priceGasoleoA).toFixed(3)} €`
+        : null;
+      return {
+        title: doc.name as string,
+        subtitle: [price, location].filter(Boolean).join(" · ") || null,
+        href: `/gasolineras/maritimas/${doc.id}`,
+        category: "Gasolineras maritimas",
+        icon: "Anchor",
+      };
+    },
   },
   {
     collection: "traffic_stations",
@@ -318,13 +362,19 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
     queryByWeights: "3,2,1,1",
     category: "Gasolineras Portugal",
     icon: "Fuel",
-    mapHit: (doc) => ({
-      title: doc.name as string,
-      subtitle: [doc.locality, doc.district].filter(Boolean).join(", ") || null,
-      href: `/portugal/combustible/${doc.id}`,
-      category: "Gasolineras Portugal",
-      icon: "Fuel",
-    }),
+    mapHit: (doc) => {
+      const location = [doc.locality, doc.district].filter(Boolean).join(", ");
+      const price = doc.priceGasoleoSimples != null
+        ? `Gasóleo ${Number(doc.priceGasoleoSimples).toFixed(3)} €`
+        : null;
+      return {
+        title: doc.name as string,
+        subtitle: [price, location].filter(Boolean).join(" · ") || null,
+        href: `/portugal/combustible/${doc.id}`,
+        category: "Gasolineras Portugal",
+        icon: "Fuel",
+      };
+    },
   },
 ];
 
