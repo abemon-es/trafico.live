@@ -117,10 +117,16 @@ const MAJOR_CITIES = [
   { name: "Valladolid", slug: "valladolid", lng: -4.7245, lat: 41.6523, type: "city" },
   { name: "Alicante", slug: "alicante", lng: -0.4907, lat: 38.3452, type: "city" },
   { name: "Córdoba", slug: "cordoba", lng: -4.7794, lat: 37.8882, type: "city" },
-  // Cross-border territories
-  { name: "Portugal", slug: "/portugal", lng: -8.2245, lat: 39.3999, type: "country" },
-  { name: "Andorra", slug: "/andorra", lng: 1.5218, lat: 42.5063, type: "country" },
-  { name: "Gibraltar", slug: "/gibraltar", lng: -5.3536, lat: 36.1408, type: "country" },
+  // Cross-border territories (with bounding boxes for zoom)
+  { name: "Portugal", slug: "/portugal", lng: -8.2245, lat: 39.3999, type: "country",
+    bounds: [[-9.5, 36.96], [-6.19, 42.15]] as [[number,number],[number,number]],
+    dataUrl: "/api/portugal/gas-stations?limit=1" },
+  { name: "Andorra", slug: "/andorra", lng: 1.5218, lat: 42.5063, type: "country",
+    bounds: [[1.41, 42.43], [1.79, 42.66]] as [[number,number],[number,number]],
+    dataUrl: "/api/andorra/incidents" },
+  { name: "Gibraltar", slug: "/gibraltar", lng: -5.3536, lat: 36.1408, type: "country",
+    bounds: [[-5.37, 36.11], [-5.34, 36.16]] as [[number,number],[number,number]],
+    dataUrl: null },
 ];
 
 export function HeroMap({ initialStats }: HeroMapProps) {
@@ -129,7 +135,14 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   const mapInstanceRef = useRef<MapInstance | null>(null);
   const [legendVisible, setLegendVisible] = useState(false);
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
-  const [selectedProvince, setSelectedProvince] = useState<{ name: string; code: string } | null>(null);
+  const [selected, setSelected] = useState<{
+    name: string;
+    code: string;
+    type: "province" | "country";
+    href: string;
+    bounds?: [[number, number], [number, number]];
+  } | null>(null);
+  const [selectedData, setSelectedData] = useState<Record<string, string | number> | null>(null);
   const [mapFocused, setMapFocused] = useState(false);
 
   useEffect(() => {
@@ -240,7 +253,17 @@ export function HeroMap({ initialStats }: HeroMapProps) {
               map.fitBounds(bounds, { padding: 60, duration: 800 });
             }
 
-            setSelectedProvince({ name: name ?? code, code });
+            setSelected({ name: name ?? code, code, type: "province", href: `/provincias/${code}` });
+            setSelectedData(null);
+            // Fetch province stats
+            fetch(`/api/province/stats?code=${code}`).then((r) => r.json()).then((d) => {
+              setSelectedData({
+                "Incidencias": d.incidents ?? 0,
+                "Cámaras": d.cameras ?? 0,
+                "Radares": d.radars ?? 0,
+                "Gasolineras": d.gasStations ?? 0,
+              });
+            }).catch(() => {});
             setMapFocused(true);
             map.setFilter("province-hover", ["==", "cod_prov", code]);
           });
@@ -305,10 +328,47 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         map.on("click", "city-dots", (e) => {
           e.originalEvent.stopPropagation();
           if (!e.features?.length) return;
-          const slug = e.features[0].properties?.slug;
+          const props = e.features[0].properties;
+          const slug = props?.slug;
+          const type = props?.type;
           if (!slug) return;
-          // Country slugs start with / (absolute path), city slugs are relative
-          router.push(slug.startsWith("/") ? slug : `/trafico/${slug}`);
+
+          if (type === "country") {
+            // Same zoom + panel effect as provinces
+            const territory = MAJOR_CITIES.find((c) => c.slug === slug);
+            if (territory && "bounds" in territory && territory.bounds) {
+              map.fitBounds(territory.bounds as [[number,number],[number,number]], { padding: 40, duration: 800 });
+            }
+            const href = slug.startsWith("/") ? slug : `/${slug}`;
+            setSelected({ name: props.name, code: slug, type: "country", href });
+            setMapFocused(true);
+            setSelectedData(null);
+
+            // Fetch real data for this territory
+            const dataUrl = MAJOR_CITIES.find((c) => c.slug === slug && "dataUrl" in c)?.dataUrl;
+            if (dataUrl) {
+              fetch(dataUrl as string).then((r) => r.json()).then((d) => {
+                if (slug === "/portugal") {
+                  setSelectedData({
+                    "Gasolineras": d.count ?? d.total ?? "3.000+",
+                    "Fuente": "DGEG",
+                    "Meteo": "IPMA",
+                  });
+                } else if (slug === "/andorra") {
+                  setSelectedData({
+                    "Incidencias": d.incidents?.length ?? d.count ?? 0,
+                    "Fuente": "Mobilitat",
+                    "Cámaras": "En vivo",
+                  });
+                }
+              }).catch(() => {});
+            } else {
+              setSelectedData({ "Territorio": "Británico de ultramar", "Acceso": "Frontera con España" });
+            }
+          } else {
+            // City → navigate directly
+            router.push(`/trafico/${slug}`);
+          }
         });
         map.on("mouseenter", "city-dots", () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", "city-dots", () => { map.getCanvas().style.cursor = ""; });
@@ -528,30 +588,54 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         </div>
       </div>
 
-      {/* Selected province panel — appears when map is focused */}
-      {selectedProvince && (
-        <div className="absolute bottom-6 left-4 sm:left-6 lg:left-8 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-lg max-w-sm">
-          <p className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{selectedProvince.name}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Provincia · Código INE: {selectedProvince.code}</p>
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/provincias/${selectedProvince.code}`}
-              className="inline-flex items-center gap-1.5 bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold text-sm rounded-lg px-4 py-2 transition-colors"
-            >
-              Ver tráfico en {selectedProvince.name}
-            </Link>
+      {/* Selected zone panel — province or territory */}
+      {selected && (
+        <div className="absolute bottom-6 left-4 sm:left-6 lg:left-8 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 shadow-lg max-w-md">
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <p className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">{selected.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {selected.type === "province" ? `Provincia · INE ${selected.code}` : "Territorio · Cobertura internacional"}
+              </p>
+            </div>
             <button
               onClick={() => {
-                setSelectedProvince(null);
+                setSelected(null);
+                setSelectedData(null);
                 setMapFocused(false);
                 mapInstanceRef.current?.flyTo({ center: [-3.7038, 40.4168], zoom: 5.5, duration: 800 });
-                if (mapInstanceRef.current) mapInstanceRef.current.setFilter?.("province-hover", ["==", "cod_prov", ""]);
+                try { mapInstanceRef.current?.setFilter("province-hover", ["==", "cod_prov", ""]); } catch {}
               }}
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors px-3 py-2"
+              className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors shrink-0 mt-1"
             >
-              Volver
+              Volver al mapa
             </button>
           </div>
+
+          {/* Data pills — show real stats */}
+          {selectedData ? (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {Object.entries(selectedData).map(([key, val]) => (
+                <span key={key} className="inline-flex items-center gap-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-[0.65rem]">
+                  <span className="text-gray-500 dark:text-gray-400">{key}</span>
+                  <span className="font-data font-semibold text-gray-900 dark:text-gray-100">{typeof val === "number" ? val.toLocaleString("es-ES") : val}</span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-1.5 mb-3">
+              {[1, 2, 3].map((i) => (
+                <span key={i} className="h-6 w-20 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          )}
+
+          <Link
+            href={selected.href}
+            className="inline-flex items-center gap-1.5 bg-tl-600 hover:bg-tl-700 text-white font-heading font-semibold text-sm rounded-lg px-4 py-2 transition-colors"
+          >
+            Ver tráfico en {selected.name}
+          </Link>
         </div>
       )}
     </section>

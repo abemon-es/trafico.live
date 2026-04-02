@@ -739,6 +739,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly",
       priority: 0.85,
     },
+    {
+      url: `${BASE_URL}/trenes`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
     // NOTE: /explorar, /explorar/territorios, /explorar/carreteras are 301-redirected
     //       to /comunidad-autonoma and /carreteras — excluded from sitemap.
     {
