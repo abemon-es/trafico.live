@@ -291,10 +291,11 @@ async function importYear(
 
   log(TASK, `Year ${year}: downloaded ${(buffer.length / 1024 / 1024).toFixed(1)} MB`);
 
-  // Parse with ExcelJS
+  // Parse with ExcelJS — release raw buffer immediately after load to free memory
   const workbook = new ExcelJS.Workbook();
   try {
     await workbook.xlsx.load(buffer);
+    buffer = null as unknown as Buffer; // allow GC of raw bytes
   } catch (err) {
     logError(TASK, `Year ${year}: failed to parse XLSX`, err);
     return { imported: 0, skipped: 0 };
@@ -452,7 +453,7 @@ async function importYear(
     const causeRaw = getCellValue(COL.causas) ?? getCellValue(COL.tipoAccidente);
 
     batch.push({
-      sourceId: `${year}-${rowNum}`,
+      sourceId: `${year}-${date?.toISOString().slice(0, 10) ?? "nd"}-${provinceCode ?? "xx"}-${rawRoad ?? "nr"}-${km ?? 0}-${rowNum}`,
       year,
       date: date ?? null,
       hour: parseHour(getCellValue(COL.hora)) ?? null,

@@ -93,6 +93,8 @@ async function discoverCities(): Promise<string[]> {
 
     if (cities.length > 0) {
       log(TAG, `Auto-discovered ${cities.length} cities from directory listing`);
+    } else {
+      log(TAG, "Directory listing returned 0 XML hrefs — falling back to static list");
     }
     return cities;
   } catch {
@@ -104,7 +106,7 @@ async function discoverCities(): Promise<string[]> {
 const FALLBACK_CITIES = [
   "Madrid", "MadridCentral", "Barcelona", "RondasDeBarcelona", "Bilbao",
   "Granada", "Valladolid", "Palma", "Alicante", "Malaga", "Oviedo",
-  "ACoru%C3%B1a", "PamplonaEnsanche", "SevillaCartuja", "Donostia-SanSebastian",
+  "ACoruña", "PamplonaEnsanche", "SevillaCartuja", "Donostia-SanSebastian",
   "VitoriaGasteiz", "LasRozas", "AlcalaDeHenares", "Fuenlabrada",
   "Castellon", "Cartagena", "Benidorm", "Pontevedra", "Lleida",
   "Girona", "Salamanca", "Avila", "Torremolinos", "DosHermanas", "Motril",

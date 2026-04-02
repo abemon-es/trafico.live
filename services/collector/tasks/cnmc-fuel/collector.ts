@@ -84,26 +84,23 @@ function delay(ms: number): Promise<void> {
 // ─── API Fetching ─────────────────────────────────────────────────────────────
 
 async function fetchPage(offset: number, minDate: string | null): Promise<CNMCResponse> {
-  const params = new URLSearchParams({
-    resource_id: RESOURCE_ID,
-    limit: String(PAGE_SIZE),
-    offset: String(offset),
-  });
+  let url: string;
 
-  // Add date filter if we have a min date (incremental mode)
   if (minDate) {
-    // CKAN datastore_search uses filters for exact matches; for range queries we use q or sql
-    // Use the `filters` JSON param (supported by CKAN datastore)
-    // CKAN doesn't natively support >= in simple filters, so we use the datastore_search_sql endpoint
-    // However, for broad compatibility we pass the filter as a raw query string and let it fall through.
-    // The simpler approach: add sort + rely on date ordering, and skip records before minDate in JS.
-    // This is safer across CKAN versions.
-    params.set("sort", "Fecha asc");
+    // Incremental mode: use datastore_search_sql for server-side date filtering
+    const sql = `SELECT * FROM "${RESOURCE_ID}" WHERE "Fecha" >= '${minDate}' ORDER BY "Fecha" ASC LIMIT ${PAGE_SIZE} OFFSET ${offset}`;
+    const params = new URLSearchParams({ sql });
+    url = `https://catalogodatos.cnmc.es/api/3/action/datastore_search_sql?${params.toString()}`;
   } else {
-    params.set("sort", "Fecha asc");
+    // Full sync: standard paginated search
+    const params = new URLSearchParams({
+      resource_id: RESOURCE_ID,
+      limit: String(PAGE_SIZE),
+      offset: String(offset),
+      sort: "Fecha asc",
+    });
+    url = `${BASE_URL}?${params.toString()}`;
   }
-
-  const url = `${BASE_URL}?${params.toString()}`;
   const response = await fetch(url, {
     headers: { "User-Agent": "trafico.live-collector/1.0 (datos@trafico.live)" },
     signal: AbortSignal.timeout(30000),

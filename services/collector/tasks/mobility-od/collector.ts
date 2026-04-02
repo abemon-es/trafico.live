@@ -94,9 +94,14 @@ async function* streamGzipCSV(url: string): AsyncGenerator<string> {
     throw new Error(`HTTP ${response.status} for ${url}`);
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
+  if (!response.body) {
+    throw new Error("No response body");
+  }
+
+  // Stream directly — never buffer the entire file in memory
   const gunzip = createGunzip();
-  const readable = Readable.from(buffer).pipe(gunzip);
+  const nodeStream = Readable.fromWeb(response.body as import("stream/web").ReadableStream);
+  const readable = nodeStream.pipe(gunzip);
 
   let remainder = "";
   for await (const chunk of readable) {

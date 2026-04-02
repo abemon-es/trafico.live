@@ -88,26 +88,29 @@ interface AEMETStep1Response {
 }
 
 async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
-  // Step 1: get datos URL
+  // Sanitize URL for logging — never log the API key
+  const safeUrl = url.replace(/api_key=[^&]+/, "api_key=***");
+
+  // Step 1: get datos URL (pass key via header, not query string)
   const step1Res = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers: { Accept: "application/json", api_key: apiKey },
   });
 
   if (!step1Res.ok) {
-    logError(TASK, `Step-1 HTTP ${step1Res.status} for ${url}`);
+    logError(TASK, `Step-1 HTTP ${step1Res.status} for ${safeUrl}`);
     return null;
   }
 
   const step1: AEMETStep1Response = await step1Res.json();
 
   if (step1.estado !== 200 || !step1.datos) {
-    logError(TASK, `Step-1 non-200 estado=${step1.estado} desc="${step1.descripcion}" url=${url}`);
+    logError(TASK, `Step-1 non-200 estado=${step1.estado} desc="${step1.descripcion}"`);
     return null;
   }
 
   await sleep(RATE_LIMIT_SLEEP_MS);
 
-  // Step 2: fetch actual data
+  // Step 2: fetch actual data from datos URL (no key needed — it's a pre-signed URL)
   const step2Res = await fetch(step1.datos, {
     headers: { Accept: "application/json" },
   });
@@ -211,7 +214,7 @@ interface AEMETDailyRecord {
 async function syncStations(prisma: PrismaClient, apiKey: string): Promise<Map<string, string>> {
   log(TASK, "Fetching station inventory from AEMET...");
 
-  const url = `${AEMET_BASE}/valores/climatologicos/inventarioestaciones/todasestaciones?api_key=${apiKey}`;
+  const url = `${AEMET_BASE}/valores/climatologicos/inventarioestaciones/todasestaciones`;
   const stations = await aemetFetch<AEMETStation[]>(url, apiKey);
 
   if (!stations || !Array.isArray(stations)) {
@@ -291,8 +294,7 @@ async function fetchDailyChunk(
 
   const url =
     `${AEMET_BASE}/valores/climatologicos/diarios/datos` +
-    `/fechaini/${startStr}/fechafin/${endStr}/todasestaciones` +
-    `?api_key=${apiKey}`;
+    `/fechaini/${startStr}/fechafin/${endStr}/todasestaciones`;
 
   log(TASK, `Fetching ${startStr} → ${endStr}`);
 
