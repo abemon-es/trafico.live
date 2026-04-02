@@ -1,6 +1,12 @@
 # Daily collectors
 30 0 * * * TASK=daily-stats npx tsx index.ts 2>&1
+# CNMC provincial fuel price history (daily, before MINETUR morning fetch)
+0 2 * * * TASK=cnmc-fuel npx tsx index.ts 2>&1
+# Renfe GTFS static timetables
+0 3 * * * TASK=renfe-gtfs NODE_OPTIONS=--max-old-space-size=384 npx tsx index.ts 2>&1
 0 4 * * * TASK=camera npx tsx index.ts 2>&1 && touch /tmp/last-run
 0 5 * * * TASK=typesense-sync npx tsx index.ts 2>&1
 0 6 * * * TASK=charger NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
+# AEMET daily climate update (after station data stabilizes for previous day)
+0 8 * * * TASK=aemet-historical npx tsx index.ts 2>&1
 30 22 * * * TASK=insights npx tsx index.ts 2>&1

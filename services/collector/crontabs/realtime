@@ -8,3 +8,5 @@
 */5 * * * * TASK=andorra npx tsx index.ts 2>&1
 # Renfe GTFS-RT alerts (every 2 min)
 */2 * * * * TASK=renfe-alerts npx tsx index.ts 2>&1
+# Renfe LD fleet positions (every 2 min)
+*/2 * * * * TASK=renfe-ld-realtime npx tsx index.ts 2>&1

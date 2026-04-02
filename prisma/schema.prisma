@@ -1797,3 +1797,210 @@ model RailwayDailyStats {
   @@unique([date])
   @@index([date])
 }
+
+// ============================================
+// DATA PLATFORM — New data sources (2026-04)
+// ============================================
+
+// ---- Mobility O-D Flows (Ministerio de Transportes BigData) ----
+// Province-level daily origin-destination trip counts
+// Source: https://opendata-movilidad.mitma.es/
+// Collector: TASK=mobility-od (one-shot backfill + periodic update)
+
+model MobilityODFlow {
+  id             String   @id @default(cuid())
+  date           DateTime @db.Date
+  originProvince String   // INE 2-digit province code
+  originName     String?
+  destProvince   String   // INE 2-digit province code
+  destName       String?
+  tripCount      Int      // Number of trips
+  avgDistanceKm  Decimal? @db.Decimal(7, 1)
+
+  @@unique([date, originProvince, destProvince])
+  @@index([date])
+  @@index([originProvince])
+  @@index([destProvince])
+}
+
+// ---- DGT Accident Microdata ----
+// Per-accident records from DGT annual XLSX microdata
+// Source: https://www.dgt.es/menusecundario/dgt-en-cifras/
+// Collector: TASK=accident-microdata (one-shot per year)
+
+model AccidentMicrodata {
+  id               String    @id @default(cuid())
+  sourceId         String?   // DGT record identifier
+  year             Int
+  date             DateTime? @db.Date
+  hour             Int?      // 0-23
+  dayOfWeek        Int?      // 1=Mon, 7=Sun
+
+  // Location
+  roadNumber       String?
+  roadType         RoadType?
+  km               Decimal?  @db.Decimal(7, 2)
+  province         String?   // INE 2-digit
+  provinceName     String?
+  municipality     String?
+  municipalityCode String?
+  latitude         Decimal?  @db.Decimal(9, 6)
+  longitude        Decimal?  @db.Decimal(9, 6)
+  isUrban          Boolean?
+
+  // Severity
+  severity         String?   // "fatal", "hospitalized", "minor"
+  fatalities       Int       @default(0)
+  hospitalized     Int       @default(0)
+  minorInjury      Int       @default(0)
+  vehiclesInvolved Int?
+
+  // Conditions
+  weatherCondition String?   // "clear", "rain", "fog", "snow", etc.
+  lightCondition   String?   // "daylight", "twilight", "night_lit", "night_unlit"
+  roadSurface      String?   // "dry", "wet", "icy", etc.
+  causeCode        String?
+  causeDescription String?
+
+  // Vehicle types involved
+  involvesCar        Boolean @default(false)
+  involvesMotorcycle Boolean @default(false)
+  involvesTruck      Boolean @default(false)
+  involvesBus        Boolean @default(false)
+  involvesBicycle    Boolean @default(false)
+  involvesPedestrian Boolean @default(false)
+
+  importedAt DateTime @default(now()) @db.Timestamptz
+
+  @@unique([sourceId, year])
+  @@index([year])
+  @@index([date])
+  @@index([province])
+  @@index([roadNumber])
+  @@index([severity])
+  @@index([weatherCondition])
+  @@index([hour])
+  @@index([latitude, longitude])
+}
+
+// ---- CNMC Historical Fuel Prices ----
+// Provincial daily aggregated prices with PAI (pre-tax)
+// Source: https://catalogodatos.cnmc.es/
+// Collector: TASK=cnmc-fuel (daily)
+
+model CNMCFuelPrice {
+  id               String   @id @default(cuid())
+  date             DateTime @db.Date
+  province         String   // INE 2-digit code
+  provinceName     String?
+
+  // Prices with tax (EUR/L)
+  priceGasoleoA     Decimal? @db.Decimal(5, 3)
+  priceGasoleoAPlus Decimal? @db.Decimal(5, 3)
+  priceGasolina95   Decimal? @db.Decimal(5, 3)
+  priceGasolina98   Decimal? @db.Decimal(5, 3)
+
+  // Prices before tax — CNMC exclusive
+  paiGasoleoA   Decimal? @db.Decimal(5, 3)
+  paiGasolina95 Decimal? @db.Decimal(5, 3)
+
+  @@unique([date, province])
+  @@index([date])
+  @@index([province])
+}
+
+// ---- Renfe LD Fleet Positions ----
+// Real-time GPS positions of long-distance trains
+// Source: https://tiempo-real.largorecorrido.renfe.com/renfe-visor/flotaLD.json
+// Collector: TASK=renfe-ld-realtime (every 2 min, rolling 48h)
+
+model RenfeFleetPosition {
+  id             String              @id @default(cuid())
+  trainNumber    String              // e.g. "04204"
+  serviceType    RailwayServiceType?
+  brand          String?             // "AVE", "Alvia", "Avant", etc.
+
+  // Position
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  speed     Int?    // km/h
+
+  // Delay
+  delay Int? // minutes (positive = late, negative = early)
+
+  // Route info
+  originStation  String?
+  destStation    String?
+  prevStation    String?
+  nextStation    String?
+  nextStationEta DateTime? @db.Timestamptz
+
+  // Rolling stock
+  rollingStock String? // Series/model (e.g. "S-103")
+
+  fetchedAt DateTime @default(now()) @db.Timestamptz
+
+  @@unique([trainNumber, fetchedAt])
+  @@index([fetchedAt])
+  @@index([brand])
+  @@index([serviceType])
+  @@index([latitude, longitude])
+}
+
+// ---- AEMET Climate Stations ----
+// Weather observation station catalog
+// Source: https://opendata.aemet.es/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones
+// Collector: TASK=aemet-historical (one-shot inventory + daily incremental)
+
+model ClimateStation {
+  id          String  @id @default(cuid())
+  stationCode String  @unique // AEMET indicativo
+  name        String
+  province    String? // INE 2-digit
+  provinceName String?
+  latitude    Decimal @db.Decimal(9, 6)
+  longitude   Decimal @db.Decimal(9, 6)
+  altitude    Int?    // meters above sea level
+  isActive    Boolean @default(true)
+
+  records ClimateRecord[]
+
+  @@index([province])
+  @@index([latitude, longitude])
+}
+
+// ---- AEMET Climate Records ----
+// Daily climate observations per station
+// Source: AEMET OpenData API (daily values)
+// Collector: TASK=aemet-historical (backfill from 2019, then daily)
+
+model ClimateRecord {
+  id        String         @id @default(cuid())
+  stationId String
+  station   ClimateStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  date      DateTime       @db.Date
+
+  // Temperature (°C)
+  tempMin Decimal? @db.Decimal(4, 1)
+  tempMax Decimal? @db.Decimal(4, 1)
+  tempAvg Decimal? @db.Decimal(4, 1)
+
+  // Precipitation
+  precipitation Decimal? @db.Decimal(5, 1) // mm
+  snowfall      Decimal? @db.Decimal(5, 1) // cm
+
+  // Wind
+  windSpeed     Decimal? @db.Decimal(4, 1) // km/h average
+  windGust      Decimal? @db.Decimal(4, 1) // km/h max gust
+  windDirection String?  // Cardinal direction
+
+  // Other
+  sunHours Decimal? @db.Decimal(4, 1) // hours
+  humidity Int?     // % average relative humidity
+  pressure Decimal? @db.Decimal(6, 1) // hPa
+
+  @@unique([stationId, date])
+  @@index([stationId])
+  @@index([date])
+  @@index([precipitation])
+}

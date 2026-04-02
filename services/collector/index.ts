@@ -38,7 +38,9 @@ const VALID_TASKS = [
   // International
   "andorra", "portugal-weather", "portugal-fuel",
   // Railway
-  "renfe-gtfs", "renfe-alerts",
+  "renfe-gtfs", "renfe-alerts", "renfe-ld-realtime",
+  // Analytics & Historical
+  "cnmc-fuel", "aemet-historical", "mobility-od", "accident-microdata",
   // Aggregation
   "daily-stats",
   // One-shot / manual
