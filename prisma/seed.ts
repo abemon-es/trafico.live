@@ -417,6 +417,10 @@ async function main() {
           minPrice: minSeg.price,
           maxPrice: fullSeg.price,
           roadId: matchingRoad?.id || null,
+          freeAltRoad: road.freeAlternative?.road || null,
+          freeAltKm: road.freeAlternative?.km || null,
+          freeAltExtraMin: road.freeAlternative?.extraMinutes || null,
+          freeAltDesc: road.freeAlternative?.description || null,
           year: 2026,
           source: tollData.source,
           segments: {

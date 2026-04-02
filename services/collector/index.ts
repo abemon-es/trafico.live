@@ -152,12 +152,16 @@ async function runTypesenseSync(
   if (!process.env.TYPESENSE_URL || !process.env.TYPESENSE_API_KEY) return;
   for (const collection of collections) {
     try {
-      const saved = process.env.SYNC_COLLECTION;
+      const savedCol = process.env.SYNC_COLLECTION;
+      const savedMode = process.env.SYNC_MODE;
       process.env.SYNC_COLLECTION = collection;
+      process.env.SYNC_MODE = "incremental";
       const mod = await import("./tasks/typesense-sync/collector.js");
       await mod.run(prisma);
-      if (saved) process.env.SYNC_COLLECTION = saved;
+      if (savedCol) process.env.SYNC_COLLECTION = savedCol;
       else delete process.env.SYNC_COLLECTION;
+      if (savedMode) process.env.SYNC_MODE = savedMode;
+      else delete process.env.SYNC_MODE;
     } catch (error) {
       console.error(`[dispatcher] Typesense sync ${collection} failed:`, error);
       Sentry.captureException(error, {

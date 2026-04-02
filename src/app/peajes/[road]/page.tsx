@@ -4,7 +4,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
-import { Route, MapPin, Clock, Building2, Calculator, ArrowRight, ChevronRight } from "lucide-react";
+import { Route, MapPin, Clock, Building2, Calculator, ArrowRight, ChevronRight, GitCompareArrows } from "lucide-react";
 
 export const revalidate = 86400;
 
@@ -192,6 +192,35 @@ export default async function TollRoadDetailPage({ params }: Props) {
             </div>
           </dl>
         </div>
+
+        {/* Free alternative */}
+        {r.freeAltRoad && (
+          <section className="mb-8">
+            <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/50 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                <GitCompareArrows className="w-5 h-5 text-green-600 dark:text-green-400" />
+                Alternativa gratuita
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-green-100 dark:border-green-800/30">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Ruta gratuita</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{r.freeAltRoad}</p>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-green-100 dark:border-green-800/30">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Distancia</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 font-data">{fmt(r.freeAltKm!, 0)} km</p>
+                  <p className="text-xs text-gray-400">vs {fmt(r.totalKm, 0)} km peaje</p>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-green-100 dark:border-green-800/30">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Tiempo extra</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 font-data">+{r.freeAltExtraMin} min</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">Ahorras {fmt(r.maxPrice)}€</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{r.freeAltDesc}</p>
+            </div>
+          </section>
+        )}
 
         {/* CTA calculadora */}
         <Link href={`/calculadora`}

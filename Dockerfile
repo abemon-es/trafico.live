@@ -40,9 +40,8 @@ ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-USER nextjs
-
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)throw new Error();process.exit(0)}).catch(()=>process.exit(1))"
 
-CMD ["npm", "start"]
+# Run migrations as root (needs DDL perms), then drop to nextjs for the app
+CMD ["sh", "-c", "npx prisma migrate deploy 2>&1 || echo '[migrate] Skipped'; exec su -s /bin/sh nextjs -c 'npm start'"]

@@ -3,11 +3,29 @@
   "source": "Ministerio de Transportes, SEITT, BOE-A-2024-26469",
   "notes": "Rates for light vehicles (Ligeros). Tag/electronic payment rates shown. 2026 tariffs.",
   "seittPerKm": {
-    "ligeros": { "tag": 0.0827, "cash": 0.0927 },
-    "pesados1": { "tag": 0.1194, "cash": 0.1298 },
-    "pesados2": { "tag": 0.1671, "cash": 0.1854 },
+    "ligeros": {
+      "tag": 0.0827,
+      "cash": 0.0927
+    },
+    "pesados1": {
+      "tag": 0.1194,
+      "cash": 0.1298
+    },
+    "pesados2": {
+      "tag": 0.1671,
+      "cash": 0.1854
+    },
     "freeHours": "00:00-06:00",
-    "roads": ["R-2", "R-3", "R-5", "R-4", "M-12", "AP-36", "AP-41", "AP-7-cartagena-vera"]
+    "roads": [
+      "R-2",
+      "R-3",
+      "R-5",
+      "R-4",
+      "M-12",
+      "AP-36",
+      "AP-41",
+      "AP-7-cartagena-vera"
+    ]
   },
   "roads": [
     {
@@ -16,10 +34,31 @@
       "operator": "Abertis (Iberpistas)",
       "expires": "2029",
       "segments": [
-        { "from": "Villalba", "to": "Adanero", "km": 87, "price": 8.60 },
-        { "from": "Villalba", "to": "San Rafael", "km": 52, "price": 5.80 },
-        { "from": "San Rafael", "to": "Adanero", "km": 35, "price": 3.95 }
-      ]
+        {
+          "from": "Villalba",
+          "to": "Adanero",
+          "km": 87,
+          "price": 8.6
+        },
+        {
+          "from": "Villalba",
+          "to": "San Rafael",
+          "km": 52,
+          "price": 5.8
+        },
+        {
+          "from": "San Rafael",
+          "to": "Adanero",
+          "km": 35,
+          "price": 3.95
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-VI / A-6",
+        "km": 95,
+        "extraMinutes": 25,
+        "description": "Por el puerto de Guadarrama (N-VI) o la A-6 gratuita hasta Adanero. Más tráfico en verano y puentes."
+      }
     },
     {
       "id": "AP-51",
@@ -27,8 +66,19 @@
       "operator": "Abertis (Iberpistas)",
       "expires": "2029",
       "segments": [
-        { "from": "Villacastín", "to": "Ávila", "km": 24, "price": 3.70 }
-      ]
+        {
+          "from": "Villacastín",
+          "to": "Ávila",
+          "km": 24,
+          "price": 3.7
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-110",
+        "km": 28,
+        "extraMinutes": 10,
+        "description": "La N-110 conecta Villacastín con Ávila por carretera convencional."
+      }
     },
     {
       "id": "AP-61",
@@ -36,8 +86,19 @@
       "operator": "Abertis (Iberpistas)",
       "expires": "2029",
       "segments": [
-        { "from": "AP-6", "to": "Segovia", "km": 18, "price": 3.25 }
-      ]
+        {
+          "from": "AP-6",
+          "to": "Segovia",
+          "km": 18,
+          "price": 3.25
+        }
+      ],
+      "freeAlternative": {
+        "road": "CL-601",
+        "km": 22,
+        "extraMinutes": 15,
+        "description": "La CL-601 de San Rafael a Segovia por La Granja. Paisaje de sierra."
+      }
     },
     {
       "id": "AP-53",
@@ -45,8 +106,19 @@
       "operator": "Acega",
       "expires": "2043",
       "segments": [
-        { "from": "Santiago", "to": "Alto de Santo Domingo", "km": 57, "price": 5.90 }
-      ]
+        {
+          "from": "Santiago",
+          "to": "Alto de Santo Domingo",
+          "km": 57,
+          "price": 5.9
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-525",
+        "km": 65,
+        "extraMinutes": 20,
+        "description": "La N-525 Santiago–Ourense pasa por Lalín. Más curvas pero sin peaje."
+      }
     },
     {
       "id": "AP-66",
@@ -54,10 +126,31 @@
       "operator": "Aucalsa (Itínere)",
       "expires": "2050",
       "segments": [
-        { "from": "León", "to": "Campomanes", "km": 78, "price": 9.20 },
-        { "from": "León", "to": "La Robla", "km": 28, "price": 3.45 },
-        { "from": "La Robla", "to": "Campomanes", "km": 50, "price": 6.30 }
-      ]
+        {
+          "from": "León",
+          "to": "Campomanes",
+          "km": 78,
+          "price": 9.2
+        },
+        {
+          "from": "León",
+          "to": "La Robla",
+          "km": 28,
+          "price": 3.45
+        },
+        {
+          "from": "La Robla",
+          "to": "Campomanes",
+          "km": 50,
+          "price": 6.3
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-630",
+        "km": 90,
+        "extraMinutes": 30,
+        "description": "La N-630 (Ruta de la Plata) por el Puerto de Pajares. Más lenta en invierno por nieve."
+      }
     },
     {
       "id": "AP-68",
@@ -65,12 +158,43 @@
       "operator": "Avasa (Abertis)",
       "expires": "2026-11",
       "segments": [
-        { "from": "Bilbao", "to": "Zaragoza", "km": 295, "price": 22.65 },
-        { "from": "Bilbao", "to": "Miranda de Ebro", "km": 85, "price": 7.10 },
-        { "from": "Miranda de Ebro", "to": "Logroño", "km": 60, "price": 5.35 },
-        { "from": "Logroño", "to": "Tudela", "km": 80, "price": 6.20 },
-        { "from": "Tudela", "to": "Zaragoza", "km": 70, "price": 5.45 }
-      ]
+        {
+          "from": "Bilbao",
+          "to": "Zaragoza",
+          "km": 295,
+          "price": 22.65
+        },
+        {
+          "from": "Bilbao",
+          "to": "Miranda de Ebro",
+          "km": 85,
+          "price": 7.1
+        },
+        {
+          "from": "Miranda de Ebro",
+          "to": "Logroño",
+          "km": 60,
+          "price": 5.35
+        },
+        {
+          "from": "Logroño",
+          "to": "Tudela",
+          "km": 80,
+          "price": 6.2
+        },
+        {
+          "from": "Tudela",
+          "to": "Zaragoza",
+          "km": 70,
+          "price": 5.45
+        }
+      ],
+      "freeAlternative": {
+        "road": "A-68 / N-232",
+        "km": 310,
+        "extraMinutes": 35,
+        "description": "La A-68 (gratuita) y N-232 recorren el valle del Ebro. Gratis desde noviembre 2026."
+      }
     },
     {
       "id": "AP-71",
@@ -78,8 +202,19 @@
       "operator": "Aulesa",
       "expires": "2055",
       "segments": [
-        { "from": "León", "to": "Astorga", "km": 42, "price": 4.10 }
-      ]
+        {
+          "from": "León",
+          "to": "Astorga",
+          "km": 42,
+          "price": 4.1
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-120",
+        "km": 48,
+        "extraMinutes": 15,
+        "description": "La N-120 León–Astorga por Hospital de Órbigo. Ruta del Camino de Santiago."
+      }
     },
     {
       "id": "AP-9",
@@ -87,13 +222,49 @@
       "operator": "Audasa (Itínere)",
       "expires": "2048",
       "segments": [
-        { "from": "Ferrol", "to": "A Coruña", "km": 52, "price": 4.85 },
-        { "from": "A Coruña", "to": "Santiago", "km": 65, "price": 5.60 },
-        { "from": "Santiago", "to": "Pontevedra", "km": 55, "price": 5.20 },
-        { "from": "Pontevedra", "to": "Vigo", "km": 25, "price": 2.95 },
-        { "from": "Vigo", "to": "Frontera Portuguesa", "km": 28, "price": 3.10 },
-        { "from": "Ferrol", "to": "Frontera Portuguesa", "km": 225, "price": 21.30 }
-      ]
+        {
+          "from": "Ferrol",
+          "to": "A Coruña",
+          "km": 52,
+          "price": 4.85
+        },
+        {
+          "from": "A Coruña",
+          "to": "Santiago",
+          "km": 65,
+          "price": 5.6
+        },
+        {
+          "from": "Santiago",
+          "to": "Pontevedra",
+          "km": 55,
+          "price": 5.2
+        },
+        {
+          "from": "Pontevedra",
+          "to": "Vigo",
+          "km": 25,
+          "price": 2.95
+        },
+        {
+          "from": "Vigo",
+          "to": "Frontera Portuguesa",
+          "km": 28,
+          "price": 3.1
+        },
+        {
+          "from": "Ferrol",
+          "to": "Frontera Portuguesa",
+          "km": 225,
+          "price": 21.3
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-550 / AG-11",
+        "km": 240,
+        "extraMinutes": 45,
+        "description": "La N-550 recorre la costa gallega. Más lenta pero con vistas al mar."
+      }
     },
     {
       "id": "AP-46",
@@ -101,8 +272,19 @@
       "operator": "Guadalcesa",
       "expires": "2044",
       "segments": [
-        { "from": "Málaga", "to": "Alto de las Pedrizas", "km": 24, "price": 4.95 }
-      ]
+        {
+          "from": "Málaga",
+          "to": "Alto de las Pedrizas",
+          "km": 24,
+          "price": 4.95
+        }
+      ],
+      "freeAlternative": {
+        "road": "A-45",
+        "km": 30,
+        "extraMinutes": 10,
+        "description": "La A-45 Málaga–Antequera es gratuita y discurre en paralelo."
+      }
     },
     {
       "id": "AP-7-malaga",
@@ -110,10 +292,31 @@
       "operator": "Ausol",
       "expires": "2054",
       "segments": [
-        { "from": "Málaga", "to": "Estepona", "km": 70, "price": 7.80 },
-        { "from": "Estepona", "to": "Guadiaro", "km": 12, "price": 1.90 },
-        { "from": "Málaga", "to": "Guadiaro", "km": 82, "price": 9.50 }
-      ]
+        {
+          "from": "Málaga",
+          "to": "Estepona",
+          "km": 70,
+          "price": 7.8
+        },
+        {
+          "from": "Estepona",
+          "to": "Guadiaro",
+          "km": 12,
+          "price": 1.9
+        },
+        {
+          "from": "Málaga",
+          "to": "Guadiaro",
+          "km": 82,
+          "price": 9.5
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-340 / A-7",
+        "km": 95,
+        "extraMinutes": 25,
+        "description": "La N-340 y la A-7 gratuita recorren la Costa del Sol por la costa."
+      }
     },
     {
       "id": "AP-7-alicante",
@@ -121,8 +324,19 @@
       "operator": "Aucosta",
       "expires": "2042",
       "segments": [
-        { "from": "Alicante", "to": "Cartagena", "km": 90, "price": 7.45 }
-      ]
+        {
+          "from": "Alicante",
+          "to": "Cartagena",
+          "km": 90,
+          "price": 7.45
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-332 / A-7",
+        "km": 100,
+        "extraMinutes": 20,
+        "description": "La N-332 y tramos de A-7 gratuita conectan Alicante con Cartagena por la costa."
+      }
     },
     {
       "id": "R-2",
@@ -131,8 +345,19 @@
       "expires": "2032",
       "isSeitt": true,
       "segments": [
-        { "from": "Madrid (M-40)", "to": "Guadalajara", "km": 42, "price": 3.47 }
-      ]
+        {
+          "from": "Madrid (M-40)",
+          "to": "Guadalajara",
+          "km": 42,
+          "price": 3.47
+        }
+      ],
+      "freeAlternative": {
+        "road": "A-2",
+        "km": 45,
+        "extraMinutes": 15,
+        "description": "La A-2 (autovía del Nordeste) es gratuita. Más tráfico en hora punta."
+      }
     },
     {
       "id": "R-3",
@@ -141,9 +366,25 @@
       "expires": "2032",
       "isSeitt": true,
       "segments": [
-        { "from": "Madrid (M-40)", "to": "Arganda", "km": 25, "price": 2.07 },
-        { "from": "Madrid (M-40)", "to": "Navalcarnero", "km": 30, "price": 2.48 }
-      ]
+        {
+          "from": "Madrid (M-40)",
+          "to": "Arganda",
+          "km": 25,
+          "price": 2.07
+        },
+        {
+          "from": "Madrid (M-40)",
+          "to": "Navalcarnero",
+          "km": 30,
+          "price": 2.48
+        }
+      ],
+      "freeAlternative": {
+        "road": "A-3",
+        "km": 28,
+        "extraMinutes": 10,
+        "description": "La A-3 (autovía de Valencia) es la alternativa gratuita. Congestión frecuente."
+      }
     },
     {
       "id": "R-4",
@@ -152,8 +393,19 @@
       "expires": "2032",
       "isSeitt": true,
       "segments": [
-        { "from": "Madrid (M-50)", "to": "Ocaña", "km": 52, "price": 4.30 }
-      ]
+        {
+          "from": "Madrid (M-50)",
+          "to": "Ocaña",
+          "km": 52,
+          "price": 4.3
+        }
+      ],
+      "freeAlternative": {
+        "road": "A-4",
+        "km": 55,
+        "extraMinutes": 15,
+        "description": "La A-4 (autovía de Andalucía) es gratuita. Muy transitada hasta Aranjuez."
+      }
     },
     {
       "id": "M-12",
@@ -162,8 +414,19 @@
       "expires": "2032",
       "isSeitt": true,
       "segments": [
-        { "from": "M-40", "to": "Aeropuerto T4", "km": 9, "price": 0.74 }
-      ]
+        {
+          "from": "M-40",
+          "to": "Aeropuerto T4",
+          "km": 9,
+          "price": 0.74
+        }
+      ],
+      "freeAlternative": {
+        "road": "M-40 + M-110",
+        "km": 12,
+        "extraMinutes": 10,
+        "description": "Acceso al aeropuerto por la M-40 y salida a T4 por la M-110/M-12 gratuita."
+      }
     },
     {
       "id": "AP-36",
@@ -172,8 +435,19 @@
       "expires": "2032",
       "isSeitt": true,
       "segments": [
-        { "from": "Ocaña", "to": "La Roda", "km": 177, "price": 14.64 }
-      ]
+        {
+          "from": "Ocaña",
+          "to": "La Roda",
+          "km": 177,
+          "price": 14.64
+        }
+      ],
+      "freeAlternative": {
+        "road": "N-301 / CM-3103",
+        "km": 190,
+        "extraMinutes": 50,
+        "description": "La N-301 Ocaña–Albacete por carreteras convencionales de La Mancha."
+      }
     },
     {
       "id": "AP-41",
@@ -182,8 +456,19 @@
       "expires": "2032",
       "isSeitt": true,
       "segments": [
-        { "from": "Madrid (M-40)", "to": "Toledo", "km": 60, "price": 4.96 }
-      ]
+        {
+          "from": "Madrid (M-40)",
+          "to": "Toledo",
+          "km": 60,
+          "price": 4.96
+        }
+      ],
+      "freeAlternative": {
+        "road": "A-42",
+        "km": 65,
+        "extraMinutes": 10,
+        "description": "La A-42 (autovía de Toledo) es gratuita y discurre en paralelo. Diferencia mínima."
+      }
     }
   ]
 }

@@ -790,6 +790,10 @@ model TollRoad {
   roadId   String? @unique
   road     Road?   @relation(fields: [roadId], references: [id])
   segments TollSegment[]
+  freeAltRoad     String?
+  freeAltKm       Decimal? @db.Decimal(7, 2)
+  freeAltExtraMin Int?
+  freeAltDesc     String?
   year     Int      @default(2026)
   source   String   @default("Ministerio de Transportes")
   updatedAt DateTime @default(now()) @updatedAt

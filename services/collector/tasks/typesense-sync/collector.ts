@@ -828,9 +828,119 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
 // Main
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Incremental delta loaders (only records updated since last sync)
+// Returns null if the collection doesn't support delta updates (falls back to full)
+// ---------------------------------------------------------------------------
+
+type DeltaLoader = (p: PrismaClient, since: Date) => Promise<Record<string, unknown>[] | null>;
+
+const DELTA_LOADERS: Partial<Record<string, DeltaLoader>> = {
+  gas_stations: async (prisma, since) => {
+    const rows = await prisma.gasStation.findMany({
+      where: { lastPriceUpdate: { gte: since } },
+      select: { id: true, name: true, province: true, provinceName: true, locality: true,
+        latitude: true, longitude: true, priceGasoleoA: true, priceGasolina95E5: true,
+        priceGasolina98E5: true, priceGLP: true, priceGNC: true, priceHidrogeno: true,
+        priceGasoleoB: true, priceGasoleoPremium: true, priceGasolina95E5Premium: true,
+        priceGasolina98E10: true, priceGNL: true, priceAdBlue: true, priceBioetanol: true,
+        priceBiodiesel: true, lastPriceUpdate: true },
+    });
+    if (rows.length === 0) return [];
+    return rows.map((s) => ({
+      id: s.id, title: s.name,
+      subtitle: s.locality ? `${s.locality}, ${s.provinceName || ""}` : s.provinceName || "",
+      href: `/gasolineras/terrestres/${s.id}`,
+      category: "Gasolineras", icon: "Fuel",
+      keywords: [s.name, s.locality, s.provinceName].filter(Boolean) as string[],
+      province: s.province || "", provinceName: s.provinceName || "",
+      location: s.latitude && s.longitude ? [Number(s.latitude), Number(s.longitude)] : undefined,
+      priceGasoleoA: s.priceGasoleoA ? Number(s.priceGasoleoA) : 0,
+      priceGasolina95: s.priceGasolina95E5 ? Number(s.priceGasolina95E5) : 0,
+      priceGasolina98: s.priceGasolina98E5 ? Number(s.priceGasolina98E5) : 0,
+      lastUpdated: s.lastPriceUpdate ? Math.floor(s.lastPriceUpdate.getTime() / 1000) : 0,
+    }));
+  },
+  incidents: async (prisma, since) => {
+    const rows = await prisma.trafficIncident.findMany({
+      where: { updatedAt: { gte: since }, isActive: true },
+      select: { id: true, type: true, severity: true, roadNumber: true, province: true,
+        provinceName: true, municipality: true, description: true, latitude: true,
+        longitude: true, source: true, causeType: true, startedAt: true },
+    });
+    if (rows.length === 0) return [];
+    return rows.map((r) => ({
+      id: r.id, type: r.type, severity: r.severity, roadNumber: r.roadNumber || "",
+      province: r.province || "", provinceName: r.provinceName || "",
+      municipality: r.municipality || "", description: r.description || "",
+      location: r.latitude && r.longitude ? [Number(r.latitude), Number(r.longitude)] : undefined,
+      source: r.source || "", causeType: r.causeType || "",
+      startedAt: Math.floor(r.startedAt.getTime() / 1000),
+    }));
+  },
+  cameras: async (prisma, since) => {
+    const rows = await prisma.camera.findMany({
+      where: { lastUpdated: { gte: since } },
+      select: { id: true, name: true, roadNumber: true, province: true, provinceName: true,
+        latitude: true, longitude: true },
+    });
+    if (rows.length === 0) return [];
+    return rows.map((c) => ({
+      id: c.id, title: c.name, roadNumber: c.roadNumber || "",
+      province: c.province || "", provinceName: c.provinceName || "",
+      href: `/camaras/camara/${c.id}`, category: "Camaras", icon: "Camera",
+      location: c.latitude && c.longitude ? [Number(c.latitude), Number(c.longitude)] : undefined,
+    }));
+  },
+  ev_chargers: async (prisma, since) => {
+    const rows = await prisma.eVCharger.findMany({
+      where: { lastUpdated: { gte: since } },
+      select: { id: true, name: true, city: true, province: true, provinceName: true,
+        operator: true, powerKw: true, latitude: true, longitude: true },
+    });
+    if (rows.length === 0) return [];
+    return rows.map((c) => ({
+      id: c.id, title: c.name, city: c.city || "", province: c.province || "",
+      provinceName: c.provinceName || "", operator: c.operator || "",
+      powerKw: c.powerKw ? Number(c.powerKw) : 0,
+      href: `/carga-ev/punto/${c.id}`, category: "Cargadores EV", icon: "Zap",
+      location: c.latitude && c.longitude ? [Number(c.latitude), Number(c.longitude)] : undefined,
+    }));
+  },
+};
+
+// Redis key for tracking last sync time per collection
+const SYNC_TS_PREFIX = "typesense:last_sync:";
+
+async function getLastSyncTime(collectionName: string): Promise<Date | null> {
+  try {
+    const redis = await import("ioredis").then((m) => {
+      const url = process.env.REDIS_URL;
+      return url ? new m.default(url) : null;
+    });
+    if (!redis) return null;
+    const ts = await redis.get(`${SYNC_TS_PREFIX}${collectionName}`);
+    await redis.quit();
+    return ts ? new Date(ts) : null;
+  } catch { return null; }
+}
+
+async function setLastSyncTime(collectionName: string, time: Date): Promise<void> {
+  try {
+    const redis = await import("ioredis").then((m) => {
+      const url = process.env.REDIS_URL;
+      return url ? new m.default(url) : null;
+    });
+    if (!redis) return;
+    await redis.set(`${SYNC_TS_PREFIX}${collectionName}`, time.toISOString());
+    await redis.quit();
+  } catch { /* non-critical */ }
+}
+
 export async function run(prisma: PrismaClient): Promise<void> {
   const target = process.env.SYNC_COLLECTION;
-  const mode = target ? "single" : "full";
+  const incremental = process.env.SYNC_MODE === "incremental";
+  const mode = target ? "single" : incremental ? "incremental" : "full";
   console.log(`[typesense-sync] ${mode} sync${target ? ` (${target})` : ""}...`);
   const start = Date.now();
 
@@ -840,31 +950,55 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const names = target ? [target] : Object.keys(LOADERS);
   if (target && !LOADERS[target]) throw new Error(`Unknown collection: ${target}`);
 
-  // Phase 1: Parallel DB loads
+  // Phase 1: Parallel DB loads (full or incremental)
+  const syncStartTime = new Date();
   const loadStart = Date.now();
   const loaded = await Promise.allSettled(
     names.map(async (name) => {
       const t0 = Date.now();
-      const docs = await LOADERS[name](prisma);
+      let docs: Record<string, unknown>[];
+
+      if (incremental && DELTA_LOADERS[name]) {
+        const lastSync = await getLastSyncTime(name);
+        if (lastSync) {
+          const delta = await DELTA_LOADERS[name]!(prisma, lastSync);
+          if (delta !== null) {
+            console.log(`[typesense-sync] Delta ${name}: ${delta.length} updated since ${lastSync.toISOString()} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
+            return { name, docs: delta, isDelta: true };
+          }
+        }
+        // Fall back to full load if no lastSync or delta not supported
+        console.log(`[typesense-sync] No delta for ${name}, falling back to full load`);
+      }
+
+      docs = await LOADERS[name](prisma);
       console.log(`[typesense-sync] Loaded ${docs.length} ${name} in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
-      return { name, docs };
+      return { name, docs, isDelta: false };
     })
   );
   console.log(`[typesense-sync] All loads in ${((Date.now() - loadStart) / 1000).toFixed(1)}s`);
 
   // Phase 2: Parallel Typesense writes (batches of 4 to avoid overwhelming)
-  const syncFn = mode === "full" ? replaceCollection : upsertCollection;
+  // Delta loads always upsert, full loads replace
+  const defaultSyncFn = mode === "full" ? replaceCollection : upsertCollection;
   const totals: Record<string, number> = {};
-  const successes = loaded.filter((r): r is PromiseFulfilledResult<{ name: string; docs: Record<string, unknown>[] }> => r.status === "fulfilled");
+  const successes = loaded.filter((r): r is PromiseFulfilledResult<{ name: string; docs: Record<string, unknown>[]; isDelta: boolean }> => r.status === "fulfilled");
 
   for (let i = 0; i < successes.length; i += 4) {
     const batch = successes.slice(i, i + 4);
     const results = await Promise.allSettled(
       batch.map(async (r) => {
-        const { name, docs } = r.value;
+        const { name, docs, isDelta } = r.value;
+        if (isDelta && docs.length === 0) {
+          console.log(`[typesense-sync] Skip ${name} (no changes)`);
+          return { name, count: 0 };
+        }
         const t0 = Date.now();
-        const count = await syncFn(client, name, COLLECTIONS[name], docs);
-        console.log(`[typesense-sync] Synced ${count} ${name} in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+        const fn = isDelta ? upsertCollection : defaultSyncFn;
+        const count = await fn(client, name, COLLECTIONS[name], docs);
+        console.log(`[typesense-sync] Synced ${count} ${name}${isDelta ? " (delta)" : ""} in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+        // Track last sync time for incremental collections
+        if (DELTA_LOADERS[name]) await setLastSyncTime(name, syncStartTime);
         return { name, count };
       })
     );

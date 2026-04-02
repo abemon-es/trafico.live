@@ -680,6 +680,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly",
       priority: 0.85,
     },
+    ...["abertis", "seitt", "itinere", "acega"].map((op) => ({
+      url: `${BASE_URL}/peajes/operador/${op}`,
+      lastModified: today,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
     {
       url: `${BASE_URL}/cuanto-cuesta-cargar`,
       lastModified: today,
