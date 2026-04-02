@@ -769,7 +769,47 @@ model Road {
   // Speed limits for this road
   speedLimits SpeedLimit[]
 
+  // Toll data (if this road has tolls)
+  tollRoad TollRoad?
+
   @@index([type])
+}
+
+model TollRoad {
+  id       String @id
+  name     String
+  slug     String @unique
+  operator String
+  isSeitt  Boolean @default(false)
+  expires  String?
+  fromCity String
+  toCity   String
+  totalKm  Decimal @db.Decimal(7, 2)
+  minPrice Decimal @db.Decimal(6, 2)
+  maxPrice Decimal @db.Decimal(6, 2)
+  roadId   String? @unique
+  road     Road?   @relation(fields: [roadId], references: [id])
+  segments TollSegment[]
+  year     Int      @default(2026)
+  source   String   @default("Ministerio de Transportes")
+  updatedAt DateTime @default(now()) @updatedAt
+  @@index([operator])
+  @@index([isSeitt])
+}
+
+model TollSegment {
+  id         String   @id @default(cuid())
+  tollRoadId String
+  tollRoad   TollRoad @relation(fields: [tollRoadId], references: [id], onDelete: Cascade)
+  fromPoint  String
+  toPoint    String
+  km         Decimal  @db.Decimal(7, 2)
+  priceLigeros  Decimal  @db.Decimal(6, 2)
+  pricePesados1 Decimal? @db.Decimal(6, 2)
+  pricePesados2 Decimal? @db.Decimal(6, 2)
+  priceLigerosCash Decimal? @db.Decimal(6, 2)
+  sortOrder  Int @default(0)
+  @@index([tollRoadId])
 }
 
 // Speed limits by road segment (ROSATTE format from NAP)
