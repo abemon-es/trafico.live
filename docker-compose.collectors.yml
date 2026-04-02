@@ -19,6 +19,8 @@ x-collector: &collector-base
     DATABASE_URL: ${DATABASE_URL}
     REDIS_URL: ${REDIS_URL}
     SENTRY_DSN: ${SENTRY_DSN}
+    TYPESENSE_URL: ${TYPESENSE_URL}
+    TYPESENSE_API_KEY: ${TYPESENSE_API_KEY}
     TZ: Europe/Madrid
     NODE_ENV: production
   mem_limit: 512m
@@ -78,17 +80,19 @@ services:
     mem_limit: 512m
 
   # ─── Daily ─────────────────────────────────────────────────────────
-  # camera, charger, insights
+  # camera, charger, insights, typesense-sync
   collector-daily:
     <<: *collector-base
     environment:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       SENTRY_DSN: ${SENTRY_DSN}
+      TYPESENSE_URL: ${TYPESENSE_URL}
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY}
       TZ: Europe/Madrid
       NODE_ENV: production
       CRONTAB_TIER: daily
-    mem_limit: 512m
+    mem_limit: 1024m
 
   # ─── Weekly ────────────────────────────────────────────────────────
   # radar, speedlimit, risk-zones, zbe, renfe-gtfs

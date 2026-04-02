@@ -77,6 +77,12 @@ const PROVINCE_ALIASES: Record<string, string> = {
   "valencia/valencia": "46",
   "balears": "07",
   "palencia/palencia": "34",
+  // DGT reversed format ("Surname, Name")
+  "balears, illes": "07",
+  "palmas, las": "35",
+  "coruna, a": "15",
+  "rioja, la": "26",
+  "coruña, a": "15",
 };
 Object.assign(PROVINCE_NAME_TO_CODE, PROVINCE_ALIASES);
 
