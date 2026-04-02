@@ -444,9 +444,9 @@ export function IncidenciasAnalyticsClient() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number | undefined, name: string | undefined) => [
-                        formatNumber(value ?? 0),
-                        name ?? "",
+                      formatter={(value, name) => [
+                        formatNumber(Number(value) || 0),
+                        String(name ?? ""),
                       ]}
                     />
                     <Legend
