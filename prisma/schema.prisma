@@ -347,6 +347,15 @@ model WeatherAlert {
   // Status
   isActive Boolean @default(true)
 
+  // Weather metrics (extracted from AEMET CAP alerts)
+  windSpeedKmh Int?
+  windGustKmh  Int?
+  tempMinC     Int?
+  tempMaxC     Int?
+  rainfallMm   Int?
+  snowLevelM   Int?
+  waveHeightM  Decimal? @db.Decimal(4, 1)
+
   @@index([province, isActive])
   @@index([type, isActive])
   @@index([startedAt])
