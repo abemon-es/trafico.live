@@ -221,6 +221,7 @@ interface TrafficMapProps {
   incidentFilters?: IncidentFilters;
   incidentViewMode?: IncidentViewMode;
   darkMode?: boolean;
+  satellite?: boolean;
   terrain3D?: boolean;
   flowData?: GeoJSON.FeatureCollection | null;
   weatherRadar?: boolean;
@@ -807,8 +808,21 @@ const DARK_MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/st
 const LIGHT_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 const SATELLITE_MAP_STYLE = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 
+const getSatelliteStyle = (): maplibregl.StyleSpecification => ({
+  version: 8,
+  sources: {
+    "esri-satellite": {
+      type: "raster",
+      tiles: [SATELLITE_MAP_STYLE],
+      tileSize: 256,
+      attribution: "Esri, Maxar, Earthstar Geographics",
+    },
+  },
+  layers: [{ id: "satellite-base", type: "raster", source: "esri-satellite" }],
+});
+
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, satellite = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -878,7 +892,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: darkMode ? DARK_MAP_STYLE : LIGHT_MAP_STYLE,
+      style: satellite ? getSatelliteStyle() : darkMode ? DARK_MAP_STYLE : LIGHT_MAP_STYLE,
       center: SPAIN_CENTER,
       zoom: 6,
       attributionControl: false,
@@ -1069,11 +1083,11 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     };
   }, []);
 
-  // Switch map style on dark mode toggle
+  // Switch map style on dark mode or satellite toggle
   useEffect(() => {
     if (!map.current || !isLoaded) return;
     const m = map.current;
-    const targetStyle = darkMode ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
+    const targetStyle = satellite ? getSatelliteStyle() : darkMode ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
 
     // setStyle removes all custom sources/layers — mark as not loaded
     setIsLoaded(false);
@@ -1130,7 +1144,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         .catch(() => setIsLoaded(true));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [darkMode]);
+  }, [darkMode, satellite]);
 
   // Toggle 3D terrain
   useEffect(() => {
