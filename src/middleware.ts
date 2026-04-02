@@ -24,7 +24,7 @@ async function resolveSlugToGeoPath(
 
   try {
     const res = await fetch(
-      `${origin}/api/comunidad-autonoma/_resolve?slug=${encodeURIComponent(slug)}`,
+      `${origin}/api/geo/resolve?slug=${encodeURIComponent(slug)}`,
       { headers: { "x-internal": "1" }, next: { revalidate: 3600 } }
     );
     if (!res.ok) {
