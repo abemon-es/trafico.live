@@ -56,48 +56,14 @@ function toGeoJSON(items: LatLngItem[]) {
 // Layer reveal config
 // ---------------------------------------------------------------------------
 
-const LAYERS = [
-  {
-    id: "incidents",
-    delay: 800,
-    color: "#dc2626", // signal-red
-    type: "heatmap" as const,
-    targetOpacity: 0.7,
-    radius: 3,
-  },
-  {
-    id: "cameras",
-    delay: 1500,
-    color: "#6393ff", // tl-400
-    type: "circle" as const,
-    targetOpacity: 0.6,
-    radius: 2,
-  },
-  {
-    id: "radars",
-    delay: 2200,
-    color: "#d48139", // tl-amber-400
-    type: "circle" as const,
-    targetOpacity: 0.5,
-    radius: 2,
-  },
-  {
-    id: "chargers",
-    delay: 2800,
-    color: "#34d399", // green
-    type: "circle" as const,
-    targetOpacity: 0.4,
-    radius: 1.5,
-  },
-];
-
+// Traffic flow layers — no infrastructure, only live traffic + alerts
 const LEGEND_ITEMS = [
   { label: "Provincias", color: "#c0d5ff" },
   { label: "Ciudades", color: "#1b4bd5" },
-  { label: "Incidencias", color: "#dc2626" },
-  { label: "Cámaras", color: "#6393ff" },
-  { label: "Radares", color: "#d48139" },
-  { label: "EV", color: "#34d399" },
+  { label: "Fluido", color: "#059669" },
+  { label: "Lento", color: "#eab308" },
+  { label: "Congestionado", color: "#dc2626" },
+  { label: "Alerta", color: "#dc2626" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -382,106 +348,101 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         map.on("mouseenter", "city-dots", () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", "city-dots", () => { map.getCanvas().style.cursor = ""; });
 
-        // ── Data layers (existing) ──
-        // Fetch all data sources in parallel
-        const [incidentsData, camerasData, radarsData, chargersData] = await Promise.allSettled([
-          fetch("/api/incidents?limit=200").then((r) => r.json()),
-          fetch("/api/cameras?limit=300").then((r) => r.json()),
-          fetch("/api/radars?limit=300").then((r) => r.json()),
-          fetch("/api/chargers?limit=300").then((r) => r.json()),
-        ]);
-
-        if (cancelled) return;
-
-        // Build GeoJSON for each source
-        const incidentsGeoJSON =
-          incidentsData.status === "fulfilled" && Array.isArray(incidentsData.value?.incidents)
-            ? toGeoJSON(incidentsData.value.incidents)
-            : { type: "FeatureCollection" as const, features: [] };
-
-        const camerasGeoJSON =
-          camerasData.status === "fulfilled" && Array.isArray(camerasData.value?.cameras)
-            ? toGeoJSON(camerasData.value.cameras)
-            : { type: "FeatureCollection" as const, features: [] };
-
-        const radarsGeoJSON =
-          radarsData.status === "fulfilled" && Array.isArray(radarsData.value?.radars)
-            ? toGeoJSON(radarsData.value.radars)
-            : { type: "FeatureCollection" as const, features: [] };
-
-        const chargersGeoJSON =
-          chargersData.status === "fulfilled" && Array.isArray(chargersData.value?.chargers)
-            ? toGeoJSON(chargersData.value.chargers)
-            : { type: "FeatureCollection" as const, features: [] };
-
-        const geoJSONMap: Record<string, ReturnType<typeof toGeoJSON>> = {
-          incidents: incidentsGeoJSON,
-          cameras: camerasGeoJSON,
-          radars: radarsGeoJSON,
-          chargers: chargersGeoJSON,
-        };
-
-        // Add sources and layers with initial opacity = 0
-        for (const layer of LAYERS) {
+        // ── Traffic flow layer — live speed from DGT detectors ──
+        try {
+          const speedRes = await fetch("/api/roads/live-speed");
+          const speedData = await speedRes.json();
           if (cancelled) return;
 
-          map.addSource(layer.id, {
-            type: "geojson",
-            data: geoJSONMap[layer.id],
+          if (speedData.success && speedData.data) {
+            map.addSource("traffic-flow", { type: "geojson", data: speedData.data });
+
+            // Color-coded dots showing traffic speed on roads
+            map.addLayer({
+              id: "traffic-flow",
+              type: "circle",
+              source: "traffic-flow",
+              paint: {
+                "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 2.5, 8, 4, 12, 7],
+                "circle-color": ["get", "color"], // pre-computed green/yellow/orange/red
+                "circle-opacity": 0,
+                "circle-opacity-transition": { duration: 1000, delay: 0 },
+                "circle-stroke-width": 0.5,
+                "circle-stroke-color": "rgba(255,255,255,0.5)",
+                "circle-stroke-opacity": 0,
+                "circle-stroke-opacity-transition": { duration: 1000, delay: 0 },
+              },
+            });
+
+            // Reveal traffic flow with pulse animation
+            setTimeout(() => {
+              if (cancelled) return;
+              map.setPaintProperty("traffic-flow", "circle-opacity", 0.85);
+              map.setPaintProperty("traffic-flow", "circle-stroke-opacity", 0.85);
+            }, prefersReducedMotion ? 0 : 800);
+          }
+        } catch {
+          // Traffic flow optional
+        }
+
+        // ── Important incidents — only HIGH/VERY_HIGH severity ──
+        try {
+          const incRes = await fetch("/api/incidents?limit=100");
+          const incData = await incRes.json();
+          if (cancelled) return;
+
+          const incidents = Array.isArray(incData?.incidents) ? incData.incidents : [];
+          // Filter to important incidents only (HIGH + VERY_HIGH)
+          const importantIncidents = incidents.filter(
+            (i: Record<string, unknown>) => i.severity === "HIGH" || i.severity === "VERY_HIGH"
+          );
+
+          const incGeoJSON = toGeoJSON(importantIncidents);
+
+          map.addSource("alerts", { type: "geojson", data: incGeoJSON });
+
+          // Pulsing alert circles for important incidents
+          map.addLayer({
+            id: "alerts-glow",
+            type: "circle",
+            source: "alerts",
+            paint: {
+              "circle-radius": 12,
+              "circle-color": "#dc2626",
+              "circle-opacity": 0,
+              "circle-opacity-transition": { duration: 800, delay: 0 },
+              "circle-blur": 0.8,
+            },
           });
 
-          if (layer.type === "heatmap") {
-            map.addLayer({
-              id: layer.id,
-              type: "heatmap",
-              source: layer.id,
-              paint: {
-                "heatmap-opacity": 0,
-                "heatmap-opacity-transition": { duration: 800, delay: 0 },
-                "heatmap-radius": layer.radius * 8,
-                "heatmap-color": [
-                  "interpolate",
-                  ["linear"],
-                  ["heatmap-density"],
-                  0, "rgba(0,0,0,0)",
-                  0.5, `${layer.color}99`,
-                  1, layer.color,
-                ],
-              },
-            });
-          } else {
-            map.addLayer({
-              id: layer.id,
-              type: "circle",
-              source: layer.id,
-              paint: {
-                "circle-opacity": 0,
-                "circle-opacity-transition": { duration: 800, delay: 0 },
-                "circle-color": layer.color,
-                "circle-radius": layer.radius,
-              },
-            });
-          }
-        }
+          map.addLayer({
+            id: "alerts-dot",
+            type: "circle",
+            source: "alerts",
+            paint: {
+              "circle-radius": 4,
+              "circle-color": "#dc2626",
+              "circle-opacity": 0,
+              "circle-opacity-transition": { duration: 800, delay: 0 },
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": 1.5,
+              "circle-stroke-opacity": 0,
+              "circle-stroke-opacity-transition": { duration: 800, delay: 0 },
+            },
+          });
 
-        // Reveal layers — immediate if reduced motion, delayed otherwise
-        let revealedCount = 0;
-        for (const layer of LAYERS) {
-          const delay = prefersReducedMotion ? 0 : layer.delay;
-          const opacityProp =
-            layer.type === "heatmap" ? "heatmap-opacity" : "circle-opacity";
-
+          // Reveal alerts
           setTimeout(() => {
-            if (cancelled || !map.getLayer(layer.id)) return;
-            map.setPaintProperty(layer.id, opacityProp, layer.targetOpacity);
-            revealedCount += 1;
-            if (revealedCount === LAYERS.length) {
-              setLegendVisible(true);
-            }
-          }, delay);
+            if (cancelled) return;
+            map.setPaintProperty("alerts-glow", "circle-opacity", 0.3);
+            map.setPaintProperty("alerts-dot", "circle-opacity", 1);
+            map.setPaintProperty("alerts-dot", "circle-stroke-opacity", 1);
+            setLegendVisible(true);
+          }, prefersReducedMotion ? 0 : 1500);
+        } catch {
+          setLegendVisible(true);
         }
 
-        // If reduced motion, show legend right away
         if (prefersReducedMotion) {
           setLegendVisible(true);
         }
