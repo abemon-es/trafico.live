@@ -287,6 +287,7 @@ export function UnifiedMap({
   const [windOverlay, setWindOverlay] = useState(false);
   const [cloudOverlay, setCloudOverlay] = useState(false);
   const [tempOverlay, setTempOverlay] = useState(false);
+  const [satellite, setSatellite] = useState(false);
   const [corridorActive, setCorridorActive] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
   const [comparatorActive, setComparatorActive] = useState(false);
@@ -736,6 +737,8 @@ export function UnifiedMap({
         onCloudOverlayToggle={() => setCloudOverlay((c) => !c)}
         tempOverlay={tempOverlay}
         onTempOverlayToggle={() => setTempOverlay((t) => !t)}
+        satellite={satellite}
+        onSatelliteToggle={() => setSatellite((s) => !s)}
         drivingMode={drivingMode}
         onDrivingModeToggle={() => setDrivingMode((d) => !d)}
         counts={counts}
@@ -779,6 +782,7 @@ export function UnifiedMap({
               terrain3D={terrain3D}
               flowData={flowActive ? flowData?.data || null : null}
               weatherRadar={weatherRadar}
+              satellite={satellite}
               windOverlay={windOverlay}
               cloudOverlay={cloudOverlay}
               tempOverlay={tempOverlay}
