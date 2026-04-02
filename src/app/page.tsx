@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Activity, AlertTriangle, Anchor, Ban, BarChart3, Camera, Cloud, Fuel, Map, Newspaper, Radar, Route, Zap } from "lucide-react";
+import { Activity, AlertTriangle, Anchor, Ban, BarChart3, Camera, Cloud, Fuel, Map, MapPin, Newspaper, Radar, Route, Zap } from "lucide-react";
 import prisma from "@/lib/db";
-import { DashboardClient } from "./DashboardClient";
+import { HomeClient } from "./HomeClient";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -42,11 +42,16 @@ const SECTION_LINKS = [
   { href: "/estadisticas", label: "Estadísticas", Icon: BarChart3 },
   { href: "/mapa", label: "Mapa en vivo", Icon: Map },
   { href: "/alertas-meteo", label: "Alertas meteorológicas", Icon: Cloud },
+  { href: "/intensidad", label: "Intensidad de tráfico", Icon: BarChart3 },
+  { href: "/estaciones-aforo", label: "Estaciones de aforo", Icon: MapPin },
+  { href: "/puntos-negros", label: "Puntos negros", Icon: AlertTriangle },
+  { href: "/andorra", label: "Andorra", Icon: Map },
+  { href: "/portugal", label: "Portugal", Icon: Map },
 ];
 
 async function getHomeStats() {
   try {
-    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount] =
+    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount] =
       await Promise.all([
         prisma.trafficIncident.count({ where: { isActive: true } }),
         prisma.camera.count(),
@@ -54,10 +59,11 @@ async function getHomeStats() {
         prisma.gasStation.count(),
         prisma.v16BeaconEvent.count({ where: { isActive: true } }),
         prisma.eVCharger.count(),
+        prisma.trafficDetector.count({ where: { isActive: true } }),
       ]);
-    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount };
+    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount };
   } catch {
-    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0 };
+    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0, detectorCount: 0 };
   }
 }
 
@@ -119,24 +125,8 @@ export default async function Dashboard() {
         </div>
       </nav>
 
-      {/* Content & Analysis Links */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-          Contenido y análisis
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/noticias" className="text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 transition-colors">Noticias</Link>
-          <Link href="/informe-diario" className="text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 transition-colors">Informe diario</Link>
-          <Link href="/informes" className="text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 transition-colors">Informes</Link>
-          <Link href="/operaciones" className="text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 transition-colors">Operaciones DGT</Link>
-          <Link href="/semana-santa-2026" className="text-sm bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-full px-3 py-1.5 text-tl-amber-700 dark:text-tl-amber-300 font-medium hover:bg-tl-amber-100 dark:hover:bg-tl-amber-900/40 transition-colors">Semana Santa 2026</Link>
-          <Link href="/profesional" className="text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 transition-colors">Profesional</Link>
-          <Link href="/ciclistas" className="text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 transition-colors">Ciclistas</Link>
-        </div>
-      </section>
-
-      {/* Client-side interactive content */}
-      <DashboardClient />
+      {/* Client-side interactive homepage */}
+      <HomeClient initialStats={stats} />
     </div>
   );
 }
