@@ -19,7 +19,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {

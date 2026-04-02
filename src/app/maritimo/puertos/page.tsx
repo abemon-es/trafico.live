@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { Anchor, Ship, MapPin, Fuel, Navigation, Trophy, BarChart3 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";

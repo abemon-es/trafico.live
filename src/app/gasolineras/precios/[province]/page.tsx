@@ -7,7 +7,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 // force-dynamic: Coolify builds with DATABASE_URL='' which caches empty ISR pages.
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

@@ -13,7 +13,6 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 const CURRENT_YEAR = new Date().getFullYear();

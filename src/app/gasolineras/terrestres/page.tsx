@@ -6,7 +6,7 @@ import TerrestresClient from "./TerrestresClient";
 
 // force-dynamic: Coolify builds with DATABASE_URL='' so ISR caches empty pages.
 // Dynamic rendering ensures live DB queries at request time.
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

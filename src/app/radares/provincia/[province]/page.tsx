@@ -17,7 +17,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const CURRENT_YEAR = new Date().getFullYear();

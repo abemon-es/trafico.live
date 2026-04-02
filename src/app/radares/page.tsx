@@ -10,7 +10,6 @@ import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 const CURRENT_YEAR = new Date().getFullYear();

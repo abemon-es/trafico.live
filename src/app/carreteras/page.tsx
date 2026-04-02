@@ -4,7 +4,6 @@ import { Route, Car, Construction, MapPin, TrendingUp, Globe } from "lucide-reac
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export const metadata = buildPageMetadata({
