@@ -1522,3 +1522,128 @@ model Redirect {
 
   @@index([source])
 }
+
+// ============================================
+// RAILWAY NETWORK (Renfe + ADIF)
+// ============================================
+
+enum RailwayServiceType {
+  CERCANIAS
+  AVE
+  LARGA_DISTANCIA
+  MEDIA_DISTANCIA
+  FEVE
+  RODALIES
+}
+
+enum RailwayAlertEffect {
+  NO_SERVICE
+  REDUCED_SERVICE
+  SIGNIFICANT_DELAYS
+  DETOUR
+  ADDITIONAL_SERVICE
+  MODIFIED_SERVICE
+  STOP_MOVED
+  OTHER_EFFECT
+  UNKNOWN_EFFECT
+}
+
+model RailwayStation {
+  id           String  @id @default(cuid())
+  stopId       String  @unique // GTFS stop_id
+  code         String? // Renfe station code (e.g. "60000" for Atocha)
+  name         String
+  latitude     Decimal @db.Decimal(9, 6)
+  longitude    Decimal @db.Decimal(9, 6)
+
+  // Classification
+  parentId     String? // GTFS parent_station (for grouped stops)
+  locationType Int     @default(0) // GTFS location_type: 0=stop, 1=station
+  platformCode String? // Platform number/code
+
+  // Administrative
+  province     String? // INE 2-digit
+  provinceName String?
+  community    String? // INE 2-digit community
+  municipality String?
+
+  // Service info
+  serviceTypes RailwayServiceType[] // Which services stop here
+  wheelchair   Int?    @default(0) // GTFS wheelchair_boarding: 0=unknown, 1=yes, 2=no
+
+  // Metadata
+  source       String  @default("RENFE_GTFS")
+  fetchedAt    DateTime @default(now()) @db.Timestamptz
+
+  @@index([name])
+  @@index([province])
+  @@index([serviceTypes])
+  @@index([latitude, longitude])
+  @@index([parentId])
+}
+
+model RailwayRoute {
+  id          String  @id @default(cuid())
+  routeId     String  @unique // GTFS route_id
+  agencyId    String? // GTFS agency_id
+  shortName   String? // e.g. "C1", "C3", "AVE"
+  longName    String? // e.g. "Príncipe Pío - Aeropuerto T4"
+  serviceType RailwayServiceType
+  color       String? // Route color hex (GTFS route_color)
+  textColor   String? // Text color hex (GTFS route_text_color)
+
+  // Network (for Cercanías grouping)
+  network     String? // e.g. "Madrid", "Barcelona", "Valencia"
+
+  // Shape geometry (from shapes.txt)
+  shapeId     String?
+  shapeGeoJSON Json?   // GeoJSON LineString or MultiLineString
+
+  // Stop sequence
+  stopIds     String[] // Ordered GTFS stop_ids for this route
+
+  // Metadata
+  source      String   @default("RENFE_GTFS")
+  fetchedAt   DateTime @default(now()) @db.Timestamptz
+
+  @@index([serviceType])
+  @@index([network])
+  @@index([shortName])
+}
+
+model RailwayAlert {
+  id         String  @id @default(cuid())
+  alertId    String  @unique // GTFS-RT alert id (e.g. "AVISO_484283")
+
+  // Affected entities
+  routeIds   String[] // GTFS route_ids affected
+  stopIds    String[] // GTFS stop_ids affected
+  tripIds    String[] // GTFS trip_ids affected
+
+  // Alert content
+  headerText   String?  @db.Text
+  description  String   @db.Text // Alert description in Spanish
+  url          String?  // External URL with more info
+  cause        String?  // GTFS-RT cause enum as string
+  effect       RailwayAlertEffect @default(UNKNOWN_EFFECT)
+
+  // Temporal
+  activePeriodStart DateTime  @db.Timestamptz
+  activePeriodEnd   DateTime? @db.Timestamptz
+
+  // Lifecycle
+  isActive     Boolean  @default(true)
+  firstSeenAt  DateTime @default(now()) @db.Timestamptz
+  lastSeenAt   DateTime @default(now()) @db.Timestamptz
+  fetchedAt    DateTime @default(now()) @db.Timestamptz
+
+  // Source
+  source       String   @default("RENFE_GTFS_RT")
+  serviceType  RailwayServiceType?
+
+  @@index([isActive])
+  @@index([activePeriodStart])
+  @@index([routeIds])
+  @@index([source, isActive])
+  @@index([serviceType])
+}
