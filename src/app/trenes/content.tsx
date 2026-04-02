@@ -4,6 +4,7 @@ import { fetcher } from "@/lib/fetcher";
 import { useState, useMemo } from "react";
 import useSWR from "swr";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   Train,
   Loader2,
@@ -15,6 +16,12 @@ import {
   Clock,
   ArrowRight,
   Accessibility,
+  TrendingUp,
+  Trophy,
+  ChevronRight,
+  Map,
+  List,
+  BarChart3,
 } from "lucide-react";
 
 const RailwayMap = dynamic(() => import("./railway-map"), {
@@ -110,6 +117,11 @@ export default function TrainesContent() {
   const { data: routeStats } = useSWR(`/api/trenes/rutas?limit=1`, fetcher, { revalidateOnFocus: false });
   const totalRoutes = routeStats?.data?.pagination?.total || 0;
   const totalStations = stationsGeoJSON?.features?.length || 0;
+
+  // --- Delay analytics ---
+  const { data: delayStats } = useSWR(`/api/trenes/stats?period=today`, fetcher, { refreshInterval: 120000 });
+  const current = delayStats?.data?.current;
+  const brandLeaderboard = delayStats?.data?.brandPunctuality || [];
 
   // Parse train stops for detail panel
   const trainStops = useMemo(() => {
@@ -311,10 +323,119 @@ export default function TrainesContent() {
         </div>
       )}
 
+      {/* ── Analytics Section ── */}
+      {current && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-heading font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-[var(--tl-primary)]" />
+            Puntualidad en tiempo real
+          </h2>
+
+          {/* Punctuality gauge + delay distribution */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Puntualidad</p>
+              <p className={`text-3xl font-heading font-bold font-mono ${Number(current.punctualityRate) >= 80 ? "text-[var(--tl-success)]" : Number(current.punctualityRate) >= 60 ? "text-yellow-600" : "text-[var(--tl-danger)]"}`}>
+                {Number(current.punctualityRate).toFixed(1)}%
+              </p>
+              <p className="text-[10px] text-gray-400 mt-0.5">trenes con &le;5 min retraso</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Retraso medio</p>
+              <p className="text-3xl font-heading font-bold font-mono text-gray-900 dark:text-gray-100">
+                {Number(current.avgDelay).toFixed(1)}<span className="text-sm font-normal ml-0.5">min</span>
+              </p>
+              <p className="text-[10px] text-gray-400 mt-0.5">mediana {current.p50Delay || 0} min, p90 {current.p90Delay || 0} min</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Retraso max</p>
+              <p className={`text-3xl font-heading font-bold font-mono ${current.maxDelay > 30 ? "text-[var(--tl-danger)]" : "text-gray-900 dark:text-gray-100"}`}>
+                {current.maxDelay}<span className="text-sm font-normal ml-0.5">min</span>
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Distribución</p>
+              <div className="flex items-end gap-1 h-8">
+                {[
+                  { count: current.onTimeCount, color: "#059669", label: "Puntual" },
+                  { count: current.slightCount, color: "#ca8a04", label: "<5m" },
+                  { count: current.moderateCount, color: "#ea580c", label: "5-15m" },
+                  { count: current.severeCount, color: "#dc2626", label: ">15m" },
+                ].map((b) => {
+                  const pct = current.totalTrains > 0 ? (b.count / current.totalTrains) * 100 : 0;
+                  return (
+                    <div key={b.label} className="flex-1 flex flex-col items-center gap-0.5" title={`${b.label}: ${b.count}`}>
+                      <div className="w-full rounded-t" style={{ backgroundColor: b.color, height: `${Math.max(pct * 0.3, 2)}px` }} />
+                      <span className="text-[9px] text-gray-400">{b.count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Brand punctuality leaderboard */}
+          {brandLeaderboard.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <h3 className="text-sm font-heading font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
+                <Trophy className="w-4 h-4 text-yellow-500" />
+                Puntualidad por marca
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {brandLeaderboard.map((b: { brand: string; punctuality: number; avgDelay: number; total: number }, i: number) => (
+                  <div key={b.brand} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                    <span className={`text-sm font-bold font-mono w-5 ${i === 0 ? "text-yellow-500" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-gray-500"}`}>
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{b.brand}</p>
+                      <p className="text-[10px] text-gray-500">
+                        <span className={`font-mono font-semibold ${b.punctuality >= 80 ? "text-green-600" : b.punctuality >= 60 ? "text-yellow-600" : "text-red-600"}`}>
+                          {b.punctuality}%
+                        </span>
+                        {" · "}{b.avgDelay}min · {b.total} trenes
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Navigation to sub-pages ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          { href: "/trenes/estaciones", icon: MapPin, title: "Estaciones", desc: `${totalStations.toLocaleString("es-ES")} estaciones en toda España`, color: "var(--tl-primary)" },
+          { href: "/trenes/lineas", icon: Route, title: "Líneas y marcas", desc: `${totalRoutes} rutas: AVE, Alvia, Cercanías...`, color: "var(--tl-accent)" },
+          { href: "/trenes/cercanias", icon: Map, title: "Cercanías", desc: "12 redes: Madrid, Barcelona, Valencia...", color: "#059669" },
+        ].map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-[var(--tl-primary)] hover:shadow-md transition-all"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${link.color}15` }}>
+                  <link.icon className="w-5 h-5" style={{ color: link.color }} />
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-gray-900 dark:text-gray-100">{link.title}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{link.desc}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[var(--tl-primary)] transition-colors shrink-0 mt-2" />
+            </div>
+          </Link>
+        ))}
+      </div>
+
       {/* Attribution */}
       <p className="flex items-center gap-1.5 text-[11px] text-gray-400">
         <Info className="w-3 h-3" />
-        Origen de los datos: Renfe Operadora (CC-BY 4.0). Posiciones cada 15 s. Estaciones y líneas GTFS semanales.
+        Origen de los datos: Renfe Operadora (CC-BY 4.0). Posiciones cada 15 s. Analytics cada 2 min. Estaciones GTFS semanales.
       </p>
     </div>
   );
