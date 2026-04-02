@@ -153,13 +153,24 @@ export async function StatsBar({ entity }: StatsBarProps) {
   if (visibleCards.length === 0) return null;
 
   return (
-    <div
-      aria-label="Resumen estadístico"
-      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2"
-    >
-      {visibleCards.map((card) => (
-        <StatCard key={card.label} {...card} />
-      ))}
+    <div>
+      <div
+        aria-label="Resumen estadístico"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2"
+      >
+        {visibleCards.map((card) => (
+          <StatCard key={card.label} {...card} />
+        ))}
+      </div>
+      {stats?.realtimeUpdatedAt && (
+        <p className="text-[10px] text-gray-400 font-data mt-1 text-right">
+          Actualizado{" "}
+          {new Date(stats.realtimeUpdatedAt).toLocaleTimeString("es-ES", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      )}
     </div>
   );
 }

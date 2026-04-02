@@ -16,11 +16,11 @@ const ROAD_TYPE_LABELS: Record<string, string> = {
 };
 
 const ROAD_TYPE_COLORS: Record<string, string> = {
-  HIGHWAY: "bg-blue-200",
+  HIGHWAY: "bg-tl-200",
   DUAL_CARRIAGEWAY: "bg-tl-200",
-  NATIONAL: "bg-red-100",
+  NATIONAL: "bg-tl-amber-100",
   URBAN: "bg-gray-200",
-  CONVENTIONAL: "bg-amber-100",
+  CONVENTIONAL: "bg-tl-amber-200",
 };
 
 // National average fatalities per 100k population (Spain ~2023)

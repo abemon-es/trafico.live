@@ -161,11 +161,11 @@ export async function EVGrowthSection({ entity }: EVGrowthSectionProps) {
               ? Math.max((entry.cumulative / maxCumulative) * 100, 4)
               : 4;
 
-          // Opacity gradient: oldest = 20%, newest = 60%
-          const opacityPct =
+          // Opacity gradient: oldest = 0.2, newest = 0.6
+          const opacity =
             timeline.length > 1
-              ? 20 + (40 * i) / (timeline.length - 1)
-              : 40;
+              ? 0.2 + (0.4 * i) / (timeline.length - 1)
+              : 0.4;
 
           return (
             <div
@@ -173,7 +173,7 @@ export async function EVGrowthSection({ entity }: EVGrowthSectionProps) {
               className="flex-1 rounded-t-sm"
               style={{
                 height: `${heightPct}%`,
-                backgroundColor: `oklch(0.723 0.219 142.1 / ${opacityPct}%)`,
+                backgroundColor: `rgba(5, 150, 105, ${opacity})`,
               }}
               title={`${entry.label}: ${entry.cumulative} puntos de carga`}
             />

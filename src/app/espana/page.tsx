@@ -58,6 +58,16 @@ export default function EspanaPage() {
             Incidencias activas, balizas V16, cámaras de la DGT y estadísticas de
             siniestralidad actualizadas.
           </p>
+          {/* SEO intro */}
+          <section className="mt-6 mb-8 prose prose-sm max-w-none text-gray-600 dark:text-gray-400">
+            <p>
+              <strong className="text-gray-900 dark:text-gray-100">trafico.live</strong> ofrece información de tráfico en tiempo real
+              para toda España, incluyendo las 17 comunidades autónomas y más de 8.000 municipios.
+              Consulta incidencias activas de la DGT, cámaras de tráfico, radares de velocidad,
+              precios de combustible actualizados y puntos de recarga para vehículos eléctricos.
+              Todos los datos provienen de fuentes oficiales y se actualizan automáticamente.
+            </p>
+          </section>
           {/* Static community links grid — crawlable internal links, shown before JS hydrates */}
           <nav aria-label="Comunidades autónomas de España">
             <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mb-6 list-none p-0 m-0">

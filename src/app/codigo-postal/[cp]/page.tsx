@@ -74,6 +74,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     chargerCount: data.evChargerCount,
   });
 
+  const hasData = data.gasStations.length >= 3;
+
   return {
     title,
     description,
@@ -86,6 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${BASE_URL}/codigo-postal/${cp}`,
       type: "website",
     },
+    ...(hasData ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
