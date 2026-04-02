@@ -65,3 +65,6 @@ services/incident-collector/node_modules/
 !public/**/*.png
 snapshot-*.md
 .wrangler/
+
+# MCP server (standalone, not part of Next.js build)
+src/mcp/
