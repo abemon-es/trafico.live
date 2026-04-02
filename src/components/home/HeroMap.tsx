@@ -59,6 +59,19 @@ function toGeoJSON(items: LatLngItem[]) {
 // Layer reveal config
 // ---------------------------------------------------------------------------
 
+// Weather type translations
+const WEATHER_TYPE_ES: Record<string, string> = {
+  RAIN: "Lluvia", SNOW: "Nieve", WIND: "Viento", FOG: "Niebla",
+  STORM: "Tormenta", HEAT: "Calor extremo", COLD: "Frío extremo",
+  COASTAL: "Fenómeno costero", AVALANCHE: "Avalancha", FLOOD: "Inundación",
+  ICE: "Hielo", HAIL: "Granizo", THUNDERSTORM: "Tormenta eléctrica",
+  FIRE: "Riesgo de incendio", UV: "Radiación UV",
+};
+const WEATHER_SEV_ES: Record<string, string> = {
+  LOW: "Amarilla", MEDIUM: "Naranja", HIGH: "Roja", EXTREME: "Extrema",
+  YELLOW: "Amarilla", ORANGE: "Naranja", RED: "Roja",
+};
+
 // Traffic flow layers — no infrastructure, only live traffic + alerts
 const LEGEND_ITEMS = [
   { label: "Provincias", color: "#c0d5ff" },
@@ -656,9 +669,9 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       {/* Full-width MapLibre background — light Positron style */}
       <div ref={mapRef} className="absolute inset-0 w-full h-full opacity-90" />
 
-      {/* White gradient scrim — fades when map is focused */}
-      <div className={`absolute inset-0 transition-opacity duration-500 pointer-events-none ${mapFocused ? "opacity-20" : "opacity-100"}`}>
-        <div className="absolute inset-0 bg-gradient-to-t from-white from-5% via-white/70 via-40% to-transparent dark:from-gray-950 dark:from-5% dark:via-gray-950/70 dark:via-40% dark:to-transparent" />
+      {/* Light gradient scrim — only at the bottom for text readability, fades when map is focused */}
+      <div className={`absolute inset-0 transition-opacity duration-500 pointer-events-none ${mapFocused ? "opacity-0" : "opacity-100"}`}>
+        <div className="absolute inset-0 bg-gradient-to-t from-white/90 from-0% via-white/30 via-25% to-transparent dark:from-gray-950/90 dark:from-0% dark:via-gray-950/30 dark:via-25% dark:to-transparent" />
       </div>
 
       {/* Top bar — technical data feed look */}
@@ -759,32 +772,38 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       </div>
 
       {/* Weather alerts panel */}
-      {weatherVisible && weatherAlerts.length > 0 && !selected && (
-        <div className="absolute top-14 right-4 sm:right-6 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 shadow-lg max-w-xs">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-heading font-semibold text-gray-900 dark:text-gray-100">Alertas meteorológicas</p>
-            <button onClick={() => { setWeatherVisible(false); setWeatherAlerts([]); }} className="text-[0.6rem] text-gray-400 hover:text-gray-600">Cerrar</button>
+      {weatherVisible && !selected && (
+        <div className="absolute top-14 right-4 sm:right-6 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-w-sm w-72 max-h-80 overflow-y-auto">
+          <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white/95 dark:bg-gray-900/95">
+            <p className="text-xs font-heading font-semibold text-gray-900 dark:text-gray-100">
+              Alertas AEMET
+              <span className="ml-1.5 font-data text-[0.6rem] text-gray-400 font-normal">{weatherAlerts.length}</span>
+            </p>
+            <button onClick={() => { setWeatherVisible(false); setWeatherAlerts([]); }} className="text-[0.6rem] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-0.5">Cerrar</button>
           </div>
-          <div className="space-y-1.5">
-            {weatherAlerts.map((a, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs">
-                <span className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${a.severity === "RED" || a.severity === "EXTREME" ? "bg-signal-red" : a.severity === "ORANGE" ? "bg-tl-amber-400" : "bg-tl-amber-300"}`} />
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{a.province}</span>
-                  <span className="text-gray-400"> · </span>
-                  <span className="text-gray-500 dark:text-gray-400">{a.type} ({a.severity})</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          {weatherAlerts.length === 0 && (
-            <p className="text-xs text-gray-400">Sin alertas activas</p>
+          {weatherAlerts.length > 0 ? (
+            <div className="px-4 py-2 space-y-1">
+              {weatherAlerts.map((a, i) => {
+                const sevColor = a.severity === "RED" || a.severity === "EXTREME" || a.severity === "HIGH" ? "bg-signal-red" : a.severity === "ORANGE" || a.severity === "MEDIUM" ? "bg-tl-amber-400" : "bg-tl-amber-300";
+                return (
+                  <div key={i} className="flex items-center gap-2 py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${sevColor}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{a.province}</p>
+                      <p className="text-[0.6rem] text-gray-500 dark:text-gray-400">
+                        {WEATHER_TYPE_ES[a.type] ?? a.type} · Alerta {WEATHER_SEV_ES[a.severity] ?? a.severity}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="px-4 py-6 text-center">
+              <p className="text-xs text-gray-400">Sin alertas meteorológicas activas</p>
+              <p className="text-[0.6rem] text-gray-300 dark:text-gray-600 mt-1">Fuente: AEMET</p>
+            </div>
           )}
-        </div>
-      )}
-      {weatherVisible && weatherAlerts.length === 0 && !selected && (
-        <div className="absolute top-14 right-4 sm:right-6 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 shadow-lg">
-          <p className="text-xs text-gray-500">Sin alertas meteorológicas activas</p>
         </div>
       )}
 
