@@ -34,6 +34,8 @@ import {
   Ship,
   Globe,
   Mountain,
+  CircleDollarSign,
+  GitCompareArrows,
   type LucideIcon,
 } from "lucide-react";
 
@@ -201,6 +203,15 @@ export const megaMenuPanels: MegaMenuPanel[] = [
           { name: "Radares", href: "/radares", icon: Radar, description: "Ubicaciones y tipos" },
           { name: "Puntos negros", href: "/puntos-negros", icon: Skull, description: "Tramos peligrosos" },
           { name: "Zonas ZBE", href: "/zbe", icon: Ban, description: "Zonas de bajas emisiones" },
+        ],
+      },
+      {
+        title: "Peajes",
+        items: [
+          { name: "Todos los peajes", href: "/peajes", icon: CircleDollarSign, description: "17 autopistas de pago" },
+          { name: "Radiales Madrid", href: "/peajes/radiales-madrid", icon: Route, description: "R-2, R-3, R-4, R-5" },
+          { name: "Gratis en 2026", href: "/peajes/gratis-2026", icon: GitCompareArrows, description: "AP-68 sin peaje pronto" },
+          { name: "Comparativa", href: "/peajes/comparativa", icon: BarChart3, description: "Peaje vs alternativa gratis" },
         ],
       },
       {
@@ -425,6 +436,7 @@ export const footerColumns: FooterColumn[] = [
       { name: "Autovías", href: "/carreteras/autovias" },
       { name: "Nacionales", href: "/carreteras/nacionales" },
       { name: "Radares", href: "/radares" },
+      { name: "Peajes", href: "/peajes" },
       { name: "Puntos negros", href: "/puntos-negros" },
       { name: "Zonas ZBE", href: "/zbe" },
       { name: "Intensidad (IMD)", href: "/intensidad" },
@@ -444,8 +456,9 @@ export const footerColumns: FooterColumn[] = [
       { name: "Baratas", href: "/gasolineras/baratas" },
       { name: "24 horas", href: "/gasolineras-24-horas" },
       { name: "Cargadores EV", href: "/carga-ev" },
+      { name: "Calculadora ruta", href: "/calculadora" },
+      { name: "Peajes", href: "/peajes" },
       { name: "Portugal combustible", href: "/portugal/combustible" },
-      { name: "Etiqueta ambiental", href: "/etiqueta-ambiental" },
     ],
   },
   {

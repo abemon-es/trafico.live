@@ -139,7 +139,7 @@ export default function TrainesContent() {
         <div className="absolute inset-0">
           <RailwayMap stationsGeoJSON={enrichedStations} cercaniaLines={cercaniaLines} trainRoutes={trainRoutes} trainPoints={trainPoints} onTrainClick={(p) => { setSelectedStation(null); setSelectedTrain(p); }} onStationClick={(p) => { setSelectedTrain(null); setSelectedStation(p); }} />
         </div>
-        <HeroOverlay trainCount={trainCount} totalStations={totalStations} totalRoutes={totalRoutes} alerts={alerts} punctuality={Number(punctuality)} avgDelay={Number(liveStats.avgDelay || 0)} maxDelay={current?.maxDelay ?? null} p50Delay={current?.p50Delay ?? null} loading={loadingTrains} />
+        <HeroOverlay trainCount={trainCount} totalStations={totalStations} totalRoutes={totalRoutes} alerts={alerts} punctuality={Number(punctuality)} avgDelay={Number(0)} maxDelay={current?.maxDelay ?? null} p50Delay={current?.p50Delay ?? null} loading={loadingTrains} />
       </section>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* OLD sections hidden */}

@@ -687,6 +687,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.8,
     })),
     {
+      url: `${BASE_URL}/peajes/comparativa`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    {
       url: `${BASE_URL}/cuanto-cuesta-cargar`,
       lastModified: today,
       changeFrequency: "monthly",
