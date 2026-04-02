@@ -63,7 +63,7 @@ export function LocationMapSection({
   return (
     <section
       id="mapa"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+      className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative"
     >
       <LocationMap
         center={center ? [center.lng, center.lat] : undefined}
@@ -74,25 +74,25 @@ export function LocationMapSection({
         entityName={entityName}
       />
 
-      {/* Legend */}
-      <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap gap-3">
-        <span className="flex items-center gap-1.5 text-xs text-gray-600">
+      {/* Floating legend overlay */}
+      <div className="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur rounded-xl px-3.5 py-2.5 shadow-lg border border-white/50 flex flex-wrap gap-x-3 gap-y-1">
+        <span className="flex items-center gap-1.5 text-[10px] text-gray-600">
           <span className="w-2.5 h-2.5 rounded-full bg-signal-red" />
           Incidencias
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-gray-600">
+        <span className="flex items-center gap-1.5 text-[10px] text-gray-600">
           <span className="w-2.5 h-2.5 rounded-full bg-tl-500" />
           Camaras
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-gray-600">
+        <span className="flex items-center gap-1.5 text-[10px] text-gray-600">
           <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
           Radares
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-gray-600">
+        <span className="flex items-center gap-1.5 text-[10px] text-gray-600">
           <span className="w-2.5 h-2.5 rounded-full bg-tl-amber-500" />
           Gasolineras
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-gray-600">
+        <span className="flex items-center gap-1.5 text-[10px] text-gray-600">
           <span className="w-2.5 h-2.5 rounded-full bg-signal-green" />
           Cargadores EV
         </span>

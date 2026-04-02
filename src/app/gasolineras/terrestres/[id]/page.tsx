@@ -338,6 +338,24 @@ export default async function StationDetailPage({ params }: Props) {
         </div>
       </div>
 
+      {/* SEO intro — unique per station */}
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+        Consulta los precios actualizados de {station.name} en{" "}
+        {station.locality || station.municipality || station.provinceName || "España"}
+        {station.provinceName && station.provinceName !== station.locality ? `, ${station.provinceName}` : ""}.
+        {station.priceGasoleoA
+          ? ` Gasoleo A a ${Number(station.priceGasoleoA).toFixed(3)} €/L.`
+          : station.priceGasolina95E5
+          ? ` Gasolina 95 a ${Number(station.priceGasolina95E5).toFixed(3)} €/L.`
+          : ""}
+        {station.is24h
+          ? " Abierta las 24 horas."
+          : station.schedule
+          ? ` Horario: ${station.schedule}.`
+          : ""}
+        {station.saleType === "P" ? " Autoservicio." : station.saleType === "R" ? " Estacion con servicio asistido." : ""}
+      </p>
+
       {/* Two column layout: Map + Quick stats */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         {/* Embedded Map */}

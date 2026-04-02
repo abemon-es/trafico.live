@@ -56,6 +56,7 @@ export async function GasStationsSection({
           <h2 className="font-heading text-lg font-bold text-gray-900">
             {total} gasolinera{total !== 1 ? "s" : ""} en {entity.name}
           </h2>
+          <span className="w-1.5 h-1.5 rounded-full bg-tl-amber-400 shrink-0" title="Actualizado frecuentemente"></span>
         </div>
         {lastUpdated && (
           <span className="text-xs text-gray-400 font-data">

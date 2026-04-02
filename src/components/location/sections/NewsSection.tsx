@@ -61,6 +61,7 @@ export async function NewsSection({
           <h2 className="font-heading text-lg font-bold text-gray-900">
             Noticias sobre {entity.name}
           </h2>
+          <span className="w-1.5 h-1.5 rounded-full bg-tl-amber-400 shrink-0" title="Actualizado frecuentemente"></span>
         </div>
         <span className="text-xs text-gray-400 font-data">
           {total} artículo{total !== 1 ? "s" : ""}

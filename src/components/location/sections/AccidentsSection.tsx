@@ -78,6 +78,7 @@ export async function AccidentsSection({
           <h2 className="font-heading text-lg font-bold text-gray-900">
             Accidentes en {entity.name}
           </h2>
+          <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" title="Datos estáticos"></span>
         </div>
         <span className="text-xs text-gray-400 font-data">
           Datos {latestYear}

@@ -61,6 +61,7 @@ export async function RiskZonesSection({
           <h2 className="font-heading text-lg font-bold text-gray-900">
             {total} zona{total !== 1 ? "s" : ""} de riesgo en {entity.name}
           </h2>
+          <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" title="Datos estáticos"></span>
         </div>
         {lastUpdated && (
           <span className="text-xs text-gray-400 font-data">

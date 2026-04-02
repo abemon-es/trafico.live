@@ -89,6 +89,7 @@ export async function PanelsSection({
             {total} panel{total !== 1 ? "es" : ""} variable
             {total !== 1 ? "s" : ""} en {entity.name}
           </h2>
+          <span className="w-1.5 h-1.5 rounded-full bg-signal-green shrink-0" title="Datos en tiempo real"></span>
         </div>
         {lastUpdated && (
           <span className="text-xs text-gray-400 font-data">

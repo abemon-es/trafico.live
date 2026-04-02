@@ -61,6 +61,7 @@ export async function V16Section({
           <h2 className="font-heading text-lg font-bold text-gray-900">
             {total} baliza{total !== 1 ? "s" : ""} V16 en {entity.name}
           </h2>
+          <span className="w-1.5 h-1.5 rounded-full bg-signal-green shrink-0" title="Datos en tiempo real"></span>
         </div>
         {lastUpdated && (
           <span className="text-xs text-gray-400 font-data">
