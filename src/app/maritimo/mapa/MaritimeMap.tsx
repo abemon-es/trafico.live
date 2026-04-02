@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Fuel, Waves, Wind, Anchor, ShieldAlert, CloudRain, RefreshCw } from "lucide-react";
+import { Fuel, Waves, Wind, Anchor, ShieldAlert, CloudRain, RefreshCw, Layers, ChevronDown, X, Maximize2, Minimize2 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -120,6 +120,9 @@ export default function MaritimeMap() {
   });
   const [emergencies, setEmergencies] = useState<Array<{ id: string; latitude: number; longitude: number; type: string; description: string | null; year: number }>>([]);
   const [coastalAlerts, setCoastalAlerts] = useState<Array<{ id: string; province: string; provinceName: string | null; type: string; severity: string; description: string | null }>>([]);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
 
   const toggleLayer = useCallback((key: keyof typeof layers) => {
     setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -643,81 +646,200 @@ export default function MaritimeMap() {
     }
   }, [emergencies, layers.emergencies, isLoaded]);
 
-  // ─── Layer toggle button ────────────────────────────────────────────────
+  const activeLayerCount = Object.values(layers).filter(Boolean).length;
 
-  const LayerBtn = ({ layerKey, icon, label, count }: { layerKey: keyof typeof layers; icon: React.ReactNode; label: string; count?: number }) => {
-    const active = layers[layerKey];
-    return (
-      <button
-        onClick={() => toggleLayer(layerKey)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-          active
-            ? "bg-white/90 dark:bg-gray-800/90 text-tl-sea-700 dark:text-tl-sea-300 shadow-sm"
-            : "bg-black/20 text-white/70 hover:bg-black/30"
-        }`}
-      >
-        {icon}
-        <span>{label}</span>
-        {count != null && count > 0 && (
-          <span className="font-mono text-[10px] opacity-70">{count}</span>
-        )}
-      </button>
-    );
+  const MARITIME_LAYERS: { key: keyof typeof layers; label: string; icon: React.ReactNode; count?: number; category: string }[] = [
+    { key: "waves", label: "Oleaje", icon: <Waves className="w-4 h-4" />, count: waveData.length, category: "Datos marítimos" },
+    { key: "wind", label: "Viento", icon: <Wind className="w-4 h-4" />, category: "Datos marítimos" },
+    { key: "coastalWeather", label: "Alertas meteo", icon: <CloudRain className="w-4 h-4" />, count: coastalAlerts.length, category: "Seguridad" },
+    { key: "emergencies", label: "SASEMAR", icon: <ShieldAlert className="w-4 h-4" />, count: emergencies.length, category: "Seguridad" },
+    { key: "fuel", label: "Combustible", icon: <Fuel className="w-4 h-4" />, count: stations.length, category: "Infraestructura" },
+  ];
+
+  const categories = [...new Set(MARITIME_LAYERS.map((l) => l.category))];
+
+  const toggleFullscreen = () => {
+    if (!mapWrapperRef.current) return;
+    if (!isFullscreen) {
+      mapWrapperRef.current.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
   };
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="relative w-full h-full">
-      <div ref={containerRef} className="w-full h-full" />
+    <div ref={mapWrapperRef} className={`relative w-full h-full flex flex-col ${isFullscreen ? "bg-white dark:bg-gray-900" : ""}`}>
+      {/* ── Toolbar (matches road map pattern) ── */}
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0 z-20 relative">
+        <div className="flex items-center gap-1.5 px-3 py-2">
+          {/* Layers button */}
+          <button
+            onClick={() => setPanelOpen(!panelOpen)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors min-h-[40px] ${
+              panelOpen
+                ? "bg-tl-sea-100 dark:bg-tl-sea-900/30 text-tl-sea-700 dark:text-tl-sea-300 border border-tl-sea-300"
+                : "bg-tl-sea-50 dark:bg-tl-sea-900/20 text-tl-sea-700 dark:text-tl-sea-300 border border-tl-sea-200 dark:border-tl-sea-800"
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span className="font-heading">Capas</span>
+            <span className="bg-tl-sea-600 text-white text-[10px] font-mono px-1.5 py-0.5 rounded-full leading-none">{activeLayerCount}</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${panelOpen ? "rotate-180" : ""}`} />
+          </button>
 
-      {/* Layer controls — top left */}
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-        <div className="flex flex-wrap gap-1.5">
-          <LayerBtn layerKey="waves" icon={<Waves className="w-3.5 h-3.5" />} label="Oleaje" count={waveData.length} />
-          <LayerBtn layerKey="wind" icon={<Wind className="w-3.5 h-3.5" />} label="Viento" />
-          <LayerBtn layerKey="emergencies" icon={<ShieldAlert className="w-3.5 h-3.5" />} label="SASEMAR" count={emergencies.length} />
-          <LayerBtn layerKey="fuel" icon={<Fuel className="w-3.5 h-3.5" />} label="Combustible" count={stations.length} />
-          <LayerBtn layerKey="coastalWeather" icon={<CloudRain className="w-3.5 h-3.5" />} label="Meteo" count={coastalAlerts.length} />
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Refresh */}
+          <button
+            onClick={fetchWaveData}
+            disabled={waveLoading}
+            className="p-2 text-gray-400 hover:text-tl-sea-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+            title="Actualizar datos"
+          >
+            <RefreshCw className={`w-4 h-4 ${waveLoading ? "animate-spin" : ""}`} />
+          </button>
+
+          {/* Fullscreen */}
+          <button
+            onClick={toggleFullscreen}
+            className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            title={isFullscreen ? "Salir" : "Pantalla completa"}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
         </div>
+
+        {/* ── Layer panel (dropdown on desktop, bottom sheet on mobile) ── */}
+        {panelOpen && (
+          <>
+            <div className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={() => setPanelOpen(false)} />
+            <div className="
+              fixed inset-x-0 bottom-0 max-h-[70vh] z-50
+              md:absolute md:inset-auto md:top-full md:left-3 md:mt-1 md:w-72 md:max-h-[60vh] md:bottom-auto
+              bg-white dark:bg-gray-900 md:rounded-xl md:shadow-xl md:border md:border-gray-200 md:dark:border-gray-800
+              rounded-t-2xl overflow-hidden flex flex-col
+            ">
+              <div className="md:hidden flex justify-center py-2">
+                <div className="w-10 h-1 bg-gray-300 dark:bg-gray-700 rounded-full" />
+              </div>
+              <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-800">
+                <span className="font-heading font-bold text-sm text-gray-900 dark:text-gray-100">Capas marítimas</span>
+                <button onClick={() => setPanelOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-1 p-3 space-y-4">
+                {categories.map((cat) => (
+                  <div key={cat}>
+                    <p className="text-[10px] font-mono font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 px-1">{cat}</p>
+                    <div className="space-y-0.5">
+                      {MARITIME_LAYERS.filter((l) => l.category === cat).map((layer) => {
+                        const active = layers[layer.key];
+                        return (
+                          <label key={layer.key} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
+                            active ? "bg-tl-sea-50 dark:bg-tl-sea-900/15" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                          }`}>
+                            <input type="checkbox" checked={active} onChange={() => toggleLayer(layer.key)} className="sr-only" />
+                            <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                              active ? "bg-tl-sea-500 border-tl-sea-500" : "border-gray-300 dark:border-gray-600"
+                            }`}>
+                              {active && <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                            </span>
+                            <span className={active ? "text-tl-sea-600 dark:text-tl-sea-400" : "text-gray-400"}>{layer.icon}</span>
+                            <span className={`flex-1 text-sm ${active ? "font-medium text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-400"}`}>{layer.label}</span>
+                            {layer.count != null && layer.count > 0 && (
+                              <span className="text-xs font-mono text-gray-400 tabular-nums">{layer.count}</span>
+                            )}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Wave legend — bottom left */}
-      {layers.waves && waveData.length > 0 && (
-        <div className="absolute bottom-3 left-3 z-10 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-3">
-          <p className="text-[10px] font-mono font-medium text-gray-400 uppercase tracking-wider mb-2">Estado del mar</p>
-          <div className="flex flex-col gap-1">
-            {[
-              { h: 0.3, label: "Calma" },
-              { h: 0.7, label: "Marejadilla" },
-              { h: 1.2, label: "Marejada" },
-              { h: 2.0, label: "F. marejada" },
-              { h: 3.0, label: "Mar gruesa" },
-              { h: 5.0, label: "Muy gruesa" },
-            ].map(({ h, label }) => (
-              <div key={label} className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getWaveColor(h) }} />
-                <span className="text-[11px] text-gray-600 dark:text-gray-400">{label}</span>
-              </div>
-            ))}
+      {/* ── Map ── */}
+      <div className="flex-1 min-h-0 relative">
+        <div ref={containerRef} className="w-full h-full" />
+
+        {/* Wave legend — bottom left */}
+        {layers.waves && waveData.length > 0 && (
+          <div className="absolute bottom-3 left-3 z-10 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-3">
+            <p className="text-[10px] font-mono font-medium text-gray-400 uppercase tracking-wider mb-2">Estado del mar</p>
+            <div className="flex flex-col gap-1">
+              {[
+                { h: 0.3, label: "Calma" },
+                { h: 0.7, label: "Marejadilla" },
+                { h: 1.2, label: "Marejada" },
+                { h: 2.0, label: "F. marejada" },
+                { h: 3.0, label: "Mar gruesa" },
+                { h: 5.0, label: "Muy gruesa" },
+              ].map(({ h, label }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getWaveColor(h) }} />
+                  <span className="text-[11px] text-gray-600 dark:text-gray-400">{label}</span>
+                </div>
+              ))}
+            </div>
+            {lastUpdated && (
+              <p className="text-[10px] text-gray-400 mt-2 font-mono">
+                {lastUpdated.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} · Open-Meteo
+              </p>
+            )}
           </div>
-          {lastUpdated && (
-            <p className="text-[10px] text-gray-400 mt-2 font-mono">
-              {lastUpdated.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} · Open-Meteo
-            </p>
+        )}
+      </div>
+
+      {/* ── Stats bar (matches road map) ── */}
+      <div className="bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 px-4 py-2 text-sm flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3 overflow-x-auto">
+          {waveData.length > 0 && (
+            <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              <Waves className="w-3.5 h-3.5 text-tl-sea-500" />
+              <span className="font-mono text-xs">{waveData.length}</span>
+              <span className="text-gray-400 text-xs hidden sm:inline">puntos</span>
+            </div>
+          )}
+          {stations.length > 0 && (
+            <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              <Fuel className="w-3.5 h-3.5 text-tl-sea-500" />
+              <span className="font-mono text-xs">{stations.length}</span>
+              <span className="text-gray-400 text-xs hidden sm:inline">estaciones</span>
+            </div>
+          )}
+          {emergencies.length > 0 && (
+            <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              <ShieldAlert className="w-3.5 h-3.5 text-red-500" />
+              <span className="font-mono text-xs">{emergencies.length}</span>
+              <span className="text-gray-400 text-xs hidden sm:inline">emergencias</span>
+            </div>
+          )}
+          {coastalAlerts.length > 0 && (
+            <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              <CloudRain className="w-3.5 h-3.5 text-tl-500" />
+              <span className="font-mono text-xs">{coastalAlerts.length}</span>
+              <span className="text-gray-400 text-xs hidden sm:inline">alertas</span>
+            </div>
           )}
         </div>
-      )}
-
-      {/* Refresh button — top right (below nav controls) */}
-      <button
-        onClick={fetchWaveData}
-        disabled={waveLoading}
-        className="absolute top-3 right-14 z-10 p-2 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-tl-sea-600 transition-colors disabled:opacity-50"
-        title="Actualizar datos"
-      >
-        <RefreshCw className={`w-4 h-4 ${waveLoading ? "animate-spin" : ""}`} />
-      </button>
+        <div className="flex items-center gap-1.5 text-gray-400 text-xs shrink-0 ml-2">
+          {lastUpdated && <span className="font-mono tabular-nums">{lastUpdated.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}</span>}
+          <span className="hidden sm:inline">· Open-Meteo + AEMET</span>
+        </div>
+      </div>
     </div>
   );
 }

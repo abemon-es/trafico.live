@@ -139,6 +139,7 @@ export function getRateLimitType(pathname: string): RateLimitType {
     "/api/trafico/imd",
     "/api/roads/geometry",
     "/api/roads/traffic-flow",
+    "/api/search",
   ];
 
   // Strict endpoints - user-facing email/subscription endpoints, SSE streams

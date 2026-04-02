@@ -35,6 +35,8 @@ const VALID_TASKS = [
   "andorra", "portugal-weather", "portugal-fuel",
   // One-shot / manual
   "historical-accidents", "imd", "portugal-accidents", "sasemar",
+  // Search index
+  "typesense-sync",
 ];
 
 if (!TASK) {
