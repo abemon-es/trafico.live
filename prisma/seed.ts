@@ -409,6 +409,39 @@ async function main() {
   console.log(`   Historical accidents: ${accidentCount}`);
   console.log(`   IMD traffic flow: ${trafficFlowCount}`);
   console.log(`   Roads: ${roadCount}`);
+
+  // Municipality data quality report
+  if (municipalityCount > 0) {
+    const withPopulation = await prisma.municipality.count({
+      where: { population: { not: null } },
+    });
+    const withCoordinates = await prisma.municipality.count({
+      where: {
+        AND: [
+          { latitude: { not: null } },
+          { longitude: { not: null } },
+        ],
+      },
+    });
+    const withArea = await prisma.municipality.count({
+      where: { area: { not: null } },
+    });
+
+    const popPct = ((withPopulation / municipalityCount) * 100).toFixed(1);
+    const coordPct = ((withCoordinates / municipalityCount) * 100).toFixed(1);
+    const areaPct = ((withArea / municipalityCount) * 100).toFixed(1);
+
+    console.log("\n   Municipality data quality:");
+    console.log(`     With population: ${withPopulation}/${municipalityCount} (${popPct}%)`);
+    console.log(`     With coordinates: ${withCoordinates}/${municipalityCount} (${coordPct}%)`);
+    console.log(`     With area: ${withArea}/${municipalityCount} (${areaPct}%)`);
+
+    if (withPopulation < municipalityCount || withCoordinates < municipalityCount) {
+      console.log(
+        "     Tip: run 'npx tsx scripts/enrich-municipalities.ts' to fill missing data"
+      );
+    }
+  }
 }
 
 main()

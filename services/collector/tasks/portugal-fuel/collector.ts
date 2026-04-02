@@ -254,9 +254,9 @@ export async function run(prisma: PrismaClient) {
         const station = stationMap.get(stationId)!;
         station[fuelType.field] = price;
 
-        // Update lastPriceUpdate to most recent known date
-        const priceDate = parseDGEGDate(result.DataAtualizacao);
-        if (priceDate && (!station.lastPriceUpdate || priceDate > station.lastPriceUpdate)) {
+        // Update lastPriceUpdate to most recent known date (fallback to now if DGEG omits it)
+        const priceDate = parseDGEGDate(result.DataAtualizacao) ?? new Date();
+        if (!station.lastPriceUpdate || priceDate > station.lastPriceUpdate) {
           station.lastPriceUpdate = priceDate;
         }
       }

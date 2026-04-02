@@ -11,7 +11,11 @@ import * as Sentry from "@sentry/node";
 import { getPrisma, getPool } from "./shared/prisma.js";
 
 // Initialize Sentry for collector error tracking
-const SENTRY_DSN = process.env.SENTRY_DSN;
+// GlitchTip uses UUID keys with hyphens; Sentry SDK requires \w+ — strip hyphens
+const SENTRY_DSN = process.env.SENTRY_DSN?.replace(
+  /\/\/([0-9a-f-]+)@/,
+  (_, key: string) => `//${key.replace(/-/g, "")}@`
+);
 if (SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN,
@@ -35,8 +39,10 @@ const VALID_TASKS = [
   "andorra", "portugal-weather", "portugal-fuel",
   // Railway
   "renfe-gtfs", "renfe-alerts",
+  // Aggregation
+  "daily-stats",
   // One-shot / manual
-  "historical-accidents", "imd", "portugal-accidents", "sasemar",
+  "historical-accidents", "imd", "sasemar",
   // Search index
   "typesense-sync",
 ];
@@ -115,6 +121,46 @@ async function getPostIngestionTriggers(task: string): Promise<InsightTrigger[]>
   }
 }
 
+// ---------------------------------------------------------------------------
+// Post-ingestion Typesense sync
+// ---------------------------------------------------------------------------
+
+const TYPESENSE_SYNC_MAP: Record<string, string[]> = {
+  "gas-station": ["gas_stations"],
+  "maritime-fuel": ["maritime_stations"],
+  camera: ["cameras"],
+  charger: ["ev_chargers"],
+  radar: ["radars"],
+  panel: ["variable_panels"],
+  "risk-zones": ["risk_zones"],
+  zbe: ["zbe_zones"],
+  "renfe-gtfs": ["railway_stations"],
+  imd: ["traffic_stations"],
+  insights: ["articles"],
+};
+
+async function runTypesenseSync(
+  prisma: import("@prisma/client").PrismaClient,
+  collections: string[]
+): Promise<void> {
+  if (!process.env.TYPESENSE_URL || !process.env.TYPESENSE_API_KEY) return;
+  for (const collection of collections) {
+    try {
+      const saved = process.env.SYNC_COLLECTION;
+      process.env.SYNC_COLLECTION = collection;
+      const mod = await import("./tasks/typesense-sync/collector.js");
+      await mod.run(prisma);
+      if (saved) process.env.SYNC_COLLECTION = saved;
+      else delete process.env.SYNC_COLLECTION;
+    } catch (error) {
+      console.error(`[dispatcher] Typesense sync ${collection} failed:`, error);
+      Sentry.captureException(error, {
+        tags: { task: TASK!, typesenseCollection: collection, layer: "collector" },
+      });
+    }
+  }
+}
+
 async function main() {
   const startTime = Date.now();
   console.log(`[dispatcher] Starting task: ${TASK} at ${new Date().toISOString()}`);
@@ -154,9 +200,16 @@ async function main() {
       }
     }
 
+    // Run post-ingestion Typesense sync
+    const tsCollections = TYPESENSE_SYNC_MAP[TASK!];
+    if (tsCollections) {
+      console.log(`[dispatcher] Syncing Typesense: ${tsCollections.join(", ")}...`);
+      await runTypesenseSync(prisma, tsCollections);
+    }
+
     const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    if (triggers.length > 0) {
-      console.log(`[dispatcher] Total (collector + insights): ${totalElapsed}s`);
+    if (triggers.length > 0 || tsCollections) {
+      console.log(`[dispatcher] Total (collector + triggers): ${totalElapsed}s`);
     }
   } catch (error) {
     console.error(`[dispatcher] Task ${TASK} failed:`, error);

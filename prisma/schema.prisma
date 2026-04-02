@@ -640,6 +640,22 @@ model DailyStats {
   // Weather summary
   weatherAlertDays Int @default(0)
 
+  // Platform-wide counts (snapshot at aggregation time)
+  cameraCount     Int?
+  radarCount      Int?
+  gasStationCount Int?
+  chargerCount    Int?
+  detectorCount   Int?
+
+  // Fuel price summary (national avg)
+  avgGasoleoA   Decimal? @db.Decimal(5, 3)
+  avgGasolina95 Decimal? @db.Decimal(5, 3)
+  avgGasolina98 Decimal? @db.Decimal(5, 3)
+
+  // Additional breakdowns
+  byIncidentCause Json?
+  bySeverity      Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
-import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock, HelpCircle } from "lucide-react";
+import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock, HelpCircle, Droplets, Building2, ChevronRight } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 import { StructuredData, generateDatasetSchema, generateFAQSchema } from "@/components/seo/StructuredData";
@@ -30,6 +30,38 @@ export const revalidate = 300;
 
 // Provincias con fiscalidad especial
 const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
+
+// Fuel types for pillar links
+const FUEL_TYPES = [
+  { slug: "diesel", label: "Diésel (Gasóleo A)", field: "priceGasoleoA" },
+  { slug: "gasolina-95", label: "Gasolina 95", field: "priceGasolina95E5" },
+  { slug: "gasolina-98", label: "Gasolina 98", field: "priceGasolina98E5" },
+  { slug: "glp", label: "GLP (Autogas)", field: "priceGLP" },
+  { slug: "gnc", label: "GNC", field: "priceGNC" },
+  { slug: "hidrogeno", label: "Hidrógeno", field: "priceHidrogeno" },
+  { slug: "adblue", label: "AdBlue", field: null },
+  { slug: "gasoleo-nuevo-a", label: "Gasóleo A+", field: null },
+  { slug: "bioetanol", label: "Bioetanol", field: null },
+  { slug: "biodiesel", label: "Biodiésel", field: null },
+] as const;
+
+// Popular cities for internal linking
+const POPULAR_CITIES = [
+  "madrid", "barcelona", "valencia", "sevilla", "zaragoza",
+  "malaga", "murcia", "palma", "las-palmas", "bilbao",
+  "alicante", "cordoba", "valladolid", "vigo", "gijon",
+  "vitoria", "granada", "elche", "oviedo", "santa-cruz-de-tenerife",
+] as const;
+
+const CITY_LABELS: Record<string, string> = {
+  madrid: "Madrid", barcelona: "Barcelona", valencia: "Valencia",
+  sevilla: "Sevilla", zaragoza: "Zaragoza", malaga: "Málaga",
+  murcia: "Murcia", palma: "Palma", "las-palmas": "Las Palmas",
+  bilbao: "Bilbao", alicante: "Alicante", cordoba: "Córdoba",
+  valladolid: "Valladolid", vigo: "Vigo", gijon: "Gijón",
+  vitoria: "Vitoria", granada: "Granada", elche: "Elche",
+  oviedo: "Oviedo", "santa-cruz-de-tenerife": "Santa Cruz de Tenerife",
+};
 
 // Slugs para URLs de provincias en /gasolineras/precios/{slug}
 const PROVINCE_SLUGS: Record<string, string> = {
@@ -136,6 +168,19 @@ async function getCheapestStations() {
   return { cheapestDiesel, cheapestGas95, cheapestMaritimeDiesel };
 }
 
+async function getProvinceStats() {
+  const stats = await prisma.gasStation.groupBy({
+    by: ["province"],
+    _count: true,
+    _avg: { priceGasoleoA: true },
+  });
+  return Object.fromEntries(
+    stats
+      .filter((s) => s.province)
+      .map((s) => [s.province!, { count: s._count, avgDiesel: s._avg.priceGasoleoA ? Number(s._avg.priceGasoleoA) : null }])
+  );
+}
+
 function TrendBadge({ current, previous }: { current: number | null; previous: number | null }) {
   if (current == null || previous == null) return null;
   const change = current - previous;
@@ -166,7 +211,7 @@ function TrendBadge({ current, previous }: { current: number | null; previous: n
 }
 
 export default async function GasolinerasPage() {
-  const [stats, cheapest] = await Promise.all([getStats(), getCheapestStations()]);
+  const [stats, cheapest, provinceStats] = await Promise.all([getStats(), getCheapestStations(), getProvinceStats()]);
 
   const fuelDatasetSchema = generateDatasetSchema({
     name: "Precios de Combustible en Gasolineras de España",
@@ -497,6 +542,115 @@ export default async function GasolinerasPage() {
       {/* Price alert subscription */}
       <div className="mb-8">
         <PriceAlertForm accent="amber" />
+      </div>
+
+      {/* Province Grid */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          Gasolineras por Provincia
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {Object.entries(PROVINCE_NAMES)
+            .sort(([, a], [, b]) => a.localeCompare(b, "es"))
+            .map(([code, name]) => {
+              const slug = PROVINCE_SLUGS[code];
+              if (!slug) return null;
+              const ps = provinceStats[code];
+              return (
+                <Link
+                  key={code}
+                  href={`/gasolineras/precios/${slug}`}
+                  className="flex items-center justify-between p-2.5 rounded-lg hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-colors group"
+                >
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-700 dark:group-hover:text-tl-300 transition-colors">
+                    {name}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    {ps && (
+                      <>
+                        <span className="font-data">{ps.count}</span>
+                        {ps.avgDiesel && (
+                          <span className="font-data text-tl-amber-600 dark:text-tl-amber-400">
+                            {ps.avgDiesel.toFixed(3)}€
+                          </span>
+                        )}
+                      </>
+                    )}
+                    <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </span>
+                </Link>
+              );
+            })}
+        </div>
+      </div>
+
+      {/* Fuel Type Quick Links */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Droplets className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
+          Precios por Tipo de Combustible
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {FUEL_TYPES.map((ft) => (
+            <Link
+              key={ft.slug}
+              href={`/gasolineras/tipo/${ft.slug}`}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800/50 hover:bg-tl-amber-100 dark:hover:bg-tl-amber-900/30 transition-colors"
+            >
+              {ft.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Popular Cities */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Gasolineras Baratas en Ciudades
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+          {POPULAR_CITIES.map((city) => (
+            <Link
+              key={city}
+              href={`/gasolineras/baratas/${city}`}
+              className="text-sm text-gray-700 dark:text-gray-300 hover:text-tl-600 dark:hover:text-tl-400 py-1.5 px-2 rounded hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-colors"
+            >
+              {CITY_LABELS[city] || city}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* SEO Content Block */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Todo sobre las Gasolineras en España
+        </h2>
+        <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
+          <p>
+            España cuenta con una de las redes de estaciones de servicio más densas de Europa, con más de 12.000
+            gasolineras terrestres repartidas por todo el territorio nacional. Los combustibles más demandados
+            son el Gasóleo A (diésel) y la Gasolina 95 E5 (sin plomo), aunque cada vez más estaciones ofrecen
+            alternativas como GLP (autogas), GNC (gas natural comprimido) e hidrógeno.
+          </p>
+          <p>
+            Los precios de los carburantes en España están regulados por el mercado libre, pero el Ministerio
+            para la Transición Ecológica y el Reto Demográfico (MITERD) exige a todas las gasolineras publicar
+            sus precios diariamente. Esta información se recopila a través de la API del Geoportal del MITERD
+            y se actualiza en trafico.live varias veces al día.
+          </p>
+          <p>
+            Para encontrar combustible barato, compara precios entre estaciones de tu zona usando nuestra
+            herramienta de búsqueda por código postal o la vista de mapa. Las estaciones de bajo coste
+            (sin marca o de marcas blancas) suelen ofrecer precios entre 3 y 8 céntimos por litro más
+            baratos que las grandes marcas. En territorios con fiscalidad especial — Canarias (IGIC 7%),
+            Ceuta y Melilla (IPSI 0,5%) — los precios son significativamente más bajos.
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Datos: MITERD (gasolineras terrestres), Puertos del Estado (estaciones marítimas). Actualización: varias veces al día.
+          </p>
+        </div>
       </div>
 
       {/* FAQ Section */}
