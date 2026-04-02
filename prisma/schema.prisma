@@ -1555,8 +1555,18 @@ model Redirect {
 enum RailwayServiceType {
   CERCANIAS
   AVE
+  AVLO
+  ALVIA
+  AVANT
+  EUROMED
   LARGA_DISTANCIA
   MEDIA_DISTANCIA
+  REGIONAL
+  REGIONAL_EXPRESS
+  PROXIMIDAD
+  INTERCITY
+  TRENHOTEL
+  TRENCELTA
   FEVE
   RODALIES
 }
@@ -1578,6 +1588,7 @@ model RailwayStation {
   stopId       String  @unique // GTFS stop_id
   code         String? // Renfe station code (e.g. "60000" for Atocha)
   name         String
+  slug         String? @unique // URL-safe name (e.g. "madrid-atocha")
   latitude     Decimal @db.Decimal(9, 6)
   longitude    Decimal @db.Decimal(9, 6)
 
@@ -1586,11 +1597,15 @@ model RailwayStation {
   locationType Int     @default(0) // GTFS location_type: 0=stop, 1=station
   platformCode String? // Platform number/code
 
-  // Administrative
+  // Administrative (reverse-geocoded)
   province     String? // INE 2-digit
   provinceName String?
   community    String? // INE 2-digit community
+  communityName String?
   municipality String?
+
+  // Network (for Cercanías: Madrid, Barcelona, etc.)
+  network      String?
 
   // Service info
   serviceTypes RailwayServiceType[] // Which services stop here
@@ -1601,7 +1616,9 @@ model RailwayStation {
   fetchedAt    DateTime @default(now()) @db.Timestamptz
 
   @@index([name])
+  @@index([slug])
   @@index([province])
+  @@index([network])
   @@index([serviceTypes])
   @@index([latitude, longitude])
   @@index([parentId])
@@ -1610,15 +1627,27 @@ model RailwayStation {
 model RailwayRoute {
   id          String  @id @default(cuid())
   routeId     String  @unique // GTFS route_id
+  slug        String? // URL-safe (e.g. "ave-madrid-malaga")
   agencyId    String? // GTFS agency_id
-  shortName   String? // e.g. "C1", "C3", "AVE"
-  longName    String? // e.g. "Príncipe Pío - Aeropuerto T4"
+  shortName   String? // Line name: "C1", "C3", "R1"
+  longName    String? // GTFS long name
+  brand       String? // Commercial brand: "AVE", "AVLO", "Alvia", "Avant", "Euromed", "MD", "Regional", etc.
   serviceType RailwayServiceType
   color       String? // Route color hex (GTFS route_color)
   textColor   String? // Text color hex (GTFS route_text_color)
 
+  // Route endpoints (resolved from stop_times)
+  originName  String? // e.g. "Madrid Pta.Atocha"
+  originCode  String? // GTFS stop_id of origin
+  destName    String? // e.g. "Málaga María Zambrano"
+  destCode    String? // GTFS stop_id of destination
+
   // Network (for Cercanías grouping)
   network     String? // e.g. "Madrid", "Barcelona", "Valencia"
+
+  // Route details
+  stopsCount  Int?    // Number of intermediate stops
+  tripCount   Int?    // Number of daily trips (services)
 
   // Shape geometry (from shapes.txt)
   shapeId     String?
@@ -1626,14 +1655,19 @@ model RailwayRoute {
 
   // Stop sequence
   stopIds     String[] // Ordered GTFS stop_ids for this route
+  stopNames   String[] // Ordered stop names for display
 
   // Metadata
   source      String   @default("RENFE_GTFS")
   fetchedAt   DateTime @default(now()) @db.Timestamptz
 
   @@index([serviceType])
+  @@index([brand])
   @@index([network])
   @@index([shortName])
+  @@index([slug])
+  @@index([originName])
+  @@index([destName])
 }
 
 model RailwayAlert {
