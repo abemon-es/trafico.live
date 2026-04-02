@@ -58,8 +58,17 @@ export async function GET(request: NextRequest) {
       serviceType: true,
       color: true,
       textColor: true,
+      brand: true,
+      originName: true,
+      originCode: true,
+      destName: true,
+      destCode: true,
       network: true,
+      stopsCount: true,
+      tripCount: true,
       stopIds: true,
+      stopNames: true,
+      slug: true,
       shapeGeoJSON: withShapes,
     };
 
@@ -88,6 +97,13 @@ export async function GET(request: NextRequest) {
       _count: { id: true },
     });
 
+    // Brand distribution
+    const brandStats = await prisma.railwayRoute.groupBy({
+      by: ["brand"],
+      where: { ...where, brand: { not: null } },
+      _count: { id: true },
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -107,6 +123,11 @@ export async function GET(request: NextRequest) {
             networkStats
               .filter((n) => n.network)
               .map((n) => [n.network!, n._count.id])
+          ),
+          byBrand: Object.fromEntries(
+            brandStats
+              .filter((b) => b.brand)
+              .map((b) => [b.brand!, b._count.id])
           ),
         },
       },
