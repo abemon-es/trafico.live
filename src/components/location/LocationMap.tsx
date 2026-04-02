@@ -3,10 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Map as MapIcon, Loader2 } from "lucide-react";
 import type { FeatureCollection } from "geojson";
-
-// Carto basemap styles — same source as TrafficMap
-const LIGHT_MAP_STYLE =
-  "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
 
 export interface LocationMapProps {
   /** Center coordinate [lng, lat] */
@@ -84,7 +81,7 @@ export function LocationMap({
 
         const map = new maplibre.Map({
           container: containerRef.current!,
-          style: LIGHT_MAP_STYLE,
+          style: MAP_STYLE_DEFAULT,
           center: initialCenter,
           zoom: initialZoom,
           attributionControl: false,
@@ -101,6 +98,8 @@ export function LocationMap({
             map.remove();
             return;
           }
+
+          forceSpanishLabels(map);
 
           // Fit to bounds if provided
           if (bounds) {

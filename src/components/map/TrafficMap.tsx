@@ -14,6 +14,7 @@ import {
 import { useAnimatedFlow } from "./AnimatedFlowOverlay";
 import { useWeatherRadar } from "./WeatherRadarOverlay";
 import { useWindOverlay, useCloudOverlay, useTemperatureOverlay } from "./WeatherOverlays";
+import { MAP_STYLE_DEFAULT, MAP_STYLE_DARK, forceSpanishLabels } from "@/lib/map-config";
 
 export type IncidentViewMode = "heatmap" | "clusters" | "points";
 
@@ -808,8 +809,8 @@ function updateClusteredLayer(
   }
 }
 
-const DARK_MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
-const LIGHT_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+const DARK_MAP_STYLE = MAP_STYLE_DARK;
+const LIGHT_MAP_STYLE = MAP_STYLE_DEFAULT;
 const SATELLITE_MAP_STYLE = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 
 const getSatelliteStyle = (): maplibregl.StyleSpecification => ({
@@ -925,6 +926,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     );
 
     map.current.on("load", () => {
+      forceSpanishLabels(map.current!);
       // Load highways GeoJSON
       fetch("/geojson/highways.json")
         .then((res) => res.json())
@@ -1100,6 +1102,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     // After the new style loads, re-add base layers (highways, provinces)
     // and mark as loaded so data useEffects re-fire
     m.once("style.load", () => {
+      forceSpanishLabels(m);
       // Re-load highways
       fetch("/geojson/highways.json")
         .then((res) => res.json())

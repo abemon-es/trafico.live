@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
 
 interface Station {
   id: string;
@@ -106,7 +107,7 @@ export default function StationMap({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      style: MAP_STYLE_DEFAULT,
       center: SPAIN_CENTER,
       zoom: INITIAL_ZOOM,
       minZoom: 4,
@@ -121,6 +122,7 @@ export default function StationMap({
     );
 
     map.on("load", () => {
+      forceSpanishLabels(map);
       // Empty source — updated when stations prop changes
       map.addSource("stations", {
         type: "geojson",

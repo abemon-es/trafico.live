@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { forceSpanishLabels } from "@/lib/map-config";
 import { Fuel, Waves, Wind, Anchor, ShieldAlert, CloudRain, RefreshCw, Layers, ChevronDown, X, Maximize2, Minimize2 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -178,6 +179,7 @@ export default function MaritimeMap() {
     mapRef.current = map;
 
     map.on("load", () => {
+      forceSpanishLabels(map);
       // ── Wave data source ──
       map.addSource("wave-points", {
         type: "geojson",

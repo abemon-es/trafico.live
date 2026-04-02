@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
 import Link from "next/link";
 import { MapPin, ExternalLink, Navigation } from "lucide-react";
 
@@ -33,7 +34,7 @@ export function StationLocationMap({
     // Initialize map
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+      style: MAP_STYLE_DEFAULT,
       center: [longitude, latitude],
       zoom: 14,
       attributionControl: false,
@@ -50,6 +51,10 @@ export function StationLocationMap({
       new maplibregl.AttributionControl({ compact: true }),
       "bottom-right"
     );
+
+    map.current.on("load", () => {
+      forceSpanishLabels(map.current!);
+    });
 
     // Create marker element
     const el = document.createElement("div");

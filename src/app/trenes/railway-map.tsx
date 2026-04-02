@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
 
 interface RailwayMapProps {
   stationsGeoJSON: GeoJSON.FeatureCollection | null;
@@ -46,7 +47,7 @@ export default function RailwayMap({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      style: MAP_STYLE_DEFAULT,
       center: SPAIN_CENTER,
       zoom: 6,
       minZoom: 4,
@@ -58,6 +59,7 @@ export default function RailwayMap({
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
 
     map.on("load", () => {
+      forceSpanishLabels(map);
       const empty: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
 
       // Load train icon images for each delay category

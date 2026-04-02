@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { ArrowLeftRight, Clock, X } from "lucide-react";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
 
 interface MapComparatorProps {
   currentIncidents: { lat: number; lng: number; effect: string }[];
@@ -30,7 +31,7 @@ const EFFECT_COLORS: Record<string, string> = {
   OTHER_EFFECT: "#6b7280",
 };
 
-const MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+const MAP_STYLE = MAP_STYLE_DEFAULT;
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168];
 
 function incidentsToGeoJSON(incidents: { lat: number; lng: number; effect: string }[]): GeoJSON.FeatureCollection {
@@ -72,6 +73,7 @@ export function MapComparator({ currentIncidents, historicalIncidents, onTimeOff
     // Add data after load
     leftMap.current.on("load", () => {
       if (!leftMap.current) return;
+      forceSpanishLabels(leftMap.current);
       leftMap.current.addSource("incidents", { type: "geojson", data: incidentsToGeoJSON(currentIncidents) });
       leftMap.current.addLayer({
         id: "incidents-circles",
@@ -89,6 +91,7 @@ export function MapComparator({ currentIncidents, historicalIncidents, onTimeOff
 
     rightMap.current.on("load", () => {
       if (!rightMap.current) return;
+      forceSpanishLabels(rightMap.current);
       rightMap.current.addSource("incidents", { type: "geojson", data: incidentsToGeoJSON(historicalIncidents) });
       rightMap.current.addLayer({
         id: "incidents-circles",

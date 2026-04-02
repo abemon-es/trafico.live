@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Layers, Flame, Circle, MapPin, Loader2 } from "lucide-react";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
 
 export interface BeaconMapData {
   id: string;
@@ -77,7 +78,7 @@ export function HistoricalMap({
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      style: MAP_STYLE_DEFAULT,
       center: SPAIN_CENTER,
       zoom: 5.5,
       attributionControl: false,
@@ -94,6 +95,7 @@ export function HistoricalMap({
     );
 
     map.current.on("load", () => {
+      forceSpanishLabels(map.current!);
       setIsMapLoaded(true);
     });
 

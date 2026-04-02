@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -125,7 +126,7 @@ export function IncidenciasContent() {
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      style: MAP_STYLE_DEFAULT,
       center: SPAIN_CENTER,
       zoom: 6,
       maxBounds: SPAIN_BOUNDS,
@@ -143,6 +144,7 @@ export function IncidenciasContent() {
     );
 
     map.current.on("load", () => {
+      forceSpanishLabels(map.current!);
       setIsMapLoaded(true);
     });
 
