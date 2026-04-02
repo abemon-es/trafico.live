@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Map } from "lucide-react";
+import { Map, Locate } from "lucide-react";
 import type maplibregl from "maplibre-gl";
 
 // Dynamic import types — maplibre-gl is loaded only on the client
@@ -110,6 +110,28 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   } | null>(null);
   const [selectedData, setSelectedData] = useState<Record<string, string | number> | null>(null);
   const [mapFocused, setMapFocused] = useState(false);
+  const [userLocated, setUserLocated] = useState(false);
+
+  // Fly to a specific location on the map
+  const flyTo = useCallback((lng: number, lat: number, zoom: number) => {
+    mapInstanceRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200, essential: true });
+    setMapFocused(true);
+  }, []);
+
+  // Geolocate user and fly to their province
+  const locateUser = useCallback(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { longitude, latitude } = pos.coords;
+        setUserLocated(true);
+        mapInstanceRef.current?.flyTo({ center: [longitude, latitude], zoom: 9, duration: 1500, essential: true });
+        setMapFocused(true);
+      },
+      () => { /* silently fail */ },
+      { enableHighAccuracy: false, timeout: 5000 }
+    );
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -672,6 +694,33 @@ export function HeroMap({ initialStats }: HeroMapProps) {
           </div>
         </div>
       )}
+
+      {/* Quick access: off-screen territories + geolocation */}
+      <div className="absolute bottom-20 right-4 sm:right-6 z-20 flex flex-col gap-1.5">
+        {/* Locate me */}
+        <button
+          onClick={locateUser}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all backdrop-blur-sm border shadow-sm ${
+            userLocated
+              ? "bg-tl-600 text-white border-tl-600"
+              : "bg-white/90 dark:bg-gray-900/90 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-tl-300"
+          }`}
+          title="Localizar mi ubicación"
+        >
+          <Locate className="w-3.5 h-3.5" />
+          Mi zona
+        </button>
+        {/* Off-screen territories */}
+        <button onClick={() => flyTo(-15.5, 28.1, 8)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-tl-300 transition-all shadow-sm">
+          Canarias
+        </button>
+        <button onClick={() => flyTo(-5.34, 35.89, 13)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-tl-300 transition-all shadow-sm">
+          Ceuta
+        </button>
+        <button onClick={() => flyTo(-2.95, 35.29, 13)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-tl-300 transition-all shadow-sm">
+          Melilla
+        </button>
+      </div>
     </section>
   );
 }
