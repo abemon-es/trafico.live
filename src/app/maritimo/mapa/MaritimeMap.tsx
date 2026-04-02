@@ -28,6 +28,9 @@ interface WavePoint {
   swellDirection: number;
   currentVelocity: number;
   currentDirection: number;
+  windSpeed: number;
+  windDirection: number;
+  seaSurfaceTemp: number;
 }
 
 // ─── Grid of points around Spain's coast for wave data ──────────────────────
@@ -75,6 +78,22 @@ function getWaveLabel(height: number): string {
   return "Mar muy gruesa";
 }
 
+function getBeaufort(kmh: number): string {
+  if (kmh < 2) return "F0 Calma";
+  if (kmh < 6) return "F1 Ventolina";
+  if (kmh < 12) return "F2 Flojito";
+  if (kmh < 20) return "F3 Flojo";
+  if (kmh < 29) return "F4 Bonancible";
+  if (kmh < 39) return "F5 Fresquito";
+  if (kmh < 50) return "F6 Fresco";
+  if (kmh < 62) return "F7 Frescachón";
+  if (kmh < 75) return "F8 Temporal";
+  if (kmh < 89) return "F9 Temporal fuerte";
+  if (kmh < 103) return "F10 Temporal duro";
+  if (kmh < 118) return "F11 Borrasca";
+  return "F12 Huracán";
+}
+
 function directionArrow(deg: number): string {
   const arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"];
   return arrows[Math.round(deg / 45) % 8];
@@ -94,9 +113,8 @@ export default function MaritimeMap() {
   // Layer visibility
   const [layers, setLayers] = useState({
     waves: true,
+    wind: true,
     fuel: true,
-    emergencies: true,
-    weather: true,
   });
 
   const toggleLayer = useCallback((key: keyof typeof layers) => {
@@ -180,6 +198,56 @@ export default function MaritimeMap() {
           "text-halo-width": 2,
         },
       });
+
+      // ── Wind indicators source ──
+      map.addSource("wind-points", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "wind-arrows",
+        type: "symbol",
+        source: "wind-points",
+        layout: {
+          "icon-image": "wind-arrow",
+          "icon-size": ["interpolate", ["linear"], ["get", "windSpeed"], 0, 0.4, 30, 0.8, 60, 1.2],
+          "icon-rotate": ["get", "windDirection"],
+          "icon-rotation-alignment": "map",
+          "icon-allow-overlap": true,
+          "text-field": ["concat", ["to-string", ["get", "windSpeedDisplay"]], ""],
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-size": 9,
+          "text-offset": [0, 1.8],
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": "#4f46e5",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
+      });
+
+      // Create a simple arrow icon for wind direction
+      const arrowCanvas = document.createElement("canvas");
+      arrowCanvas.width = 32;
+      arrowCanvas.height = 32;
+      const ctx = arrowCanvas.getContext("2d")!;
+      ctx.translate(16, 16);
+      ctx.fillStyle = "#4f46e5";
+      ctx.beginPath();
+      ctx.moveTo(0, -12);
+      ctx.lineTo(6, 8);
+      ctx.lineTo(0, 4);
+      ctx.lineTo(-6, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      const img = new Image();
+      img.onload = () => { map.addImage("wind-arrow", img); };
+      img.src = arrowCanvas.toDataURL();
 
       // ── Maritime fuel stations ──
       map.addSource("maritime-fuel", {
@@ -275,9 +343,23 @@ export default function MaritimeMap() {
                   <div class="font-bold text-cyan-800 text-base">${p.swellDisplay}m</div>
                   <div class="text-cyan-400">${p.swellArrow}</div>
                 </div>
-                <div class="bg-teal-50 p-2 rounded col-span-2">
+                <div class="bg-teal-50 p-2 rounded">
                   <div class="text-teal-500 mb-0.5">Corriente</div>
-                  <div class="font-bold text-teal-800">${p.currentDisplay} km/h ${p.currentArrow}</div>
+                  <div class="font-bold text-teal-800">${p.currentDisplay} km/h</div>
+                  <div class="text-teal-400">${p.currentArrow}</div>
+                </div>
+                <div class="bg-gray-50 p-2 rounded">
+                  <div class="text-gray-500 mb-0.5">Temp. mar</div>
+                  <div class="font-bold text-gray-800">${p.seaTemp}°C</div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 gap-2 mt-2">
+                <div class="bg-indigo-50 p-2 rounded flex items-center justify-between">
+                  <div>
+                    <div class="text-indigo-500 text-xs">Viento</div>
+                    <div class="font-bold text-indigo-800">${p.windSpeed} km/h ${p.windArrow}</div>
+                  </div>
+                  <div class="text-indigo-400 text-xs text-right">${p.windBeaufort}</div>
                 </div>
               </div>
             </div>
@@ -319,40 +401,36 @@ export default function MaritimeMap() {
       const lats = COAST_GRID.map((p) => p.lat).join(",");
       const lngs = COAST_GRID.map((p) => p.lng).join(",");
       const res = await fetch(
-        `https://marine-api.open-meteo.com/v1/marine?latitude=${lats}&longitude=${lngs}&current=wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,ocean_current_velocity,ocean_current_direction`
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${lats}&longitude=${lngs}&current=wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,ocean_current_velocity,ocean_current_direction&hourly=ocean_current_velocity&forecast_days=1&wind_speed_unit=kmh`
       );
+      // Also fetch wind + temperature from weather API for same points
+      const windRes = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=wind_speed_10m,wind_direction_10m,temperature_2m&wind_speed_unit=kmh`
+      );
+      const windData = await windRes.json();
+      const windArray = Array.isArray(windData) ? windData : [windData];
       const data = await res.json();
 
       // Open-Meteo returns array when multiple coords
+      const dataArray = Array.isArray(data) ? data : [data];
       const items: WavePoint[] = [];
-      if (Array.isArray(data)) {
-        for (let i = 0; i < data.length; i++) {
-          const d = data[i];
-          if (!d.current) continue;
-          items.push({
-            lat: d.latitude,
-            lng: d.longitude,
-            waveHeight: d.current.wave_height ?? 0,
-            waveDirection: d.current.wave_direction ?? 0,
-            wavePeriod: d.current.wave_period ?? 0,
-            swellHeight: d.current.swell_wave_height ?? 0,
-            swellDirection: d.current.swell_wave_direction ?? 0,
-            currentVelocity: d.current.ocean_current_velocity ?? 0,
-            currentDirection: d.current.ocean_current_direction ?? 0,
-          });
-        }
-      } else if (data.current) {
-        // Single point response
+      for (let i = 0; i < dataArray.length; i++) {
+        const d = dataArray[i];
+        if (!d.current) continue;
+        const w = windArray[i]?.current;
         items.push({
-          lat: data.latitude,
-          lng: data.longitude,
-          waveHeight: data.current.wave_height ?? 0,
-          waveDirection: data.current.wave_direction ?? 0,
-          wavePeriod: data.current.wave_period ?? 0,
-          swellHeight: data.current.swell_wave_height ?? 0,
-          swellDirection: data.current.swell_wave_direction ?? 0,
-          currentVelocity: data.current.ocean_current_velocity ?? 0,
-          currentDirection: data.current.ocean_current_direction ?? 0,
+          lat: d.latitude,
+          lng: d.longitude,
+          waveHeight: d.current.wave_height ?? 0,
+          waveDirection: d.current.wave_direction ?? 0,
+          wavePeriod: d.current.wave_period ?? 0,
+          swellHeight: d.current.swell_wave_height ?? 0,
+          swellDirection: d.current.swell_wave_direction ?? 0,
+          currentVelocity: d.current.ocean_current_velocity ?? 0,
+          currentDirection: d.current.ocean_current_direction ?? 0,
+          windSpeed: w?.wind_speed_10m ?? 0,
+          windDirection: w?.wind_direction_10m ?? 0,
+          seaSurfaceTemp: w?.temperature_2m ?? 0,
         });
       }
       setWaveData(items);
@@ -394,11 +472,41 @@ export default function MaritimeMap() {
             swellArrow: directionArrow(w.swellDirection),
             currentDisplay: w.currentVelocity.toFixed(1),
             currentArrow: directionArrow(w.currentDirection),
+            windSpeed: Math.round(w.windSpeed),
+            windArrow: directionArrow(w.windDirection),
+            windBeaufort: getBeaufort(w.windSpeed),
+            seaTemp: w.seaSurfaceTemp.toFixed(1),
           },
         })),
       } as GeoJSON.FeatureCollection);
     }
   }, [waveData, layers.waves, isLoaded]);
+
+  // ─── Update wind layer ───────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!mapRef.current || !isLoaded) return;
+    const source = mapRef.current.getSource("wind-points") as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    const vis = layers.wind ? "visible" : "none";
+    if (mapRef.current.getLayer("wind-arrows")) mapRef.current.setLayoutProperty("wind-arrows", "visibility", vis);
+
+    if (layers.wind && waveData.length > 0) {
+      source.setData({
+        type: "FeatureCollection",
+        features: waveData.map((w) => ({
+          type: "Feature" as const,
+          geometry: { type: "Point" as const, coordinates: [w.lng + 0.3, w.lat + 0.2] }, // slight offset from wave circle
+          properties: {
+            windSpeed: w.windSpeed,
+            windSpeedDisplay: Math.round(w.windSpeed),
+            windDirection: w.windDirection,
+          },
+        })),
+      } as GeoJSON.FeatureCollection);
+    }
+  }, [waveData, layers.wind, isLoaded]);
 
   // ─── Update fuel station layer ──────────────────────────────────────────
 
@@ -463,6 +571,7 @@ export default function MaritimeMap() {
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         <div className="flex flex-wrap gap-1.5">
           <LayerBtn layerKey="waves" icon={<Waves className="w-3.5 h-3.5" />} label="Oleaje" count={waveData.length} />
+          <LayerBtn layerKey="wind" icon={<Wind className="w-3.5 h-3.5" />} label="Viento" />
           <LayerBtn layerKey="fuel" icon={<Fuel className="w-3.5 h-3.5" />} label="Combustible" count={stations.length} />
         </div>
       </div>
