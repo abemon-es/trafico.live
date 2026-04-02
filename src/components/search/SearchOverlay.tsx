@@ -6,6 +6,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { trackSearch } from "@/lib/analytics";
+import { SearchFilters } from "./SearchFilters";
 import {
   Search,
   X,
@@ -53,6 +54,8 @@ export interface SearchResult {
   category: SearchCategory;
   icon: string;
   highlightedTitle?: string;
+  price?: number;
+  distance?: number;
 }
 
 // ── API response shape ───────────────────────────────────────────────────────
@@ -65,9 +68,17 @@ interface SearchAPIResponse {
     category: string;
     icon: string;
     highlightedTitle?: string;
+    price?: number;
+    distance?: number;
   }>;
   query: string;
   total: number;
+  filters?: {
+    applied: Record<string, unknown>;
+    labels: string[];
+    needsLocationResolution?: boolean;
+    locationHint?: string;
+  };
 }
 
 // ── Icon map ─────────────────────────────────────────────────────────────────
@@ -200,6 +211,8 @@ function transformResults(data: SearchAPIResponse | undefined): SearchResult[] {
     category: mapApiCategory(r.category),
     icon: r.icon,
     highlightedTitle: r.highlightedTitle,
+    price: r.price,
+    distance: r.distance,
   }));
 }
 
@@ -290,15 +303,45 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     dedupingInterval: 2000,
   });
 
-  const results = useMemo(() => transformResults(data), [data]);
+  // Location resolution — when API says it needs coordinates
+  const needsResolution = data?.filters?.needsLocationResolution && data?.filters?.locationHint;
+  const locationHint = data?.filters?.locationHint;
+
+  // SWR for location resolution (only when needed)
+  const { data: locationData } = useSWR(
+    needsResolution ? `/api/search/resolve-location?q=${encodeURIComponent(locationHint!)}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // When location resolves, build enhanced search URL with coordinates
+  const enhancedSwrKey = useMemo(() => {
+    if (locationData?.resolved && locationData.location) {
+      const loc = locationData.location;
+      return `/api/search?q=${encodeURIComponent(debouncedQuery.trim())}&limit=20&lat=${loc.lat}&lng=${loc.lng}`;
+    }
+    return null;
+  }, [locationData, debouncedQuery]);
+
+  // Re-fetch with coordinates when location is resolved
+  const { data: enhancedData } = useSWR<SearchAPIResponse>(
+    enhancedSwrKey,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // Use enhanced data if available, otherwise original
+  const activeData = enhancedData ?? data;
+
+  const results = useMemo(() => transformResults(activeData), [activeData]);
   const groups = useMemo(() => groupResults(results), [results]);
 
   // Track search queries to GA4
   useEffect(() => {
-    if (debouncedQuery.trim() && data) {
+    if (debouncedQuery.trim() && activeData) {
       trackSearch(debouncedQuery.trim(), results.length);
     }
-  }, [debouncedQuery, data, results.length]);
+  }, [debouncedQuery, activeData, results.length]);
 
   // Flat list for keyboard navigation
   const flatResults = useMemo(
@@ -446,6 +489,19 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
           </kbd>
         </div>
 
+        {/* Filter chips */}
+        {activeData?.filters?.labels && activeData.filters.labels.length > 0 && (
+          <SearchFilters labels={activeData.filters.labels} />
+        )}
+
+        {/* Location resolution indicator */}
+        {needsResolution && !locationData?.resolved && (
+          <div className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-400 border-b border-gray-100 dark:border-gray-800">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            Buscando ubicación: {locationHint}...
+          </div>
+        )}
+
         {/* Results */}
         <div
           ref={listRef}
@@ -573,6 +629,22 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                               </p>
                             )}
                           </div>
+
+                          {/* Price (when price-sorting) */}
+                          {result.price != null && (
+                            <span className="shrink-0 text-sm font-mono font-medium text-tl-amber-600 dark:text-tl-amber-400">
+                              {result.price.toFixed(3)} €/L
+                            </span>
+                          )}
+
+                          {/* Distance (when proximity-sorting) */}
+                          {result.distance != null && (
+                            <span className="shrink-0 text-xs text-gray-400 font-mono">
+                              {result.distance < 1
+                                ? `${Math.round(result.distance * 1000)} m`
+                                : `${result.distance.toFixed(1)} km`}
+                            </span>
+                          )}
 
                           {/* Category badge */}
                           <span
