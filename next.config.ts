@@ -166,16 +166,16 @@ const nextConfig: NextConfig = {
       // -----------------------------------------------------------------------
       // Geographic duplicates
       // -----------------------------------------------------------------------
-      // /trafico/:city → /ciudad/:city  (city-level traffic pages consolidated)
+      // /trafico/:city → /ciudad/:city (resolved to /espana/... via middleware)
       {
         source: "/trafico/:city",
         destination: "/ciudad/:city",
         permanent: true,
       },
-      // /explorar/territorios/:slug → /comunidad-autonoma/:slug
+      // /explorar/territorios/:slug → /espana/:slug
       {
         source: "/explorar/territorios/:slug",
-        destination: "/comunidad-autonoma/:slug",
+        destination: "/espana/:slug",
         permanent: true,
       },
       // /explorar/carreteras/:road → /carreteras/:road
@@ -194,10 +194,25 @@ const nextConfig: NextConfig = {
       // TODO: /comunidad-autonoma/:community/:province → /provincias/:code
       //       Requires province-slug→INE-code mapping lookup (not feasible in
       //       next.config.ts static redirects — handle in middleware if needed)
-      // /comunidad-autonoma/:community/:province/:city → /municipio/:city
+      // /comunidad-autonoma hierarchy → /espana hierarchy
       {
         source: "/comunidad-autonoma/:community/:province/:city",
-        destination: "/municipio/:city",
+        destination: "/espana/:community/:province/:city",
+        permanent: true,
+      },
+      {
+        source: "/comunidad-autonoma/:community/:province",
+        destination: "/espana/:community/:province",
+        permanent: true,
+      },
+      {
+        source: "/comunidad-autonoma/:community",
+        destination: "/espana/:community",
+        permanent: true,
+      },
+      {
+        source: "/comunidad-autonoma",
+        destination: "/espana",
         permanent: true,
       },
       // -----------------------------------------------------------------------
