@@ -42,7 +42,7 @@ const VALID_TASKS = [
   // Analytics & Historical
   "cnmc-fuel", "aemet-historical", "mobility-od", "accident-microdata",
   // Aggregation
-  "daily-stats",
+  "daily-stats", "backfill-profiles",
   // One-shot / manual
   "historical-accidents", "imd", "sasemar",
   // Search index

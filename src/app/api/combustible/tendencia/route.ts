@@ -1,6 +1,7 @@
 import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { applyRateLimit } from "@/lib/api-utils";
 import { getOrCompute } from "@/lib/redis";
 
@@ -69,28 +70,25 @@ async function fetchAvgForWindow(
   targetDate: Date,
   province: string | null
 ): Promise<PriceRow> {
-  // Use a 7-day window centered on target for smoother averaging
   const windowStart = new Date(targetDate);
   windowStart.setDate(windowStart.getDate() - 3);
   const windowEnd = new Date(targetDate);
   windowEnd.setDate(windowEnd.getDate() + 3);
 
-  const provinceClause = province
-    ? `AND "province" = '${province}'`
-    : "";
+  const provinceFilter = province
+    ? Prisma.sql`AND "province" = ${province}`
+    : Prisma.empty;
 
-  const rows = await prisma.$queryRawUnsafe<PriceRow[]>(
-    `SELECT
+  const rows = await prisma.$queryRaw<PriceRow[]>`
+    SELECT
       ROUND(AVG("priceGasoleoA")::numeric, 3) AS avg_gasoleo_a,
       ROUND(AVG("priceGasolina95")::numeric, 3) AS avg_gasolina95,
       ROUND(AVG("priceGasolina98")::numeric, 3) AS avg_gasolina98
     FROM "CNMCFuelPrice"
-    WHERE "date" >= $1
-      AND "date" <= $2
-      ${provinceClause}`,
-    windowStart,
-    windowEnd
-  );
+    WHERE "date" >= ${windowStart}
+      AND "date" <= ${windowEnd}
+      ${provinceFilter}
+  `;
 
   return rows[0] ?? { avg_gasoleo_a: null, avg_gasolina95: null, avg_gasolina98: null };
 }

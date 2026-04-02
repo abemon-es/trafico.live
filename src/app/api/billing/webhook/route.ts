@@ -23,11 +23,28 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
-        const email = session.customer_email;
         const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
         const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
-        if (!email || !customerId) break;
+        if (!customerId) {
+          console.error(`[webhook] checkout.session.completed missing customerId`, { sessionId: session.id });
+          break;
+        }
+
+        // Resolve email from session or Stripe customer object
+        let email = session.customer_email;
+        if (!email) {
+          try {
+            const customer = await getStripe().customers.retrieve(customerId);
+            if ("email" in customer && customer.email) email = customer.email;
+          } catch (err) {
+            console.error(`[webhook] Failed to resolve email for customer ${customerId}`, err);
+          }
+        }
+        if (!email) {
+          console.error(`[webhook] checkout.session.completed: no email for customer ${customerId}`);
+          break;
+        }
 
         const tier = await getTierFromSubscription(subscriptionId);
         const key = `tl_${tier.toLowerCase()}_${randomBytes(24).toString("hex")}`;
@@ -87,19 +104,26 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    // Distinguish signature errors (don't retry) from processing errors (retry)
+    const isSignatureError = error instanceof Error && error.message.includes("signature");
     console.error("[webhook] Error:", error);
-    return NextResponse.json({ error: "Webhook failed" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: isSignatureError ? 400 : 500 },
+    );
   }
 }
 
 async function getTierFromSubscription(subId: string | null | undefined): Promise<"PRO" | "ENTERPRISE"> {
   if (!subId) return "PRO";
-  try {
-    const stripe = getStripe();
-    const sub = await stripe.subscriptions.retrieve(subId);
-    const priceId = sub.items.data[0]?.price?.id;
-    return priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID ? "ENTERPRISE" : "PRO";
-  } catch {
+  // Let Stripe errors propagate — caller must handle them.
+  // Silently defaulting to PRO would downgrade ENTERPRISE customers.
+  const stripe = getStripe();
+  const sub = await stripe.subscriptions.retrieve(subId);
+  const priceId = sub.items.data[0]?.price?.id;
+  if (!priceId) {
+    console.error(`[webhook] Subscription ${subId} has no price item`);
     return "PRO";
   }
+  return priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID ? "ENTERPRISE" : "PRO";
 }

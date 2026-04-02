@@ -75,6 +75,9 @@ export async function GET(request: NextRequest) {
         params.push(dest);
       }
 
+      const limitParamIdx = paramIdx++;
+      params.push(limit as unknown as string);
+
       const sql = `
         SELECT
           TO_CHAR(date, '${dateFormat}') as period,
@@ -88,7 +91,7 @@ export async function GET(request: NextRequest) {
         WHERE ${conditions.join(" AND ")}
         GROUP BY period, "originProvince", "originName", "destProvince", "destName"
         ORDER BY period DESC
-        LIMIT ${limit}
+        LIMIT $${limitParamIdx}
       `;
 
       return prisma.$queryRawUnsafe(sql, ...params);

@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCheckoutSession, createPortalSession } from "@/lib/stripe";
 import { API_TIERS, type ApiTierName } from "@/lib/api-tiers";
+import { applyRateLimit } from "@/lib/api-utils";
 import prisma from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * POST /api/billing — Create Stripe checkout session
  * Body: { email, tier: "PRO" | "ENTERPRISE" }
  */
 export async function POST(request: NextRequest) {
+  const rateLimited = await applyRateLimit(request);
+  if (rateLimited) return rateLimited;
+
   try {
     const { email, tier } = (await request.json()) as { email?: string; tier?: string };
 
-    if (!email || !tier) {
-      return NextResponse.json({ error: "Missing email or tier" }, { status: 400 });
+    if (!email || !EMAIL_RE.test(email) || !tier) {
+      return NextResponse.json({ error: "Missing or invalid email/tier" }, { status: 400 });
     }
 
     const validTier = tier.toUpperCase() as ApiTierName;

@@ -9,6 +9,9 @@ import { Client as TypesenseClient } from "typesense";
 import type { CollectionCreateSchema } from "typesense/lib/Typesense/Collections";
 import type { CollectionFieldSchema } from "typesense/lib/Typesense/Collection";
 
+// Gate vector embedding fields behind env var — requires Typesense with model support
+const VECTOR_ENABLED = process.env.ENABLE_VECTOR_SEARCH === "true";
+
 // ---------------------------------------------------------------------------
 // Client singleton
 // ---------------------------------------------------------------------------
@@ -383,6 +386,16 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     default_sorting_field: "maxPrice",
   },
 };
+
+// Strip embedding fields when vector search is disabled (prevents Typesense errors
+// if the instance doesn't have ts/multilingual-e5-small model loaded)
+if (!VECTOR_ENABLED) {
+  for (const schema of Object.values(COLLECTIONS)) {
+    schema.fields = (schema.fields as CollectionFieldSchema[]).filter(
+      (f) => f.name !== "embedding"
+    );
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Search synonyms

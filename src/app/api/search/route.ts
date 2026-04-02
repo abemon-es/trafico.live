@@ -72,10 +72,14 @@ const GEO_COLLECTIONS = new Set([
   "incidents", "portugal_stations", "cities",
 ]);
 
-const VECTOR_COLLECTIONS = new Set([
-  "pages", "gas_stations", "incidents", "ev_chargers",
-  "railway_routes", "railway_alerts", "articles", "roads",
-]);
+const ENABLE_VECTOR_SEARCH = process.env.ENABLE_VECTOR_SEARCH === "true";
+
+const VECTOR_COLLECTIONS = ENABLE_VECTOR_SEARCH
+  ? new Set([
+      "pages", "gas_stations", "incidents", "ev_chargers",
+      "railway_routes", "railway_alerts", "articles", "roads",
+    ])
+  : new Set<string>();
 
 const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
