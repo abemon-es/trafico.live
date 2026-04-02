@@ -82,26 +82,28 @@ export function LiveTrafficFlow({ detectorCount }: LiveTrafficFlowProps) {
   ];
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-tl-950 relative overflow-hidden">
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      <div className="max-w-7xl mx-auto relative">
         {/* Header */}
-        <div className="flex items-end justify-between mb-7">
+        <div className="flex items-end justify-between mb-8">
           <div>
-            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-tl-600 dark:text-tl-400 mb-1">
+            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-white/50 mb-1">
               Flujo de tráfico en vivo
             </p>
-            <h2 className="font-heading text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+            <h2 className="font-heading text-2xl font-bold tracking-tight text-white">
               <span className="font-data">{formatDetectors(detectorCount)}</span>{" "}
               detectores DGT · cada 5 minutos
             </h2>
-            <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400 max-w-lg leading-relaxed">
+            <p className="mt-1.5 text-sm text-white/40 max-w-lg leading-relaxed">
               Velocidad, intensidad y ocupación en toda la red de carreteras. Datos
               DATEX II del NAP de la DGT.
             </p>
           </div>
           <Link
             href="/mapa"
-            className="text-xs text-tl-600 dark:text-tl-400 font-medium whitespace-nowrap hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+            className="text-xs text-tl-300 font-medium whitespace-nowrap hover:text-white transition-colors"
           >
             Ver mapa de flujo &rarr;
           </Link>
@@ -112,20 +114,23 @@ export function LiveTrafficFlow({ detectorCount }: LiveTrafficFlowProps) {
           {cards.map((card) => (
             <div
               key={card.key}
-              className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-tl-300 dark:hover:border-tl-700 transition-colors"
+              className="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-white/20 transition-colors backdrop-blur-sm"
             >
-              <div
-                className={`text-[0.6rem] font-semibold uppercase tracking-wider mb-3 ${card.labelColor}`}
-              >
+              <div className="text-[0.6rem] font-semibold uppercase tracking-wider mb-3 text-white/50">
                 {card.label}
               </div>
-              <div className={`font-data text-3xl font-bold ${card.textColor}`}>
+              <div className="font-data text-5xl font-bold text-white">
                 {card.value}
               </div>
-              <div className="text-[0.7rem] text-gray-400 dark:text-gray-500 mt-0.5">
+              <div className="text-[0.7rem] text-white/30 mt-1">
                 {card.unit}
               </div>
-              <Bar pct={card.pct} color={card.color} />
+              <div className="h-1 rounded-full bg-white/10 mt-4 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(0, card.pct))}%`, background: card.color }}
+                />
+              </div>
             </div>
           ))}
         </div>

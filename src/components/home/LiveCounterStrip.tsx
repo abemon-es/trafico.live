@@ -124,11 +124,19 @@ export function LiveCounterStrip({ initialStats }: LiveCounterStripProps) {
   ];
 
   return (
-    <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 py-2.5 px-6">
+    <div className="border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-white via-tl-50/30 to-white dark:from-gray-950 dark:via-tl-950/30 dark:to-gray-950 py-2.5 px-6">
       <div
         className="max-w-7xl mx-auto flex items-center gap-5 overflow-x-auto"
         style={{ scrollbarWidth: "none" }}
       >
+        {/* Live pulse indicator */}
+        <div className="flex items-center gap-1.5 whitespace-nowrap pr-3 mr-1 border-r border-gray-200 dark:border-gray-800">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-green opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-signal-green" />
+          </span>
+          <span className="text-[0.65rem] font-bold text-signal-green uppercase tracking-wider">En vivo</span>
+        </div>
         {items.map((item, index) => (
           <div key={item.label} className="contents">
             <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -136,10 +144,10 @@ export function LiveCounterStrip({ initialStats }: LiveCounterStripProps) {
                 className="w-1.5 h-1.5 rounded-full shrink-0"
                 style={{ background: item.color }}
               />
-              <span className="font-data text-sm font-medium text-gray-900 dark:text-gray-100">
+              <span className="font-data text-sm font-bold" style={{ color: item.color }}>
                 {item.value}
               </span>
-              <span className="text-xs text-gray-400">{item.label}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{item.label}</span>
             </div>
             {index < items.length - 1 && (
               <div className="w-px h-3 bg-gray-200 dark:bg-gray-800 shrink-0" />
