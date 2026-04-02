@@ -31,6 +31,8 @@ export interface ActiveLayers {
   gasStations: boolean;
   maritimeStations: boolean;
   panels: boolean;
+  liveSpeed: boolean;
+  dangerScore: boolean;
 }
 
 export interface IncidentFilters {
@@ -228,6 +230,8 @@ interface TrafficMapProps {
   windOverlay?: boolean;
   cloudOverlay?: boolean;
   tempOverlay?: boolean;
+  liveSpeedData?: GeoJSON.FeatureCollection;
+  dangerScoreData?: Array<{ id: string; name: string; score: number; level: string }>;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
 }
@@ -822,7 +826,7 @@ const getSatelliteStyle = (): maplibregl.StyleSpecification => ({
 });
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, incidentFilters, incidentViewMode, darkMode = false, satellite = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, liveSpeedData, dangerScoreData, incidentFilters, incidentViewMode, darkMode = false, satellite = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -1384,6 +1388,102 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     addClusteredLayer(map.current, "panels-layer", "#06b6d4", getPanelPopupHTML);
     addClusteredLayer(map.current, "maritime-layer", "#3b82f6", getMaritimePopupHTML);
 
+    // ── Live speed detector points ──
+    map.current.addSource("live-speed", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+    map.current.addLayer({
+      id: "live-speed-points",
+      type: "circle",
+      source: "live-speed",
+      layout: { visibility: "none" },
+      paint: {
+        "circle-color": ["get", "color"],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 10],
+        "circle-opacity": 0.8,
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#ffffff",
+      },
+    });
+    map.current.on("click", "live-speed-points", (e) => {
+      if (!e.features?.length) return;
+      const p = e.features[0].properties || {};
+      const coords = (e.features[0].geometry as GeoJSON.Point).coordinates.slice() as [number, number];
+      new maplibregl.Popup({ offset: 10, maxWidth: "240px" })
+        .setLngLat(coords)
+        .setHTML(`
+          <div class="p-2">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-3 h-3 rounded-full" style="background:${p.color}"></span>
+              <span class="font-bold text-sm">${p.road || "Detector"}</span>
+              <span class="text-xs px-1.5 py-0.5 rounded" style="background:${p.color}20;color:${p.color}">${p.level}</span>
+            </div>
+            ${p.speed != null ? `<p class="text-lg font-bold text-center" style="color:${p.color}">${p.speed} km/h</p>` : ""}
+            <div class="text-xs text-gray-500 space-y-0.5">
+              ${p.intensity ? `<p>Intensidad: ${p.intensity} veh/h</p>` : ""}
+              ${p.occupancy != null ? `<p>Ocupación: ${p.occupancy}%</p>` : ""}
+              ${p.kmPoint ? `<p>km ${p.kmPoint}${p.direction ? ` · ${p.direction === "INCREASING" ? "↑" : "↓"}` : ""}</p>` : ""}
+            </div>
+          </div>
+        `)
+        .addTo(map.current!);
+    });
+    map.current.on("mouseenter", "live-speed-points", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "live-speed-points", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // ── Danger score province overlay ──
+    map.current.addSource("danger-score", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+    map.current.addLayer({
+      id: "danger-score-circles",
+      type: "circle",
+      source: "danger-score",
+      layout: { visibility: "none" },
+      paint: {
+        "circle-color": ["get", "color"],
+        "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 12, 50, 20, 100, 32],
+        "circle-opacity": 0.5,
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff",
+      },
+    });
+    map.current.addLayer({
+      id: "danger-score-labels",
+      type: "symbol",
+      source: "danger-score",
+      layout: {
+        "text-field": ["concat", ["to-string", ["get", "score"]], ""],
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-size": 12,
+        "text-allow-overlap": true,
+        visibility: "none",
+      },
+      paint: { "text-color": "#ffffff", "text-halo-color": ["get", "color"], "text-halo-width": 2 },
+    });
+    map.current.on("click", "danger-score-circles", (e) => {
+      if (!e.features?.length) return;
+      const p = e.features[0].properties || {};
+      const coords = (e.features[0].geometry as GeoJSON.Point).coordinates.slice() as [number, number];
+      new maplibregl.Popup({ offset: 10, maxWidth: "220px" })
+        .setLngLat(coords)
+        .setHTML(`
+          <div class="p-2">
+            <p class="font-bold text-sm mb-1">${p.name}</p>
+            <div class="text-center my-2">
+              <span class="text-2xl font-bold" style="color:${p.color}">${p.score}</span>
+              <span class="text-xs text-gray-500">/100</span>
+            </div>
+            <p class="text-xs text-center px-2 py-1 rounded" style="background:${p.color}15;color:${p.color}">${p.level}</p>
+          </div>
+        `)
+        .addTo(map.current!);
+    });
+    map.current.on("mouseenter", "danger-score-circles", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "danger-score-circles", () => { map.current!.getCanvas().style.cursor = ""; });
+
     // Add ZBE zones source
     map.current.addSource("zbe-zones", {
       type: "geojson",
@@ -1735,6 +1835,52 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     if (!map.current || !isLoaded) return;
     updateClusteredLayer(map.current, "maritime-layer", activeLayers.maritimeStations && maritimeStations.length > 0, maritimeToGeoJSON(maritimeStations), globalViewMode);
   }, [activeLayers.maritimeStations, maritimeStations, isLoaded, globalViewMode]);
+
+  // Update live speed layer
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const source = map.current.getSource("live-speed") as maplibregl.GeoJSONSource;
+    if (!source) return;
+    const vis = activeLayers.liveSpeed && liveSpeedData ? "visible" : "none";
+    if (map.current.getLayer("live-speed-points")) map.current.setLayoutProperty("live-speed-points", "visibility", vis);
+    if (activeLayers.liveSpeed && liveSpeedData) {
+      source.setData(liveSpeedData as maplibregl.GeoJSONSourceSpecification["data"]);
+    }
+  }, [activeLayers.liveSpeed, liveSpeedData, isLoaded]);
+
+  // Update danger score layer
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const source = map.current.getSource("danger-score") as maplibregl.GeoJSONSource;
+    if (!source) return;
+    const vis = activeLayers.dangerScore && dangerScoreData ? "visible" : "none";
+    if (map.current.getLayer("danger-score-circles")) map.current.setLayoutProperty("danger-score-circles", "visibility", vis);
+    if (map.current.getLayer("danger-score-labels")) map.current.setLayoutProperty("danger-score-labels", "visibility", vis);
+    if (activeLayers.dangerScore && dangerScoreData && dangerScoreData.length > 0) {
+      // Need province coordinates — use the provinces GeoJSON already loaded
+      fetch("/geojson/provinces.json")
+        .then((r) => r.json())
+        .then((provinces) => {
+          const coordMap = new Map<string, [number, number]>();
+          for (const f of provinces.features) {
+            coordMap.set(f.properties.code, f.geometry.coordinates);
+          }
+          const features = dangerScoreData
+            .filter((s) => coordMap.has(s.id))
+            .map((s) => {
+              const coords = coordMap.get(s.id)!;
+              const color = s.score < 20 ? "#059669" : s.score < 40 ? "#84cc16" : s.score < 60 ? "#eab308" : s.score < 80 ? "#f97316" : "#dc2626";
+              return {
+                type: "Feature" as const,
+                geometry: { type: "Point" as const, coordinates: coords },
+                properties: { id: s.id, name: s.name, score: s.score, level: s.level, color },
+              };
+            });
+          source.setData({ type: "FeatureCollection", features } as maplibregl.GeoJSONSourceSpecification["data"]);
+        })
+        .catch(() => {});
+    }
+  }, [activeLayers.dangerScore, dangerScoreData, isLoaded]);
 
   // V16 individual markers (only when ≤50 beacons — provides pulse animation)
   useEffect(() => {

@@ -54,6 +54,8 @@ export interface ActiveLayers {
   gasStations: boolean;
   maritimeStations: boolean;
   panels: boolean;
+  liveSpeed: boolean;
+  dangerScore: boolean;
 }
 
 export interface IncidentFilters {
@@ -134,6 +136,8 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
     layers: [
       { key: "v16", label: "Balizas V16", icon: <AlertTriangle className="w-4 h-4" />, countKey: "v16" },
       { key: "incidents", label: "Incidencias", icon: <AlertTriangle className="w-4 h-4" />, countKey: "incidents" },
+      { key: "liveSpeed", label: "Velocidad en vivo", icon: <Activity className="w-4 h-4" /> },
+      { key: "dangerScore", label: "Índice de peligro", icon: <ShieldAlert className="w-4 h-4" /> },
       { key: "panels", label: "Paneles PMV", icon: <Monitor className="w-4 h-4" />, countKey: "panels" },
     ],
   },

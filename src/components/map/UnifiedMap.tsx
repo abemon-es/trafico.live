@@ -256,7 +256,7 @@ interface UnifiedMapProps {
 // Valid filter values for URL parsing
 const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
 const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
-const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations", "panels"];
+const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations", "panels", "liveSpeed", "dangerScore"];
 
 export function UnifiedMap({
   defaultHeight = "500px",
