@@ -223,8 +223,8 @@ function deriveSummaryStats(heatmap: HeatmapCell[]): SummaryStats {
   let worst = heatmap[0];
   let best = heatmap[0];
   for (const cell of heatmap) {
-    if (cell.avgServiceLevel > worst.avgServiceLevel) worst = cell;
-    if (cell.avgServiceLevel < best.avgServiceLevel) best = cell;
+    if ((cell.avgServiceLevel ?? 0) > (worst.avgServiceLevel ?? 0)) worst = cell;
+    if ((cell.avgServiceLevel ?? 0) < (best.avgServiceLevel ?? 0)) best = cell;
   }
 
   // Busiest / calmest day (aggregate avg intensity across all hours)
