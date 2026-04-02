@@ -218,6 +218,9 @@ function ComparisonRow({
 // ---------------------------------------------------------------------------
 
 
+interface TollRoad { id: string; name: string; maxPrice: number; }
+interface TollDetail { segments: { from: string; to: string; km: number; price: number }[] }
+
 export default function CalculadoraContent() {
   // Fetch live fuel prices
   const { data: fuelData } = useSWR<{
@@ -227,6 +230,9 @@ export default function CalculadoraContent() {
       avgGasolina98: number | null;
     };
   }>("/api/fuel-prices/today", fetcher, { revalidateOnFocus: false });
+
+  // Fetch toll road catalog
+  const { data: tollData } = useSWR<{ roads: TollRoad[] }>("/api/peajes", fetcher, { revalidateOnFocus: false });
 
   const livePrices: Partial<Record<FuelType, number>> = {
     diesel: fuelData?.national?.avgGasoleoA ?? undefined,
@@ -243,6 +249,21 @@ export default function CalculadoraContent() {
   const [precio, setPrecio] = useState(FUEL_DEFAULTS.gasolina95.precio);
   const [peajes, setPeajes] = useState(0);
   const [pasajeros, setPasajeros] = useState(1);
+  const [tollRoad, setTollRoad] = useState("");
+  const [tollSegs, setTollSegs] = useState<{ from: string; to: string; km: number; price: number }[]>([]);
+
+  // Auto-fill peajes when toll road selected
+  useEffect(() => {
+    if (!tollRoad) { setTollSegs([]); return; }
+    fetch(`/api/peajes?road=${encodeURIComponent(tollRoad)}`)
+      .then(r => r.json())
+      .then((d: TollDetail) => {
+        setTollSegs(d.segments || []);
+        const max = d.segments?.reduce((m, s) => s.price > m.price ? s : m, d.segments[0]);
+        if (max) setPeajes(max.price);
+      })
+      .catch(() => setTollSegs([]));
+  }, [tollRoad]);
 
   // Update consumo/precio defaults when fuel type changes or live prices arrive
   useEffect(() => {
@@ -421,18 +442,26 @@ export default function CalculadoraContent() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Peajes */}
+            {/* Peajes — toll road selector + manual override */}
             <div>
-              <label className={labelClass}>Peajes estimados (€)</label>
-              <input
-                type="number"
-                className={inputClass}
-                min={0}
-                step={0.5}
-                value={peajes || ""}
-                onChange={handlePeajesChange}
-                placeholder="0"
-              />
+              <label className={labelClass}>Peajes (€)</label>
+              {tollData?.roads && (
+                <select className={`${inputClass} mb-2`} value={tollRoad} onChange={e => setTollRoad(e.target.value)}>
+                  <option value="">Sin autopista de peaje</option>
+                  {tollData.roads.map(r => (
+                    <option key={r.id} value={r.id}>{r.id} — {fmt(r.maxPrice)}€</option>
+                  ))}
+                </select>
+              )}
+              {tollSegs.length > 1 && (
+                <select className={`${inputClass} mb-2 text-xs`} value={peajes} onChange={e => setPeajes(parseFloat(e.target.value) || 0)}>
+                  {tollSegs.map((s, i) => (
+                    <option key={i} value={s.price}>{s.from} → {s.to} ({s.km} km) — {fmt(s.price)}€</option>
+                  ))}
+                </select>
+              )}
+              <input type="number" className={inputClass} min={0} step={0.5} value={peajes || ""} onChange={handlePeajesChange} placeholder="0" />
+              <p className="text-xs text-gray-400 mt-1">Selecciona autopista o introduce importe</p>
             </div>
 
             {/* Pasajeros */}
