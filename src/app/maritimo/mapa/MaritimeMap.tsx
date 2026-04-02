@@ -131,24 +131,34 @@ export default function MaritimeMap() {
       style: {
         version: 8,
         sources: {
+          "carto": {
+            type: "raster",
+            tiles: ["https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"],
+            tileSize: 256,
+            attribution: "© CARTO, © OpenStreetMap",
+          },
           "esri-ocean": {
             type: "raster",
             tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"],
             tileSize: 256,
+            maxzoom: 13,
             attribution: "Esri, GEBCO, NOAA",
           },
           "esri-ocean-ref": {
             type: "raster",
             tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}"],
             tileSize: 256,
+            maxzoom: 13,
           },
         },
         layers: [
+          // CartoDB underneath — visible at all zooms, shows through when ocean tiles end
+          { id: "carto-base", type: "raster", source: "carto" },
+          // Ocean overlay on top — fades out at zoom 13, revealing CartoDB for port detail
           { id: "ocean-base", type: "raster", source: "esri-ocean" },
           { id: "ocean-labels", type: "raster", source: "esri-ocean-ref" },
         ],
       },
-      maxZoom: 12,
       center: [-3.7, 39.5],
       zoom: 6,
       attributionControl: false,
