@@ -2,13 +2,14 @@
  * ZBE (Zona de Bajas Emisiones) Collector
  *
  * Fetches Low Emission Zone boundaries and restrictions from DGT's
- * ControledZonePublication (DATEX II v3) for Spanish cities.
+ * ControlledZoneTablePublication (DATEX II v3) for Spanish cities.
  *
- * Endpoint pattern:
- *   https://infocar.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication/{City}.xml
+ * Auto-discovers cities from the directory listing at:
+ *   https://infocar.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication/
  *
- * Cities are tried from a known list; 404s are silently skipped so the
- * collector stays operational as new cities come online.
+ * DGT migrated to a new XML schema in 2025 — this collector handles
+ * the ControlledZoneTablePublication format with openlrPolygonCorners
+ * geometry and NonCodableCondition sticker restrictions.
  *
  * Run weekly — boundaries and restrictions change infrequently.
  */
@@ -20,34 +21,6 @@ import { createXMLParser } from "../../shared/xml.js";
 const TAG = "zbe";
 
 const ZBE_BASE_URL = "https://infocar.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication";
-
-/**
- * Known city slugs for the DGT ZBE publication endpoint.
- * Case-sensitive — must match the server's file naming exactly.
- * New cities can be appended here as they publish ZBE data.
- */
-const ZBE_CITIES = [
-  "Madrid",
-  "Barcelona",
-  "Bilbao",
-  "Sevilla",
-  "Granada",
-  "ACoruna",
-  "Pamplona",
-  "Valladolid",
-  "Palma",
-  "Alicante",
-  "Malaga",
-  "Zaragoza",
-  "Valencia",
-  "Murcia",
-  "Gijon",
-  "Oviedo",
-  "Santander",
-  "SanSebastian",
-  "Vitoria",
-  "Burgos",
-];
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,6 +37,8 @@ interface ZBEZoneData {
   effectiveFrom: Date;
   effectiveUntil: Date | null;
   sourceUrl: string;
+  description: string | null;
+  infoUrl: string | null;
 }
 
 interface GeoJSONPolygon {
@@ -79,48 +54,77 @@ interface ScheduleEntry {
 
 // ── XML Parser ───────────────────────────────────────────────────────────────
 
-// Ensure collections that may contain one or many entries are always arrays
 const parser = createXMLParser({
   isArray: (name) =>
     [
-      "controledZone",
-      "zoneCharacteristics",
-      "vehicleCharacteristics",
-      "applicablePeriod",
-      "period",
-      "timeOfDayRange",
-      "dayWeekMonth",
-      "applicableDays",
+      "controlledZone",
+      "controlledZoneTable",
+      "conditions",
+      "openlrCoordinates",
+      "openlrPolygonCorners",
+      "locationContainedInGroup",
+      "trafficRegulation",
+      "trafficRegulationOrder",
       "value",
-      "coordinate",
-      "posList",
     ].includes(name),
 });
 
-// ── Coordinate parsing ───────────────────────────────────────────────────────
+// ── Auto-discovery ──────────────────────────────────────────────────────────
 
-/**
- * Parse a GML posList string (space-separated lat/lon pairs) into a GeoJSON polygon.
- *
- * DGT DATEX II v3 uses GML 3.2 with:
- *   <gml:posList srsDimension="2">lat1 lon1 lat2 lon2 ...</gml:posList>
- *
- * GeoJSON requires [lon, lat] ordering.
- */
-function parsePosListToPolygon(posList: string): GeoJSONPolygon | null {
-  const parts = posList
-    .trim()
-    .split(/\s+/)
-    .map((s) => parseFloat(s))
-    .filter((n) => !isNaN(n));
+async function discoverCities(): Promise<string[]> {
+  try {
+    const response = await fetch(`${ZBE_BASE_URL}/`, {
+      headers: { "User-Agent": "trafico.live/zbe-collector" },
+      signal: AbortSignal.timeout(15_000),
+      redirect: "follow",
+    });
 
-  if (parts.length < 6 || parts.length % 2 !== 0) return null;
+    if (!response.ok) {
+      log(TAG, `Directory listing returned ${response.status} — using fallback list`);
+      return [];
+    }
 
+    const html = await response.text();
+    const matches = html.matchAll(/href="[^"]*\/([^/"]+)\.xml"/g);
+    const cities: string[] = [];
+    for (const m of matches) {
+      cities.push(decodeURIComponent(m[1]));
+    }
+
+    if (cities.length > 0) {
+      log(TAG, `Auto-discovered ${cities.length} cities from directory listing`);
+    }
+    return cities;
+  } catch {
+    log(TAG, "Directory discovery failed — using fallback list");
+    return [];
+  }
+}
+
+const FALLBACK_CITIES = [
+  "Madrid", "MadridCentral", "Barcelona", "RondasDeBarcelona", "Bilbao",
+  "Granada", "Valladolid", "Palma", "Alicante", "Malaga", "Oviedo",
+  "ACoru%C3%B1a", "PamplonaEnsanche", "SevillaCartuja", "Donostia-SanSebastian",
+  "VitoriaGasteiz", "LasRozas", "AlcalaDeHenares", "Fuenlabrada",
+  "Castellon", "Cartagena", "Benidorm", "Pontevedra", "Lleida",
+  "Girona", "Salamanca", "Avila", "Torremolinos", "DosHermanas", "Motril",
+  "Reus", "Rubi", "Sabadell", "Tarragona", "Terrasa", "Mataro", "Manlleu",
+  "Granollers", "MolinaDeSegura", "Viladecans", "SantJoanDespi", "Gava",
+  "CerdanyolaDelValles", "SantBoiDeLlobregat", "SantCugatDelValles",
+  "ElPratDeLlobregat",
+];
+
+// ── Geometry parsing ────────────────────────────────────────────────────────
+
+function parseOpenlrPolygon(coordsList: unknown[]): GeoJSONPolygon | null {
   const coords: number[][] = [];
-  for (let i = 0; i < parts.length; i += 2) {
-    const lat = parts[i];
-    const lon = parts[i + 1];
-    // Basic sanity: Spain mainland + islands
+
+  for (const c of coordsList) {
+    const cObj = c as Record<string, unknown>;
+    const lat = parseFloat(String(cObj.latitude ?? 0));
+    const lon = parseFloat(String(cObj.longitude ?? 0));
+
+    // Sanity: Spain mainland + islands (filter out UTM or garbage)
     if (lat < 27 || lat > 44 || lon < -19 || lon > 5) continue;
     coords.push([lon, lat]); // GeoJSON: [longitude, latitude]
   }
@@ -137,18 +141,11 @@ function parsePosListToPolygon(posList: string): GeoJSONPolygon | null {
   return { type: "Polygon", coordinates: [coords] };
 }
 
-/**
- * Compute a simple centroid from a polygon's outer ring.
- */
-function computeCentroid(
-  polygon: GeoJSONPolygon
-): { lat: number; lng: number } | null {
+function computeCentroid(polygon: GeoJSONPolygon): { lat: number; lng: number } | null {
   const ring = polygon.coordinates[0];
   if (!ring || ring.length === 0) return null;
 
-  let sumLon = 0;
-  let sumLat = 0;
-  // Exclude closing duplicate point
+  let sumLon = 0, sumLat = 0;
   const points = ring[ring.length - 1][0] === ring[0][0] ? ring.slice(0, -1) : ring;
 
   for (const [lon, lat] of points) {
@@ -162,196 +159,244 @@ function computeCentroid(
   };
 }
 
-// ── Restriction parsing ──────────────────────────────────────────────────────
+// ── Restriction parsing ─────────────────────────────────────────────────────
 
-/**
- * Map a DATEX II access restriction value to a human-readable label.
- *
- * DGT uses values like: "denied", "allowed", "restrictedToRestricted", etc.
- */
-function mapRestriction(raw: string): string {
-  const val = (raw || "").toLowerCase();
-  if (val.includes("denied") || val === "prohibited") return "denied";
-  if (val.includes("allowed") || val === "free") return "allowed";
-  if (val.includes("restrict")) return "restricted";
-  return val || "unknown";
+function extractTextValue(obj: unknown): string {
+  if (typeof obj === "string") return obj.trim();
+  if (typeof obj === "object" && obj !== null) {
+    const o = obj as Record<string, unknown>;
+    if (o["#text"]) return String(o["#text"]).trim();
+    const values = o.values as Record<string, unknown> | undefined;
+    if (values) {
+      const vals = ensureArray(values.value as unknown[]);
+      for (const v of vals) {
+        const text = typeof v === "string" ? v : (v as Record<string, unknown>)?.["#text"];
+        if (text) return String(text).trim();
+      }
+    }
+  }
+  return "";
 }
 
 /**
- * Extract vehicle label restrictions from zoneCharacteristics.
- * Returns a map like { "0": "denied", "A": "denied", "B": "restricted", "C": "allowed" }.
+ * Extract sticker restrictions from the new ControlledZoneTablePublication format.
  *
- * DATEX II v3 ControledZonePublication structure:
- *   zoneCharacteristics[]
- *     ├── vehicleCharacteristics[] { vehicleLabel: "A"|"B"|"C"|"0"|"ECO" }
- *     └── accessRestriction: "denied"|"allowed"|...
+ * Structure:
+ *   trafficRegulationOrder > trafficRegulation > condition(ConditionSet)
+ *     > conditions(ConditionSet, negate=true)
+ *       > conditions(NonCodableCondition, type=stickerCondition)
+ *         > condition.values.value = "0"|"B"|"C"|"ECO"|"Sin distintivo"
+ *
+ * The negate=true ConditionSet means "these stickers are EXEMPT from noEntry".
+ * So stickers listed under negate=true → allowed, everything else → denied.
  */
-function extractRestrictions(
-  zoneChars: Record<string, unknown>[]
-): Record<string, string> {
+function extractRestrictions(zone: Record<string, unknown>): Record<string, string> {
   const restrictions: Record<string, string> = {};
 
-  for (const zc of zoneChars) {
-    const accessRaw = String(zc.accessRestriction ?? zc.restrictionType ?? "");
-    const restriction = mapRestriction(accessRaw);
+  try {
+    const regOrders = ensureArray(zone.trafficRegulationOrder as unknown[]);
 
-    const vehicleChars = ensureArray(zc.vehicleCharacteristics as unknown[]);
+    for (const order of regOrders) {
+      const orderObj = order as Record<string, unknown>;
+      const regs = ensureArray(orderObj.trafficRegulation as unknown[]);
 
-    if (vehicleChars.length === 0) {
-      // No specific vehicle type — applies generically
-      restrictions["*"] = restriction;
-    } else {
-      for (const vc of vehicleChars) {
-        const vcObj = vc as Record<string, unknown>;
-        // DGT uses vehicleLabel for the environmental label (0, A, B, C, ECO)
-        const label = String(
-          vcObj.vehicleLabel ?? vcObj.emissionClassificationEuro ?? vcObj.vehicleType ?? ""
-        ).trim();
-        if (label) {
-          restrictions[label] = restriction;
-        }
+      for (const reg of regs) {
+        const regObj = reg as Record<string, unknown>;
+        // Get the regulation type (noEntry, etc.)
+        const typeObj = regObj.typeOfRegulation as Record<string, unknown> | undefined;
+        const regType = String(typeObj?.accessRestrictionType ?? "noEntry");
+
+        // Traverse condition sets to find sticker conditions
+        const rootCondition = regObj.condition as Record<string, unknown> | undefined;
+        if (!rootCondition) continue;
+
+        collectStickerConditions(rootCondition, regType, false, restrictions);
       }
     }
+  } catch {
+    // Non-fatal — return whatever we have
   }
 
   return restrictions;
 }
 
-// ── Schedule parsing ─────────────────────────────────────────────────────────
+function collectStickerConditions(
+  condition: Record<string, unknown>,
+  regType: string,
+  parentNegate: boolean,
+  result: Record<string, string>
+): void {
+  const negate = parentNegate || String(condition.negate) === "true";
+  const condType = String(condition["@_type"] ?? "");
 
-/**
- * Parse applicablePeriod entries into a simple schedule structure.
- * Returns null if the zone is active all year (no schedule constraints).
- */
-function extractSchedule(
-  periods: Record<string, unknown>[]
-): { schedule: ScheduleEntry[] | null; activeAllYear: boolean } {
-  if (periods.length === 0) return { schedule: null, activeAllYear: true };
+  // NonCodableCondition with stickerCondition → this is a sticker label
+  if (condType.includes("NonCodableCondition")) {
+    const type = extractTextValue(condition.type);
+    if (type === "stickerCondition") {
+      const label = extractTextValue(condition.condition);
+      if (label) {
+        // Under negate=true + noEntry → this sticker is ALLOWED
+        // Under no negate + noEntry → this sticker is DENIED
+        result[label] = negate ? "allowed" : "denied";
+      }
+    }
+    return;
+  }
 
-  const entries: ScheduleEntry[] = [];
-  let allYear = true;
+  // Recurse into nested ConditionSets
+  const subConditions = ensureArray(condition.conditions as unknown[]);
+  for (const sub of subConditions) {
+    const subObj = sub as Record<string, unknown>;
+    collectStickerConditions(subObj, regType, negate, result);
+  }
+}
 
-  for (const period of periods) {
-    const innerPeriods = ensureArray(period.period as unknown[]);
+// ── Geometry extraction from conditions tree ────────────────────────────────
 
-    for (const p of innerPeriods) {
-      const pObj = p as Record<string, unknown>;
+function extractPolygon(zone: Record<string, unknown>): GeoJSONPolygon | null {
+  // Walk through: trafficRegulationOrder > trafficRegulation > condition >
+  //   conditions(LocationCondition) > implementedLocation > locationContainedInGroup >
+  //   openlrAreaLocationReference > openlrPolygonCorners > openlrCoordinates[]
+  try {
+    const regOrders = ensureArray(zone.trafficRegulationOrder as unknown[]);
 
-      // dayWeekMonth gives the applicable days (MON, TUE, ... or ALL)
-      const dayWeekMonth = pObj.dayWeekMonth as Record<string, unknown> | undefined;
-      const timeRanges = ensureArray(pObj.timeOfDayRange as unknown[]);
+    for (const order of regOrders) {
+      const regs = ensureArray((order as Record<string, unknown>).trafficRegulation as unknown[]);
+      for (const reg of regs) {
+        const polygon = findPolygonInCondition((reg as Record<string, unknown>).condition as Record<string, unknown>);
+        if (polygon) return polygon;
+      }
+    }
+  } catch {
+    // Non-fatal
+  }
+  return null;
+}
 
-      const days = dayWeekMonth
-        ? ensureArray(dayWeekMonth.applicableDays as unknown[])
-            .map((d) => String(d).trim())
-            .filter(Boolean)
-        : [];
+function findPolygonInCondition(condition: Record<string, unknown> | undefined): GeoJSONPolygon | null {
+  if (!condition) return null;
 
-      // If days cover the whole week, it's effectively all year
-      if (days.length > 0 && days.length < 7) allYear = false;
+  // Check if this condition has geometry directly
+  const implLoc = condition.implementedLocation as Record<string, unknown> | undefined;
+  if (implLoc) {
+    const groups = ensureArray(implLoc.locationContainedInGroup as unknown[]);
+    for (const group of groups) {
+      const gObj = group as Record<string, unknown>;
+      const areaRef = gObj.openlrAreaLocationReference as Record<string, unknown> | undefined;
+      if (areaRef) {
+        const corners = ensureArray(areaRef.openlrPolygonCorners as unknown[]);
+        for (const cornerSet of corners) {
+          const coords = ensureArray((cornerSet as Record<string, unknown>).openlrCoordinates ??
+            (Array.isArray(cornerSet) ? cornerSet : [cornerSet]) as unknown[]);
+          // If cornerSet IS the coordinates array (flat structure)
+          const coordsList = coords.length > 0 && typeof (coords[0] as Record<string, unknown>).latitude !== "undefined"
+            ? coords
+            : ensureArray((cornerSet as Record<string, unknown>).openlrCoordinates as unknown[]);
 
-      for (const tr of timeRanges) {
-        const trObj = tr as Record<string, unknown>;
-        const startTime = String(trObj.startTimeOfPeriod ?? trObj.from ?? "").substring(0, 5);
-        const endTime = String(trObj.endTimeOfPeriod ?? trObj.to ?? "").substring(0, 5);
-
-        if (!startTime || !endTime) continue;
-        if (startTime === "00:00" && endTime === "23:59") continue; // 24h = unrestricted
-
-        const dayStr = days.length > 0 ? days.join(",") : "ALL";
-        entries.push({ day: dayStr, from: startTime, to: endTime });
+          if (coordsList.length >= 3) {
+            const polygon = parseOpenlrPolygon(coordsList);
+            if (polygon) return polygon;
+          }
+        }
+        // Also try direct openlrCoordinates under openlrAreaLocationReference
+        const directCoords = ensureArray(areaRef.openlrCoordinates as unknown[]);
+        if (directCoords.length >= 3) {
+          const polygon = parseOpenlrPolygon(directCoords);
+          if (polygon) return polygon;
+        }
       }
     }
   }
 
-  return {
-    schedule: entries.length > 0 ? entries : null,
-    activeAllYear: allYear,
-  };
+  // Recurse into nested conditions
+  const subConditions = ensureArray(condition.conditions as unknown[]);
+  for (const sub of subConditions) {
+    const polygon = findPolygonInCondition(sub as Record<string, unknown>);
+    if (polygon) return polygon;
+  }
+
+  return null;
 }
 
-// ── Zone parsing ─────────────────────────────────────────────────────────────
+// ── Validity/schedule extraction ────────────────────────────────────────────
 
-/**
- * Parse a single controledZone element from the XML.
- *
- * DGT DATEX II v3 ControledZonePublication structure:
- *
- *   controledZone
- *     ├── @id                      ← zone ID
- *     ├── zoneName.value[]         ← display name
- *     ├── gmlGeometry.Polygon.exterior.LinearRing.posList
- *     ├── zoneCharacteristics[]    ← vehicle + access restrictions
- *     ├── applicablePeriod[]       ← schedule
- *     ├── validityStatus           ← "active" | "inactive"
- *     ├── validityTimeSpec.overallStartTime
- *     ├── validityTimeSpec.overallEndTime
- *     └── fineAmount (optional)
- */
-function parseControledZone(
+function extractValidity(zone: Record<string, unknown>): {
+  effectiveFrom: Date;
+  effectiveUntil: Date | null;
+  schedule: ScheduleEntry[] | null;
+  activeAllYear: boolean;
+} {
+  // controlledZoneRecordVersionTime is the last update, not the effective date
+  // Look for ValidityCondition in the conditions tree
+  let effectiveFrom = new Date("2023-01-01");
+  let effectiveUntil: Date | null = null;
+
+  try {
+    const regOrders = ensureArray(zone.trafficRegulationOrder as unknown[]);
+    for (const order of regOrders) {
+      const regs = ensureArray((order as Record<string, unknown>).trafficRegulation as unknown[]);
+      for (const reg of regs) {
+        const condition = (reg as Record<string, unknown>).condition as Record<string, unknown> | undefined;
+        if (condition) {
+          const subConds = ensureArray(condition.conditions as unknown[]);
+          for (const sub of subConds) {
+            const subObj = sub as Record<string, unknown>;
+            if (String(subObj["@_type"] ?? "").includes("ValidityCondition")) {
+              const validPeriod = subObj.validPeriod as Record<string, unknown> | undefined;
+              if (validPeriod) {
+                const start = String(validPeriod.startOfPeriod ?? "");
+                const end = String(validPeriod.endOfPeriod ?? "");
+                if (start) {
+                  const d = new Date(start);
+                  if (!isNaN(d.getTime())) effectiveFrom = d;
+                }
+                if (end) {
+                  const d = new Date(end);
+                  if (!isNaN(d.getTime())) effectiveUntil = d;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // Non-fatal
+  }
+
+  return { effectiveFrom, effectiveUntil, schedule: null, activeAllYear: true };
+}
+
+// ── Zone parsing ────────────────────────────────────────────────────────────
+
+function parseControlledZone(
   zone: Record<string, unknown>,
   cityName: string,
   sourceUrl: string
 ): ZBEZoneData | null {
   try {
-    const id = String(zone["@_id"] ?? zone.id ?? "").trim();
+    const id = String(zone["@_id"] ?? "").trim();
     if (!id) return null;
 
-    // ── Name ─────────────────────────────────────────────────────────
-    const zoneNameObj = zone.zoneName as Record<string, unknown> | undefined;
-    const nameValues = ensureArray(zoneNameObj?.value as unknown[]);
-    let name = cityName; // fallback to city name
+    // Name
+    const nameObj = zone.name as Record<string, unknown> | undefined;
+    const name = extractTextValue(nameObj) || cityName;
 
-    for (const v of nameValues) {
-      if (typeof v === "string" && v.trim()) {
-        name = v.trim();
-        break;
-      }
-      if (typeof v === "object" && v !== null) {
-        const vObj = v as Record<string, unknown>;
-        const text = String(vObj["#text"] ?? vObj.value ?? "").trim();
-        if (text) {
-          name = text;
-          break;
-        }
-      }
-    }
+    // Description
+    const descObj = zone.controlledZoneDescription as Record<string, unknown> | undefined;
+    const description = extractTextValue(descObj) || null;
 
-    // ── Geometry ─────────────────────────────────────────────────────
-    // DGT places coordinates in gmlGeometry or openlrExtendedArea
-    let polygon: GeoJSONPolygon | null = null;
+    // Info URL
+    const infoUrl = zone.urlForFurtherInformation
+      ? String(zone.urlForFurtherInformation).trim()
+      : null;
 
-    const gmlGeometry = zone.gmlGeometry as Record<string, unknown> | undefined;
-    const gmlPolygon =
-      (gmlGeometry?.Polygon as Record<string, unknown>) ??
-      (gmlGeometry?.polygon as Record<string, unknown>);
+    // Status — skip inactive zones
+    const status = String(zone.status ?? "active").toLowerCase();
+    if (status === "inactive" || status === "suspended") return null;
 
-    if (gmlPolygon) {
-      const exterior = gmlPolygon.exterior as Record<string, unknown> | undefined;
-      const linearRing = exterior?.LinearRing as Record<string, unknown> | undefined;
-      const posListRaw = linearRing?.posList;
-
-      if (typeof posListRaw === "string") {
-        polygon = parsePosListToPolygon(posListRaw);
-      }
-    }
-
-    // Alternative: some feeds use openlrExtendedArea with GeoJSON-style coords
-    if (!polygon) {
-      const extArea = zone.openlrExtendedArea as Record<string, unknown> | undefined;
-      const coords = extArea?.coordinates;
-      if (Array.isArray(coords) && coords.length > 0) {
-        // Attempt to coerce a nested array structure into a GeoJSON polygon
-        const ring = (coords as unknown[]).map((c) => {
-          const pair = c as number[];
-          return [pair[0], pair[1]]; // already [lon, lat] in GeoJSON style
-        });
-        if (ring.length >= 3) {
-          polygon = { type: "Polygon", coordinates: [ring] };
-        }
-      }
-    }
-
+    // Geometry — extracted from the conditions tree
+    const polygon = extractPolygon(zone);
     if (!polygon) {
       log(TAG, `${cityName}/${id}: skipping — no parseable geometry`);
       return null;
@@ -359,36 +404,14 @@ function parseControledZone(
 
     const centroid = computeCentroid(polygon);
 
-    // ── Restrictions ─────────────────────────────────────────────────
-    const zoneChars = ensureArray(zone.zoneCharacteristics as unknown[]).map(
-      (z) => z as Record<string, unknown>
-    );
-    const restrictions = extractRestrictions(zoneChars);
+    // Restrictions
+    const restrictions = extractRestrictions(zone);
 
-    // ── Schedule ──────────────────────────────────────────────────────
-    const applicablePeriods = ensureArray(zone.applicablePeriod as unknown[]).map(
-      (p) => p as Record<string, unknown>
-    );
-    const { schedule, activeAllYear } = extractSchedule(applicablePeriods);
-
-    // ── Validity dates ─────────────────────────────────────────────────
-    const validitySpec = zone.validityTimeSpec as Record<string, unknown> | undefined;
-    const startRaw = String(
-      validitySpec?.overallStartTime ?? zone.effectiveFrom ?? ""
-    );
-    const endRaw = String(
-      validitySpec?.overallEndTime ?? zone.effectiveUntil ?? ""
-    );
-
-    const effectiveFrom = startRaw ? new Date(startRaw) : new Date("2023-01-01");
-    const effectiveUntil = endRaw ? new Date(endRaw) : null;
-
-    // ── Fine amount ────────────────────────────────────────────────────
-    const fineRaw = zone.fineAmount ?? zone.penaltyAmount;
-    const fineAmount = fineRaw != null ? parseFloat(String(fineRaw)) || null : null;
+    // Validity
+    const { effectiveFrom, effectiveUntil, schedule, activeAllYear } = extractValidity(zone);
 
     return {
-      id: `ZBE-${cityName}-${id}`,
+      id: `ZBE-${cityName}-${id.replace(/\s+/g, "_")}`,
       name,
       cityName,
       polygon,
@@ -396,10 +419,12 @@ function parseControledZone(
       restrictions,
       schedule,
       activeAllYear,
-      fineAmount,
-      effectiveFrom: isNaN(effectiveFrom.getTime()) ? new Date("2023-01-01") : effectiveFrom,
-      effectiveUntil: effectiveUntil && !isNaN(effectiveUntil.getTime()) ? effectiveUntil : null,
+      fineAmount: null, // Not in new schema
+      effectiveFrom,
+      effectiveUntil,
       sourceUrl,
+      description,
+      infoUrl,
     };
   } catch (err) {
     logError(TAG, `Error parsing zone in ${cityName}`, err);
@@ -407,32 +432,39 @@ function parseControledZone(
   }
 }
 
-/**
- * Parse a ControledZonePublication XML for a single city.
- * Returns all valid ZBEZoneData records found.
- */
 function parseCityXml(xml: string, cityName: string, sourceUrl: string): ZBEZoneData[] {
   const zones: ZBEZoneData[] = [];
 
   try {
     const result = parser.parse(xml);
 
-    // DATEX II v3: d2LogicalModel > payloadPublication
-    const publication =
-      result?.d2LogicalModel?.payloadPublication ??
-      result?.D2LogicalModel?.payloadPublication;
-
-    if (!publication) {
-      log(TAG, `${cityName}: no payloadPublication in XML`);
-      return [];
+    // New schema: payload > controlledZoneTable > controlledZone
+    const payload = result?.payload;
+    if (!payload) {
+      // Try legacy: d2LogicalModel > payloadPublication
+      const legacy = result?.d2LogicalModel?.payloadPublication;
+      if (legacy) {
+        const zoneList = ensureArray(legacy.controledZone as unknown[]);
+        for (const zone of zoneList) {
+          const parsed = parseControlledZone(zone as Record<string, unknown>, cityName, sourceUrl);
+          if (parsed) zones.push(parsed);
+        }
+      } else {
+        log(TAG, `${cityName}: no payload or payloadPublication in XML`);
+      }
+      return zones;
     }
 
-    const zoneList = ensureArray(publication.controledZone as unknown[]);
+    const tables = ensureArray(payload.controlledZoneTable as unknown[]);
 
-    for (const zone of zoneList) {
-      const zoneObj = zone as Record<string, unknown>;
-      const parsed = parseControledZone(zoneObj, cityName, sourceUrl);
-      if (parsed) zones.push(parsed);
+    for (const table of tables) {
+      const tableObj = table as Record<string, unknown>;
+      const zoneList = ensureArray(tableObj.controlledZone as unknown[]);
+
+      for (const zone of zoneList) {
+        const parsed = parseControlledZone(zone as Record<string, unknown>, cityName, sourceUrl);
+        if (parsed) zones.push(parsed);
+      }
     }
   } catch (err) {
     logError(TAG, `${cityName}: XML parse error`, err);
@@ -441,24 +473,21 @@ function parseCityXml(xml: string, cityName: string, sourceUrl: string): ZBEZone
   return zones;
 }
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
+// ── Fetch ───────────────────────────────────────────────────────────────────
 
 async function fetchCity(citySlug: string): Promise<{ xml: string; url: string } | null> {
-  const url = `${ZBE_BASE_URL}/${citySlug}.xml`;
+  const url = `${ZBE_BASE_URL}/${encodeURIComponent(citySlug)}.xml`;
 
   try {
     const response = await fetch(url, {
       headers: {
         Accept: "application/xml",
-        "User-Agent": "TraficoEspana/1.0 (zbe-collector)",
+        "User-Agent": "trafico.live/zbe-collector",
       },
       signal: AbortSignal.timeout(60_000),
     });
 
-    if (response.status === 404) {
-      // City not yet published — expected for many cities
-      return null;
-    }
+    if (response.status === 404) return null;
 
     if (!response.ok) {
       logError(TAG, `${citySlug}: HTTP ${response.status} ${response.statusText}`);
@@ -468,44 +497,45 @@ async function fetchCity(citySlug: string): Promise<{ xml: string; url: string }
     const xml = await response.text();
     return { xml, url };
   } catch (err) {
-    // Timeout or network error — non-fatal
     logError(TAG, `${citySlug}: fetch error`, err);
     return null;
   }
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Main ────────────────────────────────────────────────────────────────────
 
 export async function run(prisma: PrismaClient): Promise<void> {
   const now = new Date();
   log(TAG, `Starting at ${now.toISOString()}`);
-  log(TAG, `Trying ${ZBE_CITIES.length} cities`);
 
-  // 1. Fetch all cities in parallel (gracefully skip 404s)
-  const fetchResults = await Promise.all(
-    ZBE_CITIES.map(async (city) => {
-      const result = await fetchCity(city);
-      return { city, result };
-    })
-  );
+  // 1. Auto-discover cities, fall back to known list
+  let cities = await discoverCities();
+  if (cities.length === 0) {
+    cities = FALLBACK_CITIES;
+    log(TAG, `Using fallback list: ${cities.length} cities`);
+  }
+  log(TAG, `Trying ${cities.length} cities`);
 
-  const successfulCities = fetchResults.filter((r) => r.result !== null);
-  log(
-    TAG,
-    `Fetched ${successfulCities.length}/${ZBE_CITIES.length} cities successfully`
-  );
+  // 2. Fetch all cities in parallel (batch of 10 to avoid overwhelming DGT)
+  const allZones: ZBEZoneData[] = [];
+  const batchSize = 10;
 
-  // 2. Parse each city's XML
-  let allZones: ZBEZoneData[] = [];
+  for (let i = 0; i < cities.length; i += batchSize) {
+    const batch = cities.slice(i, i + batchSize);
+    const results = await Promise.all(
+      batch.map(async (city) => {
+        const result = await fetchCity(city);
+        return { city, result };
+      })
+    );
 
-  for (const { city, result } of successfulCities) {
-    if (!result) continue;
-    const zones = parseCityXml(result.xml, city, result.url);
-    if (zones.length > 0) {
-      log(TAG, `${city}: ${zones.length} zone(s) parsed`);
-      allZones = allZones.concat(zones);
-    } else {
-      log(TAG, `${city}: XML fetched but no zones parsed`);
+    for (const { city, result } of results) {
+      if (!result) continue;
+      const zones = parseCityXml(result.xml, city, result.url);
+      if (zones.length > 0) {
+        log(TAG, `${city}: ${zones.length} zone(s) parsed`);
+        allZones.push(...zones);
+      }
     }
   }
 
