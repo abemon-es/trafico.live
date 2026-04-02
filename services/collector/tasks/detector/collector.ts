@@ -54,7 +54,7 @@ interface DetectorMeasurement {
 
 const locationsParser = createXMLParser({
   isArray: (name) =>
-    ["predefinedLocationSet", "predefinedLocation"].includes(name),
+    ["predefinedLocationSet", "predefinedLocation", "name"].includes(name),
 });
 
 const measurementsParser = createXMLParser({
@@ -135,31 +135,55 @@ function parseLocations(xml: string): Map<string, DetectorLocation> {
         if (!id) continue;
 
         try {
-          // Coordinates — DATEX II uses pointByCoordinates > pointCoordinates
-          const pointBy = locObj.pointByCoordinates as Record<string, unknown>;
-          const coords = pointBy?.pointCoordinates as Record<string, unknown>;
+          // DGT uses nested predefinedLocation with TPEG point format:
+          //   predefinedLocation[@id]
+          //     predefinedLocation[type=Point] → tpegpointLocation → point → pointCoordinates
+          //     referencePoint → road/province info
+          // Also support legacy pointByCoordinates format as fallback.
 
-          const latitude = parseFloat(String(coords?.latitude ?? 0));
-          const longitude = parseFloat(String(coords?.longitude ?? 0));
+          let latitude = 0;
+          let longitude = 0;
+
+          // Try TPEG format first (current DGT feed)
+          const innerLoc = locObj.predefinedLocation as Record<string, unknown> | undefined;
+          const tpeg = (innerLoc?.tpegpointLocation ?? locObj.tpegpointLocation) as Record<string, unknown> | undefined;
+          const tpegPoint = tpeg?.point as Record<string, unknown> | undefined;
+          const tpegCoords = tpegPoint?.pointCoordinates as Record<string, unknown> | undefined;
+
+          if (tpegCoords) {
+            latitude = parseFloat(String(tpegCoords.latitude ?? 0));
+            longitude = parseFloat(String(tpegCoords.longitude ?? 0));
+          }
+
+          // Fallback: legacy pointByCoordinates format
+          if (!latitude || !longitude) {
+            const pointBy = locObj.pointByCoordinates as Record<string, unknown> | undefined;
+            const coords = pointBy?.pointCoordinates as Record<string, unknown> | undefined;
+            if (coords) {
+              latitude = parseFloat(String(coords.latitude ?? 0));
+              longitude = parseFloat(String(coords.longitude ?? 0));
+            }
+          }
 
           // Basic validity check for Spain's bounding box
           if (!latitude || !longitude || latitude < 27 || latitude > 44 || longitude < -19 || longitude > 5) {
             continue;
           }
 
-          // Supplementary positional description
-          const suppDesc = locObj.supplementaryPositionalDescription as Record<string, unknown>;
-          const direction = suppDesc
-            ? parseDirection(suppDesc.carriageway ?? suppDesc.directionRelative)
+          // Reference point — DGT current feed uses this for road/province info
+          const refPoint = (locObj.referencePoint ?? innerLoc?.referencePoint) as Record<string, unknown> | undefined;
+          const direction = refPoint
+            ? parseDirection(refPoint.directionRelative)
             : null;
 
-          // Road / km info — lives in a roadInformation child or in the supplementary block
+          // Road info from referencePoint or supplementaryPositionalDescription
+          const suppDesc = locObj.supplementaryPositionalDescription as Record<string, unknown> | undefined;
           const roadInfo = (suppDesc?.roadInformation ?? locObj.roadInformation) as Record<string, unknown> | undefined;
-          const road = String(roadInfo?.roadNumber ?? suppDesc?.roadNumber ?? "").trim();
+          const road = String(refPoint?.roadNumber ?? roadInfo?.roadNumber ?? suppDesc?.roadNumber ?? "").trim();
 
-          // kmPoint may appear as kilometreDistance or referencePointDistance (in metres → convert)
+          // kmPoint from referencePointDistance (in metres → convert to km)
+          const rawMetres = refPoint?.referencePointDistance ?? roadInfo?.referencePointDistance ?? suppDesc?.referencePointDistance;
           const rawKm = roadInfo?.kilometreDistance ?? suppDesc?.kilometreDistance;
-          const rawMetres = roadInfo?.referencePointDistance ?? suppDesc?.referencePointDistance;
           let kmPoint: number | null = null;
           if (rawKm != null) {
             const parsed = parseFloat(String(rawKm));
@@ -169,10 +193,12 @@ function parseLocations(xml: string): Map<string, DetectorLocation> {
             if (!isNaN(parsed) && parsed > 0) kmPoint = Math.round(parsed / 100) / 10;
           }
 
-          // Province — DGT sometimes includes it in extensions
-          const extension = suppDesc?.supplementaryPositionalDescriptionExtension as Record<string, unknown>;
-          const extDesc = extension?.ExtendedSupplementaryPositionalDescription as Record<string, unknown>;
-          const rawProvince = String(extDesc?.provinceINEIdentifier ?? "").padStart(2, "0");
+          // Province from referencePointExtension or supplementaryPositionalDescription
+          const refExt = refPoint?.referencePointExtension as Record<string, unknown> | undefined;
+          const extRef = refExt?.ExtendedReferencePoint as Record<string, unknown> | undefined;
+          const suppExt = suppDesc?.supplementaryPositionalDescriptionExtension as Record<string, unknown> | undefined;
+          const extDesc = suppExt?.ExtendedSupplementaryPositionalDescription as Record<string, unknown> | undefined;
+          const rawProvince = String(extRef?.provinceINEIdentifier ?? extDesc?.provinceINEIdentifier ?? "").padStart(2, "0");
           const province = rawProvince !== "00" ? rawProvince : null;
 
           // Lanes — number of monitored lanes
