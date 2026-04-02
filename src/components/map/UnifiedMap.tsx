@@ -318,6 +318,8 @@ export function UnifiedMap({
         gasStations: initialLayers.gasStations ?? false,
         maritimeStations: initialLayers.maritimeStations ?? false,
         panels: initialLayers.panels ?? false,
+        liveSpeed: initialLayers.liveSpeed ?? false,
+        dangerScore: initialLayers.dangerScore ?? false,
       };
     }
 
@@ -338,6 +340,8 @@ export function UnifiedMap({
         gasStations: urlLayers.includes("gasStations"),
         maritimeStations: urlLayers.includes("maritimeStations"),
         panels: urlLayers.includes("panels"),
+        liveSpeed: urlLayers.includes("liveSpeed"),
+        dangerScore: urlLayers.includes("dangerScore"),
       };
     }
     // Default layers
@@ -355,6 +359,8 @@ export function UnifiedMap({
       gasStations: false,
       maritimeStations: false,
       panels: false,
+      liveSpeed: false,
+      dangerScore: false,
     };
   };
 
@@ -507,6 +513,18 @@ export function UnifiedMap({
     activeLayers.panels ? "/api/panels" : null,
     fetcher,
     { revalidateOnFocus: false, refreshInterval: 600000 }
+  );
+
+  const { data: liveSpeedData } = useSWR<{ success: boolean; data: GeoJSON.FeatureCollection; count: number }>(
+    activeLayers.liveSpeed ? "/api/roads/live-speed" : null,
+    fetcher,
+    { revalidateOnFocus: false, refreshInterval: 120000 }
+  );
+
+  const { data: dangerScoreData } = useSWR<{ success: boolean; data: { scores: Array<{ id: string; name: string; score: number; level: string }> } }>(
+    activeLayers.dangerScore ? "/api/roads/danger-score" : null,
+    fetcher,
+    { revalidateOnFocus: false, refreshInterval: 300000 }
   );
 
   const { data: timelineData, isLoading: timelineLoading } = useSWR<{
@@ -755,6 +773,8 @@ export function UnifiedMap({
               gasStationData={activeLayers.gasStations ? gasStationsData?.data : undefined}
               maritimeStationData={activeLayers.maritimeStations ? maritimeStationsData?.data : undefined}
               panelData={activeLayers.panels ? panelsData?.panels : undefined}
+              liveSpeedData={activeLayers.liveSpeed ? liveSpeedData?.data : undefined}
+              dangerScoreData={activeLayers.dangerScore ? dangerScoreData?.data?.scores : undefined}
               incidentFilters={incidentFilters}
               incidentViewMode={incidentViewMode}
               darkMode={darkMode}
