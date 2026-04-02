@@ -72,6 +72,11 @@ const GEO_COLLECTIONS = new Set([
   "incidents", "portugal_stations", "cities",
 ]);
 
+const VECTOR_COLLECTIONS = new Set([
+  "pages", "gas_stations", "incidents", "ev_chargers",
+  "railway_routes", "railway_alerts", "articles", "roads",
+]);
+
 const SEARCH_CONFIGS: CollectionSearchConfig[] = [
   {
     collection: "pages",
@@ -523,6 +528,11 @@ async function performSearch(
           // Geo-bias sort for location-aware collections (no filter, just boosting)
           ...(geo && GEO_COLLECTIONS.has(config.collection) && {
             sort_by: `_text_match:desc,location(${geo.lat}, ${geo.lng}):asc`,
+          }),
+          // Hybrid search — combine keyword + vector for semantic matching
+          ...(VECTOR_COLLECTIONS.has(config.collection) && {
+            vector_query: `embedding:([], alpha:0.3)`,
+            exclude_fields: "embedding",
           }),
         };
 
