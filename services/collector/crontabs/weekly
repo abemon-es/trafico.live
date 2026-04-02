@@ -1,5 +1,5 @@
 # Weekly collectors — Sunday early morning
-0 3 * * 0 TASK=radar npx tsx index.ts 2>&1 && touch /tmp/collector-healthy
+0 3 * * 0 TASK=radar npx tsx index.ts 2>&1 && touch /tmp/last-run
 30 3 * * 0 TASK=speedlimit npx tsx index.ts 2>&1
 0 4 * * 0 TASK=risk-zones npx tsx index.ts 2>&1
 30 4 * * 0 TASK=zbe npx tsx index.ts 2>&1

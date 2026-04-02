@@ -7,7 +7,18 @@
  * After certain data collectors finish, relevant insight generators
  * are triggered automatically so reports always reflect fresh data.
  */
+import * as Sentry from "@sentry/node";
 import { getPrisma, getPool } from "./shared/prisma.js";
+
+// Initialize Sentry for collector error tracking
+const SENTRY_DSN = process.env.SENTRY_DSN;
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: process.env.NODE_ENV || "production",
+    tracesSampleRate: 0.1,
+  });
+}
 
 const TASK = process.env.TASK;
 
@@ -129,6 +140,9 @@ async function main() {
           if (r.value > 0) console.log(`[dispatcher] Trigger ${triggers[i].name}: created ${r.value} article(s)`);
         } else {
           console.error(`[dispatcher] Trigger ${triggers[i].name} failed:`, r.reason);
+          Sentry.captureException(r.reason, {
+            tags: { task: TASK!, trigger: triggers[i].name, layer: "collector" },
+          });
         }
       }
       if (created > 0) {
@@ -142,6 +156,10 @@ async function main() {
     }
   } catch (error) {
     console.error(`[dispatcher] Task ${TASK} failed:`, error);
+    Sentry.captureException(error, {
+      tags: { task: TASK!, layer: "collector" },
+    });
+    await Sentry.flush(2000);
     process.exit(1);
   } finally {
     const pool = getPool();

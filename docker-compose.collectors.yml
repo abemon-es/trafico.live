@@ -1,167 +1,95 @@
-# Unified collector services for Coolify deployment
+# trafico.live — Data Collectors
 #
-# All collectors share one Docker image (services/collector/Dockerfile)
-# differentiated only by the TASK env var.
+# Deploy as a separate Coolify "Docker Compose" application.
+# Independent from the web app — collector deploys don't restart the site.
 #
-# Build context must be the repo root (not services/collector/) because
-# the Dockerfile copies prisma/ from root.
-#
-# Coolify setup:
-#   1. Build the image ONCE → tag as trafico-collector:latest
-#   2. Create one Coolify "scheduled task" per service below
-#   3. Each task uses the same image + its TASK env + its cron schedule
-#
-# To build locally:
-#   docker build -f services/collector/Dockerfile -t trafico-collector .
-#
-# To test a task locally:
-#   docker run --rm --env-file .env -e TASK=incident trafico-collector
+# 5 tiers grouped by update frequency:
+#   collector-realtime — incident, v16, panel, detector, intensity, andorra (every 2-5 min)
+#   collector-frequent — weather, maritime-forecast, portugal-weather (every 6h)
+#   collector-fuel     — gas-station, maritime-fuel, portugal-fuel (3x daily)
+#   collector-daily    — camera, charger, insights (daily)
+#   collector-weekly   — radar, speedlimit, risk-zones, zbe (weekly)
 
 x-collector: &collector-base
   build:
     context: .
-    dockerfile: services/collector/Dockerfile
-  restart: "no"
-  env_file: .env
-  # Note: TZ and NODE_ENV are set in the Dockerfile (ENV directives).
-  # Do NOT put them in `environment:` here — YAML anchor merge replaces
-  # the entire `environment:` block when services override it with TASK.
+    dockerfile: services/collector/Dockerfile.cron
+  restart: unless-stopped
+  environment:
+    DATABASE_URL: ${DATABASE_URL}
+    REDIS_URL: ${REDIS_URL}
+    SENTRY_DSN: ${SENTRY_DSN}
+    TZ: Europe/Madrid
+    NODE_ENV: production
+  mem_limit: 512m
+  mem_reservation: 128m
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
 
 services:
-  # ── Real-time collectors (every 2 min — matches DGT feed refresh) ──
-  collector-incident:
+  # ─── Realtime (every 2-5 min) ──────────────────────────────────────
+  # incident, v16, panel, detector, intensity, andorra
+  collector-realtime:
     <<: *collector-base
     environment:
-      TASK: incident
-    # Coolify cron: */2 * * * *
-    # Sources: DGT, SCT, Euskadi, Madrid, Valencia, DT-GV, Navarra, CyL, Barcelona
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SENTRY_DSN: ${SENTRY_DSN}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: realtime
 
-  collector-v16:
+  # ─── Frequent (every 6h) ──────────────────────────────────────────
+  # weather, maritime-forecast, portugal-weather
+  collector-frequent:
     <<: *collector-base
     environment:
-      TASK: v16
-    # Coolify cron: */2 * * * *
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SENTRY_DSN: ${SENTRY_DSN}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: frequent
+    mem_limit: 256m
 
-  # ── Near-real-time (every 5 min) ───────────────────────────────────
-  collector-panel:
+  # ─── Fuel (3x daily) ──────────────────────────────────────────────
+  # gas-station, maritime-fuel, portugal-fuel
+  collector-fuel:
     <<: *collector-base
     environment:
-      TASK: panel
-    # Coolify cron: */5 * * * *
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SENTRY_DSN: ${SENTRY_DSN}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: fuel
+    mem_limit: 512m
 
-  collector-detector:
+  # ─── Daily ─────────────────────────────────────────────────────────
+  # camera, charger, insights
+  collector-daily:
     <<: *collector-base
     environment:
-      TASK: detector
-    # Coolify cron: */5 * * * *
-    # DGT MeasuredDataPublication — traffic intensity, speed, occupancy
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SENTRY_DSN: ${SENTRY_DSN}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: daily
+    mem_limit: 256m
 
-  collector-intensity:
+  # ─── Weekly ────────────────────────────────────────────────────────
+  # radar, speedlimit, risk-zones, zbe
+  collector-weekly:
     <<: *collector-base
     environment:
-      TASK: intensity
-    # Coolify cron: */5 * * * *
-    # Madrid real-time sensors (informo.madrid.es) — 6,117 sensors, intensity + occupancy + LOS
-    # Also builds HourlyTrafficProfile running averages
-
-  # ── Frequent (every 6 hours — AEMET updates ~2x/day) ──────────────
-  collector-weather:
-    <<: *collector-base
-    environment:
-      TASK: weather
-    # Coolify cron: 0 */6 * * *
-    # Was */30 — AEMET only updates ~2x/day, saves 46 API calls/day
-
-  collector-maritime-forecast:
-    <<: *collector-base
-    environment:
-      TASK: maritime-forecast
-    # Coolify cron: 0 */6 * * *
-    # AEMET coastal (8 zones) + high seas (6 areas) — wave height, wind, sea state, visibility
-
-  # ── Content generation (daily fallback — insights are now triggered
-  #    automatically after data collectors via dispatcher post-ingestion hooks) ──
-  collector-insights:
-    <<: *collector-base
-    environment:
-      TASK: insights
-    # Coolify cron: 30 22 * * *
-    # Runs once daily at 22:30 as a safety net. Primary trigger is now
-    # post-ingestion: gas-station → fuel reports, v16 → traffic reports,
-    # weather → alert reports. All generators are idempotent (skip if slug exists).
-
-  # ── Fuel prices (3x daily) ────────────────────────────────────────
-  collector-gas-station:
-    <<: *collector-base
-    environment:
-      TASK: gas-station
-    # Coolify cron: 0 6,13,20 * * *
-
-  collector-maritime-fuel:
-    <<: *collector-base
-    environment:
-      TASK: maritime-fuel
-    # Coolify cron: 0 7,14,21 * * *
-    # MINETUR PostesMaritimos — ~200 maritime fuel stations
-
-  collector-portugal-fuel:
-    <<: *collector-base
-    environment:
-      TASK: portugal-fuel
-    # Coolify cron: 0 8,15,22 * * *
-    # DGEG fuel prices — all Portuguese gas stations
-
-  # ── Daily collectors ──────────────────────────────────────────────
-  collector-camera:
-    <<: *collector-base
-    environment:
-      TASK: camera
-    # Coolify cron: 0 4 * * *
-
-  collector-charger:
-    <<: *collector-base
-    environment:
-      TASK: charger
-    # Coolify cron: 0 6 * * *
-
-  collector-andorra:
-    <<: *collector-base
-    environment:
-      TASK: andorra
-    # Coolify cron: */5 * * * *
-    # mobilitat.ad incidents + cameras
-
-  collector-portugal-weather:
-    <<: *collector-base
-    environment:
-      TASK: portugal-weather
-    # Coolify cron: 0 */6 * * *
-    # IPMA weather alerts
-
-  # ── Weekly collectors ─────────────────────────────────────────────
-  collector-radar:
-    <<: *collector-base
-    environment:
-      TASK: radar
-    # Coolify cron: 0 3 * * 0
-    # Was daily — radar positions are semi-static
-
-  collector-speedlimit:
-    <<: *collector-base
-    environment:
-      TASK: speedlimit
-    # Coolify cron: 0 3 * * 0
-
-  collector-risk-zones:
-    <<: *collector-base
-    environment:
-      TASK: risk-zones
-    # Coolify cron: 0 4 * * 0
-    # INVIVE + motorcycle risk + TEFIVA wildlife zones
-
-  collector-zbe:
-    <<: *collector-base
-    environment:
-      TASK: zbe
-    # Coolify cron: 0 5 * * 0
-    # DGT ZBE ControledZonePublication — 48 cities
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SENTRY_DSN: ${SENTRY_DSN}
+      TZ: Europe/Madrid
+      NODE_ENV: production
+      CRONTAB_TIER: weekly
+    mem_limit: 256m

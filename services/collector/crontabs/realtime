@@ -1,6 +1,6 @@
 # Realtime collectors — every 2-5 minutes
 # DGT + regional traffic feeds
-*/2 * * * * TASK=incident npx tsx index.ts 2>&1 && touch /tmp/collector-healthy
+*/2 * * * * TASK=incident npx tsx index.ts 2>&1 && touch /tmp/last-run
 */2 * * * * TASK=v16 npx tsx index.ts 2>&1
 */5 * * * * TASK=panel npx tsx index.ts 2>&1
 */5 * * * * TASK=detector npx tsx index.ts 2>&1

@@ -19,6 +19,7 @@ x-collector: &collector-base
   environment:
     DATABASE_URL: ${DATABASE_URL}
     REDIS_URL: ${REDIS_URL}
+    SENTRY_DSN: ${SENTRY_DSN}
     TZ: Europe/Madrid
     NODE_ENV: production
   mem_limit: 512m

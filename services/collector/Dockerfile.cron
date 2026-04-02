@@ -43,7 +43,7 @@ ENV CRONTAB_TIER=realtime
 
 USER collector
 
-HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
-  CMD test -f /tmp/collector-healthy || exit 1
+HEALTHCHECK --interval=60s --timeout=10s --start-period=60s --retries=3 \
+  CMD ["sh", "/app/healthcheck.sh"]
 
 CMD ["sh", "-c", "supercronic /app/crontabs/${CRONTAB_TIER}"]
