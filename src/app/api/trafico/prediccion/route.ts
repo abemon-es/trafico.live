@@ -78,13 +78,38 @@ async function handleHeatmap() {
       ORDER BY "dayOfWeek", "hour"
     `;
 
-    const heatmap = rows.map((r) => ({
-      dayOfWeek: r.dayOfWeek,
-      hour: r.hour,
-      avgIntensity: r.avg_intensity,
-      avgServiceLevel: Number(r.avg_sl),
-      sampleCount: Number(r.total_samples),
-    }));
+    // Build lookup + per-hour averages for fallback
+    const slotMap = new Map<string, HeatmapRow>();
+    const hourAgg = new Map<number, { int: number; sl: number; n: number }>();
+    for (const r of rows) {
+      slotMap.set(`${r.dayOfWeek}:${r.hour}`, r);
+      const s = Number(r.total_samples);
+      const prev = hourAgg.get(r.hour);
+      if (prev) {
+        const t = prev.n + s;
+        prev.int = Math.round((prev.int * prev.n + r.avg_intensity * s) / t);
+        prev.sl = Math.round(((prev.sl * prev.n + Number(r.avg_sl) * s) / t) * 100) / 100;
+        prev.n = t;
+      } else {
+        hourAgg.set(r.hour, { int: r.avg_intensity, sl: Number(r.avg_sl), n: s });
+      }
+    }
+
+    // Fill all 168 cells — real data or cross-day estimate
+    const heatmap = [];
+    for (let dow = 0; dow < 7; dow++) {
+      for (let h = 0; h < 24; h++) {
+        const real = slotMap.get(`${dow}:${h}`);
+        const fb = !real ? hourAgg.get(h) : null;
+        heatmap.push({
+          dayOfWeek: dow, hour: h,
+          avgIntensity: real ? real.avg_intensity : fb ? fb.int : null,
+          avgServiceLevel: real ? Number(real.avg_sl) : fb ? fb.sl : null,
+          sampleCount: real ? Number(real.total_samples) : fb ? fb.n : 0,
+          estimated: !real && !!fb,
+        });
+      }
+    }
 
     return {
       success: true,
@@ -94,6 +119,8 @@ async function handleHeatmap() {
           sensorCount: 6117,
           source: "MADRID",
           lastUpdated: new Date().toISOString(),
+          realSlots: rows.length,
+          estimatedSlots: 168 - rows.length,
         },
       },
     };
@@ -283,23 +310,38 @@ async function handleForecast(hoursParam: number) {
       profileMap.set(`${row.dayOfWeek}:${row.hour}`, row);
     }
 
+    // Same-hour-any-day fallback for slots with no exact (dow, hour) match
+    const neededHours = [...new Set(futureSlots.map((s) => s.hour))];
+    const fallbackRows = await prisma.$queryRaw<HeatmapRow[]>`
+      SELECT "hour" AS "dayOfWeek", "hour",
+        ROUND(SUM("avgIntensity" * "sampleCount")::numeric / NULLIF(SUM("sampleCount"), 0))::int AS avg_intensity,
+        ROUND(SUM(COALESCE("avgServiceLevel", 0) * "sampleCount") / NULLIF(SUM("sampleCount"), 0), 2) AS avg_sl,
+        SUM("sampleCount") AS total_samples
+      FROM "HourlyTrafficProfile"
+      WHERE "source" = 'MADRID' AND "hour" = ANY(${neededHours})
+      GROUP BY "hour"
+    `;
+    const fallbackMap = new Map<number, HeatmapRow>();
+    for (const row of fallbackRows) fallbackMap.set(row.hour, row);
+
     // Build forecast entries with faded deviation adjustment
     const forecast = futureSlots.map(({ dayOfWeek: dow, hour, offset }) => {
       const profile = profileMap.get(`${dow}:${hour}`);
+      const fb = !profile ? fallbackMap.get(hour) : null;
+      const source = profile || fb;
 
-      if (!profile) {
+      if (!source) {
         return {
-          hour,
-          dayOfWeek: dow,
-          avgIntensity: null,
-          avgServiceLevel: null,
-          confidence: 0,
+          hour, dayOfWeek: dow,
+          avgIntensity: null, avgServiceLevel: null,
+          confidence: 0, estimated: false,
         };
       }
 
-      const sampleCount = Number(profile.total_samples);
-      const baseIntensity = profile.avg_intensity;
-      const baseServiceLevel = Number(profile.avg_sl);
+      const sampleCount = Number(source.total_samples);
+      const baseIntensity = source.avg_intensity;
+      const baseServiceLevel = Number(source.avg_sl);
+      const isEstimated = !profile && !!fb;
 
       // Fade factor: 100% at h+1, 50% at h+2, 25% at h+3, etc.
       const fadeFactor = 1 / offset;
@@ -308,11 +350,11 @@ async function handleForecast(hoursParam: number) {
       );
 
       return {
-        hour,
-        dayOfWeek: dow,
+        hour, dayOfWeek: dow,
         avgIntensity: adjustedIntensity,
         avgServiceLevel: baseServiceLevel,
-        confidence: getConfidence(sampleCount),
+        confidence: isEstimated ? Math.min(getConfidence(sampleCount), 0.5) : getConfidence(sampleCount),
+        estimated: isEstimated,
       };
     });
 
