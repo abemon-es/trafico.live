@@ -1,0 +1,20 @@
+services:
+  tiles:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /opt/trafico/tiles/tiles:/data/tiles:ro
+      - /opt/trafico/tiles/fonts:/data/fonts:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tiles.rule=Host(`tiles.trafico.live`)"
+      - "traefik.http.routers.tiles.entrypoints=https"
+      - "traefik.http.routers.tiles.tls=true"
+      - "traefik.http.routers.tiles.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tiles.loadbalancer.server.port=80"
