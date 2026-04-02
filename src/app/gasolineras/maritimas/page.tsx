@@ -1,7 +1,14 @@
+import { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import MaritimasClient from "./MaritimasClient";
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: "Gasolineras Marítimas en España — Precios y Directorio",
+  description: "Directorio completo de estaciones marítimas de combustible en puertos españoles. Precios actualizados de gasóleo A, gasóleo B y gasolina 95 para embarcaciones.",
+  alternates: { canonical: "https://trafico.live/gasolineras/maritimas" },
+};
 
 export default async function MaritimasPage() {
   const [stations, total] = await Promise.all([
