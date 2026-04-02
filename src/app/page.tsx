@@ -87,6 +87,57 @@ export default async function HomePage() {
             <Link key={href} href={href}>{label}</Link>
           ))}
         </nav>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "¿Qué es trafico.live?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": `trafico.live es la plataforma de inteligencia vial más completa de España. Agrega datos en tiempo real de ${stats.incidentCount.toLocaleString("es-ES")} incidencias activas, ${stats.cameraCount.toLocaleString("es-ES")} cámaras DGT, ${stats.radarCount.toLocaleString("es-ES")} radares, ${stats.stationCount.toLocaleString("es-ES")} gasolineras y ${stats.chargerCount.toLocaleString("es-ES")} puntos de carga eléctrica en toda la Península Ibérica.`
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "¿De dónde provienen los datos de tráfico?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Los datos provienen de 12 fuentes oficiales: DGT (Dirección General de Tráfico), AEMET (meteorología), Ministerio de Transportes, MINETUR (precios de combustible), Madrid Informo, SCT Catalunya, Gobierno Vasco (Euskadi), Generalitat Valenciana, IPMA Portugal, DGEG Portugal, Mobilitat Andorra y el servicio ArcGIS REST del Ministerio de Fomento."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "¿Con qué frecuencia se actualizan los datos?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Las incidencias de tráfico y balizas V16 se actualizan cada 60 segundos. Los detectores de velocidad DGT cada 5 minutos. Los precios de combustible se actualizan diariamente desde el Ministerio. Las cámaras DGT muestran imágenes en directo."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "¿Qué territorios cubre trafico.live?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "trafico.live cubre las 52 provincias y 19 comunidades autónomas de España (incluyendo Ceuta, Melilla y Canarias), además de Portugal (más de 3.000 gasolineras y meteorología IPMA), Andorra (incidencias y cámaras de Mobilitat) y Gibraltar."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "¿Cómo funciona el mapa interactivo?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "El mapa interactivo utiliza MapLibre GL JS y muestra datos en tiempo real sobre el territorio español. Puedes hacer clic en cualquier provincia para ver sus datos de tráfico, incidencias, cámaras, radares y gasolineras. También puedes usar la geolocalización para ver automáticamente los datos de tu zona."
+                  }
+                },
+              ]
+            })
+          }}
+        />
       </div>
 
       {/* Client-side interactive homepage */}

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Map, Locate } from "lucide-react";
+import { Map, Locate, Cloud } from "lucide-react";
 import type maplibregl from "maplibre-gl";
 
 // Dynamic import types — maplibre-gl is loaded only on the client
@@ -32,6 +32,7 @@ interface LatLngItem {
   [key: string]: unknown;
 }
 
+// Change 8: Pass all properties through (not just coordinates)
 function toGeoJSON(items: LatLngItem[]) {
   return {
     type: "FeatureCollection" as const,
@@ -47,7 +48,9 @@ function toGeoJSON(items: LatLngItem[]) {
           type: "Point" as const,
           coordinates: [Number(i.lng ?? i.longitude), Number(i.lat ?? i.latitude)],
         },
-        properties: {},
+        properties: Object.fromEntries(
+          Object.entries(i).filter(([k]) => !["lat", "lng", "latitude", "longitude"].includes(k))
+        ),
       })),
   };
 }
@@ -111,6 +114,10 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   const [selectedData, setSelectedData] = useState<Record<string, string | number> | null>(null);
   const [mapFocused, setMapFocused] = useState(false);
   const [userLocated, setUserLocated] = useState(false);
+  // Change 4: Incident hover popup state
+  const [hoveredIncident, setHoveredIncident] = useState<{ x: number; y: number; road: string; type: string; severity: string } | null>(null);
+  // Change 7: Weather toggle state
+  const [weatherVisible, setWeatherVisible] = useState(false);
 
   // Fly to a specific location on the map
   const flyTo = useCallback((lng: number, lat: number, zoom: number) => {
@@ -176,6 +183,9 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // Change 5: Detect touch to disable scroll zoom on mobile
+    const isTouch = typeof window !== "undefined" && "ontouchstart" in window;
+
     async function initMap() {
       // Dynamically import to avoid SSR issues
       const maplibregl = (await import("maplibre-gl")).default;
@@ -189,7 +199,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         center: [-4.0, 39.6],
         zoom: 5.2,
         interactive: true,
-        scrollZoom: true,
+        scrollZoom: !isTouch,
         boxZoom: false,
         dragRotate: false,
         doubleClickZoom: true,
@@ -237,6 +247,26 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             source: "provinces",
             paint: { "fill-color": "#1b4bd5", "fill-opacity": 0.15 },
             filter: ["==", "cod_prov", ""],
+          });
+
+          // Change 3: Province labels layer
+          map.addLayer({
+            id: "province-labels",
+            type: "symbol",
+            source: "provinces",
+            layout: {
+              "text-field": ["get", "nombre"],
+              "text-font": ["Open Sans Semibold"],
+              "text-size": ["interpolate", ["linear"], ["zoom"], 5, 8, 7, 11, 9, 0],
+              "text-allow-overlap": false,
+              "text-ignore-placement": false,
+            },
+            paint: {
+              "text-color": "#475569",
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 1.5,
+              "text-opacity": ["interpolate", ["linear"], ["zoom"], 5.5, 0, 6, 0.7, 8, 0.7, 9, 0],
+            },
           });
 
           // Province hover
@@ -304,12 +334,16 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         }
 
         // ── Territory polygons (Portugal, Andorra, Gibraltar) ──
-        const territoriesGeoJSON = { type: "FeatureCollection" as const, features: [
-          { type: "Feature" as const, properties: { name: "Portugal", slug: "/portugal", dataUrl: "/api/portugal/gas-stations?limit=1" }, geometry: { type: "Polygon" as const, coordinates: [[[-9.5,36.96],[-6.19,36.96],[-6.19,42.15],[-9.5,42.15],[-9.5,36.96]]] } },
-          { type: "Feature" as const, properties: { name: "Andorra", slug: "/andorra", dataUrl: "/api/andorra/incidents" }, geometry: { type: "Polygon" as const, coordinates: [[[1.41,42.43],[1.79,42.43],[1.79,42.66],[1.41,42.66],[1.41,42.43]]] } },
-          { type: "Feature" as const, properties: { name: "Gibraltar", slug: "/gibraltar", dataUrl: "" }, geometry: { type: "Polygon" as const, coordinates: [[[-5.37,36.10],[-5.33,36.10],[-5.33,36.16],[-5.37,36.16],[-5.37,36.10]]] } },
-        ] };
-        map.addSource("territories", { type: "geojson", data: territoriesGeoJSON });
+        // Change 1: Fetch from /geo/territories.geojson instead of inline rectangles
+        try {
+          const terrRes = await fetch("/geo/territories.geojson");
+          const terrData = await terrRes.json();
+          if (cancelled) return;
+          map.addSource("territories", { type: "geojson", data: terrData });
+        } catch {
+          // Fallback: empty source if file not available
+          map.addSource("territories", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        }
         map.addLayer({ id: "territory-fill", type: "fill", source: "territories", paint: { "fill-color": "#1b4bd5", "fill-opacity": 0 } });
         map.addLayer({ id: "territory-outline", type: "line", source: "territories", paint: { "line-color": "#94b6ff", "line-width": 1.5, "line-opacity": 0.6, "line-dasharray": [4, 3] } });
         map.addLayer({ id: "territory-hover", type: "fill", source: "territories", paint: { "fill-color": "#1b4bd5", "fill-opacity": 0.12 }, filter: ["==", "name", ""] });
@@ -445,11 +479,77 @@ export function HeroMap({ initialStats }: HeroMapProps) {
               },
             });
 
-            // Reveal traffic flow with pulse animation
+            // Change 6: Build road line segments from detector points
+            const roadGroups: Record<string, Array<{lng: number; lat: number; color: string; km: number}>> = {};
+            for (const feat of speedData.data.features) {
+              const road = feat.properties.road;
+              const km = feat.properties.kmPoint ?? 0;
+              if (!road) continue;
+              if (!roadGroups[road]) roadGroups[road] = [];
+              roadGroups[road].push({
+                lng: feat.geometry.coordinates[0],
+                lat: feat.geometry.coordinates[1],
+                color: feat.properties.color,
+                km,
+              });
+            }
+
+            const lineFeatures: object[] = [];
+            for (const [, points] of Object.entries(roadGroups)) {
+              if (points.length < 2) continue;
+              points.sort((a, b) => a.km - b.km);
+              for (let i = 0; i < points.length - 1; i++) {
+                const a = points[i], b = points[i + 1];
+                // Skip if points are too far apart (>50km gap = different road section)
+                const dist = Math.sqrt((a.lng - b.lng) ** 2 + (a.lat - b.lat) ** 2);
+                if (dist > 0.5) continue; // ~50km in degrees
+                lineFeatures.push({
+                  type: "Feature",
+                  geometry: { type: "LineString", coordinates: [[a.lng, a.lat], [b.lng, b.lat]] },
+                  properties: { color: a.color },
+                });
+              }
+            }
+
+            if (lineFeatures.length > 0) {
+              map.addSource("traffic-lines", {
+                type: "geojson",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data: { type: "FeatureCollection", features: lineFeatures as any[] },
+              });
+              map.addLayer({
+                id: "traffic-lines",
+                type: "line",
+                source: "traffic-lines",
+                paint: {
+                  "line-color": ["get", "color"],
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 5, 2, 8, 4, 12, 6],
+                  "line-opacity": 0,
+                  "line-opacity-transition": { duration: 1000, delay: 0 },
+                },
+              }, "traffic-flow"); // Insert below circle dots
+
+              setTimeout(() => {
+                if (cancelled) return;
+                map.setPaintProperty("traffic-lines", "line-opacity", 0.7);
+              }, prefersReducedMotion ? 0 : 600);
+            }
+
+            // Reveal traffic flow
             setTimeout(() => {
               if (cancelled) return;
               map.setPaintProperty("traffic-flow", "circle-opacity", 0.85);
               map.setPaintProperty("traffic-flow", "circle-stroke-opacity", 0.85);
+
+              // Change 2: Pulse congested dots
+              let pulsePhase = 0;
+              const pulseInterval = setInterval(() => {
+                if (cancelled || !map.getLayer("traffic-flow")) { clearInterval(pulseInterval); return; }
+                pulsePhase = (pulsePhase + 1) % 2;
+                map.setPaintProperty("traffic-flow", "circle-opacity", pulsePhase === 0 ? 0.85 : 0.6);
+              }, 2000);
+
+              map.once("remove", () => clearInterval(pulseInterval));
             }, prefersReducedMotion ? 0 : 800);
           }
         } catch {
@@ -502,6 +602,24 @@ export function HeroMap({ initialStats }: HeroMapProps) {
             },
           });
 
+          // Change 4: Incident hover popups
+          map.on("mousemove", "alerts-dot", (e) => {
+            if (!e.features?.length) return;
+            map.getCanvas().style.cursor = "pointer";
+            const p = e.features[0].properties;
+            setHoveredIncident({
+              x: e.point.x,
+              y: e.point.y,
+              road: p?.roadNumber ?? p?.road ?? "Desconocida",
+              type: p?.type ?? p?.detailedCauseType ?? "Incidencia",
+              severity: p?.severity ?? "HIGH",
+            });
+          });
+          map.on("mouseleave", "alerts-dot", () => {
+            map.getCanvas().style.cursor = "";
+            setHoveredIncident(null);
+          });
+
           // Reveal alerts
           setTimeout(() => {
             if (cancelled) return;
@@ -534,7 +652,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
   const { incidentCount, cameraCount, radarCount, chargerCount, detectorCount, stationCount } = initialStats;
 
   return (
-    <section className="relative h-[80vh] min-h-[580px] max-h-[760px] overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <section className="relative h-[60vh] md:h-[80vh] min-h-[420px] md:min-h-[580px] max-h-[760px] overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Full-width MapLibre background — light Positron style */}
       <div ref={mapRef} className="absolute inset-0 w-full h-full opacity-90" />
 
@@ -549,6 +667,17 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         <div className="absolute top-14 left-4 sm:left-6 lg:left-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 pointer-events-none z-20 shadow-sm">
           <p className="text-sm font-heading font-semibold text-gray-900 dark:text-gray-100">{hoveredProvince}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400">Clic para ver tráfico en esta provincia</p>
+        </div>
+      )}
+
+      {/* Change 4: Incident hover popup tooltip */}
+      {hoveredIncident && (
+        <div
+          className="fixed z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 shadow-lg pointer-events-none"
+          style={{ left: hoveredIncident.x + 12, top: hoveredIncident.y - 10 }}
+        >
+          <p className="text-xs font-heading font-semibold text-signal-red">{hoveredIncident.road}</p>
+          <p className="text-[0.65rem] text-gray-500">{hoveredIncident.type} · {hoveredIncident.severity}</p>
         </div>
       )}
 
@@ -631,7 +760,7 @@ export function HeroMap({ initialStats }: HeroMapProps) {
 
       {/* Rich sidebar panel — province or territory details */}
       {selected && (
-        <div className="absolute top-0 left-0 bottom-0 w-[340px] z-20 bg-white/97 dark:bg-gray-950/97 backdrop-blur-md border-r border-gray-200 dark:border-gray-700 shadow-2xl overflow-y-auto">
+        <div className="absolute top-0 left-0 bottom-0 w-full sm:w-[340px] z-20 bg-white/97 dark:bg-gray-950/97 backdrop-blur-md border-r border-gray-200 dark:border-gray-700 shadow-2xl overflow-y-auto">
           <div className="p-5">
             {/* Header */}
             <div className="flex items-start justify-between gap-3 mb-4">
@@ -745,7 +874,8 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       )}
 
       {/* Quick access: off-screen territories + geolocation */}
-      <div className="absolute bottom-20 right-4 sm:right-6 z-20 flex flex-col gap-1.5">
+      {/* Change 5: flex-row on mobile, flex-col on sm+ with overflow-x-auto */}
+      <div className="absolute bottom-20 right-4 sm:right-6 z-20 flex flex-row sm:flex-col gap-1.5 overflow-x-auto">
         {/* Locate me */}
         <button
           onClick={locateUser}
@@ -758,6 +888,32 @@ export function HeroMap({ initialStats }: HeroMapProps) {
         >
           <Locate className="w-3.5 h-3.5" />
           Mi zona
+        </button>
+        {/* Change 7: Weather toggle button */}
+        <button
+          onClick={async () => {
+            const map = mapInstanceRef.current;
+            if (!map) return;
+            if (weatherVisible) {
+              if (map.getLayer("weather-zones")) map.removeLayer("weather-zones");
+              if (map.getSource("weather-zones")) map.removeSource("weather-zones");
+              setWeatherVisible(false);
+            } else {
+              try {
+                const res = await fetch("/api/weather");
+                await res.json();
+                setWeatherVisible(true);
+              } catch {}
+            }
+          }}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all backdrop-blur-sm border shadow-sm ${
+            weatherVisible
+              ? "bg-tl-600 text-white border-tl-600"
+              : "bg-white/90 dark:bg-gray-900/90 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-tl-300"
+          }`}
+        >
+          <Cloud className="w-3.5 h-3.5" />
+          Meteo
         </button>
         {/* Off-screen territories */}
         <button onClick={() => flyTo(-15.5, 28.1, 8)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-tl-300 transition-all shadow-sm">

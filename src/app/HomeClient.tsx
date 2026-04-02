@@ -21,6 +21,10 @@ const HeroMap = dynamic(
   () => import("@/components/home/HeroMap").then((m) => m.HeroMap),
   { ssr: false }
 );
+const IncidentTicker = dynamic(
+  () => import("@/components/home/IncidentTicker").then((m) => m.IncidentTicker),
+  { ssr: false }
+);
 const VerticalShowcase = dynamic(
   () => import("@/components/home/VerticalShowcase").then((m) => m.VerticalShowcase),
   { ssr: false }
@@ -125,6 +129,10 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
     <>
       <Suspense fallback={<HeroSkeleton />}>
         <HeroMap initialStats={initialStats} />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <IncidentTicker />
       </Suspense>
 
       <Suspense fallback={<StripSkeleton />}>
