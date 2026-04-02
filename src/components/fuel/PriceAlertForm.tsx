@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { Bell, Check, AlertCircle, X } from "lucide-react";
+import { trackPriceAlert } from "@/lib/analytics";
 
 const PROVINCES: { code: string; name: string }[] = [
   { code: "01", name: "Álava" },
@@ -135,6 +136,7 @@ export function PriceAlertForm({
       }
 
       setStatus("success");
+      trackPriceAlert(fuelType, province || undefined);
       setMessage(
         `Alerta creada correctamente. Te avisaremos en ${email} cuando el precio ${
           fuelType === "gasoleoA" ? "del Gasóleo A" : "de la Gasolina 95"

@@ -171,6 +171,9 @@ export default function RootLayout({
         </SWRProvider>
         <WebVitals />
         <CookieConsent />
+        <Script id="sw-register" strategy="afterInteractive">
+          {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}`}
+        </Script>
         {gaId && (
           <>
             <Script id="ga-consent-default" strategy="beforeInteractive">

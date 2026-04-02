@@ -7,18 +7,25 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // Shard size for paginated sitemaps
 const SHARD_SIZE = 5000;
 
-// ID ranges: 0 = core, 1-99 = gas stations, 100-199 = municipalities, 200-299 = postal codes, 300 = insights
+// ID ranges: 0 = core, 1-99 = gas stations, 100-199 = municipalities, 200-299 = postal codes,
+// 300 = insights, 400-499 = maritime, 500-599 = radars, 600-699 = cameras, 700-799 = EV chargers
 const GAS_STATION_OFFSET = 1;
 const MUNICIPALITY_OFFSET = 100;
 const POSTAL_CODE_OFFSET = 200;
 const INSIGHTS_OFFSET = 300;
 const MARITIME_OFFSET = 400;
+const RADAR_OFFSET = 500;
+const CAMERA_OFFSET = 600;
+const CHARGER_OFFSET = 700;
 
 // Fixed upper bounds — generous overestimates, empty shards return [] gracefully.
 const FALLBACK_STATION_SHARDS = 3;
 const FALLBACK_MUNICIPALITY_SHARDS = 3;
 const FALLBACK_POSTAL_CODE_SHARDS = 1;
 const FALLBACK_MARITIME_SHARDS = 1;
+const FALLBACK_RADAR_SHARDS = 1;
+const FALLBACK_CAMERA_SHARDS = 1;
+const FALLBACK_CHARGER_SHARDS = 2;
 
 export interface SitemapEntry {
   url: string;
@@ -55,6 +62,15 @@ export function getSitemapShardIds(): { id: number }[] {
     ...Array.from({ length: FALLBACK_MARITIME_SHARDS }, (_, i) => ({
       id: MARITIME_OFFSET + i,
     })),
+    ...Array.from({ length: FALLBACK_RADAR_SHARDS }, (_, i) => ({
+      id: RADAR_OFFSET + i,
+    })),
+    ...Array.from({ length: FALLBACK_CAMERA_SHARDS }, (_, i) => ({
+      id: CAMERA_OFFSET + i,
+    })),
+    ...Array.from({ length: FALLBACK_CHARGER_SHARDS }, (_, i) => ({
+      id: CHARGER_OFFSET + i,
+    })),
   ];
 }
 
@@ -77,6 +93,15 @@ export async function generateSitemapForShard(
   }
   if (id === INSIGHTS_OFFSET) {
     return insightsSitemap();
+  }
+  if (id >= CHARGER_OFFSET) {
+    return chargerSitemap(id - CHARGER_OFFSET);
+  }
+  if (id >= CAMERA_OFFSET) {
+    return cameraSitemap(id - CAMERA_OFFSET);
+  }
+  if (id >= RADAR_OFFSET) {
+    return radarSitemap(id - RADAR_OFFSET);
   }
   if (id >= MARITIME_OFFSET) {
     return maritimeStationSitemap(id - MARITIME_OFFSET);
@@ -1207,4 +1232,67 @@ async function insightsSitemap(): Promise<SitemapEntry[]> {
       priority: 0.7,
     })),
   ];
+}
+
+// ---------------------------------------------------------------------------
+// Radar sitemap shards
+// ---------------------------------------------------------------------------
+
+async function radarSitemap(shardIndex: number): Promise<SitemapEntry[]> {
+  const radars = await prisma.radar.findMany({
+    skip: shardIndex * SHARD_SIZE,
+    take: SHARD_SIZE,
+    where: { isActive: true },
+    select: { id: true, lastUpdated: true },
+    orderBy: { id: "asc" },
+  });
+
+  return radars.map((r) => ({
+    url: `${BASE_URL}/radares/radar/${r.id}`,
+    lastModified: r.lastUpdated ?? new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.55,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Camera sitemap shards
+// ---------------------------------------------------------------------------
+
+async function cameraSitemap(shardIndex: number): Promise<SitemapEntry[]> {
+  const cameras = await prisma.camera.findMany({
+    skip: shardIndex * SHARD_SIZE,
+    take: SHARD_SIZE,
+    where: { isActive: true },
+    select: { id: true, lastUpdated: true },
+    orderBy: { id: "asc" },
+  });
+
+  return cameras.map((c) => ({
+    url: `${BASE_URL}/camaras/camara/${c.id}`,
+    lastModified: c.lastUpdated ?? new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.5,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// EV Charger sitemap shards
+// ---------------------------------------------------------------------------
+
+async function chargerSitemap(shardIndex: number): Promise<SitemapEntry[]> {
+  const chargers = await prisma.eVCharger.findMany({
+    skip: shardIndex * SHARD_SIZE,
+    take: SHARD_SIZE,
+    where: { isPublic: true },
+    select: { id: true, lastUpdated: true },
+    orderBy: { id: "asc" },
+  });
+
+  return chargers.map((c) => ({
+    url: `${BASE_URL}/carga-ev/punto/${c.id}`,
+    lastModified: c.lastUpdated ?? new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
+  }));
 }

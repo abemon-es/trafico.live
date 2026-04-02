@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import { trackSearch } from "@/lib/analytics";
 import {
   Search,
   X,
@@ -220,6 +221,13 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   const results = useMemo(() => transformResults(data), [data]);
   const groups = useMemo(() => groupResults(results), [results]);
+
+  // Track search queries to GA4
+  useEffect(() => {
+    if (debouncedQuery.trim() && data) {
+      trackSearch(debouncedQuery.trim(), results.length);
+    }
+  }, [debouncedQuery, data, results.length]);
 
   // Flat list for keyboard navigation
   const flatResults = useMemo(

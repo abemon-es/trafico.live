@@ -94,8 +94,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Ciudad no encontrada" };
   }
 
-  const title = `Cámaras de Tráfico en ${cityData.name} — En Tiempo Real`;
-  const description = `Consulta en tiempo real las cámaras de tráfico de la DGT en ${cityData.name} (provincia de ${cityData.name}). Listado completo por carretera con imágenes actualizadas.`;
+  const cameraCount = await prisma.camera.count({
+    where: { province: cityData.code, isActive: true },
+  });
+
+  const title = `${cameraCount} Cámaras de Tráfico en ${cityData.name} — En Tiempo Real`;
+  const description = `${cameraCount} cámaras de tráfico DGT en ${cityData.name}. Imágenes en directo de autopistas, autovías y carreteras principales. Actualización continua.`;
 
   return {
     title,
