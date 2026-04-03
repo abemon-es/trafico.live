@@ -103,13 +103,13 @@ export async function run(prisma: PrismaClient): Promise<void> {
       await prisma.spanishPort.upsert({
         where: { slug },
         create: {
-          slug, name, type: "commercial",
+          slug, name, type: "COMMERCIAL",
           latitude: lat, longitude: lon,
           province: province !== "00" ? province : null,
           coastalZone,
         },
         update: {
-          name, type: "commercial",
+          name, type: "COMMERCIAL",
           latitude: lat, longitude: lon,
           province: province !== "00" ? province : null,
           coastalZone,

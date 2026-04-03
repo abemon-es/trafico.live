@@ -293,7 +293,7 @@ export default async function AviacionPage() {
           <h1 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
             Tráfico Aéreo en España
           </h1>
-          <p className="text-blue-200 text-lg md:text-xl max-w-2xl leading-relaxed">
+          <p className="text-white/75 text-lg md:text-xl max-w-2xl leading-relaxed">
             Aeronaves sobre espacio aéreo español en tiempo real, aeropuertos AENA
             y estadísticas de pasajeros. Datos OpenSky Network y AENA actualizados
             cada 5 minutos.
@@ -527,7 +527,7 @@ export default async function AviacionPage() {
                   El colector OpenSky actualiza posiciones cada 5 minutos. Vuelve en breve.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-[var(--tl-primary)] dark:text-[var(--tl-info)] bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full px-4 py-1.5">
+              <div className="flex items-center gap-2 text-xs text-[var(--tl-primary)] dark:text-[var(--tl-info)] bg-[var(--tl-primary-bg)] border border-[var(--tl-primary)]/30 rounded-full px-4 py-1.5">
                 <AlertTriangle className="w-3 h-3" />
                 Colector TASK=opensky activo en hetzner-prod
               </div>
@@ -605,7 +605,7 @@ export default async function AviacionPage() {
                         {airport.icao}
                       </span>
                       {airport.isAena && (
-                        <span className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-[var(--tl-primary)] dark:text-[var(--tl-info)] font-semibold text-[10px]">
+                        <span className="px-1.5 py-0.5 rounded bg-[var(--tl-primary-bg)] text-[var(--tl-primary)] dark:text-[var(--tl-info)] font-semibold text-[10px]">
                           AENA
                         </span>
                       )}

@@ -46,7 +46,7 @@ interface PortStats {
 
 // ---------------------------------------------------------------------------
 // GET /api/maritimo/ports/stats
-// Query params: ?type=commercial|fishing|sports|mixed, ?zone=galicia, ?province=08
+// Query params: ?type=COMMERCIAL|FISHING|SPORTS|MIXED, ?zone=galicia, ?province=08
 // ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
@@ -70,7 +70,8 @@ export async function GET(request: NextRequest) {
     const where: Record<string, any> = {};
 
     if (typeFilter) {
-      where.type = typeFilter;
+      // Normalize to uppercase to support both legacy lowercase and new uppercase enum values
+      where.type = typeFilter.toUpperCase();
     }
     if (zoneFilter) {
       // Accept either exact name or lowercase slug form

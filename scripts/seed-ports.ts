@@ -56,23 +56,23 @@ function classifyPortType(portName: string): PortType {
 
   // Sports / recreational
   if (/club|deportivo|naútico|nautico|recreo|recreativ/.test(lower)) {
-    return PortType.sports;
+    return PortType.SPORTS;
   }
 
   // Fishing
   if (/pesca|lonja|pesquero/.test(lower)) {
-    return PortType.fishing;
+    return PortType.FISHING;
   }
 
   // Commercial — explicit keyword or named major port
   if (/comercial/.test(lower)) {
-    return PortType.commercial;
+    return PortType.COMMERCIAL;
   }
   if (COMMERCIAL_PORT_NAMES.some((name) => lower.includes(name))) {
-    return PortType.commercial;
+    return PortType.COMMERCIAL;
   }
 
-  return PortType.mixed;
+  return PortType.MIXED;
 }
 
 // ---------------------------------------------------------------------------

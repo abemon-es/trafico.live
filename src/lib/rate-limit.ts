@@ -1,5 +1,6 @@
 import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { redis } from "./redis";
+import * as Sentry from "@sentry/nextjs";
 
 // Rate limit configurations
 const RATE_LIMITS = {
@@ -95,8 +96,12 @@ export async function checkRateLimit(
         retryAfter: Math.ceil(error.msBeforeNext / 1000),
       };
     }
-    // On error, allow the request (fail open)
+    // On error, allow the request (fail open) but capture to Sentry
     console.error("[RateLimit] Error checking rate limit:", error);
+    Sentry.captureException(error, {
+      tags: { layer: "rate-limit", failMode: "open" },
+      extra: { ip: key, limitType: type },
+    });
     return {
       success: true,
       limit: config.points,

@@ -258,10 +258,10 @@ async function getPortStats(): Promise<PortStatsSummary> {
 }
 
 const PORT_TYPE_LABEL: Record<string, string> = {
-  commercial: "Comerciales",
-  fishing: "Pesqueros",
-  sports: "Deportivos",
-  mixed: "Mixtos",
+  COMMERCIAL: "Comerciales",
+  FISHING: "Pesqueros",
+  SPORTS: "Deportivos",
+  MIXED: "Mixtos",
 };
 
 // ---------------------------------------------------------------------------

@@ -129,8 +129,8 @@ model TrafficDetector {
   road       String
   kmPoint    Float?
   direction  String?
-  latitude   Float
-  longitude  Float
+  latitude   Decimal @db.Decimal(9, 6)
+  longitude  Decimal @db.Decimal(9, 6)
   province   String?
   lanes      Int?
   isActive   Boolean @default(true)
@@ -167,10 +167,10 @@ model RoadRiskZone {
   road             String
   fromKm           Float
   toKm             Float
-  startLat         Float
-  startLng         Float
-  endLat           Float?
-  endLng           Float?
+  startLat         Decimal @db.Decimal(9, 6)
+  startLng         Decimal @db.Decimal(9, 6)
+  endLat           Decimal? @db.Decimal(9, 6)
+  endLng           Decimal? @db.Decimal(9, 6)
   province         String?
   municipalityCode String? // INE 5-digit code
   description      String?
@@ -203,8 +203,8 @@ model AndorraIncident {
   categoryId  Int
   title       String
   description String?  @db.Text
-  latitude    Float
-  longitude   Float
+  latitude    Decimal  @db.Decimal(9, 6)
+  longitude   Decimal  @db.Decimal(9, 6)
   startedAt   DateTime @db.Timestamptz
   endedAt     DateTime? @db.Timestamptz
   isActive    Boolean  @default(true)
@@ -217,8 +217,8 @@ model AndorraIncident {
 model AndorraCamera {
   id        String  @id // camera slug from mobilitat.ad
   name      String
-  latitude  Float
-  longitude Float
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
   elevation Int?    // meters
   route     String? // CG1, CG2, etc.
   imageUrl  String
@@ -254,8 +254,8 @@ model PortugalWeatherAlert {
 model PortugalGasStation {
   id            String   @id // DGEG station ID
   name          String
-  latitude      Float
-  longitude     Float
+  latitude      Decimal  @db.Decimal(9, 6)
+  longitude     Decimal  @db.Decimal(9, 6)
   address       String?
   locality      String?
   postalCode    String?
@@ -1486,17 +1486,17 @@ model MaritimeEmergency {
 // ============================================
 
 enum PortType {
-  commercial // Major commercial / cargo ports
-  fishing    // Fishing ports and fish markets (lonjas)
-  sports     // Sports and recreational marinas
-  mixed      // Multi-use ports
+  COMMERCIAL // Major commercial / cargo ports
+  FISHING    // Fishing ports and fish markets (lonjas)
+  SPORTS     // Sports and recreational marinas
+  MIXED      // Multi-use ports
 }
 
 model SpanishPort {
   id           String   @id @default(cuid())
   slug         String   @unique // URL-friendly identifier
   name         String   // Canonical port name (from MaritimeStation.port)
-  type         PortType @default(mixed)
+  type         PortType @default(MIXED)
 
   // Location (centroid of station coordinates)
   latitude  Decimal  @db.Decimal(9, 6)
