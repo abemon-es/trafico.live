@@ -395,9 +395,15 @@ async function importYear(
           headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
           const headerStr = headers.filter(Boolean).join(",").toUpperCase();
 
-          // Must contain at least one key DGT column name to be a valid header row
-          if (!headerStr.includes("ANYO") && !headerStr.includes("COD_PROVINCIA") && !headerStr.includes("ID_ACCIDENTE") && !headerStr.includes("SECUENCIAL")) {
-            continue; // Skip this row, keep scanning
+          // Must contain at least 3 key DGT column names to be a valid header row
+          // (the 2019 data dictionary WS has "ID_ACCIDENTE" alone — need multiple matches to avoid false positives)
+          const keyHits = [
+            headerStr.includes("ANYO"), headerStr.includes("COD_PROVINCIA"),
+            headerStr.includes("HORA"), headerStr.includes("CARRETERA"),
+            headerStr.includes("TOTAL_MU"), headerStr.includes("TIPO_VIA"),
+          ].filter(Boolean).length;
+          if (keyHits < 3) {
+            continue; // Not enough column matches — skip this row
           }
           COL = {
             fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
