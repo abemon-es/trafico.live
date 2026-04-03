@@ -743,7 +743,7 @@ SELECT json_build_object(
       'province', province,
       'provinceName', "provinceName",
       'direction', direction::text,
-      'currentMessage', "currentMessage"
+      'message', message
     )
   )), '[]'::json)
 ) FROM "VariablePanel";
