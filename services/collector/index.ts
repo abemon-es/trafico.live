@@ -160,7 +160,8 @@ const TYPESENSE_SYNC_MAP: Record<string, string[]> = {
   incident: ["incidents"],
   v16: ["incidents"],
   weather: ["weather_alerts"],
-  "ais-stream": ["vessels"],
+  // ais-stream: loader not yet implemented in typesense-sync
+  // "ais-stream": ["vessels"],
   "ferry-gtfs": ["ferry_routes"],
   // transit-gtfs: loaders not yet implemented in typesense-sync
   // "transit-gtfs": ["transit_stops", "transit_routes"],
