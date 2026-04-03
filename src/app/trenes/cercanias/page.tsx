@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import CercaniasContent from "./content";
 
+export const revalidate = 3600; // ISR: regenerate every 1 hour (network list is static, alerts via SWR)
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {

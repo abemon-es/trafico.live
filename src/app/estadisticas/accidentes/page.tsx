@@ -8,7 +8,7 @@ import { provinceSlug } from "@/lib/geo/slugify";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 // ─── Metadata ──────────────────────────────────────────────────────────────────
 

@@ -5,6 +5,8 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
+export const revalidate = 1800; // ISR: regenerate every 30 minutes (IMD data is annual)
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata = buildPageMetadata({

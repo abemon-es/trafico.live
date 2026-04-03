@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import EstadisticasTransporteContent from "./content";
 
+export const revalidate = 3600; // ISR: regenerate every 1 hour (transport modal data is monthly/yearly)
+
 export const metadata: Metadata = {
   title: "Estadísticas de Transporte en España — Series históricas | trafico.live",
   description:

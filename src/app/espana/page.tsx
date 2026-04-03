@@ -3,6 +3,8 @@ import Link from "next/link";
 import EspanaContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+export const revalidate = 600; // ISR: regenerate every 10 minutes
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {

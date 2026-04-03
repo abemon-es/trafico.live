@@ -8,7 +8,7 @@ import { RelatedByArea } from "@/components/seo/RelatedByArea";
 import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 interface Props {
   params: Promise<{ id: string }>;
