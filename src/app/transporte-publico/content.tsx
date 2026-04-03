@@ -1,7 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { fetcher } from "@/lib/fetcher";
 import { useState, useMemo } from "react";
+
+const TransitMap = dynamic(() => import("./transit-map"), { ssr: false });
 import useSWR from "swr";
 import Link from "next/link";
 import {
@@ -242,6 +245,16 @@ export default function TransportePublicoContent() {
           </div>
         ))}
       </div>
+
+      {/* Map */}
+      <section className="mb-8">
+        <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+          Mapa de transporte público
+        </h2>
+        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+          <TransitMap height="450px" />
+        </div>
+      </section>
 
       {/* Filters + Sort */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
