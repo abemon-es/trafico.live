@@ -2358,3 +2358,45 @@ model AircraftPosition {
   @@index([icao24, createdAt(sort: Desc)])
   @@index([createdAt])
 }
+
+// ============================================
+// AIR QUALITY (MITECO ICA)
+// ============================================
+
+model AirQualityStation {
+  id          String   @id @default(cuid())
+  stationId   String   @unique // MITECO station code
+  name        String
+  network     String?  // "Red de vigilancia de la calidad del aire"
+  city        String?
+  province    String?  // INE code
+  latitude    Decimal  @db.Decimal(9, 6)
+  longitude   Decimal  @db.Decimal(9, 6)
+  elevation   Int?
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  readings    AirQualityReading[]
+
+  @@index([province])
+  @@index([city])
+}
+
+model AirQualityReading {
+  id          String   @id @default(cuid())
+  stationId   String
+  no2         Float?   // µg/m³
+  pm10        Float?   // µg/m³
+  pm25        Float?   // µg/m³ (PM2.5)
+  o3          Float?   // µg/m³
+  so2         Float?   // µg/m³
+  co          Float?   // mg/m³
+  ica         Int?     // Composite air quality index (1=buena, 2=razonable, 3=moderada, 4=mala, 5=muy mala)
+  icaLabel    String?  // "Buena", "Razonable", etc.
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  station     AirQualityStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@index([ica])
+}
