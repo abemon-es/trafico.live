@@ -444,8 +444,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
     return;
   }
 
-  // Iterate 31-day chunks (AEMET API limit)
-  const CHUNK_DAYS = 31;
+  // Iterate 14-day chunks (AEMET API limit is 15 days max, use 14 for safety)
+  const CHUNK_DAYS = 14;
   let totalInserted = 0;
   let totalSkipped = 0;
   let chunkCount = 0;
