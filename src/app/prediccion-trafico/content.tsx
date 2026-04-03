@@ -3,7 +3,17 @@
 import { useMemo } from "react";
 import useSWR from "swr";
 import Link from "next/link";
-import { Loader2, TrendingUp, TrendingDown, Minus, Info, ExternalLink } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Minus, Info, ExternalLink, BarChart3, Calendar } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import { fetcher } from "@/lib/fetcher";
 import { TrafficHeatmap, type HeatmapCell } from "@/components/charts/TrafficHeatmap";
 
@@ -207,6 +217,142 @@ function ForecastStrip({ forecast }: { forecast: ForecastHour[] }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Hourly distribution types + charts
+// ---------------------------------------------------------------------------
+
+interface HourlyProfile {
+  hour: number;
+  avgIntensity: number;
+  sampleCount: number;
+}
+
+interface IncidentProfile {
+  hour: number;
+  incidentCount: number;
+  relativeIntensity: number;
+}
+
+interface DayOfWeekEntry {
+  dayOfWeek: number;
+  avgIntensity: number | null;
+  incidentCount: number;
+}
+
+interface DistribucionResponse {
+  success: boolean;
+  data: {
+    sensorProfiles: HourlyProfile[];
+    incidentProfiles: IncidentProfile[];
+    dayOfWeekPattern: DayOfWeekEntry[];
+  };
+}
+
+function intensityColor(intensity: number, peak: number): string {
+  const ratio = intensity / peak;
+  if (ratio < 0.3) return "var(--color-tl-300)";
+  if (ratio < 0.5) return "var(--color-tl-400)";
+  if (ratio < 0.7) return "var(--tl-amber-400)";
+  if (ratio < 0.85) return "var(--tl-amber-500)";
+  return "var(--color-red-500, #ef4444)";
+}
+
+function HourlyDistributionChart({ profiles, currentHour }: { profiles: HourlyProfile[]; currentHour: number }) {
+  const peak = Math.max(...profiles.map((p) => p.avgIntensity));
+
+  return (
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={profiles} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-200, #e5e7eb)" vertical={false} />
+        <XAxis
+          dataKey="hour"
+          tickFormatter={(h: number) => `${String(h).padStart(2, "0")}h`}
+          tick={{ fontSize: 11, fill: "var(--color-gray-500, #6b7280)" }}
+          interval={2}
+        />
+        <YAxis
+          tick={{ fontSize: 11, fill: "var(--color-gray-500, #6b7280)" }}
+          tickFormatter={(v: number) => v.toLocaleString("es-ES")}
+        />
+        <Tooltip
+          formatter={(value: number) => [value.toLocaleString("es-ES") + " veh/h", "Intensidad media"]}
+          labelFormatter={(h: number) => `${String(h).padStart(2, "0")}:00`}
+          contentStyle={{
+            backgroundColor: "var(--color-gray-900, #111827)",
+            border: "none",
+            borderRadius: "8px",
+            color: "#fff",
+            fontSize: "12px",
+          }}
+        />
+        <Bar dataKey="avgIntensity" radius={[4, 4, 0, 0]}>
+          {profiles.map((entry) => (
+            <Cell
+              key={entry.hour}
+              fill={intensityColor(entry.avgIntensity, peak)}
+              stroke={entry.hour === currentHour ? "#fff" : "none"}
+              strokeWidth={entry.hour === currentHour ? 2 : 0}
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function DayOfWeekChart({ data }: { data: DayOfWeekEntry[] }) {
+  const chartData = data.map((d) => ({
+    ...d,
+    dayLabel: DAY_NAMES[d.dayOfWeek],
+    dayFull: DAY_NAMES_FULL[d.dayOfWeek],
+  }));
+  const peak = Math.max(...chartData.map((d) => d.incidentCount));
+
+  const DOW_COLORS = [
+    "var(--color-tl-300)", // Dom
+    "var(--color-tl-500)", // Lun
+    "var(--color-tl-500)", // Mar
+    "var(--color-tl-500)", // Mié
+    "var(--tl-amber-500)",  // Jue
+    "var(--tl-amber-500)",  // Vie
+    "var(--color-tl-300)", // Sáb
+  ];
+
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <BarChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-200, #e5e7eb)" vertical={false} />
+        <XAxis
+          dataKey="dayLabel"
+          tick={{ fontSize: 12, fill: "var(--color-gray-500, #6b7280)" }}
+        />
+        <YAxis
+          tick={{ fontSize: 11, fill: "var(--color-gray-500, #6b7280)" }}
+          tickFormatter={(v: number) => (v / 1000).toFixed(0) + "K"}
+        />
+        <Tooltip
+          formatter={(value: number) => [value.toLocaleString("es-ES") + " incidencias", "Total acumulado"]}
+          labelFormatter={(_: string, payload: Array<{ payload?: { dayFull?: string } }>) =>
+            payload?.[0]?.payload?.dayFull ?? ""
+          }
+          contentStyle={{
+            backgroundColor: "var(--color-gray-900, #111827)",
+            border: "none",
+            borderRadius: "8px",
+            color: "#fff",
+            fontSize: "12px",
+          }}
+        />
+        <Bar dataKey="incidentCount" radius={[4, 4, 0, 0]}>
+          {chartData.map((entry, idx) => (
+            <Cell key={idx} fill={DOW_COLORS[entry.dayOfWeek] ?? "var(--color-tl-400)"} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 interface SummaryStats {
   worstHour: { hour: number; dayOfWeek: number; avgServiceLevel: number } | null;
   bestHour: { hour: number; dayOfWeek: number; avgServiceLevel: number } | null;
@@ -277,6 +423,12 @@ export default function PrediccionTraficoContent() {
     "/api/trafico/prediccion?mode=forecast&hours=6",
     fetcher,
     { revalidateOnFocus: false, refreshInterval: 300_000 }
+  );
+
+  const { data: distribucionData } = useSWR<DistribucionResponse>(
+    "/api/trafico/distribucion-horaria",
+    fetcher,
+    { revalidateOnFocus: false }
   );
 
   // Current time for heatmap highlight
