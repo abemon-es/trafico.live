@@ -10,6 +10,7 @@ import { InteractiveBaseMap } from "@/components/map/InteractiveBaseMap";
 export default function IntensityMap({ height = "450px" }: { height?: string }) {
   const handleMapLoad = useCallback((map: MapInstance) => {
     setupPMTilesProtocol();
+    addTileLayer(map, "roadSegmentsLine");  // IMD road polylines (below points)
     addTileLayer(map, "sensorsCircle");
     addTileLayer(map, "stationsCircle");
 
