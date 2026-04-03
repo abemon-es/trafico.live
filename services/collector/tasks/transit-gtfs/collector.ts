@@ -2,17 +2,8 @@
  * Transit GTFS Collector
  *
  * Downloads and parses GTFS feeds for Spanish public transit operators
- * from MobilityData CDN. Covers metro, bus, tram, rail, and funicular.
- *
- * Operators (15 priority feeds):
- *   Metro de Madrid (mdb-794), TMB Metro Barcelona (mdb-2359),
- *   Metro Bilbao (mdb-3052), Metro de Sevilla (mdb-2781),
- *   Metro de Málaga (mdb-1017), Metro de Granada (mdb-2784),
- *   FGV Metro Valencia (mdb-2830), FGC (mdb-1856),
- *   Euskotren (mdb-2715), Ouigo España (mdb-2785),
- *   EMT Madrid (mdb-793), AMB Barcelona (mdb-892),
- *   EMT Valencia (mdb-795), TUSSAM Sevilla (mdb-2770),
- *   Funicular de Artxanda (mdb-2680)
+ * from MobilityData CDN. 80+ operators across metro, bus, tram, rail,
+ * funicular, and ferry covering all major Spanish cities and regions.
  *
  * Runs weekly (schedule data changes infrequently).
  * Source: MobilityData CDN — https://files.mobilitydatabase.org/ (no auth, CC-BY 4.0)
@@ -32,6 +23,7 @@ import { log, logError } from "../../shared/utils.js";
 const TASK = "transit-gtfs";
 
 const TARGET_FEEDS = [
+  // ── METRO ──────────────────────────────────────────────────────────────────
   { mdbId: "mdb-794", name: "Metro de Madrid", city: "Madrid", province: "28", mode: "metro" },
   { mdbId: "mdb-2359", name: "TMB Metro Barcelona", city: "Barcelona", province: "08", mode: "metro" },
   { mdbId: "mdb-3052", name: "Metro Bilbao", city: "Bilbao", province: "48", mode: "metro" },
@@ -39,14 +31,95 @@ const TARGET_FEEDS = [
   { mdbId: "mdb-1017", name: "Metro de Málaga", city: "Málaga", province: "29", mode: "metro" },
   { mdbId: "mdb-2784", name: "Metro de Granada", city: "Granada", province: "18", mode: "metro" },
   { mdbId: "mdb-2830", name: "FGV Metro Valencia", city: "Valencia", province: "46", mode: "metro" },
+
+  // ── TRAM / LIGHT RAIL ─────────────────────────────────────────────────────
+  { mdbId: "mdb-1003", name: "TRAM Barcelona Trambaix", city: "Barcelona", province: "08", mode: "tram" },
+  { mdbId: "mdb-1004", name: "TRAM Barcelona Trambesòs", city: "Barcelona", province: "08", mode: "tram" },
+  { mdbId: "mdb-2829", name: "FGV TRAM Alicante", city: "Alicante", province: "03", mode: "tram" },
+  { mdbId: "mdb-2729", name: "Tranvía de Murcia", city: "Murcia", province: "30", mode: "tram" },
+  { mdbId: "mdb-2801", name: "Tranvía de Zaragoza", city: "Zaragoza", province: "50", mode: "tram" },
+  { mdbId: "mdb-788", name: "Metropolitano de Tenerife", city: "Santa Cruz de Tenerife", province: "38", mode: "tram" },
+  { mdbId: "mdb-792", name: "Metro Ligero Madrid", city: "Madrid", province: "28", mode: "tram" },
+
+  // ── COMMUTER / REGIONAL RAIL ──────────────────────────────────────────────
   { mdbId: "mdb-1856", name: "FGC", city: "Barcelona", province: "08", mode: "rail" },
   { mdbId: "mdb-2715", name: "Euskotren", city: "Bilbao", province: "48", mode: "rail" },
   { mdbId: "mdb-2785", name: "Ouigo España", city: "", province: "", mode: "rail" },
+  { mdbId: "mdb-2717", name: "Renfe FEVE", city: "", province: "", mode: "rail" },
+
+  // ── FUNICULAR / SPECIAL ───────────────────────────────────────────────────
+  { mdbId: "mdb-2680", name: "Funicular de Artxanda", city: "Bilbao", province: "48", mode: "funicular" },
+  { mdbId: "mdb-1162", name: "Puente Bizkaia", city: "Getxo", province: "48", mode: "funicular" },
+
+  // ── TIER 1: MAJOR URBAN BUS ───────────────────────────────────────────────
   { mdbId: "mdb-793", name: "EMT Madrid", city: "Madrid", province: "28", mode: "bus" },
   { mdbId: "mdb-892", name: "AMB Barcelona", city: "Barcelona", province: "08", mode: "bus" },
   { mdbId: "mdb-795", name: "EMT Valencia", city: "Valencia", province: "46", mode: "bus" },
   { mdbId: "mdb-2770", name: "TUSSAM Sevilla", city: "Sevilla", province: "41", mode: "bus" },
-  { mdbId: "mdb-2680", name: "Funicular de Artxanda", city: "Bilbao", province: "48", mode: "funicular" },
+  { mdbId: "mdb-2681", name: "Bilbobus", city: "Bilbao", province: "48", mode: "bus" },
+  { mdbId: "mdb-2682", name: "dBus San Sebastián", city: "San Sebastián", province: "20", mode: "bus" },
+  { mdbId: "mdb-797", name: "TUVISA Vitoria", city: "Vitoria-Gasteiz", province: "01", mode: "bus" },
+  { mdbId: "mdb-2212", name: "EMT Málaga", city: "Málaga", province: "29", mode: "bus" },
+  { mdbId: "mdb-2773", name: "Avanza Zaragoza", city: "Zaragoza", province: "50", mode: "bus" },
+  { mdbId: "mdb-2713", name: "AUCORSA Córdoba", city: "Córdoba", province: "14", mode: "bus" },
+  { mdbId: "mdb-2769", name: "Transportes Urbanos Granada", city: "Granada", province: "18", mode: "bus" },
+
+  // ── TIER 1: REGIONAL / INTERCITY BUS ──────────────────────────────────────
+  { mdbId: "mdb-2825", name: "ALSA", city: "", province: "", mode: "bus" },
+  { mdbId: "mdb-791", name: "CRTM Interurbanos Madrid", city: "Madrid", province: "28", mode: "bus" },
+  { mdbId: "mdb-2820", name: "CRTM Urbanos Comunidad Madrid", city: "Madrid", province: "28", mode: "bus" },
+  { mdbId: "mdb-1135", name: "Bizkaibus", city: "Bilbao", province: "48", mode: "bus" },
+  { mdbId: "mdb-1870", name: "Generalitat Valenciana Interbus", city: "Valencia", province: "46", mode: "bus" },
+
+  // ── TIER 1: ISLANDS ───────────────────────────────────────────────────────
+  { mdbId: "mdb-2766", name: "TIB Mallorca", city: "Palma", province: "07", mode: "bus" },
+  { mdbId: "mdb-2763", name: "TIB Menorca", city: "Maó", province: "07", mode: "bus" },
+  { mdbId: "mdb-2797", name: "TIB Ibiza", city: "Ibiza", province: "07", mode: "bus" },
+  { mdbId: "mdb-2782", name: "EMT Palma", city: "Palma", province: "07", mode: "bus" },
+  { mdbId: "mdb-787", name: "TITSA Tenerife", city: "Santa Cruz de Tenerife", province: "38", mode: "bus" },
+  { mdbId: "mdb-2783", name: "Guaguas Municipales Las Palmas", city: "Las Palmas", province: "35", mode: "bus" },
+
+  // ── TIER 2: MEDIUM CITY BUS ───────────────────────────────────────────────
+  { mdbId: "mdb-2730", name: "AUVASA Valladolid", city: "Valladolid", province: "47", mode: "bus" },
+  { mdbId: "mdb-2762", name: "TUS Santander", city: "Santander", province: "39", mode: "bus" },
+  { mdbId: "mdb-2719", name: "TCC Pamplona", city: "Pamplona", province: "31", mode: "bus" },
+  { mdbId: "mdb-2771", name: "TCC Castellón", city: "Castellón", province: "12", mode: "bus" },
+  { mdbId: "mdb-2400", name: "EMTF Fuenlabrada", city: "Fuenlabrada", province: "28", mode: "bus" },
+  { mdbId: "mdb-2716", name: "TMESA Terrassa", city: "Terrassa", province: "08", mode: "bus" },
+  { mdbId: "mdb-2751", name: "TMG Girona", city: "Girona", province: "17", mode: "bus" },
+  { mdbId: "mdb-2777", name: "EMT Tarragona", city: "Tarragona", province: "43", mode: "bus" },
+  { mdbId: "mdb-2723", name: "Unauto Toledo", city: "Toledo", province: "45", mode: "bus" },
+  { mdbId: "mdb-2828", name: "Transportes Murcia", city: "Murcia", province: "30", mode: "bus" },
+  { mdbId: "mdb-2804", name: "Avanza Ourense", city: "Ourense", province: "32", mode: "bus" },
+  { mdbId: "mdb-2714", name: "Vectalia Cáceres", city: "Cáceres", province: "10", mode: "bus" },
+  { mdbId: "mdb-2767", name: "Compañía de Tranvías A Coruña", city: "A Coruña", province: "15", mode: "bus" },
+  { mdbId: "mdb-3081", name: "Reus Transport", city: "Reus", province: "43", mode: "bus" },
+
+  // ── TIER 2: REGIONAL / AUTONOMOUS COMMUNITY BUS ───────────────────────────
+  { mdbId: "mdb-2721", name: "Consorcios Andalucía", city: "", province: "", mode: "bus" },
+  { mdbId: "mdb-2827", name: "Consorcio Transportes Asturias", city: "Oviedo", province: "33", mode: "bus" },
+  { mdbId: "mdb-2821", name: "Xunta de Galicia", city: "", province: "", mode: "bus" },
+  { mdbId: "mdb-2748", name: "Gobierno Cantabria", city: "Santander", province: "39", mode: "bus" },
+  { mdbId: "mdb-2150", name: "Gobierno Navarra Interurbano", city: "Pamplona", province: "31", mode: "bus" },
+  { mdbId: "mdb-2690", name: "Junta de Extremadura", city: "", province: "", mode: "bus" },
+  { mdbId: "mdb-2810", name: "Avanza Grupo", city: "", province: "", mode: "bus" },
+  { mdbId: "mdb-2811", name: "Interbus CLM", city: "", province: "", mode: "bus" },
+  { mdbId: "mdb-2817", name: "DAIBUS", city: "", province: "", mode: "bus" },
+  { mdbId: "mdb-2712", name: "Samar Buses", city: "", province: "", mode: "bus" },
+
+  // ── TIER 3: BASQUE COUNTRY NETWORK ────────────────────────────────────────
+  { mdbId: "mdb-2728", name: "Lurraldebus Gipuzkoa", city: "San Sebastián", province: "20", mode: "bus" },
+  { mdbId: "mdb-2756", name: "Lurraldebus Euskotren Bus", city: "Bilbao", province: "48", mode: "bus" },
+  { mdbId: "mdb-2776", name: "Lurraldebus PESA", city: "Bilbao", province: "48", mode: "bus" },
+  { mdbId: "mdb-2757", name: "Lurraldebus TBH Tolosa", city: "Tolosa", province: "20", mode: "bus" },
+  { mdbId: "mdb-2724", name: "Lurraldebus Irunbus", city: "Irún", province: "20", mode: "bus" },
+  { mdbId: "mdb-2731", name: "Lurraldebus Ekialdebus", city: "Eibar", province: "20", mode: "bus" },
+  { mdbId: "mdb-2732", name: "Lurraldebus Goierrialdea", city: "Beasain", province: "20", mode: "bus" },
+  { mdbId: "mdb-2733", name: "Lurraldebus Arrasate", city: "Mondragón", province: "20", mode: "bus" },
+  { mdbId: "mdb-2734", name: "Lurraldebus Hernani", city: "Hernani", province: "20", mode: "bus" },
+  { mdbId: "mdb-2735", name: "Lurraldebus Eibar", city: "Eibar", province: "20", mode: "bus" },
+  { mdbId: "mdb-2824", name: "Alavabus", city: "Vitoria-Gasteiz", province: "01", mode: "bus" },
+  { mdbId: "mdb-2799", name: "Bermibusa", city: "Bermeo", province: "48", mode: "bus" },
 ];
 
 // ── CSV parser (handles quoted fields with commas inside) ──────────────────
