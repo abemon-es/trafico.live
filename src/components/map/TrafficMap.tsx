@@ -601,7 +601,7 @@ function addClusteredLayer(
     filter: ["has", "point_count"],
     layout: {
       "text-field": "{point_count_abbreviated}",
-      "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+      "text-font": ["Noto Sans Bold"],
       "text-size": 11,
       visibility: "none",
     },
@@ -860,7 +860,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
               "symbol-placement": "line",
               "text-field": ["get", "id"],
               "text-size": 12,
-              "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+              "text-font": ["Noto Sans Bold"],
               visibility: "none",
             },
             paint: {
@@ -921,7 +921,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
                 4, 10,
                 8, 14,
               ],
-              "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+              "text-font": ["Noto Sans Medium"],
               "text-offset": [0, 1.5],
               visibility: "none",
             },
@@ -999,7 +999,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             });
             m.addLayer({
               id: "highways-labels", type: "symbol", source: "highways",
-              layout: { "symbol-placement": "line", "text-field": ["get", "id"], "text-size": 12, "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"], visibility: "none" },
+              layout: { "symbol-placement": "line", "text-field": ["get", "id"], "text-size": 12, "text-font": ["Noto Sans Bold"], visibility: "none" },
               paint: { "text-color": darkMode ? "#d1d5db" : "#374151", "text-halo-color": darkMode ? "#1f2937" : "#ffffff", "text-halo-width": 2 },
             });
           }
@@ -1019,7 +1019,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             });
             m.addLayer({
               id: "provinces-labels", type: "symbol", source: "provinces",
-              layout: { "text-field": ["get", "name"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 14], "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"], "text-offset": [0, 1.5], visibility: "none" },
+              layout: { "text-field": ["get", "name"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 14], "text-font": ["Noto Sans Medium"], "text-offset": [0, 1.5], visibility: "none" },
               paint: { "text-color": darkMode ? "#d1d5db" : "#374151", "text-halo-color": darkMode ? "#1f2937" : "#ffffff", "text-halo-width": 1.5 },
             });
           }
@@ -1166,7 +1166,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       filter: ["has", "point_count"],
       layout: {
         "text-field": "{point_count_abbreviated}",
-        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-font": ["Noto Sans Bold"],
         "text-size": 11,
       },
       paint: {
@@ -1312,7 +1312,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       source: "danger-score",
       layout: {
         "text-field": ["concat", ["to-string", ["get", "score"]], ""],
-        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-font": ["Noto Sans Bold"],
         "text-size": 12,
         "text-allow-overlap": true,
         visibility: "none",
@@ -1381,7 +1381,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       source: "zbe-labels",
       layout: {
         "text-field": ["get", "name"],
-        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-font": ["Noto Sans Bold"],
         "text-size": 12,
         "text-anchor": "center",
         "text-allow-overlap": false,

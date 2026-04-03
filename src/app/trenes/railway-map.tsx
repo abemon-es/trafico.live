@@ -106,7 +106,7 @@ export default function RailwayMap({
         "text-size": 10,
         "text-offset": [0, 1.8],
         "text-anchor": "top",
-        "text-font": ["Open Sans Bold"],
+        "text-font": ["Noto Sans Bold"],
         "text-allow-overlap": false,
       },
       paint: {

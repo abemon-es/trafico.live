@@ -261,7 +261,7 @@ export function InteractiveBaseMap({
               source: "ibm-provinces",
               layout: {
                 "text-field": ["get", "nombre"],
-                "text-font": ["Open Sans Semibold"],
+                "text-font": ["Noto Sans Medium"],
                 "text-size": ["interpolate", ["linear"], ["zoom"], 5, 8, 7, 11, 9, 0],
                 "text-allow-overlap": false,
                 "text-ignore-placement": false,
@@ -418,7 +418,7 @@ export function InteractiveBaseMap({
             source: "ibm-cities",
             layout: {
               "text-field": ["get", "name"],
-              "text-font": ["Open Sans Semibold"],
+              "text-font": ["Noto Sans Medium"],
               "text-size": 11,
               "text-offset": [0, 1.2],
               "text-anchor": "top",

@@ -264,7 +264,7 @@ export function HistoricalMap({
         filter: ["has", "point_count"],
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
-          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Noto Sans Bold"],
           "text-size": 12,
         },
         paint: {

@@ -216,7 +216,7 @@ export default function MaritimeMap() {
         source: "wave-points",
         layout: {
           "text-field": ["concat", ["to-string", ["get", "waveHeightDisplay"]], "m"],
-          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Noto Sans Bold"],
           "text-size": 11,
           "text-allow-overlap": true,
         },
@@ -244,7 +244,7 @@ export default function MaritimeMap() {
           "icon-rotation-alignment": "map",
           "icon-allow-overlap": true,
           "text-field": ["concat", ["to-string", ["get", "windSpeedDisplay"]], ""],
-          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Noto Sans Bold"],
           "text-size": 9,
           "text-offset": [0, 1.8],
           "text-allow-overlap": true,
@@ -361,7 +361,7 @@ export default function MaritimeMap() {
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Noto Sans Bold"],
           "text-size": 11,
         },
         paint: { "text-color": "#fff" },
@@ -602,7 +602,7 @@ export default function MaritimeMap() {
         source: "maritime-cities",
         layout: {
           "text-field": ["get", "name"],
-          "text-font": ["Open Sans Semibold"],
+          "text-font": ["Noto Sans Medium"],
           "text-size": 11,
           "text-offset": [0, 1.2],
           "text-anchor": "top",

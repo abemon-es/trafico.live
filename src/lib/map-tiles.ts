@@ -305,7 +305,6 @@ export function getProtomapsStyle(): StyleSpecification {
   return {
     version: 8,
     glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
-    sprite: `${TILES_BASE}/sprites/trafico`,
     sources: {
       protomaps: {
         type: "vector",
@@ -741,7 +740,6 @@ export function getProtomapsDarkStyle(): StyleSpecification {
   return {
     version: 8,
     glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
-    sprite: `${TILES_BASE}/sprites/trafico`,
     sources: {
       protomaps: {
         type: "vector",
