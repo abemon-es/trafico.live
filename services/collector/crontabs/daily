@@ -11,7 +11,7 @@
 30 2 * * * TASK=mobilitydata-sync NODE_OPTIONS=--max-old-space-size=512 npx tsx index.ts 2>&1
 
 # Renfe GTFS static timetables
-0 3 * * * TASK=renfe-gtfs NODE_OPTIONS=--max-old-space-size=384 npx tsx index.ts 2>&1
+0 3 * * * TASK=renfe-gtfs NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
 
 # INE transport statistics (light — JSON API calls, ~50MB)
 30 3 * * * TASK=ine-stats npx tsx index.ts 2>&1
