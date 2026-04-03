@@ -89,28 +89,28 @@ export async function GET(request: NextRequest) {
       const geojson = {
         type: "FeatureCollection",
         features: zones.map((z) => ({
-            type: "Feature",
-            geometry: {
-              type: "Point",
-              coordinates: [Number(z.longitude), Number(z.latitude)],
-            },
-            properties: {
-              id: z.id,
-              sourceId: z.sourceId,
-              roadNumber: z.roadNumber,
-              roadType: z.roadType,
-              kmStart: z.kmStart ? Number(z.kmStart) : null,
-              kmEnd: z.kmEnd ? Number(z.kmEnd) : null,
-              direction: z.direction,
-              description: z.description,
-              startDate: z.startDate,
-              endDate: z.endDate,
-              isActive: z.isActive,
-              province: z.province,
-              updatedAt: z.updatedAt,
-            },
-          })),
-        };
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [Number(z.longitude), Number(z.latitude)],
+          },
+          properties: {
+            id: z.id,
+            sourceId: z.sourceId,
+            roadNumber: z.roadNumber,
+            roadType: z.roadType,
+            kmStart: z.kmStart ? Number(z.kmStart) : null,
+            kmEnd: z.kmEnd ? Number(z.kmEnd) : null,
+            direction: z.direction,
+            description: z.description,
+            startDate: z.startDate,
+            endDate: z.endDate,
+            isActive: z.isActive,
+            province: z.province,
+            updatedAt: z.updatedAt,
+          },
+        })),
+      };
       await setInCache(cacheKey, geojson, 600);
       return NextResponse.json(geojson, {
         headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200" },
