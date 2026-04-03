@@ -156,6 +156,40 @@ async function getActiveCoastalAlerts(): Promise<CoastalAlert[]> {
   }) as Promise<CoastalAlert[]>;
 }
 
+interface MaritimeForecast {
+  zoneId: string;
+  zoneName: string;
+  zoneType: string;
+  issuedAt: Date;
+  waveHeightMin: number | null;
+  waveHeightMax: number | null;
+  windForceMin: number | null;
+  windForceMax: number | null;
+  seaState: string | null;
+  visibility: string | null;
+  forecast: unknown;
+}
+
+async function getLatestForecasts(): Promise<MaritimeForecast[]> {
+  return prisma.maritimeWeatherForecast.findMany({
+    orderBy: { issuedAt: "desc" },
+    distinct: ["zoneId"],
+    select: {
+      zoneId: true,
+      zoneName: true,
+      zoneType: true,
+      issuedAt: true,
+      waveHeightMin: true,
+      waveHeightMax: true,
+      windForceMin: true,
+      windForceMax: true,
+      seaState: true,
+      visibility: true,
+      forecast: true,
+    },
+  }) as Promise<MaritimeForecast[]>;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -309,7 +343,10 @@ function ZoneCard({
 // ---------------------------------------------------------------------------
 
 export default async function MeteorologiaPage() {
-  const alerts = await getActiveCoastalAlerts();
+  const [alerts, forecasts] = await Promise.all([
+    getActiveCoastalAlerts(),
+    getLatestForecasts(),
+  ]);
 
   const severityCounts = alerts.reduce<Record<string, number>>(
     (acc, a) => {
@@ -480,35 +517,101 @@ export default async function MeteorologiaPage() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* Forecast placeholder                                              */}
+        {/* Maritime forecasts from AEMET                                     */}
         {/* ---------------------------------------------------------------- */}
-        <section aria-label="Próximamente: previsiones marítimas">
-          <div
-            className="rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 p-8 text-center"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--color-tl-sea-50) 0%, white 100%)",
-            }}
-          >
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: "var(--color-tl-sea-100)" }}
-            >
-              <Wind className="w-7 h-7 text-tl-sea-600" />
-            </div>
-            <h2 className="font-heading text-xl font-bold text-tl-sea-800 dark:text-tl-sea-200 mb-2">
-              Previsiones Marítimas Detalladas
+        <section aria-label="Previsiones marítimas AEMET">
+          <div className="flex items-center gap-3 mb-6">
+            <Wind className="w-6 h-6 text-tl-sea-500" />
+            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Previsiones Marítimas
             </h2>
-            <p className="text-sm text-tl-sea-700 dark:text-tl-sea-300 max-w-md mx-auto leading-relaxed">
-              Las previsiones marítimas detalladas estarán disponibles
-              próximamente. Incluirán altura de ola, estado de la mar,
-              viento y visibilidad por zona, directamente desde los
-              modelos numéricos de la AEMET.
-            </p>
-            <div className="flex items-center justify-center gap-2 mt-4 text-xs text-tl-sea-500 dark:text-tl-sea-400 font-medium">
-              <Eye className="w-3.5 h-3.5" />
-              Fuente: AEMET — Agencia Estatal de Meteorología
+            {forecasts.length > 0 && (
+              <span className="ml-auto font-mono text-sm font-semibold text-gray-500 dark:text-gray-400">
+                {forecasts.length} zonas
+              </span>
+            )}
+          </div>
+
+          {forecasts.length === 0 ? (
+            <div className="rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 bg-tl-sea-50 dark:bg-tl-sea-900/20 p-10 text-center">
+              <Wind className="w-12 h-12 text-tl-sea-300 mx-auto mb-3" />
+              <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                Sin previsiones disponibles
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                Los datos de previsión marítima se actualizan cada 6 horas desde la AEMET.
+              </p>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {forecasts.map((f) => (
+                <article
+                  key={f.zoneId}
+                  className="rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 bg-white dark:bg-gray-900 shadow-sm overflow-hidden"
+                >
+                  <div className="px-4 py-3 border-b border-tl-sea-100 dark:border-tl-sea-800/30" style={{ background: "var(--color-tl-sea-50)" }}>
+                    <div className="flex items-center gap-2">
+                      <Waves className="w-4 h-4 text-tl-sea-600 flex-shrink-0" />
+                      <h3 className="font-heading font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
+                        {f.zoneName}
+                      </h3>
+                      <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-tl-sea-100 dark:bg-tl-sea-800/50 text-tl-sea-700 dark:text-tl-sea-300 font-medium whitespace-nowrap">
+                        {f.zoneType === "COASTAL" ? "Costera" : "Alta mar"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      {(f.waveHeightMin != null || f.waveHeightMax != null) && (
+                        <div>
+                          <div className="text-xs text-gray-400 mb-0.5">Oleaje</div>
+                          <div className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">
+                            {f.waveHeightMin != null && f.waveHeightMax != null
+                              ? `${f.waveHeightMin}–${f.waveHeightMax} m`
+                              : `${f.waveHeightMax ?? f.waveHeightMin} m`}
+                          </div>
+                        </div>
+                      )}
+                      {(f.windForceMin != null || f.windForceMax != null) && (
+                        <div>
+                          <div className="text-xs text-gray-400 mb-0.5">Viento (Beaufort)</div>
+                          <div className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">
+                            {f.windForceMin != null && f.windForceMax != null
+                              ? `F${f.windForceMin}–F${f.windForceMax}`
+                              : `F${f.windForceMax ?? f.windForceMin}`}
+                          </div>
+                        </div>
+                      )}
+                      {f.seaState && (
+                        <div>
+                          <div className="text-xs text-gray-400 mb-0.5">Estado de la mar</div>
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 capitalize">
+                            {f.seaState}
+                          </div>
+                        </div>
+                      )}
+                      {f.visibility && (
+                        <div>
+                          <div className="text-xs text-gray-400 mb-0.5">Visibilidad</div>
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 capitalize">
+                            {f.visibility}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-800">
+                      <Clock className="w-3 h-3" />
+                      Emitido {formatTime(f.issuedAt)}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-center gap-2 mt-4 text-xs text-tl-sea-500 dark:text-tl-sea-400 font-medium">
+            <Eye className="w-3.5 h-3.5" />
+            Fuente: AEMET — Agencia Estatal de Meteorología
           </div>
         </section>
 
