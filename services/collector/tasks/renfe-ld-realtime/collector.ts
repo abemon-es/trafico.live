@@ -55,20 +55,35 @@ function brandToServiceType(brand: string): RailwayServiceType | null {
  * Fields are camelCase as observed in the JSON payload.
  */
 interface RawTrain {
+  // Train ID — API changed from codTren to codComercial (2026-04)
   codTren?: string | number;
+  codComercial?: string | number;
+  // Coordinates — API uses latitud/longitud (also support lat/lng for compat)
   lat?: number | string;
   lng?: number | string;
   latitud?: number | string;
   longitud?: number | string;
+  // Delay
   ultRetraso?: number | string;
+  // Station codes — new API uses codEstAnt/codEstSig instead of names
   estacionAnterior?: string;
   estacionSiguiente?: string;
+  codEstAnt?: string;
+  codEstSig?: string;
+  // ETA — new API: horaLlegadaSigEst (ISO), old: horaLlegadaSiguiente
   horaLlegadaSiguiente?: string;
+  horaLlegadaSigEst?: string;
+  // Speed + service type
   velocidad?: number | string;
   tipoServicio?: number | string;
+  codProduct?: number | string;
+  // Rolling stock + route
   serie?: string;
+  mat?: string;
   origen?: string;
   destino?: string;
+  codOrigen?: string;
+  codDestino?: string;
 }
 
 interface FlotaResponse {
@@ -156,23 +171,26 @@ export async function run(prisma: PrismaClient): Promise<void> {
       continue;
     }
 
-    const trainNumber = raw.codTren != null ? String(raw.codTren).trim() : null;
+    const trainNumber = raw.codComercial != null
+      ? String(raw.codComercial).trim()
+      : raw.codTren != null ? String(raw.codTren).trim() : null;
     if (!trainNumber) {
       skipped++;
       continue;
     }
 
-    const tipoServicio = parseIntField(raw.tipoServicio);
+    const tipoServicio = parseIntField(raw.codProduct ?? raw.tipoServicio);
     const brand = tipoServicio !== null ? (PRODUCT_BRANDS[tipoServicio] ?? null) : null;
     const serviceType = brand ? brandToServiceType(brand) : null;
 
     const delay = parseIntField(raw.ultRetraso);
     const speed = parseIntField(raw.velocidad);
 
-    // Parse ETA for next station — format typically "HH:MM" or ISO string
+    // Parse ETA for next station — new API uses ISO dates, old used "HH:MM"
     let nextStationEta: Date | null = null;
-    if (raw.horaLlegadaSiguiente) {
-      const etaStr = raw.horaLlegadaSiguiente.trim();
+    const etaRaw = raw.horaLlegadaSigEst || raw.horaLlegadaSiguiente;
+    if (etaRaw) {
+      const etaStr = etaRaw.trim();
       // Handle "HH:MM" format by prepending today's date
       if (/^\d{1,2}:\d{2}$/.test(etaStr)) {
         const [hh, mm] = etaStr.split(":").map(Number);
@@ -210,12 +228,12 @@ export async function run(prisma: PrismaClient): Promise<void> {
           longitude: lng,
           speed,
           delay,
-          originStation: raw.origen?.trim() || null,
-          destStation: raw.destino?.trim() || null,
-          prevStation: raw.estacionAnterior?.trim() || null,
-          nextStation: raw.estacionSiguiente?.trim() || null,
+          originStation: raw.origen?.trim() || raw.codOrigen?.trim() || null,
+          destStation: raw.destino?.trim() || raw.codDestino?.trim() || null,
+          prevStation: raw.estacionAnterior?.trim() || raw.codEstAnt?.trim() || null,
+          nextStation: raw.estacionSiguiente?.trim() || raw.codEstSig?.trim() || null,
           nextStationEta,
-          rollingStock: raw.serie?.trim() || null,
+          rollingStock: raw.serie?.trim() || raw.mat?.trim() || null,
           fetchedAt: roundedFetchedAt,
         },
         update: {
@@ -226,12 +244,12 @@ export async function run(prisma: PrismaClient): Promise<void> {
           longitude: lng,
           speed,
           delay,
-          originStation: raw.origen?.trim() || null,
-          destStation: raw.destino?.trim() || null,
-          prevStation: raw.estacionAnterior?.trim() || null,
-          nextStation: raw.estacionSiguiente?.trim() || null,
+          originStation: raw.origen?.trim() || raw.codOrigen?.trim() || null,
+          destStation: raw.destino?.trim() || raw.codDestino?.trim() || null,
+          prevStation: raw.estacionAnterior?.trim() || raw.codEstAnt?.trim() || null,
+          nextStation: raw.estacionSiguiente?.trim() || raw.codEstSig?.trim() || null,
           nextStationEta,
-          rollingStock: raw.serie?.trim() || null,
+          rollingStock: raw.serie?.trim() || raw.mat?.trim() || null,
         },
       });
       stored++;
