@@ -6,7 +6,7 @@
 # 5 cron tiers + 1 always-on WebSocket service:
 #   collector-realtime — incident, v16, panel, detector, intensity, city-traffic,
 #                        andorra, renfe-alerts, renfe-ld-realtime, renfe-positions, opensky
-#   collector-frequent — weather, maritime-forecast, portugal-weather
+#   collector-frequent — weather, air-quality, maritime-forecast, portugal-weather
 #   collector-fuel     — gas-station, maritime-fuel, portugal-fuel
 #   collector-daily    — daily-stats, cnmc-fuel, mobilitydata-sync, renfe-gtfs, ine-stats,
 #                        camera, aena-stats, typesense-sync, charger, aemet-historical, insights

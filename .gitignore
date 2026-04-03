@@ -57,6 +57,11 @@ data/.municipality-geocode-cache.json
 # Collector node_modules
 services/v16-collector/node_modules/
 services/incident-collector/node_modules/
+services/collector/node_modules/
+
+# Dev/preview artifacts
+mcp-config.json
+preview-map-styles.html
 
 # Brand/design assets in repo root (working files, not for version control)
 *.png
