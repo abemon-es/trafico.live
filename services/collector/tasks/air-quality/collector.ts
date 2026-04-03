@@ -38,15 +38,16 @@ const TASK = "air-quality";
 // Candidate endpoints (tried in order)
 // ---------------------------------------------------------------------------
 
-const ENDPOINTS = [
-  // Primary: MITECO ArcGIS REST MapServer for ICA data
+// Primary: MITECO open data CSV (CC-BY 4.0, updated hourly)
+// Contains: cod_estacion, nombre, tipo, latitud, longitud, activa, fecha, indice, debido_a
+const CSV_URL = "https://ica.miteco.es/datos/ica-ultima-hora.csv";
+
+// Fallback: MITECO backend JSON API (same data source as ica.miteco.es viewer)
+const BACKEND_URL = "https://backend.ica.miteco.es/sgca/";
+
+// Legacy endpoints (no longer serving data — kept for reference only)
+const LEGACY_ENDPOINTS = [
   "https://sig.miteco.gob.es/arcgis/rest/services/CALIDAD_AIRE/ICA_Datos/MapServer/0/query?where=1%3D1&outFields=*&f=geojson&returnGeometry=true",
-  // Alt 1: Alternate layer numbering
-  "https://sig.miteco.gob.es/arcgis/rest/services/CALIDAD_AIRE/ICA_Datos/MapServer/1/query?where=1%3D1&outFields=*&f=geojson&returnGeometry=true",
-  // Alt 2: Different service path seen on MITECO viewers
-  "https://sig.miteco.gob.es/arcgis/rest/services/CalidadAire/ICA/MapServer/0/query?where=1%3D1&outFields=*&f=geojson&returnGeometry=true",
-  // Alt 3: datos.gob.es CKAN API for air quality dataset
-  "https://datos.gob.es/apidata/catalog/dataset/l01080193-qualitat-de-l-aire-als-punts-de-mesura-dels-contaminants-de-la-xarxa-de-vigilancia-i-previsio-de-la-contaminacio-atmosferica-2.json",
 ];
 
 // ---------------------------------------------------------------------------
@@ -243,7 +244,7 @@ interface StationData {
 // Fetch helpers
 // ---------------------------------------------------------------------------
 
-async function fetchWithTimeout(url: string, timeoutMs = 30000): Promise<Response> {
+async function fetchWithTimeout(url: string, timeoutMs = 30000, init?: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -251,8 +252,10 @@ async function fetchWithTimeout(url: string, timeoutMs = 30000): Promise<Respons
       signal: controller.signal,
       headers: {
         "User-Agent": "trafico.live collector/1.0 (contact: hola@trafico.live)",
-        "Accept": "application/json, application/geo+json",
+        "Accept": "text/csv, application/json, application/geo+json",
+        ...(init?.headers || {}),
       },
+      ...(init ? { method: init.method, body: init.body } : {}),
     });
     return res;
   } finally {
@@ -291,41 +294,170 @@ async function tryFetchGeoJSON(url: string): Promise<GeoJSONResponse | null> {
 // Main collector
 // ---------------------------------------------------------------------------
 
-export async function run(prisma: PrismaClient): Promise<void> {
-  log(TASK, "Starting MITECO air quality collector");
+// ---------------------------------------------------------------------------
+// CSV parser for ica-ultima-hora.csv
+// Fields: cod_estacion;nombre;tipo;latitud;longitud;activa;fecha;indice;debido_a
+// ---------------------------------------------------------------------------
 
-  // Try each endpoint in order until one succeeds
-  let geojson: GeoJSONResponse | null = null;
-  for (const url of ENDPOINTS) {
-    geojson = await tryFetchGeoJSON(url);
-    if (geojson) break;
+function parseIcaCsv(csv: string): StationData[] {
+  const lines = csv.split("\n").filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return [];
+
+  // Header detection — semicolon-separated
+  const header = lines[0].split(";").map((h) => h.trim().toLowerCase());
+  const idx = (name: string) => header.indexOf(name);
+
+  const iCod = idx("cod_estacion");
+  const iName = idx("nombre");
+  const iTipo = idx("tipo");
+  const iLat = idx("latitud");
+  const iLon = idx("longitud");
+  const iIndice = idx("indice");
+  const iDebido = idx("debido_a");
+
+  if (iCod < 0 || iLat < 0 || iLon < 0) {
+    log(TASK, `CSV header missing required fields: ${header.join(", ")}`);
+    return [];
   }
 
-  if (!geojson || !geojson.features || geojson.features.length === 0) {
-    log(TASK, "No data found from any MITECO endpoint.");
-    log(TASK, "Endpoints tried:");
-    for (const url of ENDPOINTS) {
-      log(TASK, `  - ${url}`);
-    }
-    log(TASK, "");
-    log(TASK, "NOTE: MITECO may require authenticated access or use a different URL.");
-    log(TASK, "Visit https://sig.miteco.gob.es/calidad-aire/ and inspect network requests");
-    log(TASK, "to discover the live GeoJSON endpoint.");
-    log(TASK, "Collector exiting without writing any data (safe).");
-    return;
-  }
-
-  // Parse features
   const stations: StationData[] = [];
-  for (const feature of geojson.features) {
-    const data = extractFromArcGIS(feature);
-    if (data) stations.push(data);
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(";");
+    if (cols.length < header.length) continue;
+
+    const stationId = cols[iCod]?.trim();
+    if (!stationId) continue;
+
+    const lat = parseFloat(cols[iLat]);
+    const lon = parseFloat(cols[iLon]);
+    if (isNaN(lat) || isNaN(lon) || lat === 0 || lon === 0) continue;
+
+    const name = cols[iName]?.trim() || stationId;
+    const tipo = cols[iTipo]?.trim() || "";
+
+    // ICA from CSV is the composite index (1-6), null when good
+    const rawIndice = iIndice >= 0 ? parseInt(cols[iIndice]?.trim(), 10) : NaN;
+    const ica = !isNaN(rawIndice) && rawIndice >= 1 && rawIndice <= 6 ? rawIndice : 1; // default to 1 (Buena) when null
+    const icaLabel = ICA_LABELS[ica] || "Buena";
+    const debidoA = iDebido >= 0 ? cols[iDebido]?.trim() || null : null;
+
+    // Extract province from cod_estacion (first 2 digits)
+    const province = stationId.length >= 2 ? stationId.substring(0, 2) : null;
+
+    stations.push({
+      stationId,
+      name,
+      city: null,
+      province,
+      network: tipo || "Red de vigilancia MITECO",
+      latitude: lat,
+      longitude: lon,
+      // CSV doesn't have individual pollutant values, just composite ICA
+      no2: null,
+      pm10: null,
+      pm25: null,
+      o3: null,
+      so2: null,
+      co: null,
+      ica,
+      icaLabel: debidoA ? `${icaLabel} (${debidoA})` : icaLabel,
+    });
   }
 
-  log(TASK, `Parsed ${stations.length} stations from ${geojson.features.length} features`);
+  return stations;
+}
+
+// ---------------------------------------------------------------------------
+// MITECO backend JSON fetcher (fallback for per-station pollutant values)
+// ---------------------------------------------------------------------------
+
+async function fetchBackendStations(): Promise<StationData[]> {
+  const now = new Date();
+  const utcHour = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")} ${String(now.getUTCHours()).padStart(2, "0")}:00:00`;
+
+  log(TASK, `Trying MITECO backend: refrescarICA for ${utcHour}`);
+
+  const res = await fetchWithTimeout(BACKEND_URL, 30000, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `sql=refrescarICA%23lecturas_horarias%23${encodeURIComponent(utcHour)}`,
+  });
+
+  if (!res.ok) {
+    log(TASK, `Backend returned HTTP ${res.status}`);
+    return [];
+  }
+
+  const data = (await res.json()) as Array<{
+    cod_estacion?: string;
+    nombre?: string;
+    tipo_estacion?: string;
+    longitud_g?: number;
+    latitud_g?: number;
+    indice_nivel?: number | null;
+    provincia?: string;
+  }>;
+
+  if (!Array.isArray(data)) return [];
+
+  return data
+    .filter((d) => d.cod_estacion && d.latitud_g && d.longitud_g)
+    .map((d) => {
+      const ica = d.indice_nivel != null && d.indice_nivel >= 1 ? d.indice_nivel : 1;
+      return {
+        stationId: d.cod_estacion!,
+        name: d.nombre || d.cod_estacion!,
+        city: null,
+        province: d.provincia || (d.cod_estacion!.length >= 2 ? d.cod_estacion!.substring(0, 2) : null),
+        network: d.tipo_estacion || "Red de vigilancia MITECO",
+        latitude: d.latitud_g!,
+        longitude: d.longitud_g!,
+        no2: null, pm10: null, pm25: null, o3: null, so2: null, co: null,
+        ica,
+        icaLabel: ICA_LABELS[ica] || "Buena",
+      };
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Main collector
+// ---------------------------------------------------------------------------
+
+export async function run(prisma: PrismaClient): Promise<void> {
+  log(TASK, "Starting MITECO air quality collector (v2 — ica.miteco.es)");
+
+  // Strategy: try CSV first (stable, CC-BY 4.0), fallback to backend JSON
+  let stations: StationData[] = [];
+
+  // Attempt 1: MITECO open data CSV
+  try {
+    log(TASK, `Fetching ${CSV_URL}`);
+    const res = await fetchWithTimeout(CSV_URL);
+    if (res.ok) {
+      const csv = await res.text();
+      stations = parseIcaCsv(csv);
+      log(TASK, `CSV: parsed ${stations.length} stations`);
+    } else {
+      log(TASK, `CSV returned HTTP ${res.status} — trying backend`);
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    log(TASK, `CSV fetch error: ${msg} — trying backend`);
+  }
+
+  // Attempt 2: MITECO backend JSON API
+  if (stations.length === 0) {
+    try {
+      stations = await fetchBackendStations();
+      log(TASK, `Backend: parsed ${stations.length} stations`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log(TASK, `Backend error: ${msg}`);
+    }
+  }
 
   if (stations.length === 0) {
-    log(TASK, "No parseable stations — check field name mapping in extractFromArcGIS()");
+    log(TASK, "No data from any source. Exiting safely.");
     return;
   }
 
@@ -336,7 +468,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   for (const s of stations) {
     try {
-      // Upsert station record
       const station = await prisma.airQualityStation.upsert({
         where: { stationId: s.stationId },
         create: {
@@ -359,9 +490,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
       });
       upserted++;
 
-      // Insert reading (only if there's at least one pollutant value)
-      const hasData = [s.no2, s.pm10, s.pm25, s.o3, s.so2, s.co].some((v) => v !== null);
-      if (hasData) {
+      // Insert reading with ICA data
+      if (s.ica !== null) {
         await prisma.airQualityReading.create({
           data: {
             stationId: station.id,
