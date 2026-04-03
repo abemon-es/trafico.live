@@ -247,6 +247,10 @@ interface StationData {
 async function fetchWithTimeout(url: string, timeoutMs = 30000, init?: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  // MITECO sites have incomplete TLS cert chains — skip verification for *.miteco.es only
+  const isMiteco = url.includes("miteco.es");
+  const savedTLS = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  if (isMiteco) process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   try {
     const res = await fetch(url, {
       signal: controller.signal,
@@ -261,6 +265,10 @@ async function fetchWithTimeout(url: string, timeoutMs = 30000, init?: RequestIn
     return res;
   } finally {
     clearTimeout(timer);
+    if (isMiteco) {
+      if (savedTLS !== undefined) process.env.NODE_TLS_REJECT_UNAUTHORIZED = savedTLS;
+      else delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    }
   }
 }
 
