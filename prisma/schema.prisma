@@ -116,6 +116,8 @@ model TrafficIncident {
   @@index([province])
   @@index([roadNumber])
   @@index([source, isActive])
+  @@index([lastSeenAt])
+  @@index([isActive, lastSeenAt])
 }
 
 // ============================================
@@ -1948,6 +1950,7 @@ model RenfeFleetPosition {
   @@unique([trainNumber, fetchedAt])
   @@index([fetchedAt])
   @@index([brand])
+  @@index([brand, fetchedAt])
   @@index([serviceType])
   @@index([latitude, longitude])
 }
@@ -2044,7 +2047,6 @@ model ApiKey {
   // Relations
   usage ApiUsage[]
 
-  @@index([key])
   @@index([email])
   @@index([tier])
   @@index([stripeCustomerId])
@@ -2147,6 +2149,7 @@ model FerryTrip {
 
   route       FerryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
+  @@unique([routeId, tripId])
   @@index([routeId])
 }
 

@@ -10,9 +10,6 @@
 # MobilityData GTFS catalog sync + historical snapshots (downloads ~2MB CSV + optional ZIPs)
 30 2 * * * TASK=mobilitydata-sync NODE_OPTIONS=--max-old-space-size=512 npx tsx index.ts 2>&1
 
-# Renfe GTFS static timetables
-0 3 * * * TASK=renfe-gtfs NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
-
 # INE transport statistics (light — JSON API calls, ~50MB)
 30 3 * * * TASK=ine-stats npx tsx index.ts 2>&1
 
@@ -28,3 +25,7 @@
 0 8 * * * TASK=aemet-historical npx tsx index.ts 2>&1
 
 30 22 * * * TASK=insights npx tsx index.ts 2>&1
+
+# NOTE: accident-microdata — when added, requires NODE_OPTIONS=--max-old-space-size=512
+# (large CSV parsing, ~400MB peak). Example:
+# 0 1 * * 0 TASK=accident-microdata NODE_OPTIONS=--max-old-space-size=512 npx tsx index.ts 2>&1
