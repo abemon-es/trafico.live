@@ -818,6 +818,17 @@ should_build "gas-stations"     && generate_gas_stations
 should_build "chargers"         && generate_chargers
 should_build "railway-stations" && generate_railway_stations
 should_build "railway-routes"   && generate_railway_routes
+should_build "climate-stations" && generate_climate_stations
+should_build "air-quality"      && generate_air_quality
+should_build "airports"         && generate_airports
+should_build "ports"            && generate_ports
+should_build "ferry-stops"      && generate_ferry_stops
+should_build "ferry-routes"     && generate_ferry_routes
+should_build "transit-stops"    && generate_transit_stops
+should_build "transit-routes"   && generate_transit_routes
+should_build "portugal-gas"     && generate_portugal_gas
+should_build "panels"           && generate_panels
+should_build "accidents"        && generate_accidents
 
 END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))

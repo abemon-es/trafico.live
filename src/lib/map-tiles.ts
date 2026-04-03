@@ -54,6 +54,7 @@ const TILES_BASE = "https://tiles.trafico.live";
  * (see services/tiles/generate-pmtiles.sh).
  */
 export const SOURCE_LAYERS = {
+  // Static PMTiles layers (tippecanoe -l parameter)
   stations: "stations",
   cameras: "cameras",
   radars: "radars",
@@ -61,10 +62,26 @@ export const SOURCE_LAYERS = {
   chargers: "chargers",
   railwayStations: "railway_stations",
   railwayRoutes: "railway_routes",
+  climateStations: "climate_stations",
+  airQuality: "air_quality",
+  airports: "airports",
+  ports: "ports",
+  ferryStops: "ferry_stops",
+  ferryRoutes: "ferry_routes",
+  transitStops: "transit_stops",
+  transitRoutes: "transit_routes",
+  portugalGas: "portugal_gas",
+  panels: "panels",
+  accidents: "accidents",
   // Dynamic layers (Martin tile function names from services/martin/config.yaml)
   sensors: "sensors",
   incidents: "incidents",
   fleet: "fleet",
+  aircraft: "aircraft",
+  vessels: "vessels",
+  citySensors: "city_sensors",
+  emergencies: "emergencies",
+  roadworks: "roadworks",
 } as const;
 
 export type SourceLayerName = (typeof SOURCE_LAYERS)[keyof typeof SOURCE_LAYERS];
@@ -120,6 +137,61 @@ export const TILE_SOURCES = {
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.railwayRoutes,
   },
+  climateStations: {
+    url: `pmtiles://${TILES_BASE}/tiles/climate-stations.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.climateStations,
+  },
+  airQuality: {
+    url: `pmtiles://${TILES_BASE}/tiles/air-quality.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.airQuality,
+  },
+  airports: {
+    url: `pmtiles://${TILES_BASE}/tiles/airports.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.airports,
+  },
+  ports: {
+    url: `pmtiles://${TILES_BASE}/tiles/ports.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.ports,
+  },
+  ferryStops: {
+    url: `pmtiles://${TILES_BASE}/tiles/ferry-stops.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.ferryStops,
+  },
+  ferryRoutes: {
+    url: `pmtiles://${TILES_BASE}/tiles/ferry-routes.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.ferryRoutes,
+  },
+  transitStops: {
+    url: `pmtiles://${TILES_BASE}/tiles/transit-stops.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.transitStops,
+  },
+  transitRoutes: {
+    url: `pmtiles://${TILES_BASE}/tiles/transit-routes.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.transitRoutes,
+  },
+  portugalGas: {
+    url: `pmtiles://${TILES_BASE}/tiles/portugal-gas.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.portugalGas,
+  },
+  panels: {
+    url: `pmtiles://${TILES_BASE}/tiles/panels.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.panels,
+  },
+  accidents: {
+    url: `pmtiles://${TILES_BASE}/tiles/accidents.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.accidents,
+  },
 
   // ── Dynamic Martin tile sources (TileJSON endpoint) ──
   sensors: {
@@ -136,6 +208,31 @@ export const TILE_SOURCES = {
     url: `${TILES_BASE}/dynamic/fleet`,
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.fleet,
+  },
+  aircraft: {
+    url: `${TILES_BASE}/dynamic/aircraft`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.aircraft,
+  },
+  vessels: {
+    url: `${TILES_BASE}/dynamic/vessels`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.vessels,
+  },
+  citySensors: {
+    url: `${TILES_BASE}/dynamic/city_sensors`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.citySensors,
+  },
+  emergencies: {
+    url: `${TILES_BASE}/dynamic/emergencies`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.emergencies,
+  },
+  roadworks: {
+    url: `${TILES_BASE}/dynamic/roadworks`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.roadworks,
   },
 } as const satisfies Record<string, TileSourceConfig>;
 
@@ -613,6 +710,266 @@ export const LAYER_STYLES = {
       "circle-stroke-width": 2,
       "circle-stroke-color": "#ffffff",
       "circle-opacity": 0.9,
+    },
+  },
+
+  // ── Aircraft positions (OpenSky) ──
+  aircraftCircle: {
+    id: "aircraft-circle",
+    type: "circle",
+    source: "aircraft",
+    "source-layer": SOURCE_LAYERS.aircraft,
+    paint: {
+      "circle-color": [
+        "case", ["get", "onGround"], "#94a3b8", "#0ea5e9",
+      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 10],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.85,
+    },
+  },
+
+  // ── Vessel positions (AIS) ──
+  vesselsCircle: {
+    id: "vessels-circle",
+    type: "circle",
+    source: "vessels",
+    "source-layer": SOURCE_LAYERS.vessels,
+    paint: {
+      "circle-color": [
+        "match", ["coalesce", ["get", "shipType"], 0],
+        60, "#dc2626",  // passenger
+        70, "#16a34a",  // cargo
+        80, "#d97706",  // tanker
+        "#0891b2",      // other
+      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 10],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.85,
+    },
+  },
+
+  // ── City traffic sensors ──
+  citySensorsCircle: {
+    id: "city-sensors-circle",
+    type: "circle",
+    source: "citySensors",
+    "source-layer": SOURCE_LAYERS.citySensors,
+    paint: {
+      "circle-color": [
+        "interpolate", ["linear"], ["coalesce", ["get", "serviceLevel"], 0],
+        0, MAP_COLORS.trafficGreen,
+        1, MAP_COLORS.trafficYellow,
+        2, MAP_COLORS.trafficOrange,
+        3, MAP_COLORS.trafficRed,
+      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 3, 12, 6, 15, 10],
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.8,
+    },
+  },
+
+  // ── Maritime emergencies (SASEMAR) ──
+  emergenciesCircle: {
+    id: "emergencies-circle",
+    type: "circle",
+    source: "emergencies",
+    "source-layer": SOURCE_LAYERS.emergencies,
+    paint: {
+      "circle-color": "#dc2626",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 5, 10, 9, 14, 14],
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.9,
+    },
+  },
+
+  // ── Active roadworks ──
+  roadworksCircle: {
+    id: "roadworks-circle",
+    type: "circle",
+    source: "roadworks",
+    "source-layer": SOURCE_LAYERS.roadworks,
+    paint: {
+      "circle-color": "#f59e0b",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4, 10, 7, 14, 11],
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.9,
+    },
+  },
+
+  // ── Climate stations (AEMET) ──
+  climateStationsCircle: {
+    id: "climate-stations-circle",
+    type: "circle",
+    source: "climateStations",
+    "source-layer": SOURCE_LAYERS.climateStations,
+    paint: {
+      "circle-color": "#06b6d4",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 9],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.85,
+    },
+  },
+
+  // ── Air quality stations (MITECO) ──
+  airQualityCircle: {
+    id: "air-quality-circle",
+    type: "circle",
+    source: "airQuality",
+    "source-layer": SOURCE_LAYERS.airQuality,
+    paint: {
+      "circle-color": "#84cc16",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 9],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.85,
+    },
+  },
+
+  // ── Airports ──
+  airportsCircle: {
+    id: "airports-circle",
+    type: "circle",
+    source: "airports",
+    "source-layer": SOURCE_LAYERS.airports,
+    paint: {
+      "circle-color": "#6366f1",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 5, 10, 9, 14, 14],
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.9,
+    },
+  },
+
+  // ── Spanish ports ──
+  portsCircle: {
+    id: "ports-circle",
+    type: "circle",
+    source: "ports",
+    "source-layer": SOURCE_LAYERS.ports,
+    paint: {
+      "circle-color": "#0284c7",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 5, 10, 9, 14, 14],
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.9,
+    },
+  },
+
+  // ── Ferry stops ──
+  ferryStopsCircle: {
+    id: "ferry-stops-circle",
+    type: "circle",
+    source: "ferryStops",
+    "source-layer": SOURCE_LAYERS.ferryStops,
+    paint: {
+      "circle-color": "#0891b2",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 9],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.85,
+    },
+  },
+
+  // ── Ferry routes (line geometry) ──
+  ferryRoutesLine: {
+    id: "ferry-routes-line",
+    type: "line",
+    source: "ferryRoutes",
+    "source-layer": SOURCE_LAYERS.ferryRoutes,
+    paint: {
+      "line-color": ["coalesce", ["get", "routeColor"], "#0891b2"],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 3, 14, 5],
+      "line-opacity": 0.7,
+      "line-dasharray": [6, 3],
+    },
+  },
+
+  // ── Transit stops (bus, metro, tram) ──
+  transitStopsCircle: {
+    id: "transit-stops-circle",
+    type: "circle",
+    source: "transitStops",
+    "source-layer": SOURCE_LAYERS.transitStops,
+    paint: {
+      "circle-color": [
+        "match", ["get", "locationType"],
+        1, "#dc2626",  // station
+        "#3b82f6",     // stop
+      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2, 12, 5, 15, 8],
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.8,
+    },
+  },
+
+  // ── Transit routes (line geometry) ──
+  transitRoutesLine: {
+    id: "transit-routes-line",
+    type: "line",
+    source: "transitRoutes",
+    "source-layer": SOURCE_LAYERS.transitRoutes,
+    paint: {
+      "line-color": ["coalesce", ["get", "routeColor"], "#3b82f6"],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1, 12, 2.5, 15, 4],
+      "line-opacity": 0.7,
+    },
+  },
+
+  // ── Portugal gas stations ──
+  portugalGasCircle: {
+    id: "portugal-gas-circle",
+    type: "circle",
+    source: "portugalGas",
+    "source-layer": SOURCE_LAYERS.portugalGas,
+    paint: {
+      "circle-color": MAP_COLORS.amber,
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 2, 10, 5, 14, 8],
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.8,
+    },
+  },
+
+  // ── Variable panels (DGT) ──
+  panelsCircle: {
+    id: "panels-circle",
+    type: "circle",
+    source: "panels",
+    "source-layer": SOURCE_LAYERS.panels,
+    paint: {
+      "circle-color": "#06b6d4",
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 9],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.85,
+    },
+  },
+
+  // ── Accident microdata (historical hotspots) ──
+  accidentsCircle: {
+    id: "accidents-circle",
+    type: "circle",
+    source: "accidents",
+    "source-layer": SOURCE_LAYERS.accidents,
+    paint: {
+      "circle-color": [
+        "match", ["get", "severity"],
+        "FATAL", "#dc2626",
+        "GRAVE", "#ea580c",
+        "#f59e0b",
+      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 2, 8, 4, 12, 7],
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.7,
     },
   },
 } as const satisfies Record<string, AddLayerObject>;
