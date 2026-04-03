@@ -442,6 +442,10 @@ export default function PrediccionTraficoContent() {
   const forecast: ForecastHour[] = forecastData?.data?.forecast ?? [];
   const summary = useMemo(() => deriveSummaryStats(heatmap), [heatmap]);
 
+  const sensorProfiles = distribucionData?.data?.sensorProfiles ?? [];
+  const incidentProfiles = distribucionData?.data?.incidentProfiles ?? [];
+  const dayOfWeekPattern = distribucionData?.data?.dayOfWeekPattern ?? [];
+
   const isLoading = loadingHeatmap && loadingComparison && loadingForecast;
 
   return (
@@ -500,6 +504,34 @@ export default function PrediccionTraficoContent() {
                 currentDayOfWeek={now.dayOfWeek}
                 currentHour={now.hour}
               />
+            </section>
+          )}
+
+          {/* Hourly distribution chart */}
+          {sensorProfiles.length > 0 && (
+            <section className="mb-8 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <h2 className="text-lg font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-tl-500" />
+                Distribución horaria de intensidad
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                Intensidad media (veh/h) por hora del día · Datos de {formatN(sensorProfiles.reduce((s, p) => s + p.sampleCount, 0))} mediciones
+              </p>
+              <HourlyDistributionChart profiles={sensorProfiles} currentHour={now.hour} />
+            </section>
+          )}
+
+          {/* Day-of-week chart */}
+          {dayOfWeekPattern.length > 0 && (
+            <section className="mb-8 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <h2 className="text-lg font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-tl-500" />
+                Patrón semanal de incidencias
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                Total acumulado de incidencias por día de la semana
+              </p>
+              <DayOfWeekChart data={dayOfWeekPattern} />
             </section>
           )}
 
