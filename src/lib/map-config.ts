@@ -36,6 +36,10 @@ export const MAP_PRESETS = {
   ceuta: { center: [-5.34, 35.89] as [number, number], zoom: 13 },
   melilla: { center: [-2.95, 35.29] as [number, number], zoom: 13 },
   baleares: { center: [2.9, 39.6] as [number, number], zoom: 9 },
+  marruecos: { center: [-6.85, 33.97] as [number, number], zoom: 6 },
+  portugal: { center: [-8.22, 39.4] as [number, number], zoom: 7 },
+  andorra: { center: [1.52, 42.51] as [number, number], zoom: 11 },
+  gibraltar: { center: [-5.35, 36.14] as [number, number], zoom: 14 },
 } as const;
 
 /** Province GeoJSON URL */

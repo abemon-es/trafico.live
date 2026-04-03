@@ -57,6 +57,14 @@ const MAJOR_CITIES = [
   { name: "Valladolid", slug: "valladolid",           lng: -4.7245, lat: 41.6523, type: "city" },
   { name: "Alicante",   slug: "alicante",             lng: -0.4907, lat: 38.3452, type: "city" },
   { name: "Córdoba",    slug: "cordoba",              lng: -4.7794, lat: 37.8882, type: "city" },
+  // More Spanish cities
+  { name: "Vigo",       slug: "vigo",                 lng: -8.7207, lat: 42.2328, type: "city" },
+  { name: "A Coruña",   slug: "a-coruna",             lng: -8.4063, lat: 43.3623, type: "city" },
+  { name: "Santander",  slug: "santander",            lng: -3.8044, lat: 43.4623, type: "city" },
+  { name: "San Sebastián", slug: "san-sebastian",     lng: -1.9812, lat: 43.3183, type: "city" },
+  { name: "Granada",    slug: "granada",              lng: -3.5986, lat: 37.1773, type: "city" },
+  { name: "Las Palmas", slug: "las-palmas-de-gran-canaria", lng: -15.4138, lat: 28.0997, type: "city" },
+  { name: "S/C Tenerife", slug: "santa-cruz-de-tenerife", lng: -16.2519, lat: 28.4636, type: "city" },
   // Cross-border territories
   { name: "Portugal",   slug: "/portugal",            lng: -8.2245, lat: 39.3999, type: "country",
     bounds: [[-9.5, 36.96], [-6.19, 42.15]] as [[number,number],[number,number]],
@@ -66,6 +74,9 @@ const MAJOR_CITIES = [
     dataUrl: "/api/andorra/incidents" },
   { name: "Gibraltar",  slug: "/gibraltar",           lng: -5.3536, lat: 36.1408, type: "country",
     bounds: [[-5.37, 36.11], [-5.34, 36.16]] as [[number,number],[number,number]],
+    dataUrl: null },
+  { name: "Marruecos",  slug: "/marruecos",           lng: -6.8498, lat: 33.9716, type: "country",
+    bounds: [[-13.2, 27.6], [-1.0, 35.9]] as [[number,number],[number,number]],
     dataUrl: null },
 ];
 
@@ -348,7 +359,7 @@ export function InteractiveBaseMap({
               const lats = coords.map((c: number[]) => c[1]);
               map.flyTo({
                 center: [(Math.min(...lngs) + Math.max(...lngs)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2],
-                zoom: props.name === "Andorra" ? 11 : props.name === "Gibraltar" ? 14 : 7,
+                zoom: props.name === "Andorra" ? 11 : props.name === "Gibraltar" ? 14 : props.name === "Marruecos" ? 6 : 7,
                 duration: 1200,
                 essential: true,
               });
@@ -364,6 +375,8 @@ export function InteractiveBaseMap({
                     setSelectedData({ "Incidencias": d.incidents?.length ?? d.count ?? 0, "Fuente": "Mobilitat", "Cámaras": "En vivo" });
                   }
                 }).catch(() => {});
+              } else if (props.slug === "/marruecos") {
+                setSelectedData({ "Frontera": "Ceuta + Melilla", "Tránsito": "Paso del Estrecho", "Fuente": "DGT + DGSN" });
               } else {
                 setSelectedData({ "Territorio": "Británico", "Frontera": "España", "Acceso": "La Línea" });
               }
@@ -593,7 +606,13 @@ export function InteractiveBaseMap({
                         { label: "Incidencias Mobilitat", href: "/andorra" },
                         { label: "Cámaras en vivo",       href: "/andorra" },
                       ]
-                    : [{ label: "Información general", href: selected.href }]
+                    : selected.code === "/marruecos"
+                      ? [
+                          { label: "Paso del Estrecho",     href: "/marruecos" },
+                          { label: "Frontera Ceuta",        href: "/ceuta" },
+                          { label: "Frontera Melilla",      href: "/melilla" },
+                        ]
+                      : [{ label: "Información general", href: selected.href }]
               ).map((link) => (
                 <Link
                   key={link.label}
@@ -649,6 +668,12 @@ export function InteractiveBaseMap({
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-tl-300 transition-all shadow-sm"
           >
             Melilla
+          </button>
+          <button
+            onClick={() => flyTo(2.9, 39.6, 9)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-tl-300 transition-all shadow-sm"
+          >
+            Baleares
           </button>
         </div>
       )}
