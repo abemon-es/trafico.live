@@ -317,15 +317,7 @@ export function MapControls({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [panelOpen]);
 
-  // Lock scroll when panel open on mobile
-  useEffect(() => {
-    if (panelOpen && window.innerWidth < 768) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [panelOpen]);
+  // Note: no body scroll lock — panel scrolls independently via overflow-y-auto
 
   const activeLayerCount = Object.values(activeLayers).filter(Boolean).length;
   const activeFilterCount = incidentFilters.effects.length + incidentFilters.causes.length;
@@ -384,8 +376,8 @@ export function MapControls({
 
               {/* Panel */}
               <div className="
-                fixed inset-x-0 bottom-0 max-h-[80vh] z-50
-                md:absolute md:inset-auto md:top-full md:left-0 md:mt-2 md:w-80 md:max-h-[70vh] md:bottom-auto
+                fixed inset-x-0 bottom-0 max-h-[85vh] z-50
+                md:absolute md:inset-auto md:top-full md:left-0 md:mt-2 md:w-80 md:max-h-[80vh] md:bottom-auto
                 bg-white dark:bg-gray-900 md:rounded-xl md:shadow-xl md:border md:border-gray-200 md:dark:border-gray-800
                 rounded-t-2xl md:rounded-t-xl
                 overflow-hidden flex flex-col
