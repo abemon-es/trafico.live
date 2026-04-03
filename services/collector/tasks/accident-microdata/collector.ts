@@ -16,7 +16,6 @@
 import { PrismaClient, RoadType } from "@prisma/client";
 import ExcelJS from "exceljs";
 import { log, logError, inferRoadType } from "../../shared/utils.js";
-import { PROVINCES, PROVINCE_NAMES } from "../../../../src/lib/geo/ine-codes.js";
 
 const TASK = "accident-microdata";
 
@@ -40,16 +39,10 @@ function getAltUrl(suffix: string): string {
 }
 
 // ── Province name → INE 2-digit code lookup ───────────────────────────────
-// Build a normalized lookup map from the canonical PROVINCES array
+// Self-contained mapping (no frontend imports needed in Docker collector)
 const PROVINCE_CODE_BY_NAME: Map<string, string> = new Map();
 
-for (const p of PROVINCES) {
-  const normalized = normalizeProvinceName(p.name);
-  PROVINCE_CODE_BY_NAME.set(normalized, p.code);
-}
-
-// Also add common alternate spellings used in DGT files
-const EXTRA_MAPPINGS: Record<string, string> = {
+const PROVINCE_MAPPINGS: Record<string, string> = {
   "alava": "01",
   "araba": "01",
   "albacete": "02",
@@ -119,7 +112,7 @@ const EXTRA_MAPPINGS: Record<string, string> = {
   "melilla": "52",
 };
 
-for (const [name, code] of Object.entries(EXTRA_MAPPINGS)) {
+for (const [name, code] of Object.entries(PROVINCE_MAPPINGS)) {
   PROVINCE_CODE_BY_NAME.set(name, code);
 }
 
