@@ -115,14 +115,32 @@ export async function getMapStyleAsync(theme: "light" | "dark" = "light"): Promi
 
 /**
  * Attach to a map instance to auto-switch basemap on tile failures.
- * Detects tiles.trafico.live errors and falls back to CartoDB Voyager.
+ * Requires 5+ consecutive tile errors before falling back to CartoDB.
+ * Auto-retries Protomaps after 60s.
  */
 export function handleMapTileError(map: maplibregl.Map): void {
+  let errorCount = 0;
+  let fellBack = false;
+
   map.on("error", (e) => {
     const msg = (e.error as Error | undefined)?.message || "";
     if (msg.includes("tiles.trafico.live") || msg.includes("pmtiles")) {
-      resetTileHealth();
-      map.setStyle(MAP_STYLE_VOYAGER);
+      errorCount++;
+      if (errorCount >= 5 && !fellBack) {
+        fellBack = true;
+        resetTileHealth();
+        map.setStyle(MAP_STYLE_VOYAGER);
+        // Retry Protomaps after 60s
+        setTimeout(() => {
+          fetch("https://tiles.trafico.live/health", { mode: "no-cors" })
+            .then(() => {
+              fellBack = false;
+              errorCount = 0;
+              map.setStyle(MAP_STYLE_PROTOMAPS);
+            })
+            .catch(() => { /* still down, stay on fallback */ });
+        }, 60000);
+      }
     }
   });
 }
