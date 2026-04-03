@@ -323,19 +323,17 @@ export function getProtomapsStyle(): StyleSpecification {
       { id: "background", type: "background", paint: { "background-color": "#f0f5ff" } },
       { id: "earth", type: "fill", source: S, "source-layer": "earth", paint: { "fill-color": "#f8fafc" } },
 
-      // ── Water ────────────────────────────────────────────────────────
-      { id: "water", type: "fill", source: S, "source-layer": "water", paint: { "fill-color": "#c0d5ff" } },
-      {
-        id: "water-line", type: "line", source: S, "source-layer": "water",
-        minzoom: 8,
-        paint: { "line-color": "#a3c4ff", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.3, 14, 1] },
+      // ── Water — ocean/sea only, no inland rivers/lakes ──────────────
+      { id: "water", type: "fill", source: S, "source-layer": "water",
+        paint: { "fill-color": "#c0d5ff", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.7, 12, 0.4] },
       },
 
       // ── Landuse (layered) ────────────────────────────────────────────
       {
         id: "landuse-park", type: "fill", source: S, "source-layer": "landuse",
         filter: ["in", "pmap:kind", "park", "nature_reserve", "forest", "wood"],
-        paint: { "fill-color": "#dcfce7", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.3, 10, 0.5] },
+        minzoom: 10,
+        paint: { "fill-color": "#dcfce7", "fill-opacity": 0.25 },
       },
       {
         id: "landuse-residential", type: "fill", source: S, "source-layer": "landuse",
@@ -692,24 +690,7 @@ export function getProtomapsStyle(): StyleSpecification {
         paint: { "text-color": "#64748b", "text-halo-color": "#ffffff", "text-halo-width": 1 },
       },
 
-      // ── Water labels ────────────────────────────────────────────────
-      {
-        id: "water-labels", type: "symbol", source: S, "source-layer": "water",
-        minzoom: 6,
-        layout: {
-          "text-field": textEs,
-          "text-font": ["Noto Sans Italic"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 6, 10, 10, 14],
-          "text-letter-spacing": 0.2,
-          "text-max-width": 10,
-        },
-        paint: {
-          "text-color": "#6b8fd4",
-          "text-halo-color": "#c0d5ff",
-          "text-halo-width": 1,
-          "text-opacity": 0.8,
-        },
-      },
+      // Water labels removed — focus on infrastructure, not geography
 
       // ── POI labels (high zoom) ──────────────────────────────────────
       {
@@ -757,15 +738,15 @@ export function getProtomapsDarkStyle(): StyleSpecification {
       { id: "background", type: "background", paint: { "background-color": "#0b0f1a" } },
       { id: "earth", type: "fill", source: S, "source-layer": "earth", paint: { "fill-color": "#111827" } },
 
-      // Water
-      { id: "water", type: "fill", source: S, "source-layer": "water", paint: { "fill-color": "#0c2d4a" } },
-      { id: "water-line", type: "line", source: S, "source-layer": "water", minzoom: 8,
-        paint: { "line-color": "#0f3a5e", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.3, 14, 1] } },
+      // Water — ocean only, faded at zoom
+      { id: "water", type: "fill", source: S, "source-layer": "water",
+        paint: { "fill-color": "#0c2d4a", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.7, 12, 0.4] } },
 
-      // Landuse
+      // Landuse — parks only at high zoom
       { id: "landuse-park", type: "fill", source: S, "source-layer": "landuse",
         filter: ["in", "pmap:kind", "park", "nature_reserve", "forest", "wood"],
-        paint: { "fill-color": "#0d2818", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.3, 10, 0.5] } },
+        minzoom: 10,
+        paint: { "fill-color": "#0d2818", "fill-opacity": 0.25 } },
       { id: "landuse-residential", type: "fill", source: S, "source-layer": "landuse",
         filter: ["in", "pmap:kind", "residential", "suburb"], minzoom: 10,
         paint: { "fill-color": "#151b2b", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0, 13, 0.4] } },
@@ -859,10 +840,7 @@ export function getProtomapsDarkStyle(): StyleSpecification {
         layout: { "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 11], "symbol-placement": "line", "text-rotation-alignment": "map", "text-max-angle": 30 },
         paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 1 } },
 
-      // Water labels
-      { id: "water-labels", type: "symbol", source: S, "source-layer": "water", minzoom: 6,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Italic"], "text-size": ["interpolate", ["linear"], ["zoom"], 6, 10, 10, 14], "text-letter-spacing": 0.2, "text-max-width": 10 },
-        paint: { "text-color": "#5ab5ec", "text-halo-color": "#0c2d4a", "text-halo-width": 1, "text-opacity": 0.8 } },
+      // Water labels removed — infrastructure focus
     ],
   };
 }
