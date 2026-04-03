@@ -11,7 +11,7 @@
  *   - Basemap        → Protomaps PMTiles (self-hosted) with CartoDB fallback
  */
 
-import type { StyleSpecification, AddLayerObject } from "maplibre-gl";
+import type { StyleSpecification, AddLayerObject, DataDrivenPropertyValueSpecification } from "maplibre-gl";
 import { initPMTilesProtocol } from "./pmtiles-protocol";
 
 // Colors inlined to avoid circular import with map-config.ts
@@ -299,8 +299,8 @@ export function removeTileSource(map: maplibregl.Map, sourceId: string): void {
  */
 export function getProtomapsStyle(): StyleSpecification {
   const S = "protomaps";
-  const textEs = ["coalesce", ["get", "name:es"], ["get", "name"]];
-  const textRef = ["coalesce", ["get", "ref"], ["get", "name:es"], ["get", "name"]];
+  const textEs = ["coalesce", ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
+  const textRef = ["coalesce", ["get", "ref"], ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
 
   return {
     version: 8,
@@ -730,11 +730,145 @@ export function getProtomapsStyle(): StyleSpecification {
 }
 
 /**
+ * Self-hosted Protomaps basemap — dark theme.
+ * Same source/structure as the light variant, inverted palette.
+ */
+export function getProtomapsDarkStyle(): StyleSpecification {
+  const S = "protomaps";
+  const textEs = ["coalesce", ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
+  const textRef = ["coalesce", ["get", "ref"], ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
+
+  return {
+    version: 8,
+    glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
+    sprite: `${TILES_BASE}/sprites/trafico`,
+    sources: {
+      protomaps: {
+        type: "vector",
+        url: `pmtiles://${TILES_BASE}/spain.pmtiles`,
+        attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
+      },
+    },
+    layers: [
+      { id: "background", type: "background", paint: { "background-color": "#0b0f1a" } },
+      { id: "earth", type: "fill", source: S, "source-layer": "earth", paint: { "fill-color": "#111827" } },
+
+      // Water
+      { id: "water", type: "fill", source: S, "source-layer": "water", paint: { "fill-color": "#0c2d4a" } },
+      { id: "water-line", type: "line", source: S, "source-layer": "water", minzoom: 8,
+        paint: { "line-color": "#0f3a5e", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.3, 14, 1] } },
+
+      // Landuse
+      { id: "landuse-park", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["in", "pmap:kind", "park", "nature_reserve", "forest", "wood"],
+        paint: { "fill-color": "#0d2818", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.3, 10, 0.5] } },
+      { id: "landuse-residential", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["in", "pmap:kind", "residential", "suburb"], minzoom: 10,
+        paint: { "fill-color": "#151b2b", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0, 13, 0.4] } },
+      { id: "landuse-industrial", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["in", "pmap:kind", "industrial", "quarry"], minzoom: 10,
+        paint: { "fill-color": "#1a1708", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0, 13, 0.3] } },
+
+      // Buildings
+      { id: "buildings", type: "fill", source: S, "source-layer": "buildings", minzoom: 13,
+        paint: { "fill-color": "#1f2937", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 13, 0, 14, 0.3, 16, 0.6] } },
+      { id: "buildings-outline", type: "line", source: S, "source-layer": "buildings", minzoom: 14,
+        paint: { "line-color": "#374151", "line-width": 0.5, "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 16, 0.5] } },
+
+      // Boundaries
+      { id: "boundary-country", type: "line", source: S, "source-layer": "boundaries",
+        filter: ["==", "pmap:kind", "country"],
+        paint: { "line-color": "#4b6ca8", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.5, 14, 3], "line-dasharray": [5, 2] } },
+      { id: "boundary-region", type: "line", source: S, "source-layer": "boundaries",
+        filter: ["any", ["==", "pmap:kind", "region"], ["==", "pmap:kind", "macroregion"]], minzoom: 4,
+        paint: { "line-color": "#3b5998", "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 8, 1, 14, 2], "line-dasharray": [3, 2], "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 7, 0.5] } },
+
+      // Road casings (dark outlines)
+      { id: "roads-highway-casing", type: "line", source: S, "source-layer": "roads",
+        filter: ["==", "pmap:kind", "highway"],
+        paint: { "line-color": "#0b0f1a", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 5, 14, 12], "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 7, 0.6] } },
+
+      // Roads
+      { id: "roads-highway", type: "line", source: S, "source-layer": "roads",
+        filter: ["==", "pmap:kind", "highway"],
+        paint: { "line-color": ["interpolate", ["linear"], ["zoom"], 5, "#3b6cf8", 10, "#5b8aff"], "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.8, 10, 3, 14, 8] } },
+      { id: "roads-major", type: "line", source: S, "source-layer": "roads",
+        filter: ["==", "pmap:kind", "major_road"],
+        paint: { "line-color": "#374151", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 10, 1.5, 14, 5] } },
+      { id: "roads-medium", type: "line", source: S, "source-layer": "roads",
+        filter: ["==", "pmap:kind", "medium_road"], minzoom: 8,
+        paint: { "line-color": "#1f2937", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.2, 11, 1, 14, 3] } },
+      { id: "roads-minor", type: "line", source: S, "source-layer": "roads",
+        filter: ["==", "pmap:kind", "minor_road"], minzoom: 11,
+        paint: { "line-color": "#1f2937", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.3, 14, 2, 16, 3] } },
+      { id: "roads-path", type: "line", source: S, "source-layer": "roads",
+        filter: ["in", "pmap:kind", "path", "pedestrian", "footway", "cycleway"], minzoom: 14,
+        paint: { "line-color": "#374151", "line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.5, 16, 1.5], "line-dasharray": [2, 2] } },
+
+      // Transit
+      { id: "transit-rail", type: "line", source: S, "source-layer": "transit",
+        filter: ["in", "pmap:kind", "rail"], minzoom: 7,
+        paint: { "line-color": "#4b5563", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 10, 1, 14, 2], "line-dasharray": [4, 3] } },
+      { id: "transit-ferry", type: "line", source: S, "source-layer": "transit",
+        filter: ["==", "pmap:kind", "ferry"], minzoom: 6,
+        paint: { "line-color": "#1e5a8a", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 10, 1.5, 14, 2.5], "line-dasharray": [6, 3] } },
+
+      // Road ref shields
+      { id: "road-ref-shields", type: "symbol", source: S, "source-layer": "roads",
+        filter: ["all", ["has", "ref"], ["in", "pmap:kind", "highway", "major_road"]], minzoom: 7,
+        layout: { "text-field": ["get", "ref"], "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 8, 12, 10], "symbol-placement": "line", "text-rotation-alignment": "viewport", "symbol-spacing": 500, "text-max-angle": 30, "text-keep-upright": true },
+        paint: { "text-color": "#7da4f0", "text-halo-color": "#0b0f1a", "text-halo-width": 2 } },
+
+      // Place labels
+      { id: "places-country", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "pmap:kind", "country"], maxzoom: 7,
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18], "text-transform": "uppercase", "text-letter-spacing": 0.15, "text-max-width": 8 },
+        paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 2 } },
+      { id: "places-state", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "pmap:kind", "state"], minzoom: 4, maxzoom: 9,
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 13], "text-transform": "uppercase", "text-letter-spacing": 0.1, "text-max-width": 10 },
+        paint: { "text-color": "#6b7280", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5, "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.5, 6, 1] } },
+      { id: "places-city", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "pmap:kind", "city"],
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 15, 12, 18], "text-max-width": 8, "text-allow-overlap": false },
+        paint: { "text-color": "#e2e8f0", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5 } },
+      { id: "places-town", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "pmap:kind", "town"], minzoom: 7,
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 12, 14, 15], "text-max-width": 8 },
+        paint: { "text-color": "#cbd5e1", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5 } },
+      { id: "places-village", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "pmap:kind", "village"], minzoom: 10,
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 12], "text-max-width": 7 },
+        paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 1.2 } },
+      { id: "places-neighbourhood", type: "symbol", source: S, "source-layer": "places",
+        filter: ["in", "pmap:kind", "suburb", "neighbourhood", "locality"], minzoom: 12,
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 12], "text-max-width": 6, "text-transform": "uppercase", "text-letter-spacing": 0.05 },
+        paint: { "text-color": "#6b7280", "text-halo-color": "#0b0f1a", "text-halo-width": 1 } },
+
+      // Road labels
+      { id: "road-labels-highway", type: "symbol", source: S, "source-layer": "roads",
+        filter: ["==", "pmap:kind", "highway"], minzoom: 10,
+        layout: { "text-field": textRef, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 12], "symbol-placement": "line", "text-rotation-alignment": "map", "text-max-angle": 25, "symbol-spacing": 400 },
+        paint: { "text-color": "#7da4f0", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5 } },
+      { id: "road-labels-major", type: "symbol", source: S, "source-layer": "roads",
+        filter: ["==", "pmap:kind", "major_road"], minzoom: 12,
+        layout: { "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 11], "symbol-placement": "line", "text-rotation-alignment": "map", "text-max-angle": 30 },
+        paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 1 } },
+
+      // Water labels
+      { id: "water-labels", type: "symbol", source: S, "source-layer": "water", minzoom: 6,
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Italic"], "text-size": ["interpolate", ["linear"], ["zoom"], 6, 10, 10, 14], "text-letter-spacing": 0.2, "text-max-width": 10 },
+        paint: { "text-color": "#5ab5ec", "text-halo-color": "#0c2d4a", "text-halo-width": 1, "text-opacity": 0.8 } },
+    ],
+  };
+}
+
+/**
  * Get the basemap style, preferring the self-hosted Protomaps style.
  *
  * @param options.fallbackToCartoDB - If true, returns CartoDB Voyager URL instead
  *   of the Protomaps style object. Useful when tiles.trafico.live is not yet deployed.
- * @param options.theme - "light" (default) or "dark". Dark falls back to CartoDB Dark Matter.
+ * @param options.theme - "light" (default) or "dark".
  */
 export function getBasemapStyle(options?: {
   fallbackToCartoDB?: boolean;
@@ -742,20 +876,16 @@ export function getBasemapStyle(options?: {
 }): string | StyleSpecification {
   const { fallbackToCartoDB = false, theme = "light" } = options ?? {};
 
-  if (theme === "dark") {
-    // Dark theme always uses CartoDB for now (no Protomaps dark variant yet)
-    return CARTO_DARK_URL;
-  }
-
   if (fallbackToCartoDB) {
-    return CARTO_VOYAGER_URL;
+    return theme === "dark" ? CARTO_DARK_URL : CARTO_VOYAGER_URL;
   }
 
-  return getProtomapsStyle();
+  return theme === "dark" ? getProtomapsDarkStyle() : getProtomapsStyle();
 }
 
-/** CartoDB Voyager URL — re-exported for fallback scenarios */
+/** Pre-built style objects for direct use */
 export const MAP_STYLE_TILES = getProtomapsStyle();
+export const MAP_STYLE_TILES_DARK = getProtomapsDarkStyle();
 
 // ─── Layer style presets ─────────────────────────────────────────────────────
 

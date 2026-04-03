@@ -1,5 +1,5 @@
 import type maplibregl from "maplibre-gl";
-import { getProtomapsStyle } from "@/lib/map-tiles";
+import { getProtomapsStyle, getProtomapsDarkStyle } from "@/lib/map-tiles";
 
 // ─── Shared map configuration for all trafico.live maps ───
 
@@ -8,8 +8,8 @@ import { getProtomapsStyle } from "@/lib/map-tiles";
 /** Self-hosted Protomaps basemap — light theme (brand-colored, Spanish labels) */
 export const MAP_STYLE_PROTOMAPS = getProtomapsStyle();
 
-/** Self-hosted Protomaps basemap — dark theme (falls back to CartoDB Dark Matter) */
-export const MAP_STYLE_PROTOMAPS_DARK = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+/** Self-hosted Protomaps basemap — dark theme (brand-colored, Spanish labels) */
+export const MAP_STYLE_PROTOMAPS_DARK = getProtomapsDarkStyle();
 
 // ── CartoDB fallbacks ──
 
