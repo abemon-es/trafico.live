@@ -342,8 +342,9 @@ function parseIcaCsv(csv: string): StationData[] {
     const icaLabel = ICA_LABELS[ica] || "Buena";
     const debidoA = iDebido >= 0 ? cols[iDebido]?.trim() || null : null;
 
-    // Extract province from cod_estacion (first 2 digits)
-    const province = stationId.length >= 2 ? stationId.substring(0, 2) : null;
+    // Extract province from cod_estacion — pad to 8 digits (MITECO codes: 01051001 = Álava)
+    const paddedId = stationId.padStart(8, "0");
+    const province = paddedId.substring(0, 2);
 
     stations.push({
       stationId,
@@ -406,10 +407,10 @@ async function fetchBackendStations(): Promise<StationData[]> {
     .map((d) => {
       const ica = d.indice_nivel != null && d.indice_nivel >= 1 ? d.indice_nivel : 1;
       return {
-        stationId: String(d.cod_estacion),
+        stationId: String(d.cod_estacion).padStart(8, "0"),
         name: d.nombre || d.cod_estacion!,
         city: null,
-        province: d.provincia ? String(d.provincia).padStart(2, "0") : (String(d.cod_estacion).length >= 2 ? String(d.cod_estacion).substring(0, 2) : null),
+        province: d.provincia ? String(d.provincia).padStart(2, "0") : String(d.cod_estacion).padStart(8, "0").substring(0, 2),
         network: d.tipo_estacion || "Red de vigilancia MITECO",
         latitude: d.latitud_g!,
         longitude: d.longitud_g!,
