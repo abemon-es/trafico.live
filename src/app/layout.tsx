@@ -174,6 +174,9 @@ export default function RootLayout({
         <Script id="sw-register" strategy="afterInteractive">
           {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}`}
         </Script>
+        <Script id="tile-sw-register" strategy="afterInteractive">
+          {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/tile-sw.js',{scope:'/'}).catch(()=>{})}`}
+        </Script>
         {gaId && (
           <>
             <Script id="ga-consent-default" strategy="beforeInteractive">

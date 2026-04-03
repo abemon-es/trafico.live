@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 import Link from "next/link";
 import { MapPin, ExternalLink, Navigation } from "lucide-react";
@@ -43,6 +43,8 @@ export function StationLocationMap({
       zoom: 14,
       attributionControl: false,
     });
+
+    handleMapTileError(map.current);
 
     // Add zoom controls
     map.current.addControl(

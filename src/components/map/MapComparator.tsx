@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { ArrowLeftRight, Clock, X } from "lucide-react";
-import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 
 interface MapComparatorProps {
@@ -73,6 +73,9 @@ export function MapComparator({ currentIncidents, historicalIncidents, onTimeOff
 
     leftMap.current = createMap(leftRef.current);
     rightMap.current = createMap(rightRef.current);
+
+    handleMapTileError(leftMap.current);
+    handleMapTileError(rightMap.current);
 
     // Add data after load
     leftMap.current.on("load", () => {

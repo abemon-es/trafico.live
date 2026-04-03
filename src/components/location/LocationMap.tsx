@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Map as MapIcon, Loader2 } from "lucide-react";
 import type { FeatureCollection } from "geojson";
-import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
 
 export interface LocationMapProps {
@@ -89,6 +89,8 @@ export function LocationMap({
         zoom: initialZoom,
         attributionControl: false,
       });
+
+      handleMapTileError(map);
 
       map.addControl(
         new maplibre.AttributionControl({ compact: true }),

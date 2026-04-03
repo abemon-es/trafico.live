@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { forceSpanishLabels } from "@/lib/map-config";
+import { forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 import { Fuel, Waves, Wind, Anchor, Ship, ShieldAlert, CloudRain, RefreshCw, Layers, ChevronDown, X, Maximize2, Minimize2 } from "lucide-react";
 import { addTileSource, TILE_SOURCES, LAYER_STYLES, SOURCE_LAYERS } from "@/lib/map-tiles";
@@ -185,6 +185,8 @@ export default function MaritimeMap() {
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
     mapRef.current = map;
+
+    handleMapTileError(map);
 
     map.on("load", async () => {
       forceSpanishLabels(map);

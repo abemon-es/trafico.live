@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------
 -- sensors: Latest TrafficIntensity snapshot per sensor (Madrid, ~4,800 points)
 -- Uses mv_latest_sensors materialized view (refreshed every 5 min by cron)
--- Zoom-adaptive: z<10 strips description/occupancy/load/source for smaller tiles
+-- Zoom-adaptive: z<8 uses mv_sensor_clusters (~50 grid cells), z<10 strips extras, z>=10 full props
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION tile_sensors(z integer, x integer, y integer, query_params json DEFAULT '{}')
 RETURNS bytea AS $$
@@ -15,8 +15,26 @@ DECLARE
 BEGIN
   bounds := ST_TileEnvelope(z, x, y);
 
-  IF z < 10 THEN
-    -- Low zoom: minimal properties (69% smaller tiles)
+  IF z < 8 THEN
+    -- Country zoom: aggregated clusters (~50 points instead of 4,789)
+    SELECT ST_AsMVT(q, 'sensors', 4096, 'geom') INTO mvt
+    FROM (
+      SELECT
+        c.sensor_count AS "sensorCount",
+        c.avg_intensity AS intensity,
+        c.max_service_level AS "serviceLevel",
+        ST_AsMVTGeom(
+          ST_Transform(ST_SetSRID(ST_MakePoint(c.longitude::float, c.latitude::float), 4326), 3857),
+          bounds, 4096, 64, true
+        ) AS geom
+      FROM mv_sensor_clusters c
+      WHERE ST_Intersects(
+        ST_SetSRID(ST_MakePoint(c.longitude::float, c.latitude::float), 4326),
+        ST_Transform(bounds, 4326)
+      )
+    ) q WHERE q.geom IS NOT NULL;
+  ELSIF z < 10 THEN
+    -- Mid zoom: individual sensors, minimal properties (69% smaller tiles)
     SELECT ST_AsMVT(q, 'sensors', 4096, 'geom') INTO mvt
     FROM (
       SELECT

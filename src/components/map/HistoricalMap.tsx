@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Layers, Flame, Circle, MapPin, Loader2 } from "lucide-react";
-import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { MAP_STYLE_DEFAULT, forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 
 export interface BeaconMapData {
@@ -87,6 +87,8 @@ export function HistoricalMap({
       zoom: 5.5,
       attributionControl: false,
     });
+
+    handleMapTileError(map.current);
 
     map.current.addControl(
       new maplibregl.NavigationControl({ showCompass: false }),

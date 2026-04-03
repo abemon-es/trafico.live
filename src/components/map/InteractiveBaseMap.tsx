@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Locate } from "lucide-react";
 import type maplibregl from "maplibre-gl";
 import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
-import { MAP_STYLE_DEFAULT } from "@/lib/map-config";
+import { MAP_STYLE_DEFAULT, handleMapTileError } from "@/lib/map-config";
 
 // Dynamic import type — maplibre-gl is loaded only on the client
 type MapInstance = InstanceType<typeof maplibregl.Map>;
@@ -216,6 +216,8 @@ export function InteractiveBaseMap({
       });
 
       mapInstanceRef.current = map;
+
+      handleMapTileError(map);
 
       map.on("load", async () => {
         if (cancelled) return;

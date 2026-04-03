@@ -1,5 +1,7 @@
 import type maplibregl from "maplibre-gl";
+import type { StyleSpecification } from "maplibre-gl";
 import { getProtomapsStyle, getProtomapsDarkStyle } from "@/lib/map-tiles";
+import { isTileServerHealthy, resetTileHealth } from "@/lib/tile-fallback";
 
 // ─── Shared map configuration for all trafico.live maps ───
 
@@ -97,4 +99,30 @@ export function forceSpanishLabels(map: maplibregl.Map): void {
   } catch {
     // Style not loaded yet or other issue — safe to ignore
   }
+}
+
+/**
+ * Get map style with tile server health check.
+ * Returns Protomaps if healthy, CartoDB if not.
+ */
+export async function getMapStyleAsync(theme: "light" | "dark" = "light"): Promise<string | StyleSpecification> {
+  const healthy = await isTileServerHealthy();
+  if (!healthy) {
+    return theme === "dark" ? MAP_STYLE_DARK : MAP_STYLE_VOYAGER;
+  }
+  return theme === "dark" ? MAP_STYLE_PROTOMAPS_DARK : MAP_STYLE_PROTOMAPS;
+}
+
+/**
+ * Attach to a map instance to auto-switch basemap on tile failures.
+ * Detects tiles.trafico.live errors and falls back to CartoDB Voyager.
+ */
+export function handleMapTileError(map: maplibregl.Map): void {
+  map.on("error", (e) => {
+    const msg = (e.error as Error | undefined)?.message || "";
+    if (msg.includes("tiles.trafico.live") || msg.includes("pmtiles")) {
+      resetTileHealth();
+      map.setStyle(MAP_STYLE_VOYAGER);
+    }
+  });
 }

@@ -13,7 +13,7 @@ import {
 import { useAnimatedFlow } from "./AnimatedFlowOverlay";
 import { useWeatherRadar } from "./WeatherRadarOverlay";
 import { useWindOverlay, useCloudOverlay, useTemperatureOverlay } from "./WeatherOverlays";
-import { MAP_STYLE_DEFAULT, MAP_STYLE_PROTOMAPS_DARK, forceSpanishLabels } from "@/lib/map-config";
+import { MAP_STYLE_DEFAULT, MAP_STYLE_PROTOMAPS_DARK, forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { setupPMTilesProtocol, addTileLayer } from "@/lib/map-tiles";
 
 export type IncidentViewMode = "heatmap" | "clusters" | "points";
@@ -800,6 +800,8 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       // Limit tile cache to reduce memory on constrained devices
       maxTileCacheSize: 150,
     });
+
+    handleMapTileError(map.current);
 
     map.current.addControl(
       new maplibregl.NavigationControl({ showCompass: true }),
