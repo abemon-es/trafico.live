@@ -1,6 +1,6 @@
 # trafico.live
 
-Real-time Spanish multimodal transport intelligence platform. Aggregates data from DGT, AEMET, Renfe, MITECO, OpenSky, aisstream.io, MobilityData, INE, MINETUR, SCT, Euskadi, Madrid, Barcelona, Valencia, Zaragoza, Andorra, and Portugal APIs into 90+ SEO pages covering road traffic, railways, maritime, aviation, public transit, air quality, and fuel prices.
+Real-time Spanish multimodal transport intelligence platform. Aggregates data from DGT, AEMET, Renfe, CNMC, MITECO, OpenSky, aisstream.io, MobilityData, INE, MINETUR, SCT, Euskadi, Madrid, Barcelona, Valencia, Zaragoza, Andorra, and Portugal APIs into 150+ pages covering road traffic, railways, maritime, aviation, public transit, air quality, fuel prices, and predictive analytics. 43 data collectors, 121 API endpoints, 78 Prisma models, MCP server for AI assistants, Stripe-powered API premium tiers.
 
 **URL:** https://trafico.live
 **Managed by:** Certus SPV, SLU
@@ -43,7 +43,7 @@ npm run db:seed      # Seed database
 ## Architecture
 
 ### Frontend (`src/app/`)
-- App Router with 90+ pages (heavy SEO: city traffic, gas stations, cameras, radares, incidents, EV charging, roads, provinces, ZBE, blog, seasonal, IMD, counting stations, maritime, aviation, transit, air quality, statistics)
+- App Router with 150+ pages (heavy SEO: city traffic, gas stations, cameras, radares, incidents, EV charging, roads, provinces, ZBE, blog, seasonal, IMD, counting stations, maritime, aviation, transit, air quality, statistics)
 - Components organized in: `ads`, `cameras`, `charts`, `gas-stations`, `home`, `incidents`, `layout`, `map`, `roads`, `search`, `seo`, `stats`, `ui`, `v16`
 - All pages Spanish-language
 - Key traffic data pages:
@@ -212,9 +212,12 @@ npm run db:seed      # Seed database
 | `sentry.server.config.ts` | Sentry server init (Prisma integration) |
 | `services/collector/tasks/imd/` | IMD collector (ArcGIS REST client, UTM→WGS84) |
 | `services/collector/tasks/intensity/` | Madrid real-time intensity collector |
-| `src/lib/map-config.ts` | Shared map config (style URLs, forceSpanishLabels, presets) |
-| `src/lib/map-style.ts` | Branded Protomaps style generator (light/dark, Spanish) |
-| `services/tiles/` | Self-hosted tile server (nginx, PMTiles, fonts) |
+| `src/lib/map-tiles.ts` | Vector tile integration: sources, styles, helpers, Protomaps basemap |
+| `src/lib/pmtiles-protocol.ts` | Singleton PMTiles protocol registration for MapLibre |
+| `src/lib/map-config.ts` | Shared map config (MAP_STYLE_DEFAULT, forceSpanishLabels, presets) |
+| `src/lib/map-style.ts` | Branded Protomaps style generator (legacy, see map-tiles.ts) |
+| `services/tiles/` | Tile server: nginx + docker-compose + generate-pmtiles.sh |
+| `services/martin/` | Martin tile server: config, Dockerfile, SQL tile functions |
 | `public/geo/spain-provinces.geojson` | Province boundary polygons |
 | `public/geo/territories.geojson` | Portugal/Andorra/Gibraltar boundaries |
 | `services/collector/tasks/renfe-gtfs/` | Renfe GTFS static collector (stations, routes, shapes) |
@@ -252,20 +255,31 @@ npm run db:seed      # Seed database
 | Loki | `10.100.0.2:3100` | Docker log driver, batch 400 |
 | Sentry/GlitchTip | HTTPS tunnel `/monitoring` | Client 50% replays, server 25% traces, collector 10% |
 | Coolify | hetzner-prod | Split: web app + collectors as separate Docker Compose apps |
-| Tile server | tiles.trafico.live:8088 | Self-hosted Protomaps PMTiles (460MB, z0-14, Iberian Peninsula) |
+| Tile server | tiles.trafico.live:8088 | nginx + Martin, Traefik SSL, 18 PMTiles + 8 dynamic sources |
 
-### Tile Server (`tiles.trafico.live`)
+### Vector Tile Server (`tiles.trafico.live`)
 
-Self-hosted map tile server serving Protomaps basemap for all trafico.live maps.
+Hybrid architecture: nginx serves static PMTiles files, Martin serves real-time PostGIS layers via MVT.
 
-- **Container:** `trafico-tiles` (nginx:alpine) on hetzner-prod, `coolify` network
-- **PMTiles:** `/opt/trafico/tiles/tiles/spain.pmtiles` (460MB, bbox -18.2,27.5,4.5,43.9, z0-14)
-- **Fonts:** `/opt/trafico/tiles/fonts/` (Noto Sans Regular/Medium/Bold/Italic)
-- **Routing:** Traefik file provider at `/data/coolify/proxy/dynamic/tiles.yaml`
-- **SSL:** Let's Encrypt via Traefik ACME
-- **DNS:** `tiles.trafico.live` → A → 168.119.34.248 (Cloudflare, DNS-only)
-- **Update tiles:** `pmtiles extract https://build.protomaps.com/YYYYMMDD.pmtiles /tmp/spain.pmtiles --bbox="-18.2,27.5,4.5,43.9" --maxzoom=14` → rsync to server
-- **Docs:** `services/tiles/README.md`
+- **Containers:** `tiles-tiles-1` (nginx:alpine) + `tiles-martin-1` (martin:v0.15.0)
+- **Compose:** `services/tiles/docker-compose.yml`
+- **Martin config:** `services/martin/config.yaml` (8 PostGIS function sources, pool_size 4)
+- **SQL functions:** `services/martin/migrations/` (tile_sensors, tile_incidents, tile_fleet, +5)
+- **nginx cache:** 60s TTL + `stale-while-revalidate` on `/dynamic/` (Martin proxy)
+- **GIST indexes:** On TrafficIntensity, TrafficIncident, RenfeFleetPosition for spatial queries
+- **PMTiles gen:** `services/tiles/generate-pmtiles.sh` + `Dockerfile.generate` (tippecanoe)
+- **Crontab:** `/etc/cron.d/trafico-tiles` — monthly all, 3x/day gas, daily cameras+chargers, weekly radars+railway
+- **Basemap:** `spain.pmtiles` (2.2GB, z0-14, Iberian Peninsula + Canarias)
+- **Data tiles:** 18 static layers (~36MB total), generated from PostGIS via tippecanoe
+- **DNS:** `tiles.trafico.live` → A → 168.119.34.248 (Cloudflare DNS-only)
+
+### Map Frontend
+
+Self-hosted Protomaps basemap (light + dark themes, Spanish labels native). Data via vector tiles — no GeoJSON blobs.
+
+- `src/lib/map-tiles.ts` — TILE_SOURCES, LAYER_STYLES, `addTileLayer()`, `getProtomapsStyle()`/`getProtomapsDarkStyle()`
+- `src/lib/pmtiles-protocol.ts` — singleton PMTiles protocol registration
+- `src/lib/map-config.ts` — `MAP_STYLE_DEFAULT` = Protomaps, `MAP_STYLE_PROTOMAPS_DARK`, CartoDB fallbacks
 
 ## Environment Variables
 
