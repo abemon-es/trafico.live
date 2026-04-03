@@ -89,20 +89,35 @@ export async function GET(request: NextRequest) {
         },
       });
 
+      // Compute aggregate stats for the header strip
+      const mapped = operators.map((op) => ({
+        mdbId: op.mdbId,
+        name: op.name,
+        city: op.city,
+        province: op.province,
+        mode: op.mode,
+        hasRealtime: op.hasRealtime,
+        routeCount: op._count.routes,
+        stopCount: op._count.stops,
+        updatedAt: op.updatedAt,
+      }));
+
+      const metroLines = mapped.filter((o) => o.mode === "metro").reduce((s, o) => s + o.routeCount, 0);
+      const busLines = mapped.filter((o) => o.mode === "bus").reduce((s, o) => s + o.routeCount, 0);
+      const totalStops = mapped.reduce((s, o) => s + o.stopCount, 0);
+      const cities = new Set(mapped.map((o) => o.city));
+
       const response = {
         success: true,
         count: operators.length,
-        operators: operators.map((op) => ({
-          mdbId: op.mdbId,
-          name: op.name,
-          city: op.city,
-          province: op.province,
-          mode: op.mode,
-          hasRealtime: op.hasRealtime,
-          routeCount: op._count.routes,
-          stopCount: op._count.stops,
-          updatedAt: op.updatedAt,
-        })),
+        stats: {
+          totalOperators: operators.length,
+          metroLines,
+          busLines,
+          totalStops,
+          citiesCovered: cities.size,
+        },
+        operators: mapped,
       };
 
       await setInCache(cacheKey, response, CACHE_TTL);
