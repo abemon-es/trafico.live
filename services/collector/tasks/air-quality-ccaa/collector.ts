@@ -793,20 +793,24 @@ function parseCsv(text: string): Record<string, string>[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length < 2) return [];
 
+  // Auto-detect delimiter: Andalucía uses semicolons, others may use commas
+  const firstLine = lines[0];
+  const delimiter = firstLine.includes(";") ? ";" : ",";
+
   const parseRow = (line: string): string[] => {
     const fields: string[] = [];
     let current = "";
     let inQuotes = false;
     for (let ci = 0; ci < line.length; ci++) {
       const ch = line[ci];
-      if (ch === '"') {
-        if (inQuotes && line[ci + 1] === '"') {
-          current += '"';
+      if (ch === '"' || ch === "'") {
+        if (inQuotes && line[ci + 1] === ch) {
+          current += ch;
           ci++;
         } else {
           inQuotes = !inQuotes;
         }
-      } else if (ch === "," && !inQuotes) {
+      } else if (ch === delimiter && !inQuotes) {
         fields.push(current.trim());
         current = "";
       } else {
@@ -817,13 +821,15 @@ function parseCsv(text: string): Record<string, string>[] {
     return fields;
   };
 
-  const headers = parseRow(lines[0]).map((h) => h.trim());
+  // Clean headers: strip quotes and whitespace (Andalucía has 'PM10' with single quotes)
+  const headers = parseRow(lines[0]).map((h) => h.replace(/^['"]|['"]$/g, "").trim());
   const records: Record<string, string>[] = [];
   for (let li = 1; li < lines.length; li++) {
     const vals = parseRow(lines[li]);
+    if (vals.length < 3) continue; // skip malformed rows
     const obj: Record<string, string> = {};
     for (let hi = 0; hi < headers.length; hi++) {
-      obj[headers[hi]] = vals[hi] ?? "";
+      obj[headers[hi]] = (vals[hi] ?? "").trim();
     }
     records.push(obj);
   }
