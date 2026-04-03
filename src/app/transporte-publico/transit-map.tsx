@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import type { Map as MapInstance } from "maplibre-gl";
 import { addTileLayer, setupPMTilesProtocol, SOURCE_LAYERS } from "@/lib/map-tiles";
 import { InteractiveBaseMap } from "@/components/map/InteractiveBaseMap";
@@ -31,6 +33,39 @@ export default function TransitMap({ height = "500px" }: { height?: string }) {
         "text-halo-width": 1.2,
       },
     });
+
+    // --- Hover interactions ---
+    const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10, maxWidth: "220px" });
+
+    // Stop hover
+    map.on("mouseenter", "transit-stops-circle", (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      map.getCanvas().style.cursor = "pointer";
+      const p = f.properties || {};
+      const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number];
+      popup.setLngLat(coords).setHTML(
+        `<div style="font-family:'DM Sans',system-ui;font-size:13px">
+          <strong>${p.stopName || ""}</strong>
+        </div>`
+      ).addTo(map);
+    });
+    map.on("mouseleave", "transit-stops-circle", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
+
+    // Route hover
+    map.on("mouseenter", "transit-routes-line", (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      map.getCanvas().style.cursor = "pointer";
+      const p = f.properties || {};
+      popup.setLngLat(e.lngLat).setHTML(
+        `<div style="font-family:'DM Sans',system-ui;font-size:13px">
+          <strong>${p.shortName || ""}</strong>
+          <div style="color:#6b7280">${p.longName || ""}</div>
+        </div>`
+      ).addTo(map);
+    });
+    map.on("mouseleave", "transit-routes-line", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
   }, []);
 
   return (

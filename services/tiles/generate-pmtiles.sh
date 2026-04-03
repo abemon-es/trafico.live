@@ -34,7 +34,8 @@ for arg in "$@"; do
       echo "Layers: stations, cameras, radars, gas-stations, chargers,"
       echo "        railway-stations, railway-routes, climate-stations,"
       echo "        air-quality, airports, ports, ferry-stops, ferry-routes,"
-      echo "        transit-stops, transit-routes, portugal-gas, panels, accidents"
+      echo "        transit-stops, transit-routes, portugal-gas, panels,"
+      echo "        accidents, road-segments"
       exit 0
       ;;
     *) echo "Unknown argument: $arg"; exit 1 ;;
@@ -47,7 +48,7 @@ if [[ "$ALL" == false && ${#LAYERS[@]} -eq 0 ]]; then
   exit 1
 fi
 
-ALL_LAYER_NAMES=(stations cameras radars gas-stations chargers railway-stations railway-routes climate-stations air-quality airports ports ferry-stops ferry-routes transit-stops transit-routes portugal-gas panels accidents)
+ALL_LAYER_NAMES=(stations cameras radars gas-stations chargers railway-stations railway-routes climate-stations air-quality airports ports ferry-stops ferry-routes transit-stops transit-routes portugal-gas panels accidents road-segments)
 
 if [[ "$ALL" == true ]]; then
   LAYERS=("${ALL_LAYER_NAMES[@]}")
@@ -799,6 +800,45 @@ SQL
 }
 
 # ---------------------------------------------------------------------------
+# Layer: road-segments (TrafficFlow with geometry) — IMD road polylines
+# ---------------------------------------------------------------------------
+generate_road_segments() {
+  echo ""
+  echo "=== road-segments (TrafficFlow with geometry) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', geometry,
+    'properties', json_build_object(
+      'roadNumber', "roadNumber",
+      'roadType', "roadType"::text,
+      'province', province,
+      'provinceName', "provinceName",
+      'kmStart', "kmStart"::float,
+      'kmEnd', "kmEnd"::float,
+      'year', year,
+      'imd', imd,
+      'imdLigeros', "imdLigeros",
+      'imdPesados', "imdPesados",
+      'percentPesados', "percentPesados"::float,
+      'segmentLength', "segmentLength"::float
+    )
+  )), '[]'::json)
+) FROM "TrafficFlow" WHERE geometry IS NOT NULL;
+SQL
+  )
+
+  run_query "road-segments" "$sql"
+  run_tippecanoe "road-segments" "road_segments" \
+    --no-feature-limit \
+    --no-tile-size-limit
+}
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 echo "=============================================="
@@ -829,6 +869,7 @@ should_build "transit-routes"   && generate_transit_routes
 should_build "portugal-gas"     && generate_portugal_gas
 should_build "panels"           && generate_panels
 should_build "accidents"        && generate_accidents
+should_build "road-segments"    && generate_road_segments
 
 END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))

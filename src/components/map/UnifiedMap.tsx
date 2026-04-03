@@ -256,7 +256,7 @@ interface UnifiedMapProps {
 // Valid filter values for URL parsing
 const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
 const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
-const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations", "panels", "liveSpeed", "dangerScore"];
+const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations", "panels", "liveSpeed", "dangerScore", "roadworks", "sensors", "citySensors", "portugalGas"];
 
 export function UnifiedMap({
   defaultHeight = "500px",
@@ -320,6 +320,10 @@ export function UnifiedMap({
         panels: initialLayers.panels ?? false,
         liveSpeed: initialLayers.liveSpeed ?? false,
         dangerScore: initialLayers.dangerScore ?? false,
+        roadworks: initialLayers.roadworks ?? false,
+        sensors: initialLayers.sensors ?? false,
+        citySensors: initialLayers.citySensors ?? false,
+        portugalGas: initialLayers.portugalGas ?? false,
       };
     }
 
@@ -342,6 +346,10 @@ export function UnifiedMap({
         panels: urlLayers.includes("panels"),
         liveSpeed: urlLayers.includes("liveSpeed"),
         dangerScore: urlLayers.includes("dangerScore"),
+        roadworks: urlLayers.includes("roadworks"),
+        sensors: urlLayers.includes("sensors"),
+        citySensors: urlLayers.includes("citySensors"),
+        portugalGas: urlLayers.includes("portugalGas"),
       };
     }
     // Default layers
@@ -361,6 +369,10 @@ export function UnifiedMap({
       panels: false,
       liveSpeed: false,
       dangerScore: false,
+      roadworks: false,
+      sensors: false,
+      citySensors: false,
+      portugalGas: false,
     };
   };
 

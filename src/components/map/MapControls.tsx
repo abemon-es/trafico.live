@@ -34,6 +34,8 @@ import {
   CloudLightning,
   Volume2,
   VolumeX,
+  Construction,
+  Gauge,
 } from "lucide-react";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import type { IncidentViewMode } from "./TrafficMap";
@@ -56,6 +58,10 @@ export interface ActiveLayers {
   panels: boolean;
   liveSpeed: boolean;
   dangerScore: boolean;
+  roadworks: boolean;
+  sensors: boolean;
+  citySensors: boolean;
+  portugalGas: boolean;
 }
 
 export interface IncidentFilters {
@@ -139,6 +145,9 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
       { key: "liveSpeed", label: "Velocidad en vivo", icon: <Activity className="w-4 h-4" /> },
       { key: "dangerScore", label: "Índice de peligro", icon: <ShieldAlert className="w-4 h-4" /> },
       { key: "panels", label: "Paneles PMV", icon: <Monitor className="w-4 h-4" />, countKey: "panels" },
+      { key: "roadworks", label: "Obras", icon: <Construction className="w-4 h-4" /> },
+      { key: "sensors", label: "Sensores Madrid", icon: <Gauge className="w-4 h-4" /> },
+      { key: "citySensors", label: "Sensores ciudad", icon: <Gauge className="w-4 h-4" /> },
     ],
   },
   {
@@ -149,6 +158,7 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
       { key: "gasStations", label: "Gasolineras", icon: <Fuel className="w-4 h-4" />, countKey: "gasStations" },
       { key: "chargers", label: "Cargadores EV", icon: <Zap className="w-4 h-4" />, countKey: "chargers" },
       { key: "maritimeStations", label: "Marítimas", icon: <Anchor className="w-4 h-4" />, countKey: "maritimeStations" },
+      { key: "portugalGas", label: "Gasolineras Portugal", icon: <Fuel className="w-4 h-4" /> },
     ],
   },
   {

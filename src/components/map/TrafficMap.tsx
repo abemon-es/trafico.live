@@ -34,6 +34,10 @@ export interface ActiveLayers {
   panels: boolean;
   liveSpeed: boolean;
   dangerScore: boolean;
+  roadworks: boolean;
+  sensors: boolean;
+  citySensors: boolean;
+  portugalGas: boolean;
 }
 
 export interface IncidentFilters {
@@ -1586,6 +1590,34 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     const vis = activeLayers.radars ? "visible" : "none";
     if (map.current.getLayer("radars-circle")) map.current.setLayoutProperty("radars-circle", "visibility", vis);
   }, [activeLayers.radars, isLoaded]);
+
+  // Toggle tile layer visibility — roadworks
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.roadworks ? "visible" : "none";
+    if (map.current.getLayer("roadworks-circle")) map.current.setLayoutProperty("roadworks-circle", "visibility", vis);
+  }, [activeLayers.roadworks, isLoaded]);
+
+  // Toggle tile layer visibility — Madrid intensity sensors
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.sensors ? "visible" : "none";
+    if (map.current.getLayer("sensors-circle")) map.current.setLayoutProperty("sensors-circle", "visibility", vis);
+  }, [activeLayers.sensors, isLoaded]);
+
+  // Toggle tile layer visibility — city sensors (Barcelona/Valencia/Zaragoza)
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.citySensors ? "visible" : "none";
+    if (map.current.getLayer("city-sensors-circle")) map.current.setLayoutProperty("city-sensors-circle", "visibility", vis);
+  }, [activeLayers.citySensors, isLoaded]);
+
+  // Toggle tile layer visibility — Portuguese fuel stations
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.portugalGas ? "visible" : "none";
+    if (map.current.getLayer("portugal-gas-circle")) map.current.setLayoutProperty("portugal-gas-circle", "visibility", vis);
+  }, [activeLayers.portugalGas, isLoaded]);
 
   // Update GeoJSON layer data — panels
   useEffect(() => {
