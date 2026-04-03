@@ -42,11 +42,14 @@ const TrafficMap = dynamic(() => import("./TrafficMap"), {
 });
 
 // Map location presets for quick navigation
-const MAP_PRESETS: Record<LocationPreset, { center: [number, number]; zoom: number }> = {
+const MAP_PRESETS: Record<LocationPreset, { center: [number, number]; zoom: number; layers?: Partial<ActiveLayers> }> = {
   peninsula: { center: [-3.7038, 40.4168], zoom: 6 },
-  canarias: { center: [-15.8, 28.3], zoom: 8 },
-  ceuta: { center: [-5.32, 35.89], zoom: 12 },
-  melilla: { center: [-2.94, 35.29], zoom: 12 },
+  canarias: { center: [-15.8, 28.3], zoom: 8, layers: { gasStations: true, chargers: true, radars: true, cameras: true } },
+  baleares: { center: [2.9, 39.6], zoom: 9, layers: { gasStations: true, chargers: true, cameras: true, ferryRoutes: true, ferryStops: true, ports: true } },
+  ceuta: { center: [-5.32, 35.89], zoom: 12, layers: { gasStations: true, cameras: true } },
+  melilla: { center: [-2.94, 35.29], zoom: 12, layers: { gasStations: true, cameras: true } },
+  portugal: { center: [-8.22, 39.4], zoom: 7, layers: { portugalGas: true, railwayRoutes: true, roadSegments: true } },
+  marruecos: { center: [-6.85, 33.97], zoom: 6, layers: { roadSegments: true } },
 };
 
 interface V16Response {
@@ -701,6 +704,10 @@ export function UnifiedMap({
   const handleLocationChange = (preset: LocationPreset) => {
     const location = MAP_PRESETS[preset];
     mapRef.current?.flyTo(location.center[0], location.center[1], location.zoom);
+    // Auto-enable relevant layers for this territory
+    if (location.layers) {
+      setActiveLayers((prev) => ({ ...prev, ...location.layers }));
+    }
   };
 
   const handleIncidentClick = (incident: Incident) => {

@@ -44,7 +44,7 @@ import {
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import type { IncidentViewMode } from "./TrafficMap";
 
-export type LocationPreset = "peninsula" | "canarias" | "ceuta" | "melilla";
+export type LocationPreset = "peninsula" | "canarias" | "baleares" | "ceuta" | "melilla" | "portugal" | "marruecos";
 
 export interface ActiveLayers {
   v16: boolean;
@@ -559,10 +559,13 @@ export function MapControls({
                       </p>
                       <div className="grid grid-cols-4 gap-1">
                         {([
-                          { preset: "peninsula" as LocationPreset, label: "Peninsula" },
+                          { preset: "peninsula" as LocationPreset, label: "Peninsu." },
                           { preset: "canarias" as LocationPreset, label: "Canarias" },
+                          { preset: "baleares" as LocationPreset, label: "Baleares" },
+                          { preset: "portugal" as LocationPreset, label: "Portugal" },
                           { preset: "ceuta" as LocationPreset, label: "Ceuta" },
                           { preset: "melilla" as LocationPreset, label: "Melilla" },
+                          { preset: "marruecos" as LocationPreset, label: "Marruecos" },
                         ]).map(({ preset, label }) => (
                           <button
                             key={preset}
