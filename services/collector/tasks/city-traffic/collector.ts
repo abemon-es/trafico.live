@@ -192,8 +192,10 @@ async function fetchValencia(): Promise<SensorReading[]> {
   const readings: SensorReading[] = [];
   let offset = 0;
   const pageSize = 100;
+  const MAX_PAGES = 50; // safety cap
+  let page = 0;
 
-  while (true) {
+  while (page++ < MAX_PAGES) {
     const url = `${VLC_URL}?limit=${pageSize}&offset=${offset}`;
     const resp = await fetch(url, {
       headers: { "User-Agent": "trafico.live-collector/1.0" },

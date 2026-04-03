@@ -443,6 +443,20 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "location", type: "geopoint", optional: true },
     ] as CollectionFieldSchema[],
   },
+  air_quality_stations: {
+    name: "air_quality_stations",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "stationId", type: "string" },
+      { name: "name", type: "string" },
+      { name: "city", type: "string", optional: true, facet: true },
+      { name: "province", type: "string", optional: true, facet: true },
+      { name: "network", type: "string", optional: true, facet: true },
+      { name: "location", type: "geopoint", optional: true },
+      { name: "ica", type: "int32", optional: true, sort: true },
+      { name: "icaLabel", type: "string", optional: true, facet: true },
+    ] as CollectionFieldSchema[],
+  },
 };
 
 // Strip embedding fields when vector search is disabled (prevents Typesense errors

@@ -12,8 +12,8 @@
 # Ferry GTFS — Fred. Olsen, Baleària, Vizcaya (3 small feeds)
 30 5 * * 0 TASK=ferry-gtfs npx tsx index.ts 2>&1
 
-# Transit GTFS — 15 metro/bus/tram operators (some feeds 50MB+, needs heap room)
-0 6 * * 0 TASK=transit-gtfs NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
+# Transit GTFS — ~15 priority + auto-discovered ES feeds (some 50MB+, needs heap room)
+0 6 * * 0 TASK=transit-gtfs NODE_OPTIONS=--max-old-space-size=1024 npx tsx index.ts 2>&1
 
 # DGT extras — roadworks/connected cones (placeholder, probes NAP endpoints)
 30 6 * * 0 TASK=dgt-extras npx tsx index.ts 2>&1

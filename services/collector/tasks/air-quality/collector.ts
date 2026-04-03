@@ -30,7 +30,11 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import https from "node:https";
 import { log, logError } from "../../shared/utils.js";
+
+// Reusable HTTPS agent that skips cert verification for MITECO (incomplete cert chain)
+const mitecoAgent = new https.Agent({ rejectUnauthorized: false });
 
 const TASK = "air-quality";
 
@@ -247,28 +251,25 @@ interface StationData {
 async function fetchWithTimeout(url: string, timeoutMs = 30000, init?: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  // MITECO sites have incomplete TLS cert chains — skip verification for *.miteco.es only
+  // MITECO sites have incomplete TLS cert chains — use custom agent (not global env var)
   const isMiteco = url.includes("miteco.es");
-  const savedTLS = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-  if (isMiteco) process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   try {
-    const res = await fetch(url, {
+    const fetchOpts: RequestInit & { dispatcher?: unknown } = {
       signal: controller.signal,
       headers: {
         "User-Agent": "trafico.live-collector",
         "Accept": "text/csv, application/json, application/geo+json",
-        "Origin": "https://ica.miteco.es",
+        ...(isMiteco ? { "Origin": "https://ica.miteco.es" } : {}),
         ...(init?.headers || {}),
       },
       ...(init ? { method: init.method, body: init.body } : {}),
-    });
+    };
+    // Node 22 undici respects the agent option for TLS
+    if (isMiteco) (fetchOpts as Record<string, unknown>).agent = mitecoAgent;
+    const res = await fetch(url, fetchOpts);
     return res;
   } finally {
     clearTimeout(timer);
-    if (isMiteco) {
-      if (savedTLS !== undefined) process.env.NODE_TLS_REJECT_UNAUTHORIZED = savedTLS;
-      else delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-    }
   }
 }
 

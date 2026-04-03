@@ -24,7 +24,6 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { createReadStream } from "fs";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { log, logError } from "../../shared/utils.js";
@@ -129,7 +128,7 @@ async function fetchBbox(
   };
   if (authHeader) headers["Authorization"] = authHeader;
 
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(30_000) });
 
   if (response.status === 429) {
     log(TASK, "Rate limit hit (HTTP 429) — skipping this run");
