@@ -94,12 +94,9 @@ export async function POST(request: NextRequest) {
       elapsed: `${elapsed}s`,
     });
   } catch (error) {
-    reportApiError(error, "admin/seed-accidents] Error");
+    reportApiError(error, "admin/seed-accidents");
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -1,5 +1,5 @@
 import { reportApiError } from "@/lib/api-error";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +8,13 @@ export const dynamic = "force-dynamic";
  * Call from Coolify cron or external scheduler every 12h.
  * GET /api/cron/warm-roads
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const apiKey = request.headers.get("x-api-key") || request.nextUrl.searchParams.get("key");
+  const validKeys = process.env.API_KEYS?.split(",").map((k) => k.trim()) || [];
+  if (!apiKey || !validKeys.includes(apiKey)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
     const response = await fetch(`${baseUrl}/api/roads/geometry`, {

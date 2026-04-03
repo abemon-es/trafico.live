@@ -152,19 +152,31 @@ async function updateHourlyProfiles(prisma: PrismaClient, readings: SensorReadin
   const valid = readings.filter((r) => !r.error && r.intensity > 0);
   if (valid.length === 0) return;
 
-  // Batch upsert: single SQL statement instead of 12,000+ sequential round-trips
+  // Batch upsert: single SQL statement instead of 12,000+ sequential round-trips.
+  // All sensor values are passed as $N parameters — no string interpolation of user data.
   const batchSize = 500;
   for (let i = 0; i < valid.length; i += batchSize) {
     const batch = valid.slice(i, i + batchSize);
+
+    // Each row uses 6 parameters: sensorId, dayOfWeek, hour, intensity, occupancy, serviceLevel
     const values = batch
-      .map(
-        (r) =>
-          `(gen_random_uuid()::text, ${r.sensorId}, 'MADRID', ${dayOfWeek}, ${hour}, ${r.intensity}, ${r.occupancy ?? "NULL"}, ${r.serviceLevel}, 1, NOW())`
-      )
+      .map((_, idx) => {
+        const b = idx * 6;
+        return `(gen_random_uuid()::text, $${b + 1}, 'MADRID', $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6}, 1, NOW())`;
+      })
       .join(",\n");
 
-    await prisma.$executeRawUnsafe(`
-      INSERT INTO "HourlyTrafficProfile"
+    const params: (number | null)[] = batch.flatMap((r) => [
+      r.sensorId,
+      dayOfWeek,
+      hour,
+      r.intensity,
+      r.occupancy ?? null,
+      r.serviceLevel,
+    ]);
+
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "HourlyTrafficProfile"
         ("id", "sensorId", "source", "dayOfWeek", "hour", "avgIntensity", "avgOccupancy", "avgServiceLevel", "sampleCount", "updatedAt")
       VALUES ${values}
       ON CONFLICT ("sensorId", "source", "dayOfWeek", "hour") DO UPDATE SET
@@ -184,8 +196,9 @@ async function updateHourlyProfiles(prisma: PrismaClient, readings: SensorReadin
           / ("HourlyTrafficProfile"."sampleCount" + 1), 2
         ),
         "sampleCount" = "HourlyTrafficProfile"."sampleCount" + 1,
-        "updatedAt" = NOW()
-    `);
+        "updatedAt" = NOW()`,
+      ...params
+    );
   }
 }
 

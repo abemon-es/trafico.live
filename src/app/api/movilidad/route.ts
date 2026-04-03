@@ -7,6 +7,9 @@ import { getOrCompute } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
+const VALID_GROUP_BY = ["day", "week", "month"] as const;
+type GroupBy = (typeof VALID_GROUP_BY)[number];
+
 /**
  * GET /api/movilidad
  *
@@ -29,8 +32,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const origin = searchParams.get("origin");
     const dest = searchParams.get("dest");
-    const groupBy = searchParams.get("groupBy") || "day";
+    const groupByRaw = searchParams.get("groupBy") || "day";
     const limit = Math.min(parseInt(searchParams.get("limit") || "1000"), 5000);
+
+    // Validate groupBy BEFORE the cache callback to fail fast on bad input
+    if (!(VALID_GROUP_BY as readonly string[]).includes(groupByRaw)) {
+      return NextResponse.json(
+        { error: `Invalid groupBy. Must be one of: ${VALID_GROUP_BY.join(", ")}` },
+        { status: 400 }
+      );
+    }
+    const groupBy = groupByRaw as GroupBy;
 
     const now = new Date();
     const defaultFrom = new Date(now);
@@ -60,27 +72,20 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      // For week/month aggregation, use raw SQL
+      // For week/month aggregation, use raw SQL with Prisma.sql for safe interpolation.
+      // dateFormat comes exclusively from the validated groupBy allowlist (never user input).
       const dateFormat = groupBy === "week" ? "IYYY-IW" : "YYYY-MM";
-      const conditions: string[] = [`date >= $1 AND date <= $2`];
-      const params: (string | Date)[] = [from, to];
-      let paramIdx = 3;
 
-      if (origin) {
-        conditions.push(`"originProvince" = $${paramIdx++}`);
-        params.push(origin);
-      }
-      if (dest) {
-        conditions.push(`"destProvince" = $${paramIdx++}`);
-        params.push(dest);
-      }
+      const originFilter = origin
+        ? Prisma.sql`AND "originProvince" = ${origin}`
+        : Prisma.empty;
+      const destFilter = dest
+        ? Prisma.sql`AND "destProvince" = ${dest}`
+        : Prisma.empty;
 
-      const limitParamIdx = paramIdx++;
-      params.push(limit as unknown as string);
-
-      const sql = `
+      return prisma.$queryRaw`
         SELECT
-          TO_CHAR(date, '${dateFormat}') as period,
+          TO_CHAR(date, ${dateFormat}) as period,
           "originProvince",
           "originName",
           "destProvince",
@@ -88,13 +93,13 @@ export async function GET(request: NextRequest) {
           SUM("tripCount") as "tripCount",
           AVG("avgDistanceKm") as "avgDistanceKm"
         FROM "MobilityODFlow"
-        WHERE ${conditions.join(" AND ")}
+        WHERE date >= ${from} AND date <= ${to}
+        ${originFilter}
+        ${destFilter}
         GROUP BY period, "originProvince", "originName", "destProvince", "destName"
         ORDER BY period DESC
-        LIMIT $${limitParamIdx}
+        LIMIT ${limit}
       `;
-
-      return prisma.$queryRawUnsafe(sql, ...params);
     });
 
     return NextResponse.json({

@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
  * Header: x-api-key
  */
 export async function GET(request: NextRequest) {
+  const rateLimited = await applyRateLimit(request);
+  if (rateLimited) return rateLimited;
+
   try {
     const apiKeyHeader = request.headers.get("x-api-key");
     if (!apiKeyHeader) {
@@ -80,7 +83,11 @@ export async function GET(request: NextRequest) {
     let portalUrl: string | null = null;
     if (apiKey.stripeCustomerId) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-      portalUrl = await createPortalSession(apiKey.stripeCustomerId, `${baseUrl}/api-docs`);
+      try {
+        portalUrl = await createPortalSession(apiKey.stripeCustomerId, `${baseUrl}/api-docs`);
+      } catch (err) {
+        console.error("[billing] Portal session failed:", err);
+      }
     }
 
     return NextResponse.json({
