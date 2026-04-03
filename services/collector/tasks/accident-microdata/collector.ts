@@ -387,13 +387,22 @@ async function importYear(
 
   try {
     for await (const worksheetReader of reader) {
-      // Only process first worksheet
+      // 2019-2020 XLSX files have description text in WS0, data in WS1.
+      // We detect valid data worksheets by checking if the first row contains known headers.
+      headerParsed = false;
       for await (const row of worksheetReader) {
-        // First row = headers
+        // First row of this worksheet — check if it's headers
         if (!headerParsed) {
           const values = row.values as (string | undefined)[];
           // ExcelJS row.values is 1-indexed (index 0 is undefined)
           headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
+
+          // Check if this looks like a data header row (must contain ANYO or COD_PROVINCIA or ID_ACCIDENTE)
+          const headerStr = headers.filter(Boolean).join(",").toUpperCase();
+          if (!headerStr.includes("ANYO") && !headerStr.includes("COD_PROVINCIA") && !headerStr.includes("ID_ACCIDENTE") && !headerStr.includes("SECUENCIAL")) {
+            log(TASK, `Year ${year}: skipping worksheet (first row: ${headers[0] ?? "empty"})`);
+            break; // Skip this worksheet, try next one
+          }
           COL = {
             fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
             anyo:           findColIndex(headers, ["ANYO", "AÑO", "ANNO"]),
