@@ -82,6 +82,7 @@ export const SOURCE_LAYERS = {
   citySensors: "city_sensors",
   emergencies: "emergencies",
   roadworks: "roadworks",
+  roadSegments: "road_segments",
 } as const;
 
 export type SourceLayerName = (typeof SOURCE_LAYERS)[keyof typeof SOURCE_LAYERS];
@@ -233,6 +234,11 @@ export const TILE_SOURCES = {
     url: `${TILES_BASE}/dynamic/roadworks`,
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.roadworks,
+  },
+  roadSegments: {
+    url: `pmtiles://${TILES_BASE}/tiles/road-segments.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.roadSegments,
   },
 } as const satisfies Record<string, TileSourceConfig>;
 
@@ -1329,6 +1335,32 @@ export const LAYER_STYLES = {
       "circle-stroke-width": 1,
       "circle-stroke-color": "#ffffff",
       "circle-opacity": 0.7,
+    },
+  },
+
+  // ── Road segments (IMD traffic flow polylines) ──
+  roadSegmentsLine: {
+    id: "road-segments-line",
+    type: "line",
+    source: "roadSegments",
+    "source-layer": SOURCE_LAYERS.roadSegments,
+    paint: {
+      "line-color": [
+        "interpolate", ["linear"], ["coalesce", ["get", "imd"], 0],
+        0, "#94a3b8",
+        2000, "#3b82f6",
+        5000, MAP_COLORS.trafficGreen,
+        10000, "#eab308",
+        20000, MAP_COLORS.trafficOrange,
+        50000, MAP_COLORS.incidentRed,
+      ],
+      "line-width": [
+        "interpolate", ["linear"], ["zoom"],
+        5, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 0.5, 50000, 3],
+        10, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 1, 50000, 5],
+        14, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 2, 50000, 8],
+      ],
+      "line-opacity": 0.8,
     },
   },
 } as const satisfies Record<string, AddLayerObject>;
