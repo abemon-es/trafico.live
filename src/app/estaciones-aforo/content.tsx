@@ -1,12 +1,11 @@
 "use client";
 
 import { fetcher } from "@/lib/fetcher";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import dynamic from "next/dynamic";
 import {
   Map as MapIcon,
-  Loader2,
   Filter,
   BarChart3,
   Radio,
@@ -97,17 +96,8 @@ export default function EstacionesAforoContent() {
   if (road) filterParams.set("road", road);
   if (stationType) filterParams.set("type", stationType);
 
-  // GeoJSON for map (lightweight, all stations with coords only)
-  const mapParams = new URLSearchParams(filterParams);
-  mapParams.set("format", "geojson");
-  mapParams.set("limit", "3000");
-  const { data: geoData, isLoading: mapLoading } = useSWR(
-    `/api/estaciones-aforo?${mapParams}`,
-    fetcher,
-    { revalidateOnFocus: false }
-  );
-
   // Paginated JSON for table + stats (only 100 rows)
+  // Map loads tiles independently via PMTiles — no client-fetched GeoJSON needed
   const tableParams = new URLSearchParams(filterParams);
   tableParams.set("limit", "100");
   const { data, isLoading: tableLoading } = useSWR<StationsResponse>(
@@ -116,7 +106,7 @@ export default function EstacionesAforoContent() {
     { revalidateOnFocus: false }
   );
 
-  const isLoading = mapLoading || tableLoading;
+  const isLoading = tableLoading;
   const stations = data?.data?.stations || [];
   const stats = data?.data?.stats;
 
@@ -208,20 +198,12 @@ export default function EstacionesAforoContent() {
         </select>
       </div>
 
-      {/* Map */}
+      {/* Map — tiles load independently via PMTiles */}
       <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 mb-8">
-        {isLoading ? (
-          <div className="w-full h-[500px] bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-tl-500" />
-          </div>
-        ) : (
-          <StationMap
-            stations={stations}
-            geojson={geoData}
-            onStationClick={setSelectedStation}
-            selectedStation={selectedStation}
-          />
-        )}
+        <StationMap
+          onStationClick={setSelectedStation}
+          selectedStation={selectedStation}
+        />
       </div>
 
       {/* Legend */}

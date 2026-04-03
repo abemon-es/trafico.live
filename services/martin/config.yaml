@@ -1,0 +1,19 @@
+# Martin tile server configuration
+# Serves real-time PostGIS layers as vector tiles (MVT)
+# Tables use lat/lng decimals — geometry constructed via SQL functions
+
+postgres:
+  connection_string: ${DATABASE_URL}
+  pool_size: 4
+  auto_publish: false
+
+functions:
+  sensors:
+    schema: public
+    function: tile_sensors
+  incidents:
+    schema: public
+    function: tile_incidents
+  fleet:
+    schema: public
+    function: tile_fleet

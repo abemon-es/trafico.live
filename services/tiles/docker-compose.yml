@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      martin:
+        condition: service_healthy
     volumes:
       - /opt/trafico/tiles/tiles:/data/tiles:ro
       - /opt/trafico/tiles/fonts:/data/fonts:ro
@@ -18,3 +21,18 @@ services:
       - "traefik.http.routers.tiles.tls=true"
       - "traefik.http.routers.tiles.tls.certresolver=letsencrypt"
       - "traefik.http.services.tiles.loadbalancer.server.port=80"
+
+  martin:
+    build:
+      context: ../martin
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 10s

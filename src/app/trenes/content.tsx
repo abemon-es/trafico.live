@@ -15,12 +15,9 @@ import {
   Radio,
   Clock,
   ArrowRight,
-  Accessibility,
-  TrendingUp,
   Trophy,
   ChevronRight,
   Map,
-  List,
   BarChart3,
 } from "lucide-react";
 import HeroOverlay from "./hero-overlay";
@@ -33,11 +30,6 @@ const RailwayMap = dynamic(() => import("./railway-map"), {
     </div>
   ),
 });
-
-const SERVICE_COLORS: Record<string, string> = {
-  CERCANIAS: "#059669", RODALIES: "#059669", AVE: "#dc2626",
-  LARGA_DISTANCIA: "#d48139", MEDIA_DISTANCIA: "#366cf8", FEVE: "#8b5cf6",
-};
 
 const BRAND_COLORS: Record<string, string> = {
   AVE: "#6b21a8", Alvia: "#d48139", Avant: "#7c3aed", Euromed: "#0891b2",
@@ -55,45 +47,12 @@ export default function TrainesContent() {
   const [selectedTrain, setSelectedTrain] = useState<Record<string, unknown> | null>(null);
   const [selectedStation, setSelectedStation] = useState<Record<string, unknown> | null>(null);
 
-  // --- Stations GeoJSON ---
-  const { data: stationsGeoJSON } = useSWR(
-    `/api/trenes/estaciones?format=geojson&limit=3000`,
+  // --- Station count (lightweight — tiles handle the map rendering) ---
+  const { data: stationCountData } = useSWR(
+    `/api/trenes/estaciones?limit=1`,
     fetcher, { revalidateOnFocus: false }
   );
-
-  const enrichedStations = useMemo(() => {
-    if (!stationsGeoJSON?.features) return null;
-    return {
-      ...stationsGeoJSON,
-      features: stationsGeoJSON.features.map((f: GeoJSON.Feature) => ({
-        ...f,
-        properties: {
-          ...f.properties,
-          color: SERVICE_COLORS[(f.properties?.serviceTypes || [])[0]] || "#94b6ff",
-        },
-      })),
-    };
-  }, [stationsGeoJSON]);
-
-  // --- Cercanías route shapes ---
-  const { data: routesData } = useSWR(
-    `/api/trenes/rutas?withShapes=true&limit=500&serviceType=CERCANIAS`,
-    fetcher, { revalidateOnFocus: false }
-  );
-
-  const cercaniaLines = useMemo(() => {
-    const routes = routesData?.data?.routes || [];
-    const features: GeoJSON.Feature[] = [];
-    for (const r of routes) {
-      if (!r.shapeGeoJSON?.coordinates?.length) continue;
-      features.push({
-        type: "Feature",
-        geometry: r.shapeGeoJSON,
-        properties: { routeId: r.routeId, shortName: r.shortName, color: r.color || "#059669" },
-      });
-    }
-    return { type: "FeatureCollection" as const, features };
-  }, [routesData]);
+  const totalStations = stationCountData?.data?.stats?.totalStations || 0;
 
   // --- Active alerts ---
   const { data: alertsData } = useSWR(
@@ -108,7 +67,6 @@ export default function TrainesContent() {
     fetcher, { refreshInterval: 15000 }
   );
 
-  const trainPoints = liveData?.trains || null;
   const trainRoutes = liveData?.routes || null;
   const meta = liveData?.metadata || {};
   const trainCount = meta.count || 0;
@@ -117,7 +75,6 @@ export default function TrainesContent() {
   // --- Route stats ---
   const { data: routeStats } = useSWR(`/api/trenes/rutas?limit=1`, fetcher, { revalidateOnFocus: false });
   const totalRoutes = routeStats?.data?.pagination?.total || 0;
-  const totalStations = stationsGeoJSON?.features?.length || 0;
 
   // --- Delay analytics ---
   const { data: delayStats } = useSWR(`/api/trenes/stats?period=today`, fetcher, { refreshInterval: 120000 });
@@ -137,7 +94,7 @@ export default function TrainesContent() {
       {/* HERO MAP — full viewport */}
       <section className="relative" style={{ height: "85vh", minHeight: 600, maxHeight: 900 }}>
         <div className="absolute inset-0">
-          <RailwayMap stationsGeoJSON={enrichedStations} cercaniaLines={cercaniaLines} trainRoutes={trainRoutes} trainPoints={trainPoints} onTrainClick={(p) => { setSelectedStation(null); setSelectedTrain(p); }} onStationClick={(p) => { setSelectedTrain(null); setSelectedStation(p); }} />
+          <RailwayMap trainRoutes={trainRoutes} onTrainClick={(p) => { setSelectedStation(null); setSelectedTrain(p); }} onStationClick={(p) => { setSelectedTrain(null); setSelectedStation(p); }} />
         </div>
         <HeroOverlay trainCount={trainCount} totalStations={totalStations} totalRoutes={totalRoutes} alerts={alerts} punctuality={Number(punctuality)} avgDelay={Number(0)} maxDelay={current?.maxDelay ?? null} p50Delay={current?.p50Delay ?? null} loading={loadingTrains} />
       </section>
@@ -187,10 +144,7 @@ export default function TrainesContent() {
       {/* Map */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
         <RailwayMap
-          stationsGeoJSON={enrichedStations}
-          cercaniaLines={cercaniaLines}
           trainRoutes={trainRoutes}
-          trainPoints={trainPoints}
           onTrainClick={(p) => { setSelectedStation(null); setSelectedTrain(p); }}
           onStationClick={(p) => { setSelectedTrain(null); setSelectedStation(p); }}
         />

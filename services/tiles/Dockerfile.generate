@@ -1,0 +1,66 @@
+# Dockerfile.generate — One-shot PMTiles generation job
+# Installs tippecanoe + psql, runs generate-pmtiles.sh
+#
+# Build:
+#   docker build -f Dockerfile.generate -t trafico-tiles-gen .
+#
+# Run:
+#   docker run --rm \
+#     -e DATABASE_URL="$DATABASE_URL" \
+#     -v /data/tiles:/data/tiles \
+#     trafico-tiles-gen --all
+#
+# Single layer:
+#   docker run --rm \
+#     -e DATABASE_URL="$DATABASE_URL" \
+#     -v /data/tiles:/data/tiles \
+#     trafico-tiles-gen --layer=stations
+
+FROM debian:bookworm-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    libsqlite3-dev \
+    zlib1g-dev \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Build tippecanoe from source (latest stable)
+RUN git clone --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe \
+  && cd /tmp/tippecanoe \
+  && make -j$(nproc) \
+  && make install \
+  && rm -rf /tmp/tippecanoe
+
+# ---------------------------------------------------------------------------
+FROM debian:bookworm-slim
+
+# Install runtime dependencies: psql client, sqlite3 (tippecanoe dep), coreutils (numfmt)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    libsqlite3-0 \
+    zlib1g \
+    ca-certificates \
+    coreutils \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy tippecanoe binary from builder
+COPY --from=builder /usr/local/bin/tippecanoe /usr/local/bin/tippecanoe
+COPY --from=builder /usr/local/bin/tile-join /usr/local/bin/tile-join
+COPY --from=builder /usr/local/bin/tippecanoe-decode /usr/local/bin/tippecanoe-decode
+COPY --from=builder /usr/local/bin/tippecanoe-enumerate /usr/local/bin/tippecanoe-enumerate
+COPY --from=builder /usr/local/bin/tippecanoe-json-tool /usr/local/bin/tippecanoe-json-tool
+
+# Copy generation script
+COPY generate-pmtiles.sh /usr/local/bin/generate-pmtiles.sh
+RUN chmod +x /usr/local/bin/generate-pmtiles.sh
+
+# Create work and output directories
+RUN mkdir -p /tmp/tiles-work /data/tiles
+
+ENV WORK_DIR=/tmp/tiles-work
+ENV OUTPUT_DIR=/data/tiles
+
+ENTRYPOINT ["/usr/local/bin/generate-pmtiles.sh"]
+CMD ["--all"]
