@@ -44,7 +44,7 @@ const TARGET_FEEDS = [
   // ── COMMUTER / REGIONAL RAIL ──────────────────────────────────────────────
   { mdbId: "mdb-1856", name: "FGC", city: "Barcelona", province: "08", mode: "rail" },
   { mdbId: "mdb-2715", name: "Euskotren", city: "Bilbao", province: "48", mode: "rail" },
-  { mdbId: "mdb-2785", name: "Ouigo España", city: "", province: "", mode: "rail" },
+  // Ouigo (mdb-2785) excluded — GTFS feed has headers only, zero data rows
   { mdbId: "mdb-2717", name: "Renfe FEVE", city: "", province: "", mode: "rail" },
 
   // ── FUNICULAR / SPECIAL ───────────────────────────────────────────────────
@@ -244,22 +244,60 @@ async function processFeed(
     const routeRows = await parseCSV(join(tmpDir, "routes.txt"));
     const stopRows = await parseCSV(join(tmpDir, "stops.txt"));
 
-    let tripRows: Record<string, string>[] = [];
+    // For trips.txt, we only need route_id→shape_id mapping (not all trip data).
+    // Stream-parse to avoid OOM on large feeds (e.g., Xunta 156K trips).
+    const routeShapeMap = new Map<string, string>();
     try {
-      tripRows = await parseCSV(join(tmpDir, "trips.txt"));
+      const tripStream = createReadStream(join(tmpDir, "trips.txt"), { encoding: "utf-8" });
+      const tripRl = createInterface({ input: tripStream, crlfDelay: Infinity });
+      let tripHeaders: string[] = [];
+      let tripCount = 0;
+      for await (const line of tripRl) {
+        const trimmed = line.trim().replace(/^\uFEFF/, "");
+        if (!trimmed) continue;
+        if (tripHeaders.length === 0) {
+          tripHeaders = trimmed.split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+          continue;
+        }
+        tripCount++;
+        const values = trimmed.split(",");
+        const routeIdx = tripHeaders.indexOf("route_id");
+        const shapeIdx = tripHeaders.indexOf("shape_id");
+        if (routeIdx < 0 || shapeIdx < 0) continue;
+        const routeId = values[routeIdx]?.trim().replace(/^"|"$/g, "");
+        const shapeId = values[shapeIdx]?.trim().replace(/^"|"$/g, "");
+        if (shapeId && routeId && !routeShapeMap.has(routeId)) {
+          routeShapeMap.set(routeId, shapeId);
+        }
+      }
+      log(TASK, `${feed.name}: scanned ${tripCount} trips → ${routeShapeMap.size} route→shape mappings`);
     } catch {
       log(TASK, `${feed.name}: no trips.txt`);
     }
 
-    // shapes.txt is optional — group by shape_id
+    // shapes.txt is optional — only load shapes referenced by routes (not all)
+    const neededShapeIds = new Set(routeShapeMap.values());
     const shapesMap = new Map<string, Record<string, string>[]>();
     try {
-      const shapeRows = await parseCSV(join(tmpDir, "shapes.txt"));
-      for (const shape of shapeRows) {
-        const id = shape.shape_id;
-        if (!id) continue;
+      const shapeStream = createReadStream(join(tmpDir, "shapes.txt"), { encoding: "utf-8" });
+      const shapeRl = createInterface({ input: shapeStream, crlfDelay: Infinity });
+      let shapeHeaders: string[] = [];
+      for await (const line of shapeRl) {
+        const trimmed = line.trim().replace(/^\uFEFF/, "");
+        if (!trimmed) continue;
+        if (shapeHeaders.length === 0) {
+          shapeHeaders = trimmed.split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+          continue;
+        }
+        const values = trimmed.split(",");
+        const obj: Record<string, string> = {};
+        for (let i = 0; i < shapeHeaders.length; i++) {
+          obj[shapeHeaders[i]] = (values[i] || "").trim().replace(/^"|"$/g, "");
+        }
+        const id = obj.shape_id;
+        if (!id || !neededShapeIds.has(id)) continue;
         const arr = shapesMap.get(id) || [];
-        arr.push(shape);
+        arr.push(obj);
         shapesMap.set(id, arr);
       }
     } catch {
@@ -268,16 +306,8 @@ async function processFeed(
 
     log(
       TASK,
-      `${feed.name}: ${routeRows.length} routes, ${stopRows.length} stops, ${tripRows.length} trips, ${shapesMap.size} shape_ids`
+      `${feed.name}: ${routeRows.length} routes, ${stopRows.length} stops, ${routeShapeMap.size} shape mappings, ${shapesMap.size} shapes loaded`
     );
-
-    // ── Build route_id → shape_id (use first trip with a shape) ──
-    const routeShapeMap = new Map<string, string>();
-    for (const trip of tripRows) {
-      if (trip.shape_id && trip.route_id && !routeShapeMap.has(trip.route_id)) {
-        routeShapeMap.set(trip.route_id, trip.shape_id);
-      }
-    }
 
     // ── Upsert TransitOperator ──
     const operator = await prisma.transitOperator.upsert({
