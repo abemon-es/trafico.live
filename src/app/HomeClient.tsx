@@ -17,8 +17,8 @@ const LiveCounterStrip = dynamic(
   () => import("@/components/home/LiveCounterStrip").then((m) => m.LiveCounterStrip),
   { ssr: false }
 );
-const HeroMap = dynamic(
-  () => import("@/components/home/HeroMap").then((m) => m.HeroMap),
+const HeroMapUnified = dynamic(
+  () => import("@/components/home/HeroMapUnified").then((m) => m.HeroMapUnified),
   { ssr: false }
 );
 const IncidentTicker = dynamic(
@@ -128,7 +128,7 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
   return (
     <>
       <Suspense fallback={<HeroSkeleton />}>
-        <HeroMap initialStats={initialStats} />
+        <HeroMapUnified />
       </Suspense>
 
       <Suspense fallback={null}>
