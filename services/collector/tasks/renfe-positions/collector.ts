@@ -5,9 +5,10 @@
  * Stores current GPS positions in RenfeFleetPosition using the same schema as
  * the LD real-time collector (renfe-ld-realtime), differentiated by serviceType.
  *
- * Source (GTFS-RT): https://gtfsrt.renfe.com/vehiclepositions.json
+ * Source (GTFS-RT): https://gtfsrt.renfe.com/vehicle_positions.json
  *   Listed in MobilityData as mdb-2835. No auth required.
  *   Feed: GTFS Realtime v2.0 (JSON format).
+ *   URL changed from /vehiclepositions.json to /vehicle_positions.json (2026-03).
  *
  * Runs every 2 minutes (realtime tier) alongside renfe-ld-realtime.
  * Shares the RenfeFleetPosition table and 48h rolling window.
@@ -20,8 +21,8 @@ import { log, logError } from "../../shared/utils.js";
 
 const TASK = "renfe-positions";
 
-/** Renfe Cercanías GTFS-RT vehicle positions endpoint */
-const VEHICLE_POSITIONS_URL = "https://gtfsrt.renfe.com/vehiclepositions.json";
+/** Renfe Cercanías GTFS-RT vehicle positions endpoint (URL changed 2026-03 to underscored path) */
+const VEHICLE_POSITIONS_URL = "https://gtfsrt.renfe.com/vehicle_positions.json";
 
 /** Rolling window: positions older than this are pruned each run */
 const RETENTION_HOURS = 48;
