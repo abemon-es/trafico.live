@@ -258,12 +258,10 @@ export async function fetchMadridAyuntamiento(): Promise<StationReading[]> {
 
   let raw: MadridAytRecord[];
   try {
-    const data = await fetchJson<{ results?: MadridAytRecord[] } | MadridAytRecord[]>(MADRID_AYT_URL);
+    const data = await fetchJson<{ records?: MadridAytRecord[]; results?: MadridAytRecord[] } | MadridAytRecord[]>(MADRID_AYT_URL);
     raw = Array.isArray(data)
       ? data
-      : Array.isArray((data as { results?: MadridAytRecord[] }).results)
-        ? (data as { results: MadridAytRecord[] }).results
-        : [];
+      : (data as any).records ?? (data as any).results ?? [];
   } catch (err) {
     logError(TASK, `[${NETWORK_MADRID_AYT}] Fetch failed`, err);
     return [];
@@ -398,16 +396,15 @@ export async function fetchMadridComunidad(): Promise<StationReading[]> {
 
   let raw: MadridComRecord[];
   try {
-    const data = await fetchJson<{ result?: { records?: MadridComRecord[] } } | MadridComRecord[] | Record<string, unknown>>(MADRID_COM_URL);
-    if (Array.isArray(data)) {
-      raw = data as MadridComRecord[];
-    } else if (Array.isArray((data as { result?: { records?: MadridComRecord[] } }).result?.records)) {
-      raw = (data as { result: { records: MadridComRecord[] } }).result.records;
-    } else {
-      // Try treating the object values as the records list
-      const candidate = Object.values(data as Record<string, unknown>).find(Array.isArray);
-      raw = (candidate as MadridComRecord[] | undefined) ?? [];
-    }
+    const data = await fetchJson<Record<string, unknown>>(MADRID_COM_URL);
+    // Response is { data: [...] } with lowercase keys — normalize to uppercase
+    const innerArray = (data as any).data ?? (data as any).records ?? (Array.isArray(data) ? data : []);
+    raw = (innerArray as Record<string, unknown>[]).map((r: Record<string, unknown>) => {
+      // Normalize lowercase keys to uppercase for consistent parsing
+      const upper: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(r)) upper[k.toUpperCase()] = v;
+      return upper as unknown as MadridComRecord;
+    });
   } catch (err) {
     logError(TASK, `[${NETWORK_MADRID_COM}] Fetch failed`, err);
     return [];
