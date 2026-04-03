@@ -25,8 +25,7 @@ export async function createCheckoutSession(
     cancel_url: cancelUrl,
     metadata: { source: "trafico-live-api" },
   });
-  if (!session.url) throw new Error(`Stripe checkout session ${session.id} has no URL`);
-  return session.url;
+  return session.url!;
 }
 
 export async function createPortalSession(

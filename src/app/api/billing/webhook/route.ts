@@ -68,10 +68,7 @@ export async function POST(request: NextRequest) {
       case "customer.subscription.updated": {
         const sub = event.data.object;
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
-        if (!customerId) {
-          console.error(`[webhook] ${event.type}: missing customerId`, { eventId: event.id });
-          return NextResponse.json({ error: "Missing customerId" }, { status: 400 });
-        }
+        if (!customerId) break;
 
         const newTier = await getTierFromSubscription(sub.id);
         await prisma.apiKey.updateMany({
@@ -88,10 +85,7 @@ export async function POST(request: NextRequest) {
       case "customer.subscription.deleted": {
         const sub = event.data.object;
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
-        if (!customerId) {
-          console.error(`[webhook] ${event.type}: missing customerId`, { eventId: event.id });
-          return NextResponse.json({ error: "Missing customerId" }, { status: 400 });
-        }
+        if (!customerId) break;
 
         await prisma.apiKey.updateMany({
           where: { stripeCustomerId: customerId, isActive: true },
@@ -103,10 +97,7 @@ export async function POST(request: NextRequest) {
       case "invoice.payment_failed": {
         const invoice = event.data.object;
         const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
-        console.error(`[webhook] Payment failed for customer ${customerId ?? "unknown"}`, {
-          eventId: event.id,
-          attemptCount: (invoice as any).attempt_count,
-        });
+        if (customerId) console.warn(`[webhook] Payment failed: ${customerId}`);
         break;
       }
     }
@@ -133,9 +124,6 @@ async function getTierFromSubscription(subId: string | null | undefined): Promis
   if (!priceId) {
     console.error(`[webhook] Subscription ${subId} has no price item`);
     return "PRO";
-  }
-  if (priceId !== process.env.STRIPE_PRO_PRICE_ID && priceId !== process.env.STRIPE_ENTERPRISE_PRICE_ID) {
-    console.error(`[webhook] Unknown priceId ${priceId} for subscription ${subId}`);
   }
   return priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID ? "ENTERPRISE" : "PRO";
 }
