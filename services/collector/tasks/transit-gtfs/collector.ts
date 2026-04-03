@@ -276,32 +276,38 @@ async function processFeed(
     }
 
     // shapes.txt is optional — only load shapes referenced by routes (not all)
+    // Skip shapes entirely for very large feeds (>5K stops) to avoid OOM
+    const isLargeFeed = stopRows.length > 5000;
     const neededShapeIds = new Set(routeShapeMap.values());
     const shapesMap = new Map<string, Record<string, string>[]>();
-    try {
-      const shapeStream = createReadStream(join(tmpDir, "shapes.txt"), { encoding: "utf-8" });
-      const shapeRl = createInterface({ input: shapeStream, crlfDelay: Infinity });
-      let shapeHeaders: string[] = [];
-      for await (const line of shapeRl) {
-        const trimmed = line.trim().replace(/^\uFEFF/, "");
-        if (!trimmed) continue;
-        if (shapeHeaders.length === 0) {
-          shapeHeaders = trimmed.split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
-          continue;
+    if (isLargeFeed) {
+      log(TASK, `${feed.name}: large feed (${stopRows.length} stops) — skipping shapes to conserve memory`);
+    } else {
+      try {
+        const shapeStream = createReadStream(join(tmpDir, "shapes.txt"), { encoding: "utf-8" });
+        const shapeRl = createInterface({ input: shapeStream, crlfDelay: Infinity });
+        let shapeHeaders: string[] = [];
+        for await (const line of shapeRl) {
+          const trimmed = line.trim().replace(/^\uFEFF/, "");
+          if (!trimmed) continue;
+          if (shapeHeaders.length === 0) {
+            shapeHeaders = trimmed.split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+            continue;
+          }
+          const values = trimmed.split(",");
+          const obj: Record<string, string> = {};
+          for (let i = 0; i < shapeHeaders.length; i++) {
+            obj[shapeHeaders[i]] = (values[i] || "").trim().replace(/^"|"$/g, "");
+          }
+          const id = obj.shape_id;
+          if (!id || !neededShapeIds.has(id)) continue;
+          const arr = shapesMap.get(id) || [];
+          arr.push(obj);
+          shapesMap.set(id, arr);
         }
-        const values = trimmed.split(",");
-        const obj: Record<string, string> = {};
-        for (let i = 0; i < shapeHeaders.length; i++) {
-          obj[shapeHeaders[i]] = (values[i] || "").trim().replace(/^"|"$/g, "");
-        }
-        const id = obj.shape_id;
-        if (!id || !neededShapeIds.has(id)) continue;
-        const arr = shapesMap.get(id) || [];
-        arr.push(obj);
-        shapesMap.set(id, arr);
+      } catch {
+        // shapes.txt optional — many bus/metro feeds omit it
       }
-    } catch {
-      // shapes.txt optional — many bus/metro feeds omit it
     }
 
     log(
@@ -365,34 +371,44 @@ async function processFeed(
       }
     }
 
-    // ── Import stops (location_type 0 = stop, 1 = station entrance) ──
+    // ── Import stops in batches (location_type 0 = stop, 1 = station entrance) ──
     let stopCount = 0;
+    const stopBatch: Array<{
+      operatorId: string; stopId: string; stopName: string;
+      latitude: number; longitude: number; parentId: string | null; locationType: number;
+    }> = [];
+
     for (const row of stopRows) {
       if (!row.stop_id) continue;
-
       const locationType = row.location_type ? parseInt(row.location_type) : 0;
-      // Only import boarding stops (0) and station parent nodes (1)
       if (locationType !== 0 && locationType !== 1) continue;
-
       const lat = parseFloat(row.stop_lat);
       const lon = parseFloat(row.stop_lon);
       if (isNaN(lat) || isNaN(lon) || lat === 0 || lon === 0) continue;
 
+      stopBatch.push({
+        operatorId: operator.id,
+        stopId: row.stop_id,
+        stopName: row.stop_name?.trim() || row.stop_id,
+        latitude: lat,
+        longitude: lon,
+        parentId: row.parent_station?.trim() || null,
+        locationType,
+      });
+    }
+
+    // Batch insert in chunks of 500
+    const STOP_BATCH_SIZE = 500;
+    for (let i = 0; i < stopBatch.length; i += STOP_BATCH_SIZE) {
+      const chunk = stopBatch.slice(i, i + STOP_BATCH_SIZE);
       try {
-        await prisma.transitStop.create({
-          data: {
-            operatorId: operator.id,
-            stopId: row.stop_id,
-            stopName: row.stop_name?.trim() || row.stop_id,
-            latitude: lat,
-            longitude: lon,
-            parentId: row.parent_station?.trim() || null,
-            locationType,
-          },
+        const result = await prisma.transitStop.createMany({
+          data: chunk,
+          skipDuplicates: true,
         });
-        stopCount++;
-      } catch {
-        // @@unique([operatorId, stopId]) — skip duplicate
+        stopCount += result.count;
+      } catch (err) {
+        logError(TASK, `${feed.name}: stop batch at ${i} failed`, err);
       }
     }
 
