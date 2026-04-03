@@ -24,7 +24,7 @@ BEGIN
       t."serviceLevel",
       t.source,
       ST_AsMVTGeom(
-        ST_SetSRID(ST_MakePoint(t.longitude::float, t.latitude::float), 4326),
+        ST_Transform(ST_SetSRID(ST_MakePoint(t.longitude::float, t.latitude::float), 4326), 3857),
         bounds,
         4096, 64, true
       ) AS geom
@@ -71,7 +71,7 @@ BEGIN
       t."causeType",
       t."detailedCauseType",
       ST_AsMVTGeom(
-        ST_SetSRID(ST_MakePoint(t.longitude::float, t.latitude::float), 4326),
+        ST_Transform(ST_SetSRID(ST_MakePoint(t.longitude::float, t.latitude::float), 4326), 3857),
         bounds,
         4096, 64, true
       ) AS geom
@@ -111,7 +111,7 @@ BEGIN
       t."destStation",
       t."rollingStock",
       ST_AsMVTGeom(
-        ST_SetSRID(ST_MakePoint(t.longitude::float, t.latitude::float), 4326),
+        ST_Transform(ST_SetSRID(ST_MakePoint(t.longitude::float, t.latitude::float), 4326), 3857),
         bounds,
         4096, 64, true
       ) AS geom
