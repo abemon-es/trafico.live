@@ -98,7 +98,6 @@ const TARGET_FEEDS = [
   // ── TIER 2: REGIONAL / AUTONOMOUS COMMUNITY BUS ───────────────────────────
   { mdbId: "mdb-2721", name: "Consorcios Andalucía", city: "", province: "", mode: "bus" },
   { mdbId: "mdb-2827", name: "Consorcio Transportes Asturias", city: "Oviedo", province: "33", mode: "bus" },
-  { mdbId: "mdb-2821", name: "Xunta de Galicia", city: "", province: "", mode: "bus" },
   { mdbId: "mdb-2748", name: "Gobierno Cantabria", city: "Santander", province: "39", mode: "bus" },
   { mdbId: "mdb-2150", name: "Gobierno Navarra Interurbano", city: "Pamplona", province: "31", mode: "bus" },
   { mdbId: "mdb-2690", name: "Junta de Extremadura", city: "", province: "", mode: "bus" },
@@ -120,6 +119,9 @@ const TARGET_FEEDS = [
   { mdbId: "mdb-2735", name: "Lurraldebus Eibar", city: "Eibar", province: "20", mode: "bus" },
   { mdbId: "mdb-2824", name: "Alavabus", city: "Vitoria-Gasteiz", province: "01", mode: "bus" },
   { mdbId: "mdb-2799", name: "Bermibusa", city: "Bermeo", province: "48", mode: "bus" },
+
+  // ── LARGE FEEDS (last — high memory, may OOM on constrained containers) ───
+  { mdbId: "mdb-2821", name: "Xunta de Galicia", city: "", province: "", mode: "bus" },
 ];
 
 // ── CSV parser (handles quoted fields with commas inside) ──────────────────
