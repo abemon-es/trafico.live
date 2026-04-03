@@ -6,10 +6,12 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { Map as MapInstance } from "maplibre-gl";
 import {
   addTileSource,
+  addTileLayer,
   TILE_SOURCES,
   LAYER_STYLES,
   SOURCE_LAYERS,
 } from "@/lib/map-tiles";
+import { loadTransportIcons } from "@/lib/map-icons";
 import { InteractiveBaseMap } from "@/components/map/InteractiveBaseMap";
 
 interface RailwayMapProps {
@@ -91,8 +93,15 @@ export default function RailwayMap({
       },
     });
 
-    // Fleet circles (Martin dynamic tiles)
+    // Fleet circles (Martin dynamic tiles) — hidden; symbol layer replaces visually
     map.addLayer(LAYER_STYLES.fleetCircle as maplibregl.AddLayerObject);
+    map.setLayoutProperty("fleet-circle", "visibility", "none");
+
+    // Fleet symbol layer — loaded async after icons are ready
+    loadTransportIcons(map).then(() => {
+      if (!map.getCanvas()) return;
+      addTileLayer(map, "fleetSymbol");
+    });
 
     // Fleet labels (dynamic tiles, medium zoom)
     map.addLayer({
@@ -119,13 +128,13 @@ export default function RailwayMap({
     // --- Interactions ---
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 16, maxWidth: "280px" });
 
-    for (const layer of ["fleet-circle", "railway-stations-circle"]) {
+    for (const layer of ["fleet-circle", "fleet-symbol", "railway-stations-circle"]) {
       map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; popup.remove(); });
     }
 
-    // Fleet hover
-    map.on("mouseenter", "fleet-circle", (e) => {
+    // Fleet hover — shared handler for both circle (fallback) and symbol layers
+    function showFleetPopup(e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) {
       const f = e.features?.[0];
       if (!f) return;
       const p = f.properties || {};
@@ -142,7 +151,10 @@ export default function RailwayMap({
           </div>
         </div>`
       ).addTo(map);
-    });
+    }
+
+    map.on("mouseenter", "fleet-circle", showFleetPopup);
+    map.on("mouseenter", "fleet-symbol", showFleetPopup);
 
     // Station hover
     map.on("mouseenter", "railway-stations-circle", (e) => {
@@ -159,7 +171,7 @@ export default function RailwayMap({
     });
 
     // Click handlers — normalize tile property names for the detail panel
-    map.on("click", "fleet-circle", (e) => {
+    function handleFleetClick(e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) {
       const p = e.features?.[0]?.properties;
       if (!p) return;
       onTrainClick({
@@ -170,7 +182,10 @@ export default function RailwayMap({
         productType: p.serviceType ?? p.productType,
         material: p.rollingStock ?? p.material,
       });
-    });
+    }
+
+    map.on("click", "fleet-circle", handleFleetClick);
+    map.on("click", "fleet-symbol", handleFleetClick);
     map.on("click", "railway-stations-circle", (e) => {
       const p = e.features?.[0]?.properties;
       if (p) onStationClick(p);

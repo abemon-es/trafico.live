@@ -5,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Map as MapInstance } from "maplibre-gl";
 import { addTileLayer, setupPMTilesProtocol, SOURCE_LAYERS } from "@/lib/map-tiles";
+import { loadTransportIcons } from "@/lib/map-icons";
 import { InteractiveBaseMap } from "@/components/map/InteractiveBaseMap";
 
 export default function AviationMap({ height = "500px" }: { height?: string }) {
@@ -12,6 +13,12 @@ export default function AviationMap({ height = "500px" }: { height?: string }) {
     setupPMTilesProtocol();
     addTileLayer(map, "airportsCircle");
     addTileLayer(map, "aircraftCircle");
+    // Hide circle, add symbol layer on top
+    map.setLayoutProperty("aircraft-circle", "visibility", "none");
+    loadTransportIcons(map).then(() => {
+      if (!map.getCanvas()) return;
+      addTileLayer(map, "aircraftSymbol");
+    });
 
     // Airport name labels — visible from zoom 7
     map.addLayer({
@@ -54,8 +61,8 @@ export default function AviationMap({ height = "500px" }: { height?: string }) {
     });
     map.on("mouseleave", "airports-circle", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
 
-    // Aircraft hover
-    map.on("mouseenter", "aircraft-circle", (e) => {
+    // Aircraft hover — shared handler for circle (fallback) and symbol layers
+    function showAircraftPopup(e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) {
       const f = e.features?.[0];
       if (!f) return;
       map.getCanvas().style.cursor = "pointer";
@@ -70,8 +77,12 @@ export default function AviationMap({ height = "500px" }: { height?: string }) {
           <div style="color:#6b7280;font-size:11px">${vel} · ${p.originCountry || ""}</div>
         </div>`
       ).addTo(map);
-    });
+    }
+
+    map.on("mouseenter", "aircraft-circle", showAircraftPopup);
+    map.on("mouseenter", "aircraft-symbol", showAircraftPopup);
     map.on("mouseleave", "aircraft-circle", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
+    map.on("mouseleave", "aircraft-symbol", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
   }, []);
 
   return (

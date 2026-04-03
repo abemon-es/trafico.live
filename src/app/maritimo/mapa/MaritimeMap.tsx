@@ -6,7 +6,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 import { Fuel, Waves, Wind, Anchor, Ship, ShieldAlert, CloudRain, RefreshCw, Layers, ChevronDown, X, Maximize2, Minimize2 } from "lucide-react";
-import { addTileSource, TILE_SOURCES, LAYER_STYLES, SOURCE_LAYERS } from "@/lib/map-tiles";
+import { addTileSource, addTileLayer, TILE_SOURCES, LAYER_STYLES, SOURCE_LAYERS } from "@/lib/map-tiles";
+import { loadTransportIcons } from "@/lib/map-icons";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -486,8 +487,13 @@ export default function MaritimeMap() {
       // Ferry stop circles
       map.addLayer(LAYER_STYLES.ferryStopsCircle as maplibregl.AddLayerObject);
 
-      // Vessel positions
+      // Vessel positions — circle hidden; symbol layer replaces visually
       map.addLayer(LAYER_STYLES.vesselsCircle as maplibregl.AddLayerObject);
+      map.setLayoutProperty("vessels-circle", "visibility", "none");
+      loadTransportIcons(map).then(() => {
+        if (!map.getCanvas()) return;
+        addTileLayer(map, "vesselsSymbol");
+      });
 
       // Port labels
       map.addLayer({
@@ -509,9 +515,9 @@ export default function MaritimeMap() {
         },
       });
 
-      // Vessel hover popup
+      // Vessel hover popup — shared for circle (fallback) and symbol layers
       const vesselPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, maxWidth: "240px" });
-      map.on("mouseenter", "vessels-circle", (e) => {
+      function showVesselPopup(e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) {
         const f = e.features?.[0];
         if (!f) return;
         map.getCanvas().style.cursor = "pointer";
@@ -525,8 +531,14 @@ export default function MaritimeMap() {
             <div style="color:#0891b2;font-size:11px">SOG: ${speed}</div>
           </div>`
         ).addTo(map);
-      });
+      }
+      map.on("mouseenter", "vessels-circle", showVesselPopup);
+      map.on("mouseenter", "vessels-symbol", showVesselPopup);
       map.on("mouseleave", "vessels-circle", () => {
+        map.getCanvas().style.cursor = "";
+        vesselPopup.remove();
+      });
+      map.on("mouseleave", "vessels-symbol", () => {
         map.getCanvas().style.cursor = "";
         vesselPopup.remove();
       });
@@ -808,9 +820,9 @@ export default function MaritimeMap() {
   useEffect(() => {
     if (!mapRef.current || !isLoaded) return;
     const vis = layers.vessels ? "visible" : "none";
-    for (const id of ["vessels-circle"]) {
-      if (mapRef.current.getLayer(id)) mapRef.current.setLayoutProperty(id, "visibility", vis);
-    }
+    // Circle is always hidden (symbol replaces it); symbol toggles with user preference
+    if (mapRef.current.getLayer("vessels-circle")) mapRef.current.setLayoutProperty("vessels-circle", "visibility", "none");
+    if (mapRef.current.getLayer("vessels-symbol")) mapRef.current.setLayoutProperty("vessels-symbol", "visibility", vis);
   }, [layers.vessels, isLoaded]);
 
   // ─── Ports + ferries layer visibility ──────────────────────────────────

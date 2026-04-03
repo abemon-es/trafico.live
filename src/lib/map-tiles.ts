@@ -1094,6 +1094,58 @@ export const LAYER_STYLES = {
     },
   },
 
+  // ── Aircraft symbol (replaces aircraftCircle visually) ──
+  aircraftSymbol: {
+    id: "aircraft-symbol",
+    type: "symbol",
+    source: "aircraft",
+    "source-layer": SOURCE_LAYERS.aircraft,
+    layout: {
+      "icon-image": "icon-aircraft",
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 10, 0.9, 14, 1.2],
+      "icon-rotate": ["coalesce", ["get", "heading"], 0],
+      "icon-rotation-alignment": "map",
+      "icon-allow-overlap": true,
+    },
+    paint: {
+      "icon-opacity": 0.9,
+    },
+  },
+
+  // ── Vessel symbol (replaces vesselsCircle visually) ──
+  vesselsSymbol: {
+    id: "vessels-symbol",
+    type: "symbol",
+    source: "vessels",
+    "source-layer": SOURCE_LAYERS.vessels,
+    layout: {
+      "icon-image": "icon-vessel",
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 10, 0.9, 14, 1.2],
+      "icon-rotate": ["coalesce", ["get", "cog"], 0],
+      "icon-rotation-alignment": "map",
+      "icon-allow-overlap": true,
+    },
+    paint: {
+      "icon-opacity": 0.9,
+    },
+  },
+
+  // ── Fleet symbol (replaces fleetCircle visually) ──
+  fleetSymbol: {
+    id: "fleet-symbol",
+    type: "symbol",
+    source: "fleet",
+    "source-layer": SOURCE_LAYERS.fleet,
+    layout: {
+      "icon-image": "icon-train",
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 10, 0.9, 14, 1.2],
+      "icon-allow-overlap": true,
+    },
+    paint: {
+      "icon-opacity": 0.9,
+    },
+  },
+
   // ── City traffic sensors ──
   citySensorsCircle: {
     id: "city-sensors-circle",

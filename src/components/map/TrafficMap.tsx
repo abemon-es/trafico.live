@@ -15,6 +15,7 @@ import { useWeatherRadar } from "./WeatherRadarOverlay";
 import { useWindOverlay, useCloudOverlay, useTemperatureOverlay } from "./WeatherOverlays";
 import { MAP_STYLE_DEFAULT, MAP_STYLE_PROTOMAPS_DARK, forceSpanishLabels, handleMapTileError } from "@/lib/map-config";
 import { setupPMTilesProtocol, addTileLayer } from "@/lib/map-tiles";
+import { loadTransportIcons } from "@/lib/map-icons";
 
 export type IncidentViewMode = "heatmap" | "clusters" | "points";
 
@@ -1064,8 +1065,14 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
           addTileLayer(m, "aircraftCircle");
           addTileLayer(m, "vesselsCircle");
           addTileLayer(m, "climateStationsCircle");
+          // Reload transport icons + symbol layers after style reset
+          loadTransportIcons(m).then(() => {
+            if (!m.getCanvas()) return;
+            addTileLayer(m, "aircraftSymbol");
+            addTileLayer(m, "vesselsSymbol");
+          });
           // Start hidden — visibility useEffects will set them when they fire
-          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "climate-stations-circle"]) {
+          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "climate-stations-circle"]) {
             if (m.getLayer(lid)) m.setLayoutProperty(lid, "visibility", "none");
           }
 
@@ -1230,8 +1237,16 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     addTileLayer(map.current, "vesselsCircle");
     addTileLayer(map.current, "climateStationsCircle");
 
+    // Load transport icons then add symbol layers on top of the hidden circles
+    const _mapForIcons = map.current;
+    loadTransportIcons(_mapForIcons).then(() => {
+      if (!_mapForIcons.getCanvas()) return;
+      addTileLayer(_mapForIcons, "aircraftSymbol");
+      addTileLayer(_mapForIcons, "vesselsSymbol");
+    });
+
     // Tile layers start hidden — visibility controlled by activeLayers
-    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "climate-stations-circle"]) {
+    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "climate-stations-circle"]) {
       if (map.current.getLayer(layerId)) {
         map.current.setLayoutProperty(layerId, "visibility", "none");
       }
@@ -1352,7 +1367,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     map.current.on("mouseenter", "fleet-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
     map.current.on("mouseleave", "fleet-circle", () => { map.current!.getCanvas().style.cursor = ""; });
 
-    // Aircraft
+    // Aircraft (circle layer — kept for fallback, symbol layer is primary)
     map.current.on("click", "aircraft-circle", (e) => {
       const p = e.features?.[0]?.properties;
       if (!p || !onInfrastructureClickRef.current) return;
@@ -1368,7 +1383,23 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     map.current.on("mouseenter", "aircraft-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
     map.current.on("mouseleave", "aircraft-circle", () => { map.current!.getCanvas().style.cursor = ""; });
 
-    // Vessels
+    // Aircraft symbol layer — primary interaction layer
+    map.current.on("click", "aircraft-symbol", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "aircraft",
+        title: p.callsign || p.icao24 || "Aeronave",
+        subtitle: p.originCountry || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "aircraft-symbol", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "aircraft-symbol", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Vessels (circle layer — kept for fallback, symbol layer is primary)
     map.current.on("click", "vessels-circle", (e) => {
       const p = e.features?.[0]?.properties;
       if (!p || !onInfrastructureClickRef.current) return;
@@ -1383,6 +1414,22 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     });
     map.current.on("mouseenter", "vessels-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
     map.current.on("mouseleave", "vessels-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Vessels symbol layer — primary interaction layer
+    map.current.on("click", "vessels-symbol", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "vessel",
+        title: p.vesselName || p.mmsi || "Buque",
+        subtitle: p.shipType || p.flag || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "vessels-symbol", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "vessels-symbol", () => { map.current!.getCanvas().style.cursor = ""; });
 
     // Traffic sensors
     map.current.on("click", "sensors-circle", (e) => {
@@ -1976,14 +2023,16 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   useEffect(() => {
     if (!map.current || !isLoaded) return;
     const vis = activeLayers.aircraft ? "visible" : "none";
-    if (map.current.getLayer("aircraft-circle")) map.current.setLayoutProperty("aircraft-circle", "visibility", vis);
+    if (map.current.getLayer("aircraft-circle")) map.current.setLayoutProperty("aircraft-circle", "visibility", "none");
+    if (map.current.getLayer("aircraft-symbol")) map.current.setLayoutProperty("aircraft-symbol", "visibility", vis);
   }, [activeLayers.aircraft, isLoaded]);
 
   // Toggle tile layer visibility — vessels (AIS)
   useEffect(() => {
     if (!map.current || !isLoaded) return;
     const vis = activeLayers.vessels ? "visible" : "none";
-    if (map.current.getLayer("vessels-circle")) map.current.setLayoutProperty("vessels-circle", "visibility", vis);
+    if (map.current.getLayer("vessels-circle")) map.current.setLayoutProperty("vessels-circle", "visibility", "none");
+    if (map.current.getLayer("vessels-symbol")) map.current.setLayoutProperty("vessels-symbol", "visibility", vis);
   }, [activeLayers.vessels, isLoaded]);
 
   // Toggle tile layer visibility — climate stations (AEMET)
