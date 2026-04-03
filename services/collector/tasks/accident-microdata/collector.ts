@@ -23,23 +23,46 @@ import { log, logError, inferRoadType } from "../../shared/utils.js";
 const TASK = "accident-microdata";
 
 // Years to import (2-digit year suffix for DGT URL)
-const YEARS = [
-  { year: 2019, suffix: "19" },
-  { year: 2020, suffix: "20" },
-  { year: 2021, suffix: "21" },
-  { year: 2022, suffix: "22" },
-  { year: 2023, suffix: "23" },
+// Years to import — DGT restructured URLs around 2020.
+// 2019: different path (publicaciones/Ficheros_microdatos...)
+// 2020-2022: lowercase .xlsx extension
+// 2023: uppercase .XLSX
+const YEARS: Array<{ year: number; urls: string[] }> = [
+  {
+    year: 2019,
+    urls: [
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/publicaciones/Ficheros_microdatos_de_accidentalidad_con_victimas/Tabla-Accidentes-2019.xlsx",
+    ],
+  },
+  {
+    year: 2020,
+    urls: [
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_20.xlsx",
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_20.XLSX",
+    ],
+  },
+  {
+    year: 2021,
+    urls: [
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_21.xlsx",
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_21.XLSX",
+    ],
+  },
+  {
+    year: 2022,
+    urls: [
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_22.xlsx",
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_22.XLSX",
+    ],
+  },
+  {
+    year: 2023,
+    urls: [
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_23.XLSX",
+      "https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_23.xlsx",
+    ],
+  },
 ];
-
-// DGT XLSX URL pattern
-function getUrl(suffix: string): string {
-  return `https://www.dgt.es/export/sites/web-DGT/.galleries/downloads/dgt-en-cifras/24h/TABLA_ACCIDENTES_${suffix}.XLSX`;
-}
-
-// Alternative URL pattern (datos.gob.es) as fallback
-function getAltUrl(suffix: string): string {
-  return `https://datos.gob.es/sites/default/files/resources/TABLA_ACCIDENTES_${suffix}.xlsx`;
-}
 
 // ── Province name → INE 2-digit code lookup ───────────────────────────────
 // Self-contained mapping (no frontend imports needed in Docker collector)
@@ -303,7 +326,7 @@ async function downloadXlsx(url: string): Promise<Buffer | null> {
 async function importYear(
   prisma: PrismaClient,
   year: number,
-  suffix: string
+  urls: string[]
 ): Promise<{ imported: number; skipped: number }> {
   // Skip if already imported
   const existing = await prisma.accidentMicrodata.count({ where: { year } });
@@ -312,17 +335,15 @@ async function importYear(
     return { imported: 0, skipped: existing };
   }
 
-  // Download to temp file (avoids holding entire buffer in memory during parse)
-  const primaryUrl = getUrl(suffix);
-  const altUrl = getAltUrl(suffix);
-
-  let buffer = await downloadXlsx(primaryUrl);
-  if (!buffer) {
-    log(TASK, `Year ${year}: primary URL failed, trying alternate...`);
-    buffer = await downloadXlsx(altUrl);
+  // Try each URL until one works
+  let buffer: Buffer | null = null;
+  for (const url of urls) {
+    buffer = await downloadXlsx(url);
+    if (buffer) break;
+    log(TASK, `Year ${year}: URL failed, trying next...`);
   }
   if (!buffer) {
-    log(TASK, `Year ${year}: could not download — skipping`);
+    log(TASK, `Year ${year}: all ${urls.length} URLs failed — skipping`);
     return { imported: 0, skipped: 0 };
   }
 
@@ -544,9 +565,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let totalImported = 0;
   let totalSkipped = 0;
 
-  for (const { year, suffix } of YEARS) {
+  for (const { year, urls } of YEARS) {
     try {
-      const result = await importYear(prisma, year, suffix);
+      const result = await importYear(prisma, year, urls);
       totalImported += result.imported;
       totalSkipped += result.skipped;
     } catch (err) {
