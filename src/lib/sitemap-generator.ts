@@ -806,6 +806,48 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily",
       priority: 0.85,
     },
+    {
+      url: `${BASE_URL}/trenes/cercanias`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/trenes/lineas`,
+      lastModified: today,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    },
+    {
+      url: `${BASE_URL}/trenes/estaciones`,
+      lastModified: today,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    },
+    {
+      url: `${BASE_URL}/aviacion`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/transporte-publico`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/calidad-aire`,
+      lastModified: today,
+      changeFrequency: "hourly" as const,
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/estadisticas-transporte`,
+      lastModified: today,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    },
     // NOTE: /explorar, /explorar/territorios, /explorar/carreteras are 301-redirected
     //       to /comunidad-autonoma and /carreteras — excluded from sitemap.
     {
