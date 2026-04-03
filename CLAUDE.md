@@ -1,6 +1,6 @@
 # trafico.live
 
-Real-time Spanish traffic intelligence platform. Aggregates data from DGT, AEMET, SCT, Euskadi, Madrid, Valencia, and fuel price APIs into a unified dashboard with 75+ SEO pages.
+Real-time Spanish multimodal transport intelligence platform. Aggregates data from DGT, AEMET, Renfe, MITECO, OpenSky, aisstream.io, MobilityData, INE, MINETUR, SCT, Euskadi, Madrid, Barcelona, Valencia, Zaragoza, Andorra, and Portugal APIs into 90+ SEO pages covering road traffic, railways, maritime, aviation, public transit, air quality, and fuel prices.
 
 **URL:** https://trafico.live
 **Managed by:** Certus SPV, SLU
@@ -15,7 +15,7 @@ Real-time Spanish traffic intelligence platform. Aggregates data from DGT, AEMET
 |-------|------|
 | Framework | Next.js 16 (App Router, React 19, TypeScript) |
 | Database | PostgreSQL + PostGIS via Prisma 7 (`@prisma/adapter-pg`), PgBouncer pooling |
-| Search | Typesense (14 collections, geo-search, daily sync) |
+| Search | Typesense (19 collections, geo-search, daily sync) |
 | Cache | Redis (ioredis) — dedicated instance :6441 |
 | Maps | MapLibre GL + self-hosted Protomaps (tiles.trafico.live) |
 | Map tiles | PMTiles on nginx (hetzner-prod:8088, Traefik → tiles.trafico.live) |
@@ -43,8 +43,8 @@ npm run db:seed      # Seed database
 ## Architecture
 
 ### Frontend (`src/app/`)
-- App Router with 80+ pages (heavy SEO: city traffic, gas stations, cameras, radares, incidents, EV charging, roads, provinces, ZBE, blog, seasonal, IMD, counting stations)
-- Components organized in: `ads`, `cameras`, `charts`, `gas-stations`, `home`, `incidents`, `layout`, `map`, `search`, `seo`, `stats`, `ui`, `v16`
+- App Router with 90+ pages (heavy SEO: city traffic, gas stations, cameras, radares, incidents, EV charging, roads, provinces, ZBE, blog, seasonal, IMD, counting stations, maritime, aviation, transit, air quality, statistics)
+- Components organized in: `ads`, `cameras`, `charts`, `gas-stations`, `home`, `incidents`, `layout`, `map`, `roads`, `search`, `seo`, `stats`, `ui`, `v16`
 - All pages Spanish-language
 - Key traffic data pages:
   - `/estaciones-aforo` — MapLibre map with 14,400+ counting stations, color-coded by IMD
@@ -53,6 +53,12 @@ npm run db:seed      # Seed database
   - `/trenes/estaciones` — 2,154 station catalog with search, network/province filters
   - `/trenes/lineas` — 14 brands, 1,248 routes with origin→destination, brand cards grid
   - `/trenes/cercanias` — 12 network overview + `/trenes/cercanias/[network]` detail pages (SSG)
+- Multimodal transport pages (2026-04):
+  - `/maritimo` — Maritime hub: ports, maritime fuel, weather, AIS vessel tracking, ferry routes
+  - `/aviacion` — Real-time aircraft positions (OpenSky), 42 AENA airport catalog
+  - `/transporte-publico` — 15+ transit operators (metro, bus, tram), GTFS routes and stops
+  - `/calidad-aire` — MITECO ICA air quality index, 506 stations, pollutant breakdown by province
+  - `/estadisticas-transporte` — Multimodal transport statistics (INE), modal split analysis
 
 ### API Routes (`src/app/api/`)
 - 40+ endpoints for incidents, gas stations, roads, stats, weather, rankings, fuel prices, IMD, counting stations, traffic intensity, hourly profiles, etc.
@@ -77,13 +83,25 @@ npm run db:seed      # Seed database
   - `/api/combustible/tendencia` — Fuel price trend analysis (7d/30d/90d/1y)
   - `/api/clima/estaciones` — AEMET weather station catalog (GeoJSON)
   - `/api/clima/historico` — Daily climate records with temporal aggregation
+- Multimodal transport endpoints (2026-04):
+  - `/api/maritimo` — AIS vessel positions (GeoJSON, 48h rolling buffer)
+  - `/api/maritimo/ferries` — Ferry routes + stops + schedules (Fred. Olsen, Baleària, Vizcaya)
+  - `/api/transporte` — Transit operators/routes/stops (15+ GTFS feeds)
+  - `/api/transporte/[operator]` — Single transit operator detail by MobilityData ID
+  - `/api/aviacion` — Real-time aircraft positions over Spain (OpenSky, GeoJSON)
+  - `/api/aviacion/aeropuertos` — 42 AENA airports catalog + statistics
+  - `/api/calidad-aire` — Air quality stations + ICA index (MITECO, 506 stations)
+  - `/api/estadisticas` — Transport statistics (INE, CNMC) with groupBy aggregation
+  - `/api/estadisticas/modal` — Modal split analysis with period comparison
+  - `/api/trafico/ciudades` — City-level traffic sensors (Barcelona, Valencia, Zaragoza)
+  - `/api/trafico/obras` — Active roadworks zones (DGT connected cones)
 - Billing & API key management:
   - `/api/billing` — Stripe checkout + subscription status
   - `/api/billing/webhook` — Stripe webhook handler
   - `/api/keys` — API key CRUD (FREE/PRO/ENTERPRISE tiers)
 
 ### Typesense Search (`src/lib/typesense.ts`)
-- **14 collections** with geo-search: gas_stations, roads, cameras, articles, provinces, cities, ev_chargers, radars, railway_stations, zbe_zones, risk_zones, variable_panels, maritime_stations, traffic_stations
+- **19 collections** with geo-search: gas_stations, roads, cameras, articles, provinces, cities, ev_chargers, radars, railway_stations, zbe_zones, risk_zones, variable_panels, maritime_stations, traffic_stations, vessels, ferry_routes, transit_stops, transit_routes, airports
 - Multi-collection search via `/api/search?q=query` with Redis caching (60s)
 - Daily sync at 05:00 via `TASK=typesense-sync` collector
 - Geopoint fields on all location-aware entities (gas stations, cameras, EV chargers, radars, stations, panels, maritime)
@@ -92,14 +110,15 @@ npm run db:seed      # Seed database
 
 ### Data Collectors (`services/collector/`)
 - Unified dispatcher (`TASK` env var selects collector)
-- Valid tasks: `v16`, `incident`, `panel`, `detector`, `intensity`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `maritime-fuel`, `insights`, `risk-zones`, `zbe`, `imd`, `andorra`, `portugal-weather`, `portugal-fuel`, `historical-accidents`, `portugal-accidents`, `renfe-gtfs`, `renfe-alerts`, `renfe-ld-realtime`, `maritime-forecast`, `sasemar`, `typesense-sync`, `cnmc-fuel`, `aemet-historical`, `mobility-od`, `accident-microdata`
-- Single Docker image: `services/collector/Dockerfile` — cron schedules in `docker-compose.collectors.yml`
+- Valid tasks: `v16`, `incident`, `panel`, `detector`, `intensity`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `maritime-fuel`, `insights`, `risk-zones`, `zbe`, `imd`, `andorra`, `portugal-weather`, `portugal-fuel`, `historical-accidents`, `portugal-accidents`, `renfe-gtfs`, `renfe-alerts`, `renfe-ld-realtime`, `maritime-forecast`, `sasemar`, `typesense-sync`, `cnmc-fuel`, `aemet-historical`, `mobility-od`, `accident-microdata`, `ais-stream`, `ferry-gtfs`, `transit-gtfs`, `renfe-positions`, `city-traffic`, `dgt-extras`, `mobilitydata-sync`, `ine-stats`, `opensky`, `aena-stats`, `air-quality`
+- 7 Docker containers in `docker-compose.collectors.yml`: realtime (11 tasks), frequent (3), fuel (3), daily (11), weekly (8), ais (always-on WebSocket), + cron schedules in `services/collector/crontabs/`
+- Total ~5.2 GB RAM allocated across containers (1536m realtime, 256m frequent, 512m fuel, 1536m daily, 1024m weekly, 192m ais)
 - Runs on hetzner-prod via Coolify (separate app from web)
 - IMD data also collected monthly from hetzner-dev cron (`/opt/trafico/imd-import.sh`)
-- Data sources: DGT (DATEX II XML + accident microdata XLSX), AEMET (alerts + historical climate), SCT, Euskadi, Madrid (informo.madrid.es), Valencia, MINETUR, CNMC (fuel price history), Ministry ArcGIS REST API + BigData O-D matrices, Andorra, Portugal (IPMA, DGEG), Renfe (GTFS + GTFS-RT + undocumented LD fleet API)
+- Data sources: DGT (DATEX II XML + accident microdata XLSX), AEMET (alerts + historical climate + ICA air quality via MITECO), SCT, Euskadi, Madrid (informo.madrid.es), Barcelona (bcn.cat/transit), Valencia (opendatasoft), Zaragoza, MINETUR, CNMC (fuel price history), Ministry ArcGIS REST API + BigData O-D matrices, INE (transport statistics JSON API), MobilityData (126 Spanish GTFS feeds), OpenSky Network (aircraft ADS-B), aisstream.io (AIS vessel tracking WebSocket), Andorra, Portugal (IPMA, DGEG), Renfe (GTFS + GTFS-RT + undocumented LD fleet API)
 
 ### Database (Prisma)
-- Schema with models for: V16 beacons, traffic incidents, weather conditions/alerts, cameras, radars, panels, speed limits, gas stations (terrestrial + maritime), EV chargers, roads, IMD data, traffic counting stations, real-time traffic intensity, hourly traffic profiles, articles/tags, risk zones, ZBE, railway stations/routes/alerts/fleet positions, mobility O-D flows, accident microdata, CNMC fuel prices, climate stations/records, API keys/usage
+- Schema with models for: V16 beacons, traffic incidents, weather conditions/alerts, cameras, radars, panels, speed limits, gas stations (terrestrial + maritime), EV chargers, roads, IMD data, traffic counting stations, real-time traffic intensity, hourly traffic profiles, articles/tags, risk zones, ZBE, railway stations/routes/alerts/fleet positions, mobility O-D flows, accident microdata, CNMC fuel prices, climate stations/records, API keys/usage, vessels/positions (AIS), ferry routes/stops/trips, transit operators/routes/stops (GTFS), city traffic sensors/readings, roadworks zones, GTFS archives, transport statistics, airports/statistics, aircraft positions, air quality stations/readings
 - Heavy indexing for time-series queries
 - Province/community/municipality administrative hierarchy
 - Enums: RoadType, Direction, Severity, IncidentType, WeatherType, FuelType, StationType, etc.
