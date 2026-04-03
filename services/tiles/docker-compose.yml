@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       martin:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "8088:80"
     volumes:
