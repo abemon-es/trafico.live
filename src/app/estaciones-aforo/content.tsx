@@ -152,7 +152,7 @@ export default function EstacionesAforoContent() {
                   key={type}
                   className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                 >
-                  {STATION_TYPE_LABELS[type] || type}: {count}
+                  {STATION_TYPE_LABELS[type] || (type === "null" || type === "UNKNOWN" ? "Sin clasificar" : type)}: {count}
                 </span>
               ))}
             </div>

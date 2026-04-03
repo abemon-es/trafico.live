@@ -279,7 +279,7 @@ export default function IntensidadContent() {
                       <td className="py-2 px-3 text-gray-500">{idx + 1}</td>
                       <td className="py-2 px-3">
                         <Link
-                          href={`/explorar/carreteras/${r.roadNumber}`}
+                          href={`/carreteras/${r.roadNumber}`}
                           className="font-medium text-tl-600 dark:text-tl-400 hover:underline"
                         >
                           {r.roadNumber}
