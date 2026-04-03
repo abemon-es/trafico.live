@@ -37,32 +37,28 @@ const DATASETS_URL = (id: string) =>
   `https://api.mobilitydatabase.org/v1/gtfs_feeds/${id}/datasets?limit=50`;
 
 const PRIORITY_FEEDS = [
-  { mdbId: "mdb-794", operator: "Renfe Cercanías" },
-  { mdbId: "mdb-793", operator: "Renfe Larga Distancia" },
-  { mdbId: "mdb-2653", operator: "EMT Madrid" },
-  { mdbId: "mdb-1856", operator: "TMB Barcelona" },
-  { mdbId: "mdb-2359", operator: "EMT Valencia" },
-  { mdbId: "mdb-892", operator: "Tussam Sevilla" },
-  { mdbId: "mdb-3052", operator: "Auvasa Valladolid" },
-  { mdbId: "mdb-795", operator: "Renfe Media Distancia" },
+  { mdbId: "mdb-794", operator: "Metro de Madrid" },
+  { mdbId: "mdb-793", operator: "EMT Madrid" },
+  { mdbId: "mdb-2653", operator: "Renfe Cercanías" },
+  { mdbId: "mdb-1856", operator: "FGC Barcelona" },
+  { mdbId: "mdb-2359", operator: "TMB Barcelona" },
+  { mdbId: "mdb-892", operator: "AMB Barcelona" },
+  { mdbId: "mdb-3052", operator: "Metro Bilbao" },
+  { mdbId: "mdb-795", operator: "EMT Valencia" },
 ];
 
 const RATE_LIMIT_MS = 1000; // 1 req/sec for authenticated API
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+/** Represents a row parsed from MobilityData's feeds_v2.csv catalog. */
 interface MobilityFeedRow {
-  mdb_id: string;
-  data_type: string;
-  status: string;
-  "location.country_code": string;
-  provider: string;
-  feed_name?: string;
-  note?: string;
-  feed_contact_email?: string;
-  urls_direct_download?: string;
-  urls_latest?: string;
   [key: string]: string | undefined;
+  // Key columns (column names match CSV headers exactly):
+  //   id, data_type, entity_type, location.country_code, location.subdivision_name,
+  //   location.municipality, provider, is_official, name, note, feed_contact_email,
+  //   static_reference, urls.direct_download, urls.latest, urls.license,
+  //   location.bounding_box.extracted_on, status, features, redirect.id
 }
 
 interface MDBDataset {
@@ -236,6 +232,70 @@ async function runPhaseA(): Promise<MobilityFeedRow[]> {
   return esFeeds;
 }
 
+// ─── Phase A+: Populate GTFSArchive from CSV catalog (no auth) ───────────────
+
+/**
+ * Writes GTFSArchive entries for every Spanish feed found in the CSV catalog.
+ * Uses the bounding_box.extracted_on date as downloadedAt and the direct_download
+ * URL hash as a lightweight dedup key. This runs without authentication, so the
+ * table gets populated even when MOBILITYDATA_REFRESH_TOKEN is not configured.
+ */
+async function runPhaseAPlus(
+  prisma: PrismaClient,
+  esFeeds: MobilityFeedRow[]
+): Promise<void> {
+  log(TASK, `Phase A+: Populating GTFSArchive from ${esFeeds.length} catalog entries...`);
+
+  let upserted = 0;
+  let skipped = 0;
+
+  for (const feed of esFeeds) {
+    const mdbId = feed["id"];
+    if (!mdbId) { skipped++; continue; }
+
+    const operator = feed["provider"] || feed["name"] || mdbId;
+    const downloadUrl = feed["urls.direct_download"] || feed["urls.latest"] || "";
+
+    // Use extracted_on timestamp as downloadedAt (when MDB last crawled the feed)
+    const extractedOn = feed["location.bounding_box.extracted_on"];
+    const downloadedAt = extractedOn ? new Date(extractedOn) : new Date();
+    if (isNaN(downloadedAt.getTime())) { skipped++; continue; }
+
+    // Hash: use the download URL as a stable identifier per catalog snapshot.
+    // When the URL changes (new feed version), a new archive entry is created.
+    const hash = downloadUrl || `${mdbId}-catalog-${downloadedAt.toISOString().slice(0, 10)}`;
+
+    try {
+      await prisma.gTFSArchive.upsert({
+        where: { mdbId_hash: { mdbId, hash } },
+        create: {
+          mdbId,
+          operator,
+          downloadedAt,
+          hash,
+          serviceStart: null,
+          serviceEnd: null,
+          routeCount: null,
+          stopCount: null,
+          tripCount: null,
+          fileSize: null,
+        },
+        update: {
+          // Re-sync operator name in case it changed in the catalog
+          operator,
+          downloadedAt,
+        },
+      });
+      upserted++;
+    } catch (err) {
+      logError(TASK, `  Failed to upsert archive for ${mdbId}:`, err);
+      skipped++;
+    }
+  }
+
+  log(TASK, `Phase A+ done: ${upserted} upserted, ${skipped} skipped`);
+}
+
 // ─── Phase B: Archive Metadata ────────────────────────────────────────────────
 
 async function runPhaseB(prisma: PrismaClient, accessToken: string): Promise<void> {
@@ -312,18 +372,27 @@ export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, "Starting MobilityData GTFS archive sync");
 
   // Phase A — always runs, no auth required
+  let esFeeds: MobilityFeedRow[];
   try {
-    await runPhaseA();
+    esFeeds = await runPhaseA();
   } catch (err) {
     logError(TASK, "Phase A failed:", err);
     throw err; // Phase A is required — fail the collector if catalog download fails
   }
 
-  // Phase B — optional, requires refresh token
+  // Phase A+ — populate GTFSArchive from CSV catalog (no auth needed)
+  try {
+    await runPhaseAPlus(prisma, esFeeds);
+  } catch (err) {
+    logError(TASK, "Phase A+ failed (non-fatal):", err);
+    // Don't rethrow — Phase A succeeded, A+ is best-effort
+  }
+
+  // Phase B — optional, requires refresh token (enriches GTFSArchive with dataset metadata)
   const refreshToken = process.env.MOBILITYDATA_REFRESH_TOKEN;
   if (!refreshToken) {
     log(TASK, "No MOBILITYDATA_REFRESH_TOKEN — skipping historical snapshots (Phase B)");
-    log(TASK, "MobilityData sync complete (catalog only)");
+    log(TASK, "MobilityData sync complete (catalog + archive)");
     return;
   }
 
