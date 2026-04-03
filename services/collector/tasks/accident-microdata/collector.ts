@@ -119,6 +119,24 @@ for (const [name, code] of Object.entries(PROVINCE_MAPPINGS)) {
   PROVINCE_CODE_BY_NAME.set(name, code);
 }
 
+// Reverse lookup: INE code → province display name
+const PROVINCE_NAMES: Record<string, string> = {
+  "01": "Álava", "02": "Albacete", "03": "Alicante", "04": "Almería",
+  "05": "Ávila", "06": "Badajoz", "07": "Baleares", "08": "Barcelona",
+  "09": "Burgos", "10": "Cáceres", "11": "Cádiz", "12": "Castellón",
+  "13": "Ciudad Real", "14": "Córdoba", "15": "A Coruña", "16": "Cuenca",
+  "17": "Girona", "18": "Granada", "19": "Guadalajara", "20": "Gipuzkoa",
+  "21": "Huelva", "22": "Huesca", "23": "Jaén", "24": "León",
+  "25": "Lleida", "26": "La Rioja", "27": "Lugo", "28": "Madrid",
+  "29": "Málaga", "30": "Murcia", "31": "Navarra", "32": "Ourense",
+  "33": "Asturias", "34": "Palencia", "35": "Las Palmas", "36": "Pontevedra",
+  "37": "Salamanca", "38": "Santa Cruz de Tenerife", "39": "Cantabria",
+  "40": "Segovia", "41": "Sevilla", "42": "Soria", "43": "Tarragona",
+  "44": "Teruel", "45": "Toledo", "46": "Valencia", "47": "Valladolid",
+  "48": "Bizkaia", "49": "Zamora", "50": "Zaragoza", "51": "Ceuta",
+  "52": "Melilla",
+};
+
 function normalizeProvinceName(name: string): string {
   return name
     .toLowerCase()
@@ -130,18 +148,43 @@ function normalizeProvinceName(name: string): string {
 
 function getProvinceCode(raw: string | undefined): { code: string | null; name: string | null } {
   if (!raw) return { code: null, name: null };
-  const normalized = normalizeProvinceName(String(raw));
+  const str = String(raw).trim();
+
+  // DGT sends COD_PROVINCIA as numeric (1, 2, 28...)
+  if (/^\d+$/.test(str)) {
+    const code = str.padStart(2, "0");
+    if (PROVINCE_NAMES[code]) {
+      return { code, name: PROVINCE_NAMES[code] };
+    }
+  }
+
+  // Fallback: try matching by province name
+  const normalized = normalizeProvinceName(str);
   const code = PROVINCE_CODE_BY_NAME.get(normalized) ?? null;
   if (code) {
     return { code, name: PROVINCE_NAMES[code] ?? raw };
   }
-  return { code: null, name: String(raw) };
+  return { code: null, name: str };
 }
 
 // ── Road type mapping ─────────────────────────────────────────────────────
+// DGT TIPO_VIA codes: 1=autopista, 2=autovía, 3=carretera convencional,
+// 4=vía de servicio, 5=ramal de enlace, 6=otro tipo, 7=camino vecinal
+const ROAD_TYPE_CODES: Record<string, RoadType> = {
+  "1": "AUTOPISTA",
+  "2": "AUTOVIA",
+  "3": "NACIONAL",    // convencional → closest match
+  "4": "OTHER",       // vía de servicio
+  "5": "OTHER",       // ramal de enlace
+  "6": "OTHER",
+  "7": "COMARCAL",    // camino vecinal → closest match
+};
+
 function mapRoadType(raw: string | undefined): RoadType | undefined {
   if (!raw) return undefined;
   const s = String(raw).toUpperCase().trim();
+  // Handle numeric DGT codes first
+  if (ROAD_TYPE_CODES[s]) return ROAD_TYPE_CODES[s];
   if (s.includes("AUTOPISTA") || s === "AP") return "AUTOPISTA";
   if (s.includes("AUTOV") || s === "AV" || s === "A") return "AUTOVIA";
   if (s.includes("NACIONAL") || s === "N") return "NACIONAL";
@@ -298,7 +341,7 @@ async function importYear(
   });
 
   const BATCH_SIZE = 200;
-  let batch: Parameters<typeof prisma.accidentMicrodata.createMany>[0]["data"] = [];
+  let batch: Array<Record<string, unknown>> = [];
   let imported = 0;
   let errorCount = 0;
   let rowNum = 0;
@@ -310,7 +353,7 @@ async function importYear(
     if (batch.length === 0) return;
     try {
       const result = await prisma.accidentMicrodata.createMany({
-        data: batch,
+        data: batch as any,
         skipDuplicates: true,
       });
       imported += result.count;
@@ -332,23 +375,28 @@ async function importYear(
           headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
           COL = {
             fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
+            anyo:           findColIndex(headers, ["ANYO", "AÑO", "ANNO"]),
+            mes:            findColIndex(headers, ["MES"]),
             hora:           findColIndex(headers, ["HORA", "HORA_ACCIDENTE"]),
             diaSemana:      findColIndex(headers, ["DIA_SEMANA", "DIA SEMANA", "DIASEMANA"]),
+            codProvincia:   findColIndex(headers, ["COD_PROVINCIA", "CPRO"]),
             provincia:      findColIndex(headers, ["PROVINCIA"]),
+            codMunicipio:   findColIndex(headers, ["COD_MUNICIPIO", "CMUN"]),
             municipio:      findColIndex(headers, ["MUNICIPIO"]),
             carretera:      findColIndex(headers, ["CARRETERA", "VIA", "NOMBRE_VIA", "NOMBRE VIA"]),
             km:             findColIndex(headers, ["KM", "P_KM", "PK"]),
             tipoVia:        findColIndex(headers, ["TIPO_VIA", "TIPO VIA", "TIPOVIA", "SUBTIPO_VIA"]),
             zona:           findColIndex(headers, ["ZONA", "ZONA_AGRUPADA", "ZONA AGRUPADA"]),
-            muertos:        findColIndex(headers, ["TOTAL_MUERTOS", "MUERTOS", "FALLECIDOS", "NUM_MUERTOS"]),
-            gravesHosp:     findColIndex(headers, ["TOTAL_HERIDOS_GRAVES", "HERIDOS_GRAVES", "NUM_HERIDOS_GRAVES"]),
-            leves:          findColIndex(headers, ["TOTAL_HERIDOS_LEVES", "HERIDOS_LEVES", "NUM_HERIDOS_LEVES"]),
+            // DGT uses TOTAL_MU24H / TOTAL_MU30DF for fatalities
+            muertos:        findColIndex(headers, ["TOTAL_MU24H", "TOTAL_MU30DF", "TOTAL_MUERTOS", "MUERTOS", "FALLECIDOS", "NUM_MUERTOS"]),
+            gravesHosp:     findColIndex(headers, ["TOTAL_HG24H", "TOTAL_HG30DF", "TOTAL_HERIDOS_GRAVES", "HERIDOS_GRAVES", "NUM_HERIDOS_GRAVES"]),
+            leves:          findColIndex(headers, ["TOTAL_HL24H", "TOTAL_HL30DF", "TOTAL_HERIDOS_LEVES", "HERIDOS_LEVES", "NUM_HERIDOS_LEVES"]),
             vehiculos:      findColIndex(headers, ["TOTAL_VEHICULOS", "NUM_VEHICULOS", "VEHICULOS_IMPLICADOS"]),
             tipoAccidente:  findColIndex(headers, ["TIPO_ACCIDENTE", "TIPO ACCIDENTE", "TIPOACCIDENTE"]),
             causas:         findColIndex(headers, ["CAUSA", "CAUSAS", "FACTORES_CONCURRENTES"]),
-            atmosfera:      findColIndex(headers, ["FACTORES_ATMOSFERICOS", "FACTORES ATMOSFERICOS", "ATMOSFERA"]),
-            luminosidad:    findColIndex(headers, ["LUMINOSIDAD", "ILUMINACION"]),
-            superficie:     findColIndex(headers, ["SUPERFICIE", "ESTADO_CALZADA", "ESTADO CALZADA"]),
+            atmosfera:      findColIndex(headers, ["CONDICION_METEO", "FACTORES_ATMOSFERICOS", "FACTORES ATMOSFERICOS", "ATMOSFERA"]),
+            luminosidad:    findColIndex(headers, ["CONDICION_ILUMINACION", "LUMINOSIDAD", "ILUMINACION"]),
+            superficie:     findColIndex(headers, ["CONDICION_FIRME", "SUPERFICIE", "ESTADO_CALZADA", "ESTADO CALZADA"]),
             turismo:        findColIndex(headers, ["TURISMO", "TURISMOS"]),
             moto:           findColIndex(headers, ["MOTOCICLETA", "MOTOS", "MOTOCICLETAS"]),
             camion:         findColIndex(headers, ["CAMION", "CAMIONES", "VEHICULO PESADO"]),
@@ -382,7 +430,7 @@ async function importYear(
           return isNaN(n) ? undefined : n;
         };
 
-        // Parse date
+        // Parse date — try FECHA first, then construct from ANYO+MES
         let date: Date | undefined;
         if (COL.fecha >= 0) {
           const v = values[COL.fecha + 1];
@@ -396,12 +444,21 @@ async function importYear(
             }
           }
         }
+        // Fallback: construct approximate date from ANYO + MES columns
+        if (!date && COL.anyo >= 0 && COL.mes >= 0) {
+          const y = getNum(COL.anyo);
+          const m = getNum(COL.mes);
+          if (y && m && m >= 1 && m <= 12) {
+            date = new Date(`${y}-${String(m).padStart(2, "0")}-15`); // mid-month approximation
+          }
+        }
 
         const fatalities = getNum(COL.muertos) ?? 0;
         const hospitalized = getNum(COL.gravesHosp) ?? 0;
         const minorInjury = getNum(COL.leves) ?? 0;
 
-        const rawProvince = getVal(COL.provincia);
+        // Province: prefer COD_PROVINCIA (numeric), fallback to PROVINCIA (text)
+        const rawProvince = getVal(COL.codProvincia) ?? getVal(COL.provincia);
         const { code: provinceCode, name: provinceName } = getProvinceCode(rawProvince);
 
         const rawRoad = getVal(COL.carretera);
@@ -416,9 +473,10 @@ async function importYear(
         let isUrban: boolean | undefined;
         const rawZona = getVal(COL.zona);
         if (rawZona) {
-          const z = rawZona.toUpperCase();
-          if (z.includes("URBANA") && !z.includes("INTERURBANA")) isUrban = true;
-          if (z.includes("INTERURBANA") || z.includes("NO URBANA")) isUrban = false;
+          const z = rawZona.toUpperCase().trim();
+          // DGT uses numeric codes: 1=interurbana, 2=urbana (or text labels)
+          if (z === "2" || z.includes("URBANA") && !z.includes("INTERURBANA")) isUrban = true;
+          if (z === "1" || z.includes("INTERURBANA") || z.includes("NO URBANA")) isUrban = false;
         }
 
         const causeRaw = getVal(COL.causas) ?? getVal(COL.tipoAccidente);
@@ -431,11 +489,11 @@ async function importYear(
           dayOfWeek: parseDayOfWeek(getVal(COL.diaSemana)) ?? null,
           roadNumber: rawRoad ?? null,
           roadType: roadType ?? null,
-          km: km !== undefined ? km : null,
+          km: km !== undefined ? String(km) : null,
           province: provinceCode,
           provinceName: provinceName ?? null,
           municipality: getVal(COL.municipio) ?? null,
-          municipalityCode: null,
+          municipalityCode: getVal(COL.codMunicipio) ?? null,
           latitude: null,
           longitude: null,
           isUrban: isUrban ?? null,
