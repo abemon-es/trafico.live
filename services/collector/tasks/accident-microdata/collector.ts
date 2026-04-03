@@ -15,6 +15,9 @@
 
 import { PrismaClient, RoadType } from "@prisma/client";
 import ExcelJS from "exceljs";
+import { writeFileSync, unlinkSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
 import { log, logError, inferRoadType } from "../../shared/utils.js";
 
 const TASK = "accident-microdata";
@@ -253,7 +256,7 @@ async function downloadXlsx(url: string): Promise<Buffer | null> {
   }
 }
 
-// ── Parse XLSX and import records ────────────────────────────────────────
+// ── Parse XLSX via streaming reader (low memory) ────────────────────────
 async function importYear(
   prisma: PrismaClient,
   year: number,
@@ -266,85 +269,42 @@ async function importYear(
     return { imported: 0, skipped: existing };
   }
 
-  // Try primary URL, then fallback
-  let buffer: Buffer | null = null;
+  // Download to temp file (avoids holding entire buffer in memory during parse)
   const primaryUrl = getUrl(suffix);
   const altUrl = getAltUrl(suffix);
 
-  buffer = await downloadXlsx(primaryUrl);
+  let buffer = await downloadXlsx(primaryUrl);
   if (!buffer) {
     log(TASK, `Year ${year}: primary URL failed, trying alternate...`);
     buffer = await downloadXlsx(altUrl);
   }
-
   if (!buffer) {
-    log(TASK, `Year ${year}: could not download from either URL — skipping`);
+    log(TASK, `Year ${year}: could not download — skipping`);
     return { imported: 0, skipped: 0 };
   }
 
-  log(TASK, `Year ${year}: downloaded ${(buffer.length / 1024 / 1024).toFixed(1)} MB`);
+  const tmpPath = join(tmpdir(), `dgt-accidents-${year}.xlsx`);
+  writeFileSync(tmpPath, buffer);
+  const sizeMB = (buffer.length / 1024 / 1024).toFixed(1);
+  log(TASK, `Year ${year}: downloaded ${sizeMB} MB → ${tmpPath}`);
+  buffer = null as unknown as Buffer; // release buffer before parsing
 
-  // Parse with ExcelJS — release raw buffer immediately after load to free memory
-  const workbook = new ExcelJS.Workbook();
-  try {
-    await workbook.xlsx.load(buffer);
-    buffer = null as unknown as Buffer; // allow GC of raw bytes
-  } catch (err) {
-    logError(TASK, `Year ${year}: failed to parse XLSX`, err);
-    return { imported: 0, skipped: 0 };
-  }
-
-  const sheet = workbook.worksheets[0];
-  if (!sheet) {
-    log(TASK, `Year ${year}: no worksheets found`);
-    return { imported: 0, skipped: 0 };
-  }
-
-  // Read header row (row 1)
-  const headerRow = sheet.getRow(1);
-  const headers: (string | undefined)[] = [];
-  headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-    headers[colNumber - 1] = cell.text?.trim() || undefined;
+  // Use ExcelJS streaming WorkbookReader — reads row by row, ~50MB heap instead of 700MB
+  const reader = new ExcelJS.stream.xlsx.WorkbookReader(tmpPath, {
+    sharedStrings: "cache",
+    worksheets: "emit",
+    hyperlinks: "ignore",
+    styles: "ignore",
   });
 
-  log(TASK, `Year ${year}: columns detected: ${headers.filter(Boolean).join(", ")}`);
-
-  // Map column names to indices (0-based)
-  const COL = {
-    fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
-    hora:           findColIndex(headers, ["HORA", "HORA_ACCIDENTE"]),
-    diaSemana:      findColIndex(headers, ["DIA_SEMANA", "DIA SEMANA", "DIASEMANA"]),
-    provincia:      findColIndex(headers, ["PROVINCIA"]),
-    municipio:      findColIndex(headers, ["MUNICIPIO"]),
-    carretera:      findColIndex(headers, ["CARRETERA", "VIA", "NOMBRE_VIA", "NOMBRE VIA"]),
-    km:             findColIndex(headers, ["KM", "P_KM", "PK"]),
-    tipoVia:        findColIndex(headers, ["TIPO_VIA", "TIPO VIA", "TIPOVIA", "SUBTIPO_VIA"]),
-    zona:           findColIndex(headers, ["ZONA", "ZONA_AGRUPADA", "ZONA AGRUPADA"]),
-    muertos:        findColIndex(headers, ["TOTAL_MUERTOS", "MUERTOS", "FALLECIDOS", "NUM_MUERTOS"]),
-    gravesHosp:     findColIndex(headers, ["TOTAL_HERIDOS_GRAVES", "HERIDOS_GRAVES", "NUM_HERIDOS_GRAVES"]),
-    leves:          findColIndex(headers, ["TOTAL_HERIDOS_LEVES", "HERIDOS_LEVES", "NUM_HERIDOS_LEVES"]),
-    vehiculos:      findColIndex(headers, ["TOTAL_VEHICULOS", "NUM_VEHICULOS", "VEHICULOS_IMPLICADOS"]),
-    tipoAccidente:  findColIndex(headers, ["TIPO_ACCIDENTE", "TIPO ACCIDENTE", "TIPOACCIDENTE"]),
-    causas:         findColIndex(headers, ["CAUSA", "CAUSAS", "FACTORES_CONCURRENTES"]),
-    atmosfera:      findColIndex(headers, ["FACTORES_ATMOSFERICOS", "FACTORES ATMOSFERICOS", "ATMOSFERA"]),
-    luminosidad:    findColIndex(headers, ["LUMINOSIDAD", "ILUMINACION"]),
-    superficie:     findColIndex(headers, ["SUPERFICIE", "ESTADO_CALZADA", "ESTADO CALZADA"]),
-    // Vehicle type columns (optional)
-    turismo:        findColIndex(headers, ["TURISMO", "TURISMOS"]),
-    moto:           findColIndex(headers, ["MOTOCICLETA", "MOTOS", "MOTOCICLETAS"]),
-    camion:         findColIndex(headers, ["CAMION", "CAMIONES", "VEHICULO PESADO"]),
-    bus:            findColIndex(headers, ["AUTOBUS", "BUS", "AUTOBUSES"]),
-    bici:           findColIndex(headers, ["BICICLETA", "BICICLETAS", "CICLO"]),
-    peaton:         findColIndex(headers, ["PEATON", "PEATONES", "PEATÓN"]),
-  };
-
-  log(TASK, `Year ${year}: sheet has ${sheet.rowCount} rows (including header)`);
-
-  // Collect records for batch insert
   const BATCH_SIZE = 200;
   let batch: Parameters<typeof prisma.accidentMicrodata.createMany>[0]["data"] = [];
   let imported = 0;
   let errorCount = 0;
+  let rowNum = 0;
+  let headers: (string | undefined)[] = [];
+  let COL: Record<string, number> = {};
+  let headerParsed = false;
 
   const flushBatch = async () => {
     if (batch.length === 0) return;
@@ -361,136 +321,159 @@ async function importYear(
     batch = [];
   };
 
-  let rowNum = 0;
-  for (let rowIndex = 2; rowIndex <= sheet.rowCount; rowIndex++) {
-    const row = sheet.getRow(rowIndex);
+  try {
+    for await (const worksheetReader of reader) {
+      // Only process first worksheet
+      for await (const row of worksheetReader) {
+        // First row = headers
+        if (!headerParsed) {
+          const values = row.values as (string | undefined)[];
+          // ExcelJS row.values is 1-indexed (index 0 is undefined)
+          headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
+          COL = {
+            fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
+            hora:           findColIndex(headers, ["HORA", "HORA_ACCIDENTE"]),
+            diaSemana:      findColIndex(headers, ["DIA_SEMANA", "DIA SEMANA", "DIASEMANA"]),
+            provincia:      findColIndex(headers, ["PROVINCIA"]),
+            municipio:      findColIndex(headers, ["MUNICIPIO"]),
+            carretera:      findColIndex(headers, ["CARRETERA", "VIA", "NOMBRE_VIA", "NOMBRE VIA"]),
+            km:             findColIndex(headers, ["KM", "P_KM", "PK"]),
+            tipoVia:        findColIndex(headers, ["TIPO_VIA", "TIPO VIA", "TIPOVIA", "SUBTIPO_VIA"]),
+            zona:           findColIndex(headers, ["ZONA", "ZONA_AGRUPADA", "ZONA AGRUPADA"]),
+            muertos:        findColIndex(headers, ["TOTAL_MUERTOS", "MUERTOS", "FALLECIDOS", "NUM_MUERTOS"]),
+            gravesHosp:     findColIndex(headers, ["TOTAL_HERIDOS_GRAVES", "HERIDOS_GRAVES", "NUM_HERIDOS_GRAVES"]),
+            leves:          findColIndex(headers, ["TOTAL_HERIDOS_LEVES", "HERIDOS_LEVES", "NUM_HERIDOS_LEVES"]),
+            vehiculos:      findColIndex(headers, ["TOTAL_VEHICULOS", "NUM_VEHICULOS", "VEHICULOS_IMPLICADOS"]),
+            tipoAccidente:  findColIndex(headers, ["TIPO_ACCIDENTE", "TIPO ACCIDENTE", "TIPOACCIDENTE"]),
+            causas:         findColIndex(headers, ["CAUSA", "CAUSAS", "FACTORES_CONCURRENTES"]),
+            atmosfera:      findColIndex(headers, ["FACTORES_ATMOSFERICOS", "FACTORES ATMOSFERICOS", "ATMOSFERA"]),
+            luminosidad:    findColIndex(headers, ["LUMINOSIDAD", "ILUMINACION"]),
+            superficie:     findColIndex(headers, ["SUPERFICIE", "ESTADO_CALZADA", "ESTADO CALZADA"]),
+            turismo:        findColIndex(headers, ["TURISMO", "TURISMOS"]),
+            moto:           findColIndex(headers, ["MOTOCICLETA", "MOTOS", "MOTOCICLETAS"]),
+            camion:         findColIndex(headers, ["CAMION", "CAMIONES", "VEHICULO PESADO"]),
+            bus:            findColIndex(headers, ["AUTOBUS", "BUS", "AUTOBUSES"]),
+            bici:           findColIndex(headers, ["BICICLETA", "BICICLETAS", "CICLO"]),
+            peaton:         findColIndex(headers, ["PEATON", "PEATONES", "PEATÓN"]),
+          };
+          log(TASK, `Year ${year}: columns: ${headers.filter(Boolean).join(", ")}`);
+          headerParsed = true;
+          continue;
+        }
 
-    // Skip empty rows
-    let hasData = false;
-    row.eachCell({ includeEmpty: false }, () => { hasData = true; });
-    if (!hasData) continue;
+        // Data row — values is 1-indexed array
+        const values = row.values as (string | number | Date | undefined)[];
+        if (!values || values.length < 3) continue;
 
-    rowNum++;
+        rowNum++;
 
-    const getCellValue = (colIdx: number): string | undefined => {
-      if (colIdx < 0) return undefined;
-      const cell = row.getCell(colIdx + 1); // ExcelJS is 1-indexed
-      const val = cell.text?.trim();
-      return val || undefined;
-    };
+        const getVal = (idx: number): string | undefined => {
+          if (idx < 0) return undefined;
+          const v = values[idx + 1]; // 1-indexed
+          if (v === null || v === undefined) return undefined;
+          return String(v).trim() || undefined;
+        };
 
-    const getCellNumber = (colIdx: number): number | undefined => {
-      if (colIdx < 0) return undefined;
-      const cell = row.getCell(colIdx + 1);
-      const v = cell.value;
-      if (v === null || v === undefined) return undefined;
-      const n = typeof v === "number" ? v : parseFloat(String(v));
-      return isNaN(n) ? undefined : n;
-    };
+        const getNum = (idx: number): number | undefined => {
+          if (idx < 0) return undefined;
+          const v = values[idx + 1];
+          if (v === null || v === undefined) return undefined;
+          const n = typeof v === "number" ? v : parseFloat(String(v));
+          return isNaN(n) ? undefined : n;
+        };
 
-    // Parse date
-    let date: Date | undefined;
-    if (COL.fecha >= 0) {
-      const cell = row.getCell(COL.fecha + 1);
-      if (cell.value instanceof Date) {
-        date = cell.value;
-      } else if (cell.text) {
-        // Try DD/MM/YYYY format common in DGT files
-        const match = cell.text.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-        if (match) {
-          date = new Date(`${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`);
-          if (isNaN(date.getTime())) date = undefined;
+        // Parse date
+        let date: Date | undefined;
+        if (COL.fecha >= 0) {
+          const v = values[COL.fecha + 1];
+          if (v instanceof Date) {
+            date = v;
+          } else if (v) {
+            const match = String(v).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if (match) {
+              date = new Date(`${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`);
+              if (isNaN(date.getTime())) date = undefined;
+            }
+          }
+        }
+
+        const fatalities = getNum(COL.muertos) ?? 0;
+        const hospitalized = getNum(COL.gravesHosp) ?? 0;
+        const minorInjury = getNum(COL.leves) ?? 0;
+
+        const rawProvince = getVal(COL.provincia);
+        const { code: provinceCode, name: provinceName } = getProvinceCode(rawProvince);
+
+        const rawRoad = getVal(COL.carretera);
+        const roadType = COL.tipoVia >= 0
+          ? mapRoadType(getVal(COL.tipoVia))
+          : inferRoadType(rawRoad);
+
+        let km: number | undefined;
+        const rawKm = getNum(COL.km);
+        if (rawKm !== undefined && rawKm >= 0 && rawKm < 100000) km = rawKm;
+
+        let isUrban: boolean | undefined;
+        const rawZona = getVal(COL.zona);
+        if (rawZona) {
+          const z = rawZona.toUpperCase();
+          if (z.includes("URBANA") && !z.includes("INTERURBANA")) isUrban = true;
+          if (z.includes("INTERURBANA") || z.includes("NO URBANA")) isUrban = false;
+        }
+
+        const causeRaw = getVal(COL.causas) ?? getVal(COL.tipoAccidente);
+
+        batch.push({
+          sourceId: `${year}-${date?.toISOString().slice(0, 10) ?? "nd"}-${provinceCode ?? "xx"}-${rawRoad ?? "nr"}-${km ?? 0}-${rowNum}`,
+          year,
+          date: date ?? null,
+          hour: parseHour(getVal(COL.hora)) ?? null,
+          dayOfWeek: parseDayOfWeek(getVal(COL.diaSemana)) ?? null,
+          roadNumber: rawRoad ?? null,
+          roadType: roadType ?? null,
+          km: km !== undefined ? km : null,
+          province: provinceCode,
+          provinceName: provinceName ?? null,
+          municipality: getVal(COL.municipio) ?? null,
+          municipalityCode: null,
+          latitude: null,
+          longitude: null,
+          isUrban: isUrban ?? null,
+          severity: deriveSeverity(fatalities, hospitalized, minorInjury),
+          fatalities: Math.max(0, Math.round(fatalities)),
+          hospitalized: Math.max(0, Math.round(hospitalized)),
+          minorInjury: Math.max(0, Math.round(minorInjury)),
+          vehiclesInvolved: getNum(COL.vehiculos) !== undefined ? Math.round(getNum(COL.vehiculos)!) : null,
+          weatherCondition: mapWeather(getVal(COL.atmosfera)) ?? null,
+          lightCondition: mapLight(getVal(COL.luminosidad)) ?? null,
+          roadSurface: mapSurface(getVal(COL.superficie)) ?? null,
+          causeCode: null,
+          causeDescription: causeRaw?.slice(0, 255) ?? null,
+          involvesCar: (getNum(COL.turismo) ?? 0) > 0,
+          involvesMotorcycle: (getNum(COL.moto) ?? 0) > 0,
+          involvesTruck: (getNum(COL.camion) ?? 0) > 0,
+          involvesBus: (getNum(COL.bus) ?? 0) > 0,
+          involvesBicycle: (getNum(COL.bici) ?? 0) > 0,
+          involvesPedestrian: (getNum(COL.peaton) ?? 0) > 0,
+        });
+
+        if (batch.length >= BATCH_SIZE) {
+          await flushBatch();
+          if (rowNum % 10000 === 0) {
+            log(TASK, `Year ${year}: ${rowNum.toLocaleString()} rows (imported: ${imported.toLocaleString()})`);
+          }
         }
       }
+      break; // Only process first worksheet
     }
-
-    // Parse numeric fields
-    const fatalities = getCellNumber(COL.muertos) ?? 0;
-    const hospitalized = getCellNumber(COL.gravesHosp) ?? 0;
-    const minorInjury = getCellNumber(COL.leves) ?? 0;
-
-    // Parse province
-    const rawProvince = getCellValue(COL.provincia);
-    const { code: provinceCode, name: provinceName } = getProvinceCode(rawProvince);
-
-    // Parse road
-    const rawRoad = getCellValue(COL.carretera);
-    const roadType = COL.tipoVia >= 0
-      ? mapRoadType(getCellValue(COL.tipoVia))
-      : inferRoadType(rawRoad);
-
-    // Parse km
-    let km: number | undefined;
-    const rawKm = getCellNumber(COL.km);
-    if (rawKm !== undefined && rawKm >= 0 && rawKm < 100000) {
-      km = rawKm;
-    }
-
-    // Parse zone (urban/interurban)
-    let isUrban: boolean | undefined;
-    const rawZona = getCellValue(COL.zona);
-    if (rawZona) {
-      const z = rawZona.toUpperCase();
-      if (z.includes("URBANA") && !z.includes("INTERURBANA")) isUrban = true;
-      if (z.includes("INTERURBANA") || z.includes("NO URBANA")) isUrban = false;
-    }
-
-    // Vehicle type flags
-    const involvesCarVal = getCellNumber(COL.turismo);
-    const involvesMotorcycleVal = getCellNumber(COL.moto);
-    const involvesTruckVal = getCellNumber(COL.camion);
-    const involvesBusVal = getCellNumber(COL.bus);
-    const involvesBicycleVal = getCellNumber(COL.bici);
-    const involvesPedestrianVal = getCellNumber(COL.peaton);
-
-    const causeRaw = getCellValue(COL.causas) ?? getCellValue(COL.tipoAccidente);
-
-    batch.push({
-      sourceId: `${year}-${date?.toISOString().slice(0, 10) ?? "nd"}-${provinceCode ?? "xx"}-${rawRoad ?? "nr"}-${km ?? 0}-${rowNum}`,
-      year,
-      date: date ?? null,
-      hour: parseHour(getCellValue(COL.hora)) ?? null,
-      dayOfWeek: parseDayOfWeek(getCellValue(COL.diaSemana)) ?? null,
-      roadNumber: rawRoad ?? null,
-      roadType: roadType ?? null,
-      km: km !== undefined ? km : null,
-      province: provinceCode,
-      provinceName: provinceName ?? null,
-      municipality: getCellValue(COL.municipio) ?? null,
-      municipalityCode: null,
-      latitude: null,
-      longitude: null,
-      isUrban: isUrban ?? null,
-      severity: deriveSeverity(fatalities, hospitalized, minorInjury),
-      fatalities: Math.max(0, Math.round(fatalities)),
-      hospitalized: Math.max(0, Math.round(hospitalized)),
-      minorInjury: Math.max(0, Math.round(minorInjury)),
-      vehiclesInvolved: getCellNumber(COL.vehiculos) !== undefined ? Math.round(getCellNumber(COL.vehiculos)!) : null,
-      weatherCondition: mapWeather(getCellValue(COL.atmosfera)) ?? null,
-      lightCondition: mapLight(getCellValue(COL.luminosidad)) ?? null,
-      roadSurface: mapSurface(getCellValue(COL.superficie)) ?? null,
-      causeCode: null,
-      causeDescription: causeRaw?.slice(0, 255) ?? null,
-      involvesCar: involvesCarVal !== undefined ? involvesCarVal > 0 : false,
-      involvesMotorcycle: involvesMotorcycleVal !== undefined ? involvesMotorcycleVal > 0 : false,
-      involvesTruck: involvesTruckVal !== undefined ? involvesTruckVal > 0 : false,
-      involvesBus: involvesBusVal !== undefined ? involvesBusVal > 0 : false,
-      involvesBicycle: involvesBicycleVal !== undefined ? involvesBicycleVal > 0 : false,
-      involvesPedestrian: involvesPedestrianVal !== undefined ? involvesPedestrianVal > 0 : false,
-    });
-
-    if (batch.length >= BATCH_SIZE) {
-      await flushBatch();
-      if (rowNum % 10000 === 0) {
-        log(TASK, `Year ${year}: processed ${rowNum.toLocaleString()} rows (imported so far: ${imported.toLocaleString()})`);
-      }
-    }
+  } finally {
+    // Clean up temp file
+    try { unlinkSync(tmpPath); } catch { /* ignore */ }
   }
 
-  // Flush remaining
   await flushBatch();
 
-  log(TASK, `Year ${year}: done — ${imported.toLocaleString()} imported, ${errorCount} batch errors out of ${rowNum.toLocaleString()} rows`);
+  log(TASK, `Year ${year}: done — ${imported.toLocaleString()} imported, ${errorCount} errors, ${rowNum.toLocaleString()} rows`);
   return { imported, skipped: 0 };
 }
 
