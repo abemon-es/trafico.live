@@ -57,6 +57,8 @@ const VALID_TASKS = [
   "mobilitydata-sync", "ine-stats",
   // Aviation
   "opensky", "aena-stats",
+  // Air quality
+  "air-quality",
 ];
 
 if (!TASK) {
