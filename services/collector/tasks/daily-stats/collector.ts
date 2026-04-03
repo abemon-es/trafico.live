@@ -126,7 +126,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
     // Fleet positions (RenfeFleetPosition or RailwayDelaySnapshot)
     const fleetAgg = await prisma.renfeFleetPosition.aggregate({
-      where: { createdAt: { gte: dayStart, lt: dayEnd } },
+      where: { fetchedAt: { gte: dayStart, lt: dayEnd } },
       _count: { _all: true },
       _avg: { delay: true },
       _max: { delay: true },
