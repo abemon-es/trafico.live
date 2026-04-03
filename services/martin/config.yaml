@@ -7,33 +7,33 @@ postgres:
   pool_size: 4
   auto_publish: false
 
-functions:
-  # --- Real-time traffic ---
-  sensors:
-    schema: public
-    function: tile_sensors
-  incidents:
-    schema: public
-    function: tile_incidents
-  roadworks:
-    schema: public
-    function: tile_roadworks
-  city_sensors:
-    schema: public
-    function: tile_city_sensors
+  functions:
+    # --- Real-time traffic ---
+    sensors:
+      schema: public
+      function: tile_sensors
+    incidents:
+      schema: public
+      function: tile_incidents
+    roadworks:
+      schema: public
+      function: tile_roadworks
+    city_sensors:
+      schema: public
+      function: tile_city_sensors
 
-  # --- Transport ---
-  fleet:
-    schema: public
-    function: tile_fleet
-  aircraft:
-    schema: public
-    function: tile_aircraft
-  vessels:
-    schema: public
-    function: tile_vessels
+    # --- Transport ---
+    fleet:
+      schema: public
+      function: tile_fleet
+    aircraft:
+      schema: public
+      function: tile_aircraft
+    vessels:
+      schema: public
+      function: tile_vessels
 
-  # --- Maritime ---
-  emergencies:
-    schema: public
-    function: tile_emergencies
+    # --- Maritime ---
+    emergencies:
+      schema: public
+      function: tile_emergencies
