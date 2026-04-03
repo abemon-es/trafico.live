@@ -11,6 +11,7 @@
  */
 
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
@@ -29,6 +30,8 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+
+const AviationMap = dynamic(() => import("./aviation-map"), { ssr: false });
 
 export const revalidate = 120;
 
@@ -405,6 +408,21 @@ export default async function AviacionPage() {
               </div>
             </div>
           )}
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Aviation map                                                     */}
+        {/* ---------------------------------------------------------------- */}
+        <section className="mb-10">
+          <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Mapa de tráfico aéreo
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Aeropuertos AENA y posiciones de aeronaves en tiempo real (OpenSky Network)
+          </p>
+          <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+            <AviationMap height="500px" />
+          </div>
         </section>
 
         {/* ---------------------------------------------------------------- */}
