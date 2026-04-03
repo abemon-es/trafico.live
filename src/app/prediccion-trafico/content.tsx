@@ -275,8 +275,8 @@ function HourlyDistributionChart({ profiles, currentHour }: { profiles: HourlyPr
           tickFormatter={(v: number) => v.toLocaleString("es-ES")}
         />
         <Tooltip
-          formatter={(value: number) => [value.toLocaleString("es-ES") + " veh/h", "Intensidad media"]}
-          labelFormatter={(h: number) => `${String(h).padStart(2, "0")}:00`}
+          formatter={(value: number | string) => [Number(value).toLocaleString("es-ES") + " veh/h", "Intensidad media"]}
+          labelFormatter={(h: number | string) => `${String(h).padStart(2, "0")}:00`}
           contentStyle={{
             backgroundColor: "var(--color-gray-900, #111827)",
             border: "none",

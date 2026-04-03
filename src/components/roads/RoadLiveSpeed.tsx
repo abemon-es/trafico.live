@@ -110,10 +110,6 @@ export function RoadLiveSpeed({ roadId }: { roadId: string }) {
             withSpeed.length
         )
       : null;
-  const totalIntensity = sorted.reduce(
-    (s, f) => s + (f.properties.intensity ?? 0),
-    0
-  );
   const levelCounts: Record<string, number> = {};
   for (const f of sorted) {
     levelCounts[f.properties.level] =

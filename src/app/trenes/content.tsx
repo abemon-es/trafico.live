@@ -454,8 +454,8 @@ export default function TrainesContent() {
                     <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v: number) => `${v}m`} />
                     <Tooltip
                       contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}
-                      formatter={(value: number, name: string) => [
-                        name === "punctuality" ? `${value.toFixed(1)}%` : `${value.toFixed(1)} min`,
+                      formatter={(value, name) => [
+                        name === "punctuality" ? `${Number(value ?? 0).toFixed(1)}%` : `${Number(value ?? 0).toFixed(1)} min`,
                         name === "punctuality" ? "Puntualidad" : "Retraso medio",
                       ]}
                       labelFormatter={(label: string) => `Hora: ${label}`}
@@ -496,7 +496,7 @@ export default function TrainesContent() {
                     <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v: number) => `${v}m`} />
                     <Tooltip
                       contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}
-                      formatter={(value: number, name: string) => {
+                      formatter={(value, name) => {
                         const labels: Record<string, string> = {
                           punctuality: "Puntualidad",
                           delay: "Retraso medio",
@@ -510,7 +510,7 @@ export default function TrainesContent() {
                           delay: " min",
                           maxDelay: " min",
                         };
-                        return [`${value}${suffix[name] || ""}`, labels[name] || name];
+                        return [`${value ?? 0}${suffix[String(name)] || ""}`, labels[String(name)] || String(name)];
                       }}
                     />
                     <Line yAxisId="left" type="monotone" dataKey="punctuality" stroke="#059669" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
