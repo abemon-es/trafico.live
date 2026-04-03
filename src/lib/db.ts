@@ -10,7 +10,7 @@ const globalForPrisma = globalThis as unknown as {
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
-  if (!connectionString) {
+  if (!connectionString || connectionString.includes("placeholder") || connectionString.includes("localhost:5432/db")) {
     // During build time (Coolify runs `DATABASE_URL='' next build`),
     // return a lazy proxy that re-checks DATABASE_URL on each access.
     // At runtime, DATABASE_URL is set and we create a real client.
