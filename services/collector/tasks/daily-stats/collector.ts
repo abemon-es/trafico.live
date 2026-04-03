@@ -115,5 +115,77 @@ export async function run(prisma: PrismaClient): Promise<void> {
   });
 
   console.log(`[daily-stats] Upserted DailyStats for ${yesterday.toISOString().slice(0, 10)}`);
+
+  // ---------------------------------------------------------------
+  // 5. Refresh LocationStats (province + community level)
+  // ---------------------------------------------------------------
+  console.log("[daily-stats] Refreshing LocationStats...");
+
+  const provinces = await prisma.province.findMany({ select: { code: true, name: true } });
+  const communities = await prisma.community.findMany({ select: { code: true, name: true } });
+
+  let locUpdated = 0;
+  for (const scope of [...provinces.map(p => ({ type: "province", ...p })), ...communities.map(c => ({ type: "community", ...c }))]) {
+    try {
+      const gasWhere = scope.type === "province"
+        ? { province: scope.code }
+        : { communityCode: scope.code };
+      const provWhere = scope.type === "province"
+        ? { province: scope.code }
+        : {};
+
+      const [cameras, radars, gas, chargers, incidents, v16s, weather, roads] = await Promise.all([
+        prisma.camera.count({ where: provWhere }),
+        prisma.radar.count({ where: provWhere }),
+        prisma.gasStation.count({ where: gasWhere }),
+        prisma.eVCharger.count({ where: provWhere }),
+        prisma.trafficIncident.count({ where: { ...provWhere, isActive: true } }),
+        prisma.v16BeaconEvent.count({ where: { ...provWhere, isActive: true } }),
+        prisma.weatherAlert.count({ where: { ...(scope.type === "province" ? { province: scope.code } : {}), isActive: true } }),
+        scope.type === "province" ? prisma.road.count({ where: { provinces: { has: scope.code } } }) : Promise.resolve(0),
+      ]);
+
+      const fuelAgg = await prisma.gasStation.aggregate({
+        where: gasWhere,
+        _avg: { priceGasoleoA: true, priceGasolina95E5: true },
+        _min: { priceGasoleoA: true, priceGasolina95E5: true },
+      });
+
+      await prisma.locationStats.upsert({
+        where: { scopeType_scopeCode: { scopeType: scope.type, scopeCode: scope.code } },
+        create: {
+          scopeType: scope.type,
+          scopeCode: scope.code,
+          scopeName: scope.name,
+          cameraCount: cameras, radarCount: radars, gasStationCount: gas,
+          evChargerCount: chargers, roadCount: roads,
+          activeIncidentCount: incidents, activeV16Count: v16s, activeWeatherAlerts: weather,
+          avgDieselPrice: fuelAgg._avg.priceGasoleoA ?? undefined,
+          avgGasoline95Price: fuelAgg._avg.priceGasolina95E5 ?? undefined,
+          minDieselPrice: fuelAgg._min.priceGasoleoA ?? undefined,
+          minGasoline95Price: fuelAgg._min.priceGasolina95E5 ?? undefined,
+          staticUpdatedAt: now, realtimeUpdatedAt: now,
+          pricesUpdatedAt: fuelAgg._avg.priceGasoleoA != null ? now : undefined,
+        },
+        update: {
+          scopeName: scope.name,
+          cameraCount: cameras, radarCount: radars, gasStationCount: gas,
+          evChargerCount: chargers, roadCount: roads,
+          activeIncidentCount: incidents, activeV16Count: v16s, activeWeatherAlerts: weather,
+          avgDieselPrice: fuelAgg._avg.priceGasoleoA ?? undefined,
+          avgGasoline95Price: fuelAgg._avg.priceGasolina95E5 ?? undefined,
+          minDieselPrice: fuelAgg._min.priceGasoleoA ?? undefined,
+          minGasoline95Price: fuelAgg._min.priceGasolina95E5 ?? undefined,
+          staticUpdatedAt: now, realtimeUpdatedAt: now,
+          pricesUpdatedAt: fuelAgg._avg.priceGasoleoA != null ? now : undefined,
+        },
+      });
+      locUpdated++;
+    } catch (err) {
+      console.error(`[daily-stats] LocationStats ${scope.type}:${scope.code} failed:`, (err as Error).message);
+    }
+  }
+
+  console.log(`[daily-stats] LocationStats: ${locUpdated}/${provinces.length + communities.length} scopes updated`);
   console.log("[daily-stats] Done");
 }
