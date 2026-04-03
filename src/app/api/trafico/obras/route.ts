@@ -2,6 +2,7 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
 import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,15 @@ export async function GET(request: NextRequest) {
     const activeParam = searchParams.get("active") ?? "true";
     const format = (searchParams.get("format") || "json").toLowerCase();
     const limit = Math.min(parseInt(searchParams.get("limit") || "200", 10), 1000);
+
+    // Redis cache (10 min — roadworks change slowly)
+    const cacheKey = `api:obras:${province || "all"}:${road || "all"}:${activeParam}:${format}:${limit}`;
+    const cached = await getFromCache<object>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=600" },
+      });
+    }
 
     // Build where clause
     const where: Prisma.RoadworksZoneWhereInput = {};
@@ -76,10 +86,9 @@ export async function GET(request: NextRequest) {
 
     // GeoJSON format
     if (format === "geojson") {
-      return NextResponse.json(
-        {
-          type: "FeatureCollection",
-          features: zones.map((z) => ({
+      const geojson = {
+        type: "FeatureCollection",
+        features: zones.map((z) => ({
             type: "Feature",
             geometry: {
               type: "Point",
@@ -101,22 +110,19 @@ export async function GET(request: NextRequest) {
               updatedAt: z.updatedAt,
             },
           })),
-        },
-        {
-          headers: {
-            "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200",
-          },
-        }
-      );
+        };
+      await setInCache(cacheKey, geojson, 600);
+      return NextResponse.json(geojson, {
+        headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200" },
+      });
     }
 
     // JSON format
     const active = zones.filter((z) => z.isActive).length;
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
+    const jsonResponse = {
+      success: true,
+      data: {
           total: zones.length,
           active,
           filters: {
@@ -144,12 +150,11 @@ export async function GET(request: NextRequest) {
           })),
         },
       },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200",
-        },
-      }
-    );
+    };
+    await setInCache(cacheKey, jsonResponse, 600);
+    return NextResponse.json(jsonResponse, {
+      headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200" },
+    });
   } catch (error) {
     reportApiError(error, "Roadworks API error");
     return NextResponse.json(

@@ -90,6 +90,15 @@
   --color-signal-green: #059669;
   --color-signal-amber: #d97706;
   --color-signal-red: #dc2626;
+
+  /* Transport mode colors */
+  --color-mode-metro: #7c3aed;
+  --color-mode-bus: #1b4bd5;
+  --color-mode-tram: #059669;
+  --color-mode-rail: #d48139;
+  --color-mode-funicular: #6b7280;
+  --color-mode-air: #0891b2;
+  --color-mode-maritime: #0369a1;
 }
 
 body {
