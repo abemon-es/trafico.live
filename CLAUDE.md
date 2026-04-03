@@ -44,7 +44,7 @@ npm run db:seed      # Seed database
 
 ### Frontend (`src/app/`)
 - App Router with 150+ pages (heavy SEO: city traffic, gas stations, cameras, radares, incidents, EV charging, roads, provinces, ZBE, blog, seasonal, IMD, counting stations, maritime, aviation, transit, air quality, statistics)
-- Components organized in: `ads`, `cameras`, `charts`, `gas-stations`, `home`, `incidents`, `layout`, `map`, `roads`, `search`, `seo`, `stats`, `ui`, `v16`
+- Components organized in: `ads`, `analytics`, `brand`, `cameras`, `charts`, `fuel`, `gas-stations`, `home`, `incidents`, `insights`, `layout`, `legal`, `location`, `map`, `providers`, `roads`, `search`, `seo`, `stats`, `ui`, `v16`
 - All pages Spanish-language
 - Key traffic data pages:
   - `/estaciones-aforo` — MapLibre map with 14,400+ counting stations, color-coded by IMD
@@ -61,7 +61,7 @@ npm run db:seed      # Seed database
   - `/estadisticas-transporte` — Multimodal transport statistics (INE), modal split analysis
 
 ### API Routes (`src/app/api/`)
-- 40+ endpoints for incidents, gas stations, roads, stats, weather, rankings, fuel prices, IMD, counting stations, traffic intensity, hourly profiles, etc.
+- 121 endpoints for incidents, gas stations, roads, stats, weather, rankings, fuel prices, IMD, counting stations, traffic intensity, hourly profiles, maritime, aviation, transit, billing, climate, mobility, accidents, etc.
 - Auth: same-origin allowed, external needs `x-api-key` header
 - Rate limiting via `rate-limiter-flexible` + Redis
 - Health check at `/api/health` (auth exempt)
@@ -183,9 +183,18 @@ npm run db:seed      # Seed database
 - **AEMET Climate:** ~900 weather stations + daily records from 2019 (temp, precip, wind, sun, pressure)
   - Collector: `TASK=aemet-historical` (daily 08:00), Tables: `ClimateStation`, `ClimateRecord`
 - **MCP Server:** Exposes 12+ tools via Model Context Protocol (traffic, fuel, railway, weather, search)
-  - Standalone: `services/mcp-server/`, Integrated: `src/mcp/`
+  - Implementation: `src/mcp/` (Prisma-backed, stdio transport)
 - **API Premium:** Stripe billing with FREE/PRO/ENTERPRISE tiers, API key management
   - Tables: `ApiKey`, `ApiUsage`, Lib: `src/lib/stripe.ts`, `src/lib/api-tiers.ts`
+
+### Multimodal Transport (2026-04)
+
+- **Maritime:** AIS vessel tracking (aisstream.io WebSocket, always-on) + ferry GTFS. Tables: `Vessel`, `VesselPosition`, `FerryRoute/Stop/Trip`. Collectors: `ais-stream`, `ferry-gtfs`. APIs: `/api/maritimo`, `/api/maritimo/ferries`. Page: `/maritimo`
+- **Public Transit:** 15+ GTFS operators via MobilityData (Metro Madrid/Barcelona/Bilbao, FGC, Euskotren, EMT, TUSSAM, Ouigo). Tables: `TransitOperator`, `TransitRoute`, `TransitStop`. Collectors: `transit-gtfs`, `renfe-positions`. APIs: `/api/transporte`, `/api/transporte/[operator]`. Page: `/transporte-publico`
+- **City Sensors:** Barcelona/Valencia/Zaragoza real-time traffic. Tables: `CityTrafficSensor`, `CityTrafficReading`. Collectors: `city-traffic` (5min), `dgt-extras` (weekly). APIs: `/api/trafico/ciudades`, `/api/trafico/obras`
+- **Aviation:** OpenSky aircraft + 42 AENA airports. Tables: `AircraftPosition`, `Airport`, `AirportStatistic`. Collectors: `opensky` (5min), `aena-stats`. APIs: `/api/aviacion`, `/api/aviacion/aeropuertos`. Page: `/aviacion`
+- **Air Quality:** MITECO ICA, 506 stations. Tables: `AirQualityStation`, `AirQualityReading` (NO2, PM10, PM2.5, O3, SO2, ICA 1-5). Collector: `air-quality` (hourly). API: `/api/calidad-aire`. Page: `/calidad-aire`
+- **Historical:** MobilityData GTFS archive (126 feeds) + INE transport stats. Tables: `GTFSArchive`, `TransportStatistic`. Collectors: `mobilitydata-sync`, `ine-stats`. APIs: `/api/estadisticas`, `/api/estadisticas/modal`. Page: `/estadisticas-transporte`
 
 ## Key Files
 
@@ -198,15 +207,15 @@ npm run db:seed      # Seed database
 | `src/lib/redis.ts` | Redis client singleton |
 | `src/lib/db.ts` | Prisma client |
 | `src/lib/geo/` | Province mapping, INE codes, slugify |
-| `prisma/schema.prisma` | Full data model (961 lines) |
+| `prisma/schema.prisma` | Full data model (78 models, 23 enums, 2,400 lines) |
 | `services/collector/index.ts` | Unified collector dispatcher |
 | `next.config.ts` | Security headers, rewrites, redirects |
 | `src/app/globals.css` | Tailwind v4 config + brand tokens (OKLCH) |
 | `src/app/sitemap.ts` | Dynamic sitemap generation |
 | `docker-compose.collectors.yml` | All collector service definitions + cron schedules |
 | `docker-compose.web.yml` | Web app service definition (separate Coolify deploy) |
-| `src/lib/typesense.ts` | Typesense client + 14 collection schemas |
-| `services/collector/tasks/typesense-sync/` | Daily Typesense sync (14 collections, geo-search) |
+| `src/lib/typesense.ts` | Typesense client + 26 collection schemas |
+| `services/collector/tasks/typesense-sync/` | Daily Typesense sync (26 collections, geo-search) |
 | `src/app/api/search/route.ts` | Multi-collection search API (Cmd+K) |
 | `sentry.client.config.ts` | Sentry client init (browser tracing, replays) |
 | `sentry.server.config.ts` | Sentry server init (Prisma integration) |
@@ -229,11 +238,27 @@ npm run db:seed      # Seed database
 | `services/collector/tasks/aemet-historical/` | AEMET climate station + daily records collector |
 | `src/lib/api-tiers.ts` | FREE/PRO/ENTERPRISE tier definitions |
 | `src/lib/stripe.ts` | Stripe client + checkout/webhook helpers |
-| `services/mcp-server/` | Standalone MCP server for AI assistants |
-| `src/mcp/` | Integrated MCP server (Prisma-backed tools) |
+| `src/mcp/` | MCP server (Prisma-backed, 12+ tools, stdio transport) |
 | `src/app/trenes/` | Railway network map page |
 | `src/app/estaciones-aforo/` | Counting stations map page |
 | `src/app/intensidad/` | National IMD overview page |
+| `services/collector/tasks/ais-stream/` | AIS WebSocket vessel tracking (always-on) |
+| `services/collector/tasks/ferry-gtfs/` | MobilityData ferry GTFS collector |
+| `services/collector/tasks/transit-gtfs/` | 15+ transit GTFS feeds collector |
+| `services/collector/tasks/renfe-positions/` | Renfe Cercanías vehicle positions |
+| `services/collector/tasks/city-traffic/` | Barcelona/Valencia/Zaragoza sensors |
+| `services/collector/tasks/opensky/` | OpenSky aircraft positions collector |
+| `services/collector/tasks/air-quality/` | MITECO ICA air quality collector |
+| `services/collector/tasks/mobilitydata-sync/` | MobilityData GTFS archive sync |
+| `services/collector/tasks/ine-stats/` | INE transport statistics collector |
+| `services/collector/shared/ws-client.ts` | Reconnecting WebSocket wrapper (AIS) |
+| `services/collector/shared/gtfs-parser.ts` | GTFS ZIP parser utility |
+| `data/airports-spain.json` | 42 AENA airports static catalog |
+| `src/app/maritimo/` | Maritime hub page |
+| `src/app/aviacion/` | Aviation page (aircraft + airports) |
+| `src/app/transporte-publico/` | Public transit operators page |
+| `src/app/calidad-aire/` | Air quality ICA page |
+| `src/app/estadisticas-transporte/` | Multimodal transport statistics |
 
 ## Conventions
 
@@ -300,6 +325,11 @@ Self-hosted Protomaps basemap (light + dark themes, Spanish labels native). Data
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature secret |
 | `STRIPE_PRO_PRICE_ID` | Stripe price ID for PRO tier |
 | `STRIPE_ENTERPRISE_PRICE_ID` | Stripe price ID for ENTERPRISE tier |
+| `AISSTREAM_API_KEY` | aisstream.io API key (maritime AIS WebSocket) |
+| `OPENSKY_USERNAME` | OpenSky Network username (optional, higher rate limits) |
+| `OPENSKY_PASSWORD` | OpenSky Network password (optional) |
+| `MOBILITYDATA_REFRESH_TOKEN` | MobilityData API refresh token (optional, for historical snapshots) |
+| `COLLECTOR_DURATION` | AIS collector run duration in ms (0 = indefinite) |
 
 ## Security
 
