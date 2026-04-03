@@ -42,6 +42,8 @@ const TASK = "air-quality-ccaa";
 const NETWORK_MADRID_AYT = "Madrid-Ayuntamiento";
 const NETWORK_MADRID_COM = "Madrid-Comunidad";
 const NETWORK_CATALUNA   = "Cataluña-XVPCA";
+const NETWORK_EUSKADI    = "Euskadi-CAPV";
+const NETWORK_ANDALUCIA  = "Andalucía-SIVA";
 
 // ---------------------------------------------------------------------------
 // ICA thresholds
@@ -617,6 +619,332 @@ export async function fetchCataluna(): Promise<StationReading[]> {
 }
 
 // ---------------------------------------------------------------------------
+// Source 4: Euskadi (País Vasco) — opendata.euskadi.eus (daily batch)
+// ---------------------------------------------------------------------------
+
+const EUSKADI_STATIONS_URL =
+  "https://opendata.euskadi.eus/contenidos/ds_informes_estudios/calidad_aire_2025/es_def/adjuntos/estaciones.json";
+const EUSKADI_HOURLY_BASE =
+  "https://opendata.euskadi.eus/contenidos/ds_informes_estudios/calidad_aire_2025/es_def/adjuntos/datos_horarios/";
+
+// Province name → INE code
+const EUSKADI_PROV_CODES: Record<string, string> = {
+  "Araba":    "01",
+  "Álava":    "01",
+  "Alava":    "01",
+  "Bizkaia":  "48",
+  "Vizcaya":  "48",
+  "Gipuzkoa": "20",
+  "Guipúzcoa":"20",
+};
+
+interface EuskadiStation {
+  Name:      string;
+  Province?: string;
+  Town?:     string;
+  Latitude?: number | string;
+  Longitude?: number | string;
+  [key: string]: unknown;
+}
+
+interface EuskadiHourlyRecord {
+  Date?:     string;
+  HourGMT?:  number | string;
+  NOgm3?:    number | string | null;
+  NO2gm3?:   number | string | null;
+  O3gm3?:    number | string | null;
+  PM10gm3?:  number | string | null;
+  SO2gm3?:   number | string | null;
+  [key: string]: unknown;
+}
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
+function safeNum(v: unknown): number | null {
+  if (v == null || v === "" || v === "-" || v === "null") return null;
+  const n = Number(v);
+  return isNaN(n) || n < 0 ? null : n;
+}
+
+export async function fetchEuskadi(): Promise<StationReading[]> {
+  log(TASK, `[${NETWORK_EUSKADI}] Fetching station catalog`);
+
+  let stations: EuskadiStation[];
+  try {
+    stations = await fetchJson<EuskadiStation[]>(EUSKADI_STATIONS_URL, 30_000);
+    if (!Array.isArray(stations)) {
+      log(TASK, `[${NETWORK_EUSKADI}] Unexpected catalog response — skipping`);
+      return [];
+    }
+  } catch (err) {
+    logError(TASK, `[${NETWORK_EUSKADI}] Catalog fetch failed`, err);
+    return [];
+  }
+
+  log(TASK, `[${NETWORK_EUSKADI}] ${stations.length} stations in catalog`);
+
+  const results: StationReading[] = [];
+
+  // Fetch each station's hourly data concurrently (but cap concurrency at 10)
+  const CONCURRENCY = 10;
+  for (let i = 0; i < stations.length; i += CONCURRENCY) {
+    const batch = stations.slice(i, i + CONCURRENCY);
+    const settled = await Promise.allSettled(
+      batch.map(async (st, batchIdx) => {
+        const idx = i + batchIdx;
+        const name = st.Name?.trim();
+        if (!name) return null;
+
+        const lat = parseFloat(String(st.Latitude  ?? ""));
+        const lon = parseFloat(String(st.Longitude ?? ""));
+        if (isNaN(lat) || isNaN(lon)) {
+          log(TASK, `[${NETWORK_EUSKADI}] No coords for ${name} — skipping`);
+          return null;
+        }
+
+        const url = `${EUSKADI_HOURLY_BASE}${encodeURIComponent(name)}.json`;
+        let hourly: EuskadiHourlyRecord[];
+        try {
+          hourly = await fetchJson<EuskadiHourlyRecord[]>(url, 20_000);
+          if (!Array.isArray(hourly) || hourly.length === 0) return null;
+        } catch {
+          // Station file may not exist — not an error worth logging verbosely
+          return null;
+        }
+
+        // Use the last record (most recent hour)
+        const rec = hourly[hourly.length - 1];
+
+        const no2  = safeNum(rec.NO2gm3);
+        const pm10 = safeNum(rec.PM10gm3);
+        const o3   = safeNum(rec.O3gm3);
+        const so2  = safeNum(rec.SO2gm3);
+        // NOgm3 is NO (not NO2) — not stored as a main pollutant
+
+        const hasData = no2 != null || pm10 != null || o3 != null || so2 != null;
+        if (!hasData) return null;
+
+        const provinceName = String(st.Province ?? "").trim();
+        const provinceCode = EUSKADI_PROV_CODES[provinceName] ?? "48"; // default Bizkaia
+        const town = String(st.Town ?? "").trim() || null;
+
+        const stationId = `eu_${slugify(name)}_${idx}`;
+        const computed  = computeIca(no2, pm10, null, o3);
+
+        return {
+          stationId,
+          name,
+          network:   NETWORK_EUSKADI,
+          city:      town,
+          province:  provinceCode,
+          latitude:  lat,
+          longitude: lon,
+          no2,
+          pm10,
+          pm25:      null,
+          o3,
+          so2,
+          co:        null,
+          ica:       computed?.ica    ?? null,
+          icaLabel:  computed?.icaLabel ?? null,
+        } satisfies StationReading;
+      })
+    );
+
+    for (const outcome of settled) {
+      if (outcome.status === "fulfilled" && outcome.value != null) {
+        results.push(outcome.value);
+      }
+    }
+  }
+
+  log(TASK, `[${NETWORK_EUSKADI}] Parsed ${results.length} stations with data`);
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Source 5: Andalucía — SIVA daily CSV (juntadeandalucia.es)
+// ---------------------------------------------------------------------------
+
+// Province abbreviation → INE code
+const ANDALUCIA_PROVINCES: Array<{ code: string; ine: string; name: string }> = [
+  { code: "AL", ine: "04", name: "Almería"  },
+  { code: "CA", ine: "11", name: "Cádiz"    },
+  { code: "CO", ine: "14", name: "Córdoba"  },
+  { code: "GR", ine: "18", name: "Granada"  },
+  { code: "HU", ine: "21", name: "Huelva"   },
+  { code: "JA", ine: "23", name: "Jaén"     },
+  { code: "MA", ine: "29", name: "Málaga"   },
+  { code: "SE", ine: "41", name: "Sevilla"  },
+];
+
+/**
+ * Minimal CSV parser that handles quoted fields.
+ * Returns an array of objects keyed by the header row.
+ */
+function parseCsv(text: string): Record<string, string>[] {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return [];
+
+  const parseRow = (line: string): string[] => {
+    const fields: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    for (let ci = 0; ci < line.length; ci++) {
+      const ch = line[ci];
+      if (ch === '"') {
+        if (inQuotes && line[ci + 1] === '"') {
+          current += '"';
+          ci++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === "," && !inQuotes) {
+        fields.push(current.trim());
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+    fields.push(current.trim());
+    return fields;
+  };
+
+  const headers = parseRow(lines[0]).map((h) => h.trim());
+  const records: Record<string, string>[] = [];
+  for (let li = 1; li < lines.length; li++) {
+    const vals = parseRow(lines[li]);
+    const obj: Record<string, string> = {};
+    for (let hi = 0; hi < headers.length; hi++) {
+      obj[headers[hi]] = vals[hi] ?? "";
+    }
+    records.push(obj);
+  }
+  return records;
+}
+
+async function fetchTextWithTimeout(url: string, timeoutMs = 30_000): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { "User-Agent": "trafico.live-collector/1.0", "Accept": "text/csv,text/plain,*/*" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    return res.text();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function fetchAndalucia(): Promise<StationReading[]> {
+  // Use yesterday's date for the CSV URL
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const year  = yesterday.getUTCFullYear();
+  const month = String(yesterday.getUTCMonth() + 1).padStart(2, "0");
+  const day   = String(yesterday.getUTCDate()).padStart(2, "0");
+  const dateStr = `${year}${month}${day}`;
+
+  log(TASK, `[${NETWORK_ANDALUCIA}] Fetching CSVs for ${dateStr} (8 provinces)`);
+
+  const results: StationReading[] = [];
+
+  const settled = await Promise.allSettled(
+    ANDALUCIA_PROVINCES.map(async ({ code, ine, name: provName }) => {
+      const url = `https://www.juntadeandalucia.es/medioambiente/atmosfera/informes_siva/cuantitativo/${year}/${code}_${dateStr}.csv`;
+      let text: string;
+      try {
+        text = await fetchTextWithTimeout(url, 25_000);
+      } catch (err) {
+        log(TASK, `[${NETWORK_ANDALUCIA}] ${provName} fetch failed — ${(err as Error).message}`);
+        return [];
+      }
+
+      let rows: Record<string, string>[];
+      try {
+        rows = parseCsv(text);
+      } catch {
+        log(TASK, `[${NETWORK_ANDALUCIA}] ${provName} CSV parse error`);
+        return [];
+      }
+
+      if (rows.length === 0) {
+        log(TASK, `[${NETWORK_ANDALUCIA}] ${provName} — empty CSV`);
+        return [];
+      }
+
+      // Group rows by D_ESTACION, keep the row with the highest D_HORA
+      const byStation = new Map<string, Record<string, string>>();
+      for (const row of rows) {
+        const stationName = row["D_ESTACION"]?.trim();
+        if (!stationName) continue;
+        const existing = byStation.get(stationName);
+        const hora = Number(row["D_HORA"] ?? "0");
+        if (!existing || Number(existing["D_HORA"] ?? "0") < hora) {
+          byStation.set(stationName, row);
+        }
+      }
+
+      const provReadings: StationReading[] = [];
+      for (const [stationName, row] of byStation) {
+        const no2  = safeNum(row["NO2"]);
+        const pm10 = safeNum(row["PM10"]);
+        const pm25 = safeNum(row["PM25"]);
+        const o3   = safeNum(row["O3"]);
+        const so2  = safeNum(row["SO2"]);
+
+        const hasData = no2 != null || pm10 != null || pm25 != null || o3 != null || so2 != null;
+        if (!hasData) continue;
+
+        const municipio = row["D_MUNICIPIO"]?.trim() || null;
+        const stationId = `and_${code.toLowerCase()}_${slugify(stationName)}`;
+        const computed  = computeIca(no2, pm10, pm25, o3);
+
+        provReadings.push({
+          stationId,
+          name:      stationName,
+          network:   NETWORK_ANDALUCIA,
+          city:      municipio,
+          province:  ine,
+          latitude:  0,    // no coordinates in CSV
+          longitude: 0,
+          no2,
+          pm10,
+          pm25,
+          o3,
+          so2,
+          co:        null,
+          ica:       computed?.ica    ?? null,
+          icaLabel:  computed?.icaLabel ?? null,
+        });
+      }
+
+      log(TASK, `[${NETWORK_ANDALUCIA}] ${provName}: ${provReadings.length} stations parsed`);
+      return provReadings;
+    })
+  );
+
+  for (const outcome of settled) {
+    if (outcome.status === "fulfilled") {
+      results.push(...outcome.value);
+    } else {
+      logError(TASK, `[${NETWORK_ANDALUCIA}] Province task rejected`, outcome.reason);
+    }
+  }
+
+  log(TASK, `[${NETWORK_ANDALUCIA}] Total: ${results.length} stations with data`);
+  return results;
+}
+
+// ---------------------------------------------------------------------------
 // Persist a batch of readings to the DB
 // ---------------------------------------------------------------------------
 
@@ -690,12 +1018,15 @@ async function persistReadings(
 export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, "Starting CCAA air quality collector");
 
-  // Run all three sources concurrently; a failure in one does not abort others
-  const [madridAytData, madridComData, catalunaData] = await Promise.allSettled([
-    fetchMadridAyuntamiento(),
-    fetchMadridComunidad(),
-    fetchCataluna(),
-  ]);
+  // Run all five sources concurrently; a failure in one does not abort others
+  const [madridAytData, madridComData, catalunaData, euskadiData, andaluciaData] =
+    await Promise.allSettled([
+      fetchMadridAyuntamiento(),
+      fetchMadridComunidad(),
+      fetchCataluna(),
+      fetchEuskadi(),
+      fetchAndalucia(),
+    ]);
 
   // Collect results per source
   const sources: Array<{ label: string; readings: StationReading[] }> = [];
@@ -716,6 +1047,18 @@ export async function run(prisma: PrismaClient): Promise<void> {
     sources.push({ label: NETWORK_CATALUNA, readings: catalunaData.value });
   } else {
     logError(TASK, `[${NETWORK_CATALUNA}] Source failed`, catalunaData.reason);
+  }
+
+  if (euskadiData.status === "fulfilled") {
+    sources.push({ label: NETWORK_EUSKADI, readings: euskadiData.value });
+  } else {
+    logError(TASK, `[${NETWORK_EUSKADI}] Source failed`, euskadiData.reason);
+  }
+
+  if (andaluciaData.status === "fulfilled") {
+    sources.push({ label: NETWORK_ANDALUCIA, readings: andaluciaData.value });
+  } else {
+    logError(TASK, `[${NETWORK_ANDALUCIA}] Source failed`, andaluciaData.reason);
   }
 
   if (sources.every((s) => s.readings.length === 0)) {
@@ -742,7 +1085,17 @@ export async function run(prisma: PrismaClient): Promise<void> {
   // Cleanup readings older than 48 hours from CCAA networks only
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
   const staleStations = await prisma.airQualityStation.findMany({
-    where: { network: { in: [NETWORK_MADRID_AYT, NETWORK_MADRID_COM, NETWORK_CATALUNA] } },
+    where: {
+      network: {
+        in: [
+          NETWORK_MADRID_AYT,
+          NETWORK_MADRID_COM,
+          NETWORK_CATALUNA,
+          NETWORK_EUSKADI,
+          NETWORK_ANDALUCIA,
+        ],
+      },
+    },
     select: { id: true },
   });
   if (staleStations.length > 0) {
