@@ -14,6 +14,9 @@ import {
   Radio,
   Activity,
   Route,
+  Train,
+  Wind,
+  Plane,
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -213,7 +216,7 @@ export default async function TraficoCityPage({ params }: Props) {
   };
 
   // Live data — parallel queries
-  const [incidents, incidentCount, cameraCount, weatherCount] = await Promise.all([
+  const [incidents, incidentCount, cameraCount, weatherCount, railwayStationCount, airQualityStations, airports] = await Promise.all([
     prisma.trafficIncident.findMany({
       where: {
         isActive: true,
@@ -241,6 +244,19 @@ export default async function TraficoCityPage({ params }: Props) {
     }),
     prisma.weatherAlert.count({
       where: { isActive: true, province: cityData.provinceCode },
+    }),
+    prisma.railwayStation.count({
+      where: { province: cityData.provinceCode },
+    }),
+    prisma.airQualityStation.findMany({
+      where: { province: cityData.provinceCode },
+      include: { readings: { orderBy: { createdAt: "desc" }, take: 1 } },
+      take: 5,
+      orderBy: { name: "asc" },
+    }),
+    prisma.airport.findMany({
+      where: { province: cityData.provinceCode },
+      include: { statistics: { where: { metric: "pax" }, orderBy: { periodStart: "desc" }, take: 1 } },
     }),
   ]);
 
@@ -573,6 +589,64 @@ export default async function TraficoCityPage({ params }: Props) {
               </Link>
             </div>
           </section>
+
+          {/* Multimodal transport data */}
+          {(railwayStationCount > 0 || airQualityStations.length > 0 || airports.length > 0) && (
+            <section className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                Transporte e infraestructura en {cityData.name}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {railwayStationCount > 0 && (
+                  <Link
+                    href="/trenes/estaciones"
+                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group"
+                  >
+                    <Train className="w-5 h-5 text-tl-500 flex-shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        <span className="font-mono">{railwayStationCount}</span> estaciones de tren
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Renfe · Cercanías · AVE</div>
+                    </div>
+                  </Link>
+                )}
+                {airQualityStations.length > 0 && (
+                  <Link
+                    href="/calidad-aire"
+                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-300 hover:shadow-sm transition-all group"
+                  >
+                    <Wind className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        <span className="font-mono">{airQualityStations.length}</span> estaciones calidad aire
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        ICA: {airQualityStations[0]?.readings?.[0]?.icaLabel ?? "Buena"}
+                      </div>
+                    </div>
+                  </Link>
+                )}
+                {airports.map((apt) => (
+                  <Link
+                    key={apt.id}
+                    href="/aviacion"
+                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-sky-300 hover:shadow-sm transition-all group"
+                  >
+                    <Plane className="w-5 h-5 text-sky-500 flex-shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        {apt.name} {apt.iata && <span className="font-mono text-xs text-gray-400 ml-1">({apt.iata})</span>}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {apt.statistics?.[0] ? `${(Number(apt.statistics[0].value) / 1_000_000).toFixed(1)}M pax/año` : "AENA"}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Other cities */}
           <section className="mb-6">

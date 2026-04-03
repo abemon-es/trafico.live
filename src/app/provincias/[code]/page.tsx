@@ -24,6 +24,9 @@ import {
   RoadsSection,
   NewsSection,
   V16Section,
+  RailwaySection,
+  AirQualitySection,
+  AirportsSection,
 } from "@/components/location/sections";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { provinceDescription } from "@/lib/seo/text-generators";
@@ -109,6 +112,9 @@ export default async function ProvinciaDetailPage({ params }: Props) {
     { id: "limites-velocidad", label: "Límites" },
     { id: "carreteras", label: "Carreteras" },
     { id: "noticias", label: "Noticias" },
+    { id: "ferrocarril", label: "Ferrocarril" },
+    { id: "calidad-aire", label: "Calidad aire" },
+    { id: "aeropuertos", label: "Aeropuertos" },
   ];
 
   const breadcrumbs = [
@@ -209,6 +215,15 @@ export default async function ProvinciaDetailPage({ params }: Props) {
         </Suspense>
         <Suspense fallback={<SectionSkeleton title="Noticias" />}>
           <NewsSection entity={entity} />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton title="Ferrocarril" />}>
+          <RailwaySection entity={entity} />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton title="Calidad del aire" />}>
+          <AirQualitySection entity={entity} />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton title="Aeropuertos" />}>
+          <AirportsSection entity={entity} />
         </Suspense>
       </LocationShell>
     </>
