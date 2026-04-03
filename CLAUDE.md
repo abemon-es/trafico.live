@@ -49,7 +49,10 @@ npm run db:seed      # Seed database
 - Key traffic data pages:
   - `/estaciones-aforo` — MapLibre map with 14,400+ counting stations, color-coded by IMD
   - `/intensidad` — National IMD overview with province comparison, year evolution, road rankings
-  - `/trenes` — Railway network map with Cercanías/AVE/LD lines, stations, real-time alerts
+  - `/trenes` — Hero map with ~115 live trains (GPS), delay analytics overlay, brand punctuality ranking
+  - `/trenes/estaciones` — 2,154 station catalog with search, network/province filters
+  - `/trenes/lineas` — 14 brands, 1,248 routes with origin→destination, brand cards grid
+  - `/trenes/cercanias` — 12 network overview + `/trenes/cercanias/[network]` detail pages (SSG)
 
 ### API Routes (`src/app/api/`)
 - 40+ endpoints for incidents, gas stations, roads, stats, weather, rankings, fuel prices, IMD, counting stations, traffic intensity, hourly profiles, etc.
@@ -136,17 +139,20 @@ npm run db:seed      # Seed database
 
 ### Railway Network (Renfe + ADIF)
 - **Source (static):** Renfe GTFS — Cercanías (`ssl.renfe.com/ftransit/`) + AVE/LD (`ssl.renfe.com/gtransit/`)
-  - Stations from `stops.txt`, routes from `routes.txt`, line shapes from `shapes.txt` (Cercanías only)
+  - Stations from `stops.txt` (quirky CSV with single-quoted fields), routes, shapes (Cercanías only)
+  - 2,154 stations, 1,248 routes, 14 commercial brands, 12 Cercanías networks
   - CC-BY 4.0, no auth required
-- **Source (real-time):** Renfe GTFS-RT — `gtfsrt.renfe.com/alerts.json`, `trip_updates.json`, `trip_updates_LD.json`
-  - Service alerts, cancellations, significant delays (>5 min)
-  - 20-second cadence, no auth
-- **Source (LD fleet):** Renfe undocumented API — `tiempo-real.largorecorrido.renfe.com/renfe-visor/flotaLD.json`
-  - GPS positions + delay for all active AVE/Alvia/Avant trains, every 2 min, no auth
-- **Tables:** `RailwayStation`, `RailwayRoute` (with GeoJSON shapes), `RailwayAlert`, `RenfeFleetPosition` (rolling 48h)
-- **Collectors:** `TASK=renfe-gtfs` (weekly), `TASK=renfe-alerts` (every 2 min), `TASK=renfe-ld-realtime` (every 2 min)
-- **APIs:** `/api/trenes/estaciones`, `/api/trenes/rutas`, `/api/trenes/alertas`, `/api/trenes/flota`
-- **Page:** `/trenes` — MapLibre map with lines, stations, live alerts, service type filters
+- **Source (real-time alerts):** Renfe GTFS-RT — `gtfsrt.renfe.com/alerts.json`, `trip_updates.json`, `trip_updates_LD.json`
+  - Service alerts, cancellations, significant delays (>5 min), 20s cadence, no auth
+- **Source (LD fleet):** Renfe undocumented API — `tiempo-real.largorecorrido.renfe.com/renfe-visor/`
+  - `flotaLD.json`: GPS positions + delay for ~115 active trains, no auth
+  - `trenesConEstacionesLD.json`: full route polylines + stop schedules per train
+- **Tables:** `RailwayStation` (slug, network, province), `RailwayRoute` (brand, origin/dest, shapes, stopNames), `RailwayAlert`, `RailwayDelaySnapshot` (2-min fleet snapshots), `RailwayDailyStats` (daily aggregates)
+- **Brands:** AVE, AVLO, Alvia, Avant, Euromed, Intercity, MD, Regional, REG.EXP, Proximidad, Trencelta, Cercanías, Rodalies, FEVE
+- **Cercanías networks:** Madrid (96), Barcelona (111), Valencia (57), Sevilla (31), Málaga (25), Bilbao (65), Asturias (161), Santander (70), Cádiz (31), Murcia/Alicante (31), Zaragoza (10), San Sebastián (27)
+- **Collectors:** `TASK=renfe-gtfs` (weekly, quirky CSV parser), `TASK=renfe-alerts` (every 2 min, also captures delay snapshots from fleet API)
+- **APIs:** `/api/trenes/estaciones` (GeoJSON), `/api/trenes/rutas` (with shapes, brand stats), `/api/trenes/alertas`, `/api/trenes/posiciones` (live GPS + route polylines, Redis-cached 15s), `/api/trenes/stats` (delay analytics, brand punctuality)
+- **Pages:** `/trenes` (hero map with live trains, overlay stats, brand punctuality), `/trenes/estaciones` (catalog), `/trenes/lineas` (brand cards), `/trenes/cercanias` (12 network overview), `/trenes/cercanias/[network]` (per-network detail)
 
 ### Data Platform (2026-04)
 - **Mobility O-D:** Province-level daily trip flows from Ministerio de Transportes BigData study (2022+)
