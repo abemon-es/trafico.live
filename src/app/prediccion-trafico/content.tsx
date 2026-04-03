@@ -275,8 +275,8 @@ function HourlyDistributionChart({ profiles, currentHour }: { profiles: HourlyPr
           tickFormatter={(v: number) => v.toLocaleString("es-ES")}
         />
         <Tooltip
-          formatter={(value: number | string) => [Number(value).toLocaleString("es-ES") + " veh/h", "Intensidad media"]}
-          labelFormatter={(h: number | string) => `${String(h).padStart(2, "0")}:00`}
+          formatter={(value?: number | string) => [Number(value ?? 0).toLocaleString("es-ES") + " veh/h", "Intensidad media"]}
+          labelFormatter={(h?: number | string) => `${String(h ?? 0).padStart(2, "0")}:00`}
           contentStyle={{
             backgroundColor: "var(--color-gray-900, #111827)",
             border: "none",
@@ -331,8 +331,9 @@ function DayOfWeekChart({ data }: { data: DayOfWeekEntry[] }) {
           tickFormatter={(v: number) => (v / 1000).toFixed(0) + "K"}
         />
         <Tooltip
-          formatter={(value: number) => [value.toLocaleString("es-ES") + " incidencias", "Total acumulado"]}
-          labelFormatter={(_: string, payload: Array<{ payload?: { dayFull?: string } }>) =>
+          formatter={(value?: number | string) => [Number(value ?? 0).toLocaleString("es-ES") + " incidencias", "Total acumulado"]}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          labelFormatter={(_: any, payload: any) =>
             payload?.[0]?.payload?.dayFull ?? ""
           }
           contentStyle={{
