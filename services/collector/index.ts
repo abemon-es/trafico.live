@@ -56,7 +56,9 @@ const VALID_TASKS = [
   // Historical
   "mobilitydata-sync", "ine-stats",
   // Aviation
-  "opensky", "aena-stats",
+  "opensky", "aena-stats", "ourairports-runways",
+  // Ports
+  "puertos-estado",
   // Air quality
   "air-quality",
   "air-quality-ccaa",
