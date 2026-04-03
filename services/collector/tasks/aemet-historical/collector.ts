@@ -428,8 +428,12 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const BACKFILL_START = new Date("2019-01-01T00:00:00Z");
   let startDate: Date;
 
-  if (latestRecord?.date) {
-    // Resume from day after the latest record to avoid re-fetching everything
+  // BACKFILL_FROM env var overrides — use to fill gaps: BACKFILL_FROM=2019-09-24
+  const backfillOverride = process.env.BACKFILL_FROM;
+  if (backfillOverride) {
+    startDate = new Date(`${backfillOverride}T00:00:00Z`);
+    log(TASK, `Manual backfill from ${startDate.toISOString().slice(0, 10)} (BACKFILL_FROM env)`);
+  } else if (latestRecord?.date) {
     startDate = addDays(latestRecord.date, 1);
     log(TASK, `Resuming from ${startDate.toISOString().slice(0, 10)} (latest record: ${latestRecord.date.toISOString().slice(0, 10)})`);
   } else {
@@ -437,7 +441,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
     log(TASK, `No existing records — full backfill from ${startDate.toISOString().slice(0, 10)}`);
   }
 
-  const endLimit = yesterday();
+  // BACKFILL_TO env var — limit end date for targeted gap-filling
+  const backfillTo = process.env.BACKFILL_TO;
+  const endLimit = backfillTo ? new Date(`${backfillTo}T00:00:00Z`) : yesterday();
 
   if (startDate >= endLimit) {
     log(TASK, "Already up-to-date — nothing to fetch");
