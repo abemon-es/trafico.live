@@ -425,7 +425,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     select: { date: true },
   });
 
-  const BACKFILL_START = new Date("2019-01-01T00:00:00Z");
+  const BACKFILL_START = new Date("2010-01-01T00:00:00Z");
   let startDate: Date;
 
   // BACKFILL_FROM env var overrides — use to fill gaps: BACKFILL_FROM=2019-09-24
