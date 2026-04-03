@@ -167,4 +167,4 @@ services:
     mem_reservation: 64m
     cpus: 0.25
     restart: always
-    command: ["node", "--import", "tsx", "services/collector/index.ts"]
+    command: ["node", "--import", "tsx", "index.ts"]
