@@ -31,3 +31,6 @@
 
 # MITECO air quality — 506 stations, ICA index (hourly)
 0 * * * * TASK=air-quality npx tsx index.ts 2>&1
+
+# Health check failsafe — checks all tables against SLAs, triggers recovery for stale data
+*/30 * * * * TASK=health-check npx tsx index.ts 2>&1

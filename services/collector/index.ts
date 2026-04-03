@@ -62,6 +62,8 @@ const VALID_TASKS = [
   // Air quality
   "air-quality",
   "air-quality-ccaa",
+  // Failsafe
+  "health-check",
 ];
 
 if (!TASK) {
