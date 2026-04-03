@@ -353,13 +353,40 @@ async function importYear(
   log(TASK, `Year ${year}: downloaded ${sizeMB} MB → ${tmpPath}`);
   buffer = null as unknown as Buffer; // release buffer before parsing
 
-  // Use ExcelJS streaming WorkbookReader — reads row by row, ~50MB heap instead of 700MB
-  const reader = new ExcelJS.stream.xlsx.WorkbookReader(tmpPath, {
-    sharedStrings: "cache",
-    worksheets: "emit",
-    hyperlinks: "ignore",
-    styles: "ignore",
-  });
+  // Use non-streaming WorkbookReader to properly handle multi-worksheet XLSX
+  // (2019-2020 have description in WS0, data in WS1; streaming reader has issues with multi-WS)
+  // Memory: ~300-500MB for 25MB XLSX. NODE_OPTIONS=--max-old-space-size=2048 required.
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.readFile(tmpPath);
+
+  // Find the worksheet with data headers (check first row of each WS for 3+ key columns)
+  let dataWs: ExcelJS.Worksheet | null = null;
+  let headerRowNum = 0;
+  for (const ws of wb.worksheets) {
+    for (let r = 1; r <= Math.min(ws.rowCount, 30); r++) {
+      const row = ws.getRow(r);
+      const vals = [] as string[];
+      row.eachCell((cell) => vals.push(String(cell.value ?? "").toUpperCase()));
+      const joined = vals.join(",");
+      const hits = [
+        joined.includes("ANYO"), joined.includes("COD_PROVINCIA"),
+        joined.includes("HORA"), joined.includes("CARRETERA"),
+        joined.includes("TOTAL_MU"), joined.includes("TIPO_VIA"),
+      ].filter(Boolean).length;
+      if (hits >= 3) {
+        dataWs = ws;
+        headerRowNum = r;
+        break;
+      }
+    }
+    if (dataWs) break;
+  }
+  if (!dataWs) {
+    log(TASK, `Year ${year}: no data worksheet found — skipping`);
+    unlinkSync(tmpPath);
+    return { imported: 0, skipped: 0 };
+  }
+  log(TASK, `Year ${year}: data in worksheet "${dataWs.name}" row ${headerRowNum}, ${dataWs.rowCount} total rows`);
 
   const BATCH_SIZE = 200;
   let batch: Array<Record<string, unknown>> = [];
@@ -386,25 +413,19 @@ async function importYear(
   };
 
   try {
-    for await (const worksheetReader of reader) {
-      for await (const row of worksheetReader) {
-        // Scan rows until we find one that looks like a header row with known DGT columns.
-        // 2019-2020 files have 8+ description rows before headers; 2021+ have headers on row 1.
-        if (!headerParsed) {
-          const values = row.values as (string | undefined)[];
-          headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
-          const headerStr = headers.filter(Boolean).join(",").toUpperCase();
+    // Process rows from the data worksheet, starting at header row
+    for (let r = headerRowNum; r <= dataWs.rowCount; r++) {
+      const row = dataWs.getRow(r);
+      const values = [undefined] as (string | number | Date | undefined)[]; // index 0 placeholder (1-indexed compat)
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        while (values.length < colNumber) values.push(undefined);
+        values[colNumber] = cell.value as string | number | Date | undefined;
+      });
 
-          // Must contain at least 3 key DGT column names to be a valid header row
-          // (the 2019 data dictionary WS has "ID_ACCIDENTE" alone — need multiple matches to avoid false positives)
-          const keyHits = [
-            headerStr.includes("ANYO"), headerStr.includes("COD_PROVINCIA"),
-            headerStr.includes("HORA"), headerStr.includes("CARRETERA"),
-            headerStr.includes("TOTAL_MU"), headerStr.includes("TIPO_VIA"),
-          ].filter(Boolean).length;
-          if (keyHits < 3) {
-            continue; // Not enough column matches — skip this row
-          }
+      {
+        // First row = headers
+        if (!headerParsed) {
+          headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
           COL = {
             fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
             anyo:           findColIndex(headers, ["ANYO", "AÑO", "ANNO"]),
@@ -554,7 +575,6 @@ async function importYear(
           }
         }
       }
-      break; // Only process first worksheet
     }
   } finally {
     // Clean up temp file
