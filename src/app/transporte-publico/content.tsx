@@ -34,11 +34,11 @@ const MODES = [
 type ModeKey = (typeof MODES)[number]["key"];
 
 const MODE_COLORS: Record<string, string> = {
-  metro: "#7c3aed",
-  bus: "#1b4bd5",
-  tram: "#059669",
-  rail: "#d48139",
-  funicular: "#6b7280",
+  metro: "var(--color-mode-metro)",
+  bus: "var(--color-mode-bus)",
+  tram: "var(--color-mode-tram)",
+  rail: "var(--color-mode-rail)",
+  funicular: "var(--color-mode-funicular)",
 };
 
 const MODE_LABELS: Record<string, string> = {

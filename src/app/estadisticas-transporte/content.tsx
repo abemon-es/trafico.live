@@ -22,12 +22,12 @@ import {
 // ── Mode config ────────────────────────────────────────────────────────────────
 
 const MODE_COLORS: Record<string, string> = {
-  metro: "#7c3aed",
-  bus: "#1b4bd5",
-  rail: "#d48139",
-  air: "#059669",
-  maritime: "#0891b2",
-  interurban_bus: "#6b7280",
+  metro: "var(--color-mode-metro)",
+  bus: "var(--color-mode-bus)",
+  rail: "var(--color-mode-rail)",
+  air: "var(--color-mode-air)",
+  maritime: "var(--color-mode-maritime)",
+  interurban_bus: "var(--color-mode-funicular)",
 };
 
 const MODE_LABELS: Record<string, string> = {
