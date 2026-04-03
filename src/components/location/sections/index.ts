@@ -20,3 +20,6 @@ export { FuelPriceEvolution } from "./FuelPriceEvolution";
 export { TrafficPatternsSection } from "./TrafficPatternsSection";
 export { AccidentAnalyticsSection } from "./AccidentAnalyticsSection";
 export { WeatherCorrelationSection } from "./WeatherCorrelationSection";
+export { RailwaySection } from "./RailwaySection";
+export { AirQualitySection } from "./AirQualitySection";
+export { AirportsSection } from "./AirportsSection";
