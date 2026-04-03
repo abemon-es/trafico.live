@@ -2,8 +2,8 @@
  * City Traffic Sensor Collector
  *
  * Collects real-time traffic sensor data from Spanish cities:
- *   - Barcelona (bcn.cat DAT format, ~539 segments)
- *   - Valencia  (opendatasoft JSON, ~100 segments)
+ *   - Barcelona (bcn.cat DAT format ~539 segments + Open Data portal mirror ~527 sections)
+ *   - Valencia  (opendatasoft JSON ~100 segments + ArcGIS REST ~road segments)
  *   - Zaragoza  (zaragoza.es JSON, city sensors)
  *
  * Updates CityTrafficSensor (upsert) + CityTrafficReading (insert).
@@ -65,42 +65,95 @@ interface SensorReading {
 // ---------------------------------------------------------------------------
 
 const BCN_TRAMS_URL = "https://www.bcn.cat/transit/dades/dadestrams.dat";
-const BCN_GEO_URL = "https://www.bcn.cat/transit/dades/dadestrams_geo.csv";
 
-async function fetchBcnCoordinates(): Promise<Map<string, { lat: number; lon: number }>> {
-  const coordMap = new Map<string, { lat: number; lon: number }>();
-  try {
-    const resp = await fetch(BCN_GEO_URL, {
-      headers: { "User-Agent": "trafico.live-collector/1.0" },
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!resp.ok) return coordMap;
+// Open Data portal mirror of the DAT feed (same pipe-delimited format, ~527 road sections)
+const BCN_SECTIONS_URL =
+  "https://opendata-ajuntament.barcelona.cat/data/dataset/8319c2b1-4c21-4962-9acd-6db4c5ff1148/resource/2d456eb5-4ea6-4f68-9794-2f3f1a58a933/download";
 
-    const csv = await resp.text();
-    const lines = csv.trim().split(/\r?\n/);
-    if (lines.length < 2) return coordMap;
+// Primary: long-format CSV from Barcelona Open Data portal (Tram, Tram_Components, Descripció, Longitud, Latitud)
+const BCN_GEO_URL_PRIMARY =
+  "https://opendata-ajuntament.barcelona.cat/data/dataset/1090983a-1c40-4609-8620-14ad49aae3ab/resource/c97072a3-3619-4547-84dd-f1999d2a3fec/download";
+// Fallback: the old bcn.cat CSV (may return 403)
+const BCN_GEO_URL_FALLBACK = "https://www.bcn.cat/transit/dades/dadestrams_geo.csv";
 
-    const delim = lines[0].includes(";") ? ";" : ",";
-    const headers = lines[0].split(delim).map((h) => h.trim().toLowerCase());
-    const idIdx = headers.findIndex((h) => h === "idtram" || h === "id_tram" || h === "id");
-    const latIdx = headers.findIndex((h) => ["lat", "latitud", "latitude", "y"].includes(h));
-    const lonIdx = headers.findIndex((h) => ["lon", "longitud", "longitude", "x"].includes(h));
+async function fetchBcnCoordinates(): Promise<Map<string, { lat: number; lon: number; desc: string }>> {
+  const coordMap = new Map<string, { lat: number; lon: number; desc: string }>();
 
-    if (idIdx === -1 || latIdx === -1 || lonIdx === -1) return coordMap;
-
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(delim);
-      const id = cols[idIdx]?.trim();
-      const lat = parseFloat(cols[latIdx]?.trim() || "");
-      const lon = parseFloat(cols[lonIdx]?.trim() || "");
-      if (id && !isNaN(lat) && !isNaN(lon)) {
-        coordMap.set(id, { lat, lon });
+  // Try primary source first (long-format: Tram,Tram_Components,Descripció,Longitud,Latitud)
+  for (const url of [BCN_GEO_URL_PRIMARY, BCN_GEO_URL_FALLBACK]) {
+    try {
+      const resp = await fetch(url, {
+        headers: { "User-Agent": "trafico.live-collector/1.0" },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!resp.ok) {
+        log(TASK, `Barcelona geo ${url.includes("opendata") ? "primary" : "fallback"} returned ${resp.status}, trying next`);
+        continue;
       }
+
+      const csv = await resp.text();
+      const lines = csv.trim().split(/\r?\n/);
+      if (lines.length < 2) continue;
+
+      // Parse header — handle both comma and semicolon delimiters
+      const headerLine = lines[0];
+      const delim = headerLine.includes(";") ? ";" : ",";
+      const headers = headerLine.split(delim).map((h) => h.trim().toLowerCase().replace(/^["']|["']$/g, ""));
+
+      // Long format: Tram, Tram_Components, Descripció, Longitud, Latitud
+      const idIdx = headers.findIndex((h) => h === "tram" || h === "idtram" || h === "id_tram" || h === "id");
+      const latIdx = headers.findIndex((h) => ["lat", "latitud", "latitude", "y"].includes(h));
+      const lonIdx = headers.findIndex((h) => ["lon", "longitud", "longitude", "x"].includes(h));
+      const descIdx = headers.findIndex((h) => h.includes("descrip") || h === "descripció");
+
+      if (idIdx === -1 || latIdx === -1 || lonIdx === -1) {
+        log(TASK, `Barcelona geo: could not find required columns in header: ${headerLine}`);
+        continue;
+      }
+
+      // For long format, take the first point (Tram_Components=1) as representative coordinate
+      for (let i = 1; i < lines.length; i++) {
+        // Handle quoted CSV fields properly
+        const cols = parseCSVLine(lines[i], delim);
+        const id = cols[idIdx]?.trim();
+        const lat = parseFloat(cols[latIdx]?.trim() || "");
+        const lon = parseFloat(cols[lonIdx]?.trim() || "");
+        const desc = descIdx >= 0 ? (cols[descIdx]?.trim().replace(/^["']|["']$/g, "") || "") : "";
+        if (id && !isNaN(lat) && !isNaN(lon) && !coordMap.has(id)) {
+          coordMap.set(id, { lat, lon, desc });
+        }
+      }
+
+      if (coordMap.size > 0) {
+        log(TASK, `Barcelona geo: loaded ${coordMap.size} tram coordinates from ${url.includes("opendata") ? "primary" : "fallback"}`);
+        break;
+      }
+    } catch (err) {
+      log(TASK, `Barcelona geo fetch error: ${err instanceof Error ? err.message : String(err)}`);
     }
-  } catch {
-    // Coordinate file is optional — sensors without coords are skipped
   }
+
   return coordMap;
+}
+
+/** Parse a CSV line respecting quoted fields */
+function parseCSVLine(line: string, delim: string): string[] {
+  const fields: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === delim && !inQuotes) {
+      fields.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current);
+  return fields;
 }
 
 async function fetchBarcelona(): Promise<SensorReading[]> {
@@ -118,12 +171,16 @@ async function fetchBarcelona(): Promise<SensorReading[]> {
     throw new Error(`Barcelona API error: ${tramsResp.status}`);
   }
 
+  if (coordMap.size === 0) {
+    throw new Error("Barcelona: no coordinates loaded — both primary and fallback geo sources failed");
+  }
+
   const dat = await tramsResp.text();
   const lines = dat.trim().split(/\r?\n/);
 
   // DAT format: idTram#timestamp#estatActual#estatPrevist
-  const BCN_CENTER = { lat: 41.3874, lon: 2.1686 };
   const readings: SensorReading[] = [];
+  let skippedNoCoords = 0;
 
   for (const line of lines) {
     const parts = line.split("#");
@@ -137,19 +194,19 @@ async function fetchBarcelona(): Promise<SensorReading[]> {
 
     const coords = coordMap.get(idTram);
     if (!coords) {
-      // Skip sensors without coordinates — they can't be mapped
+      skippedNoCoords++;
       continue;
     }
 
     // Validate coordinates are plausible for Barcelona
-    const lat = coords.lat ?? BCN_CENTER.lat;
-    const lon = coords.lon ?? BCN_CENTER.lon;
+    const lat = coords.lat;
+    const lon = coords.lon;
     if (lat < 41.2 || lat > 41.6 || lon < 1.9 || lon > 2.4) continue;
 
     readings.push({
       sensorId: `BCN-${idTram}`,
       city: "BARCELONA",
-      streetName: `Tram ${idTram}`,
+      streetName: coords.desc || `Tram ${idTram}`,
       latitude: lat,
       longitude: lon,
       direction: null,
@@ -161,7 +218,87 @@ async function fetchBarcelona(): Promise<SensorReading[]> {
     });
   }
 
+  if (skippedNoCoords > 0) {
+    log(TASK, `Barcelona: ${skippedNoCoords} trams skipped (no coordinates)`);
+  }
   log(TASK, `Barcelona: ${readings.length} segments parsed (${coordMap.size} with coordinates)`);
+  return readings;
+}
+
+// ---------------------------------------------------------------------------
+// Barcelona — Open Data portal road sections (tram_id#timestamp#status#forecast)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches Barcelona road-section traffic state from the Open Data portal mirror.
+ * Format is identical to dadestrams.dat but uses a separate dataset (~527 sections).
+ * Coordinates are resolved using the same geo CSV used by fetchBarcelona().
+ */
+async function fetchBarcelonaSections(): Promise<SensorReading[]> {
+  log(TASK, "Fetching Barcelona Open Data road sections...");
+
+  const [sectionsResp, coordMap] = await Promise.all([
+    fetch(BCN_SECTIONS_URL, {
+      headers: { "User-Agent": "trafico.live-collector/1.0" },
+      signal: AbortSignal.timeout(15000),
+    }),
+    fetchBcnCoordinates(),
+  ]);
+
+  if (!sectionsResp.ok) {
+    throw new Error(`Barcelona sections API error: ${sectionsResp.status}`);
+  }
+
+  if (coordMap.size === 0) {
+    throw new Error("Barcelona sections: no coordinates loaded — geo sources failed");
+  }
+
+  const dat = await sectionsResp.text();
+  const lines = dat.trim().split(/\r?\n/);
+
+  // DAT format: tram_id#timestamp#current_status#15min_forecast
+  const readings: SensorReading[] = [];
+  let skippedNoCoords = 0;
+
+  for (const line of lines) {
+    const parts = line.split("#");
+    if (parts.length < 4) continue;
+
+    const idTram = parts[0].trim();
+    const estatActual = parseInt(parts[2].trim(), 10);
+    const estatPrevist = parseInt(parts[3].trim(), 10);
+
+    if (!idTram || isNaN(estatActual)) continue;
+
+    const coords = coordMap.get(idTram);
+    if (!coords) {
+      skippedNoCoords++;
+      continue;
+    }
+
+    const lat = coords.lat;
+    const lon = coords.lon;
+    if (lat < 41.2 || lat > 41.6 || lon < 1.9 || lon > 2.4) continue;
+
+    readings.push({
+      sensorId: `BCN-SEC-${idTram}`,
+      city: "BARCELONA",
+      streetName: coords.desc || `Secció ${idTram}`,
+      latitude: lat,
+      longitude: lon,
+      direction: null,
+      intensity: null,
+      occupancy: null,
+      speed: null,
+      serviceLevel: BCN_STATUS_LEVEL[estatActual] ?? 0,
+      prediction: isNaN(estatPrevist) ? null : BCN_STATUS_LEVEL[estatPrevist] ?? 0,
+    });
+  }
+
+  if (skippedNoCoords > 0) {
+    log(TASK, `Barcelona sections: ${skippedNoCoords} sections skipped (no coordinates)`);
+  }
+  log(TASK, `Barcelona sections: ${readings.length} road sections parsed`);
   return readings;
 }
 
@@ -252,6 +389,113 @@ async function fetchValencia(): Promise<SensorReading[]> {
   }
 
   log(TASK, `Valencia: ${readings.length} segments parsed`);
+  return readings;
+}
+
+// ---------------------------------------------------------------------------
+// Valencia — ArcGIS REST traffic state
+// ---------------------------------------------------------------------------
+
+const VLC_ARCGIS_URL =
+  "https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/192/query?where=1%3D1&outFields=*&f=json";
+
+/** Valencia ArcGIS estado numeric code → serviceLevel (0-3) */
+function vlcArcGisEstadoToLevel(estado: number | null): number {
+  if (estado === null || estado === undefined) return 0;
+  // 0=no data, 1=very fluid, 2=fluid, 3=dense, 4=very dense, 5=congestion, 6=blocked
+  if (estado <= 2) return 0;
+  if (estado === 3) return 1;
+  if (estado === 4) return 2;
+  if (estado >= 5) return 3;
+  return 0;
+}
+
+interface VlcArcGisFeature {
+  attributes?: {
+    gid?: number | string;
+    denominacion?: string;
+    estado?: number | null;
+    idtramo?: number | string;
+    fiwareid?: string;
+  };
+  geometry?: {
+    paths?: number[][][];
+  };
+}
+
+/**
+ * Fetches Valencia road segment traffic state from the Geoportal Valencia ArcGIS REST service.
+ * Updated every 3 minutes. Returns road segment midpoint as sensor coordinate.
+ */
+async function fetchValenciaArcGIS(): Promise<SensorReading[]> {
+  log(TASK, "Fetching Valencia ArcGIS traffic state...");
+
+  const resp = await fetch(VLC_ARCGIS_URL, {
+    headers: { "User-Agent": "trafico.live-collector/1.0" },
+    signal: AbortSignal.timeout(20000),
+  });
+
+  if (!resp.ok) {
+    throw new Error(`Valencia ArcGIS API error: ${resp.status}`);
+  }
+
+  const json = await resp.json() as {
+    features?: VlcArcGisFeature[];
+    error?: { message?: string };
+  };
+
+  if (json.error) {
+    throw new Error(`Valencia ArcGIS error: ${json.error.message ?? "unknown"}`);
+  }
+
+  const features = json.features ?? [];
+  const readings: SensorReading[] = [];
+
+  for (const feature of features) {
+    const attrs = feature.attributes;
+    if (!attrs) continue;
+
+    const id = attrs.idtramo ?? attrs.gid;
+    if (id === null || id === undefined) continue;
+
+    // Derive a representative point from the polyline's first segment midpoint
+    const paths = feature.geometry?.paths;
+    let lat: number | null = null;
+    let lon: number | null = null;
+
+    if (paths && paths.length > 0 && paths[0].length > 0) {
+      const path = paths[0];
+      // Use midpoint of the first path for a representative coordinate
+      const midIdx = Math.floor(path.length / 2);
+      const pt = path[midIdx];
+      // ArcGIS default: [x=longitude, y=latitude]
+      if (pt && pt.length >= 2) {
+        lon = pt[0];
+        lat = pt[1];
+      }
+    }
+
+    if (lat === null || lon === null) continue;
+
+    // Validate coordinates for Valencia area
+    if (lat < 39.3 || lat > 39.7 || lon < -0.5 || lon > 0.0) continue;
+
+    readings.push({
+      sensorId: `VLC-ARC-${id}`,
+      city: "VALENCIA",
+      streetName: attrs.denominacion || null,
+      latitude: lat,
+      longitude: lon,
+      direction: null,
+      intensity: null,
+      occupancy: null,
+      speed: null,
+      serviceLevel: vlcArcGisEstadoToLevel(attrs.estado ?? null),
+      prediction: null,
+    });
+  }
+
+  log(TASK, `Valencia ArcGIS: ${readings.length} road segments parsed`);
   return readings;
 }
 
@@ -434,9 +678,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, "Starting city traffic collection (Barcelona, Valencia, Zaragoza)");
 
   const cities = [
-    { name: "Barcelona", fetch: fetchBarcelona },
-    { name: "Valencia", fetch: fetchValencia },
-    { name: "Zaragoza", fetch: fetchZaragoza },
+    { name: "Barcelona (trams)",    fetch: fetchBarcelona },
+    { name: "Barcelona (sections)", fetch: fetchBarcelonaSections },
+    { name: "Valencia (ODS)",       fetch: fetchValencia },
+    { name: "Valencia (ArcGIS)",    fetch: fetchValenciaArcGIS },
+    { name: "Zaragoza",             fetch: fetchZaragoza },
   ];
 
   let totalSensors = 0;
