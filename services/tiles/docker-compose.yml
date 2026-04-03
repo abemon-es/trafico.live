@@ -6,6 +6,8 @@ services:
     depends_on:
       martin:
         condition: service_healthy
+    ports:
+      - "8088:80"
     volumes:
       - /opt/trafico/tiles/tiles:/data/tiles:ro
       - /opt/trafico/tiles/fonts:/data/fonts:ro
@@ -31,7 +33,7 @@ services:
     expose:
       - "3000"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s
       timeout: 3s
       retries: 5
