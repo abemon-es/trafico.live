@@ -101,32 +101,42 @@ export async function run(prisma: PrismaClient): Promise<void> {
   // ── 1. Fetch fleet JSON ───────────────────────────────────────────────────
   let rawTrains: RawTrain[] = [];
 
-  try {
-    const url = `${FLOTA_URL}?v=${Date.now()}`;
-    const response = await fetch(url, {
-      headers: { "User-Agent": "trafico.live-collector/1.0" },
-      signal: AbortSignal.timeout(15000),
-    });
+  const MAX_RETRIES = 2;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const url = `${FLOTA_URL}?v=${Date.now()}`;
+      const response = await fetch(url, {
+        headers: { "User-Agent": "trafico.live-collector/1.0" },
+        signal: AbortSignal.timeout(10000),
+      });
 
-    if (!response.ok) {
-      logError(TASK, `Fleet API returned HTTP ${response.status} — skipping run`);
+      if (!response.ok) {
+        logError(TASK, `Fleet API returned HTTP ${response.status} — skipping run`);
+        return;
+      }
+
+      const json = await response.json() as FlotaResponse | RawTrain[];
+
+      // The API may return either { trenes: [...] } or a bare array
+      if (Array.isArray(json)) {
+        rawTrains = json;
+      } else if (json && typeof json === "object" && Array.isArray((json as FlotaResponse).trenes)) {
+        rawTrains = (json as FlotaResponse).trenes!;
+      } else {
+        log(TASK, "Unexpected response shape — no trains array found, skipping run");
+        return;
+      }
+      break; // success
+    } catch (error) {
+      if (attempt < MAX_RETRIES) {
+        const delay = Math.pow(2, attempt) * 1000;
+        log(TASK, `Fetch failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}), retrying in ${delay / 1000}s...`);
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      logError(TASK, "Failed to fetch fleet data after retries (non-fatal):", error);
       return;
     }
-
-    const json = await response.json() as FlotaResponse | RawTrain[];
-
-    // The API may return either { trenes: [...] } or a bare array
-    if (Array.isArray(json)) {
-      rawTrains = json;
-    } else if (json && typeof json === "object" && Array.isArray((json as FlotaResponse).trenes)) {
-      rawTrains = (json as FlotaResponse).trenes!;
-    } else {
-      log(TASK, "Unexpected response shape — no trains array found, skipping run");
-      return;
-    }
-  } catch (error) {
-    logError(TASK, "Failed to fetch fleet data (non-fatal):", error);
-    return;
   }
 
   log(TASK, `Fetched ${rawTrains.length} raw train entries from fleet API`);

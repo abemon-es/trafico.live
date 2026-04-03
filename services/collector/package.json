@@ -14,10 +14,12 @@
     "pg": "^8.17.2",
     "tsx": "^4.21.0",
     "typesense": "^3.0.5",
-    "exceljs": "^4.4.0"
+    "exceljs": "^4.4.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/pg": "^8.16.0",
+    "@types/ws": "^8.5.0",
     "prisma": "^7.3.0",
     "typescript": "^5"
   }

@@ -1074,6 +1074,7 @@ model TrafficFlow {
   vhKmPesados    Decimal?  @db.Decimal(12, 2) // Vehicle-km heavy vehicles
   segmentLength  Decimal?  @db.Decimal(7, 2) // Segment length in km
   sourceId       Int? // Original ArcGIS OBJECTID
+  geometry       Json? // GeoJSON LineString from ArcGIS polyline (UTM→WGS84)
 
   // Relation to counting station (optional, not all segments have a station)
   stationId String?

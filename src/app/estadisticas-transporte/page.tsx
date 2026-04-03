@@ -4,7 +4,7 @@ import EstadisticasTransporteContent from "./content";
 export const metadata: Metadata = {
   title: "Estadísticas de Transporte en España — Series históricas | trafico.live",
   description:
-    "Datos estadísticos de transporte de viajeros en España por modo: metro, autobús, ferrocarril, avión, marítimo. Fuentes: INE, CNMC, AENA.",
+    "Datos estadísticos de transporte de viajeros en España por modo: metro, autobús, ferrocarril, avión, marítimo y flujos de movilidad interprovincial. Fuentes: INE, CNMC, AENA, Ministerio de Transportes.",
   openGraph: {
     title: "Estadísticas de Transporte en España — Series históricas",
     description:

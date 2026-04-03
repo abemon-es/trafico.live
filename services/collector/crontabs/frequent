@@ -1,6 +1,5 @@
 # Frequent collectors — hourly weather + air quality, 6h maritime/portugal
 # Weather hourly for storm freshness (AEMET alerts change within minutes)
 0 * * * * TASK=weather npx tsx index.ts 2>&1 && touch /tmp/last-run
-30 * * * * TASK=air-quality npx tsx index.ts 2>&1
 0 */6 * * * TASK=maritime-forecast npx tsx index.ts 2>&1
 0 */6 * * * TASK=portugal-weather npx tsx index.ts 2>&1

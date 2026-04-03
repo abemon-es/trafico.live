@@ -4,6 +4,18 @@ import { useState, useMemo } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import type { TooltipContentProps } from "recharts/types/component/Tooltip";
+import type { ValueType, NameType, Payload } from "recharts/types/component/DefaultTooltipContent";
+import {
   Fuel,
   TrendingUp,
   TrendingDown,
@@ -365,6 +377,276 @@ function TrendPeriodRow({
   );
 }
 
+// ─── National Evolution Chart (Recharts) ────────────────────────────────────
+
+const EVOLUTION_COLORS = {
+  gasoleoA: "var(--tl-warning)",
+  gasolina95: "var(--tl-primary)",
+  gasolina98: "#8b5cf6",
+};
+
+interface EvolutionPoint {
+  label: string;
+  rawDate: string;
+  diesel: number | null;
+  gasolina95: number | null;
+  gasolina98: number | null;
+}
+
+function EvolutionTooltip(props: TooltipContentProps<ValueType, NameType>) {
+  const { active, payload, label } = props;
+  if (!active || !payload || payload.length === 0) return null;
+
+  return (
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg px-4 py-3 text-sm">
+      <p className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        {String(label)}
+      </p>
+      {payload.map((entry: Payload<ValueType, NameType>) => {
+        if (entry.value == null) return null;
+        return (
+          <div key={String(entry.dataKey)} className="flex items-center gap-2 mb-1">
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="text-gray-600 dark:text-gray-400">{entry.name}:</span>
+            <span className="font-bold font-mono text-gray-900 dark:text-gray-100">
+              {Number(entry.value).toFixed(3)}&nbsp;€/L
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function NationalEvolutionChart() {
+  const [visibleLines, setVisibleLines] = useState({
+    diesel: true,
+    gasolina95: true,
+    gasolina98: false,
+  });
+
+  // Fetch all three fuels as monthly national averages since 2016
+  const { data: dieselData, isLoading: loadingDiesel } = useSWR<HistoricoResponse>(
+    "/api/combustible/historico?fuel=gasoleoA&from=2016-01-01&groupBy=month",
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+  const { data: g95Data, isLoading: loadingG95 } = useSWR<HistoricoResponse>(
+    "/api/combustible/historico?fuel=gasolina95&from=2016-01-01&groupBy=month",
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+  const { data: g98Data, isLoading: loadingG98 } = useSWR<HistoricoResponse>(
+    visibleLines.gasolina98
+      ? "/api/combustible/historico?fuel=gasolina98&from=2016-01-01&groupBy=month"
+      : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const isLoading = loadingDiesel || loadingG95 || (visibleLines.gasolina98 && loadingG98);
+
+  // Merge the three series by date
+  const chartData = useMemo<EvolutionPoint[]>(() => {
+    const dateMap = new Map<string, EvolutionPoint>();
+
+    const addSeries = (
+      points: PricePoint[] | undefined,
+      key: "diesel" | "gasolina95" | "gasolina98"
+    ) => {
+      if (!points) return;
+      for (const pt of points) {
+        let entry = dateMap.get(pt.date);
+        if (!entry) {
+          const d = new Date(pt.date + "T00:00:00");
+          entry = {
+            label: d.toLocaleDateString("es-ES", { month: "short", year: "2-digit" }),
+            rawDate: pt.date,
+            diesel: null,
+            gasolina95: null,
+            gasolina98: null,
+          };
+          dateMap.set(pt.date, entry);
+        }
+        entry[key] = pt.price;
+      }
+    };
+
+    addSeries(dieselData?.data, "diesel");
+    addSeries(g95Data?.data, "gasolina95");
+    addSeries(g98Data?.data, "gasolina98");
+
+    return Array.from(dateMap.values()).sort((a, b) =>
+      a.rawDate.localeCompare(b.rawDate)
+    );
+  }, [dieselData, g95Data, g98Data]);
+
+  const toggleLine = (key: keyof typeof visibleLines) => {
+    setVisibleLines((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Tick interval: show ~12 labels across the full range
+  const tickInterval = Math.max(1, Math.floor(chartData.length / 12));
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-[var(--tl-primary)]" />
+          <h2 className="font-heading text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Evolución Nacional del Precio de Combustibles
+          </h2>
+        </div>
+      </div>
+
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+        Media mensual nacional desde 2016 — datos oficiales CNMC.
+      </p>
+
+      {/* Line toggles */}
+      <div className="flex flex-wrap gap-3 mb-5">
+        <button
+          onClick={() => toggleLine("diesel")}
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
+            visibleLines.diesel
+              ? "border-tl-amber-400 bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+          }`}
+        >
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: EVOLUTION_COLORS.gasoleoA }}
+          />
+          Gasóleo A
+        </button>
+        <button
+          onClick={() => toggleLine("gasolina95")}
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
+            visibleLines.gasolina95
+              ? "border-tl-400 bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+          }`}
+        >
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: EVOLUTION_COLORS.gasolina95 }}
+          />
+          Gasolina 95
+        </button>
+        <button
+          onClick={() => toggleLine("gasolina98")}
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
+            visibleLines.gasolina98
+              ? "border-violet-400 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+          }`}
+        >
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: EVOLUTION_COLORS.gasolina98 }}
+          />
+          Gasolina 98
+        </button>
+      </div>
+
+      {/* Chart */}
+      {isLoading ? (
+        <div className="h-[320px] flex items-center justify-center text-gray-400 dark:text-gray-500">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-[var(--tl-primary)] rounded-full animate-spin" />
+            <span className="text-sm">Cargando evolución de precios...</span>
+          </div>
+        </div>
+      ) : chartData.length === 0 ? (
+        <div className="h-[320px] flex items-center justify-center text-gray-400 dark:text-gray-500 text-center">
+          <div>
+            <BarChart3 className="w-10 h-10 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">Sin datos de evolución disponibles</p>
+          </div>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={320}>
+          <LineChart
+            data={chartData}
+            margin={{ top: 4, right: 8, left: -4, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 11, fill: "#9ca3af" }}
+              tickLine={false}
+              axisLine={false}
+              interval={tickInterval}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: "#9ca3af" }}
+              tickLine={false}
+              axisLine={false}
+              domain={["auto", "auto"]}
+              tickFormatter={(v: number) => `${v.toFixed(2)}€`}
+              width={52}
+            />
+            <Tooltip
+              content={(p) => (
+                <EvolutionTooltip
+                  {...(p as TooltipContentProps<ValueType, NameType>)}
+                />
+              )}
+              cursor={{ stroke: "#e5e7eb", strokeWidth: 1 }}
+            />
+            <Legend wrapperStyle={{ display: "none" }} />
+
+            {visibleLines.diesel && (
+              <Line
+                type="monotone"
+                dataKey="diesel"
+                name="Gasóleo A"
+                stroke={EVOLUTION_COLORS.gasoleoA}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
+                connectNulls
+              />
+            )}
+            {visibleLines.gasolina95 && (
+              <Line
+                type="monotone"
+                dataKey="gasolina95"
+                name="Gasolina 95"
+                stroke={EVOLUTION_COLORS.gasolina95}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
+                connectNulls
+              />
+            )}
+            {visibleLines.gasolina98 && (
+              <Line
+                type="monotone"
+                dataKey="gasolina98"
+                name="Gasolina 98"
+                stroke={EVOLUTION_COLORS.gasolina98}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
+                connectNulls
+              />
+            )}
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 text-right">
+        Media nacional mensual · Datos CNMC desde enero 2016
+      </p>
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function HistoricoContent() {
@@ -488,6 +770,9 @@ export function HistoricoContent() {
           </select>
         </div>
       </div>
+
+      {/* National evolution chart (Recharts — diesel + gasolina 95 since 2016) */}
+      <NationalEvolutionChart />
 
       {/* Trend cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -49,6 +49,11 @@ interface StationData {
   daysRecorded: number | null;
 }
 
+interface GeoJSONLineString {
+  type: "LineString";
+  coordinates: [number, number][];
+}
+
 interface SegmentData {
   roadNumber: string;
   roadType: RoadType | undefined;
@@ -66,6 +71,7 @@ interface SegmentData {
   vhKmPesados: number | null;
   segmentLength: number | null;
   sourceId: number | null;
+  geometry: GeoJSONLineString | null;
 }
 
 function parseStationType(type: string | null): StationType | null {
@@ -183,6 +189,27 @@ function parseSegment(feature: ArcGISFeature, year: number): SegmentData | null 
   else if (tipoStr.includes("COMARCAL")) roadType = "COMARCAL";
   else roadType = inferRoadType(roadNumber);
 
+  // Convert ArcGIS polyline paths (UTM Zone 30N) → GeoJSON LineString (WGS84)
+  let geometry: GeoJSONLineString | null = null;
+  const geom = feature.geometry;
+  if (geom?.paths && geom.paths.length > 0) {
+    const coordinates: [number, number][] = [];
+    for (const path of geom.paths) {
+      for (const point of path) {
+        if (point.length >= 2) {
+          const { latitude, longitude } = utmToWgs84(point[0], point[1]);
+          // Sanity: Iberian Peninsula + Canarias range
+          if (latitude >= 27 && latitude <= 44 && longitude >= -19 && longitude <= 5) {
+            coordinates.push([longitude, latitude]);
+          }
+        }
+      }
+    }
+    if (coordinates.length >= 2) {
+      geometry = { type: "LineString", coordinates };
+    }
+  }
+
   return {
     roadNumber,
     roadType,
@@ -203,6 +230,7 @@ function parseSegment(feature: ArcGISFeature, year: number): SegmentData | null 
     vhKmPesados,
     segmentLength: Number(attrs.Longitud || attrs.longitud || 0) || null,
     sourceId: Number(attrs.OBJECTID || attrs.ID || attrs.id) || null,
+    geometry,
   };
 }
 
@@ -309,6 +337,7 @@ async function upsertSegments(
             vhKmPesados: s.vhKmPesados,
             segmentLength: s.segmentLength,
             sourceId: s.sourceId,
+            geometry: s.geometry ?? undefined,
           },
           create: {
             roadNumber: s.roadNumber,
@@ -327,6 +356,7 @@ async function upsertSegments(
             vhKmPesados: s.vhKmPesados,
             segmentLength: s.segmentLength,
             sourceId: s.sourceId,
+            geometry: s.geometry ?? undefined,
           },
         })
       )

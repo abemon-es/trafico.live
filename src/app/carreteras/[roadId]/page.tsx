@@ -19,6 +19,7 @@ import {
 import { StructuredData, generateRoadSchema, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { RoadLiveSpeed } from "@/components/roads/RoadLiveSpeed";
 import { labelForEnum } from "@/lib/labels";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
@@ -287,6 +288,9 @@ export default async function RoadDetailPage({ params }: PageProps) {
                 </div>
               </div>
             )}
+
+            {/* Live Speed from Detectors */}
+            <RoadLiveSpeed roadId={road.id} />
 
             {/* Cameras */}
             {cameras.length > 0 && (

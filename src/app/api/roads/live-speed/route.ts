@@ -24,13 +24,27 @@ export async function GET(req: NextRequest) {
   try {
     await applyRateLimit(req);
 
+    const { searchParams } = new URL(req.url);
+    const road = searchParams.get("road")?.toUpperCase();
+    const province = searchParams.get("province");
+    const bbox = searchParams.get("bbox");
+
+    // Per-filter cache key
+    const cacheKeySuffix = road ? `:road:${road}` : province ? `:prov:${province}` : ":all";
+    const cacheKey = CACHE_KEY + cacheKeySuffix;
+
     // Check cache
-    const cached = await getFromCache(CACHE_KEY);
+    const cached = await getFromCache(cacheKey);
     if (cached) return NextResponse.json(cached);
+
+    // Build filter
+    const where: Record<string, unknown> = { isActive: true };
+    if (road) where.road = road;
+    if (province) where.province = province;
 
     // Get detectors with their latest reading
     const detectors = await prisma.trafficDetector.findMany({
-      where: { isActive: true },
+      where,
       include: {
         readings: {
           orderBy: { measuredAt: "desc" },
@@ -99,7 +113,7 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
     };
 
-    await setInCache(CACHE_KEY, result, CACHE_TTL);
+    await setInCache(cacheKey, result, CACHE_TTL);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Live speed API error:", error);
