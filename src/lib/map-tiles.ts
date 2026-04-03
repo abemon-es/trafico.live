@@ -12,11 +12,25 @@
  */
 
 import type { StyleSpecification, AddLayerObject } from "maplibre-gl";
-import { MAP_COLORS } from "./map-config";
 import { initPMTilesProtocol } from "./pmtiles-protocol";
 
-// CartoDB Voyager fallback URL — inlined here to avoid circular import
+// Colors inlined to avoid circular import with map-config.ts
 // (map-config.ts imports getProtomapsStyle from this file)
+const MAP_COLORS = {
+  primary: "#1b4bd5",
+  primaryLight: "#94b6ff",
+  provinceOutline: "#94b6ff",
+  provinceHover: "#1b4bd5",
+  cityDot: "#1b4bd5",
+  incidentRed: "#dc2626",
+  trafficGreen: "#059669",
+  trafficYellow: "#eab308",
+  trafficOrange: "#f97316",
+  trafficRed: "#dc2626",
+  amber: "#d48139",
+  evGreen: "#34d399",
+} as const;
+
 const CARTO_VOYAGER_URL = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 const CARTO_DARK_URL = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 

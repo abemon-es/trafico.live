@@ -1,13 +1,13 @@
 "use client";
 
 import { fetcher } from "@/lib/fetcher";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
-import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
+import type { Map as MapInstance } from "maplibre-gl";
+import { InteractiveBaseMap } from "@/components/map/InteractiveBaseMap";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -25,7 +25,6 @@ import { IncidentModal, type IncidentData } from "@/components/incidents/Inciden
 import {
   createIncidentMarkerElement,
   createSimpleMarkerElement,
-  getIncidentPopupHTML,
   EFFECT_COLORS,
   EFFECT_LABELS,
   CAUSE_LABELS,
@@ -79,10 +78,6 @@ interface IncidentsResponse {
 
 // Spain center coordinates
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168];
-const SPAIN_BOUNDS: [[number, number], [number, number]] = [
-  [-9.5, 35.5],
-  [4.5, 44.0],
-];
 
 export function IncidenciasContent() {
   const searchParams = useSearchParams();
@@ -95,10 +90,14 @@ export function IncidenciasContent() {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [selectedIncident, setSelectedIncident] = useState<IncidentFeature | null>(null);
 
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
+  const mapInstanceRef = useRef<MapInstance | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+
+  const handleMapLoad = useCallback((mapInstance: MapInstance) => {
+    mapInstanceRef.current = mapInstance;
+    setIsMapLoaded(true);
+  }, []);
 
   // Build API URL with filters
   const apiUrl = useMemo(() => {
@@ -121,46 +120,10 @@ export function IncidenciasContent() {
     }
   );
 
-  // Initialize map
-  useEffect(() => {
-    if (!mapContainer.current || map.current) return;
-
-    // Register PMTiles protocol before creating the map
-    initPMTilesProtocol();
-
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: MAP_STYLE_DEFAULT,
-      center: SPAIN_CENTER,
-      zoom: 6,
-      maxBounds: SPAIN_BOUNDS,
-      attributionControl: false,
-    });
-
-    map.current.addControl(
-      new maplibregl.NavigationControl({ showCompass: false }),
-      "top-right"
-    );
-
-    map.current.addControl(
-      new maplibregl.AttributionControl({ compact: true }),
-      "bottom-right"
-    );
-
-    map.current.on("load", () => {
-      forceSpanishLabels(map.current!);
-      setIsMapLoaded(true);
-    });
-
-    return () => {
-      map.current?.remove();
-      map.current = null;
-    };
-  }, []);
 
   // Update markers when data changes
   useEffect(() => {
-    if (!map.current || !isMapLoaded || !data?.geojson?.features) return;
+    if (!mapInstanceRef.current || !isMapLoaded || !data?.geojson?.features) return;
 
     // Clear existing markers
     markersRef.current.forEach((marker) => marker.remove());
@@ -185,7 +148,7 @@ export function IncidenciasContent() {
 
       const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([lng, lat])
-        .addTo(map.current!);
+        .addTo(mapInstanceRef.current!);
 
       markersRef.current.push(marker);
     });
@@ -352,12 +315,19 @@ export function IncidenciasContent() {
             </div>
           )}
 
-          {/* Map container - always rendered to avoid race condition */}
-          <div
-            ref={mapContainer}
-            className={`w-full h-[600px] relative ${viewMode !== "map" || isLoading || error ? "hidden" : ""}`}
-            style={{ backgroundColor: "#f5f5f5", overflow: "hidden" }}
-          />
+          {/* Map — always rendered (hidden in list view) to avoid re-init */}
+          <div className={viewMode !== "map" || isLoading || error ? "hidden" : ""}>
+            <InteractiveBaseMap
+              height="600px"
+              center={SPAIN_CENTER}
+              zoom={6}
+              onMapLoad={handleMapLoad}
+              showSidebar={true}
+              showProvinces={true}
+              showCities={true}
+              showQuickAccess={true}
+            />
+          </div>
 
           {/* List view */}
           {!isLoading && !error && viewMode === "list" && (

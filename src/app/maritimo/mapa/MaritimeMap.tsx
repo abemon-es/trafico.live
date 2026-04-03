@@ -182,7 +182,7 @@ export default function MaritimeMap() {
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
     mapRef.current = map;
 
-    map.on("load", () => {
+    map.on("load", async () => {
       forceSpanishLabels(map);
       // ── Wave data source ──
       map.addSource("wave-points", {
@@ -464,6 +464,85 @@ export default function MaritimeMap() {
         map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
       }
+
+      // ── Province boundaries (semi-transparent over ocean basemap) ──────
+      try {
+        const provRes = await fetch("/geo/spain-provinces.geojson");
+        const provData = await provRes.json();
+        map.addSource("maritime-provinces", { type: "geojson", data: provData });
+        map.addLayer({
+          id: "maritime-province-fill",
+          type: "fill",
+          source: "maritime-provinces",
+          paint: { "fill-color": "#1b4bd5", "fill-opacity": 0.04 },
+        });
+        map.addLayer({
+          id: "maritime-province-outline",
+          type: "line",
+          source: "maritime-provinces",
+          paint: {
+            "line-color": "#6b9fff",
+            "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 9, 1.2],
+            "line-opacity": 0.5,
+          },
+        });
+      } catch { /* Province boundaries optional on maritime map */ }
+
+      // ── Major coastal city dots ──────────────────────────────────────────
+      const MARITIME_CITIES = [
+        { name: "Barcelona",  lng:  2.1734, lat: 41.3851 },
+        { name: "Valencia",   lng: -0.3763, lat: 39.4699 },
+        { name: "Málaga",     lng: -4.4214, lat: 36.7213 },
+        { name: "Bilbao",     lng: -2.9350, lat: 43.2630 },
+        { name: "Palma",      lng:  2.6502, lat: 39.5696 },
+        { name: "Alicante",   lng: -0.4907, lat: 38.3452 },
+        { name: "Cádiz",      lng: -6.2988, lat: 36.5298 },
+        { name: "Vigo",       lng: -8.7207, lat: 42.2328 },
+        { name: "A Coruña",   lng: -8.4063, lat: 43.3623 },
+        { name: "Santander",  lng: -3.8044, lat: 43.4623 },
+        { name: "Las Palmas", lng: -15.4138, lat: 28.0997 },
+        { name: "Ceuta",      lng: -5.3536, lat: 35.8894 },
+      ];
+      map.addSource("maritime-cities", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: MARITIME_CITIES.map((c) => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [c.lng, c.lat] },
+            properties: { name: c.name },
+          })),
+        },
+      });
+      map.addLayer({
+        id: "maritime-city-dots",
+        type: "circle",
+        source: "maritime-cities",
+        paint: {
+          "circle-radius": 4,
+          "circle-color": "#1b4bd5",
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 1.5,
+          "circle-opacity": 0.8,
+        },
+      });
+      map.addLayer({
+        id: "maritime-city-labels",
+        type: "symbol",
+        source: "maritime-cities",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ["Open Sans Semibold"],
+          "text-size": 11,
+          "text-offset": [0, 1.2],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#374151",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
+      });
 
       setIsLoaded(true);
     });
