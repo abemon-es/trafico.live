@@ -1,14 +1,14 @@
 /**
- * CNMC Historical Fuel Prices Collector
+ * CNMC Historical Fuel Prices Collector (v2)
  *
  * Fetches provincial daily fuel price series from CNMC Open Data (CKAN API).
- * Covers Gasoleo A, Gasolina 95, Gasolina 98 — with and without tax.
- * Historical series from 2016 onwards, updated weekly.
+ * CNMC restructured to 11 year-by-year datasets (2016-2026).
+ * New long/normalized schema: one row per province+product+day.
  *
  * Source: https://catalogodatos.cnmc.es/
- * Resource ID: 8afd824c-034e-4ca3-b6b5-de1bb92002ad
+ * Bulk CSV: https://catalogodatos.cnmc.es/datastore/dump/{resource_id}
  *
- * Runs daily at 06:00 (low-priority tier — data updates weekly).
+ * Runs daily at 06:00 (data updates weekly).
  * Attribution: "Fuente: CNMC (Comisión Nacional de Mercados y la Competencia)"
  */
 
@@ -17,114 +17,246 @@ import { log, logError } from "../../shared/utils.js";
 
 const TASK = "cnmc-fuel";
 
+// ── Year→resource_id mapping (CNMC creates a new dataset each January) ──────
+const YEAR_RESOURCES: Record<number, string> = {
+  2016: "a385ec5d-a22b-4029-a322-ce3f40241597",
+  2017: "4c94e9aa-4973-471c-ae19-6658ec57e865",
+  2018: "e2a074ed-789e-43fc-b7bf-e2ba6106458a",
+  2019: "898c5d4b-c78b-4653-9226-bc24de59846a",
+  2020: "beb221c5-2be6-472a-bb25-bd6d2343e014",
+  2021: "9bb7d9fe-b99a-42ea-96f7-35c735b56612",
+  2022: "42fca586-6582-40c8-8df5-6ebbb8fbfd73",
+  2023: "b5a89db0-239f-4c8a-bd98-6575858359ae",
+  2024: "141fdb3b-7c56-4eed-bf8d-bee56e577aa6",
+  2025: "3b60baeb-a422-4b6d-a35f-af748adefcb1",
+  2026: "a5b93d30-5fa4-4577-a057-dadc9c9bb2bc",
+};
+
 const BASE_URL = "https://catalogodatos.cnmc.es/api/3/action/datastore_search";
-const RESOURCE_ID = "8afd824c-034e-4ca3-b6b5-de1bb92002ad";
-const PAGE_SIZE = 1000;
-const REQUEST_DELAY_MS = 200;
+const PAGE_SIZE = 5000;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ── Province name → INE code mapping ────────────────────────────────────────
+// CNMC uses full province names (sometimes bilingual with "/")
+const PROVINCE_MAP: Record<string, string> = {
+  "albacete": "02", "alicante": "03", "alicante/alacant": "03",
+  "almeria": "04", "almería": "04", "alava": "01", "álava": "01",
+  "araba/álava": "01", "asturias": "33", "avila": "05", "ávila": "05",
+  "badajoz": "06", "baleares": "07", "illes balears": "07", "islas baleares": "07",
+  "barcelona": "08", "bizkaia": "48", "vizcaya": "48",
+  "burgos": "09", "caceres": "10", "cáceres": "10",
+  "cadiz": "11", "cádiz": "11", "cantabria": "39",
+  "castellon": "12", "castellón": "12", "castellón/castelló": "12", "castellon/castello": "12",
+  "ceuta": "51", "ciudad real": "13", "cordoba": "14", "córdoba": "14",
+  "cuenca": "16", "gipuzkoa": "20", "guipuzcoa": "20", "guipúzcoa": "20",
+  "girona": "17", "gerona": "17", "granada": "18",
+  "guadalajara": "19", "huelva": "21", "huesca": "22",
+  "jaen": "23", "jaén": "23", "la coruña": "15", "a coruña": "15", "coruña": "15",
+  "la rioja": "26", "leon": "24", "león": "24",
+  "lleida": "25", "lérida": "25", "lugo": "27",
+  "madrid": "28", "malaga": "29", "málaga": "29", "melilla": "52",
+  "murcia": "30", "navarra": "31",
+  "ourense": "32", "orense": "32", "palencia": "34",
+  "las palmas": "35", "pontevedra": "36",
+  "salamanca": "37", "santa cruz de tenerife": "38", "tenerife": "38",
+  "segovia": "40", "sevilla": "41", "soria": "42",
+  "tarragona": "43", "teruel": "44", "toledo": "45",
+  "valencia": "46", "valencia/valència": "46", "valladolid": "47",
+  "zamora": "49", "zaragoza": "50",
+};
 
-interface CNMCRecord {
-  _id?: number;
-  Fecha?: string;
-  Cod_Provincia?: string;
-  CPRO?: string;
-  Provincia?: string;
-  Gasoleo_A?: string | number | null;
-  Gasoleo_A_Plus?: string | number | null;
-  Gasolina_95?: string | number | null;
-  Gasolina_98?: string | number | null;
-  PAI_Gasoleo_A?: string | number | null;
-  PAI_Gasolina_95?: string | number | null;
-  [key: string]: unknown;
+function normalizeProvince(name: string): string | null {
+  const normalized = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  // Direct match
+  if (PROVINCE_MAP[normalized]) return PROVINCE_MAP[normalized];
+  // Try with original (for accented keys)
+  const lower = name.toLowerCase().trim();
+  if (PROVINCE_MAP[lower]) return PROVINCE_MAP[lower];
+  // Try first part before "/"
+  const parts = lower.split("/");
+  for (const part of parts) {
+    const p = part.trim();
+    if (PROVINCE_MAP[p]) return PROVINCE_MAP[p];
+    const pn = p.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (PROVINCE_MAP[pn]) return PROVINCE_MAP[pn];
+  }
+  return null;
 }
 
-interface CNMCResponse {
-  success: boolean;
-  result: {
-    total: number;
-    records: CNMCRecord[];
-    offset: number;
-    limit: number;
-  };
+// ── Product name → fuel type mapping ────────────────────────────────────────
+type FuelField = "priceGasoleoA" | "priceGasoleoAPlus" | "priceGasolina95" | "priceGasolina98";
+type PaiField = "paiGasoleoA" | "paiGasolina95";
+
+interface ProductMapping {
+  priceField: FuelField;
+  paiField?: PaiField;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+const PRODUCT_MAP: Record<string, ProductMapping> = {
+  "gasóleo a habitual": { priceField: "priceGasoleoA", paiField: "paiGasoleoA" },
+  "gasoleo a habitual": { priceField: "priceGasoleoA", paiField: "paiGasoleoA" },
+  "gasóleo premium": { priceField: "priceGasoleoAPlus" },
+  "gasoleo premium": { priceField: "priceGasoleoAPlus" },
+  "gasolina 95 e5": { priceField: "priceGasolina95", paiField: "paiGasolina95" },
+  "gasolina 98 e5": { priceField: "priceGasolina98" },
+};
 
-/** Parse Spanish decimal format: "1,234" → 1.234 */
-function parseDecimal(value: string | number | null | undefined): number | null {
-  if (value === null || value === undefined || value === "") return null;
-  const str = String(value).trim().replace(",", ".");
-  const n = parseFloat(str);
-  return isNaN(n) ? null : n;
-}
-
-/** Parse a date string like "2024-01-15T00:00:00" or "2024-01-15" */
-function parseDate(value: string | null | undefined): Date | null {
-  if (!value) return null;
-  // CNMC dates come as ISO strings or "YYYY-MM-DD"
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-/** Normalize province code to 2-digit zero-padded INE string */
-function normalizeProvinceCode(cod?: string, cpro?: string): string | null {
-  const raw = cod || cpro;
-  if (!raw) return null;
-  const trimmed = String(raw).trim();
-  // May come as "1", "01", "28", etc.
-  if (!/^\d+$/.test(trimmed)) return null;
-  return trimmed.padStart(2, "0");
+function mapProduct(name: string): ProductMapping | null {
+  const lower = name.toLowerCase().trim();
+  return PRODUCT_MAP[lower] ?? null;
 }
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// ─── API Fetching ─────────────────────────────────────────────────────────────
+// ── Types for new CNMC schema ───────────────────────────────────────────────
 
-async function fetchPage(offset: number, minDate: string | null): Promise<CNMCResponse> {
-  let url: string;
-
-  if (minDate) {
-    // Incremental mode: use datastore_search_sql for server-side date filtering
-    const sql = `SELECT * FROM "${RESOURCE_ID}" WHERE "Fecha" >= '${minDate}' ORDER BY "Fecha" ASC LIMIT ${PAGE_SIZE} OFFSET ${offset}`;
-    const params = new URLSearchParams({ sql });
-    url = `https://catalogodatos.cnmc.es/api/3/action/datastore_search_sql?${params.toString()}`;
-  } else {
-    // Full sync: standard paginated search
-    const params = new URLSearchParams({
-      resource_id: RESOURCE_ID,
-      limit: String(PAGE_SIZE),
-      offset: String(offset),
-      sort: "Fecha asc",
-    });
-    url = `${BASE_URL}?${params.toString()}`;
-  }
-  const response = await fetch(url, {
-    headers: { "User-Agent": "trafico.live-collector/1.0 (datos@trafico.live)" },
-    signal: AbortSignal.timeout(30000),
-  });
-
-  if (!response.ok) {
-    throw new Error(`CNMC API returned ${response.status} for offset ${offset}`);
-  }
-
-  const data = (await response.json()) as CNMCResponse;
-
-  if (!data.success) {
-    throw new Error(`CNMC API returned success=false for offset ${offset}`);
-  }
-
-  return data;
+interface CNMCRecord {
+  fecha_precio?: string;
+  provincia?: string;
+  producto?: string;
+  promedio_de_pvp_diario_cubo?: number | string | null;
+  promedio_de_pai_diario_cubo?: number | string | null;
 }
 
-// ─── Main run ────────────────────────────────────────────────────────────────
+// ── Fetch + process a single year ──────────────────────────────────────────
+
+async function processYear(
+  prisma: PrismaClient,
+  year: number,
+  resourceId: string,
+  minDate: string | null
+): Promise<{ upserted: number; skipped: number }> {
+  let offset = 0;
+  let upserted = 0;
+  let skipped = 0;
+  let total = 0;
+  let firstPage = true;
+
+  // Pivot: group records by date+province, then upsert once with all fuel types
+  const pivotMap = new Map<string, Record<string, unknown>>();
+
+  while (true) {
+    const params = new URLSearchParams({
+      resource_id: resourceId,
+      limit: String(PAGE_SIZE),
+      offset: String(offset),
+      sort: "fecha_precio asc",
+    });
+    const url = `${BASE_URL}?${params.toString()}`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: { "User-Agent": "trafico.live-collector/2.0" },
+        signal: AbortSignal.timeout(60000),
+      });
+    } catch (err) {
+      logError(TASK, `Fetch failed for year ${year} offset ${offset}:`, err);
+      break;
+    }
+
+    if (!response.ok) {
+      logError(TASK, `HTTP ${response.status} for year ${year} offset ${offset}`);
+      break;
+    }
+
+    const json = await response.json() as { success: boolean; result: { total: number; records: CNMCRecord[] } };
+    if (!json.success) {
+      logError(TASK, `CNMC API success=false for year ${year}`);
+      break;
+    }
+
+    if (firstPage) {
+      total = json.result.total;
+      log(TASK, `Year ${year}: ${total.toLocaleString()} records (resource ${resourceId.slice(0, 8)}...)`);
+      firstPage = false;
+    }
+
+    const records = json.result.records;
+    if (records.length === 0) break;
+
+    for (const rec of records) {
+      if (!rec.fecha_precio || !rec.provincia || !rec.producto) {
+        skipped++;
+        continue;
+      }
+
+      const dateStr = rec.fecha_precio.slice(0, 10);
+      if (minDate && dateStr < minDate) {
+        skipped++;
+        continue;
+      }
+
+      const provinceCode = normalizeProvince(rec.provincia);
+      if (!provinceCode) {
+        skipped++;
+        continue;
+      }
+
+      const mapping = mapProduct(rec.producto);
+      if (!mapping) {
+        skipped++;
+        continue;
+      }
+
+      const pvp = typeof rec.promedio_de_pvp_diario_cubo === "number"
+        ? rec.promedio_de_pvp_diario_cubo
+        : rec.promedio_de_pvp_diario_cubo ? parseFloat(String(rec.promedio_de_pvp_diario_cubo)) : null;
+
+      const pai = typeof rec.promedio_de_pai_diario_cubo === "number"
+        ? rec.promedio_de_pai_diario_cubo
+        : rec.promedio_de_pai_diario_cubo ? parseFloat(String(rec.promedio_de_pai_diario_cubo)) : null;
+
+      const key = `${dateStr}|${provinceCode}`;
+      if (!pivotMap.has(key)) {
+        pivotMap.set(key, {
+          date: new Date(dateStr),
+          province: provinceCode,
+          provinceName: rec.provincia,
+        });
+      }
+
+      const row = pivotMap.get(key)!;
+      if (pvp !== null && !isNaN(pvp)) row[mapping.priceField] = pvp;
+      if (pai !== null && !isNaN(pai) && mapping.paiField) row[mapping.paiField] = pai;
+    }
+
+    offset += PAGE_SIZE;
+    if (offset >= total) break;
+    await delay(200);
+  }
+
+  // Batch upsert from pivot map
+  const entries = Array.from(pivotMap.values());
+  const BATCH = 100;
+  for (let i = 0; i < entries.length; i += BATCH) {
+    const batch = entries.slice(i, i + BATCH);
+    for (const entry of batch) {
+      try {
+        const { date, province, ...data } = entry as any;
+        await prisma.cNMCFuelPrice.upsert({
+          where: { date_province: { date, province } },
+          create: { date, province, ...data },
+          update: data,
+        });
+        upserted++;
+      } catch (err) {
+        skipped++;
+      }
+    }
+  }
+
+  log(TASK, `Year ${year}: upserted ${upserted.toLocaleString()}, skipped ${skipped}`);
+  return { upserted, skipped };
+}
+
+// ── Main ────────────────────────────────────────────────────────────────────
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  log(TASK, "Starting CNMC historical fuel prices collection");
+  log(TASK, "Starting CNMC historical fuel prices collection (v2 — year-by-year datasets)");
 
-  // Determine incremental start date — find max date already in DB
+  // Determine incremental start
   let minDate: string | null = null;
   try {
     const latest = await prisma.cNMCFuelPrice.findFirst({
@@ -132,136 +264,46 @@ export async function run(prisma: PrismaClient): Promise<void> {
       select: { date: true },
     });
     if (latest?.date) {
-      // Subtract 7 days to re-fetch recent data (CNMC may update past week)
       const cutoff = new Date(latest.date);
       cutoff.setDate(cutoff.getDate() - 7);
       minDate = cutoff.toISOString().slice(0, 10);
-      log(TASK, `Incremental mode: fetching records from ${minDate} onwards`);
+      log(TASK, `Incremental mode: from ${minDate}`);
     } else {
-      log(TASK, "Full sync mode: no existing records, fetching all history");
+      log(TASK, "Full sync: fetching all years 2016-2026");
     }
-  } catch (err) {
-    logError(TASK, "Could not read max date from DB, proceeding with full sync:", err);
+  } catch {
+    log(TASK, "Full sync mode");
   }
 
-  let offset = 0;
-  let totalRecords = 0;
-  let processedRecords = 0;
-  let upsertedRecords = 0;
-  let skippedRecords = 0;
-  let pageCount = 0;
-  let firstPage = true;
+  let totalUpserted = 0;
+  let totalSkipped = 0;
 
-  while (true) {
-    let data: CNMCResponse;
-    try {
-      data = await fetchPage(offset, minDate);
-    } catch (err) {
-      logError(TASK, `Failed to fetch page at offset ${offset}:`, err);
-      break;
+  // Determine which years to fetch
+  const currentYear = new Date().getFullYear();
+  const yearsToFetch = minDate
+    ? [currentYear - 1, currentYear] // incremental: only last 2 years
+    : Object.keys(YEAR_RESOURCES).map(Number).sort(); // full: all years
+
+  for (const year of yearsToFetch) {
+    const resourceId = YEAR_RESOURCES[year];
+    if (!resourceId) {
+      log(TASK, `No resource ID for year ${year} — skipping`);
+      continue;
     }
 
-    if (firstPage) {
-      totalRecords = data.result.total;
-      log(TASK, `Total records in dataset: ${totalRecords.toLocaleString()}`);
-      firstPage = false;
-    }
-
-    const records = data.result.records;
-    if (records.length === 0) {
-      log(TASK, `No more records at offset ${offset}, done`);
-      break;
-    }
-
-    pageCount++;
-
-    for (const record of records) {
-      processedRecords++;
-
-      const dateVal = parseDate(record.Fecha);
-      if (!dateVal) {
-        skippedRecords++;
-        continue;
-      }
-
-      // Skip records before our incremental cutoff
-      if (minDate && dateVal.toISOString().slice(0, 10) < minDate) {
-        skippedRecords++;
-        continue;
-      }
-
-      const province = normalizeProvinceCode(record.Cod_Provincia, record.CPRO);
-      if (!province) {
-        skippedRecords++;
-        continue;
-      }
-
-      const provinceName = record.Provincia ? String(record.Provincia).trim() : null;
-      const priceGasoleoA = parseDecimal(record.Gasoleo_A);
-      const priceGasoleoAPlus = parseDecimal(record.Gasoleo_A_Plus);
-      const priceGasolina95 = parseDecimal(record.Gasolina_95);
-      const priceGasolina98 = parseDecimal(record.Gasolina_98);
-      const paiGasoleoA = parseDecimal(record.PAI_Gasoleo_A);
-      const paiGasolina95 = parseDecimal(record.PAI_Gasolina_95);
-
-      const data_ = {
-        provinceName,
-        priceGasoleoA,
-        priceGasoleoAPlus,
-        priceGasolina95,
-        priceGasolina98,
-        paiGasoleoA,
-        paiGasolina95,
-      };
-
-      try {
-        await prisma.cNMCFuelPrice.upsert({
-          where: { date_province: { date: dateVal, province } },
-          create: {
-            date: dateVal,
-            province,
-            ...data_,
-          },
-          update: data_,
-        });
-        upsertedRecords++;
-      } catch (err) {
-        logError(TASK, `Upsert failed for (${dateVal.toISOString().slice(0, 10)}, ${province}):`, err);
-        skippedRecords++;
-      }
-    }
-
-    log(
-      TASK,
-      `Page ${pageCount}: offset=${offset}, records=${records.length}, upserted=${upsertedRecords}, skipped=${skippedRecords}`
-    );
-
-    offset += PAGE_SIZE;
-
-    // Stop if we've fetched all records
-    if (offset >= totalRecords) {
-      log(TASK, "Reached end of dataset");
-      break;
-    }
-
-    // Polite delay between pages
-    await delay(REQUEST_DELAY_MS);
+    const { upserted, skipped } = await processYear(prisma, year, resourceId, minDate);
+    totalUpserted += upserted;
+    totalSkipped += skipped;
   }
 
-  log(
-    TASK,
-    `Collection complete — pages: ${pageCount}, processed: ${processedRecords}, upserted: ${upsertedRecords}, skipped: ${skippedRecords}`
-  );
+  log(TASK, `Collection complete — total upserted: ${totalUpserted.toLocaleString()}, skipped: ${totalSkipped}`);
 
-  // Log summary stats
   try {
     const count = await prisma.cNMCFuelPrice.count();
     const newest = await prisma.cNMCFuelPrice.findFirst({
       orderBy: { date: "desc" },
       select: { date: true },
     });
-    log(TASK, `DB now has ${count.toLocaleString()} records, latest date: ${newest?.date?.toISOString().slice(0, 10) ?? "none"}`);
-  } catch (err) {
-    logError(TASK, "Could not read final stats:", err);
-  }
+    log(TASK, `DB has ${count.toLocaleString()} records, latest: ${newest?.date?.toISOString().slice(0, 10) ?? "none"}`);
+  } catch {}
 }
