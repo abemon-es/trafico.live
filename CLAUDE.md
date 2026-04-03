@@ -110,7 +110,7 @@ npm run db:seed      # Seed database
 
 ### Data Collectors (`services/collector/`)
 - Unified dispatcher (`TASK` env var selects collector)
-- Valid tasks: `v16`, `incident`, `panel`, `detector`, `intensity`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `maritime-fuel`, `insights`, `risk-zones`, `zbe`, `imd`, `andorra`, `portugal-weather`, `portugal-fuel`, `historical-accidents`, `portugal-accidents`, `renfe-gtfs`, `renfe-alerts`, `renfe-ld-realtime`, `maritime-forecast`, `sasemar`, `typesense-sync`, `cnmc-fuel`, `aemet-historical`, `mobility-od`, `accident-microdata`, `ais-stream`, `ferry-gtfs`, `transit-gtfs`, `renfe-positions`, `city-traffic`, `dgt-extras`, `mobilitydata-sync`, `ine-stats`, `opensky`, `aena-stats`, `air-quality`
+- Valid tasks: `v16`, `incident`, `panel`, `detector`, `intensity`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `maritime-fuel`, `insights`, `risk-zones`, `zbe`, `imd`, `andorra`, `portugal-weather`, `portugal-fuel`, `historical-accidents`, `portugal-accidents`, `renfe-gtfs`, `renfe-alerts`, `renfe-ld-realtime`, `maritime-forecast`, `sasemar`, `typesense-sync`, `cnmc-fuel`, `aemet-historical`, `mobility-od`, `accident-microdata`, `ais-stream`, `ferry-gtfs`, `transit-gtfs`, `renfe-positions`, `city-traffic`, `dgt-extras`, `mobilitydata-sync`, `ine-stats`, `opensky`, `aena-stats`, `air-quality`, `air-quality-ccaa`, `ourairports-runways`, `puertos-estado`
 - 7 Docker containers in `docker-compose.collectors.yml`: realtime (11 tasks), frequent (3), fuel (3), daily (11), weekly (8), ais (always-on WebSocket), + cron schedules in `services/collector/crontabs/`
 - Total ~5.2 GB RAM allocated across containers (1536m realtime, 256m frequent, 512m fuel, 1536m daily, 1024m weekly, 192m ais)
 - Runs on hetzner-prod via Coolify (separate app from web)
@@ -163,6 +163,8 @@ npm run db:seed      # Seed database
   - CC-BY 4.0, no auth required
 - **Source (real-time alerts):** Renfe GTFS-RT — `gtfsrt.renfe.com/alerts.json`, `trip_updates.json`, `trip_updates_LD.json`
   - Service alerts, cancellations, significant delays (>5 min), 20s cadence, no auth
+- **Source (Cercanías GPS):** Renfe GTFS-RT VehiclePositions — `gtfsrt.renfe.com/vehicle_positions.json`
+  - Real GPS coordinates for Cercanías trains, 20s update, CC-BY 4.0, no auth
 - **Source (LD fleet):** Renfe undocumented API — `tiempo-real.largorecorrido.renfe.com/renfe-visor/`
   - `flotaLD.json`: GPS positions + delay for ~115 active trains, no auth
   - `trenesConEstacionesLD.json`: full route polylines + stop schedules per train
@@ -189,11 +191,11 @@ npm run db:seed      # Seed database
 
 ### Multimodal Transport (2026-04)
 
-- **Maritime:** AIS vessel tracking (aisstream.io WebSocket, always-on) + ferry GTFS. Tables: `Vessel`, `VesselPosition`, `FerryRoute/Stop/Trip`. Collectors: `ais-stream`, `ferry-gtfs`. APIs: `/api/maritimo`, `/api/maritimo/ferries`. Page: `/maritimo`
+- **Maritime:** AIS vessel tracking (aisstream.io WebSocket, always-on — currently degraded, auth issues since Mar 2026, email sent to founders) + ferry GTFS + Puertos del Estado WFS (50 state ports with INSPIRE polygons). Tables: `Vessel`, `VesselPosition`, `SpanishPort` (197 ports), `FerryRoute/Stop/Trip`. Collectors: `ais-stream`, `ferry-gtfs`, `puertos-estado` (WFS import). APIs: `/api/maritimo`, `/api/maritimo/ferries`. Page: `/maritimo`
 - **Public Transit:** 15+ GTFS operators via MobilityData (Metro Madrid/Barcelona/Bilbao, FGC, Euskotren, EMT, TUSSAM, Ouigo). Tables: `TransitOperator`, `TransitRoute`, `TransitStop`. Collectors: `transit-gtfs`, `renfe-positions`. APIs: `/api/transporte`, `/api/transporte/[operator]`. Page: `/transporte-publico`
-- **City Sensors:** Barcelona/Valencia/Zaragoza real-time traffic. Tables: `CityTrafficSensor`, `CityTrafficReading`. Collectors: `city-traffic` (5min), `dgt-extras` (weekly). APIs: `/api/trafico/ciudades`, `/api/trafico/obras`
-- **Aviation:** OpenSky aircraft + 42 AENA airports. Tables: `AircraftPosition`, `Airport`, `AirportStatistic`. Collectors: `opensky` (5min), `aena-stats`. APIs: `/api/aviacion`, `/api/aviacion/aeropuertos`. Page: `/aviacion`
-- **Air Quality:** MITECO ICA, 506 stations. Tables: `AirQualityStation`, `AirQualityReading` (NO2, PM10, PM2.5, O3, SO2, ICA 1-5). Collector: `air-quality` (hourly). API: `/api/calidad-aire`. Page: `/calidad-aire`
+- **City Sensors:** Madrid (informo.madrid.es, 6K sensors, */5) + Barcelona (transit DAT + road sections, 527 roads) + Valencia (ODS + ArcGIS REST, */3) + Zaragoza. Tables: `CityTrafficSensor`, `CityTrafficReading`. Collectors: `city-traffic` (5min, all cities), `dgt-extras` (weekly). APIs: `/api/trafico/ciudades`, `/api/trafico/obras`
+- **Aviation:** OpenSky aircraft (*/15, anonymous rate-limited) + 46 AENA airports + Eurostat annual pax stats (2019-2025) + OurAirports runway geometry (103 runways, 76 airports, `public/data/runways.json`). Tables: `AircraftPosition`, `Airport`, `AirportStatistic`. Collectors: `opensky` (*/15), `aena-stats` (daily, Eurostat AVIA_PAOA CSV), `ourairports-runways` (weekly, runway ends + heading + length). APIs: `/api/aviacion`, `/api/aviacion/aeropuertos`. Page: `/aviacion`
+- **Air Quality:** MITECO ICA via `ica.miteco.es/datos/ica-ultima-hora.csv` (CC-BY 4.0, hourly CSV) + backend API fallback (`backend.ica.miteco.es/sgca/`). 565 stations with ICA 1-6 levels. CCAA extensions: Madrid (20min, `datos.comunidad.madrid`), Cataluña (daily), Euskadi, Andalucía. Tables: `AirQualityStation`, `AirQualityReading` (NO2, PM10, PM2.5, O3, SO2, CO, ICA 1-6). Collectors: `air-quality` (hourly), `air-quality-ccaa` (varies). API: `/api/calidad-aire`. Page: `/calidad-aire`
 - **Historical:** MobilityData GTFS archive (126 feeds) + INE transport stats. Tables: `GTFSArchive`, `TransportStatistic`. Collectors: `mobilitydata-sync`, `ine-stats`. APIs: `/api/estadisticas`, `/api/estadisticas/modal`. Page: `/estadisticas-transporte`
 
 ## Key Files
@@ -252,6 +254,15 @@ npm run db:seed      # Seed database
 | `services/collector/tasks/mobilitydata-sync/` | MobilityData GTFS archive sync |
 | `services/collector/tasks/ine-stats/` | INE transport statistics collector |
 | `services/collector/shared/ws-client.ts` | Reconnecting WebSocket wrapper (AIS) |
+| `services/collector/tasks/puertos-estado/` | Puertos del Estado WFS port catalog |
+| `services/collector/tasks/ourairports-runways/` | OurAirports runway geometry import |
+| `services/collector/tasks/air-quality-ccaa/` | CCAA regional air quality (Madrid, Cataluña, Euskadi, Andalucía) |
+| `services/collector/tasks/aena-stats/` | Eurostat AVIA_PAOA airport passenger stats |
+| `public/data/runways.json` | Static runway geometry (76 airports, 103 runways) for 3D map |
+| `src/components/location/sections/RailwaySection.tsx` | Province railway stations section |
+| `src/components/location/sections/AirQualitySection.tsx` | Province air quality section |
+| `src/components/location/sections/AirportsSection.tsx` | Province airports section |
+| `src/app/calidad-aire/page.tsx` | Air quality page (565 stations, ICA distribution) |
 | `services/collector/shared/gtfs-parser.ts` | GTFS ZIP parser utility |
 | `data/airports-spain.json` | 42 AENA airports static catalog |
 | `src/app/maritimo/` | Maritime hub page |
