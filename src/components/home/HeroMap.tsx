@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Map, Locate, Cloud } from "lucide-react";
 import type maplibregl from "maplibre-gl";
+import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
+import { MAP_STYLE_DEFAULT } from "@/lib/map-config";
 
 // Dynamic import types — maplibre-gl is loaded only on the client
 type MapInstance = InstanceType<typeof maplibregl.Map>;
@@ -204,12 +206,14 @@ export function HeroMap({ initialStats }: HeroMapProps) {
       // Dynamically import to avoid SSR issues
       const maplibregl = (await import("maplibre-gl")).default;
       await import("maplibre-gl/dist/maplibre-gl.css");
+      // Register PMTiles protocol before creating the map
+      await initPMTilesProtocolAsync();
 
       if (cancelled || !mapRef.current) return;
 
       const map = new maplibregl.Map({
         container: mapRef.current,
-        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        style: MAP_STYLE_DEFAULT,
         center: [-4.0, 39.6],
         zoom: 5.2,
         interactive: true,

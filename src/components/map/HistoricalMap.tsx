@@ -5,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Layers, Flame, Circle, MapPin, Loader2 } from "lucide-react";
 import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 
 export interface BeaconMapData {
   id: string;
@@ -75,6 +76,9 @@ export function HistoricalMap({
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+
+    // Register PMTiles protocol before creating the map
+    initPMTilesProtocol();
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,

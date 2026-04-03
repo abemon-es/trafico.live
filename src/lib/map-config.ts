@@ -1,18 +1,29 @@
 import type maplibregl from "maplibre-gl";
+import { getProtomapsStyle } from "@/lib/map-tiles";
 
 // ─── Shared map configuration for all trafico.live maps ───
 
-/** Default basemap — CartoDB Voyager (warm, detailed, Spanish-friendly) */
+// ── Self-hosted Protomaps styles ──
+
+/** Self-hosted Protomaps basemap — light theme (brand-colored, Spanish labels) */
+export const MAP_STYLE_PROTOMAPS = getProtomapsStyle();
+
+/** Self-hosted Protomaps basemap — dark theme (falls back to CartoDB Dark Matter) */
+export const MAP_STYLE_PROTOMAPS_DARK = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+
+// ── CartoDB fallbacks ──
+
+/** CartoDB Voyager — warm, detailed basemap. Kept as fallback. */
 export const MAP_STYLE_VOYAGER = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 
-/** Dark basemap — for driving mode / night mode */
+/** CartoDB Dark Matter — dark basemap fallback */
 export const MAP_STYLE_DARK = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
-/** Light basemap — legacy, prefer Voyager */
+/** CartoDB Positron — light basemap, legacy */
 export const MAP_STYLE_POSITRON = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
-/** Default style for all maps */
-export const MAP_STYLE_DEFAULT = MAP_STYLE_VOYAGER;
+/** Default style for all maps — self-hosted Protomaps (Spanish labels, brand colors) */
+export const MAP_STYLE_DEFAULT = MAP_STYLE_PROTOMAPS;
 
 /** Spain center (full Iberian Peninsula including Portugal) */
 export const SPAIN_CENTER: [number, number] = [-4.0, 39.6];
@@ -52,10 +63,20 @@ export const MAP_COLORS = {
 /**
  * Force all basemap labels to Spanish.
  * Call this inside map.on("load", ...) after the style is fully loaded.
+ *
+ * No-op when using the self-hosted Protomaps style — labels are already in
+ * Spanish via `["coalesce", ["get", "name:es"], ["get", "name"]]` expressions
+ * baked into the style definition.
  */
 export function forceSpanishLabels(map: maplibregl.Map): void {
   try {
-    for (const layer of map.getStyle().layers) {
+    const style = map.getStyle();
+    // Protomaps styles already use Spanish labels — skip patching
+    const isProtomaps = style?.sources != null && "protomaps" in style.sources;
+    if (isProtomaps) return;
+
+    // CartoDB fallback — patch every symbol layer to prefer Spanish names
+    for (const layer of style.layers) {
       if (layer.type === "symbol" && layer.layout?.["text-field"]) {
         try {
           map.setLayoutProperty(layer.id, "text-field", [

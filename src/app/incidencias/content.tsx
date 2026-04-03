@@ -7,6 +7,7 @@ import useSWR from "swr";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -123,6 +124,9 @@ export function IncidenciasContent() {
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+
+    // Register PMTiles protocol before creating the map
+    initPMTilesProtocol();
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,

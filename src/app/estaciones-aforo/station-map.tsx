@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { setupPMTilesProtocol, TILE_SOURCES, LAYER_STYLES, addTileSource } from "@/lib/map-tiles";
 
 interface Station {
   id: string;
@@ -25,8 +26,6 @@ interface Station {
 }
 
 interface StationMapProps {
-  stations: Station[];
-  geojson?: GeoJSON.FeatureCollection | null;
   onStationClick: (station: Station) => void;
   selectedStation: Station | null;
 }
@@ -34,76 +33,18 @@ interface StationMapProps {
 const SPAIN_CENTER: [number, number] = [-3.7, 40.4];
 const INITIAL_ZOOM = 6;
 
-function getCircleColor(): maplibregl.ExpressionSpecification {
-  return [
-    "interpolate",
-    ["linear"],
-    ["coalesce", ["get", "imd"], 0],
-    0, "#94b6ff",       // tl-300 — no data / very low
-    5000, "#366cf8",    // tl-500
-    10000, "#059669",   // green
-    20000, "#d97706",   // yellow/amber
-    50000, "#ea580c",   // orange
-    100000, "#dc2626",  // red
-  ];
-}
-
-function getCircleRadius(): maplibregl.ExpressionSpecification {
-  return [
-    "interpolate",
-    ["linear"],
-    ["zoom"],
-    5, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 3, 100000, 8],
-    10, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 5, 100000, 14],
-  ];
-}
-
-function stationsToGeoJSON(stations: Station[]): GeoJSON.FeatureCollection {
-  return {
-    type: "FeatureCollection",
-    features: stations.map((s) => ({
-      type: "Feature" as const,
-      geometry: {
-        type: "Point" as const,
-        coordinates: [s.longitude, s.latitude],
-      },
-      properties: {
-        id: s.id,
-        stationCode: s.stationCode,
-        roadNumber: s.roadNumber,
-        kmPoint: s.kmPoint,
-        provinceName: s.provinceName || "",
-        population: s.population || "",
-        imd: s.imd,
-        imdLigeros: s.imdLigeros,
-        imdPesados: s.imdPesados,
-        percentPesados: s.percentPesados,
-        stationType: s.stationType || "",
-      },
-    })),
-  };
-}
-
 export default function StationMap({
-  stations,
-  geojson,
   onStationClick,
   selectedStation,
 }: StationMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const stationsLookup = useRef<Map<string, Station>>(new Map());
-
-  // Build lookup
-  useEffect(() => {
-    const lookup = new Map<string, Station>();
-    stations.forEach((s) => lookup.set(s.id, s));
-    stationsLookup.current = lookup;
-  }, [stations]);
 
   // Initialize map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    setupPMTilesProtocol();
 
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -123,24 +64,13 @@ export default function StationMap({
 
     map.on("load", () => {
       forceSpanishLabels(map);
-      // Empty source — updated when stations prop changes
-      map.addSource("stations", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
+
+      // Vector tile source — data fetched directly by MapLibre
+      addTileSource(map, "stations", TILE_SOURCES.stations);
 
       map.addLayer({
-        id: "stations-circle",
-        type: "circle",
-        source: "stations",
-        paint: {
-          "circle-color": getCircleColor(),
-          "circle-radius": getCircleRadius(),
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "#ffffff",
-          "circle-opacity": 0.85,
-        },
-      });
+        ...LAYER_STYLES.stationsCircle,
+      } as maplibregl.AddLayerObject);
 
       // Hover cursor
       map.on("mouseenter", "stations-circle", () => {
@@ -150,15 +80,29 @@ export default function StationMap({
         map.getCanvas().style.cursor = "";
       });
 
-      // Click handler
+      // Click handler — build Station-like object from tile properties
       map.on("click", "stations-circle", (e) => {
         const feature = e.features?.[0];
         if (!feature) return;
-        const stationId = feature.properties?.id;
-        const station = stationsLookup.current.get(stationId);
-        if (station) {
-          onStationClick(station);
-        }
+        const props = feature.properties;
+        onStationClick({
+          id: props?.stationCode || "",
+          stationCode: props?.stationCode || "",
+          roadNumber: props?.roadNumber || "",
+          kmPoint: Number(props?.kmPoint || 0),
+          province: props?.province || null,
+          provinceName: props?.provinceName || null,
+          roadType: null,
+          stationType: props?.stationType || null,
+          population: props?.population || null,
+          latitude: e.lngLat.lat,
+          longitude: e.lngLat.lng,
+          year: Number(props?.year || 0),
+          imd: props?.imd ? Number(props.imd) : null,
+          imdLigeros: props?.imdLigeros ? Number(props.imdLigeros) : null,
+          imdPesados: props?.imdPesados ? Number(props.imdPesados) : null,
+          percentPesados: props?.percentPesados ? Number(props.percentPesados) : null,
+        });
       });
 
       // Popup on hover
@@ -201,26 +145,6 @@ export default function StationMap({
       mapRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Update source data — prefer pre-built GeoJSON from API, fallback to conversion
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    const updateSource = () => {
-      const source = map.getSource("stations") as maplibregl.GeoJSONSource | undefined;
-      if (source) {
-        const data = geojson?.type === "FeatureCollection" ? geojson : stationsToGeoJSON(stations);
-        source.setData(data);
-      }
-    };
-
-    if (map.loaded()) {
-      updateSource();
-    } else {
-      map.on("load", updateSource);
-    }
-  }, [stations, geojson]);
 
   // Fly to selected station
   useEffect(() => {

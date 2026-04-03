@@ -5,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MapPin, Loader2 } from "lucide-react";
 import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 
 export interface ProvinceDataPoint {
   province: string; // INE 2-digit code or province name
@@ -84,6 +85,9 @@ export function ProvinceHeatmap({
   // Initialize map once
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+
+    // Register PMTiles protocol before creating the map
+    initPMTilesProtocol();
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,

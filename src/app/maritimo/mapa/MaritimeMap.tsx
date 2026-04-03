@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { forceSpanishLabels } from "@/lib/map-config";
+import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 import { Fuel, Waves, Wind, Anchor, ShieldAlert, CloudRain, RefreshCw, Layers, ChevronDown, X, Maximize2, Minimize2 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -133,6 +134,9 @@ export default function MaritimeMap() {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    // Register PMTiles protocol (no-op for this map's raster style, ready for future use)
+    initPMTilesProtocol();
 
     const map = new maplibregl.Map({
       container: containerRef.current,

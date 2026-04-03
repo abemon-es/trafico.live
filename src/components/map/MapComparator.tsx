@@ -5,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { ArrowLeftRight, Clock, X } from "lucide-react";
 import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
 
 interface MapComparatorProps {
   currentIncidents: { lat: number; lng: number; effect: string }[];
@@ -57,6 +58,9 @@ export function MapComparator({ currentIncidents, historicalIncidents, onTimeOff
   // Initialize both maps
   useEffect(() => {
     if (!leftRef.current || !rightRef.current) return;
+
+    // Register PMTiles protocol before creating the maps
+    initPMTilesProtocol();
 
     const createMap = (container: HTMLDivElement) =>
       new maplibregl.Map({

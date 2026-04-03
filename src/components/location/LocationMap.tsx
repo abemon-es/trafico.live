@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Map as MapIcon, Loader2 } from "lucide-react";
 import type { FeatureCollection } from "geojson";
 import { MAP_STYLE_DEFAULT, forceSpanishLabels } from "@/lib/map-config";
+import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
 
 export interface LocationMapProps {
   /** Center coordinate [lng, lat] */
@@ -67,134 +68,137 @@ export function LocationMap({
 
     let cancelled = false;
 
-    import("maplibre-gl")
-      .then((maplibre) => {
-        if (cancelled || !containerRef.current) return;
+    async function initMap() {
+      // Register PMTiles protocol before creating the map
+      await initPMTilesProtocolAsync();
+      const maplibre = await import("maplibre-gl");
+      if (cancelled || !containerRef.current) return;
 
-        // Import CSS lazily (safe to call multiple times — maplibre guards it)
-        import("maplibre-gl/dist/maplibre-gl.css").catch(() => {
-          // CSS may already be loaded by TrafficMap — ignore
-        });
+      // Import CSS lazily (safe to call multiple times — maplibre guards it)
+      import("maplibre-gl/dist/maplibre-gl.css").catch(() => {
+        // CSS may already be loaded by TrafficMap — ignore
+      });
 
-        const initialCenter: [number, number] = center ?? [-3.7038, 40.4168];
-        const initialZoom = center ? zoom : 6;
+      const initialCenter: [number, number] = center ?? [-3.7038, 40.4168];
+      const initialZoom = center ? zoom : 6;
 
-        const map = new maplibre.Map({
-          container: containerRef.current!,
-          style: MAP_STYLE_DEFAULT,
-          center: initialCenter,
-          zoom: initialZoom,
-          attributionControl: false,
-        });
+      const map = new maplibre.Map({
+        container: containerRef.current!,
+        style: MAP_STYLE_DEFAULT,
+        center: initialCenter,
+        zoom: initialZoom,
+        attributionControl: false,
+      });
 
-        map.addControl(
-          new maplibre.AttributionControl({ compact: true }),
-          "bottom-right"
-        );
-        map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
+      map.addControl(
+        new maplibre.AttributionControl({ compact: true }),
+        "bottom-right"
+      );
+      map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
 
-        map.on("load", () => {
-          if (cancelled) {
-            map.remove();
-            return;
-          }
+      map.on("load", () => {
+        if (cancelled) {
+          map.remove();
+          return;
+        }
 
-          forceSpanishLabels(map);
+        forceSpanishLabels(map);
 
-          // Fit to bounds if provided
-          if (bounds) {
-            map.fitBounds(
-              [
-                [bounds.west, bounds.south],
-                [bounds.east, bounds.north],
+        // Fit to bounds if provided
+        if (bounds) {
+          map.fitBounds(
+            [
+              [bounds.west, bounds.south],
+              [bounds.east, bounds.north],
+            ],
+            { padding: 32, duration: 0 }
+          );
+        }
+
+        // Add markers layer if provided
+        if (markers && markers.features.length > 0) {
+          const sourceId = "loc-markers";
+
+          map.addSource(sourceId, {
+            type: "geojson",
+            data: markers,
+            cluster: markers.features.length > 50,
+            clusterMaxZoom: 14,
+            clusterRadius: 50,
+          });
+
+          // Cluster circles
+          map.addLayer({
+            id: `${sourceId}-clusters`,
+            type: "circle",
+            source: sourceId,
+            filter: ["has", "point_count"],
+            paint: {
+              "circle-color": [
+                "step",
+                ["get", "point_count"],
+                "#366cf8", // tl-500
+                20,
+                "#1b4bd5", // tl-600
+                100,
+                "#092ea8", // tl-700
               ],
-              { padding: 32, duration: 0 }
-            );
-          }
+              "circle-radius": [
+                "step",
+                ["get", "point_count"],
+                16,
+                20,
+                22,
+                100,
+                28,
+              ],
+              "circle-opacity": 0.85,
+            },
+          });
 
-          // Add markers layer if provided
-          if (markers && markers.features.length > 0) {
-            const sourceId = "loc-markers";
+          // Cluster count labels
+          map.addLayer({
+            id: `${sourceId}-cluster-count`,
+            type: "symbol",
+            source: sourceId,
+            filter: ["has", "point_count"],
+            layout: {
+              "text-field": "{point_count_abbreviated}",
+              "text-size": 12,
+              "text-font": ["Noto Sans Bold"],
+            },
+            paint: {
+              "text-color": "#ffffff",
+            },
+          });
 
-            map.addSource(sourceId, {
-              type: "geojson",
-              data: markers,
-              cluster: markers.features.length > 50,
-              clusterMaxZoom: 14,
-              clusterRadius: 50,
-            });
+          // Unclustered points
+          map.addLayer({
+            id: `${sourceId}-unclustered`,
+            type: "circle",
+            source: sourceId,
+            filter: ["!", ["has", "point_count"]],
+            paint: {
+              "circle-color": "#366cf8",
+              "circle-radius": 6,
+              "circle-stroke-width": 1.5,
+              "circle-stroke-color": "#ffffff",
+            },
+          });
+        }
 
-            // Cluster circles
-            map.addLayer({
-              id: `${sourceId}-clusters`,
-              type: "circle",
-              source: sourceId,
-              filter: ["has", "point_count"],
-              paint: {
-                "circle-color": [
-                  "step",
-                  ["get", "point_count"],
-                  "#366cf8", // tl-500
-                  20,
-                  "#1b4bd5", // tl-600
-                  100,
-                  "#092ea8", // tl-700
-                ],
-                "circle-radius": [
-                  "step",
-                  ["get", "point_count"],
-                  16,
-                  20,
-                  22,
-                  100,
-                  28,
-                ],
-                "circle-opacity": 0.85,
-              },
-            });
+        setIsLoaded(true);
+        mapRef.current = map;
+      });
 
-            // Cluster count labels
-            map.addLayer({
-              id: `${sourceId}-cluster-count`,
-              type: "symbol",
-              source: sourceId,
-              filter: ["has", "point_count"],
-              layout: {
-                "text-field": "{point_count_abbreviated}",
-                "text-size": 12,
-                "text-font": ["Noto Sans Bold"],
-              },
-              paint: {
-                "text-color": "#ffffff",
-              },
-            });
-
-            // Unclustered points
-            map.addLayer({
-              id: `${sourceId}-unclustered`,
-              type: "circle",
-              source: sourceId,
-              filter: ["!", ["has", "point_count"]],
-              paint: {
-                "circle-color": "#366cf8",
-                "circle-radius": 6,
-                "circle-stroke-width": 1.5,
-                "circle-stroke-color": "#ffffff",
-              },
-            });
-          }
-
-          setIsLoaded(true);
-          mapRef.current = map;
-        });
-
-        map.on("error", () => {
-          if (!cancelled) setError(true);
-        });
-      })
-      .catch(() => {
+      map.on("error", () => {
         if (!cancelled) setError(true);
       });
+    }
+
+    initMap().catch(() => {
+      if (!cancelled) setError(true);
+    });
 
     return () => {
       cancelled = true;

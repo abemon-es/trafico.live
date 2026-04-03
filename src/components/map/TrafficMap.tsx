@@ -9,12 +9,12 @@ import {
   createIncidentMarkerElement,
   createSimpleMarkerElement,
   getIncidentPopupHTML,
-  EFFECT_COLORS,
 } from "./IncidentMarker";
 import { useAnimatedFlow } from "./AnimatedFlowOverlay";
 import { useWeatherRadar } from "./WeatherRadarOverlay";
 import { useWindOverlay, useCloudOverlay, useTemperatureOverlay } from "./WeatherOverlays";
-import { MAP_STYLE_DEFAULT, MAP_STYLE_DARK, forceSpanishLabels } from "@/lib/map-config";
+import { MAP_STYLE_DEFAULT, MAP_STYLE_PROTOMAPS_DARK, forceSpanishLabels } from "@/lib/map-config";
+import { setupPMTilesProtocol, addTileLayer } from "@/lib/map-tiles";
 
 export type IncidentViewMode = "heatmap" | "clusters" | "points";
 
@@ -248,29 +248,11 @@ export const MAP_PRESETS = {
   melilla: { center: [-2.94, 35.29] as [number, number], zoom: 12 },
 };
 
-// Empty array - cameras will be loaded from API
-const SAMPLE_CAMERAS: Camera[] = [];
-
 const SEVERITY_COLORS: Record<string, string> = {
   LOW: "#22c55e",
   MEDIUM: "#f97316",
   HIGH: "#ef4444",
   VERY_HIGH: "#7f1d1d",
-};
-
-// Severity weights for heatmap intensity
-const SEVERITY_WEIGHT: Record<string, number> = {
-  LOW: 1,
-  MEDIUM: 2,
-  HIGH: 3,
-  VERY_HIGH: 4,
-};
-
-// Cluster colors by size
-const CLUSTER_COLORS = {
-  small: "#51bbd6",   // < 10
-  medium: "#f1f075",  // 10-50
-  large: "#f28cb1",   // > 50
 };
 
 // Weather alert colors by type
@@ -342,34 +324,6 @@ const RISK_ZONE_LABELS: Record<string, string> = {
   PEDESTRIAN: "Zona peatones",
 };
 
-// Helper to convert incidents to GeoJSON
-function incidentsToGeoJSON(incidents: Incident[]): GeoJSON {
-  return {
-    type: "FeatureCollection",
-    features: incidents.map((inc) => ({
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [inc.lng, inc.lat],
-      },
-      properties: {
-        id: inc.id,
-        type: inc.type,
-        effect: inc.effect,
-        cause: inc.cause,
-        road: inc.road || "",
-        km: inc.km || 0,
-        province: inc.province || "",
-        severity: inc.severity,
-        severityWeight: SEVERITY_WEIGHT[inc.severity] || 1,
-        description: inc.description || "",
-        laneInfo: inc.laneInfo || "",
-        startedAt: inc.startedAt || "",
-        color: EFFECT_COLORS[inc.effect] || EFFECT_COLORS.OTHER_EFFECT,
-      },
-    })),
-  };
-}
 
 // Helper to convert V16 beacons to GeoJSON
 function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
@@ -394,92 +348,10 @@ function v16ToGeoJSON(beacons: V16Beacon[]): GeoJSON {
   };
 }
 
-// GeoJSON converters for layers using native MapLibre rendering (no DOM markers)
-function camerasToGeoJSON(cameras: Camera[]): GeoJSON {
-  return {
-    type: "FeatureCollection",
-    features: cameras.map((cam) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [cam.lng, cam.lat] },
-      properties: {
-        id: cam.id,
-        name: cam.name,
-        road: cam.road || "",
-        province: cam.province || "",
-        imageUrl: cam.imageUrl || "",
-      },
-    })),
-  };
-}
+// GeoJSON converters for layers that remain prop-driven (not served via tiles)
 
-function chargersToGeoJSON(chargers: Charger[]): GeoJSON {
-  return {
-    type: "FeatureCollection",
-    features: chargers.map((ch) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [ch.lng, ch.lat] },
-      properties: {
-        id: ch.id,
-        name: ch.name,
-        province: ch.province,
-        operator: ch.operator || "",
-        totalPowerKw: ch.totalPowerKw,
-        connectorCount: ch.connectorCount,
-        connectorTypes: ch.connectorTypes.join(", "),
-        is24h: ch.is24h ? 1 : 0,
-        address: ch.address || "",
-        city: ch.city || "",
-      },
-    })),
-  };
-}
 
-function gasStationsToGeoJSON(stations: GasStation[]): GeoJSON {
-  return {
-    type: "FeatureCollection",
-    features: stations.map((s) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [s.longitude, s.latitude] },
-      properties: {
-        id: s.id,
-        name: s.name,
-        priceGasoleoA: s.priceGasoleoA,
-        priceGasolina95E5: s.priceGasolina95E5,
-        priceGasolina98E5: s.priceGasolina98E5,
-        priceGLP: s.priceGLP,
-        address: s.address || "",
-        locality: s.locality || "",
-        provinceName: s.provinceName || "",
-        schedule: s.schedule || "",
-        is24h: s.is24h ? 1 : 0,
-        lat: s.latitude,
-        lng: s.longitude,
-      },
-    })),
-  };
-}
 
-function radarsToGeoJSON(radars: Radar[]): GeoJSON {
-  return {
-    type: "FeatureCollection",
-    features: radars.map((r) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [r.lng, r.lat] },
-      properties: {
-        id: r.id,
-        road: r.road,
-        kmPoint: r.kmPoint,
-        direction: r.direction || "",
-        type: r.type,
-        speedLimit: r.speedLimit,
-        provinceName: r.provinceName,
-        avgSpeedPartner: r.avgSpeedPartner || "",
-        color: RADAR_COLORS[r.type] || RADAR_COLORS.FIXED,
-        label: RADAR_LABELS[r.type] || r.type,
-      },
-    })),
-  };
-}
 
 function panelsToGeoJSON(panels: PanelData[]): GeoJSON {
   return {
@@ -590,13 +462,15 @@ function getGasStationPopupHTML(props: Record<string, unknown>): string {
 }
 
 function getRadarPopupHTML(props: Record<string, unknown>): string {
-  const color = String(props.color);
+  const radarType = String(props.type || "FIXED");
+  const color = props.color ? String(props.color) : (RADAR_COLORS[radarType] || RADAR_COLORS.FIXED);
+  const label = props.label ? String(props.label) : (RADAR_LABELS[radarType] || radarType);
   const dirDisplay = props.direction === "INCREASING" ? "↑ Sentido creciente" : props.direction === "DECREASING" ? "↓ Sentido decreciente" : "";
   return `
     <div class="p-2 min-w-[180px]">
       <div class="flex items-center gap-2 mb-2">
         <span class="w-3 h-3 rounded-full" style="background: ${color}"></span>
-        <span class="font-bold text-sm">${props.label}</span>
+        <span class="font-bold text-sm">${label}</span>
       </div>
       ${props.speedLimit ? `<p class="text-lg font-bold text-center" style="color: ${color}">${props.speedLimit} km/h</p>` : ""}
       <div class="text-sm text-gray-600 space-y-1">
@@ -809,7 +683,7 @@ function updateClusteredLayer(
   }
 }
 
-const DARK_MAP_STYLE = MAP_STYLE_DARK;
+const DARK_MAP_STYLE = MAP_STYLE_PROTOMAPS_DARK;
 const LIGHT_MAP_STYLE = MAP_STYLE_DEFAULT;
 const SATELLITE_MAP_STYLE = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 
@@ -857,13 +731,10 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   }, []);
 
   // Use provided data or empty arrays
+  // Note: cameras, chargers, radars, gasStations are now served via vector tiles — no prop needed
   const beacons = v16Data || [];
-  const cameras = cameraData || [];
-  const chargers = chargerData || [];
-  const radars = radarData || [];
   const riskZones = riskZoneData || [];
   const zbeZones = zbeData || [];
-  const gasStations = gasStationData || [];
   const maritimeStations = maritimeStationData || [];
   const panels = panelData || [];
 
@@ -894,6 +765,9 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+
+    // Register PMTiles protocol before creating the map
+    setupPMTilesProtocol();
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
@@ -1145,6 +1019,17 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
               paint: { "text-color": darkMode ? "#d1d5db" : "#374151", "text-halo-color": darkMode ? "#1f2937" : "#ffffff", "text-halo-width": 1.5 },
             });
           }
+          // Re-add tile layers (sources+layers stripped by setStyle)
+          addTileLayer(m, "camerasCircle");
+          addTileLayer(m, "chargersCircle");
+          addTileLayer(m, "gasStationsCircle");
+          addTileLayer(m, "radarsCircle");
+          addTileLayer(m, "incidentsCircle");
+          // Start hidden — visibility useEffects will set them when they fire
+          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle"]) {
+            if (m.getLayer(lid)) m.setLayoutProperty(lid, "visibility", "none");
+          }
+
           // Mark ready — all data useEffects will re-fire
           setIsLoaded(true);
         })
@@ -1226,122 +1111,20 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     }
   }, [activeLayers.provinces, isLoaded]);
 
-  // Setup clustering sources and layers (run once after map loads)
+  // Setup clustering sources and layers for GeoJSON-only layers (run once after map loads)
   useEffect(() => {
     if (!map.current || !isLoaded) return;
 
     // Skip if sources already exist
-    if (map.current.getSource("incidents-cluster")) return;
+    if (map.current.getSource("v16-cluster")) return;
 
-    // Add incidents cluster source
-    map.current.addSource("incidents-cluster", {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] },
-      cluster: true,
-      clusterMaxZoom: 14,
-      clusterRadius: 50,
-    });
-
-    // Add V16 cluster source
+    // Add V16 cluster source (V16 beacons remain GeoJSON — real-time, small count)
     map.current.addSource("v16-cluster", {
       type: "geojson",
       data: { type: "FeatureCollection", features: [] },
       cluster: true,
       clusterMaxZoom: 14,
       clusterRadius: 50,
-    });
-
-    // Incident cluster circles
-    map.current.addLayer({
-      id: "incident-clusters",
-      type: "circle",
-      source: "incidents-cluster",
-      filter: ["has", "point_count"],
-      paint: {
-        "circle-color": [
-          "step",
-          ["get", "point_count"],
-          CLUSTER_COLORS.small,
-          10,
-          CLUSTER_COLORS.medium,
-          50,
-          CLUSTER_COLORS.large,
-        ],
-        "circle-radius": ["step", ["get", "point_count"], 18, 10, 24, 50, 32],
-        "circle-stroke-width": 2,
-        "circle-stroke-color": "#fff",
-      },
-    });
-
-    // Incident cluster count labels
-    map.current.addLayer({
-      id: "incident-cluster-count",
-      type: "symbol",
-      source: "incidents-cluster",
-      filter: ["has", "point_count"],
-      layout: {
-        "text-field": "{point_count_abbreviated}",
-        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
-        "text-size": 12,
-      },
-      paint: {
-        "text-color": "#333",
-      },
-    });
-
-    // Unclustered incident points (visible when zoomed in past cluster threshold)
-    map.current.addLayer({
-      id: "incident-unclustered",
-      type: "circle",
-      source: "incidents-cluster",
-      filter: ["!", ["has", "point_count"]],
-      paint: {
-        "circle-color": ["get", "color"],
-        "circle-radius": 8,
-        "circle-stroke-width": 2,
-        "circle-stroke-color": "#ffffff",
-      },
-    });
-
-    // Add incidents heatmap source (separate from cluster source)
-    map.current.addSource("incidents-heatmap", {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] },
-    });
-
-    // Heatmap layer for incidents
-    map.current.addLayer({
-      id: "incidents-heat",
-      type: "heatmap",
-      source: "incidents-heatmap",
-      layout: { visibility: "none" },
-      paint: {
-        "heatmap-weight": [
-          "interpolate", ["linear"], ["get", "severityWeight"],
-          1, 0.3, 2, 0.5, 3, 0.7, 4, 1
-        ],
-        "heatmap-intensity": [
-          "interpolate", ["linear"], ["zoom"],
-          0, 0.5, 5, 1, 9, 2
-        ],
-        "heatmap-color": [
-          "interpolate", ["linear"], ["heatmap-density"],
-          0, "rgba(0,0,255,0)",
-          0.1, "rgba(65,105,225,0.4)",
-          0.3, "rgba(0,255,128,0.6)",
-          0.5, "rgba(255,255,0,0.7)",
-          0.7, "rgba(255,165,0,0.8)",
-          1, "rgba(255,0,0,0.9)"
-        ],
-        "heatmap-radius": [
-          "interpolate", ["linear"], ["zoom"],
-          0, 4, 5, 15, 9, 25
-        ],
-        "heatmap-opacity": [
-          "interpolate", ["linear"], ["zoom"],
-          7, 1, 9, 0.7
-        ],
-      },
     });
 
     // V16 cluster circles
@@ -1382,12 +1165,68 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       },
     });
 
-    // Add clustered GeoJSON layers for high-count data (cameras, chargers, gas stations, radars, panels, maritime)
-    // These replace individual DOM markers — zero DOM overhead, WebGL-rendered
-    addClusteredLayer(map.current, "cameras-layer", "#3b82f6", getCameraPopupHTML);
-    addClusteredLayer(map.current, "chargers-layer", "#22c55e", getChargerPopupHTML);
-    addClusteredLayer(map.current, "gas-stations-layer", "#f97316", getGasStationPopupHTML, { clusterRadius: 60 });
-    addClusteredLayer(map.current, "radars-layer", "#eab308", getRadarPopupHTML);
+    // ── Vector tile layers (PMTiles for static, Martin for dynamic) ──
+    // These replace GeoJSON sources — tippecanoe handles density reduction,
+    // no client-side clustering needed.
+    addTileLayer(map.current, "camerasCircle");
+    addTileLayer(map.current, "chargersCircle");
+    addTileLayer(map.current, "gasStationsCircle");
+    addTileLayer(map.current, "radarsCircle");
+    addTileLayer(map.current, "incidentsCircle");
+
+    // Tile layers start hidden — visibility controlled by activeLayers
+    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle"]) {
+      if (map.current.getLayer(layerId)) {
+        map.current.setLayoutProperty(layerId, "visibility", "none");
+      }
+    }
+
+    // Click handlers for tile layers → popups
+    const tileClickHandlers: Array<{ layer: string; popup: (props: Record<string, unknown>) => string }> = [
+      { layer: "cameras-circle", popup: getCameraPopupHTML },
+      { layer: "chargers-circle", popup: getChargerPopupHTML },
+      { layer: "gas-stations-circle", popup: getGasStationPopupHTML },
+      { layer: "radars-circle", popup: getRadarPopupHTML },
+    ];
+
+    for (const { layer, popup } of tileClickHandlers) {
+      map.current.on("click", layer, (e) => {
+        if (!e.features?.length) return;
+        const props = e.features[0].properties || {};
+        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates.slice() as [number, number];
+        new maplibregl.Popup({ offset: 25, maxWidth: "300px" })
+          .setLngLat(coords)
+          .setHTML(popup(props))
+          .addTo(map.current!);
+      });
+      map.current.on("mouseenter", layer, () => { map.current!.getCanvas().style.cursor = "pointer"; });
+      map.current.on("mouseleave", layer, () => { map.current!.getCanvas().style.cursor = ""; });
+    }
+
+    // Incidents tile layer click handler (uses getIncidentPopupHTML)
+    map.current.on("click", "incidents-circle", (e) => {
+      if (!e.features?.length) return;
+      const props = e.features[0].properties || {};
+      const coords = (e.features[0].geometry as GeoJSON.Point).coordinates.slice() as [number, number];
+      new maplibregl.Popup({ offset: 15, maxWidth: "280px" })
+        .setLngLat(coords)
+        .setHTML(getIncidentPopupHTML({
+          effect: props.effect as IncidentEffect,
+          cause: props.cause as IncidentCause,
+          roadNumber: props.road || undefined,
+          kmPoint: props.km ? Number(props.km) : undefined,
+          province: props.province || undefined,
+          description: props.description || undefined,
+          severity: props.severity || undefined,
+          laneInfo: props.laneInfo || undefined,
+          startedAt: props.startedAt || undefined,
+        }))
+        .addTo(map.current!);
+    });
+    map.current.on("mouseenter", "incidents-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "incidents-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Clustered GeoJSON layers for remaining prop-driven data (panels, maritime)
     addClusteredLayer(map.current, "panels-layer", "#06b6d4", getPanelPopupHTML);
     addClusteredLayer(map.current, "maritime-layer", "#3b82f6", getMaritimePopupHTML);
 
@@ -1575,31 +1414,6 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       if (map.current) map.current.getCanvas().style.cursor = "";
     });
 
-    // Click handler for incident clusters - zoom in
-    map.current.on("click", "incident-clusters", async (e) => {
-      const features = map.current!.queryRenderedFeatures(e.point, {
-        layers: ["incident-clusters"],
-      });
-      if (!features.length) return;
-
-      const clusterId = features[0].properties?.cluster_id;
-      if (clusterId === undefined) return;
-
-      const source = map.current!.getSource("incidents-cluster") as maplibregl.GeoJSONSource;
-      try {
-        const zoom = await source.getClusterExpansionZoom(clusterId);
-        const geometry = features[0].geometry;
-        if (geometry.type === "Point") {
-          map.current!.easeTo({
-            center: geometry.coordinates as [number, number],
-            zoom: zoom,
-          });
-        }
-      } catch {
-        // Ignore cluster expansion errors
-      }
-    });
-
     // Click handler for V16 clusters - zoom in
     map.current.on("click", "v16-clusters", async (e) => {
       const features = map.current!.queryRenderedFeatures(e.point, {
@@ -1625,41 +1439,7 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       }
     });
 
-    // Click unclustered incident → popup with details
-    map.current.on("click", "incident-unclustered", (e) => {
-      if (!e.features?.length) return;
-      const props = e.features[0].properties || {};
-      const coords = (e.features[0].geometry as GeoJSON.Point).coordinates.slice() as [number, number];
-
-      new maplibregl.Popup({ offset: 15, maxWidth: "280px" })
-        .setLngLat(coords)
-        .setHTML(getIncidentPopupHTML({
-          effect: props.effect as IncidentEffect,
-          cause: props.cause as IncidentCause,
-          roadNumber: props.road || undefined,
-          kmPoint: props.km ? Number(props.km) : undefined,
-          province: props.province || undefined,
-          description: props.description || undefined,
-          severity: props.severity || undefined,
-          laneInfo: props.laneInfo || undefined,
-          startedAt: props.startedAt || undefined,
-        }))
-        .addTo(map.current!);
-    });
-
-    // Cursor change on cluster/unclustered hover
-    map.current.on("mouseenter", "incident-unclustered", () => {
-      if (map.current) map.current.getCanvas().style.cursor = "pointer";
-    });
-    map.current.on("mouseleave", "incident-unclustered", () => {
-      if (map.current) map.current.getCanvas().style.cursor = "";
-    });
-    map.current.on("mouseenter", "incident-clusters", () => {
-      if (map.current) map.current.getCanvas().style.cursor = "pointer";
-    });
-    map.current.on("mouseleave", "incident-clusters", () => {
-      if (map.current) map.current.getCanvas().style.cursor = "";
-    });
+    // Cursor change on V16 cluster hover
     map.current.on("mouseenter", "v16-clusters", () => {
       if (map.current) map.current.getCanvas().style.cursor = "pointer";
     });
@@ -1668,48 +1448,14 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     });
   }, [isLoaded]);
 
-  // Update cluster data when incidents change (handles all view modes)
+  // Toggle incidents tile layer visibility
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-
-    const mode = incidentViewMode || "clusters";
-    const clusterSource = map.current.getSource("incidents-cluster") as maplibregl.GeoJSONSource;
-    const heatmapSource = map.current.getSource("incidents-heatmap") as maplibregl.GeoJSONSource;
-
-    // Set visibility based on mode
-    const showClusters = activeLayers.incidents && mode === "clusters";
-    const showHeatmap = activeLayers.incidents && mode === "heatmap";
-
-    // Cluster layers visibility
-    if (map.current.getLayer("incident-clusters")) {
-      map.current.setLayoutProperty("incident-clusters", "visibility", showClusters ? "visible" : "none");
+    const visibility = activeLayers.incidents ? "visible" : "none";
+    if (map.current.getLayer("incidents-circle")) {
+      map.current.setLayoutProperty("incidents-circle", "visibility", visibility);
     }
-    if (map.current.getLayer("incident-cluster-count")) {
-      map.current.setLayoutProperty("incident-cluster-count", "visibility", showClusters ? "visible" : "none");
-    }
-    // Unclustered incident points (visible in clusters + points mode)
-    if (map.current.getLayer("incident-unclustered")) {
-      const showUnclustered = activeLayers.incidents && (mode === "clusters" || mode === "points");
-      map.current.setLayoutProperty("incident-unclustered", "visibility", showUnclustered ? "visible" : "none");
-    }
-
-    // Heatmap layer visibility
-    if (map.current.getLayer("incidents-heat")) {
-      map.current.setLayoutProperty("incidents-heat", "visibility", showHeatmap ? "visible" : "none");
-    }
-
-    // Update data for active mode
-    if (activeLayers.incidents) {
-      const geojson = incidentsToGeoJSON(incidents);
-      if (clusterSource && mode === "clusters") {
-        clusterSource.setData(geojson as maplibregl.GeoJSONSourceSpecification["data"]);
-      }
-      if (heatmapSource && (mode === "heatmap" || mode === "points")) {
-        // Heatmap source is also used for points mode reference
-        heatmapSource.setData(geojson as maplibregl.GeoJSONSourceSpecification["data"]);
-      }
-    }
-  }, [activeLayers.incidents, isLoaded, incidents, incidentViewMode]);
+  }, [activeLayers.incidents, isLoaded]);
 
   // Update cluster data when V16 beacons change
   useEffect(() => {
@@ -1800,32 +1546,36 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     }
   }, [activeLayers.zbe, isLoaded, zbeZones]);
 
-  // Global view mode for all clustered layers
+  // Global view mode for remaining clustered GeoJSON layers (panels, maritime)
   const globalViewMode = incidentViewMode || "clusters";
 
-  // Update GeoJSON layer data — cameras
+  // Toggle tile layer visibility — cameras
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "cameras-layer", activeLayers.cameras && cameras.length > 0, camerasToGeoJSON(cameras), globalViewMode);
-  }, [activeLayers.cameras, cameras, isLoaded, globalViewMode]);
+    const vis = activeLayers.cameras ? "visible" : "none";
+    if (map.current.getLayer("cameras-circle")) map.current.setLayoutProperty("cameras-circle", "visibility", vis);
+  }, [activeLayers.cameras, isLoaded]);
 
-  // Update GeoJSON layer data — chargers
+  // Toggle tile layer visibility — chargers
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "chargers-layer", activeLayers.chargers && chargers.length > 0, chargersToGeoJSON(chargers), globalViewMode);
-  }, [activeLayers.chargers, chargers, isLoaded, globalViewMode]);
+    const vis = activeLayers.chargers ? "visible" : "none";
+    if (map.current.getLayer("chargers-circle")) map.current.setLayoutProperty("chargers-circle", "visibility", vis);
+  }, [activeLayers.chargers, isLoaded]);
 
-  // Update GeoJSON layer data — gas stations
+  // Toggle tile layer visibility — gas stations
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "gas-stations-layer", activeLayers.gasStations && gasStations.length > 0, gasStationsToGeoJSON(gasStations), globalViewMode);
-  }, [activeLayers.gasStations, gasStations, isLoaded, globalViewMode]);
+    const vis = activeLayers.gasStations ? "visible" : "none";
+    if (map.current.getLayer("gas-stations-circle")) map.current.setLayoutProperty("gas-stations-circle", "visibility", vis);
+  }, [activeLayers.gasStations, isLoaded]);
 
-  // Update GeoJSON layer data — radars
+  // Toggle tile layer visibility — radars
   useEffect(() => {
     if (!map.current || !isLoaded) return;
-    updateClusteredLayer(map.current, "radars-layer", activeLayers.radars && radars.length > 0, radarsToGeoJSON(radars), globalViewMode);
-  }, [activeLayers.radars, radars, isLoaded, globalViewMode]);
+    const vis = activeLayers.radars ? "visible" : "none";
+    if (map.current.getLayer("radars-circle")) map.current.setLayoutProperty("radars-circle", "visibility", vis);
+  }, [activeLayers.radars, isLoaded]);
 
   // Update GeoJSON layer data — panels
   useEffect(() => {
@@ -1972,15 +1722,9 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
         incidentMarkersRef.current.push(marker);
       });
 
-      // Hide cluster layers when showing individual markers
-      if (map.current.getLayer("incident-clusters")) {
-        map.current.setLayoutProperty("incident-clusters", "visibility", "none");
-      }
-      if (map.current.getLayer("incident-cluster-count")) {
-        map.current.setLayoutProperty("incident-cluster-count", "visibility", "none");
-      }
-      if (map.current.getLayer("incidents-heat")) {
-        map.current.setLayoutProperty("incidents-heat", "visibility", "none");
+      // Hide tile layer when showing individual DOM markers
+      if (map.current.getLayer("incidents-circle")) {
+        map.current.setLayoutProperty("incidents-circle", "visibility", "none");
       }
     }
   }, [activeLayers.incidents, incidents, incidentViewMode, onIncidentClick, isLoaded]);
