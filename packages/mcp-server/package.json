@@ -1,0 +1,26 @@
+{
+  "name": "@trafico/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for trafico.live — Spanish traffic intelligence for AI assistants",
+  "type": "module",
+  "bin": {
+    "trafico-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  },
+  "files": ["dist"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abemon-es/trafico.live",
+    "directory": "packages/mcp-server"
+  }
+}

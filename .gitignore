@@ -73,3 +73,7 @@ snapshot-*.md
 
 # MCP server (standalone, not part of Next.js build)
 src/mcp/
+
+# packages/mcp-server build artifacts and dependencies
+packages/mcp-server/dist/
+packages/mcp-server/node_modules/
