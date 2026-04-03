@@ -1,5 +1,5 @@
 # Weekly collectors — Sunday early morning
-# Staggered 30-min intervals. Heaviest: transit-gtfs (15 GTFS feeds, some 50MB+)
+# Staggered 30-min intervals. Heaviest: transit-gtfs (145 auto-discovered feeds, Xunta 141MB)
 
 0 3 * * 0 TASK=radar npx tsx index.ts 2>&1 && touch /tmp/last-run
 30 3 * * 0 TASK=speedlimit npx tsx index.ts 2>&1
@@ -12,8 +12,9 @@
 # Ferry GTFS — Fred. Olsen, Baleària, Vizcaya (3 small feeds)
 30 5 * * 0 TASK=ferry-gtfs npx tsx index.ts 2>&1
 
-# Transit GTFS — ~15 priority + auto-discovered ES feeds (some 50MB+, needs heap room)
-0 6 * * 0 TASK=transit-gtfs NODE_OPTIONS=--max-old-space-size=1024 npx tsx index.ts 2>&1
+# Transit GTFS — auto-discovered 145 ES feeds from MobilityData catalog
+# Needs 4GB heap for Xunta de Galicia (141MB, 156K trips, 27K stops)
+0 6 * * 0 TASK=transit-gtfs NODE_OPTIONS=--max-old-space-size=4096 npx tsx index.ts 2>&1
 
 # DGT extras — roadworks/connected cones (placeholder, probes NAP endpoints)
 30 6 * * 0 TASK=dgt-extras npx tsx index.ts 2>&1
