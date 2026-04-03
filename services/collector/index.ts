@@ -59,6 +59,7 @@ const VALID_TASKS = [
   "opensky", "aena-stats",
   // Air quality
   "air-quality",
+  "air-quality-ccaa",
 ];
 
 if (!TASK) {
