@@ -36,6 +36,10 @@ import {
   VolumeX,
   Construction,
   Gauge,
+  Train,
+  Bus,
+  Ship,
+  Plane,
 } from "lucide-react";
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import type { IncidentViewMode } from "./TrafficMap";
@@ -62,6 +66,18 @@ export interface ActiveLayers {
   sensors: boolean;
   citySensors: boolean;
   portugalGas: boolean;
+  railwayStations: boolean;
+  railwayRoutes: boolean;
+  airports: boolean;
+  ports: boolean;
+  transitStops: boolean;
+  transitRoutes: boolean;
+  ferryStops: boolean;
+  ferryRoutes: boolean;
+  roadSegments: boolean;
+  aircraft: boolean;
+  vessels: boolean;
+  climateStations: boolean;
 }
 
 export interface IncidentFilters {
@@ -174,6 +190,28 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
     title: "Mapa base",
     layers: [
       { key: "highways", label: "Red viaria", icon: <Route className="w-4 h-4" /> },
+    ],
+  },
+  {
+    title: "Transporte",
+    layers: [
+      { key: "railwayRoutes", label: "Vías de tren", icon: <Train className="w-4 h-4" /> },
+      { key: "railwayStations", label: "Estaciones tren", icon: <Train className="w-4 h-4" /> },
+      { key: "transitRoutes", label: "Rutas bus/metro", icon: <Bus className="w-4 h-4" /> },
+      { key: "transitStops", label: "Paradas", icon: <Bus className="w-4 h-4" /> },
+      { key: "ferryRoutes", label: "Rutas ferry", icon: <Ship className="w-4 h-4" /> },
+      { key: "ferryStops", label: "Puertos ferry", icon: <Ship className="w-4 h-4" /> },
+      { key: "aircraft", label: "Aviones en vuelo", icon: <Plane className="w-4 h-4" /> },
+      { key: "vessels", label: "Buques AIS", icon: <Ship className="w-4 h-4" /> },
+      { key: "airports", label: "Aeropuertos", icon: <Plane className="w-4 h-4" /> },
+      { key: "ports", label: "Puertos", icon: <Anchor className="w-4 h-4" /> },
+    ],
+  },
+  {
+    title: "Datos ambientales",
+    layers: [
+      { key: "climateStations", label: "Estaciones AEMET", icon: <CloudRain className="w-4 h-4" /> },
+      { key: "roadSegments", label: "IMD carreteras", icon: <Route className="w-4 h-4" /> },
     ],
   },
 ];
