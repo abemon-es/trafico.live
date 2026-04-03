@@ -6,6 +6,7 @@
  */
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
   Wind,
@@ -14,8 +15,10 @@ import {
   Info,
   CheckCircle2,
   XCircle,
-  Thermometer,
   Activity,
+  ArrowRight,
+  ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
@@ -196,7 +199,16 @@ async function getPageStats(
     stations.map((s) => s.province).filter(Boolean)
   ).size;
 
-  return { total, withReading, goodIca, badIca, provinces };
+  // Count per ICA level (1-5)
+  const byIca: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  for (const s of stations) {
+    const level = s.latestReading?.ica;
+    if (level != null && level >= 1 && level <= 5) {
+      byIca[level] = (byIca[level] ?? 0) + 1;
+    }
+  }
+
+  return { total, withReading, goodIca, badIca, provinces, byIca };
 }
 
 // ---------------------------------------------------------------------------
@@ -411,6 +423,66 @@ export default async function CalidadAirePage() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
+        {/* ICA distribution bar                                              */}
+        {/* ---------------------------------------------------------------- */}
+        {stats.withReading > 0 && (
+          <section aria-label="Distribución del índice ICA">
+            <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
+              Distribución ICA — {stats.withReading.toLocaleString("es-ES")} estaciones con datos
+            </h2>
+
+            {/* Stacked bar */}
+            <div className="flex h-8 w-full rounded-lg overflow-hidden" role="img" aria-label="Barra de distribución ICA">
+              {Object.entries(ICA_CONFIG).map(([level, cfg]) => {
+                const count = stats.byIca[Number(level)] ?? 0;
+                const pct = stats.withReading > 0 ? (count / stats.withReading) * 100 : 0;
+                if (pct === 0) return null;
+                return (
+                  <div
+                    key={level}
+                    style={{ width: `${pct.toFixed(1)}%`, backgroundColor: cfg.color }}
+                    title={`ICA ${level} ${cfg.label}: ${count} estaciones (${pct.toFixed(1)}%)`}
+                    className="transition-all"
+                  />
+                );
+              })}
+            </div>
+
+            {/* Legend row with percentages */}
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+              {Object.entries(ICA_CONFIG).map(([level, cfg]) => {
+                const count = stats.byIca[Number(level)] ?? 0;
+                const pct = stats.withReading > 0 ? (count / stats.withReading) * 100 : 0;
+                return (
+                  <div key={level} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                    <span
+                      className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                      style={{ backgroundColor: cfg.color }}
+                      aria-hidden="true"
+                    />
+                    <span className="font-medium">{cfg.label}</span>
+                    <span className="font-mono text-gray-500 dark:text-gray-500">
+                      {count} ({pct.toFixed(0)}%)
+                    </span>
+                  </div>
+                );
+              })}
+              {(() => {
+                const noData = stats.total - stats.withReading;
+                return noData > 0 ? (
+                  <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-600">
+                    <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0 bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
+                    <span>Sin datos</span>
+                    <span className="font-mono">{noData}</span>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          </section>
+        )}
+
+        {/* ---------------------------------------------------------------- */}
         {/* ICA legend                                                        */}
         {/* ---------------------------------------------------------------- */}
         <section aria-label="Leyenda del índice ICA">
@@ -591,34 +663,157 @@ export default async function CalidadAirePage() {
         )}
 
         {/* ---------------------------------------------------------------- */}
-        {/* Attribution + info                                                */}
+        {/* Related pages nav cards                                           */}
         {/* ---------------------------------------------------------------- */}
-        <section
-          className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-6"
-          aria-label="Información y atribución de datos"
-        >
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-[var(--tl-warning)] flex-shrink-0 mt-0.5" />
-            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <p>
-                <strong className="text-gray-900 dark:text-gray-100">
-                  Fuente:
-                </strong>{" "}
-                Ministerio para la Transición Ecológica y el Reto Demográfico
-                (MITECO) — Red de Vigilancia de la Calidad del Aire.
-              </p>
-              <p>
-                Los datos se actualizan cada hora. El Índice de Calidad del Aire
-                (ICA) se calcula a partir de las concentraciones de NO₂, SO₂,
-                PM10, PM2.5, O₃ y CO según la metodología del MITECO.
-              </p>
-              <p>
-                Los valores mostrados son orientativos. Para decisiones
-                sanitarias, consulte siempre las fuentes oficiales.
-              </p>
+        <section aria-label="Páginas relacionadas">
+          <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-5">
+            Más datos ambientales y de tráfico
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <div className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-[var(--tl-primary)] hover:shadow-md transition-all">
+              <div
+                className="w-12 h-12 rounded-lg flex items-center justify-center"
+                style={{ background: "var(--tl-primary-bg)" }}
+              >
+                <Wind className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  API Calidad del Aire
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Datos ICA de {stats.total} estaciones en formato JSON y GeoJSON
+                </p>
+              </div>
+              <a
+                href="/api/calidad-aire"
+                target="_blank"
+                rel="noopener"
+                className="flex items-center gap-1 text-[var(--tl-primary)] dark:text-[var(--tl-info)] text-sm font-medium group-hover:gap-2 transition-all"
+              >
+                Ver datos JSON <ArrowRight className="w-4 h-4" />
+              </a>
             </div>
+
+            <div className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-[var(--tl-primary)] hover:shadow-md transition-all">
+              <div
+                className="w-12 h-12 rounded-lg flex items-center justify-center"
+                style={{ background: "var(--tl-primary-bg)" }}
+              >
+                <Activity className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  Incidencias de tráfico
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Accidentes, obras y retenciones en carreteras españolas en tiempo real
+                </p>
+              </div>
+              <Link
+                href="/incidencias"
+                className="flex items-center gap-1 text-[var(--tl-primary)] dark:text-[var(--tl-info)] text-sm font-medium group-hover:gap-2 transition-all"
+              >
+                Ver incidencias <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-[var(--tl-primary)] hover:shadow-md transition-all">
+              <div
+                className="w-12 h-12 rounded-lg flex items-center justify-center"
+                style={{ background: "var(--tl-primary-bg)" }}
+              >
+                <MapPin className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  Estaciones de aforo
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                  14.400+ estaciones de conteo de tráfico con datos IMD por carretera
+                </p>
+              </div>
+              <Link
+                href="/estaciones-aforo"
+                className="flex items-center gap-1 text-[var(--tl-primary)] dark:text-[var(--tl-info)] text-sm font-medium group-hover:gap-2 transition-all"
+              >
+                Ver estaciones <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
           </div>
         </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* SEO text                                                          */}
+        {/* ---------------------------------------------------------------- */}
+        <section
+          className="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60 p-8"
+          aria-label="Información sobre la calidad del aire en España"
+        >
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Calidad del Aire en España
+          </h2>
+          <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 space-y-3">
+            <p>
+              La <strong>Red de Vigilancia de la Calidad del Aire</strong> del Ministerio para
+              la Transición Ecológica y el Reto Demográfico (MITECO) monitoriza en tiempo real
+              los principales contaminantes atmosféricos en todo el territorio español. Con más
+              de 565 estaciones distribuidas por las 52 provincias, la red proporciona datos
+              horarios de dióxido de nitrógeno (NO₂), partículas PM10 y PM2.5, ozono troposférico
+              (O₃), dióxido de azufre (SO₂) y monóxido de carbono (CO).
+            </p>
+            <p>
+              El <strong>Índice de Calidad del Aire (ICA)</strong> es un indicador sintético que
+              resume el estado de la contaminación atmosférica en una escala de 1 a 5, desde
+              «Buena» hasta «Muy mala». Se calcula a partir de las concentraciones individuales
+              de cada contaminante y toma el valor más desfavorable. Los umbrales de los
+              contaminantes siguen la normativa europea de calidad del aire (Directiva
+              2008/50/CE) y la metodología establecida por el MITECO.
+            </p>
+            <p>
+              La contaminación atmosférica es especialmente relevante en las grandes áreas
+              metropolitanas. <strong>Madrid</strong> y <strong>Barcelona</strong> concentran
+              el mayor número de estaciones de vigilancia, dado el peso del tráfico rodado,
+              la actividad industrial y la densidad de población. Las zonas costeras
+              mediterráneas y las cuencas fluviales del interior también presentan episodios
+              recurrentes de contaminación por ozono en verano, principalmente por la reacción
+              fotoquímica de los precursores emitidos por el tráfico y la industria.
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Fuente: Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO) —
+              Red de Vigilancia de la Calidad del Aire. Datos actualizados cada hora. Los valores
+              mostrados son orientativos; para decisiones sanitarias, consulte siempre las fuentes
+              oficiales del MITECO.
+            </p>
+          </div>
+        </section>
+
+        {/* Attribution footer */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-400 dark:text-gray-500 pb-2">
+          <div className="flex items-center gap-1.5">
+            <Info className="w-3 h-3" />
+            <span>
+              Datos: © MITECO — Red de Vigilancia de la Calidad del Aire · Actualización horaria
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/incidencias"
+              className="flex items-center gap-1 hover:text-[var(--tl-primary)] transition-colors"
+            >
+              Incidencias <ChevronRight className="w-3 h-3" />
+            </Link>
+            <Link
+              href="/estaciones-aforo"
+              className="flex items-center gap-1 hover:text-[var(--tl-primary)] transition-colors"
+            >
+              Estaciones de aforo <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+
       </div>
     </>
   );
