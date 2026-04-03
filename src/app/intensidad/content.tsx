@@ -4,6 +4,7 @@ import { fetcher } from "@/lib/fetcher";
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   BarChart3,
   TrendingUp,
@@ -14,6 +15,8 @@ import {
   Loader2,
   ArrowUpDown,
 } from "lucide-react";
+
+const IntensityMap = dynamic(() => import("./intensity-map"), { ssr: false });
 import {
   BarChart,
   Bar,
@@ -160,6 +163,11 @@ export default function IntensidadContent() {
         >
           <Map className="w-4 h-4" /> Ver mapa de estaciones
         </Link>
+      </div>
+
+      {/* Sensor + station map */}
+      <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 mb-8">
+        <IntensityMap height="450px" />
       </div>
 
       {isLoading ? (
