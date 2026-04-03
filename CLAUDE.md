@@ -17,7 +17,8 @@ Real-time Spanish traffic intelligence platform. Aggregates data from DGT, AEMET
 | Database | PostgreSQL + PostGIS via Prisma 7 (`@prisma/adapter-pg`), PgBouncer pooling |
 | Search | Typesense (14 collections, geo-search, daily sync) |
 | Cache | Redis (ioredis) — dedicated instance :6441 |
-| Maps | MapLibre GL |
+| Maps | MapLibre GL + self-hosted Protomaps (tiles.trafico.live) |
+| Map tiles | PMTiles on nginx (hetzner-prod:8088, Traefik → tiles.trafico.live) |
 | Charts | Recharts |
 | CSS | Tailwind v4 (CSS-first, no `tailwind.config.ts`) |
 | Data fetching | SWR (client), direct Prisma (server) |
@@ -186,6 +187,11 @@ npm run db:seed      # Seed database
 | `sentry.server.config.ts` | Sentry server init (Prisma integration) |
 | `services/collector/tasks/imd/` | IMD collector (ArcGIS REST client, UTM→WGS84) |
 | `services/collector/tasks/intensity/` | Madrid real-time intensity collector |
+| `src/lib/map-config.ts` | Shared map config (style URLs, forceSpanishLabels, presets) |
+| `src/lib/map-style.ts` | Branded Protomaps style generator (light/dark, Spanish) |
+| `services/tiles/` | Self-hosted tile server (nginx, PMTiles, fonts) |
+| `public/geo/spain-provinces.geojson` | Province boundary polygons |
+| `public/geo/territories.geojson` | Portugal/Andorra/Gibraltar boundaries |
 | `services/collector/tasks/renfe-gtfs/` | Renfe GTFS static collector (stations, routes, shapes) |
 | `services/collector/tasks/renfe-alerts/` | Renfe GTFS-RT alerts collector (real-time) |
 | `services/collector/tasks/renfe-ld-realtime/` | Renfe LD fleet GPS collector (every 2 min) |
@@ -221,6 +227,20 @@ npm run db:seed      # Seed database
 | Loki | `10.100.0.2:3100` | Docker log driver, batch 400 |
 | Sentry/GlitchTip | HTTPS tunnel `/monitoring` | Client 50% replays, server 25% traces, collector 10% |
 | Coolify | hetzner-prod | Split: web app + collectors as separate Docker Compose apps |
+| Tile server | tiles.trafico.live:8088 | Self-hosted Protomaps PMTiles (460MB, z0-14, Iberian Peninsula) |
+
+### Tile Server (`tiles.trafico.live`)
+
+Self-hosted map tile server serving Protomaps basemap for all trafico.live maps.
+
+- **Container:** `trafico-tiles` (nginx:alpine) on hetzner-prod, `coolify` network
+- **PMTiles:** `/opt/trafico/tiles/tiles/spain.pmtiles` (460MB, bbox -18.2,27.5,4.5,43.9, z0-14)
+- **Fonts:** `/opt/trafico/tiles/fonts/` (Noto Sans Regular/Medium/Bold/Italic)
+- **Routing:** Traefik file provider at `/data/coolify/proxy/dynamic/tiles.yaml`
+- **SSL:** Let's Encrypt via Traefik ACME
+- **DNS:** `tiles.trafico.live` → A → 168.119.34.248 (Cloudflare, DNS-only)
+- **Update tiles:** `pmtiles extract https://build.protomaps.com/YYYYMMDD.pmtiles /tmp/spain.pmtiles --bbox="-18.2,27.5,4.5,43.9" --maxzoom=14` → rsync to server
+- **Docs:** `services/tiles/README.md`
 
 ## Environment Variables
 
