@@ -30,7 +30,7 @@ const VALID_TASKS = [
   // Real-time (every 2-5 min)
   "v16", "incident", "panel", "detector", "intensity",
   // Frequent (6h-daily)
-  "weather", "maritime-forecast", "camera", "radar", "charger", "gas-station", "maritime-fuel",
+  "weather", "maritime-forecast", "camera", "radar", "charger", "gas-station", "maritime-fuel", "roadworks",
   // Infrequent (weekly)
   "speedlimit", "risk-zones", "zbe",
   // Content generation
@@ -157,7 +157,8 @@ const TYPESENSE_SYNC_MAP: Record<string, string[]> = {
   weather: ["weather_alerts"],
   "ais-stream": ["vessels"],
   "ferry-gtfs": ["ferry_routes"],
-  "transit-gtfs": ["transit_stops", "transit_routes"],
+  // transit-gtfs: loaders not yet implemented in typesense-sync
+  // "transit-gtfs": ["transit_stops", "transit_routes"],
   "opensky": ["airports"],
 };
 
