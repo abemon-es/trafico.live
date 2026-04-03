@@ -166,13 +166,13 @@ async function getPortugalData() {
     }),
 
     // Latest year accident totals across all districts
-    prisma.portugalHistoricalAccidents.groupBy({
+    prisma.historicalAccidents.groupBy({
       by: ["year"],
       _sum: {
         accidents: true,
         fatalities: true,
-        seriousInjury: true,
-        minorInjury: true,
+        hospitalized: true,
+        nonHospitalized: true,
       },
       orderBy: { year: "desc" },
       take: 3,
@@ -577,10 +577,10 @@ export default async function PortugalPage() {
                         {row._sum.fatalities?.toLocaleString("es-ES") ?? "—"}
                       </td>
                       <td className="px-4 py-3 font-data text-right text-tl-amber-700 dark:text-tl-amber-300">
-                        {row._sum.seriousInjury?.toLocaleString("es-ES") ?? "—"}
+                        {row._sum.hospitalized?.toLocaleString("es-ES") ?? "—"}
                       </td>
                       <td className="px-4 py-3 font-data text-right text-gray-500 dark:text-gray-400">
-                        {row._sum.minorInjury?.toLocaleString("es-ES") ?? "—"}
+                        {row._sum.nonHospitalized?.toLocaleString("es-ES") ?? "—"}
                       </td>
                     </tr>
                   ))}

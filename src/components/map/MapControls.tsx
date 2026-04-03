@@ -376,11 +376,11 @@ export function MapControls({
 
               {/* Panel */}
               <div className="
-                fixed inset-x-0 bottom-0 max-h-[85vh] z-50
-                md:absolute md:inset-auto md:top-full md:left-0 md:mt-2 md:w-80 md:max-h-[80vh] md:bottom-auto
+                fixed inset-x-0 bottom-0 h-[85vh] z-50
+                md:absolute md:inset-auto md:top-full md:left-0 md:mt-2 md:w-80 md:h-[min(80vh,600px)] md:bottom-auto
                 bg-white dark:bg-gray-900 md:rounded-xl md:shadow-xl md:border md:border-gray-200 md:dark:border-gray-800
                 rounded-t-2xl md:rounded-t-xl
-                overflow-hidden
+                overflow-hidden flex flex-col
               ">
                 {/* Drag handle (mobile) */}
                 <div className="md:hidden flex justify-center py-2">
@@ -401,7 +401,7 @@ export function MapControls({
                 </div>
 
                 {/* Scrollable content */}
-                <div className="overflow-y-auto p-3 space-y-3">
+                <div className="overflow-y-auto min-h-0 flex-1 p-3 space-y-3">
                   {CATEGORIES.map((cat) => (
                     <div key={cat.title}>
                       <p className="text-[10px] font-mono font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 px-1">
