@@ -3,6 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { DigestForm } from "@/components/seo/DigestForm";
 import { Calendar, TrendingUp, BarChart3, Fuel, Newspaper, FileText, AlertTriangle } from "lucide-react";
 
 export const revalidate = 300;
@@ -156,6 +157,11 @@ export default async function InformesPage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Weekly digest signup */}
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 mb-8">
+          <DigestForm />
         </div>
 
         <RelatedLinks links={[

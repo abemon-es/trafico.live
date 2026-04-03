@@ -312,21 +312,6 @@ model PortugalGasStationPriceHistory {
   @@index([recordedAt])
 }
 
-model PortugalHistoricalAccidents {
-  id            String  @id @default(cuid())
-  year          Int
-  district      String  // Portuguese district
-  districtName  String?
-  accidents     Int
-  fatalities    Int
-  seriousInjury Int
-  minorInjury   Int
-
-  @@unique([year, district])
-  @@index([year])
-  @@index([district])
-}
-
 // AEMET weather alerts for traffic impact correlation
 model WeatherAlert {
   id       String           @id @default(cuid())
