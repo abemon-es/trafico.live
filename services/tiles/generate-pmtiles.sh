@@ -32,7 +32,9 @@ for arg in "$@"; do
       echo "Usage: $0 [--all] [--layer=NAME ...] [--output=DIR] [--work-dir=DIR]"
       echo ""
       echo "Layers: stations, cameras, radars, gas-stations, chargers,"
-      echo "        railway-stations, railway-routes"
+      echo "        railway-stations, railway-routes, climate-stations,"
+      echo "        air-quality, airports, ports, ferry-stops, ferry-routes,"
+      echo "        transit-stops, transit-routes, portugal-gas, panels, accidents"
       exit 0
       ;;
     *) echo "Unknown argument: $arg"; exit 1 ;;
@@ -45,7 +47,7 @@ if [[ "$ALL" == false && ${#LAYERS[@]} -eq 0 ]]; then
   exit 1
 fi
 
-ALL_LAYER_NAMES=(stations cameras radars gas-stations chargers railway-stations railway-routes)
+ALL_LAYER_NAMES=(stations cameras radars gas-stations chargers railway-stations railway-routes climate-stations air-quality airports ports ferry-stops ferry-routes transit-stops transit-routes portugal-gas panels accidents)
 
 if [[ "$ALL" == true ]]; then
   LAYERS=("${ALL_LAYER_NAMES[@]}")
@@ -399,6 +401,401 @@ SQL
   run_tippecanoe "railway-routes" "railway_routes" \
     --no-feature-limit \
     --no-tile-size-limit
+}
+
+# ---------------------------------------------------------------------------
+# Layer: climate-stations (ClimateStation) — ~900 rows
+# ---------------------------------------------------------------------------
+generate_climate_stations() {
+  echo ""
+  echo "=== climate-stations (ClimateStation) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'stationCode', "stationCode",
+      'name', name,
+      'province', province,
+      'provinceName', "provinceName",
+      'altitude', altitude,
+      'isActive', "isActive"
+    )
+  )), '[]'::json)
+) FROM "ClimateStation";
+SQL
+  )
+
+  run_query "climate-stations" "$sql"
+  run_tippecanoe "climate-stations" "climate_stations" \
+    --drop-densest-as-needed \
+    --extend-zooms-if-still-dropping
+}
+
+# ---------------------------------------------------------------------------
+# Layer: air-quality (AirQualityStation) — ~600 rows
+# ---------------------------------------------------------------------------
+generate_air_quality() {
+  echo ""
+  echo "=== air-quality (AirQualityStation) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'stationId', "stationId",
+      'name', name,
+      'network', network,
+      'city', city,
+      'province', province,
+      'elevation', elevation
+    )
+  )), '[]'::json)
+) FROM "AirQualityStation";
+SQL
+  )
+
+  run_query "air-quality" "$sql"
+  run_tippecanoe "air-quality" "air_quality" \
+    --drop-densest-as-needed \
+    --extend-zooms-if-still-dropping
+}
+
+# ---------------------------------------------------------------------------
+# Layer: airports (Airport) — ~50 rows
+# ---------------------------------------------------------------------------
+generate_airports() {
+  echo ""
+  echo "=== airports (Airport) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'icao', icao,
+      'iata', iata,
+      'name', name,
+      'city', city,
+      'province', province,
+      'elevation', elevation,
+      'isAena', "isAena"
+    )
+  )), '[]'::json)
+) FROM "Airport";
+SQL
+  )
+
+  run_query "airports" "$sql"
+  run_tippecanoe "airports" "airports" \
+    --no-feature-limit \
+    --no-tile-size-limit
+}
+
+# ---------------------------------------------------------------------------
+# Layer: ports (SpanishPort) — ~50 rows
+# ---------------------------------------------------------------------------
+generate_ports() {
+  echo ""
+  echo "=== ports (SpanishPort) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'slug', slug,
+      'name', name,
+      'type', type::text,
+      'province', province,
+      'provinceName', "provinceName",
+      'coastalZone', "coastalZone",
+      'stationCount', "stationCount"
+    )
+  )), '[]'::json)
+) FROM "SpanishPort";
+SQL
+  )
+
+  run_query "ports" "$sql"
+  run_tippecanoe "ports" "ports" \
+    --no-feature-limit \
+    --no-tile-size-limit
+}
+
+# ---------------------------------------------------------------------------
+# Layer: ferry-stops (FerryStop) — ~200 rows
+# ---------------------------------------------------------------------------
+generate_ferry_stops() {
+  echo ""
+  echo "=== ferry-stops (FerryStop) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'stopId', "stopId",
+      'stopName', "stopName",
+      'routeId', "routeId"
+    )
+  )), '[]'::json)
+) FROM "FerryStop";
+SQL
+  )
+
+  run_query "ferry-stops" "$sql"
+  run_tippecanoe "ferry-stops" "ferry_stops" \
+    --no-feature-limit \
+    --no-tile-size-limit
+}
+
+# ---------------------------------------------------------------------------
+# Layer: ferry-routes (FerryRoute) — line geometry from JSON
+# ---------------------------------------------------------------------------
+generate_ferry_routes() {
+  echo ""
+  echo "=== ferry-routes (FerryRoute) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', geometry,
+    'properties', json_build_object(
+      'routeId', "routeId",
+      'routeName', "routeName",
+      'operator', operator,
+      'routeColor', "routeColor"
+    )
+  )), '[]'::json)
+) FROM "FerryRoute" WHERE geometry IS NOT NULL;
+SQL
+  )
+
+  run_query "ferry-routes" "$sql"
+  run_tippecanoe "ferry-routes" "ferry_routes" \
+    --no-feature-limit \
+    --no-tile-size-limit
+}
+
+# ---------------------------------------------------------------------------
+# Layer: transit-stops (TransitStop) — thousands of rows
+# ---------------------------------------------------------------------------
+generate_transit_stops() {
+  echo ""
+  echo "=== transit-stops (TransitStop) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'stopId', "stopId",
+      'stopName', "stopName",
+      'operatorId', "operatorId",
+      'locationType', "locationType"
+    )
+  )), '[]'::json)
+) FROM "TransitStop";
+SQL
+  )
+
+  run_query "transit-stops" "$sql"
+  run_tippecanoe "transit-stops" "transit_stops" \
+    --drop-densest-as-needed \
+    --extend-zooms-if-still-dropping \
+    --cluster-distance=10
+}
+
+# ---------------------------------------------------------------------------
+# Layer: transit-routes (TransitRoute) — line geometry from JSON
+# ---------------------------------------------------------------------------
+generate_transit_routes() {
+  echo ""
+  echo "=== transit-routes (TransitRoute) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', geometry,
+    'properties', json_build_object(
+      'routeId', "routeId",
+      'shortName', "shortName",
+      'longName', "longName",
+      'routeType', "routeType",
+      'routeColor', "routeColor",
+      'operatorId', "operatorId"
+    )
+  )), '[]'::json)
+) FROM "TransitRoute" WHERE geometry IS NOT NULL;
+SQL
+  )
+
+  run_query "transit-routes" "$sql"
+  run_tippecanoe "transit-routes" "transit_routes" \
+    --no-feature-limit \
+    --no-tile-size-limit
+}
+
+# ---------------------------------------------------------------------------
+# Layer: portugal-gas (PortugalGasStation) — ~1,000+ rows
+# ---------------------------------------------------------------------------
+generate_portugal_gas() {
+  echo ""
+  echo "=== portugal-gas (PortugalGasStation) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'id', id,
+      'name', name,
+      'brand', brand,
+      'district', district,
+      'municipality', municipality,
+      'priceGasoleoSimples', "priceGasoleoSimples"::float,
+      'priceGasolina95', "priceGasolina95"::float,
+      'priceGasolina98', "priceGasolina98"::float
+    )
+  )), '[]'::json)
+) FROM "PortugalGasStation";
+SQL
+  )
+
+  run_query "portugal-gas" "$sql"
+  run_tippecanoe "portugal-gas" "portugal_gas" \
+    --drop-densest-as-needed \
+    --extend-zooms-if-still-dropping
+}
+
+# ---------------------------------------------------------------------------
+# Layer: panels (VariablePanel) — DGT variable message signs
+# ---------------------------------------------------------------------------
+generate_panels() {
+  echo ""
+  echo "=== panels (VariablePanel) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'panelId', "panelId",
+      'roadNumber', "roadNumber",
+      'kmPoint', "kmPoint"::float,
+      'province', province,
+      'provinceName', "provinceName",
+      'direction', direction::text,
+      'currentMessage', "currentMessage"
+    )
+  )), '[]'::json)
+) FROM "VariablePanel";
+SQL
+  )
+
+  run_query "panels" "$sql"
+  run_tippecanoe "panels" "panels" \
+    --drop-densest-as-needed \
+    --extend-zooms-if-still-dropping
+}
+
+# ---------------------------------------------------------------------------
+# Layer: accidents (AccidentMicrodata) — where lat/lon exist
+# ---------------------------------------------------------------------------
+generate_accidents() {
+  echo ""
+  echo "=== accidents (AccidentMicrodata with coords) ==="
+
+  local sql
+  sql=$(cat <<'SQL'
+SELECT json_build_object(
+  'type', 'FeatureCollection',
+  'features', COALESCE(json_agg(json_build_object(
+    'type', 'Feature',
+    'geometry', json_build_object(
+      'type', 'Point',
+      'coordinates', json_build_array(longitude::float, latitude::float)
+    ),
+    'properties', json_build_object(
+      'year', year,
+      'month', month,
+      'severity', severity,
+      'numVehicles', "numVehicles",
+      'numVictims', "numVictims",
+      'numDeaths', "numDeaths",
+      'roadType', "roadType",
+      'roadNumber', "roadNumber",
+      'province', province
+    )
+  )), '[]'::json)
+) FROM "AccidentMicrodata"
+WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
+SQL
+  )
+
+  run_query "accidents" "$sql"
+  run_tippecanoe "accidents" "accidents" \
+    --drop-densest-as-needed \
+    --extend-zooms-if-still-dropping \
+    --cluster-distance=15 \
+    -z12 -Z3
 }
 
 # ---------------------------------------------------------------------------
