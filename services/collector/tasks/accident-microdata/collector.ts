@@ -462,8 +462,7 @@ async function importYear(
           continue;
         }
 
-        // Data row — values is 1-indexed array
-        const values = row.values as (string | number | Date | undefined)[];
+        // Data row — values already built above (1-indexed)
         if (!values || values.length < 3) continue;
 
         rowNum++;
