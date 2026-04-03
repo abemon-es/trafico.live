@@ -15,7 +15,7 @@ Real-time Spanish multimodal transport intelligence platform. Aggregates data fr
 |-------|------|
 | Framework | Next.js 16 (App Router, React 19, TypeScript) |
 | Database | PostgreSQL + PostGIS via Prisma 7 (`@prisma/adapter-pg`), PgBouncer pooling |
-| Search | Typesense (19 collections, geo-search, daily sync) |
+| Search | Typesense (26 collections, geo-search, daily sync, optional vector embeddings) |
 | Cache | Redis (ioredis) — dedicated instance :6441 |
 | Maps | MapLibre GL + self-hosted Protomaps (tiles.trafico.live) |
 | Map tiles | PMTiles on nginx (hetzner-prod:8088, Traefik → tiles.trafico.live) |
@@ -101,7 +101,7 @@ npm run db:seed      # Seed database
   - `/api/keys` — API key CRUD (FREE/PRO/ENTERPRISE tiers)
 
 ### Typesense Search (`src/lib/typesense.ts`)
-- **19 collections** with geo-search: gas_stations, roads, cameras, articles, provinces, cities, ev_chargers, radars, railway_stations, zbe_zones, risk_zones, variable_panels, maritime_stations, traffic_stations, vessels, ferry_routes, transit_stops, transit_routes, airports
+- **26 collections** with geo-search: gas_stations, roads, cameras, articles, provinces, cities, ev_chargers, radars, railway_stations, railway_routes, railway_alerts, zbe_zones, risk_zones, variable_panels, maritime_stations, traffic_stations, incidents, weather_alerts, tolls, pages, vessels, ferry_routes, transit_stops, transit_routes, airports, portugal_stations
 - Multi-collection search via `/api/search?q=query` with Redis caching (60s)
 - Daily sync at 05:00 via `TASK=typesense-sync` collector
 - Geopoint fields on all location-aware entities (gas stations, cameras, EV chargers, radars, stations, panels, maritime)
@@ -276,7 +276,7 @@ npm run db:seed      # Seed database
 |-----------|--------|-------|
 | PostgreSQL + PostGIS | hetzner-dev via PgBouncer | Prisma 7, `@prisma/adapter-pg`, 25-conn pool |
 | Redis | :6441 (dedicated) | Cache + rate limiting, ioredis 5.9.2 |
-| Typesense | :6442 | 14 collections, daily sync, geo-search |
+| Typesense | :6442 | 26 collections, daily sync, geo-search |
 | Loki | `10.100.0.2:3100` | Docker log driver, batch 400 |
 | Sentry/GlitchTip | HTTPS tunnel `/monitoring` | Client 50% replays, server 25% traces, collector 10% |
 | Coolify | hetzner-prod | Split: web app + collectors as separate Docker Compose apps |
@@ -328,6 +328,7 @@ Self-hosted Protomaps basemap (light + dark themes, Spanish labels native). Data
 | `AISSTREAM_API_KEY` | aisstream.io API key (maritime AIS WebSocket) |
 | `OPENSKY_USERNAME` | OpenSky Network username (optional, higher rate limits) |
 | `OPENSKY_PASSWORD` | OpenSky Network password (optional) |
+| `ENABLE_VECTOR_SEARCH` | Set to `true` to enable Typesense embedding fields + hybrid search |
 | `MOBILITYDATA_REFRESH_TOKEN` | MobilityData API refresh token (optional, for historical snapshots) |
 | `COLLECTOR_DURATION` | AIS collector run duration in ms (0 = indefinite) |
 
