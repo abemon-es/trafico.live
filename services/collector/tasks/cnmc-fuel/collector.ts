@@ -33,7 +33,45 @@ const YEAR_RESOURCES: Record<number, string> = {
 };
 
 const BASE_URL = "https://catalogodatos.cnmc.es/api/3/action/datastore_search";
+const SEARCH_URL = "https://catalogodatos.cnmc.es/api/3/action/package_search";
 const PAGE_SIZE = 5000;
+
+/**
+ * Auto-discover resource IDs for years not in the hardcoded map.
+ * Searches CNMC CKAN catalog for "carburantes" datasets.
+ */
+async function discoverNewResources(): Promise<Record<number, string>> {
+  const discovered: Record<number, string> = {};
+  try {
+    const url = `${SEARCH_URL}?q=carburantes&rows=20`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "trafico.live-collector/2.0" },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return discovered;
+    const data = await res.json() as { success: boolean; result: { results: Array<{ resources: Array<{ id: string; format: string }>; title: string }> } };
+    if (!data.success) return discovered;
+
+    for (const pkg of data.result.results) {
+      // Match titles like "Precios de carburantes 2027" or "Carburantes y precios de venta al público - Datos 2027"
+      const yearMatch = pkg.title.match(/(\d{4})/);
+      if (!yearMatch) continue;
+      const year = parseInt(yearMatch[1], 10);
+      if (year < 2016 || year > 2050) continue;
+      if (YEAR_RESOURCES[year]) continue; // already known
+
+      // Find the CSV/JSON datastore resource
+      const resource = pkg.resources.find(r => r.format?.toUpperCase() === "CSV" || r.id);
+      if (resource) {
+        discovered[year] = resource.id;
+        log(TASK, `Discovered new resource for ${year}: ${resource.id}`);
+      }
+    }
+  } catch (err) {
+    logError(TASK, "Auto-discovery failed (non-fatal):", err);
+  }
+  return discovered;
+}
 
 // ── Province name → INE code mapping ────────────────────────────────────────
 // CNMC uses full province names (sometimes bilingual with "/")
@@ -278,14 +316,18 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let totalUpserted = 0;
   let totalSkipped = 0;
 
+  // Auto-discover new year resource IDs (e.g. 2027+)
+  const discovered = await discoverNewResources();
+  const allResources = { ...YEAR_RESOURCES, ...discovered };
+
   // Determine which years to fetch
   const currentYear = new Date().getFullYear();
   const yearsToFetch = minDate
     ? [currentYear - 1, currentYear] // incremental: only last 2 years
-    : Object.keys(YEAR_RESOURCES).map(Number).sort(); // full: all years
+    : Object.keys(allResources).map(Number).sort(); // full: all years
 
   for (const year of yearsToFetch) {
-    const resourceId = YEAR_RESOURCES[year];
+    const resourceId = allResources[year];
     if (!resourceId) {
       log(TASK, `No resource ID for year ${year} — skipping`);
       continue;

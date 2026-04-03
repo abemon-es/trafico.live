@@ -27,6 +27,7 @@ interface SeriesDefinition {
   description: string;
 }
 
+// ── Table 20239: National modal breakdown (2005+) ────────────────────────────
 const SERIES: SeriesDefinition[] = [
   { code: "TV1004", mode: "total",           description: "Total pasajeros transporte público" },
   { code: "TV1014", mode: "metro",           description: "Pasajeros metro" },
@@ -34,9 +35,19 @@ const SERIES: SeriesDefinition[] = [
   { code: "TV1106", mode: "interurban_bus",  description: "Pasajeros autobús interurbano" },
   { code: "TV1102", mode: "rail",            description: "Pasajeros ferroviario total" },
   { code: "TV1101", mode: "commuter_rail",   description: "Pasajeros Cercanías" },
+  { code: "TV1100", mode: "medium_rail",     description: "Pasajeros ferrocarril media distancia" },
+  { code: "TV1099", mode: "long_rail",       description: "Pasajeros ferrocarril larga distancia" },
   { code: "TV1316", mode: "high_speed_rail", description: "Pasajeros AVE/alta velocidad" },
   { code: "TV1098", mode: "air",             description: "Pasajeros aéreo interior" },
   { code: "TV1097", mode: "maritime",        description: "Pasajeros marítimo de cabotaje" },
+  { code: "TV1001", mode: "special_bus",     description: "Transporte especial y discrecional" },
+];
+
+// ── Table 20193 city-level + 20240 CCAA-level series fetched via DATOS_TABLA ─
+// These tables contain multiple series that we'll discover dynamically.
+const EXTRA_TABLES = [
+  { tableId: "20193", description: "City-level metro+bus (7 cities, 2012+)" },
+  { tableId: "20240", description: "Urban bus by CCAA (2012+)" },
 ];
 
 // ─── INE API types ────────────────────────────────────────────────────────────
@@ -209,11 +220,118 @@ async function upsertSeries(
   return { upserted, skipped };
 }
 
+// ─── Fetch entire table (for city/CCAA data) ────────────────────────────────
+
+interface INETableSeries {
+  COD: string;
+  Nombre: string;
+  T3_Escala: string;
+  Data: INEDataPoint[];
+}
+
+async function fetchTable(tableId: string): Promise<INETableSeries[] | null> {
+  const url = `https://servicios.ine.es/wstempus/js/es/DATOS_TABLA/${tableId}?nult=300&tip=AM`;
+  try {
+    const response = await fetch(url, {
+      headers: { "User-Agent": "trafico.live-collector/1.0", Accept: "application/json" },
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (!response.ok) {
+      logError(TASK, `HTTP ${response.status} fetching table ${tableId}`);
+      return null;
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [data];
+  } catch (err) {
+    logError(TASK, `Failed to fetch table ${tableId}:`, err);
+    return null;
+  }
+}
+
+/** Extract city/province name from INE series name like "Madrid. Metro. Viajeros transportados" */
+function extractOperatorFromName(name: string): { city: string | null; mode: string } {
+  const lower = name.toLowerCase();
+  const cities = ["madrid", "barcelona", "valencia", "sevilla", "bilbao", "málaga", "malaga", "palma"];
+  let city: string | null = null;
+  for (const c of cities) {
+    if (lower.includes(c)) { city = c.charAt(0).toUpperCase() + c.slice(1); break; }
+  }
+  // Normalize málaga
+  if (city === "Malaga") city = "Málaga";
+
+  let mode = "urban_bus";
+  if (lower.includes("metro")) mode = "metro";
+  if (lower.includes("cercanías") || lower.includes("cercanias")) mode = "commuter_rail";
+
+  return { city, mode };
+}
+
+async function processTable(
+  prisma: PrismaClient,
+  tableId: string,
+  description: string
+): Promise<{ upserted: number; skipped: number }> {
+  const seriesArray = await fetchTable(tableId);
+  if (!seriesArray) return { upserted: 0, skipped: 0 };
+
+  log(TASK, `Table ${tableId}: ${seriesArray.length} series`);
+  let upserted = 0;
+  let skipped = 0;
+
+  for (const series of seriesArray) {
+    if (!series.Data || series.Data.length === 0) continue;
+
+    // Only import "Viajeros transportados" series (skip variation % series)
+    if (!series.Nombre?.toLowerCase().includes("viajeros transportados")) continue;
+
+    const { city, mode } = extractOperatorFromName(series.Nombre);
+
+    for (const dp of series.Data) {
+      if (dp.Valor === null || dp.Valor === undefined) { skipped++; continue; }
+      const month = parseMonth(dp.T3_Periodo);
+      if (!month) { skipped++; continue; }
+
+      const actualPassengers = Math.round(dp.Valor * 1000);
+      const periodStart = new Date(Date.UTC(dp.Anyo, month - 1, 1));
+      const periodEnd = new Date(Date.UTC(dp.Anyo, month, 0));
+
+      try {
+        const existing = await prisma.transportStatistic.findFirst({
+          where: { source: "INE", mode, metric: "passengers", operator: city, periodStart },
+          select: { id: true },
+        });
+
+        if (existing) {
+          await prisma.transportStatistic.update({
+            where: { id: existing.id },
+            data: { value: actualPassengers, unit: "passengers", periodEnd },
+          });
+        } else {
+          await prisma.transportStatistic.create({
+            data: {
+              source: "INE", mode, metric: "passengers",
+              operator: city, province: null,
+              value: actualPassengers, unit: "passengers",
+              periodType: "monthly", periodStart, periodEnd,
+            },
+          });
+        }
+        upserted++;
+      } catch {
+        skipped++;
+      }
+    }
+  }
+
+  log(TASK, `Table ${tableId} (${description}): ${upserted} upserted, ${skipped} skipped`);
+  return { upserted, skipped };
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  log(TASK, "Starting INE transport statistics collection (Table 20239 — series mode)");
-  log(TASK, `Fetching ${SERIES.length} series with nult=300 (full history)`);
+  log(TASK, "Starting INE transport statistics collection (Tables 20239 + 20193 + 20240)");
+  log(TASK, `Fetching ${SERIES.length} national series + ${EXTRA_TABLES.length} extra tables`);
 
   const summary: Record<string, { upserted: number; skipped: number }> = {};
   let totalUpserted = 0;
@@ -256,6 +374,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
   if (seriesFailed > 0) {
     log(TASK, `  ${seriesFailed} series failed to fetch`);
   }
+  // ── Phase 2: Fetch extra tables (city-level + CCAA-level) ──────────────────
+  for (const table of EXTRA_TABLES) {
+    log(TASK, `Fetching table ${table.tableId} — ${table.description}`);
+    const result = await processTable(prisma, table.tableId, table.description);
+    totalUpserted += result.upserted;
+    totalSkipped += result.skipped;
+    await delay(RATE_LIMIT_MS * 2); // extra delay between large table fetches
+  }
+
   log(
     TASK,
     `Collection complete — total: ${totalUpserted} upserted, ${totalSkipped} skipped`
