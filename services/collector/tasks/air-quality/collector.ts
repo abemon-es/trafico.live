@@ -303,8 +303,9 @@ function parseIcaCsv(csv: string): StationData[] {
   const lines = csv.split("\n").filter((l) => l.trim().length > 0);
   if (lines.length < 2) return [];
 
-  // Header detection — semicolon-separated
-  const header = lines[0].split(";").map((h) => h.trim().toLowerCase());
+  // Header detection — try semicolon first, fallback to comma
+  const sep = lines[0].includes(";") ? ";" : ",";
+  const header = lines[0].split(sep).map((h) => h.trim().toLowerCase());
   const idx = (name: string) => header.indexOf(name);
 
   const iCod = idx("cod_estacion");
@@ -322,7 +323,7 @@ function parseIcaCsv(csv: string): StationData[] {
 
   const stations: StationData[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(";");
+    const cols = lines[i].split(sep);
     if (cols.length < header.length) continue;
 
     const stationId = cols[iCod]?.trim();
@@ -405,10 +406,10 @@ async function fetchBackendStations(): Promise<StationData[]> {
     .map((d) => {
       const ica = d.indice_nivel != null && d.indice_nivel >= 1 ? d.indice_nivel : 1;
       return {
-        stationId: d.cod_estacion!,
+        stationId: String(d.cod_estacion),
         name: d.nombre || d.cod_estacion!,
         city: null,
-        province: d.provincia || (d.cod_estacion!.length >= 2 ? d.cod_estacion!.substring(0, 2) : null),
+        province: d.provincia ? String(d.provincia).padStart(2, "0") : (String(d.cod_estacion).length >= 2 ? String(d.cod_estacion).substring(0, 2) : null),
         network: d.tipo_estacion || "Red de vigilancia MITECO",
         latitude: d.latitud_g!,
         longitude: d.longitud_g!,
