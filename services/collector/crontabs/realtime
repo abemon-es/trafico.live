@@ -25,9 +25,9 @@
 */2 * * * * TASK=renfe-ld-realtime npx tsx index.ts 2>&1
 */2 * * * * TASK=renfe-positions npx tsx index.ts 2>&1
 
-# OpenSky aircraft positions (every 5 min with auth, 30 min without)
-# Uses OPENSKY_USERNAME/PASSWORD for higher rate limits if set
-*/5 * * * * TASK=opensky npx tsx index.ts 2>&1
+# OpenSky aircraft positions — anonymous limit ~5 req/h, with auth ~100 req/h
+# Register at opensky-network.org and set OPENSKY_USERNAME/PASSWORD for */5 frequency
+*/15 * * * * TASK=opensky npx tsx index.ts 2>&1
 
 # MITECO air quality — 506 stations, ICA index (hourly)
 0 * * * * TASK=air-quality npx tsx index.ts 2>&1
