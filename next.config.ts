@@ -163,6 +163,12 @@ const nextConfig: NextConfig = {
         destination: "/maritimo/combustible/:path*",
         permanent: true,
       },
+      // Common typo: /maritima → /maritimo
+      {
+        source: "/maritima/:path*",
+        destination: "/maritimo/:path*",
+        permanent: true,
+      },
       // -----------------------------------------------------------------------
       // Geographic duplicates
       // -----------------------------------------------------------------------

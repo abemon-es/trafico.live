@@ -140,9 +140,12 @@ export function IncidenciasContent() {
         ? createIncidentMarkerElement(effect, cause, 28)
         : createSimpleMarkerElement(effect, 14);
 
-      // Add click handler to open modal
+      // Add click handler — flyTo incident then open modal
       el.addEventListener("click", (e) => {
         e.stopPropagation();
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.flyTo({ center: [lng, lat], zoom: Math.max(mapInstanceRef.current.getZoom(), 10), duration: 800 });
+        }
         setSelectedIncident(feature);
       });
 

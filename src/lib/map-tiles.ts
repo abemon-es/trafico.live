@@ -451,16 +451,16 @@ export function getProtomapsStyle(): StyleSpecification {
       {
         id: "roads-medium", type: "line", source: S, "source-layer": "roads",
         filter: ["==", "pmap:kind", "medium_road"],
-        minzoom: 8,
+        minzoom: 6,
         paint: {
           "line-color": "#dde8ff",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.2, 11, 1, 14, 3],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 8, 0.3, 11, 1, 14, 3],
         },
       },
       {
         id: "roads-minor", type: "line", source: S, "source-layer": "roads",
         filter: ["==", "pmap:kind", "minor_road"],
-        minzoom: 11,
+        minzoom: 9,
         paint: {
           "line-color": "#e8eeff",
           "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.3, 14, 2, 16, 3],
