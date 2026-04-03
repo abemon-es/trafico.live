@@ -748,8 +748,9 @@ export function UnifiedMap({
       id={id}
       className={`
         bg-white dark:bg-gray-900 flex flex-col
-        ${isFullscreen ? "fixed inset-0 z-50" : "h-full overflow-hidden"}
+        ${isFullscreen ? "fixed inset-0 z-50" : "overflow-hidden"}
       `}
+      style={isFullscreen ? undefined : { height: mapHeight }}
     >
       {/* Controls */}
       <MapControls
