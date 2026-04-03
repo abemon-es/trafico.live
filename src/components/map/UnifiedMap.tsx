@@ -22,6 +22,9 @@ import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { TimeSlider } from "./TimeSlider";
 import { useRadarProximity } from "@/hooks/useRadarProximity";
 import { RadarHUD } from "./RadarHUD";
+import { InfrastructureDetailPanel } from "./InfrastructureDetailPanel";
+import { useDetailPanel } from "@/hooks/useDetailPanel";
+import type { InfrastructureDetail } from "./InfrastructureDetailPanel";
 
 // Dynamic imports for heavy map components (avoid bloating main bundle)
 const CorridorView = dynamic(() => import("./CorridorView").then((m) => m.CorridorView), { ssr: false });
@@ -256,7 +259,7 @@ interface UnifiedMapProps {
 // Valid filter values for URL parsing
 const VALID_EFFECTS: IncidentEffect[] = ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"];
 const VALID_CAUSES: IncidentCause[] = ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"];
-const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations", "panels", "liveSpeed", "dangerScore", "roadworks", "sensors", "citySensors", "portugalGas"];
+const VALID_LAYERS: (keyof ActiveLayers)[] = ["v16", "incidents", "cameras", "chargers", "zbe", "weather", "highways", "provinces", "radars", "riskZones", "gasStations", "maritimeStations", "panels", "liveSpeed", "dangerScore", "roadworks", "sensors", "citySensors", "portugalGas", "railwayStations", "railwayRoutes", "airports", "ports", "transitStops", "transitRoutes", "ferryStops", "ferryRoutes", "roadSegments", "aircraft", "vessels", "climateStations"];
 
 export function UnifiedMap({
   defaultHeight = "500px",
@@ -324,6 +327,18 @@ export function UnifiedMap({
         sensors: initialLayers.sensors ?? false,
         citySensors: initialLayers.citySensors ?? false,
         portugalGas: initialLayers.portugalGas ?? false,
+        railwayStations: initialLayers.railwayStations ?? false,
+        railwayRoutes: initialLayers.railwayRoutes ?? false,
+        airports: initialLayers.airports ?? false,
+        ports: initialLayers.ports ?? false,
+        transitStops: initialLayers.transitStops ?? false,
+        transitRoutes: initialLayers.transitRoutes ?? false,
+        ferryStops: initialLayers.ferryStops ?? false,
+        ferryRoutes: initialLayers.ferryRoutes ?? false,
+        roadSegments: initialLayers.roadSegments ?? false,
+        aircraft: initialLayers.aircraft ?? false,
+        vessels: initialLayers.vessels ?? false,
+        climateStations: initialLayers.climateStations ?? false,
       };
     }
 
@@ -350,6 +365,18 @@ export function UnifiedMap({
         sensors: urlLayers.includes("sensors"),
         citySensors: urlLayers.includes("citySensors"),
         portugalGas: urlLayers.includes("portugalGas"),
+        railwayStations: urlLayers.includes("railwayStations"),
+        railwayRoutes: urlLayers.includes("railwayRoutes"),
+        airports: urlLayers.includes("airports"),
+        ports: urlLayers.includes("ports"),
+        transitStops: urlLayers.includes("transitStops"),
+        transitRoutes: urlLayers.includes("transitRoutes"),
+        ferryStops: urlLayers.includes("ferryStops"),
+        ferryRoutes: urlLayers.includes("ferryRoutes"),
+        roadSegments: urlLayers.includes("roadSegments"),
+        aircraft: urlLayers.includes("aircraft"),
+        vessels: urlLayers.includes("vessels"),
+        climateStations: urlLayers.includes("climateStations"),
       };
     }
     // Default layers
@@ -373,6 +400,18 @@ export function UnifiedMap({
       sensors: false,
       citySensors: false,
       portugalGas: false,
+      railwayStations: false,
+      railwayRoutes: false,
+      airports: false,
+      ports: false,
+      transitStops: false,
+      transitRoutes: false,
+      ferryStops: false,
+      ferryRoutes: false,
+      roadSegments: false,
+      aircraft: false,
+      vessels: false,
+      climateStations: false,
     };
   };
 
@@ -565,6 +604,9 @@ export function UnifiedMap({
     enabled: drivingMode,
     voiceEnabled: drivingMode,
   });
+
+  // Infrastructure detail panel
+  const { detail: infraDetail, showDetail: showInfraDetail, hideDetail: hideInfraDetail } = useDetailPanel();
 
   // Handle fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -799,6 +841,7 @@ export function UnifiedMap({
               tempOverlay={tempOverlay}
               height="100%"
               onIncidentClick={handleIncidentClick}
+              onInfrastructureClick={showInfraDetail}
             />
             {/* Zone insights overlay */}
             <ZoneInsights
@@ -807,6 +850,8 @@ export function UnifiedMap({
               visible={!corridorActive && !comparatorActive}
               onClose={() => {}}
             />
+            {/* Infrastructure detail panel */}
+            <InfrastructureDetailPanel detail={infraDetail} onClose={hideInfraDetail} />
           </div>
         )}
 

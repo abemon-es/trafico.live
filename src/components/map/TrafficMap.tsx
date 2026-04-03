@@ -38,6 +38,18 @@ export interface ActiveLayers {
   sensors: boolean;
   citySensors: boolean;
   portugalGas: boolean;
+  railwayStations: boolean;
+  railwayRoutes: boolean;
+  airports: boolean;
+  ports: boolean;
+  transitStops: boolean;
+  transitRoutes: boolean;
+  ferryStops: boolean;
+  ferryRoutes: boolean;
+  roadSegments: boolean;
+  aircraft: boolean;
+  vessels: boolean;
+  climateStations: boolean;
 }
 
 export interface IncidentFilters {
@@ -239,6 +251,7 @@ interface TrafficMapProps {
   dangerScoreData?: Array<{ id: string; name: string; score: number; level: string }>;
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
+  onInfrastructureClick?: (detail: import("./InfrastructureDetailPanel").InfrastructureDetail) => void;
 }
 
 // Spain center coordinates
@@ -705,7 +718,7 @@ const getSatelliteStyle = (): maplibregl.StyleSpecification => ({
 });
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, liveSpeedData, dangerScoreData, incidentFilters, incidentViewMode, darkMode = false, satellite = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, liveSpeedData, dangerScoreData, incidentFilters, incidentViewMode, darkMode = false, satellite = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick, onInfrastructureClick },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -717,6 +730,9 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
   const riskZoneMarkersRef = useRef<maplibregl.Marker[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [provinceCoords, setProvinceCoords] = useState<Map<string, [number, number]>>(new Map());
+  // Stable ref for the infrastructure click callback — avoids re-running the map init effect
+  const onInfrastructureClickRef = useRef(onInfrastructureClick);
+  useEffect(() => { onInfrastructureClickRef.current = onInfrastructureClick; }, [onInfrastructureClick]);
 
   // Load province coordinates for weather markers
   useEffect(() => {
@@ -1034,8 +1050,20 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
           addTileLayer(m, "sensorsCircle");
           addTileLayer(m, "citySensorsCircle");
           addTileLayer(m, "portugalGasCircle");
+          addTileLayer(m, "roadSegmentsLine");
+          addTileLayer(m, "railwayRoutesLine");
+          addTileLayer(m, "transitRoutesLine");
+          addTileLayer(m, "ferryRoutesLine");
+          addTileLayer(m, "railwayStationsCircle");
+          addTileLayer(m, "transitStopsCircle");
+          addTileLayer(m, "ferryStopsCircle");
+          addTileLayer(m, "airportsCircle");
+          addTileLayer(m, "portsCircle");
+          addTileLayer(m, "aircraftCircle");
+          addTileLayer(m, "vesselsCircle");
+          addTileLayer(m, "climateStationsCircle");
           // Start hidden — visibility useEffects will set them when they fire
-          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle"]) {
+          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "climate-stations-circle"]) {
             if (m.getLayer(lid)) m.setLayoutProperty(lid, "visibility", "none");
           }
 
@@ -1187,9 +1215,21 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     addTileLayer(map.current, "sensorsCircle");
     addTileLayer(map.current, "citySensorsCircle");
     addTileLayer(map.current, "portugalGasCircle");
+    addTileLayer(map.current, "roadSegmentsLine");
+    addTileLayer(map.current, "railwayRoutesLine");
+    addTileLayer(map.current, "transitRoutesLine");
+    addTileLayer(map.current, "ferryRoutesLine");
+    addTileLayer(map.current, "railwayStationsCircle");
+    addTileLayer(map.current, "transitStopsCircle");
+    addTileLayer(map.current, "ferryStopsCircle");
+    addTileLayer(map.current, "airportsCircle");
+    addTileLayer(map.current, "portsCircle");
+    addTileLayer(map.current, "aircraftCircle");
+    addTileLayer(map.current, "vesselsCircle");
+    addTileLayer(map.current, "climateStationsCircle");
 
     // Tile layers start hidden — visibility controlled by activeLayers
-    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle"]) {
+    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "climate-stations-circle"]) {
       if (map.current.getLayer(layerId)) {
         map.current.setLayoutProperty(layerId, "visibility", "none");
       }
@@ -1239,6 +1279,254 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     });
     map.current.on("mouseenter", "incidents-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
     map.current.on("mouseleave", "incidents-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // ── Infrastructure detail panel click handlers (tile layers) ──
+    // Each handler calls onInfrastructureClick if provided, falling back gracefully.
+
+    // Railway stations
+    map.current.on("click", "railway-stations-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "railway-station",
+        title: p.name || "Estación",
+        subtitle: p.network || p.province || "",
+        coordinates: coords,
+        properties: p,
+        href: `/trenes/estaciones`,
+      });
+    });
+    map.current.on("mouseenter", "railway-stations-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "railway-stations-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Airports
+    map.current.on("click", "airports-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "airport",
+        title: p.name || p.iata || "Aeropuerto",
+        subtitle: p.city || p.province || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "airports-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "airports-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Ports
+    map.current.on("click", "ports-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "port",
+        title: p.name || "Puerto",
+        subtitle: p.provinceName || p.coastalZone || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "ports-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "ports-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Live fleet (trains)
+    map.current.on("click", "fleet-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      const trainId = p.trainNumber || p.trainId || p.id || "Tren";
+      const delay = p.delay != null ? Number(p.delay) : null;
+      onInfrastructureClickRef.current({
+        type: "train",
+        title: `Tren ${trainId}`,
+        subtitle: delay != null ? (delay <= 0 ? "Puntual" : `+${delay} min`) : (p.brand || ""),
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "fleet-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "fleet-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Aircraft
+    map.current.on("click", "aircraft-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "aircraft",
+        title: p.callsign || p.icao24 || "Aeronave",
+        subtitle: p.originCountry || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "aircraft-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "aircraft-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Vessels
+    map.current.on("click", "vessels-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "vessel",
+        title: p.vesselName || p.mmsi || "Buque",
+        subtitle: p.shipType || p.flag || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "vessels-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "vessels-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Traffic sensors
+    map.current.on("click", "sensors-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "sensor",
+        title: p.description || p.sensorId || "Sensor",
+        subtitle: p.road || "",
+        coordinates: coords,
+        properties: p,
+        href: `/intensidad`,
+      });
+    });
+    map.current.on("mouseenter", "sensors-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "sensors-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // City sensors
+    map.current.on("click", "city-sensors-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "sensor",
+        title: p.description || p.sensorId || "Sensor urbano",
+        subtitle: p.road || p.city || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "city-sensors-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "city-sensors-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Climate stations
+    map.current.on("click", "climate-stations-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "climate-station",
+        title: p.name || p.stationCode || "Estación meteorológica",
+        subtitle: p.provinceName || p.province || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "climate-stations-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "climate-stations-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Road segments
+    map.current.on("click", "road-segments-line", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = [e.lngLat.lng, e.lngLat.lat] as [number, number];
+      onInfrastructureClickRef.current({
+        type: "road",
+        title: p.roadNumber || p.road || "Carretera",
+        subtitle: p.provinceName || "",
+        coordinates: coords,
+        properties: p,
+        href: p.roadNumber ? `/carreteras/${String(p.roadNumber).toLowerCase()}` : undefined,
+      });
+    });
+    map.current.on("mouseenter", "road-segments-line", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "road-segments-line", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Transit stops
+    map.current.on("click", "transit-stops-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "transit-stop",
+        title: p.name || "Parada",
+        subtitle: p.routeName || p.route || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "transit-stops-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "transit-stops-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Transit routes
+    map.current.on("click", "transit-routes-line", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = [e.lngLat.lng, e.lngLat.lat] as [number, number];
+      onInfrastructureClickRef.current({
+        type: "transit-stop",
+        title: p.name || p.routeName || "Línea",
+        subtitle: p.operator || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "transit-routes-line", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "transit-routes-line", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Ferry stops
+    map.current.on("click", "ferry-stops-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "ferry-stop",
+        title: p.name || "Parada ferry",
+        subtitle: p.operator || p.route || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "ferry-stops-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "ferry-stops-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Panels
+    map.current.on("click", "panels-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "panel",
+        title: p.roadNumber ? `Panel ${p.roadNumber}` : "Panel variable",
+        subtitle: p.message || p.provinceName || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "panels-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "panels-circle", () => { map.current!.getCanvas().style.cursor = ""; });
+
+    // Roadworks
+    map.current.on("click", "roadworks-circle", (e) => {
+      const p = e.features?.[0]?.properties;
+      if (!p || !onInfrastructureClickRef.current) return;
+      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+      onInfrastructureClickRef.current({
+        type: "roadwork",
+        title: p.roadNumber ? `Obras ${p.roadNumber}` : "Obras",
+        subtitle: p.description || p.province || "",
+        coordinates: coords,
+        properties: p,
+      });
+    });
+    map.current.on("mouseenter", "roadworks-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
+    map.current.on("mouseleave", "roadworks-circle", () => { map.current!.getCanvas().style.cursor = ""; });
 
     // Clustered GeoJSON layers for remaining prop-driven data (panels, maritime)
     addClusteredLayer(map.current, "panels-layer", "#06b6d4", getPanelPopupHTML);
@@ -1618,6 +1906,90 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     const vis = activeLayers.portugalGas ? "visible" : "none";
     if (map.current.getLayer("portugal-gas-circle")) map.current.setLayoutProperty("portugal-gas-circle", "visibility", vis);
   }, [activeLayers.portugalGas, isLoaded]);
+
+  // Toggle tile layer visibility — railway stations
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.railwayStations ? "visible" : "none";
+    if (map.current.getLayer("railway-stations-circle")) map.current.setLayoutProperty("railway-stations-circle", "visibility", vis);
+  }, [activeLayers.railwayStations, isLoaded]);
+
+  // Toggle tile layer visibility — railway routes
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.railwayRoutes ? "visible" : "none";
+    if (map.current.getLayer("railway-routes-line")) map.current.setLayoutProperty("railway-routes-line", "visibility", vis);
+  }, [activeLayers.railwayRoutes, isLoaded]);
+
+  // Toggle tile layer visibility — airports
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.airports ? "visible" : "none";
+    if (map.current.getLayer("airports-circle")) map.current.setLayoutProperty("airports-circle", "visibility", vis);
+  }, [activeLayers.airports, isLoaded]);
+
+  // Toggle tile layer visibility — ports
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.ports ? "visible" : "none";
+    if (map.current.getLayer("ports-circle")) map.current.setLayoutProperty("ports-circle", "visibility", vis);
+  }, [activeLayers.ports, isLoaded]);
+
+  // Toggle tile layer visibility — transit stops
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.transitStops ? "visible" : "none";
+    if (map.current.getLayer("transit-stops-circle")) map.current.setLayoutProperty("transit-stops-circle", "visibility", vis);
+  }, [activeLayers.transitStops, isLoaded]);
+
+  // Toggle tile layer visibility — transit routes
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.transitRoutes ? "visible" : "none";
+    if (map.current.getLayer("transit-routes-line")) map.current.setLayoutProperty("transit-routes-line", "visibility", vis);
+  }, [activeLayers.transitRoutes, isLoaded]);
+
+  // Toggle tile layer visibility — ferry stops
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.ferryStops ? "visible" : "none";
+    if (map.current.getLayer("ferry-stops-circle")) map.current.setLayoutProperty("ferry-stops-circle", "visibility", vis);
+  }, [activeLayers.ferryStops, isLoaded]);
+
+  // Toggle tile layer visibility — ferry routes
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.ferryRoutes ? "visible" : "none";
+    if (map.current.getLayer("ferry-routes-line")) map.current.setLayoutProperty("ferry-routes-line", "visibility", vis);
+  }, [activeLayers.ferryRoutes, isLoaded]);
+
+  // Toggle tile layer visibility — road segments (IMD)
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.roadSegments ? "visible" : "none";
+    if (map.current.getLayer("road-segments-line")) map.current.setLayoutProperty("road-segments-line", "visibility", vis);
+  }, [activeLayers.roadSegments, isLoaded]);
+
+  // Toggle tile layer visibility — aircraft
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.aircraft ? "visible" : "none";
+    if (map.current.getLayer("aircraft-circle")) map.current.setLayoutProperty("aircraft-circle", "visibility", vis);
+  }, [activeLayers.aircraft, isLoaded]);
+
+  // Toggle tile layer visibility — vessels (AIS)
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.vessels ? "visible" : "none";
+    if (map.current.getLayer("vessels-circle")) map.current.setLayoutProperty("vessels-circle", "visibility", vis);
+  }, [activeLayers.vessels, isLoaded]);
+
+  // Toggle tile layer visibility — climate stations (AEMET)
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+    const vis = activeLayers.climateStations ? "visible" : "none";
+    if (map.current.getLayer("climate-stations-circle")) map.current.setLayoutProperty("climate-stations-circle", "visibility", vis);
+  }, [activeLayers.climateStations, isLoaded]);
 
   // Update GeoJSON layer data — panels
   useEffect(() => {
