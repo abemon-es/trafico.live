@@ -28,3 +28,6 @@
 # OpenSky aircraft positions (every 5 min with auth, 30 min without)
 # Uses OPENSKY_USERNAME/PASSWORD for higher rate limits if set
 */5 * * * * TASK=opensky npx tsx index.ts 2>&1
+
+# MITECO air quality — 506 stations, ICA index (hourly)
+0 * * * * TASK=air-quality npx tsx index.ts 2>&1
