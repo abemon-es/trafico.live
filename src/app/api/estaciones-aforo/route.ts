@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Prisma, StationType } from "@prisma/client";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:estaciones-aforo";
+const CACHE_TTL = 3600; // 1 hour — monthly data
 
 export const revalidate = 3600;
 
@@ -41,6 +45,15 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(limitParam || "500", 10), 3000);
     const offset = parseInt(offsetParam || "0", 10);
 
+    // Cache key — sorted params for determinism
+    const paramStr = Array.from(searchParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join("&");
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
+
     const where: Prisma.TrafficStationWhereInput = {};
 
     if (province) where.province = province;
@@ -73,7 +86,7 @@ export async function GET(request: NextRequest) {
 
     // GeoJSON output
     if (format === "geojson") {
-      return NextResponse.json({
+      const geojsonData = {
         type: "FeatureCollection",
         features: stations.map((s) => ({
           type: "Feature",
@@ -98,7 +111,9 @@ export async function GET(request: NextRequest) {
             percentPesados: s.percentPesados ? Number(s.percentPesados) : null,
           },
         })),
-      });
+      };
+      await setInCache(cacheKey, geojsonData, CACHE_TTL);
+      return NextResponse.json(geojsonData);
     }
 
     // Summary stats — parallelized
@@ -117,7 +132,7 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: {
         stations: stations.map((s) => ({
@@ -156,7 +171,10 @@ export async function GET(request: NextRequest) {
           ),
         },
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     reportApiError(error, "Estaciones aforo API error");
     return NextResponse.json(

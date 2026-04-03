@@ -2,6 +2,10 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY = "api:espana";
+const CACHE_TTL = 600; // 10 minutes — semi-static community data
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +15,9 @@ export async function GET(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
+    const cached = await getFromCache(CACHE_KEY);
+    if (cached) return NextResponse.json(cached);
+
     // Fetch all data in parallel for performance
     const [
       communities,
@@ -100,13 +107,16 @@ export async function GET(request: NextRequest) {
       incidentsByCommunity: byCommunity,
     };
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: {
         communities,
         stats,
       },
-    });
+    };
+
+    await setInCache(CACHE_KEY, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     reportApiError(error, "España API error");
     return NextResponse.json(

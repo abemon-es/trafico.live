@@ -18,6 +18,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
 import { Prisma } from "@prisma/client";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:aviacion:aeropuertos";
+const CACHE_TTL = 86400; // 24 hours — static airport catalog
 
 // Cache for 24 hours — airport catalog rarely changes
 export const revalidate = 86400;
@@ -32,6 +36,15 @@ export async function GET(request: NextRequest) {
     const airportCode = searchParams.get("airport");
     const province = searchParams.get("province");
     const format = searchParams.get("format") || "json";
+
+    // Cache key — sorted params for determinism
+    const paramStr = Array.from(searchParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join("&");
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // --- Single airport lookup (IATA or ICAO) ---
     if (airportCode) {
@@ -58,36 +71,35 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json(
-        {
-          success: true,
-          data: {
-            airport: {
-              id: airport.id,
-              icao: airport.icao,
-              iata: airport.iata,
-              name: airport.name,
-              city: airport.city,
-              province: airport.province,
-              latitude: Number(airport.latitude),
-              longitude: Number(airport.longitude),
-              elevation: airport.elevation,
-              isAena: airport.isAena,
-            },
-            statistics: airport.statistics.map((s) => ({
-              metric: s.metric,
-              value: Number(s.value),
-              periodType: s.periodType,
-              periodStart: s.periodStart,
-            })),
+      const singleAirportData = {
+        success: true,
+        data: {
+          airport: {
+            id: airport.id,
+            icao: airport.icao,
+            iata: airport.iata,
+            name: airport.name,
+            city: airport.city,
+            province: airport.province,
+            latitude: Number(airport.latitude),
+            longitude: Number(airport.longitude),
+            elevation: airport.elevation,
+            isAena: airport.isAena,
           },
+          statistics: airport.statistics.map((s) => ({
+            metric: s.metric,
+            value: Number(s.value),
+            periodType: s.periodType,
+            periodStart: s.periodStart,
+          })),
         },
-        {
-          headers: {
-            "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
-          },
-        }
-      );
+      };
+      await setInCache(cacheKey, singleAirportData, CACHE_TTL);
+      return NextResponse.json(singleAirportData, {
+        headers: {
+          "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
+        },
+      });
     }
 
     // --- All airports (optionally filtered by province) ---
@@ -124,6 +136,7 @@ export async function GET(request: NextRequest) {
         })),
       };
 
+      await setInCache(cacheKey, geojson, CACHE_TTL);
       return NextResponse.json(geojson, {
         headers: {
           "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
@@ -132,31 +145,30 @@ export async function GET(request: NextRequest) {
     }
 
     // Default JSON format
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          airports: airports.map((a) => ({
-            id: a.id,
-            icao: a.icao,
-            iata: a.iata,
-            name: a.name,
-            city: a.city,
-            province: a.province,
-            latitude: Number(a.latitude),
-            longitude: Number(a.longitude),
-            elevation: a.elevation,
-            isAena: a.isAena,
-          })),
-          total: airports.length,
-        },
+    const listData = {
+      success: true,
+      data: {
+        airports: airports.map((a) => ({
+          id: a.id,
+          icao: a.icao,
+          iata: a.iata,
+          name: a.name,
+          city: a.city,
+          province: a.province,
+          latitude: Number(a.latitude),
+          longitude: Number(a.longitude),
+          elevation: a.elevation,
+          isAena: a.isAena,
+        })),
+        total: airports.length,
       },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
-        },
-      }
-    );
+    };
+    await setInCache(cacheKey, listData, CACHE_TTL);
+    return NextResponse.json(listData, {
+      headers: {
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
+      },
+    });
   } catch (error) {
     reportApiError(error, "api/aviacion/aeropuertos] Airport catalog error");
     return NextResponse.json(

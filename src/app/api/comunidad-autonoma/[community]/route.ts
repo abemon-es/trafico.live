@@ -2,6 +2,10 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:comunidad-autonoma";
+const CACHE_TTL = 600; // 10 minutes — semi-static community data
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +19,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     const { community: slug } = await params;
+
+    const cacheKey = `${CACHE_KEY_PREFIX}:${slug}`;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     const communityInclude = {
       provinces: {
@@ -133,13 +141,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       incidentsBySource: bySource,
     };
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: {
         community,
         stats,
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     reportApiError(error, "Community API error");
     return NextResponse.json(

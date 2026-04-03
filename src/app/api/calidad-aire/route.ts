@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
 import { authenticateRequest } from "@/lib/auth";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:calidad-aire";
+const CACHE_TTL = 300; // 5 minutes — hourly updates
 
 export const revalidate = 300; // 5 minutes
 
@@ -35,6 +39,15 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(limitParam || "500", 10), 2000);
     const offset = parseInt(offsetParam || "0", 10);
 
+    // Cache key — sorted params for determinism
+    const paramStr = Array.from(searchParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join("&");
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
+
     const where = province ? { province } : {};
 
     const [stations, totalCount] = await Promise.all([
@@ -55,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     // GeoJSON output
     if (format === "geojson") {
-      return NextResponse.json({
+      const geojsonData = {
         type: "FeatureCollection",
         features: stations.map((s) => ({
           type: "Feature",
@@ -79,7 +92,9 @@ export async function GET(request: NextRequest) {
             updatedAt: s.readings[0]?.createdAt ?? null,
           },
         })),
-      });
+      };
+      await setInCache(cacheKey, geojsonData, CACHE_TTL);
+      return NextResponse.json(geojsonData);
     }
 
     // Build stats
@@ -98,7 +113,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: {
         stations: stations.map((s) => ({
@@ -138,7 +153,10 @@ export async function GET(request: NextRequest) {
           provinceCount: provinces.size,
         },
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     reportApiError(error, "Air quality API error", request);
     return NextResponse.json(

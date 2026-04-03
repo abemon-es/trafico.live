@@ -17,6 +17,10 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:aviacion";
+const CACHE_TTL = 120; // 2 minutes — real-time flights
 
 // Cache for 30 seconds — aircraft positions update every 5 min (auth) or 30 min (anon)
 export const revalidate = 30;
@@ -31,6 +35,15 @@ export async function GET(request: NextRequest) {
     const bounds = searchParams.get("bounds");
     const onGroundParam = searchParams.get("onGround");
     const limit = Math.min(parseInt(searchParams.get("limit") || "500", 10), 2000);
+
+    // Cache key — sorted params for determinism
+    const paramStr = Array.from(searchParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join("&");
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // Rolling 1-hour window (matches collector cleanup window)
     const since = new Date(Date.now() - 60 * 60 * 1000);
@@ -93,6 +106,7 @@ export async function GET(request: NextRequest) {
       })),
     };
 
+    await setInCache(cacheKey, geojson, CACHE_TTL);
     return NextResponse.json(geojson, {
       headers: {
         "Cache-Control": "public, s-maxage=30, stale-while-revalidate=30",

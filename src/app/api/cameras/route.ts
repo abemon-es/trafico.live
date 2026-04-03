@@ -29,11 +29,19 @@ interface CameraResponseItem {
   imageUrl: string;
 }
 
+interface PaginationInfo {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
 interface CamerasResponse {
   count: number;
   cameras: CameraResponseItem[];
   provinces: string[];
   source: "database" | "api";
+  pagination: PaginationInfo;
 }
 
 export async function GET(request: NextRequest) {
@@ -45,6 +53,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const filterProvince = searchParams.get("province");
     const filterCommunity = searchParams.get("community");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "100", 10), 5000);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     // Build a deterministic cache key from query params
     const paramStr = new URLSearchParams(
@@ -58,6 +68,7 @@ export async function GET(request: NextRequest) {
     // Try to fetch from database first
     let cameras: CameraResponseItem[] = [];
     let source: "database" | "api" = "database";
+    let totalCount = 0;
 
     try {
       // Build where clause for database query
@@ -75,11 +86,17 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      const dbCameras = await prisma.camera.findMany({
-        where: whereClause,
-        orderBy: { name: "asc" },
-        take: 5000,
-      });
+      const [dbCameras, dbCount] = await Promise.all([
+        prisma.camera.findMany({
+          where: whereClause,
+          orderBy: { name: "asc" },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.camera.count({ where: whereClause }),
+      ]);
+
+      totalCount = dbCount;
 
       if (dbCameras.length > 0) {
         cameras = dbCameras.map((cam) => {
@@ -107,7 +124,7 @@ export async function GET(request: NextRequest) {
       source = "api";
       const rawCameras = await fetchDGTCameras();
 
-      cameras = rawCameras.map((cam: CameraData) => {
+      let allCameras = rawCameras.map((cam: CameraData) => {
         const normalizedProvince = normalizeDGTProvince(cam.province);
         const community = PROVINCE_TO_COMMUNITY[normalizedProvince] || "";
 
@@ -128,7 +145,7 @@ export async function GET(request: NextRequest) {
       // Apply filters for API fallback
       if (filterProvince) {
         const filterLower = filterProvince.toLowerCase();
-        cameras = cameras.filter(
+        allCameras = allCameras.filter(
           (cam) => cam.province.toLowerCase() === filterLower
         );
       }
@@ -137,11 +154,14 @@ export async function GET(request: NextRequest) {
         const communityProvinces = getProvincesForCommunity(filterCommunity);
         if (communityProvinces.length > 0) {
           const provincesLower = communityProvinces.map((p) => p.toLowerCase());
-          cameras = cameras.filter((cam) =>
+          allCameras = allCameras.filter((cam) =>
             provincesLower.includes(cam.province.toLowerCase())
           );
         }
       }
+
+      totalCount = allCameras.length;
+      cameras = allCameras.slice(offset, offset + limit);
     }
 
     // Extract unique provinces for filtering dropdown
@@ -154,6 +174,12 @@ export async function GET(request: NextRequest) {
       cameras,
       provinces,
       source,
+      pagination: {
+        total: totalCount,
+        limit,
+        offset,
+        hasMore: offset + cameras.length < totalCount,
+      },
     };
 
     await setInCache(cacheKey, response, CACHE_TTL);

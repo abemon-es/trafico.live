@@ -2,6 +2,10 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:gas-stations";
+const CACHE_TTL = 300; // 5 minutes — prices update 3x/day
 
 // Cache for 5 minutes (prices update 3x daily)
 export const revalidate = 300;
@@ -82,6 +86,15 @@ export async function GET(request: NextRequest) {
     // Sorting
     const sort = searchParams.get("sort") || "name";
     const order = searchParams.get("order") || "asc";
+
+    // Cache key — sorted params for determinism
+    const paramStr = Array.from(searchParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join("&");
+    const cacheKey = paramStr ? `${CACHE_KEY_PREFIX}:${paramStr}` : CACHE_KEY_PREFIX;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     // Build where clause
     const where: Record<string, unknown> = {};
@@ -198,7 +211,7 @@ export async function GET(request: NextRequest) {
     // Calculate pagination
     const totalPages = Math.ceil(total / pageSize);
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: responseStations,
       pagination: {
@@ -211,7 +224,10 @@ export async function GET(request: NextRequest) {
         provinces: uniqueProvinces.sort(),
         brands: uniqueBrands.sort(),
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     reportApiError(error, "Error fetching gas stations");
     return NextResponse.json(

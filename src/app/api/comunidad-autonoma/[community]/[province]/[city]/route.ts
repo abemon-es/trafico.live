@@ -2,6 +2,10 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:comunidad-autonoma";
+const CACHE_TTL = 600; // 10 minutes — semi-static municipality data
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +19,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     const { community: communitySlug, province: provinceSlug, city: citySlug } = await params;
+
+    const cacheKey = `${CACHE_KEY_PREFIX}:${communitySlug}:${provinceSlug}:${citySlug}`;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     const municipality = await prisma.municipality.findUnique({
       where: { slug: citySlug },
@@ -45,12 +53,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: {
         municipality,
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     reportApiError(error, "Municipality API error");
     return NextResponse.json(

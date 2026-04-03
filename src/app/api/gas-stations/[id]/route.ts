@@ -2,6 +2,10 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { getFromCache, setInCache } from "@/lib/redis";
+
+const CACHE_KEY_PREFIX = "api:gas-stations";
+const CACHE_TTL = 300; // 5 minutes — prices update 3x/day
 
 // Cache for 5 minutes
 export const revalidate = 300;
@@ -15,6 +19,10 @@ export async function GET(
 
   try {
     const { id } = await params;
+
+    const cacheKey = `${CACHE_KEY_PREFIX}:${id}`;
+    const cached = await getFromCache(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     const station = await prisma.gasStation.findUnique({
       where: { id },
@@ -33,7 +41,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       station: {
         id: station.id,
@@ -87,7 +95,10 @@ export async function GET(
           priceGLP: h.priceGLP ? Number(h.priceGLP) : null,
         })),
       },
-    });
+    };
+
+    await setInCache(cacheKey, responseData, CACHE_TTL);
+    return NextResponse.json(responseData);
   } catch (error) {
     reportApiError(error, "Error fetching gas station");
     return NextResponse.json(
