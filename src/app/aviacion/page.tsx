@@ -11,7 +11,7 @@
  */
 
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+import { AviationMapWrapper } from "./aviation-map-wrapper";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
@@ -30,8 +30,6 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
-
-const AviationMap = dynamic(() => import("./aviation-map"), { ssr: false });
 
 export const revalidate = 120;
 
@@ -421,7 +419,7 @@ export default async function AviacionPage() {
             Aeropuertos AENA y posiciones de aeronaves en tiempo real (OpenSky Network)
           </p>
           <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-            <AviationMap height="500px" />
+            <AviationMapWrapper />
           </div>
         </section>
 

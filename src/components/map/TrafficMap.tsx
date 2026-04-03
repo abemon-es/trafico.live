@@ -1027,8 +1027,11 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
           addTileLayer(m, "incidentsCircle");
           addTileLayer(m, "roadworksCircle");
           addTileLayer(m, "panelsCircle");
+          addTileLayer(m, "sensorsCircle");
+          addTileLayer(m, "citySensorsCircle");
+          addTileLayer(m, "portugalGasCircle");
           // Start hidden — visibility useEffects will set them when they fire
-          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle"]) {
+          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle"]) {
             if (m.getLayer(lid)) m.setLayoutProperty(lid, "visibility", "none");
           }
 
@@ -1177,9 +1180,12 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     addTileLayer(map.current, "incidentsCircle");
     addTileLayer(map.current, "roadworksCircle");
     addTileLayer(map.current, "panelsCircle");
+    addTileLayer(map.current, "sensorsCircle");
+    addTileLayer(map.current, "citySensorsCircle");
+    addTileLayer(map.current, "portugalGasCircle");
 
     // Tile layers start hidden — visibility controlled by activeLayers
-    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle"]) {
+    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle"]) {
       if (map.current.getLayer(layerId)) {
         map.current.setLayoutProperty(layerId, "visibility", "none");
       }

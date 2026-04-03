@@ -5,7 +5,8 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { forceSpanishLabels } from "@/lib/map-config";
 import { initPMTilesProtocol } from "@/lib/pmtiles-protocol";
-import { Fuel, Waves, Wind, Anchor, ShieldAlert, CloudRain, RefreshCw, Layers, ChevronDown, X, Maximize2, Minimize2 } from "lucide-react";
+import { Fuel, Waves, Wind, Anchor, Ship, ShieldAlert, CloudRain, RefreshCw, Layers, ChevronDown, X, Maximize2, Minimize2 } from "lucide-react";
+import { addTileSource, TILE_SOURCES, LAYER_STYLES, SOURCE_LAYERS } from "@/lib/map-tiles";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -119,6 +120,9 @@ export default function MaritimeMap() {
     fuel: true,
     emergencies: true,
     coastalWeather: true,
+    vessels: true,
+    ports: true,
+    ferries: true,
   });
   const [emergencies, setEmergencies] = useState<Array<{ id: string; latitude: number; longitude: number; type: string; description: string | null; year: number }>>([]);
   const [coastalAlerts, setCoastalAlerts] = useState<Array<{ id: string; province: string; provinceName: string | null; type: string; severity: string; description: string | null }>>([]);
@@ -465,6 +469,72 @@ export default function MaritimeMap() {
         map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
       }
 
+      // ── Vector tile layers (PMTiles + Martin) ──────────────────────────
+      addTileSource(map, "ports", TILE_SOURCES.ports);
+      addTileSource(map, "ferryStops", TILE_SOURCES.ferryStops);
+      addTileSource(map, "ferryRoutes", TILE_SOURCES.ferryRoutes);
+      addTileSource(map, "vessels", TILE_SOURCES.vessels);
+
+      // Ferry route lines (below points)
+      map.addLayer(LAYER_STYLES.ferryRoutesLine as maplibregl.AddLayerObject);
+
+      // Port circles
+      map.addLayer(LAYER_STYLES.portsCircle as maplibregl.AddLayerObject);
+
+      // Ferry stop circles
+      map.addLayer(LAYER_STYLES.ferryStopsCircle as maplibregl.AddLayerObject);
+
+      // Vessel positions
+      map.addLayer(LAYER_STYLES.vesselsCircle as maplibregl.AddLayerObject);
+
+      // Port labels
+      map.addLayer({
+        id: "ports-label",
+        type: "symbol",
+        source: "ports",
+        "source-layer": SOURCE_LAYERS.ports,
+        minzoom: 8,
+        layout: {
+          "text-field": ["get", "name"],
+          "text-size": 11,
+          "text-offset": [0, 1.4],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#0284c7",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
+      });
+
+      // Vessel hover popup
+      const vesselPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, maxWidth: "240px" });
+      map.on("mouseenter", "vessels-circle", (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        map.getCanvas().style.cursor = "pointer";
+        const p = f.properties || {};
+        const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number];
+        const speed = p.sog != null ? `${Number(p.sog).toFixed(1)} kn` : "N/D";
+        vesselPopup.setLngLat(coords).setHTML(
+          `<div style="font-family:'DM Sans',system-ui;font-size:13px;line-height:1.5">
+            <div style="font-weight:700">${p.vesselName || `MMSI ${p.mmsi}`}</div>
+            <div style="color:#6b7280">${p.destination || ""}</div>
+            <div style="color:#0891b2;font-size:11px">SOG: ${speed}</div>
+          </div>`
+        ).addTo(map);
+      });
+      map.on("mouseleave", "vessels-circle", () => {
+        map.getCanvas().style.cursor = "";
+        vesselPopup.remove();
+      });
+
+      // Add cursors for new layers
+      for (const layer of ["ports-circle", "ferry-stops-circle"]) {
+        map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
+      }
+
       // ── Province boundaries (semi-transparent over ocean basemap) ──────
       try {
         const provRes = await fetch("/geo/spain-provinces.geojson");
@@ -731,6 +801,30 @@ export default function MaritimeMap() {
     }
   }, [emergencies, layers.emergencies, isLoaded]);
 
+  // ─── Vessel layer visibility ────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!mapRef.current || !isLoaded) return;
+    const vis = layers.vessels ? "visible" : "none";
+    for (const id of ["vessels-circle"]) {
+      if (mapRef.current.getLayer(id)) mapRef.current.setLayoutProperty(id, "visibility", vis);
+    }
+  }, [layers.vessels, isLoaded]);
+
+  // ─── Ports + ferries layer visibility ──────────────────────────────────
+
+  useEffect(() => {
+    if (!mapRef.current || !isLoaded) return;
+    const portVis = layers.ports ? "visible" : "none";
+    for (const id of ["ports-circle", "ports-label"]) {
+      if (mapRef.current.getLayer(id)) mapRef.current.setLayoutProperty(id, "visibility", portVis);
+    }
+    const ferryVis = layers.ferries ? "visible" : "none";
+    for (const id of ["ferry-routes-line", "ferry-stops-circle"]) {
+      if (mapRef.current.getLayer(id)) mapRef.current.setLayoutProperty(id, "visibility", ferryVis);
+    }
+  }, [layers.ports, layers.ferries, isLoaded]);
+
   const activeLayerCount = Object.values(layers).filter(Boolean).length;
 
   const MARITIME_LAYERS: { key: keyof typeof layers; label: string; icon: React.ReactNode; count?: number; category: string }[] = [
@@ -739,6 +833,9 @@ export default function MaritimeMap() {
     { key: "coastalWeather", label: "Alertas meteo", icon: <CloudRain className="w-4 h-4" />, count: coastalAlerts.length, category: "Seguridad" },
     { key: "emergencies", label: "SASEMAR", icon: <ShieldAlert className="w-4 h-4" />, count: emergencies.length, category: "Seguridad" },
     { key: "fuel", label: "Combustible", icon: <Fuel className="w-4 h-4" />, count: stations.length, category: "Infraestructura" },
+    { key: "vessels", label: "Buques AIS", icon: <Ship className="w-4 h-4" />, category: "Transporte" },
+    { key: "ports", label: "Puertos", icon: <Anchor className="w-4 h-4" />, category: "Infraestructura" },
+    { key: "ferries", label: "Ferris", icon: <Ship className="w-4 h-4" />, category: "Transporte" },
   ];
 
   const categories = [...new Set(MARITIME_LAYERS.map((l) => l.category))];
@@ -917,6 +1014,18 @@ export default function MaritimeMap() {
               <CloudRain className="w-3.5 h-3.5 text-tl-500" />
               <span className="font-mono text-xs">{coastalAlerts.length}</span>
               <span className="text-gray-400 text-xs hidden sm:inline">alertas</span>
+            </div>
+          )}
+          {layers.vessels && (
+            <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              <Ship className="w-3.5 h-3.5 text-tl-sea-500" />
+              <span className="text-gray-400 text-xs hidden sm:inline">buques AIS</span>
+            </div>
+          )}
+          {layers.ports && (
+            <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              <Anchor className="w-3.5 h-3.5 text-sky-500" />
+              <span className="text-gray-400 text-xs hidden sm:inline">puertos</span>
             </div>
           )}
         </div>
