@@ -251,8 +251,9 @@ async function fetchWithTimeout(url: string, timeoutMs = 30000, init?: RequestIn
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "trafico.live collector/1.0 (contact: hola@trafico.live)",
+        "User-Agent": "trafico.live-collector",
         "Accept": "text/csv, application/json, application/geo+json",
+        "Origin": "https://ica.miteco.es",
         ...(init?.headers || {}),
       },
       ...(init ? { method: init.method, body: init.body } : {}),
@@ -370,55 +371,175 @@ function parseIcaCsv(csv: string): StationData[] {
 }
 
 // ---------------------------------------------------------------------------
-// MITECO backend JSON fetcher (fallback for per-station pollutant values)
+// MITECO backend JSON fetcher (fallback — per station type, per-pollutant values)
 // ---------------------------------------------------------------------------
 
-async function fetchBackendStations(): Promise<StationData[]> {
-  const now = new Date();
-  const utcHour = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")} ${String(now.getUTCHours()).padStart(2, "0")}:00:00`;
+// Station types exposed by the backend API
+const BACKEND_TIPOS = ["FONDO", "TRAFICO", "INDUSTRIAL"] as const;
 
-  log(TASK, `Trying MITECO backend: refrescarICA for ${utcHour}`);
+interface BackendStation {
+  cod_estacion?: string;
+  nombre?: string;
+  tipo_estacion?: string;
+  longitud_g?: number | string;
+  latitud_g?: number | string;
+  // Composite ICA index (1–5)
+  indice_nivel?: number | null;
+  // Province identifier (2-digit INE code or name)
+  provincia?: string;
+  // Individual pollutant readings (µg/m³ except CO in mg/m³)
+  no2?: number | string | null;
+  pm10?: number | string | null;
+  pm25?: number | string | null;
+  pm2_5?: number | string | null;
+  o3?: number | string | null;
+  so2?: number | string | null;
+  co?: number | string | null;
+}
+
+/** Build the YYYYMMDD HH:00 timestamp string the backend expects (local Spain time approximated as UTC+1) */
+function buildBackendTimestamp(date: Date): string {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
+  const h = String(date.getUTCHours()).padStart(2, "0");
+  return `${y}${m}${d} ${h}:00`;
+}
+
+async function fetchBackendForTipo(timestamp: string, tipo: string): Promise<BackendStation[]> {
+  const sqlParam = `refrescarTipoEstacion#lecturas_horarias#${timestamp}#${tipo}`;
+  const body = `sql=${encodeURIComponent(sqlParam)}`;
+
+  log(TASK, `  POST ${BACKEND_URL} sql=refrescarTipoEstacion#lecturas_horarias#${timestamp}#${tipo}`);
 
   const res = await fetchWithTimeout(BACKEND_URL, 30000, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `sql=refrescarICA%23lecturas_horarias%23${encodeURIComponent(utcHour)}`,
+    body,
   });
 
   if (!res.ok) {
-    log(TASK, `Backend returned HTTP ${res.status}`);
+    log(TASK, `  Backend HTTP ${res.status} for tipo=${tipo}`);
     return [];
   }
 
-  const data = (await res.json()) as Array<{
-    cod_estacion?: string;
-    nombre?: string;
-    tipo_estacion?: string;
-    longitud_g?: number;
-    latitud_g?: number;
-    indice_nivel?: number | null;
-    provincia?: string;
-  }>;
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("json")) {
+    log(TASK, `  Backend non-JSON response (${contentType}) for tipo=${tipo}`);
+    return [];
+  }
+
+  let data: unknown;
+  try {
+    data = await res.json();
+  } catch {
+    log(TASK, `  Backend JSON parse error for tipo=${tipo}`);
+    return [];
+  }
 
   if (!Array.isArray(data)) return [];
+  return data as BackendStation[];
+}
 
-  return data
-    .filter((d) => d.cod_estacion && d.latitud_g && d.longitud_g)
-    .map((d) => {
-      const ica = d.indice_nivel != null && d.indice_nivel >= 1 ? d.indice_nivel : 1;
-      return {
-        stationId: String(d.cod_estacion).padStart(8, "0"),
-        name: d.nombre || d.cod_estacion!,
-        city: null,
-        province: d.provincia ? String(d.provincia).padStart(2, "0") : String(d.cod_estacion).padStart(8, "0").substring(0, 2),
-        network: d.tipo_estacion || "Red de vigilancia MITECO",
-        latitude: d.latitud_g!,
-        longitude: d.longitud_g!,
-        no2: null, pm10: null, pm25: null, o3: null, so2: null, co: null,
-        ica,
-        icaLabel: ICA_LABELS[ica] || "Buena",
-      };
-    });
+function parseBackendStation(d: BackendStation, tipo: string): StationData | null {
+  if (!d.cod_estacion) return null;
+
+  const lat = Number(d.latitud_g);
+  const lon = Number(d.longitud_g);
+  if (isNaN(lat) || isNaN(lon) || lat === 0 || lon === 0) return null;
+
+  const parseNum = (v: unknown): number | null => {
+    if (v == null || v === "" || v === "-") return null;
+    const n = Number(v);
+    return !isNaN(n) && n >= 0 ? n : null;
+  };
+
+  const stationId = String(d.cod_estacion).padStart(8, "0");
+  const no2 = parseNum(d.no2);
+  const pm10 = parseNum(d.pm10);
+  const pm25 = parseNum(d.pm25 ?? d.pm2_5);
+  const o3 = parseNum(d.o3);
+  const so2 = parseNum(d.so2);
+  const co = parseNum(d.co);
+
+  // Prefer direct ICA from API; fall back to computing from pollutants
+  let ica: number | null = null;
+  let icaLabel: string | null = null;
+  if (d.indice_nivel != null && d.indice_nivel >= 1 && d.indice_nivel <= 5) {
+    ica = d.indice_nivel;
+    icaLabel = ICA_LABELS[ica];
+  } else {
+    const computed = computeIca(no2, pm10, pm25, o3, so2, co);
+    if (computed) {
+      ica = computed.ica;
+      icaLabel = computed.icaLabel;
+    }
+  }
+
+  const province = d.provincia
+    ? String(d.provincia).padStart(2, "0")
+    : stationId.substring(0, 2);
+
+  return {
+    stationId,
+    name: d.nombre || d.cod_estacion!,
+    city: null,
+    province,
+    network: d.tipo_estacion || tipo,
+    latitude: lat,
+    longitude: lon,
+    no2,
+    pm10,
+    pm25,
+    o3,
+    so2,
+    co,
+    ica,
+    icaLabel,
+  };
+}
+
+async function fetchBackendStations(): Promise<StationData[]> {
+  const now = new Date();
+  // Try current hour first, then previous hour as fallback (data can lag)
+  const timestamps = [
+    buildBackendTimestamp(now),
+    buildBackendTimestamp(new Date(now.getTime() - 60 * 60 * 1000)),
+  ];
+
+  const seen = new Set<string>();
+  const results: StationData[] = [];
+
+  for (const timestamp of timestamps) {
+    log(TASK, `Trying MITECO backend for timestamp: ${timestamp}`);
+    let foundAny = false;
+
+    for (const tipo of BACKEND_TIPOS) {
+      try {
+        const raw = await fetchBackendForTipo(timestamp, tipo);
+        log(TASK, `  tipo=${tipo}: ${raw.length} records`);
+
+        for (const d of raw) {
+          const station = parseBackendStation(d, tipo);
+          if (!station) continue;
+          if (seen.has(station.stationId)) continue;
+          seen.add(station.stationId);
+          results.push(station);
+          foundAny = true;
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log(TASK, `  Error for tipo=${tipo}: ${msg}`);
+      }
+    }
+
+    if (foundAny) {
+      log(TASK, `Backend: collected ${results.length} stations for timestamp ${timestamp}`);
+      break; // Don't fall back to previous hour if current hour had data
+    }
+  }
+
+  return results;
 }
 
 // ---------------------------------------------------------------------------
