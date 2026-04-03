@@ -387,21 +387,17 @@ async function importYear(
 
   try {
     for await (const worksheetReader of reader) {
-      // 2019-2020 XLSX files have description text in WS0, data in WS1.
-      // We detect valid data worksheets by checking if the first row contains known headers.
-      headerParsed = false;
       for await (const row of worksheetReader) {
-        // First row of this worksheet — check if it's headers
+        // Scan rows until we find one that looks like a header row with known DGT columns.
+        // 2019-2020 files have 8+ description rows before headers; 2021+ have headers on row 1.
         if (!headerParsed) {
           const values = row.values as (string | undefined)[];
-          // ExcelJS row.values is 1-indexed (index 0 is undefined)
           headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
-
-          // Check if this looks like a data header row (must contain ANYO or COD_PROVINCIA or ID_ACCIDENTE)
           const headerStr = headers.filter(Boolean).join(",").toUpperCase();
+
+          // Must contain at least one key DGT column name to be a valid header row
           if (!headerStr.includes("ANYO") && !headerStr.includes("COD_PROVINCIA") && !headerStr.includes("ID_ACCIDENTE") && !headerStr.includes("SECUENCIAL")) {
-            log(TASK, `Year ${year}: skipping worksheet (first row: ${headers[0] ?? "empty"})`);
-            break; // Skip this worksheet, try next one
+            continue; // Skip this row, keep scanning
           }
           COL = {
             fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
