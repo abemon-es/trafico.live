@@ -315,7 +315,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     {
       url: "wss://stream.aisstream.io/v0/stream",
       subscriptionMessage: {
-        api_key: apiKey,
+        APIKey: apiKey,
         BoundingBoxes: SPAIN_BBOXES,
         FilterMessageTypes: [
           "PositionReport",
