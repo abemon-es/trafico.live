@@ -63,18 +63,22 @@ interface MonthlyRow {
   [mode: string]: string | number;
 }
 
-interface StatsApiData {
-  records?: ModeStats[];
-  summary?: {
-    totalRecords?: number;
-    dataSources?: number;
-    modesCovered?: number;
-    lastPeriod?: string;
-  };
+// The API returns a flat array of TransportStatistic records
+interface TransportStatRecord {
+  mode: string;
+  value: number;
+  unit: string;
+  periodStart: string;
+  periodEnd: string;
+  source: string;
 }
 
+type StatsApiData = TransportStatRecord[];
+
 interface ModalApiData {
-  modal?: ModeStats[];
+  total_passengers?: number;
+  period?: string;
+  [key: string]: unknown;
 }
 
 // ── CSS bar chart ──────────────────────────────────────────────────────────────
@@ -255,36 +259,58 @@ function FlujosMovilidadSection() {
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function EstadisticasTransporteContent() {
-  const { data: statsData, isLoading: loadingStats, error: statsError } = useSWR<StatsApiData>(
-    "/api/estadisticas?groupBy=mode&limit=100",
+  const { data: rawStats, isLoading: loadingStats, error: statsError } = useSWR<StatsApiData>(
+    "/api/estadisticas?limit=500",
     fetcher,
     { revalidateOnFocus: false }
   );
 
-  const { data: modalData, isLoading: loadingModal } = useSWR<ModalApiData>(
-    "/api/estadisticas/modal",
-    fetcher,
-    { revalidateOnFocus: false }
-  );
+  const isLoading = loadingStats;
 
-  const isLoading = loadingStats || loadingModal;
-  const records: ModeStats[] = statsData?.records ?? [];
-  const summary = statsData?.summary ?? {};
-  const modal: ModeStats[] = modalData?.modal ?? [];
+  // Transform flat API array into ModeStats[] grouped by mode (latest value per mode)
+  const rawArray = Array.isArray(rawStats) ? rawStats : [];
+
+  // Group by mode, pick latest period per mode, compute total for share %
+  const byMode = new Map<string, { totalPassengers: number; lastPeriod: string }>();
+  for (const rec of rawArray) {
+    const existing = byMode.get(rec.mode);
+    const period = rec.periodStart?.slice(0, 7) ?? "";
+    if (!existing || period > existing.lastPeriod) {
+      byMode.set(rec.mode, { totalPassengers: Number(rec.value) || 0, lastPeriod: period });
+    }
+  }
+  const grandTotal = Array.from(byMode.values()).reduce((s, v) => s + v.totalPassengers, 0);
+
+  const records: ModeStats[] = Array.from(byMode.entries()).map(([mode, data]) => ({
+    mode,
+    totalPassengers: data.totalPassengers,
+    sharePercent: grandTotal > 0 ? (data.totalPassengers / grandTotal) * 100 : 0,
+    lastPeriod: data.lastPeriod,
+  }));
+
+  // Use records as modal split too
+  const modal: ModeStats[] = records.filter(r => r.totalPassengers > 0);
   const maxModalPct = modal.reduce((max, m) => Math.max(max, m.sharePercent), 0);
 
-  // Build monthly table from records if they carry period info
-  const monthlyModes = Array.from(new Set(records.map((r) => r.mode)));
+  const summary = {
+    totalRecords: rawArray.length,
+    dataSources: 1,
+    modesCovered: byMode.size,
+    lastPeriod: records.length > 0 ? records.reduce((latest, r) => (r.lastPeriod ?? "") > latest ? (r.lastPeriod ?? "") : latest, "") : undefined,
+  };
+
+  // Build monthly table from raw records
+  const monthlyModes = Array.from(new Set(rawArray.map((r) => r.mode)));
   const monthlyPeriods = Array.from(
-    new Set(records.filter((r) => r.lastPeriod).map((r) => r.lastPeriod as string))
+    new Set(rawArray.map((r) => r.periodStart?.slice(0, 7)).filter(Boolean) as string[])
   ).sort();
 
-  // Aggregate into rows (simple: one row per period)
-  const monthlyRows: MonthlyRow[] = monthlyPeriods.map((period) => {
+  // Aggregate into rows (one row per period, from raw API data)
+  const monthlyRows: MonthlyRow[] = monthlyPeriods.slice(-24).map((period) => {
     const row: MonthlyRow = { period };
     for (const mode of monthlyModes) {
-      const match = records.find((r) => r.mode === mode && r.lastPeriod === period);
-      row[mode] = match ? match.totalPassengers : 0;
+      const match = rawArray.find((r) => r.mode === mode && r.periodStart?.slice(0, 7) === period);
+      row[mode] = match ? Number(match.value) || 0 : 0;
     }
     return row;
   });
