@@ -233,8 +233,8 @@ async function downloadAndExtract(
   const zipPath = join(tmpDir, "gtfs.zip");
   await writeFile(zipPath, buffer);
 
-  const { execSync } = await import("child_process");
-  execSync(`unzip -o -q "${zipPath}" -d "${tmpDir}"`, { timeout: 60000 });
+  const { execFileSync } = await import("child_process");
+  execFileSync("unzip", ["-o", "-q", zipPath, "-d", tmpDir], { timeout: 60000 });
 
   return { tmpDir, hash, sizeKB };
 }

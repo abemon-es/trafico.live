@@ -100,14 +100,26 @@ export async function GET(request: NextRequest) {
     const compareParam = searchParams.get("compare");
     const province = searchParams.get("province");
 
+    // If no period specified, find the latest available period
+    let period: { start: Date; end: Date } | null = null;
     if (!periodParam) {
-      return NextResponse.json(
-        { error: "Missing required parameter: period (format: YYYY-MM)" },
-        { status: 400 }
-      );
+      const latest = await prisma.transportStatistic.findFirst({
+        orderBy: { periodStart: "desc" },
+        select: { periodStart: true },
+      });
+      if (latest) {
+        const d = latest.periodStart;
+        period = {
+          start: new Date(d.getFullYear(), d.getMonth(), 1),
+          end: new Date(d.getFullYear(), d.getMonth() + 1, 0),
+        };
+      } else {
+        return NextResponse.json({ success: true, data: { period: null, modes: [] } });
+      }
+    } else {
+      period = parseYearMonth(periodParam);
     }
 
-    const period = parseYearMonth(periodParam);
     if (!period) {
       return NextResponse.json(
         { error: "Invalid period format — expected YYYY-MM (e.g. 2023-01)" },

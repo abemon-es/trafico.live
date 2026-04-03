@@ -195,6 +195,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
       const rawHeading = pos.TrueHeading as number | undefined;
       const heading = rawHeading !== undefined && rawHeading !== 511 ? rawHeading : null;
 
+      // Cap batch to prevent unbounded memory growth if DB is down
+      if (positionBatch.length >= 50_000) {
+        positionBatch.splice(0, 10_000); // drop oldest 10K
+        log(TASK, "WARNING: position batch overflow, dropped 10K oldest entries");
+      }
       positionBatch.push({
         mmsi,
         latitude: lat,

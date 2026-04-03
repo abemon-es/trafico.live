@@ -109,8 +109,8 @@ async function downloadAndExtract(url: string, operatorName: string): Promise<st
   const zipPath = join(tmpDir, "gtfs.zip");
   await writeFile(zipPath, buffer);
 
-  const { execSync } = await import("child_process");
-  execSync(`unzip -o -q "${zipPath}" -d "${tmpDir}"`, { timeout: 30000 });
+  const { execFileSync } = await import("child_process");
+  execFileSync("unzip", ["-o", "-q", zipPath, "-d", tmpDir], { timeout: 30000 });
 
   return tmpDir;
 }
