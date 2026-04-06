@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -21,8 +20,7 @@ export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-// Lazy-load the map component (no SSR — MapLibre requires browser APIs)
-const RouteMap = dynamic(() => import("./route-map"), { ssr: false });
+import RouteMap from "./route-map-wrapper";
 
 // ──────────────────────────────────────────────────────────────
 // Brand configuration (colors + labels)
