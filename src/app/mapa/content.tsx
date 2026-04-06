@@ -12,7 +12,9 @@ import {
 } from "@/lib/map-tiles";
 import { handleMapTileError } from "@/lib/map-config";
 import { loadTransportIcons } from "@/lib/map-icons";
-import { addTrafficLayer } from "@/lib/traffic-coloring";
+import { addTrafficLayer, applyTrafficDataViaExpression, type TrafficSegment } from "@/lib/traffic-coloring";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import { LayerPanel, LAYER_GROUPS, buildDefaultVisibility } from "./layer-panel";
 import RoutingPanel from "./routing-panel";
 
@@ -189,6 +191,42 @@ export default function MapaContent() {
   const [mapReady, setMapReady] = useState(false);
   const [visibility, setVisibility] = useState<Record<string, boolean>>(buildDefaultVisibility);
 
+  // Live traffic intensity data — refreshed every 5 minutes
+  const { data: trafficData } = useSWR(
+    "/api/trafico/intensidad?source=MADRID&limit=5000",
+    fetcher,
+    { refreshInterval: 300000, revalidateOnFocus: false }
+  );
+
+  // Apply live traffic data to road coloring layer
+  useEffect(() => {
+    if (!mapRef.current || !trafficData?.data) return;
+    const map = mapRef.current;
+    if (!map.getLayer("roads-traffic")) return;
+
+    // Group sensors by roadNumber, keep worst serviceLevel per road
+    const roadMap = new Map<string, number>();
+    for (const sensor of trafficData.data) {
+      const ref = sensor.roadNumber || sensor.ref;
+      if (!ref) continue;
+      const current = roadMap.get(ref) ?? 0;
+      roadMap.set(ref, Math.max(current, sensor.serviceLevel ?? 0));
+    }
+
+    const segments: TrafficSegment[] = [];
+    for (const [ref, level] of roadMap) {
+      segments.push({
+        ref,
+        level: level >= 3 ? "blocked" : level >= 2 ? "heavy" : level >= 1 ? "moderate" : "free",
+        serviceLevel: level,
+      });
+    }
+
+    if (segments.length > 0) {
+      applyTrafficDataViaExpression(map, segments);
+    }
+  }, [trafficData, mapReady]);
+
   // Add all layers to the map on load
   const initLayers = useCallback((map: maplibregl.Map) => {
     // Add all layers with initial visibility
@@ -251,6 +289,45 @@ export default function MapaContent() {
       // Iberia source may not be loaded yet — safe to defer
     }
 
+    // Add EEZ / maritime zones layer (static GeoJSON, hidden by default)
+    fetch("/geo/eez-iberia.geojson")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!map.getCanvas()) return;
+        if (!map.getSource("eez")) {
+          map.addSource("eez", { type: "geojson", data });
+        }
+        if (!map.getLayer("eez-fill")) {
+          map.addLayer({
+            id: "eez-fill",
+            type: "fill",
+            source: "eez",
+            paint: {
+              "fill-color": "#1b4bd5",
+              "fill-opacity": 0.06,
+            },
+            layout: { visibility: "none" },
+          });
+        }
+        if (!map.getLayer("eez-line")) {
+          map.addLayer({
+            id: "eez-line",
+            type: "line",
+            source: "eez",
+            paint: {
+              "line-color": "#94b6ff",
+              "line-width": 1.5,
+              "line-opacity": 0.7,
+              "line-dasharray": [5, 4],
+            },
+            layout: { visibility: "none" },
+          });
+        }
+      })
+      .catch(() => {
+        // EEZ file unavailable — skip silently
+      });
+
     setMapReady(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -302,6 +379,14 @@ export default function MapaContent() {
       // Keep fleet-symbol in sync with fleet-circle toggle
       if (layerId === "fleet-circle" && map.getLayer("fleet-symbol")) {
         map.setLayoutProperty("fleet-symbol", "visibility", vis);
+      }
+      // Keep roads-traffic-casing in sync with roads-traffic toggle
+      if (layerId === "roads-traffic" && map.getLayer("roads-traffic-casing")) {
+        map.setLayoutProperty("roads-traffic-casing", "visibility", vis);
+      }
+      // Keep eez-line in sync with eez-fill toggle
+      if (layerId === "eez-fill" && map.getLayer("eez-line")) {
+        map.setLayoutProperty("eez-line", "visibility", vis);
       }
     } catch {
       // Layer not yet loaded — ignore

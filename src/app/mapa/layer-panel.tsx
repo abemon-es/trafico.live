@@ -40,6 +40,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
       { id: "gas-stations-circle", label: "Gasolineras", defaultOn: false },
       { id: "accidents-circle", label: "Accidentes (hist.)", defaultOn: false },
       { id: "road-segments-line", label: "IMD carreteras", defaultOn: false },
+      { id: "roads-traffic", label: "Tráfico en vivo", defaultOn: false },
     ],
   },
   {
@@ -66,6 +67,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
     label: "Marítimo",
     icon: Ship,
     layers: [
+      { id: "eez-fill", label: "Zonas marítimas (ZEE)", defaultOn: false },
       { id: "ports-circle", label: "Puertos", defaultOn: false },
       { id: "ferry-routes-line", label: "Rutas de ferry", defaultOn: false },
       { id: "ferry-stops-circle", label: "Terminales ferry", defaultOn: false },
