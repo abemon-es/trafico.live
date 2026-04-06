@@ -1,0 +1,62 @@
+# Valhalla routing engine for Spain + Portugal
+# Provides: route, isochrone, map-match, nearest, matrix APIs
+#
+# Uses the same OSM PBF as the Planetiler tileset build.
+# Graph build: ~20 min on first start, then serves requests.
+# RAM: ~4-6 GB for Spain+Portugal graph
+#
+# Port 8002 (internal) → proxied via tiles.trafico.live/route/
+#
+# API endpoints:
+#   POST /route        — turn-by-turn routing
+#   POST /isochrone    — drive-time polygons
+#   POST /trace_route  — map matching (GPS → road)
+#   POST /sources_to_targets — distance matrix
+#   GET  /status       — health check
+
+services:
+  valhalla:
+    image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
+    container_name: trafico-valhalla
+    restart: unless-stopped
+    environment:
+      # Use pre-built tiles from shared build directory
+      tile_url: "file:///data/osm/iberia.osm.pbf"
+      use_tiles_ignore_pbf: "False"
+      build_elevation: "False"
+      build_admins: "True"
+      build_time_zones: "True"
+      build_transit: "False"
+      # Server config
+      server_threads: 4
+      serve_tiles: "True"
+    volumes:
+      - /opt/trafico/tiles/build:/data/osm:ro
+      - valhalla-data:/custom_files
+    ports:
+      - "127.0.0.1:8002:8002"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8002/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 300s  # Graph build takes several minutes
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
+        loki-batch-size: "400"
+        loki-retries: "2"
+        labels: "app=trafico-valhalla"
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  valhalla-data:
+    name: trafico-valhalla-data

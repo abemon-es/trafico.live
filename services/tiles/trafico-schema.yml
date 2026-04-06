@@ -1,0 +1,601 @@
+# trafico.live — Custom Planetiler schema for Spain + Portugal
+# Generates a vector tileset with every road, railway, building, and POI
+# individually addressable for data-driven styling (traffic coloring).
+#
+# Usage:
+#   java -Xmx8g -jar planetiler.jar \
+#     --schema=trafico-schema.yml \
+#     --osm-path=iberia.osm.pbf \
+#     --output=trafico-iberia.pmtiles \
+#     --maxzoom=14 --minzoom=0 \
+#     --nodemap-type=array --storage=mmap
+#
+# Layers: roads, railways, buildings, landuse, water, boundaries,
+#         places, transport, pois, natural
+
+schema_name: trafico
+schema_description: "trafico.live — Spain + Portugal transport infrastructure"
+attribution: "© OpenStreetMap contributors"
+
+# ─── Definitions (reusable snippets) ─────────────────────────────────────────
+
+definitions:
+  # Zoom ranges by feature importance
+  highway_min_zoom: &highway_zoom
+    motorway: 4
+    motorway_link: 9
+    trunk: 5
+    trunk_link: 9
+    primary: 7
+    primary_link: 10
+    secondary: 9
+    secondary_link: 11
+    tertiary: 11
+    tertiary_link: 12
+    residential: 12
+    unclassified: 12
+    living_street: 13
+    service: 14
+    pedestrian: 13
+    track: 13
+    path: 14
+    footway: 14
+    cycleway: 14
+    steps: 14
+
+# ─── Sources ─────────────────────────────────────────────────────────────────
+
+sources:
+  osm:
+    type: osm
+    url: osmPath
+
+# ─── Layers ──────────────────────────────────────────────────────────────────
+
+layers:
+
+  # ── ROADS ────────────────────────────────────────────────────────────────
+  # Every road segment with Spanish classification properties.
+  # The `ref` property (AP-7, A-1, N-340) is the join key for live traffic data.
+  - id: roads
+    features:
+      - source: osm
+        geometry: line
+        min_zoom:
+          default_value: 14
+          overrides:
+            - if: { highway: motorway }
+              value: 4
+            - if: { highway: trunk }
+              value: 5
+            - if: { highway: primary }
+              value: 7
+            - if: { highway: secondary }
+              value: 9
+            - if: { highway: tertiary }
+              value: 11
+            - if: { highway: [residential, unclassified, living_street] }
+              value: 12
+            - if: { highway: [service, pedestrian] }
+              value: 13
+            - if: { highway: [motorway_link, trunk_link] }
+              value: 9
+            - if: { highway: [primary_link, secondary_link] }
+              value: 11
+            - if: { highway: [track, path, footway, cycleway, steps] }
+              value: 14
+        include_when:
+          highway:
+            - motorway
+            - motorway_link
+            - trunk
+            - trunk_link
+            - primary
+            - primary_link
+            - secondary
+            - secondary_link
+            - tertiary
+            - tertiary_link
+            - residential
+            - unclassified
+            - living_street
+            - service
+            - pedestrian
+            - track
+            - path
+            - footway
+            - cycleway
+            - steps
+        attributes:
+          - key: highway
+            tag_value: highway
+          - key: ref
+            tag_value: ref
+          - key: name
+            tag_value: name
+          - key: lanes
+            tag_value: lanes
+            type: integer
+          - key: maxspeed
+            tag_value: maxspeed
+            type: integer
+          - key: surface
+            tag_value: surface
+          - key: oneway
+            tag_value: oneway
+          - key: tunnel
+            tag_value: tunnel
+          - key: bridge
+            tag_value: bridge
+          - key: toll
+            tag_value: toll
+          - key: access
+            tag_value: access
+            min_zoom: 12
+
+  # ── RAILWAYS ─────────────────────────────────────────────────────────────
+  - id: railways
+    features:
+      - source: osm
+        geometry: line
+        min_zoom:
+          default_value: 10
+          overrides:
+            - if: { usage: main }
+              value: 5
+            - if: { usage: branch }
+              value: 8
+            - if: { railway: [subway, tram, light_rail] }
+              value: 10
+            - if: { railway: narrow_gauge }
+              value: 9
+        include_when:
+          railway:
+            - rail
+            - narrow_gauge
+            - tram
+            - subway
+            - light_rail
+            - funicular
+            - monorail
+        exclude_when:
+          railway: [abandoned, disused, razed, proposed, construction]
+          __all__:
+            - service: [spur, siding, yard]
+        attributes:
+          - key: railway
+            tag_value: railway
+          - key: usage
+            tag_value: usage
+          - key: service
+            tag_value: service
+          - key: operator
+            tag_value: operator
+          - key: gauge
+            tag_value: gauge
+          - key: electrified
+            tag_value: electrified
+          - key: maxspeed
+            tag_value: maxspeed
+            type: integer
+          - key: name
+            tag_value: name
+          - key: ref
+            tag_value: ref
+          - key: highspeed
+            tag_value: highspeed
+
+  # ── BUILDINGS ────────────────────────────────────────────────────────────
+  - id: buildings
+    features:
+      - source: osm
+        geometry: polygon
+        min_zoom: 13
+        include_when:
+          building: __any__
+        exclude_when:
+          building: [no, "false"]
+        attributes:
+          - key: building
+            tag_value: building
+          - key: height
+            tag_value: height
+            type: double
+          - key: levels
+            tag_value: building:levels
+            type: integer
+          - key: name
+            tag_value: name
+            min_zoom: 14
+
+  # ── LANDUSE ──────────────────────────────────────────────────────────────
+  - id: landuse
+    features:
+      - source: osm
+        geometry: polygon
+        min_zoom:
+          default_value: 10
+          overrides:
+            - if: { landuse: [industrial, commercial, retail] }
+              value: 8
+            - if: { landuse: [residential] }
+              value: 10
+            - if: { landuse: [forest, farmland] }
+              value: 6
+        include_when:
+          landuse:
+            - industrial
+            - commercial
+            - retail
+            - residential
+            - farmland
+            - farmyard
+            - forest
+            - meadow
+            - orchard
+            - vineyard
+            - recreation_ground
+            - cemetery
+            - quarry
+            - landfill
+            - military
+            - port
+            - railway
+          leisure:
+            - park
+            - garden
+            - pitch
+            - stadium
+            - golf_course
+            - nature_reserve
+          amenity:
+            - hospital
+            - school
+            - university
+            - college
+        attributes:
+          - key: kind
+            value:
+              default_value: other
+              overrides:
+                - if: { landuse: industrial }
+                  value: industrial
+                - if: { landuse: commercial }
+                  value: commercial
+                - if: { landuse: retail }
+                  value: retail
+                - if: { landuse: residential }
+                  value: residential
+                - if: { landuse: [forest, farmland, meadow, orchard, vineyard] }
+                  value: nature
+                - if: { leisure: [park, garden, nature_reserve] }
+                  value: park
+                - if: { landuse: [military] }
+                  value: military
+                - if: { landuse: [port] }
+                  value: port
+                - if: { amenity: hospital }
+                  value: hospital
+                - if: { amenity: [school, university, college] }
+                  value: education
+          - key: name
+            tag_value: name
+
+  # ── WATER ────────────────────────────────────────────────────────────────
+  - id: water
+    features:
+      - source: osm
+        geometry: polygon
+        min_zoom:
+          default_value: 6
+          overrides:
+            - if: { natural: sea }
+              value: 0
+            - if: { natural: ocean }
+              value: 0
+        include_when:
+          natural:
+            - water
+            - bay
+            - strait
+            - sea
+            - ocean
+          landuse:
+            - reservoir
+            - basin
+          waterway:
+            - riverbank
+            - dock
+        attributes:
+          - key: kind
+            value:
+              default_value: water
+              overrides:
+                - if: { natural: [sea, ocean] }
+                  value: ocean
+                - if: { natural: bay }
+                  value: bay
+                - if: { landuse: reservoir }
+                  value: reservoir
+          - key: name
+            tag_value: name
+      # Waterway lines (rivers, canals)
+      - source: osm
+        geometry: line
+        min_zoom:
+          default_value: 12
+          overrides:
+            - if: { waterway: river }
+              value: 8
+            - if: { waterway: canal }
+              value: 10
+        include_when:
+          waterway:
+            - river
+            - canal
+            - stream
+            - ditch
+        attributes:
+          - key: waterway
+            tag_value: waterway
+          - key: name
+            tag_value: name
+
+  # ── BOUNDARIES ───────────────────────────────────────────────────────────
+  # admin_level: 2=country, 4=CCAA, 6=province, 8=municipality
+  - id: boundaries
+    features:
+      - source: osm
+        geometry: line
+        min_zoom:
+          default_value: 10
+          overrides:
+            - if: { admin_level: ["2"] }
+              value: 0
+            - if: { admin_level: ["4"] }
+              value: 4
+            - if: { admin_level: ["6"] }
+              value: 6
+            - if: { admin_level: ["8"] }
+              value: 10
+        include_when:
+          __all__:
+            - boundary: administrative
+            - admin_level: ["2", "4", "6", "8"]
+        attributes:
+          - key: admin_level
+            tag_value: admin_level
+            type: integer
+          - key: name
+            tag_value: name
+
+  # ── PLACES ───────────────────────────────────────────────────────────────
+  - id: places
+    features:
+      - source: osm
+        geometry: point
+        min_zoom:
+          default_value: 14
+          overrides:
+            - if: { place: country }
+              value: 2
+            - if: { place: state }
+              value: 4
+            - if: { place: city }
+              value: 5
+            - if: { place: town }
+              value: 8
+            - if: { place: village }
+              value: 11
+            - if: { place: hamlet }
+              value: 13
+            - if: { place: suburb }
+              value: 11
+        include_when:
+          place:
+            - country
+            - state
+            - city
+            - town
+            - village
+            - hamlet
+            - suburb
+            - neighbourhood
+            - locality
+            - island
+        attributes:
+          - key: place
+            tag_value: place
+          - key: name
+            tag_value: name
+          - key: population
+            tag_value: population
+            type: integer
+          - key: capital
+            tag_value: capital
+          - key: wikidata
+            tag_value: wikidata
+            min_zoom: 8
+
+  # ── TRANSPORT INFRASTRUCTURE ─────────────────────────────────────────────
+  # Airports, ports, stations, ferry terminals
+  - id: transport
+    features:
+      # Airport areas (runways, terminals, aprons)
+      - source: osm
+        geometry: polygon
+        min_zoom: 10
+        include_when:
+          aeroway:
+            - aerodrome
+            - terminal
+            - apron
+            - hangar
+        attributes:
+          - key: kind
+            value: airport
+          - key: aeroway
+            tag_value: aeroway
+          - key: name
+            tag_value: name
+          - key: iata
+            tag_value: iata
+          - key: icao
+            tag_value: icao
+      # Runways and taxiways (lines)
+      - source: osm
+        geometry: line
+        min_zoom: 11
+        include_when:
+          aeroway:
+            - runway
+            - taxiway
+        attributes:
+          - key: kind
+            value: runway
+          - key: aeroway
+            tag_value: aeroway
+          - key: ref
+            tag_value: ref
+          - key: length
+            tag_value: length
+            type: integer
+          - key: surface
+            tag_value: surface
+      # Ports and harbours (polygons)
+      - source: osm
+        geometry: polygon
+        min_zoom: 9
+        include_when:
+          landuse: [port, harbour]
+          harbour: __any__
+          industrial: port
+        attributes:
+          - key: kind
+            value: port
+          - key: name
+            tag_value: name
+          - key: harbour
+            tag_value: harbour
+      # Ferry terminals and stations (points)
+      - source: osm
+        geometry: point
+        min_zoom: 10
+        include_when:
+          amenity:
+            - ferry_terminal
+            - bus_station
+          railway:
+            - station
+            - halt
+          public_transport:
+            - station
+        attributes:
+          - key: kind
+            value:
+              default_value: station
+              overrides:
+                - if: { amenity: ferry_terminal }
+                  value: ferry_terminal
+                - if: { amenity: bus_station }
+                  value: bus_station
+                - if: { railway: station }
+                  value: railway_station
+                - if: { railway: halt }
+                  value: railway_halt
+          - key: name
+            tag_value: name
+          - key: operator
+            tag_value: operator
+          - key: network
+            tag_value: network
+
+  # ── POINTS OF INTEREST ──────────────────────────────────────────────────
+  - id: pois
+    features:
+      - source: osm
+        geometry: point
+        min_zoom: 13
+        include_when:
+          amenity:
+            - fuel
+            - hospital
+            - clinic
+            - pharmacy
+            - school
+            - university
+            - parking
+            - police
+            - fire_station
+            - courthouse
+            - townhall
+            - post_office
+            - library
+            - theatre
+            - cinema
+            - marketplace
+            - charging_station
+          tourism:
+            - hotel
+            - information
+            - viewpoint
+            - camp_site
+          shop:
+            - supermarket
+            - mall
+          highway:
+            - rest_area
+            - services
+        attributes:
+          - key: kind
+            tag_value: amenity
+          - key: name
+            tag_value: name
+          - key: brand
+            tag_value: brand
+          - key: operator
+            tag_value: operator
+
+  # ── NATURAL FEATURES ─────────────────────────────────────────────────────
+  - id: natural
+    features:
+      - source: osm
+        geometry: polygon
+        min_zoom:
+          default_value: 8
+          overrides:
+            - if: { natural: coastline }
+              value: 0
+        include_when:
+          natural:
+            - wood
+            - scrub
+            - heath
+            - grassland
+            - wetland
+            - beach
+            - sand
+            - cliff
+            - peak
+        attributes:
+          - key: natural
+            tag_value: natural
+          - key: name
+            tag_value: name
+          - key: ele
+            tag_value: ele
+            type: integer
+      # Peaks as points
+      - source: osm
+        geometry: point
+        min_zoom: 10
+        include_when:
+          natural: peak
+        attributes:
+          - key: natural
+            value: peak
+          - key: name
+            tag_value: name
+          - key: ele
+            tag_value: ele
+            type: integer
