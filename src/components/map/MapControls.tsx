@@ -306,15 +306,19 @@ export function MapControls({
   const [incidentFiltersOpen, setIncidentFiltersOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close panel on outside click (desktop)
+  // Close panel on outside click (desktop only)
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        setPanelOpen(false);
+    if (!panelOpen) return;
+    const timer = setTimeout(() => {
+      function handleClick(e: MouseEvent) {
+        if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+          setPanelOpen(false);
+        }
       }
-    }
-    if (panelOpen) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }, 100); // Small delay to avoid closing on the same click that opened it
+    return () => clearTimeout(timer);
   }, [panelOpen]);
 
   // Note: no body scroll lock — panel scrolls independently via overflow-y-auto

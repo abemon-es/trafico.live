@@ -58,28 +58,25 @@ export async function GET(request: NextRequest) {
       vesselWhere.flag = flag.toUpperCase().slice(0, 2);
     }
 
-    // Fetch latest position per vessel using Prisma's distinct
-    // (distinct on mmsi, ordered by createdAt desc gives us the latest row)
-    const positions = await prisma.vesselPosition.findMany({
-      where: {
-        createdAt: { gte: since },
-        vessel: Object.keys(vesselWhere).length > 0 ? vesselWhere : undefined,
-      },
-      distinct: ["mmsi"],
-      orderBy: [{ mmsi: "asc" }, { createdAt: "desc" }],
-      take: limit,
-      include: {
-        vessel: {
-          select: {
-            name: true,
-            shipType: true,
-            flag: true,
-            destination: true,
-            length: true,
-          },
-        },
-      },
-    });
+    // Fetch latest position per vessel via raw SQL (no FK relation)
+    const positions = await prisma.$queryRaw<Array<{
+      mmsi: number; latitude: number; longitude: number;
+      sog: number | null; cog: number | null; heading: number | null; navStatus: number | null;
+      createdAt: Date; name: string | null; shipType: number | null; flag: string | null;
+      destination: string | null; length: number | null;
+      category: string | null; owner: string | null; gt: number | null;
+    }>>`
+      SELECT DISTINCT ON (vp.mmsi)
+        vp.mmsi, vp.latitude::float, vp.longitude::float,
+        vp.sog, vp.cog, vp.heading, vp."navStatus", vp."createdAt",
+        v.name, v."shipType", v.flag, v.destination, v.length,
+        v."shipCategory" as category, v."registeredOwner" as owner, v."grossTonnage" as gt
+      FROM "VesselPosition" vp
+      LEFT JOIN "Vessel" v ON v.mmsi = vp.mmsi
+      WHERE vp."createdAt" > ${since}
+      ORDER BY vp.mmsi, vp."createdAt" DESC
+      LIMIT ${limit}
+    `;
 
     // Apply geographic bounds filter (post-query — bounding box is client-driven)
     let filtered = positions;
@@ -106,11 +103,14 @@ export async function GET(request: NextRequest) {
         },
         properties: {
           mmsi: p.mmsi,
-          name: p.vessel?.name ?? null,
-          shipType: p.vessel?.shipType ?? null,
-          flag: p.vessel?.flag ?? null,
-          destination: p.vessel?.destination ?? null,
-          length: p.vessel?.length ?? null,
+          name: p.name,
+          shipType: p.shipType,
+          flag: p.flag,
+          destination: p.destination,
+          length: p.length,
+          category: p.category,
+          owner: p.owner,
+          gt: p.gt,
           sog: p.sog,
           cog: p.cog,
           heading: p.heading,

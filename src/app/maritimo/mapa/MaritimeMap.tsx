@@ -127,6 +127,23 @@ export default function MaritimeMap() {
   });
   const [emergencies, setEmergencies] = useState<Array<{ id: string; latitude: number; longitude: number; type: string; description: string | null; year: number }>>([]);
   const [coastalAlerts, setCoastalAlerts] = useState<Array<{ id: string; province: string; provinceName: string | null; type: string; severity: string; description: string | null }>>([]);
+  const [vesselCategories, setVesselCategories] = useState<Record<string, boolean>>({
+    CARGO: true,
+    TANKER: true,
+    FISHING: true,
+    PASSENGER: true,
+    FERRY: true,
+    CRUISE: true,
+    ROPAX: true,
+    TUG: true,
+    PLEASURE: true,
+    SAILING: true,
+    MILITARY: true,
+    HSC: true,
+    OFFSHORE: true,
+    DREDGING: true,
+    OTHER: true,
+  });
   const [panelOpen, setPanelOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const mapWrapperRef = useRef<HTMLDivElement>(null);
@@ -487,12 +504,70 @@ export default function MaritimeMap() {
       // Ferry stop circles
       map.addLayer(LAYER_STYLES.ferryStopsCircle as maplibregl.AddLayerObject);
 
-      // Vessel positions — circle hidden; symbol layer replaces visually
-      map.addLayer(LAYER_STYLES.vesselsCircle as maplibregl.AddLayerObject);
-      map.setLayoutProperty("vessels-circle", "visibility", "none");
+      // Vessel heading lines (course projection, proportional to speed)
+      map.addSource("vessel-headings", {
+        type: "vector",
+        tiles: ["https://tiles.trafico.live/dynamic/vessel_headings/{z}/{x}/{y}"],
+        minzoom: 3,
+        maxzoom: 14,
+      });
+      map.addLayer({
+        id: "vessel-heading-lines",
+        type: "line",
+        source: "vessel-headings",
+        "source-layer": "vessel_headings",
+        paint: {
+          "line-color": [
+            "match", ["coalesce", ["get", "category"], "OTHER"],
+            "CARGO", "#16a34a",
+            "TANKER", "#d97706",
+            "FISHING", "#0891b2",
+            "PASSENGER", "#dc2626",
+            "FERRY", "#e11d48",
+            "CRUISE", "#9333ea",
+            "TUG", "#64748b",
+            "#94a3b8",
+          ],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 1.5, 14, 2.5],
+          "line-opacity": 0.6,
+        },
+      } as maplibregl.AddLayerObject);
+
+      // Vessel positions — category icons with color + rotation
       loadTransportIcons(map).then(() => {
         if (!map.getCanvas()) return;
-        addTileLayer(map, "vesselsSymbol");
+        map.addLayer({
+          id: "vessels-symbol",
+          type: "symbol",
+          source: "vessels",
+          "source-layer": "vessels",
+          layout: {
+            "icon-image": [
+              "match", ["coalesce", ["get", "category"], "OTHER"],
+              "CARGO", "vessel-cargo",
+              "TANKER", "vessel-tanker",
+              "FISHING", "vessel-fishing",
+              "PASSENGER", "vessel-passenger",
+              "FERRY", "vessel-passenger",
+              "CRUISE", "vessel-cruise",
+              "ROPAX", "vessel-passenger",
+              "TUG", "vessel-tug",
+              "PLEASURE", "vessel-pleasure",
+              "SAILING", "vessel-sailing",
+              "MILITARY", "vessel-military",
+              "OFFSHORE", "vessel-offshore",
+              "vessel-default",
+            ],
+            "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.35, 7, 0.55, 10, 0.75, 14, 1.0],
+            "icon-rotate": ["coalesce", ["get", "cog"], 0],
+            "icon-rotation-alignment": "map",
+            "icon-pitch-alignment": "map",
+            "icon-allow-overlap": true,
+          },
+          paint: {
+            "icon-opacity": 0.95,
+          },
+        } as maplibregl.AddLayerObject);
       });
 
       // Port labels
@@ -516,7 +591,7 @@ export default function MaritimeMap() {
       });
 
       // Vessel hover popup — shared for circle (fallback) and symbol layers
-      const vesselPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, maxWidth: "240px" });
+      const vesselPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, maxWidth: "320px" });
       function showVesselPopup(e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) {
         const f = e.features?.[0];
         if (!f) return;
@@ -524,20 +599,55 @@ export default function MaritimeMap() {
         const p = f.properties || {};
         const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number];
         const speed = p.sog != null ? `${Number(p.sog).toFixed(1)} kn` : "N/D";
+        const course = p.cog != null ? `${Math.round(Number(p.cog))}\u00b0` : "";
+        const heading = p.heading != null ? `${p.heading}\u00b0` : "";
+        const flagEmoji = p.flag ? String.fromCodePoint(...[...p.flag.toUpperCase()].map((c: string) => 0x1F1E6 - 65 + c.charCodeAt(0))) : "";
+        
+        // Speed indicator color
+        const sogVal = p.sog != null ? Number(p.sog) : -1;
+        const speedColor = sogVal >= 10 ? "#22c55e" : sogVal >= 2 ? "#eab308" : sogVal >= 0 ? "#ef4444" : "#9ca3af";
+        const speedLabel = sogVal >= 10 ? "En ruta" : sogVal >= 2 ? "Maniobra" : sogVal >= 0 ? "Parado" : "";
+        
+        // Category color
+        const catColors: Record<string, string> = {
+          CARGO: "#16a34a", TANKER: "#d97706", FISHING: "#0891b2", PASSENGER: "#dc2626",
+          FERRY: "#dc2626", CRUISE: "#9333ea", ROPAX: "#e11d48", TUG: "#64748b",
+          PLEASURE: "#06b6d4", SAILING: "#14b8a6", MILITARY: "#1e3a5f", OFFSHORE: "#ea580c",
+        };
+        const catColor = catColors[p.category] || "#94a3b8";
+        // Translate category to Spanish
+        const catTranslations: Record<string, string> = {
+          CARGO: "Carga", TANKER: "Petrolero", FISHING: "Pesquero",
+          PASSENGER: "Pasajeros", FERRY: "Ferry", CRUISE: "Crucero",
+          ROPAX: "Ro-Pax", TUG: "Remolcador", PLEASURE: "Recreo",
+          SAILING: "Velero", MILITARY: "Militar", HSC: "Alta velocidad",
+          OFFSHORE: "Offshore", DREDGING: "Draga", OTHER: "Otro",
+          PORT_TENDER: "Práctico", PILOT: "Piloto", SAR: "Salvamento",
+          LAW_ENFORCEMENT: "Vigilancia", RESEARCH: "Investigación",
+          UTILITY: "Servicio",
+        };
+        const catLabel = catTranslations[p.category] || p.typeDetailed || p.subtype || "Desconocido";
+        
         vesselPopup.setLngLat(coords).setHTML(
-          `<div style="font-family:'DM Sans',system-ui;font-size:13px;line-height:1.5">
-            <div style="font-weight:700">${p.vesselName || `MMSI ${p.mmsi}`}</div>
-            <div style="color:#6b7280">${p.destination || ""}</div>
-            <div style="color:#0891b2;font-size:11px">SOG: ${speed}</div>
+          `<div style="font-family:'DM Sans',system-ui;font-size:13px;line-height:1.6;min-width:200px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${catColor}"></span>
+              <span style="font-weight:700;font-size:14px">${p.vesselName || `MMSI ${p.mmsi}`}</span>
+              <span>${flagEmoji}</span>
+            </div>
+            <div style="color:${catColor};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">${catLabel}</div>
+            ${p.owner ? `<div style="color:#6b7280;font-size:11px;margin-top:2px">\ud83c\udfe2 ${p.owner}</div>` : ""}
+            ${p.destination ? `<div style="color:#6b7280;font-size:11px">\ud83d\udccd ${p.destination}</div>` : ""}
+            <div style="display:flex;gap:12px;margin-top:6px;padding-top:6px;border-top:1px solid #e5e7eb">
+              <div><span style="color:${speedColor};font-weight:600">${speed}</span></div>
+              ${course ? `<div style="color:#6b7280">Rumbo ${course}</div>` : ""}
+              ${p.gt ? `<div style="color:#6b7280">${Number(p.gt).toLocaleString()} GT</div>` : ""}
+            </div>
+            ${speedLabel ? `<div style="font-size:10px;color:${speedColor};margin-top:2px">${speedLabel}</div>` : ""}
           </div>`
         ).addTo(map);
       }
-      map.on("mouseenter", "vessels-circle", showVesselPopup);
       map.on("mouseenter", "vessels-symbol", showVesselPopup);
-      map.on("mouseleave", "vessels-circle", () => {
-        map.getCanvas().style.cursor = "";
-        vesselPopup.remove();
-      });
       map.on("mouseleave", "vessels-symbol", () => {
         map.getCanvas().style.cursor = "";
         vesselPopup.remove();
@@ -820,10 +930,25 @@ export default function MaritimeMap() {
   useEffect(() => {
     if (!mapRef.current || !isLoaded) return;
     const vis = layers.vessels ? "visible" : "none";
-    // Circle is always hidden (symbol replaces it); symbol toggles with user preference
-    if (mapRef.current.getLayer("vessels-circle")) mapRef.current.setLayoutProperty("vessels-circle", "visibility", "none");
     if (mapRef.current.getLayer("vessels-symbol")) mapRef.current.setLayoutProperty("vessels-symbol", "visibility", vis);
+    if (mapRef.current.getLayer("vessel-heading-lines")) mapRef.current.setLayoutProperty("vessel-heading-lines", "visibility", vis);
   }, [layers.vessels, isLoaded]);
+
+  // ─── Vessel category filter ───────────────────────────────────────────
+  useEffect(() => {
+    if (!isLoaded || !mapRef.current) return;
+    const activeCategories = Object.entries(vesselCategories)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+    
+    const filter: maplibregl.FilterSpecification = ["in", ["get", "category"], ["literal", activeCategories]];
+    
+    for (const layerId of ["vessels-symbol"]) {
+      if (mapRef.current.getLayer(layerId)) {
+        mapRef.current.setFilter(layerId, filter);
+      }
+    }
+  }, [vesselCategories, isLoaded]);
 
   // ─── Ports + ferries layer visibility ──────────────────────────────────
 
@@ -962,6 +1087,38 @@ export default function MaritimeMap() {
                   </div>
                 ))}
               </div>
+              {/* ── Vessel category filter ── */}
+              {layers.vessels && (
+                <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 px-1">
+                  <span className="text-gray-400 text-xs font-medium">Filtrar buques por tipo:</span>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 mt-1.5">
+                    {([
+                      ["CARGO", "Carga", "#16a34a"],
+                      ["TANKER", "Petrolero", "#d97706"],
+                      ["FISHING", "Pesquero", "#0891b2"],
+                      ["PASSENGER", "Pasajeros", "#dc2626"],
+                      ["FERRY", "Ferry", "#dc2626"],
+                      ["CRUISE", "Crucero", "#9333ea"],
+                      ["ROPAX", "Ro-Pax", "#e11d48"],
+                      ["TUG", "Remolcador", "#64748b"],
+                      ["PLEASURE", "Recreo", "#06b6d4"],
+                      ["OFFSHORE", "Offshore", "#ea580c"],
+                    ] as const).map(([key, label, color]) => (
+                      <label key={key} className="flex items-center gap-1.5 text-xs cursor-pointer py-0.5">
+                        <input
+                          type="checkbox"
+                          checked={vesselCategories[key] ?? true}
+                          onChange={() => setVesselCategories(prev => ({ ...prev, [key]: !prev[key] }))}
+                          className="w-3 h-3 rounded"
+                          style={{ accentColor: color }}
+                        />
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                        <span className="text-gray-300">{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
