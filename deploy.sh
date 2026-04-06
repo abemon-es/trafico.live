@@ -6,7 +6,7 @@ IMAGE="trafico-web:latest"
 ENV_FILE="/opt/apps/trafico-live/.env"
 
 echo "Building $IMAGE..."
-docker build -f Dockerfile -t "$IMAGE" .
+DOCKER_BUILDKIT=0 docker build -f Dockerfile -t "$IMAGE" .
 
 echo "Stopping old container..."
 docker stop "$APP_NAME" 2>/dev/null || true
