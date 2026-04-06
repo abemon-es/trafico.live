@@ -155,9 +155,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="preconnect" href="https://a.basemaps.cartocdn.com" />
-        <link rel="preconnect" href="https://b.basemaps.cartocdn.com" />
-        <link rel="preconnect" href="https://fonts.openmaptiles.org" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://tiles.trafico.live" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://tiles.trafico.live" />
       </head>
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
