@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   AlertTriangle,
   Camera,
@@ -223,6 +223,44 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
   },
 ];
 
+
+// ─── Section tabs (filter categories by transport mode) ─────────────────────
+
+type SectionTab = {
+  id: string;
+  label: string;
+  layers: Set<keyof ActiveLayers>;
+};
+
+const SECTION_TABS: SectionTab[] = [
+  { id: "todos", label: "Todos", layers: new Set() }, // empty = show all
+  {
+    id: "trafico",
+    label: "Tr\u00e1fico",
+    layers: new Set<keyof ActiveLayers>(["v16", "incidents", "liveSpeed", "dangerScore", "roadworks", "sensors", "citySensors", "cameras", "radars"]),
+  },
+  {
+    id: "maritimo",
+    label: "Mar\u00edtimo",
+    layers: new Set<keyof ActiveLayers>(["vessels", "ports", "ferryRoutes", "ferryStops", "maritimeStations"]),
+  },
+  {
+    id: "trenes",
+    label: "Trenes",
+    layers: new Set<keyof ActiveLayers>(["railwayRoutes", "railwayStations"]),
+  },
+  {
+    id: "aviacion",
+    label: "Aviaci\u00f3n",
+    layers: new Set<keyof ActiveLayers>(["aircraft", "airports"]),
+  },
+  {
+    id: "servicios",
+    label: "Servicios",
+    layers: new Set<keyof ActiveLayers>(["gasStations", "chargers", "portugalGas", "zbe", "weather", "riskZones", "climateStations"]),
+  },
+];
+
 const EFFECT_OPTIONS: { value: IncidentEffect; label: string; color: string }[] = [
   { value: "ROAD_CLOSED", label: "Cortada", color: "#dc2626" },
   { value: "SLOW_TRAFFIC", label: "Lento", color: "#f97316" },
@@ -313,6 +351,7 @@ export function MapControls({
 }: MapControlsProps) {
   const [panelOpen, setPanelOpen] = useState(false);
   const [incidentFiltersOpen, setIncidentFiltersOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("todos");
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Close panel on outside click (desktop only)
@@ -348,6 +387,19 @@ export function MapControls({
       : [...incidentFilters.causes, cause];
     onIncidentFiltersChange({ ...incidentFilters, causes });
   };
+
+
+  // Filter categories based on active section tab
+  const filteredCategories = useMemo(() => {
+    const tab = SECTION_TABS.find((t) => t.id === activeTab);
+    if (!tab || tab.layers.size === 0) return CATEGORIES; // "todos" shows all
+    return CATEGORIES
+      .map((cat) => ({
+        ...cat,
+        layers: cat.layers.filter((layer) => tab.layers.has(layer.key)),
+      }))
+      .filter((cat) => cat.layers.length > 0);
+  }, [activeTab]);
 
   // ─── Render ──────────────────────────────────────────────────────────────
 
@@ -413,9 +465,26 @@ export function MapControls({
                   </button>
                 </div>
 
+                {/* Section tabs */}
+                <div className="flex gap-1 px-3 py-2 border-b border-gray-100 dark:border-gray-800 overflow-x-auto scrollbar-hide">
+                  {SECTION_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                        activeTab === tab.id
+                          ? "bg-tl-600 text-white"
+                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
                 {/* Scrollable content */}
                 <div className="overflow-y-auto min-h-0 flex-1 p-3 space-y-3">
-                  {CATEGORIES.map((cat) => (
+                  {filteredCategories.map((cat) => (
                     <div key={cat.title}>
                       <p className="text-[10px] font-mono font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 px-1">
                         {cat.title}

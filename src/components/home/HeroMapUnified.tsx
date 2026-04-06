@@ -35,13 +35,9 @@ export function HeroMapUnified() {
         defaultHeight="calc(70vh - 64px)"
         showStats={true}
         initialLayers={{
-          v16: true,
           incidents: true,
-          highways: true,
+          liveSpeed: true,
           provinces: true,
-          weather: true,
-          railwayRoutes: true,
-          roadSegments: true,
         }}
       />
     </Suspense>
