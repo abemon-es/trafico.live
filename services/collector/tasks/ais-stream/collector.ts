@@ -20,10 +20,23 @@ import { log, logError } from "../../shared/utils.js";
 const TASK = "ais-stream";
 
 // Bounding boxes for all Spanish waters [SW, NE] as [lat, lng]
-const SPAIN_BBOXES = [
-  [[35.7, -9.5], [43.8, 3.3]],    // Peninsula (Mediterranean + Atlantic + Cantabrian)
-  [[27.5, -18.2], [29.5, -13.3]], // Canary Islands
-  [[38.6, 1.1], [40.1, 4.4]],    // Balearic Islands
+// Major shipping regions — global coverage via regional bounding boxes
+// aisstream.io free tier rejects single worldwide bbox, so we use regional ones
+const WORLD_BBOXES = [
+  // W Mediterranean + Iberia + NW Africa + Canarias
+  [[25, -20], [48, 15]],
+  // E Mediterranean + Black Sea + Suez + Persian Gulf
+  [[10, 15], [48, 65]],
+  // NW Europe + North Sea + Baltic + Scandinavia
+  [[48, -15], [72, 35]],
+  // E Coast Americas + Caribbean + Gulf of Mexico
+  [[5, -100], [50, -40]],
+  // East Asia + SE Asia + Indian Ocean
+  [[-10, 65], [45, 145]],
+  // W Coast Americas
+  [[-55, -130], [55, -100]],
+  // Oceania + W Pacific
+  [[-50, 110], [5, 180]],
 ];
 
 // MMSI Maritime Identification Digit (MID) → country flag mapping
@@ -142,7 +155,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   // Duration: 0 = indefinite, otherwise milliseconds
   const duration = parseInt(process.env.COLLECTOR_DURATION || "3300000", 10); // default 55 min
   const batchInterval = 10_000; // flush positions every 10 seconds
-  const cleanupInterval = 3600_000; // cleanup every hour
+  // Cleanup disabled — full historical retention
 
   // Batching state
   const positionBatch: Array<{
@@ -293,20 +306,20 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  // Cleanup old positions (rolling 48h buffer)
-  async function cleanup() {
-    const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
-    try {
-      const result = await prisma.vesselPosition.deleteMany({
-        where: { createdAt: { lt: cutoff } },
-      });
-      if (result.count > 0) {
-        log(TASK, `Cleaned ${result.count} positions older than 48h`);
-      }
-    } catch (err) {
-      logError(TASK, "Cleanup failed", err);
-    }
-  }
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
+// REMOVED: No cleanup — full retention
 
   // Set up abort controller for duration-based shutdown
   const ac = new AbortController();
@@ -316,7 +329,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
       url: "wss://stream.aisstream.io/v0/stream",
       subscriptionMessage: {
         APIKey: apiKey,
-        BoundingBoxes: SPAIN_BBOXES,
+        BoundingBoxes: WORLD_BBOXES,
         FilterMessageTypes: [
           "PositionReport",
           "ShipStaticData",
@@ -336,7 +349,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     await flushVessels();
   }, batchInterval);
 
-  const cleanupTimer = setInterval(cleanup, cleanupInterval);
+  // cleanupTimer disabled — full retention
 
   // Stats logging every 60 seconds
   const statsTimer = setInterval(() => {
@@ -347,7 +360,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }, 60_000);
 
   // Run initial cleanup
-  await cleanup();
+  // await cleanup(); — disabled, full retention
 
   // Wait for duration or indefinite
   if (duration > 0) {
@@ -369,7 +382,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   // Graceful shutdown
   clearInterval(flushTimer);
-  clearInterval(cleanupTimer);
+  // clearInterval(cleanupTimer); — disabled
   clearInterval(statsTimer);
   await flushPositions();
   await flushVessels();
