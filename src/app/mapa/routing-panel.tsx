@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 import {
   calculateRoute,
-  calculateIsochrone,
   routeToGeoJSON,
+  formatDuration,
+  formatDistance,
+  getManeuverText,
 } from "@/lib/routing";
 import type { CostingModel, RouteResponse } from "@/lib/routing";
 import type maplibregl from "maplibre-gl";
@@ -26,8 +28,8 @@ interface RoutingPanelProps {
   map: maplibregl.Map | null;
 }
 
-type PanelMode = "route" | "isochrone";
-type PickTarget = "origin" | "destination" | "isochrone" | null;
+type PanelMode = "route";
+type PickTarget = "origin" | "destination" | null;
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -71,7 +73,7 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
   const [pickingTarget, setPickingTarget] = useState<PickTarget>(null);
 
   const pickPoint = useCallback(
-    (which: "origin" | "destination" | "isochrone") => {
+    (which: "origin" | "destination") => {
       if (!map) return;
       setPickingTarget(which);
       setError(null);
@@ -80,7 +82,7 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
 
       const handler = (e: maplibregl.MapMouseEvent) => {
         const { lng, lat } = e.lngLat;
-        if (which === "origin" || which === "isochrone") {
+        if (which === "origin") {
           setOrigin({ lat, lon: lng });
         } else {
           setDestination({ lat, lon: lng });
@@ -100,10 +102,7 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
     try {
       if (map.getLayer("route-line-layer")) map.removeLayer("route-line-layer");
       if (map.getSource("route-line")) map.removeSource("route-line");
-      if (map.getLayer("isochrone-fill")) map.removeLayer("isochrone-fill");
-      if (map.getLayer("isochrone-line")) map.removeLayer("isochrone-line");
-      if (map.getSource("isochrone")) map.removeSource("isochrone");
-    } catch {
+          } catch {
       // Layers may not exist — ignore
     }
   }, [map]);
@@ -145,11 +144,14 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
         layout: { "line-cap": "round", "line-join": "round" },
       });
 
-      const s = result.trip.summary;
+      // Fit map to route geometry bounds
+      const coords = result.routes[0].geometry.coordinates as [number, number][];
+      const lngs = coords.map((c) => c[0]);
+      const lats = coords.map((c) => c[1]);
       map.fitBounds(
         [
-          [s.min_lon, s.min_lat],
-          [s.max_lon, s.max_lat],
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
         ],
         { padding: 80 },
       );
@@ -160,62 +162,7 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
     }
   }, [origin, destination, costing, map, clearRoute]);
 
-  const handleIsochrone = useCallback(async () => {
-    if (!origin || !map) return;
-    setLoading(true);
-    setError(null);
-    clearRoute();
-
-    try {
-      const iso = await calculateIsochrone(origin, [15, 30, 60], costing);
-
-      map.addSource("isochrone", {
-        type: "geojson",
-        data: iso as unknown as GeoJSON.GeoJSON,
-      });
-      map.addLayer(
-        {
-          id: "isochrone-fill",
-          type: "fill",
-          source: "isochrone",
-          paint: {
-            "fill-color": [
-              "step",
-              ["get", "contour"],
-              "#22c55e",
-              15,
-              "#eab308",
-              30,
-              "#ef4444",
-            ],
-            "fill-opacity": 0.2,
-          },
-        } as maplibregl.AddLayerObject,
-        "roads-traffic",
-      );
-      map.addLayer({
-        id: "isochrone-line",
-        type: "line",
-        source: "isochrone",
-        paint: {
-          "line-color": [
-            "step",
-            ["get", "contour"],
-            "#22c55e",
-            15,
-            "#eab308",
-            30,
-            "#ef4444",
-          ],
-          "line-width": 2,
-        },
-      } as maplibregl.AddLayerObject);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error calculando isócrona");
-    } finally {
-      setLoading(false);
-    }
-  }, [origin, costing, map, clearRoute]);
+  // Isochrones not available with OSRM — would need Valhalla or custom implementation
 
   return (
     <div
@@ -326,9 +273,9 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
             <PointPicker
               label="Origen"
               value={origin}
-              picking={pickingTarget === "origin" || (mode === "isochrone" && pickingTarget === "isochrone")}
+              picking={pickingTarget === "origin" || (false)}
               onPick={() =>
-                pickPoint(mode === "isochrone" ? "isochrone" : "origin")
+                pickPoint("origin")
               }
               onClear={() => setOrigin(null)}
             />
@@ -346,7 +293,7 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
 
             {/* Action button */}
             <button
-              onClick={mode === "route" ? handleRoute : handleIsochrone}
+              onClick={handleRoute}
               disabled={
                 loading ||
                 !origin ||
@@ -355,11 +302,11 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
               className="w-full py-2 rounded-lg text-sm font-semibold transition-all"
               style={{
                 background:
-                  !loading && origin && (mode === "isochrone" || destination)
+                  !loading && origin && (destination)
                     ? "#1b4bd5"
                     : "rgba(27,75,213,0.25)",
                 color:
-                  !loading && origin && (mode === "isochrone" || destination)
+                  !loading && origin && (destination)
                     ? "#fff"
                     : "#475569",
                 cursor:
@@ -401,10 +348,6 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
               <RouteResultCard result={routeResult} />
             )}
 
-            {/* Isochrone legend */}
-            {mode === "isochrone" && !error && (
-              <IsochroneLegend />
-            )}
           </div>
         </div>
       )}
@@ -422,7 +365,7 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
           }}
         >
           Haz clic en el mapa para seleccionar{" "}
-          {pickingTarget === "origin" || pickingTarget === "isochrone"
+          {pickingTarget === "origin"
             ? "origen"
             : "destino"}
         </div>
@@ -492,8 +435,8 @@ function PointPicker({
 
 function RouteResultCard({ result }: { result: RouteResponse }) {
   const [expanded, setExpanded] = useState(false);
-  const { summary, legs } = result.trip;
-  const maneuvers = legs.flatMap((l) => l.maneuvers);
+  const route = result.routes[0];
+  const steps = route.legs.flatMap((l) => l.steps);
 
   return (
     <div
@@ -514,10 +457,10 @@ function RouteResultCard({ result }: { result: RouteResponse }) {
               color: "#94b6ff",
             }}
           >
-            {formatTime(summary.time)}
+            {formatDuration(route.duration)}
           </span>
           <span className="ml-2 text-xs" style={{ color: "#64748b" }}>
-            {formatDist(summary.length)}
+            {formatDistance(route.distance)}
           </span>
         </div>
         <button
@@ -539,7 +482,7 @@ function RouteResultCard({ result }: { result: RouteResponse }) {
           className="overflow-y-auto"
           style={{ maxHeight: 220, background: "rgba(15,23,42,0.5)" }}
         >
-          {maneuvers.map((m, i) => (
+          {steps.map((step, i) => (
             <div
               key={i}
               className="flex items-start gap-2 px-3 py-1.5 border-b last:border-b-0"
@@ -553,11 +496,11 @@ function RouteResultCard({ result }: { result: RouteResponse }) {
               </span>
               <div className="flex-1 min-w-0">
                 <div className="text-xs leading-snug" style={{ color: "#cbd5e1" }}>
-                  {m.instruction}
+                  {getManeuverText(step)}
                 </div>
-                {m.length > 0 && (
+                {step.distance > 0 && (
                   <div style={{ fontSize: 10, color: "#475569" }}>
-                    {formatDist(m.length)}
+                    {formatDistance(step.distance)}
                   </div>
                 )}
               </div>
