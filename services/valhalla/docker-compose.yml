@@ -40,7 +40,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
-      start_period: 300s  # Graph build takes several minutes
+      start_period: 1800s  # Graph build takes 20-30 min on first start
     deploy:
       resources:
         limits:

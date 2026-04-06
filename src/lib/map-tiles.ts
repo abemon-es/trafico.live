@@ -3,12 +3,12 @@
  *
  * Provides PMTiles protocol registration, tile source definitions,
  * helpers to add sources/layers to MapLibre maps, and the self-hosted
- * Protomaps basemap style.
+ * basemap style built from the custom Planetiler tileset.
  *
  * Architecture:
  *   - Static layers  → PMTiles files served via nginx at tiles.trafico.live/tiles/
  *   - Dynamic layers → Martin tile server proxied at tiles.trafico.live/dynamic/
- *   - Basemap        → Protomaps PMTiles (self-hosted) with CartoDB fallback
+ *   - Basemap        → trafico-iberia.pmtiles (Planetiler, Spain+Portugal OSM) with CartoDB fallback
  */
 
 import type { StyleSpecification, AddLayerObject, DataDrivenPropertyValueSpecification } from "maplibre-gl";
@@ -299,95 +299,139 @@ export function removeTileSource(map: maplibregl.Map, sourceId: string): void {
 // ─── Basemap style ───────────────────────────────────────────────────────────
 
 /**
- * Self-hosted Protomaps basemap style using brand colors.
- * Renders from a Spain-region PMTiles extract on tiles.trafico.live.
- * Labels are in Spanish natively (no post-load patching needed).
+ * Basemap style using the custom Planetiler tileset (trafico-iberia.pmtiles).
+ * Source: Spain + Portugal OSM, built with custom Planetiler schema.
+ * Labels use the native `name` property (already Spanish for Spain/Portugal).
  */
 export function getProtomapsStyle(): StyleSpecification {
-  const S = "protomaps";
-  const textEs = ["coalesce", ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
-  const textRef = ["coalesce", ["get", "ref"], ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
+  const S = "iberia";
+  const textName = ["get", "name"] as unknown as DataDrivenPropertyValueSpecification<string>;
+  const textRef = ["coalesce", ["get", "ref"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
 
   return {
     version: 8,
     glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
     sources: {
-      protomaps: {
+      iberia: {
         type: "vector",
-        url: `pmtiles://${TILES_BASE}/spain.pmtiles`,
-        attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
+        url: `pmtiles://${TILES_BASE}/tiles/trafico-iberia.pmtiles`,
+        promoteId: { roads: "ref" },
+        attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors",
       },
     },
     layers: [
-      // ── Background + terrain ─────────────────────────────────────────
+      // ── Background ───────────────────────────────────────────────────
+      // No "earth" layer in custom schema — use background color for land
       { id: "background", type: "background", paint: { "background-color": "#f0f5ff" } },
-      { id: "earth", type: "fill", source: S, "source-layer": "earth", paint: { "fill-color": "#f8fafc" } },
 
-      // ── Water — ocean/sea only, no inland rivers/lakes ──────────────
+      // ── Water ────────────────────────────────────────────────────────
+      // Polygons: ocean/water/bay/reservoir via `kind` property
       { id: "water", type: "fill", source: S, "source-layer": "water",
+        filter: ["in", "kind", "ocean", "water", "bay", "reservoir"],
         paint: { "fill-color": "#c0d5ff", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.7, 12, 0.4] },
+      },
+      // Waterway lines: rivers, canals, streams
+      { id: "waterway", type: "line", source: S, "source-layer": "water",
+        filter: ["in", "waterway", "river", "canal", "stream"],
+        minzoom: 8,
+        paint: {
+          "line-color": "#c0d5ff",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 12, 1.5, 14, 2.5],
+          "line-opacity": 0.7,
+        },
+      },
+
+      // ── Natural areas ────────────────────────────────────────────────
+      { id: "natural-wood", type: "fill", source: S, "source-layer": "natural",
+        filter: ["in", "natural", "wood", "scrub"],
+        minzoom: 9,
+        paint: { "fill-color": "#dcfce7", "fill-opacity": 0.2 },
+      },
+      { id: "natural-beach", type: "fill", source: S, "source-layer": "natural",
+        filter: ["==", "natural", "beach"],
+        minzoom: 10,
+        paint: { "fill-color": "#fef9c3", "fill-opacity": 0.4 },
       },
 
       // ── Landuse (layered) ────────────────────────────────────────────
-      {
-        id: "landuse-park", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["in", "pmap:kind", "park", "nature_reserve", "forest", "wood"],
+      // `kind` property: industrial/commercial/residential/nature/park/military/port/hospital/education
+      { id: "landuse-park", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["in", "kind", "park", "nature"],
         minzoom: 10,
         paint: { "fill-color": "#dcfce7", "fill-opacity": 0.25 },
       },
-      {
-        id: "landuse-residential", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["in", "pmap:kind", "residential", "suburb"],
+      { id: "landuse-residential", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["==", "kind", "residential"],
         minzoom: 10,
         paint: { "fill-color": "#f1f5f9", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0, 13, 0.4] },
       },
-      {
-        id: "landuse-industrial", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["in", "pmap:kind", "industrial", "quarry"],
+      { id: "landuse-industrial", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["in", "kind", "industrial", "commercial"],
         minzoom: 10,
         paint: { "fill-color": "#fef3c7", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0, 13, 0.3] },
       },
-      {
-        id: "landuse-hospital", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["==", "pmap:kind", "hospital"],
+      { id: "landuse-hospital", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["==", "kind", "hospital"],
         minzoom: 12,
         paint: { "fill-color": "#fecaca", "fill-opacity": 0.3 },
       },
-      {
-        id: "landuse-school", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["in", "pmap:kind", "school", "university", "college"],
+      { id: "landuse-education", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["==", "kind", "education"],
         minzoom: 12,
         paint: { "fill-color": "#e0e7ff", "fill-opacity": 0.3 },
       },
+      { id: "landuse-port", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["==", "kind", "port"],
+        minzoom: 10,
+        paint: { "fill-color": "#bfdbfe", "fill-opacity": 0.3 },
+      },
+      { id: "landuse-military", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["==", "kind", "military"],
+        minzoom: 10,
+        paint: { "fill-color": "#fde68a", "fill-opacity": 0.2 },
+      },
 
       // ── Buildings ────────────────────────────────────────────────────
-      {
-        id: "buildings", type: "fill", source: S, "source-layer": "buildings",
+      { id: "buildings", type: "fill", source: S, "source-layer": "buildings",
         minzoom: 13,
         paint: {
           "fill-color": "#e2e8f0",
           "fill-opacity": ["interpolate", ["linear"], ["zoom"], 13, 0, 14, 0.3, 16, 0.6],
         },
       },
-      {
-        id: "buildings-outline", type: "line", source: S, "source-layer": "buildings",
+      { id: "buildings-outline", type: "line", source: S, "source-layer": "buildings",
         minzoom: 14,
         paint: { "line-color": "#cbd5e1", "line-width": 0.5, "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 16, 0.5] },
       },
 
-      // ── Boundaries (country → region → municipality) ─────────────────
-      {
-        id: "boundary-country", type: "line", source: S, "source-layer": "boundaries",
-        filter: ["==", "pmap:kind", "country"],
+      // ── Airport runways / taxiways ───────────────────────────────────
+      { id: "transport-runway", type: "line", source: S, "source-layer": "transport",
+        filter: ["in", "aeroway", "runway", "taxiway"],
+        minzoom: 11,
+        paint: {
+          "line-color": "#94a3b8",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1, 13, 4, 15, 10],
+          "line-opacity": 0.6,
+        },
+      },
+      { id: "transport-airport-area", type: "fill", source: S, "source-layer": "transport",
+        filter: ["==", "kind", "airport"],
+        minzoom: 9,
+        paint: { "fill-color": "#e2e8f0", "fill-opacity": 0.2 },
+      },
+
+      // ── Boundaries (country → region → province) ─────────────────────
+      // `admin_level`: 2=country, 4=autonomous community, 6=province, 8=municipality
+      { id: "boundary-country", type: "line", source: S, "source-layer": "boundaries",
+        filter: ["==", "admin_level", 2],
         paint: {
           "line-color": "#6b8cce",
           "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.5, 14, 3],
           "line-dasharray": [5, 2],
         },
       },
-      {
-        id: "boundary-region", type: "line", source: S, "source-layer": "boundaries",
-        filter: ["any", ["==", "pmap:kind", "region"], ["==", "pmap:kind", "macroregion"]],
+      { id: "boundary-region", type: "line", source: S, "source-layer": "boundaries",
+        filter: ["==", "admin_level", 4],
         minzoom: 4,
         paint: {
           "line-color": MAP_COLORS.primaryLight,
@@ -396,31 +440,38 @@ export function getProtomapsStyle(): StyleSpecification {
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 7, 0.7],
         },
       },
-      {
-        id: "boundary-municipality", type: "line", source: S, "source-layer": "boundaries",
-        filter: ["==", "pmap:kind", "locality"],
-        minzoom: 10,
+      { id: "boundary-province", type: "line", source: S, "source-layer": "boundaries",
+        filter: ["==", "admin_level", 6],
+        minzoom: 7,
         paint: {
           "line-color": "#cbd5e1",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.3, 14, 1],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.2, 12, 0.8, 14, 1.5],
           "line-dasharray": [2, 2],
           "line-opacity": 0.5,
         },
       },
+      { id: "boundary-municipality", type: "line", source: S, "source-layer": "boundaries",
+        filter: ["==", "admin_level", 8],
+        minzoom: 10,
+        paint: {
+          "line-color": "#e2e8f0",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.2, 14, 0.8],
+          "line-dasharray": [1, 2],
+          "line-opacity": 0.4,
+        },
+      },
 
       // ── Roads — casings (white outlines for legibility) ──────────────
-      {
-        id: "roads-highway-casing", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "highway"],
+      { id: "roads-highway-casing", type: "line", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "motorway", "trunk"],
         paint: {
           "line-color": "#ffffff",
           "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 5, 14, 12],
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 7, 0.8],
         },
       },
-      {
-        id: "roads-major-casing", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "major_road"],
+      { id: "roads-major-casing", type: "line", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "primary", "secondary"],
         minzoom: 8,
         paint: {
           "line-color": "#ffffff",
@@ -430,43 +481,38 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Roads — fills ────────────────────────────────────────────────
-      {
-        id: "roads-highway", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "highway"],
+      { id: "roads-highway", type: "line", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "motorway", "trunk"],
         paint: {
           "line-color": ["interpolate", ["linear"], ["zoom"], 5, MAP_COLORS.primaryLight, 10, "#7da4f0"],
           "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.8, 10, 3, 14, 8],
         },
       },
-      {
-        id: "roads-major", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "major_road"],
+      { id: "roads-major", type: "line", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "primary", "secondary"],
         paint: {
           "line-color": "#b8cdff",
           "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 10, 1.5, 14, 5],
         },
       },
-      {
-        id: "roads-medium", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "medium_road"],
+      { id: "roads-medium", type: "line", source: S, "source-layer": "roads",
+        filter: ["==", "highway", "tertiary"],
         minzoom: 6,
         paint: {
           "line-color": "#dde8ff",
           "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 8, 0.3, 11, 1, 14, 3],
         },
       },
-      {
-        id: "roads-minor", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "minor_road"],
+      { id: "roads-minor", type: "line", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "residential", "unclassified", "service"],
         minzoom: 9,
         paint: {
           "line-color": "#e8eeff",
           "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.3, 14, 2, 16, 3],
         },
       },
-      {
-        id: "roads-path", type: "line", source: S, "source-layer": "roads",
-        filter: ["in", "pmap:kind", "path", "pedestrian", "footway", "cycleway"],
+      { id: "roads-path", type: "line", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "path", "pedestrian", "footway", "cycleway", "steps"],
         minzoom: 14,
         paint: {
           "line-color": "#d1d5db",
@@ -475,42 +521,42 @@ export function getProtomapsStyle(): StyleSpecification {
         },
       },
 
-      // ── Transit ──────────────────────────────────────────────────────
-      {
-        id: "transit-rail", type: "line", source: S, "source-layer": "transit",
-        filter: ["in", "pmap:kind", "rail"],
+      // ── Railways ─────────────────────────────────────────────────────
+      // `railway`: rail/tram/subway; `highspeed`: true for AVE lines
+      { id: "railway-highspeed", type: "line", source: S, "source-layer": "railways",
+        filter: ["all", ["==", "railway", "rail"], ["==", "highspeed", true]],
+        minzoom: 5,
+        paint: {
+          "line-color": "#1e40af",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 10, 1.5, 14, 3],
+          "line-dasharray": [6, 2],
+          "line-opacity": 0.7,
+        },
+      },
+      { id: "railway-main", type: "line", source: S, "source-layer": "railways",
+        filter: ["all", ["==", "railway", "rail"], ["!=", "highspeed", true]],
         minzoom: 7,
         paint: {
           "line-color": "#94a3b8",
           "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 10, 1, 14, 2],
           "line-dasharray": [4, 3],
+          "line-opacity": 0.8,
         },
       },
-      {
-        id: "transit-light-rail", type: "line", source: S, "source-layer": "transit",
-        filter: ["in", "pmap:kind", "light_rail", "subway", "tram"],
+      { id: "railway-light", type: "line", source: S, "source-layer": "railways",
+        filter: ["in", "railway", "tram", "subway", "light_rail", "narrow_gauge"],
         minzoom: 10,
         paint: {
           "line-color": "#a78bfa",
           "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.5, 14, 1.5],
           "line-dasharray": [3, 2],
-        },
-      },
-      {
-        id: "transit-ferry", type: "line", source: S, "source-layer": "transit",
-        filter: ["==", "pmap:kind", "ferry"],
-        minzoom: 6,
-        paint: {
-          "line-color": "#38bdf8",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 10, 1.5, 14, 2.5],
-          "line-dasharray": [6, 3],
+          "line-opacity": 0.7,
         },
       },
 
       // ── Road ref shields (highway numbers) ──────────────────────────
-      {
-        id: "road-ref-shields", type: "symbol", source: S, "source-layer": "roads",
-        filter: ["all", ["has", "ref"], ["in", "pmap:kind", "highway", "major_road"]],
+      { id: "road-ref-shields", type: "symbol", source: S, "source-layer": "roads",
+        filter: ["all", ["has", "ref"], ["in", "highway", "motorway", "trunk", "primary", "secondary"]],
         minzoom: 7,
         layout: {
           "text-field": ["get", "ref"],
@@ -530,12 +576,11 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — country ──────────────────────────────────────
-      {
-        id: "places-country", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "country"],
+      { id: "places-country", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "place", "country"],
         maxzoom: 7,
         layout: {
-          "text-field": textEs,
+          "text-field": textName,
           "text-font": ["Noto Sans Bold"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18],
           "text-transform": "uppercase",
@@ -550,13 +595,12 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — state / autonomous community ─────────────────
-      {
-        id: "places-state", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "state"],
+      { id: "places-state", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "place", "state"],
         minzoom: 4,
         maxzoom: 9,
         layout: {
-          "text-field": textEs,
+          "text-field": textName,
           "text-font": ["Noto Sans Medium"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 13],
           "text-transform": "uppercase",
@@ -572,11 +616,10 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — cities ───────────────────────────────────────
-      {
-        id: "places-city", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "city"],
+      { id: "places-city", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "place", "city"],
         layout: {
-          "text-field": textEs,
+          "text-field": textName,
           "text-font": ["Noto Sans Medium"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 15, 12, 18],
           "text-max-width": 8,
@@ -590,12 +633,11 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — towns ────────────────────────────────────────
-      {
-        id: "places-town", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "town"],
+      { id: "places-town", type: "symbol", source: S, "source-layer": "places",
+        filter: ["==", "place", "town"],
         minzoom: 7,
         layout: {
-          "text-field": textEs,
+          "text-field": textName,
           "text-font": ["Noto Sans Medium"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 12, 14, 15],
           "text-max-width": 8,
@@ -608,12 +650,11 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — villages ─────────────────────────────────────
-      {
-        id: "places-village", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "village"],
+      { id: "places-village", type: "symbol", source: S, "source-layer": "places",
+        filter: ["in", "place", "village", "hamlet"],
         minzoom: 10,
         layout: {
-          "text-field": textEs,
+          "text-field": textName,
           "text-font": ["Noto Sans Regular"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 12],
           "text-max-width": 7,
@@ -626,12 +667,11 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — suburbs, neighbourhoods ──────────────────────
-      {
-        id: "places-neighbourhood", type: "symbol", source: S, "source-layer": "places",
-        filter: ["in", "pmap:kind", "suburb", "neighbourhood", "locality"],
+      { id: "places-neighbourhood", type: "symbol", source: S, "source-layer": "places",
+        filter: ["in", "place", "suburb", "neighbourhood", "locality"],
         minzoom: 12,
         layout: {
-          "text-field": textEs,
+          "text-field": textName,
           "text-font": ["Noto Sans Regular"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 12],
           "text-max-width": 6,
@@ -646,9 +686,8 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Road name labels ────────────────────────────────────────────
-      {
-        id: "road-labels-highway", type: "symbol", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "highway"],
+      { id: "road-labels-highway", type: "symbol", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "motorway", "trunk"],
         minzoom: 10,
         layout: {
           "text-field": textRef,
@@ -661,12 +700,11 @@ export function getProtomapsStyle(): StyleSpecification {
         },
         paint: { "text-color": "#1e40af", "text-halo-color": "#ffffff", "text-halo-width": 1.5 },
       },
-      {
-        id: "road-labels-major", type: "symbol", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "major_road"],
+      { id: "road-labels-major", type: "symbol", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "primary", "secondary"],
         minzoom: 12,
         layout: {
-          "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]],
+          "text-field": ["get", "name"],
           "text-font": ["Noto Sans Regular"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 11],
           "symbol-placement": "line",
@@ -675,12 +713,11 @@ export function getProtomapsStyle(): StyleSpecification {
         },
         paint: { "text-color": "#475569", "text-halo-color": "#ffffff", "text-halo-width": 1 },
       },
-      {
-        id: "road-labels-minor", type: "symbol", source: S, "source-layer": "roads",
-        filter: ["in", "pmap:kind", "medium_road", "minor_road"],
+      { id: "road-labels-minor", type: "symbol", source: S, "source-layer": "roads",
+        filter: ["in", "highway", "tertiary", "residential", "unclassified"],
         minzoom: 14,
         layout: {
-          "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]],
+          "text-field": ["get", "name"],
           "text-font": ["Noto Sans Regular"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 14, 9, 16, 11],
           "symbol-placement": "line",
@@ -690,14 +727,31 @@ export function getProtomapsStyle(): StyleSpecification {
         paint: { "text-color": "#64748b", "text-halo-color": "#ffffff", "text-halo-width": 1 },
       },
 
-      // Water labels removed — focus on infrastructure, not geography
+      // ── Transport labels (airports, ferry terminals) ─────────────────
+      { id: "transport-labels", type: "symbol", source: S, "source-layer": "transport",
+        filter: ["in", "kind", "aerodrome", "ferry_terminal", "station"],
+        minzoom: 9,
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ["Noto Sans Medium"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 9, 9, 14, 12],
+          "text-offset": [0, 1],
+          "text-anchor": "top",
+          "text-max-width": 8,
+        },
+        paint: {
+          "text-color": "#334155",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+          "text-opacity": 0.85,
+        },
+      },
 
       // ── POI labels (high zoom) ──────────────────────────────────────
-      {
-        id: "poi-labels", type: "symbol", source: S, "source-layer": "pois",
+      { id: "poi-labels", type: "symbol", source: S, "source-layer": "pois",
         minzoom: 14,
         layout: {
-          "text-field": textEs,
+          "text-field": ["get", "name"],
           "text-font": ["Noto Sans Regular"],
           "text-size": 10,
           "text-offset": [0, 0.8],
@@ -716,43 +770,55 @@ export function getProtomapsStyle(): StyleSpecification {
 }
 
 /**
- * Self-hosted Protomaps basemap — dark theme.
+ * Basemap style using the custom Planetiler tileset — dark theme.
  * Same source/structure as the light variant, inverted palette.
  */
 export function getProtomapsDarkStyle(): StyleSpecification {
-  const S = "protomaps";
-  const textEs = ["coalesce", ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
-  const textRef = ["coalesce", ["get", "ref"], ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
+  const S = "iberia";
+  const textName = ["get", "name"] as unknown as DataDrivenPropertyValueSpecification<string>;
+  const textRef = ["coalesce", ["get", "ref"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
 
   return {
     version: 8,
     glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
     sources: {
-      protomaps: {
+      iberia: {
         type: "vector",
-        url: `pmtiles://${TILES_BASE}/spain.pmtiles`,
-        attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
+        url: `pmtiles://${TILES_BASE}/tiles/trafico-iberia.pmtiles`,
+        promoteId: { roads: "ref" },
+        attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors",
       },
     },
     layers: [
+      // No "earth" layer — background covers land
       { id: "background", type: "background", paint: { "background-color": "#0b0f1a" } },
-      { id: "earth", type: "fill", source: S, "source-layer": "earth", paint: { "fill-color": "#111827" } },
 
-      // Water — ocean only, faded at zoom
+      // Water
       { id: "water", type: "fill", source: S, "source-layer": "water",
+        filter: ["in", "kind", "ocean", "water", "bay", "reservoir"],
         paint: { "fill-color": "#0c2d4a", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.7, 12, 0.4] } },
+      { id: "waterway", type: "line", source: S, "source-layer": "water",
+        filter: ["in", "waterway", "river", "canal", "stream"], minzoom: 8,
+        paint: { "line-color": "#0c2d4a", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 12, 1.5, 14, 2.5], "line-opacity": 0.7 } },
 
-      // Landuse — parks only at high zoom
+      // Natural
+      { id: "natural-wood", type: "fill", source: S, "source-layer": "natural",
+        filter: ["in", "natural", "wood", "scrub"], minzoom: 9,
+        paint: { "fill-color": "#0d2818", "fill-opacity": 0.2 } },
+
+      // Landuse
       { id: "landuse-park", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["in", "pmap:kind", "park", "nature_reserve", "forest", "wood"],
-        minzoom: 10,
+        filter: ["in", "kind", "park", "nature"], minzoom: 10,
         paint: { "fill-color": "#0d2818", "fill-opacity": 0.25 } },
       { id: "landuse-residential", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["in", "pmap:kind", "residential", "suburb"], minzoom: 10,
+        filter: ["==", "kind", "residential"], minzoom: 10,
         paint: { "fill-color": "#151b2b", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0, 13, 0.4] } },
       { id: "landuse-industrial", type: "fill", source: S, "source-layer": "landuse",
-        filter: ["in", "pmap:kind", "industrial", "quarry"], minzoom: 10,
+        filter: ["in", "kind", "industrial", "commercial"], minzoom: 10,
         paint: { "fill-color": "#1a1708", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0, 13, 0.3] } },
+      { id: "landuse-port", type: "fill", source: S, "source-layer": "landuse",
+        filter: ["==", "kind", "port"], minzoom: 10,
+        paint: { "fill-color": "#0c2340", "fill-opacity": 0.3 } },
 
       // Buildings
       { id: "buildings", type: "fill", source: S, "source-layer": "buildings", minzoom: 13,
@@ -760,96 +826,114 @@ export function getProtomapsDarkStyle(): StyleSpecification {
       { id: "buildings-outline", type: "line", source: S, "source-layer": "buildings", minzoom: 14,
         paint: { "line-color": "#374151", "line-width": 0.5, "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 16, 0.5] } },
 
+      // Airport runways
+      { id: "transport-runway", type: "line", source: S, "source-layer": "transport",
+        filter: ["in", "aeroway", "runway", "taxiway"], minzoom: 11,
+        paint: { "line-color": "#374151", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1, 13, 4, 15, 10], "line-opacity": 0.5 } },
+      { id: "transport-airport-area", type: "fill", source: S, "source-layer": "transport",
+        filter: ["==", "kind", "airport"], minzoom: 9,
+        paint: { "fill-color": "#1f2937", "fill-opacity": 0.2 } },
+
       // Boundaries
       { id: "boundary-country", type: "line", source: S, "source-layer": "boundaries",
-        filter: ["==", "pmap:kind", "country"],
+        filter: ["==", "admin_level", 2],
         paint: { "line-color": "#4b6ca8", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.5, 14, 3], "line-dasharray": [5, 2] } },
       { id: "boundary-region", type: "line", source: S, "source-layer": "boundaries",
-        filter: ["any", ["==", "pmap:kind", "region"], ["==", "pmap:kind", "macroregion"]], minzoom: 4,
+        filter: ["==", "admin_level", 4], minzoom: 4,
         paint: { "line-color": "#3b5998", "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 8, 1, 14, 2], "line-dasharray": [3, 2], "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 7, 0.5] } },
+      { id: "boundary-province", type: "line", source: S, "source-layer": "boundaries",
+        filter: ["==", "admin_level", 6], minzoom: 7,
+        paint: { "line-color": "#374151", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.2, 12, 0.8, 14, 1.5], "line-dasharray": [2, 2], "line-opacity": 0.5 } },
 
       // Road casings (dark outlines)
       { id: "roads-highway-casing", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "highway"],
+        filter: ["in", "highway", "motorway", "trunk"],
         paint: { "line-color": "#0b0f1a", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 5, 14, 12], "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 7, 0.6] } },
 
       // Roads
       { id: "roads-highway", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "highway"],
+        filter: ["in", "highway", "motorway", "trunk"],
         paint: { "line-color": ["interpolate", ["linear"], ["zoom"], 5, "#3b6cf8", 10, "#5b8aff"], "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.8, 10, 3, 14, 8] } },
       { id: "roads-major", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "major_road"],
+        filter: ["in", "highway", "primary", "secondary"],
         paint: { "line-color": "#374151", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 10, 1.5, 14, 5] } },
       { id: "roads-medium", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "medium_road"], minzoom: 8,
+        filter: ["==", "highway", "tertiary"], minzoom: 8,
         paint: { "line-color": "#1f2937", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.2, 11, 1, 14, 3] } },
       { id: "roads-minor", type: "line", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "minor_road"], minzoom: 11,
+        filter: ["in", "highway", "residential", "unclassified", "service"], minzoom: 11,
         paint: { "line-color": "#1f2937", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.3, 14, 2, 16, 3] } },
       { id: "roads-path", type: "line", source: S, "source-layer": "roads",
-        filter: ["in", "pmap:kind", "path", "pedestrian", "footway", "cycleway"], minzoom: 14,
+        filter: ["in", "highway", "path", "pedestrian", "footway", "cycleway", "steps"], minzoom: 14,
         paint: { "line-color": "#374151", "line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.5, 16, 1.5], "line-dasharray": [2, 2] } },
 
-      // Transit
-      { id: "transit-rail", type: "line", source: S, "source-layer": "transit",
-        filter: ["in", "pmap:kind", "rail"], minzoom: 7,
-        paint: { "line-color": "#4b5563", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 10, 1, 14, 2], "line-dasharray": [4, 3] } },
-      { id: "transit-ferry", type: "line", source: S, "source-layer": "transit",
-        filter: ["==", "pmap:kind", "ferry"], minzoom: 6,
-        paint: { "line-color": "#1e5a8a", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 10, 1.5, 14, 2.5], "line-dasharray": [6, 3] } },
+      // Railways
+      { id: "railway-highspeed", type: "line", source: S, "source-layer": "railways",
+        filter: ["all", ["==", "railway", "rail"], ["==", "highspeed", true]], minzoom: 5,
+        paint: { "line-color": "#3b6cf8", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 10, 1.5, 14, 3], "line-dasharray": [6, 2], "line-opacity": 0.7 } },
+      { id: "railway-main", type: "line", source: S, "source-layer": "railways",
+        filter: ["all", ["==", "railway", "rail"], ["!=", "highspeed", true]], minzoom: 7,
+        paint: { "line-color": "#4b5563", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 10, 1, 14, 2], "line-dasharray": [4, 3], "line-opacity": 0.8 } },
+      { id: "railway-light", type: "line", source: S, "source-layer": "railways",
+        filter: ["in", "railway", "tram", "subway", "light_rail", "narrow_gauge"], minzoom: 10,
+        paint: { "line-color": "#7c3aed", "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.5, 14, 1.5], "line-dasharray": [3, 2], "line-opacity": 0.7 } },
 
       // Road ref shields
       { id: "road-ref-shields", type: "symbol", source: S, "source-layer": "roads",
-        filter: ["all", ["has", "ref"], ["in", "pmap:kind", "highway", "major_road"]], minzoom: 7,
+        filter: ["all", ["has", "ref"], ["in", "highway", "motorway", "trunk", "primary", "secondary"]], minzoom: 7,
         layout: { "text-field": ["get", "ref"], "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 8, 12, 10], "symbol-placement": "line", "text-rotation-alignment": "viewport", "symbol-spacing": 500, "text-max-angle": 30, "text-keep-upright": true },
         paint: { "text-color": "#7da4f0", "text-halo-color": "#0b0f1a", "text-halo-width": 2 } },
 
       // Place labels
       { id: "places-country", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "country"], maxzoom: 7,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18], "text-transform": "uppercase", "text-letter-spacing": 0.15, "text-max-width": 8 },
+        filter: ["==", "place", "country"], maxzoom: 7,
+        layout: { "text-field": textName, "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18], "text-transform": "uppercase", "text-letter-spacing": 0.15, "text-max-width": 8 },
         paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 2 } },
       { id: "places-state", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "state"], minzoom: 4, maxzoom: 9,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 13], "text-transform": "uppercase", "text-letter-spacing": 0.1, "text-max-width": 10 },
+        filter: ["==", "place", "state"], minzoom: 4, maxzoom: 9,
+        layout: { "text-field": textName, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 13], "text-transform": "uppercase", "text-letter-spacing": 0.1, "text-max-width": 10 },
         paint: { "text-color": "#6b7280", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5, "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.5, 6, 1] } },
       { id: "places-city", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "city"],
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 15, 12, 18], "text-max-width": 8, "text-allow-overlap": false },
+        filter: ["==", "place", "city"],
+        layout: { "text-field": textName, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 15, 12, 18], "text-max-width": 8, "text-allow-overlap": false },
         paint: { "text-color": "#e2e8f0", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5 } },
       { id: "places-town", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "town"], minzoom: 7,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 12, 14, 15], "text-max-width": 8 },
+        filter: ["==", "place", "town"], minzoom: 7,
+        layout: { "text-field": textName, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 12, 14, 15], "text-max-width": 8 },
         paint: { "text-color": "#cbd5e1", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5 } },
       { id: "places-village", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "pmap:kind", "village"], minzoom: 10,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 12], "text-max-width": 7 },
+        filter: ["in", "place", "village", "hamlet"], minzoom: 10,
+        layout: { "text-field": textName, "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 12], "text-max-width": 7 },
         paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 1.2 } },
       { id: "places-neighbourhood", type: "symbol", source: S, "source-layer": "places",
-        filter: ["in", "pmap:kind", "suburb", "neighbourhood", "locality"], minzoom: 12,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 12], "text-max-width": 6, "text-transform": "uppercase", "text-letter-spacing": 0.05 },
+        filter: ["in", "place", "suburb", "neighbourhood", "locality"], minzoom: 12,
+        layout: { "text-field": textName, "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 12], "text-max-width": 6, "text-transform": "uppercase", "text-letter-spacing": 0.05 },
         paint: { "text-color": "#6b7280", "text-halo-color": "#0b0f1a", "text-halo-width": 1 } },
 
       // Road labels
       { id: "road-labels-highway", type: "symbol", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "highway"], minzoom: 10,
+        filter: ["in", "highway", "motorway", "trunk"], minzoom: 10,
         layout: { "text-field": textRef, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 12], "symbol-placement": "line", "text-rotation-alignment": "map", "text-max-angle": 25, "symbol-spacing": 400 },
         paint: { "text-color": "#7da4f0", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5 } },
       { id: "road-labels-major", type: "symbol", source: S, "source-layer": "roads",
-        filter: ["==", "pmap:kind", "major_road"], minzoom: 12,
-        layout: { "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 11], "symbol-placement": "line", "text-rotation-alignment": "map", "text-max-angle": 30 },
+        filter: ["in", "highway", "primary", "secondary"], minzoom: 12,
+        layout: { "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 11], "symbol-placement": "line", "text-rotation-alignment": "map", "text-max-angle": 30 },
         paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 1 } },
 
-      // Water labels removed — infrastructure focus
+      // Transport labels
+      { id: "transport-labels", type: "symbol", source: S, "source-layer": "transport",
+        filter: ["in", "kind", "aerodrome", "ferry_terminal", "station"], minzoom: 9,
+        layout: { "text-field": ["get", "name"], "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 9, 9, 14, 12], "text-offset": [0, 1], "text-anchor": "top", "text-max-width": 8 },
+        paint: { "text-color": "#94a3b8", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5, "text-opacity": 0.85 } },
     ],
   };
 }
 
 /**
- * Get the basemap style, preferring the self-hosted Protomaps style.
+ * Get the basemap style, preferring the self-hosted Planetiler tileset.
  *
  * @param options.fallbackToCartoDB - If true, returns CartoDB Voyager URL instead
- *   of the Protomaps style object. Useful when tiles.trafico.live is not yet deployed.
+ *   of the iberia style object. Useful when tiles.trafico.live is not yet deployed.
  * @param options.theme - "light" (default) or "dark".
  */
 export function getBasemapStyle(options?: {

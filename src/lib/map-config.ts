@@ -5,12 +5,12 @@ import { isTileServerHealthy, resetTileHealth } from "@/lib/tile-fallback";
 
 // ─── Shared map configuration for all trafico.live maps ───
 
-// ── Self-hosted Protomaps styles ──
+// ── Self-hosted basemap styles (Planetiler trafico-iberia tileset) ──
 
-/** Self-hosted Protomaps basemap — light theme (brand-colored, Spanish labels) */
+/** Planetiler basemap — light theme (brand-colored, Spanish labels) */
 export const MAP_STYLE_PROTOMAPS = getProtomapsStyle();
 
-/** Self-hosted Protomaps basemap — dark theme (brand-colored, Spanish labels) */
+/** Planetiler basemap — dark theme (brand-colored, Spanish labels) */
 export const MAP_STYLE_PROTOMAPS_DARK = getProtomapsDarkStyle();
 
 // ── CartoDB fallbacks ──
@@ -70,16 +70,16 @@ export const MAP_COLORS = {
  * Force all basemap labels to Spanish.
  * Call this inside map.on("load", ...) after the style is fully loaded.
  *
- * No-op when using the self-hosted Protomaps style — labels are already in
- * Spanish via `["coalesce", ["get", "name:es"], ["get", "name"]]` expressions
- * baked into the style definition.
+ * No-op when using the self-hosted Planetiler (iberia) style — labels are already
+ * Spanish-native via `["get", "name"]` (Planetiler preserves OSM native names,
+ * which are already in Spanish for Spain and Portuguese for Portugal).
  */
 export function forceSpanishLabels(map: maplibregl.Map): void {
   try {
     const style = map.getStyle();
-    // Protomaps styles already use Spanish labels — skip patching
-    const isProtomaps = style?.sources != null && "protomaps" in style.sources;
-    if (isProtomaps) return;
+    // Custom Planetiler (iberia) styles already use Spanish labels — skip patching
+    const isIberia = style?.sources != null && "iberia" in style.sources;
+    if (isIberia) return;
 
     // CartoDB fallback — patch every symbol layer to prefer Spanish names
     for (const layer of style.layers) {
