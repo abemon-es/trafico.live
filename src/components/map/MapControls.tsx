@@ -44,7 +44,7 @@ import {
 import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import type { IncidentViewMode } from "./TrafficMap";
 
-export type LocationPreset = "peninsula" | "canarias" | "baleares" | "ceuta" | "melilla" | "portugal" | "marruecos";
+export type LocationPreset = "peninsula" | "canarias" | "baleares" | "ceuta" | "melilla" | "portugal" | "marruecos" | "mediterraneo";
 
 export interface ActiveLayers {
   v16: boolean;
@@ -141,6 +141,8 @@ interface MapControlsProps {
     maritimeStations: number;
     panels: number;
   };
+  vesselCategories?: Record<string, boolean>;
+  onVesselCategoryToggle?: (category: string) => void;
 }
 
 // ─── Layer categories ────────────────────────────────────────────────────────
@@ -173,7 +175,6 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
       { key: "radars", label: "Radares", icon: <Radar className="w-4 h-4" />, countKey: "radars" },
       { key: "gasStations", label: "Gasolineras", icon: <Fuel className="w-4 h-4" />, countKey: "gasStations" },
       { key: "chargers", label: "Cargadores EV", icon: <Zap className="w-4 h-4" />, countKey: "chargers" },
-      { key: "maritimeStations", label: "Marítimas", icon: <Anchor className="w-4 h-4" />, countKey: "maritimeStations" },
       { key: "portugalGas", label: "Gasolineras Portugal", icon: <Fuel className="w-4 h-4" /> },
     ],
   },
@@ -199,12 +200,18 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
       { key: "railwayStations", label: "Estaciones tren", icon: <Train className="w-4 h-4" /> },
       { key: "transitRoutes", label: "Rutas bus/metro", icon: <Bus className="w-4 h-4" /> },
       { key: "transitStops", label: "Paradas", icon: <Bus className="w-4 h-4" /> },
+      { key: "aircraft", label: "Aviones en vuelo", icon: <Plane className="w-4 h-4" /> },
+      { key: "airports", label: "Aeropuertos", icon: <Plane className="w-4 h-4" /> },
+    ],
+  },
+  {
+    title: "Marítimo",
+    layers: [
+      { key: "vessels", label: "Buques AIS", icon: <Ship className="w-4 h-4" /> },
+      { key: "ports", label: "Puertos", icon: <Anchor className="w-4 h-4" /> },
       { key: "ferryRoutes", label: "Rutas ferry", icon: <Ship className="w-4 h-4" /> },
       { key: "ferryStops", label: "Puertos ferry", icon: <Ship className="w-4 h-4" /> },
-      { key: "aircraft", label: "Aviones en vuelo", icon: <Plane className="w-4 h-4" /> },
-      { key: "vessels", label: "Buques AIS", icon: <Ship className="w-4 h-4" /> },
-      { key: "airports", label: "Aeropuertos", icon: <Plane className="w-4 h-4" /> },
-      { key: "ports", label: "Puertos", icon: <Anchor className="w-4 h-4" /> },
+      { key: "maritimeStations", label: "Combustible marítimo", icon: <Fuel className="w-4 h-4" />, countKey: "maritimeStations" },
     ],
   },
   {
@@ -301,6 +308,8 @@ export function MapControls({
   drivingMode,
   onDrivingModeToggle,
   counts,
+  vesselCategories,
+  onVesselCategoryToggle,
 }: MapControlsProps) {
   const [panelOpen, setPanelOpen] = useState(false);
   const [incidentFiltersOpen, setIncidentFiltersOpen] = useState(false);
@@ -547,6 +556,41 @@ export function MapControls({
                     </div>
                   ))}
 
+                  {/* Vessel category filter */}
+                  {activeLayers.vessels && vesselCategories && onVesselCategoryToggle && (
+                    <div>
+                      <p className="text-[10px] font-mono font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 px-1">
+                        Filtrar buques
+                      </p>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 px-1">
+                        {([
+                          ["CARGO", "Carga", "#16a34a"],
+                          ["TANKER", "Petrolero", "#d97706"],
+                          ["FISHING", "Pesquero", "#0891b2"],
+                          ["PASSENGER", "Pasajeros", "#dc2626"],
+                          ["FERRY", "Ferry", "#e11d48"],
+                          ["CRUISE", "Crucero", "#9333ea"],
+                          ["ROPAX", "Ro-Pax", "#e11d48"],
+                          ["TUG", "Remolcador", "#64748b"],
+                          ["PLEASURE", "Recreo", "#06b6d4"],
+                          ["OFFSHORE", "Offshore", "#ea580c"],
+                        ] as const).map(([key, label, color]) => (
+                          <label key={key} className="flex items-center gap-1.5 text-xs cursor-pointer py-0.5">
+                            <input
+                              type="checkbox"
+                              checked={vesselCategories[key] ?? true}
+                              onChange={() => onVesselCategoryToggle(key)}
+                              className="w-3 h-3 rounded"
+                              style={{ accentColor: color }}
+                            />
+                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                            <span className="text-gray-600 dark:text-gray-400">{label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Location presets */}
                   {onLocationChange && (
                     <div>
@@ -562,6 +606,7 @@ export function MapControls({
                           { preset: "ceuta" as LocationPreset, label: "Ceuta" },
                           { preset: "melilla" as LocationPreset, label: "Melilla" },
                           { preset: "marruecos" as LocationPreset, label: "Marruecos" },
+                          { preset: "mediterraneo" as LocationPreset, label: "Mediterr." },
                         ]).map(({ preset, label }) => (
                           <button
                             key={preset}

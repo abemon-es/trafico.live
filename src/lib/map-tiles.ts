@@ -79,6 +79,7 @@ export const SOURCE_LAYERS = {
   fleet: "fleet",
   aircraft: "aircraft",
   vessels: "vessels",
+  vesselHeadings: "vessel_headings",
   citySensors: "city_sensors",
   emergencies: "emergencies",
   roadworks: "roadworks",
@@ -219,6 +220,11 @@ export const TILE_SOURCES = {
     url: `${TILES_BASE}/dynamic/vessels`,
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.vessels,
+  },
+  vesselHeadings: {
+    url: `${TILES_BASE}/dynamic/vessel_headings`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.vesselHeadings,
   },
   citySensors: {
     url: `${TILES_BASE}/dynamic/city_sensors`,
@@ -1193,6 +1199,29 @@ export const LAYER_STYLES = {
         "#94a3b8",
       ],
       "icon-opacity": 0.9,
+    },
+  },
+
+  // ── Vessel heading lines (course projection, proportional to speed) ──
+  vesselHeadingLines: {
+    id: "vessel-heading-lines",
+    type: "line",
+    source: "vesselHeadings",
+    "source-layer": SOURCE_LAYERS.vesselHeadings,
+    paint: {
+      "line-color": [
+        "match", ["coalesce", ["get", "category"], "OTHER"],
+        "CARGO", "#16a34a",
+        "TANKER", "#d97706",
+        "FISHING", "#0891b2",
+        "PASSENGER", "#dc2626",
+        "FERRY", "#e11d48",
+        "CRUISE", "#9333ea",
+        "TUG", "#64748b",
+        "#94a3b8",
+      ],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 1.5, 14, 2.5],
+      "line-opacity": 0.6,
     },
   },
 

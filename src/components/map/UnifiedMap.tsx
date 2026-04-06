@@ -50,6 +50,7 @@ const MAP_PRESETS: Record<LocationPreset, { center: [number, number]; zoom: numb
   melilla: { center: [-2.94, 35.29], zoom: 12, layers: { gasStations: true, cameras: true } },
   portugal: { center: [-8.22, 39.4], zoom: 7, layers: { portugalGas: true, railwayRoutes: true, roadSegments: true } },
   marruecos: { center: [-6.85, 33.97], zoom: 6, layers: { roadSegments: true } },
+  mediterraneo: { center: [2, 38], zoom: 6, layers: { vessels: true, ports: true, ferryRoutes: true, ferryStops: true, maritimeStations: true } },
 };
 
 interface V16Response {
@@ -302,6 +303,12 @@ export function UnifiedMap({
   const [timelineActive, setTimelineActive] = useState(false);
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [timelinePlaying, setTimelinePlaying] = useState(false);
+  const [vesselCategories, setVesselCategories] = useState<Record<string, boolean>>({
+    CARGO: true, TANKER: true, FISHING: true, PASSENGER: true,
+    FERRY: true, CRUISE: true, ROPAX: true, TUG: true,
+    PLEASURE: true, SAILING: true, MILITARY: true, HSC: true,
+    OFFSHORE: true, DREDGING: true, OTHER: true,
+  });
 
   // Connect SSE for real-time push updates — when connected, disable SWR polling
   const { isConnected: sseConnected } = useTrafficStream();
@@ -801,6 +808,8 @@ export function UnifiedMap({
         drivingMode={drivingMode}
         onDrivingModeToggle={() => setDrivingMode((d) => !d)}
         counts={counts}
+        vesselCategories={vesselCategories}
+        onVesselCategoryToggle={(cat) => setVesselCategories((prev) => ({ ...prev, [cat]: !prev[cat] }))}
       />
 
       {/* Main content area */}
@@ -850,6 +859,7 @@ export function UnifiedMap({
               height="100%"
               onIncidentClick={handleIncidentClick}
               onInfrastructureClick={showInfraDetail}
+              vesselCategories={vesselCategories}
             />
             {/* Zone insights overlay */}
             <ZoneInsights

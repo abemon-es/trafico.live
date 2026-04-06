@@ -253,6 +253,7 @@ interface TrafficMapProps {
   height?: string;
   onIncidentClick?: (incident: Incident) => void;
   onInfrastructureClick?: (detail: import("./InfrastructureDetailPanel").InfrastructureDetail) => void;
+  vesselCategories?: Record<string, boolean>;
 }
 
 // Spain center coordinates
@@ -719,7 +720,7 @@ const getSatelliteStyle = (): maplibregl.StyleSpecification => ({
 });
 
 const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMap(
-  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, liveSpeedData, dangerScoreData, incidentFilters, incidentViewMode, darkMode = false, satellite = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick, onInfrastructureClick },
+  { activeLayers, v16Data, incidentData, cameraData, chargerData, weatherData, radarData, riskZoneData, zbeData, gasStationData, maritimeStationData, panelData, liveSpeedData, dangerScoreData, incidentFilters, incidentViewMode, darkMode = false, satellite = false, terrain3D = false, flowData = null, weatherRadar = false, windOverlay = false, cloudOverlay = false, tempOverlay = false, height = "500px", onIncidentClick, onInfrastructureClick, vesselCategories },
   ref
 ) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -1070,9 +1071,10 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             if (!m.getCanvas()) return;
             addTileLayer(m, "aircraftSymbol");
             addTileLayer(m, "vesselsSymbol");
+            addTileLayer(m, "vesselHeadingLines");
           });
           // Start hidden — visibility useEffects will set them when they fire
-          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "climate-stations-circle"]) {
+          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "vessel-heading-lines", "climate-stations-circle"]) {
             if (m.getLayer(lid)) m.setLayoutProperty(lid, "visibility", "none");
           }
 
@@ -1243,10 +1245,11 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       if (!_mapForIcons.getCanvas()) return;
       addTileLayer(_mapForIcons, "aircraftSymbol");
       addTileLayer(_mapForIcons, "vesselsSymbol");
+      addTileLayer(_mapForIcons, "vesselHeadingLines");
     });
 
     // Tile layers start hidden — visibility controlled by activeLayers
-    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "climate-stations-circle"]) {
+    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "vessel-heading-lines", "climate-stations-circle"]) {
       if (map.current.getLayer(layerId)) {
         map.current.setLayoutProperty(layerId, "visibility", "none");
       }
@@ -1399,37 +1402,71 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     map.current.on("mouseenter", "aircraft-symbol", () => { map.current!.getCanvas().style.cursor = "pointer"; });
     map.current.on("mouseleave", "aircraft-symbol", () => { map.current!.getCanvas().style.cursor = ""; });
 
-    // Vessels (circle layer — kept for fallback, symbol layer is primary)
-    map.current.on("click", "vessels-circle", (e) => {
-      const p = e.features?.[0]?.properties;
-      if (!p || !onInfrastructureClickRef.current) return;
-      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
-      onInfrastructureClickRef.current({
-        type: "vessel",
-        title: p.vesselName || p.mmsi || "Buque",
-        subtitle: p.shipType || p.flag || "",
-        coordinates: coords,
-        properties: p,
+    // Vessels — rich hover popup + click-to-detail-panel
+    const vesselPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, maxWidth: "320px" });
+    function showVesselPopup(e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) {
+      const f = e.features?.[0];
+      if (!f || !map.current) return;
+      map.current.getCanvas().style.cursor = "pointer";
+      const p = f.properties || {};
+      const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number];
+      const speed = p.sog != null ? `${Number(p.sog).toFixed(1)} kn` : "N/D";
+      const course = p.cog != null ? `${Math.round(Number(p.cog))}°` : "";
+      const flagEmoji = p.flag ? String.fromCodePoint(...[...p.flag.toUpperCase()].map((c: string) => 0x1F1E6 - 65 + c.charCodeAt(0))) : "";
+      const sogVal = p.sog != null ? Number(p.sog) : -1;
+      const speedColor = sogVal >= 10 ? "#22c55e" : sogVal >= 2 ? "#eab308" : sogVal >= 0 ? "#ef4444" : "#9ca3af";
+      const speedLabel = sogVal >= 10 ? "En ruta" : sogVal >= 2 ? "Maniobra" : sogVal >= 0 ? "Parado" : "";
+      const catColors: Record<string, string> = {
+        CARGO: "#16a34a", TANKER: "#d97706", FISHING: "#0891b2", PASSENGER: "#dc2626",
+        FERRY: "#dc2626", CRUISE: "#9333ea", ROPAX: "#e11d48", TUG: "#64748b",
+        PLEASURE: "#06b6d4", SAILING: "#14b8a6", MILITARY: "#1e3a5f", OFFSHORE: "#ea580c",
+      };
+      const catColor = catColors[p.category] || "#94a3b8";
+      const catTranslations: Record<string, string> = {
+        CARGO: "Carga", TANKER: "Petrolero", FISHING: "Pesquero",
+        PASSENGER: "Pasajeros", FERRY: "Ferry", CRUISE: "Crucero",
+        ROPAX: "Ro-Pax", TUG: "Remolcador", PLEASURE: "Recreo",
+        SAILING: "Velero", MILITARY: "Militar", HSC: "Alta velocidad",
+        OFFSHORE: "Offshore", DREDGING: "Draga", OTHER: "Otro",
+      };
+      const catLabel = catTranslations[p.category] || p.typeDetailed || p.subtype || "Desconocido";
+      vesselPopup.setLngLat(coords).setHTML(
+        `<div style="font-family:system-ui;font-size:13px;line-height:1.6;min-width:200px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${catColor}"></span>
+            <span style="font-weight:700;font-size:14px">${p.vesselName || `MMSI ${p.mmsi}`}</span>
+            <span>${flagEmoji}</span>
+          </div>
+          <div style="color:${catColor};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">${catLabel}</div>
+          ${p.owner ? `<div style="color:#6b7280;font-size:11px;margin-top:2px">🏢 ${p.owner}</div>` : ""}
+          ${p.destination ? `<div style="color:#6b7280;font-size:11px">📍 ${p.destination}</div>` : ""}
+          <div style="display:flex;gap:12px;margin-top:6px;padding-top:6px;border-top:1px solid #e5e7eb">
+            <div><span style="color:${speedColor};font-weight:600">${speed}</span></div>
+            ${course ? `<div style="color:#6b7280">Rumbo ${course}</div>` : ""}
+            ${p.gt ? `<div style="color:#6b7280">${Number(p.gt).toLocaleString()} GT</div>` : ""}
+          </div>
+          ${speedLabel ? `<div style="font-size:10px;color:${speedColor};margin-top:2px">${speedLabel}</div>` : ""}
+        </div>`
+      ).addTo(map.current);
+    }
+    for (const layerId of ["vessels-symbol", "vessels-circle"]) {
+      map.current.on("mouseenter", layerId, showVesselPopup);
+      map.current.on("mouseleave", layerId, () => {
+        if (map.current) { map.current.getCanvas().style.cursor = ""; vesselPopup.remove(); }
       });
-    });
-    map.current.on("mouseenter", "vessels-circle", () => { map.current!.getCanvas().style.cursor = "pointer"; });
-    map.current.on("mouseleave", "vessels-circle", () => { map.current!.getCanvas().style.cursor = ""; });
-
-    // Vessels symbol layer — primary interaction layer
-    map.current.on("click", "vessels-symbol", (e) => {
-      const p = e.features?.[0]?.properties;
-      if (!p || !onInfrastructureClickRef.current) return;
-      const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
-      onInfrastructureClickRef.current({
-        type: "vessel",
-        title: p.vesselName || p.mmsi || "Buque",
-        subtitle: p.shipType || p.flag || "",
-        coordinates: coords,
-        properties: p,
+      map.current.on("click", layerId, (e) => {
+        const p = e.features?.[0]?.properties;
+        if (!p || !onInfrastructureClickRef.current) return;
+        const coords = (e.features![0].geometry as GeoJSON.Point).coordinates as [number, number];
+        onInfrastructureClickRef.current({
+          type: "vessel",
+          title: p.vesselName || p.mmsi || "Buque",
+          subtitle: p.shipType || p.flag || "",
+          coordinates: coords,
+          properties: p,
+        });
       });
-    });
-    map.current.on("mouseenter", "vessels-symbol", () => { map.current!.getCanvas().style.cursor = "pointer"; });
-    map.current.on("mouseleave", "vessels-symbol", () => { map.current!.getCanvas().style.cursor = ""; });
+    }
 
     // Traffic sensors
     map.current.on("click", "sensors-circle", (e) => {
@@ -2027,13 +2064,25 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
     if (map.current.getLayer("aircraft-symbol")) map.current.setLayoutProperty("aircraft-symbol", "visibility", vis);
   }, [activeLayers.aircraft, isLoaded]);
 
-  // Toggle tile layer visibility — vessels (AIS)
+  // Toggle tile layer visibility — vessels (AIS) + heading lines
   useEffect(() => {
     if (!map.current || !isLoaded) return;
     const vis = activeLayers.vessels ? "visible" : "none";
     if (map.current.getLayer("vessels-circle")) map.current.setLayoutProperty("vessels-circle", "visibility", "none");
     if (map.current.getLayer("vessels-symbol")) map.current.setLayoutProperty("vessels-symbol", "visibility", vis);
+    if (map.current.getLayer("vessel-heading-lines")) map.current.setLayoutProperty("vessel-heading-lines", "visibility", vis);
   }, [activeLayers.vessels, isLoaded]);
+
+  // Vessel category filter
+  useEffect(() => {
+    if (!map.current || !isLoaded || !vesselCategories) return;
+    const activeCategories = Object.entries(vesselCategories)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+    const filter: maplibregl.FilterSpecification = ["in", ["get", "category"], ["literal", activeCategories]];
+    if (map.current.getLayer("vessels-symbol")) map.current.setFilter("vessels-symbol", filter);
+    if (map.current.getLayer("vessel-heading-lines")) map.current.setFilter("vessel-heading-lines", filter);
+  }, [vesselCategories, isLoaded]);
 
   // Toggle tile layer visibility — climate stations (AEMET)
   useEffect(() => {
