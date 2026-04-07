@@ -86,6 +86,7 @@ export async function GET(request: NextRequest) {
         { rain: number; clear: number; rainFatalities: number; clearFatalities: number; name: string }
       >();
 
+      // weatherCondition stores NUMERIC CODES: 1=clear, 2=lluvia debil, 3=lluvia fuerte, 4=niebla, 5=nieve, 6=granizo, 7=viento
       for (const row of provinceWeatherRows) {
         if (!row.province) continue;
         if (!provinceMap.has(row.province)) {
@@ -98,11 +99,13 @@ export async function GET(request: NextRequest) {
           });
         }
         const entry = provinceMap.get(row.province)!;
-        const wc = row.weatherCondition.toLowerCase();
-        if (wc === "rain" || wc === "lluvia" || wc.includes("rain") || wc.includes("lluv")) {
+        const wc = row.weatherCondition;
+        // Codes 2 (lluvia debil) and 3 (lluvia fuerte) = rain
+        if (wc === "2" || wc === "3") {
           entry.rain += row.count;
           entry.rainFatalities += row.fatalities;
-        } else if (wc === "clear" || wc === "buen tiempo" || wc.includes("clear") || wc.includes("buen")) {
+        // Code 1 = buen tiempo / clear
+        } else if (wc === "1") {
           entry.clear += row.count;
           entry.clearFatalities += row.fatalities;
         }
