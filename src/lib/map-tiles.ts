@@ -310,7 +310,7 @@ export function removeTileSource(map: maplibregl.Map, sourceId: string): void {
  * Labels are in Spanish natively (no post-load patching needed).
  */
 export function getProtomapsStyle(): StyleSpecification {
-  const S = "protomaps";
+  const S = "iberia";
   const textEs = ["coalesce", ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
   const textRef = ["coalesce", ["get", "ref"], ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
 
@@ -318,9 +318,10 @@ export function getProtomapsStyle(): StyleSpecification {
     version: 8,
     glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
     sources: {
-      protomaps: {
+      iberia: {
         type: "vector",
-        url: `pmtiles://${TILES_BASE}/spain.pmtiles`,
+        url: `pmtiles://${TILES_BASE}/tiles/trafico-iberia.pmtiles`,
+        promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
     },
@@ -726,7 +727,7 @@ export function getProtomapsStyle(): StyleSpecification {
  * Same source/structure as the light variant, inverted palette.
  */
 export function getProtomapsDarkStyle(): StyleSpecification {
-  const S = "protomaps";
+  const S = "iberia";
   const textEs = ["coalesce", ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
   const textRef = ["coalesce", ["get", "ref"], ["get", "name:es"], ["get", "name"]] as unknown as DataDrivenPropertyValueSpecification<string>;
 
@@ -734,9 +735,10 @@ export function getProtomapsDarkStyle(): StyleSpecification {
     version: 8,
     glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
     sources: {
-      protomaps: {
+      iberia: {
         type: "vector",
-        url: `pmtiles://${TILES_BASE}/spain.pmtiles`,
+        url: `pmtiles://${TILES_BASE}/tiles/trafico-iberia.pmtiles`,
+        promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
     },
