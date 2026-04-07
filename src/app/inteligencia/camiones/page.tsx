@@ -67,7 +67,13 @@ export const metadata: Metadata = {
 // ---------------------------------------------------------------------------
 
 async function getTruckData() {
-  const truckWhere = { involvesTruck: true };
+  // Check if vehicle type data is available (all booleans may be false due to import issue)
+  const truckSample = await prisma.accidentMicrodata.count({
+    where: { involvesTruck: true },
+    take: 1,
+  });
+  const hasVehicleData = truckSample > 0;
+  const truckWhere = hasVehicleData ? { involvesTruck: true } : {};
 
   // 1. By year
   const byYearRaw = await prisma.accidentMicrodata.groupBy({
@@ -197,66 +203,36 @@ async function getTruckData() {
       ? ((carTotals._sum.fatalities ?? 0) / carTotals._count._all) * 100
       : 0;
 
-  // Wind and fog stats
-  const windAccidents =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("wind") ||
-        w.weatherCondition.toLowerCase().includes("viento")
-    )?.accidents ?? 0;
-  const windFatalities =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("wind") ||
-        w.weatherCondition.toLowerCase().includes("viento")
-    )?.fatalities ?? 0;
+  // Wind and fog stats — weatherCondition uses numeric codes:
+  // 1=buen tiempo, 2=lluvia debil, 3=lluvia fuerte, 4=niebla, 5=nieve, 6=granizo, 7=viento
+  const windEntry = byWeather.find((w) => w.weatherCondition === "7");
+  const windAccidents = windEntry?.accidents ?? 0;
+  const windFatalities = windEntry?.fatalities ?? 0;
 
-  const fogAccidents =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("fog") ||
-        w.weatherCondition.toLowerCase().includes("niebla")
-    )?.accidents ?? 0;
-  const fogFatalities =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("fog") ||
-        w.weatherCondition.toLowerCase().includes("niebla")
-    )?.fatalities ?? 0;
+  const fogEntry = byWeather.find((w) => w.weatherCondition === "4");
+  const fogAccidents = fogEntry?.accidents ?? 0;
+  const fogFatalities = fogEntry?.fatalities ?? 0;
 
-  const clearAccidents =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("clear") ||
-        w.weatherCondition.toLowerCase().includes("buen")
-    )?.accidents ?? 0;
-  const clearFatalities =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("clear") ||
-        w.weatherCondition.toLowerCase().includes("buen")
-    )?.fatalities ?? 0;
+  const clearEntry = byWeather.find((w) => w.weatherCondition === "1");
+  const clearAccidents = clearEntry?.accidents ?? 0;
+  const clearFatalities = clearEntry?.fatalities ?? 0;
 
   // Fog fatality rate comparison: truck vs car fog
+  // When vehicle data is unavailable, use all accidents for comparison
   const carByWeatherRaw = await prisma.accidentMicrodata.groupBy({
     by: ["weatherCondition"],
-    where: { involvesCar: true, weatherCondition: { not: null } },
+    where: hasVehicleData
+      ? { involvesCar: true, weatherCondition: { not: null } }
+      : { weatherCondition: { not: null } },
     _count: { _all: true },
     _sum: { fatalities: true },
   });
 
-  const carFogAccidents =
-    carByWeatherRaw.find(
-      (w) =>
-        (w.weatherCondition ?? "").toLowerCase().includes("fog") ||
-        (w.weatherCondition ?? "").toLowerCase().includes("niebla")
-    )?._count._all ?? 0;
-  const carFogFatalities =
-    carByWeatherRaw.find(
-      (w) =>
-        (w.weatherCondition ?? "").toLowerCase().includes("fog") ||
-        (w.weatherCondition ?? "").toLowerCase().includes("niebla")
-    )?._sum.fatalities ?? 0;
+  const carFogEntry = carByWeatherRaw.find(
+    (w) => w.weatherCondition === "4"
+  );
+  const carFogAccidents = carFogEntry?._count._all ?? 0;
+  const carFogFatalities = carFogEntry?._sum.fatalities ?? 0;
 
   const truckFogFatalityRate =
     fogAccidents > 0 ? (fogFatalities / fogAccidents) * 100 : 0;
@@ -317,6 +293,7 @@ async function getTruckData() {
     firstYear,
     totalTruckAccidents,
     totalTruckFatalities: truckTotals._sum.fatalities ?? 0,
+    hasVehicleData,
   };
 }
 
@@ -435,6 +412,25 @@ export default async function CamionesPage() {
           efecto del viento y la niebla. Datos DGT (microdatos 2019-2023).
         </p>
       </div>
+
+      {/* Vehicle data availability banner */}
+      {!data.hasVehicleData && (
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/40 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
+                Datos de tipo de vehiculo en procesamiento
+              </p>
+              <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                La clasificacion por tipo de vehiculo esta siendo actualizada. Las estadisticas
+                generales de accidentes (tendencia anual, distribucion horaria, condiciones
+                meteorologicas y provincias) se muestran con todos los accidentes registrados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -702,17 +698,13 @@ export default async function CamionesPage() {
                   }`}
                 >
                   <td className="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    {row.weatherCondition.toLowerCase().includes("wind") ||
-                    row.weatherCondition.toLowerCase().includes("viento") ? (
+                    {row.weatherCondition === "7" ? (
                       <Wind className="w-4 h-4 text-indigo-400" />
-                    ) : row.weatherCondition.toLowerCase().includes("fog") ||
-                      row.weatherCondition.toLowerCase().includes("niebla") ? (
+                    ) : row.weatherCondition === "4" ? (
                       <Eye className="w-4 h-4 text-gray-400" />
-                    ) : row.weatherCondition.toLowerCase().includes("rain") ||
-                      row.weatherCondition.toLowerCase().includes("lluv") ? (
+                    ) : row.weatherCondition === "2" || row.weatherCondition === "3" ? (
                       <CloudRain className="w-4 h-4 text-tl-500" />
-                    ) : row.weatherCondition.toLowerCase().includes("clear") ||
-                      row.weatherCondition.toLowerCase().includes("buen") ? (
+                    ) : row.weatherCondition === "1" ? (
                       <Sun className="w-4 h-4 text-tl-amber-400" />
                     ) : (
                       <CloudRain className="w-4 h-4 text-gray-400" />
