@@ -327,12 +327,12 @@ export function getProtomapsStyle(): StyleSpecification {
     },
     layers: [
       // ── Background + terrain ─────────────────────────────────────────
-      { id: "background", type: "background", paint: { "background-color": "#f0f5ff" } },
+      { id: "background", type: "background", paint: { "background-color": "#f8f9fa" } },
       // No earth layer in custom tileset — background color covers land
 
-      // ── Water — ocean/sea only, no inland rivers/lakes ──────────────
+      // ── Water — ocean/sea, strong blue to contrast with land ───────
       { id: "water", type: "fill", source: S, "source-layer": "water",
-        paint: { "fill-color": "#c0d5ff", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.7, 12, 0.4] },
+        paint: { "fill-color": "#a3c4f3", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.85, 12, 0.7] },
       },
 
       // ── Landuse (layered) ────────────────────────────────────────────
