@@ -18,6 +18,16 @@ type Props = {
 const NATIONAL_RATE_PER_100K = 3.6;
 
 const WEATHER_LABELS: Record<string, string> = {
+  // Numeric codes stored by DGT microdata collector
+  "1": "Buen tiempo",
+  "2": "Lluvia debil",
+  "3": "Lluvia fuerte",
+  "4": "Niebla",
+  "5": "Nieve",
+  "6": "Granizo",
+  "7": "Viento fuerte",
+  "999": "Desconocido",
+  // Legacy string keys
   clear: "Despejado",
   rain: "Lluvia",
   fog: "Niebla",
@@ -536,6 +546,17 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
         )}
 
         {/* Vehicle types */}
+        {vehicleEntries.length === 0 && (
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+              Tipo de vehiculo implicado
+            </h2>
+            <p className="text-sm text-gray-500 text-center py-4">
+              Los datos de clasificacion por tipo de vehiculo estan siendo procesados
+              para este periodo. Las demas estadisticas de accidentes siguen disponibles.
+            </p>
+          </section>
+        )}
         {vehicleEntries.length > 0 && (
           <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
             <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
