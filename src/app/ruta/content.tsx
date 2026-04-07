@@ -471,7 +471,7 @@ function PointInput({
         {/* Search results dropdown */}
         {showResults && results.length > 0 && (
           <div
-            className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden shadow-xl z-50"
+            className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden shadow-xl z-[60]"
             style={{ background: "rgba(15,23,42,0.95)", border: "1px solid rgba(255,255,255,0.1)" }}
           >
             {results.map((r, i) => (
