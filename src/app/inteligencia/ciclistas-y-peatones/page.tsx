@@ -88,11 +88,20 @@ interface VulnerableUserData {
 
 async function getVulnerableUserData(
   vehicleFilter: Record<string, boolean>
-): Promise<VulnerableUserData> {
+): Promise<VulnerableUserData & { hasVehicleData: boolean }> {
+  // Check if vehicle type data is available (all booleans may be false due to import issue)
+  const sampleCount = await prisma.accidentMicrodata.count({
+    where: vehicleFilter,
+    take: 1,
+  });
+  const hasVehicleData = sampleCount > 0;
+  // Fallback to all accidents if vehicle booleans are all false
+  const effectiveFilter = hasVehicleData ? vehicleFilter : {};
+
   // 1. By year
   const byYearRaw = await prisma.accidentMicrodata.groupBy({
     by: ["year"],
-    where: vehicleFilter,
+    where: effectiveFilter,
     _count: { _all: true },
     _sum: { fatalities: true, hospitalized: true },
     orderBy: { year: "asc" },
@@ -108,7 +117,7 @@ async function getVulnerableUserData(
   // 2. By hour
   const byHourRaw = await prisma.accidentMicrodata.groupBy({
     by: ["hour"],
-    where: { ...vehicleFilter, hour: { not: null } },
+    where: { ...effectiveFilter, hour: { not: null } },
     _count: { _all: true },
     _sum: { fatalities: true },
     orderBy: { hour: "asc" },
@@ -125,7 +134,7 @@ async function getVulnerableUserData(
   // 3. By province — top 15
   const byProvinceRaw = await prisma.accidentMicrodata.groupBy({
     by: ["province"],
-    where: { ...vehicleFilter, province: { not: null } },
+    where: { ...effectiveFilter, province: { not: null } },
     _count: { _all: true },
     _sum: { fatalities: true, hospitalized: true },
   });
@@ -145,7 +154,7 @@ async function getVulnerableUserData(
   // 4. By light condition
   const byLightRaw = await prisma.accidentMicrodata.groupBy({
     by: ["lightCondition"],
-    where: { ...vehicleFilter, lightCondition: { not: null } },
+    where: { ...effectiveFilter, lightCondition: { not: null } },
     _count: { _all: true },
     _sum: { fatalities: true },
   });
@@ -161,14 +170,14 @@ async function getVulnerableUserData(
 
   // 5. Totals
   const totals = await prisma.accidentMicrodata.aggregate({
-    where: vehicleFilter,
+    where: effectiveFilter,
     _count: { _all: true },
     _sum: { fatalities: true },
   });
 
   // 6. Urban count
   const urbanCount = await prisma.accidentMicrodata.count({
-    where: { ...vehicleFilter, isUrban: true },
+    where: { ...effectiveFilter, isUrban: true },
   });
 
   const totalAccidents = totals._count._all;
@@ -191,6 +200,7 @@ async function getVulnerableUserData(
     urbanAccidents: urbanCount,
     urbanPct,
     peakHours,
+    hasVehicleData,
   };
 }
 
@@ -338,6 +348,25 @@ export default async function CiclistasYPeatonesPage() {
           comportamiento de otros conductores. Datos DGT (2019-2023).
         </p>
       </div>
+
+      {/* Vehicle data availability banner */}
+      {(!cyclist.hasVehicleData || !pedestrian.hasVehicleData) && (
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                Datos de tipo de vehiculo en procesamiento
+              </p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                La clasificacion por tipo de vehiculo esta siendo actualizada. Las estadisticas
+                generales de accidentes (tendencia anual, distribucion horaria, iluminacion
+                y provincias) se muestran con todos los accidentes registrados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
