@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { slugify } from "@/lib/geo/slugify";
 
 export const dynamic = "force-dynamic";
 
@@ -549,12 +550,21 @@ export default async function CalidadAirePage() {
                     {/* Province header */}
                     <div className="flex items-center gap-3 mb-3">
                       <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                      <h3 className="font-heading font-semibold text-gray-800 dark:text-gray-200">
-                        {provinceName}
-                      </h3>
+                      <Link
+                        href={`/calidad-aire/provincia/${slugify(provinceName)}`}
+                        className="font-heading font-semibold text-gray-800 dark:text-gray-200 hover:text-[var(--tl-primary)] transition-colors"
+                      >
+                        <h3 className="inline">{provinceName}</h3>
+                      </Link>
                       <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">
                         {provStations.length} estaciones
                       </span>
+                      <Link
+                        href={`/calidad-aire/provincia/${slugify(provinceName)}`}
+                        className="text-xs text-[var(--tl-primary)] dark:text-[var(--tl-info)] hover:underline flex items-center gap-0.5"
+                      >
+                        Ver todas <ArrowRight className="w-3 h-3" />
+                      </Link>
                     </div>
 
                     {/* Station cards */}
@@ -564,9 +574,10 @@ export default async function CalidadAirePage() {
                         const icaCfg = getIcaConfig(reading?.ica);
 
                         return (
-                          <div
+                          <Link
                             key={station.id}
-                            className="rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+                            href={`/calidad-aire/estacion/${station.stationId}`}
+                            className="block rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-4 hover:shadow-md hover:border-[var(--tl-primary)] transition-all"
                           >
                             {/* Station name + ICA badge */}
                             <div className="flex items-start justify-between gap-2 mb-3">
@@ -651,7 +662,7 @@ export default async function CalidadAirePage() {
                                 })}
                               </div>
                             )}
-                          </div>
+                          </Link>
                         );
                       })}
                     </div>
