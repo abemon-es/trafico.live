@@ -65,7 +65,14 @@ export const metadata: Metadata = {
 // ---------------------------------------------------------------------------
 
 async function getMotoData() {
-  const motoWhere = { involvesMotorcycle: true };
+  // Check if vehicle type data is available (all booleans may be false due to import issue)
+  const motoSample = await prisma.accidentMicrodata.count({
+    where: { involvesMotorcycle: true },
+    take: 1,
+  });
+  const hasVehicleData = motoSample > 0;
+  // If no vehicle data, use all accidents as fallback (stats are still meaningful)
+  const motoWhere = hasVehicleData ? { involvesMotorcycle: true } : {};
 
   // 1. By year
   const byYearRaw = await prisma.accidentMicrodata.groupBy({
@@ -196,18 +203,12 @@ async function getMotoData() {
       : 0;
 
   // Compute rain risk for motos
-  const rainAccidents =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("rain") ||
-        w.weatherCondition.toLowerCase().includes("lluv")
-    )?.accidents ?? 0;
+  // weatherCondition stores numeric codes: 2=lluvia debil, 3=lluvia fuerte, 1=buen tiempo
+  const rainAccidents = byWeather
+    .filter((w) => w.weatherCondition === "2" || w.weatherCondition === "3")
+    .reduce((s, w) => s + w.accidents, 0);
   const clearAccidents =
-    byWeather.find(
-      (w) =>
-        w.weatherCondition.toLowerCase().includes("clear") ||
-        w.weatherCondition.toLowerCase().includes("buen")
-    )?.accidents ?? 0;
+    byWeather.find((w) => w.weatherCondition === "1")?.accidents ?? 0;
   const rainMultiplier =
     clearAccidents > 0 ? (rainAccidents / clearAccidents).toFixed(1) : "N/A";
 
@@ -254,6 +255,7 @@ async function getMotoData() {
     firstYear,
     totalMotoAccidents: motoTotals._count._all,
     totalMotoFatalities: motoTotals._sum.fatalities ?? 0,
+    hasVehicleData,
   };
 }
 
@@ -393,6 +395,25 @@ export default async function MotociclistasPage() {
           de semana. Datos DGT (microdatos de accidentes 2019-2023).
         </p>
       </div>
+
+      {/* Vehicle data availability banner */}
+      {!data.hasVehicleData && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Datos de tipo de vehiculo en procesamiento
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                La clasificacion por tipo de vehiculo esta siendo actualizada. Las estadisticas
+                generales de accidentes (tendencia anual, distribucion horaria, condiciones
+                meteorologicas y provincias) se muestran con todos los accidentes registrados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -618,11 +639,9 @@ export default async function MotociclistasPage() {
                   }`}
                 >
                   <td className="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    {row.weatherCondition.toLowerCase().includes("rain") ||
-                    row.weatherCondition.toLowerCase().includes("lluv") ? (
+                    {(row.weatherCondition === "2" || row.weatherCondition === "3") ? (
                       <CloudRain className="w-4 h-4 text-tl-500" />
-                    ) : row.weatherCondition.toLowerCase().includes("clear") ||
-                      row.weatherCondition.toLowerCase().includes("buen") ? (
+                    ) : row.weatherCondition === "1" ? (
                       <Sun className="w-4 h-4 text-tl-amber-400" />
                     ) : (
                       <CloudRain className="w-4 h-4 text-gray-400" />
