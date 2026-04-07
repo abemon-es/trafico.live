@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import maplibregl from "maplibre-gl";
+import maplibregl, { addProtocol } from "maplibre-gl";
+import { Protocol } from "pmtiles";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { setupPMTilesProtocol, TILE_SOURCES, addTileSource, LAYER_STYLES } from "@/lib/map-tiles";
+import { TILE_SOURCES, addTileSource, LAYER_STYLES } from "@/lib/map-tiles";
 import { getProtomapsStyle } from "@/lib/map-tiles";
 import { handleMapTileError, SPAIN_CENTER, SPAIN_ZOOM } from "@/lib/map-config";
 import { addTrafficLayer } from "@/lib/traffic-coloring";
@@ -47,7 +48,9 @@ export default function RutaContent() {
   // Init map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    setupPMTilesProtocol();
+    // Register PMTiles protocol directly (avoid require() mismatch)
+    const protocol = new Protocol();
+    addProtocol("pmtiles", protocol.tile);
 
     const map = new maplibregl.Map({
       container: containerRef.current,
