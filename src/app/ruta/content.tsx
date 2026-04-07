@@ -209,7 +209,7 @@ export default function RutaContent() {
   return (
     <div className="relative w-full" style={{ height: "calc(100dvh - 64px)" }}>
       {/* Map */}
-      <div ref={containerRef} className="absolute inset-0" />
+      <div ref={containerRef} className="w-full h-full" />
 
       {/* Route panel — left side */}
       <div

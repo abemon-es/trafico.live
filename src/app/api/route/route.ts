@@ -3,7 +3,7 @@ import { applyRateLimit } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
-const OSRM_URL = process.env.OSRM_URL || "http://127.0.0.1:8002";
+const OSRM_URL = process.env.OSRM_URL || "http://trafico-osrm:5000";
 
 /**
  * POST /api/route
