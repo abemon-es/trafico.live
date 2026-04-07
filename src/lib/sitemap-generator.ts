@@ -942,6 +942,102 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily" as const,
       priority: 0.7,
     })),
+    // Maritime: buques and zonas
+    {
+      url: `${BASE_URL}/maritimo/buques`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/maritimo/zonas`,
+      lastModified: today,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    // Corredores, Pulso, Guías
+    {
+      url: `${BASE_URL}/corredores`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/pulso`,
+      lastModified: today,
+      changeFrequency: "hourly",
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/guias`,
+      lastModified: today,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    // Individual guides
+    ...["cercanias-madrid", "etiqueta-ambiental", "gasolina-vs-diesel-vs-electrico", "limites-velocidad-espana", "peajes-espana", "puntos-recarga-electrico", "radares-espana", "zonas-bajas-emisiones"].map((slug) => ({
+      url: `${BASE_URL}/guias/${slug}`,
+      lastModified: today,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
+    // Intelligence pages
+    {
+      url: `${BASE_URL}/inteligencia/lluvia-y-accidentes`,
+      lastModified: today,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/inteligencia/hora-punta-y-accidentes`,
+      lastModified: today,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/inteligencia/coste-desplazamiento`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${BASE_URL}/inteligencia/motociclistas`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${BASE_URL}/inteligencia/camiones`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${BASE_URL}/inteligencia/ciclistas-y-peatones`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    // Prediction pages
+    {
+      url: `${BASE_URL}/prediccion/precio-combustible`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/prediccion/retrasos-trenes`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    // Clima
+    {
+      url: `${BASE_URL}/clima`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
   ];
 
   // City-based pages
