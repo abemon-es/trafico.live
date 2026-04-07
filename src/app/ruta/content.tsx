@@ -4,10 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl, { addProtocol } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { TILE_SOURCES, addTileSource, LAYER_STYLES } from "@/lib/map-tiles";
-import { getProtomapsStyle } from "@/lib/map-tiles";
-import { handleMapTileError, SPAIN_CENTER, SPAIN_ZOOM } from "@/lib/map-config";
-import { addTrafficLayer } from "@/lib/traffic-coloring";
+import { TILE_SOURCES, addTileSource, LAYER_STYLES, getProtomapsStyle } from "@/lib/map-tiles";
+import { handleMapTileError, MAP_STYLE_VOYAGER, SPAIN_CENTER, SPAIN_ZOOM } from "@/lib/map-config";
 import {
   calculateRoute,
   routeToGeoJSON,
@@ -48,13 +46,26 @@ export default function RutaContent() {
   // Init map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    // Register PMTiles protocol directly (avoid require() mismatch)
-    const protocol = new Protocol();
-    addProtocol("pmtiles", protocol.tile);
+
+    // Register PMTiles protocol
+    try {
+      const protocol = new Protocol();
+      addProtocol("pmtiles", protocol.tile);
+    } catch {
+      // Already registered
+    }
+
+    // Try custom tileset, fall back to CartoDB if it fails
+    let style: string | maplibregl.StyleSpecification;
+    try {
+      style = getProtomapsStyle();
+    } catch {
+      style = MAP_STYLE_VOYAGER;
+    }
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getProtomapsStyle(),
+      style,
       center: SPAIN_CENTER,
       zoom: SPAIN_ZOOM,
       attributionControl: false,
@@ -65,12 +76,13 @@ export default function RutaContent() {
     handleMapTileError(map);
 
     map.on("load", () => {
-      // Add incident overlay
-      addTileSource(map, "incidents", TILE_SOURCES.incidents);
-      map.addLayer(LAYER_STYLES.incidentsCircle as maplibregl.AddLayerObject);
-
-      // Add traffic layer (hidden, for road coloring)
-      try { addTrafficLayer(map, { sourceId: "iberia", sourceLayer: "roads" }); } catch {}
+      // Add incident overlay (if Martin is available)
+      try {
+        addTileSource(map, "incidents", TILE_SOURCES.incidents);
+        map.addLayer(LAYER_STYLES.incidentsCircle as maplibregl.AddLayerObject);
+      } catch {
+        // Martin not available — skip
+      }
 
       setMapReady(true);
       mapRef.current = map;
@@ -222,46 +234,61 @@ export default function RutaContent() {
           </div>
 
           {/* Origin */}
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-3 h-3 rounded-full bg-green-500 shrink-0" />
-            <button
-              onClick={() => startPicking("origin")}
-              className={`flex-1 text-left text-sm px-3 py-2 rounded-lg border transition-colors ${
-                picking === "origin"
-                  ? "border-green-500 bg-green-500/10 text-green-400"
-                  : origin
-                    ? "border-gray-600 bg-gray-800 text-gray-200"
-                    : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500"
-              }`}
-            >
-              {picking === "origin"
-                ? "Haz clic en el mapa..."
-                : origin
-                  ? `${origin.lat.toFixed(4)}, ${origin.lon.toFixed(4)}`
-                  : "Seleccionar origen"}
-            </button>
-          </div>
+          <PointInput
+            label="Origen"
+            color="green"
+            value={origin}
+            picking={picking === "origin"}
+            onPick={() => startPicking("origin")}
+            onSearch={async (q) => {
+              const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`);
+              const data = await res.json();
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              return (data.results || data.hits || []).map((r: any) => ({
+                name: String(r.name || r.document?.name || q),
+                lat: Number(r.lat || r.document?.lat || 0),
+                lon: Number(r.lng || r.lon || r.document?.lng || r.document?.lon || 0),
+              }));
+            }}
+            onSelect={(point) => {
+              setOrigin(point);
+              if (originMarkerRef.current) originMarkerRef.current.remove();
+              if (mapRef.current) {
+                originMarkerRef.current = new maplibregl.Marker({ color: "#059669" })
+                  .setLngLat([point.lon, point.lat])
+                  .addTo(mapRef.current);
+              }
+            }}
+          />
 
           {/* Destination */}
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500 shrink-0" />
-            <button
-              onClick={() => startPicking("destination")}
-              className={`flex-1 text-left text-sm px-3 py-2 rounded-lg border transition-colors ${
-                picking === "destination"
-                  ? "border-red-500 bg-red-500/10 text-red-400"
-                  : destination
-                    ? "border-gray-600 bg-gray-800 text-gray-200"
-                    : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500"
-              }`}
-            >
-              {picking === "destination"
-                ? "Haz clic en el mapa..."
-                : destination
-                  ? `${destination.lat.toFixed(4)}, ${destination.lon.toFixed(4)}`
-                  : "Seleccionar destino"}
-            </button>
-          </div>
+          <PointInput
+            label="Destino"
+            color="red"
+            value={destination}
+            picking={picking === "destination"}
+            onPick={() => startPicking("destination")}
+            onSearch={async (q) => {
+              const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`);
+              const data = await res.json();
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              return (data.results || data.hits || []).map((r: any) => ({
+                name: String(r.name || r.document?.name || q),
+                lat: Number(r.lat || r.document?.lat || 0),
+                lon: Number(r.lng || r.lon || r.document?.lng || r.document?.lon || 0),
+              }));
+            }}
+            onSelect={(point) => {
+              setDestination(point);
+              if (destMarkerRef.current) destMarkerRef.current.remove();
+              if (mapRef.current) {
+                destMarkerRef.current = new maplibregl.Marker({ color: "#dc2626" })
+                  .setLngLat([point.lon, point.lat])
+                  .addTo(mapRef.current);
+              }
+            }}
+          />
+
         </div>
 
         {/* Loading */}
@@ -355,6 +382,111 @@ export default function RutaContent() {
           Haz clic en el mapa para seleccionar {picking === "origin" ? "el origen" : "el destino"}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── PointInput: text search + click-on-map ─────────────────────────────────
+
+interface SearchResult {
+  name: string;
+  lat: number;
+  lon: number;
+}
+
+function PointInput({
+  label,
+  color,
+  value,
+  picking,
+  onPick,
+  onSearch,
+  onSelect,
+}: {
+  label: string;
+  color: "green" | "red";
+  value: { lat: number; lon: number } | null;
+  picking: boolean;
+  onPick: () => void;
+  onSearch: (q: string) => Promise<SearchResult[]>;
+  onSelect: (point: { lat: number; lon: number }) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleInput = useCallback((q: string) => {
+    setQuery(q);
+    setSelectedName(null);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (q.length < 2) { setResults([]); setShowResults(false); return; }
+    timerRef.current = setTimeout(async () => {
+      try {
+        const r = await onSearch(q);
+        setResults(r.filter((p) => p.lat !== 0 && p.lon !== 0));
+        setShowResults(true);
+      } catch { setResults([]); }
+    }, 300);
+  }, [onSearch]);
+
+  const handleSelect = useCallback((r: SearchResult) => {
+    setQuery(r.name);
+    setSelectedName(r.name);
+    setShowResults(false);
+    onSelect({ lat: r.lat, lon: r.lon });
+  }, [onSelect]);
+
+  const dotColor = color === "green" ? "bg-green-500" : "bg-red-500";
+  const borderActive = color === "green" ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10";
+
+  return (
+    <div className="flex items-start gap-2 mb-2 relative">
+      <div className={`w-3 h-3 rounded-full ${dotColor} shrink-0 mt-2.5`} />
+      <div className="flex-1 relative">
+        <div className="flex gap-1">
+          <input
+            type="text"
+            placeholder={picking ? "Haz clic en el mapa..." : `Buscar ${label.toLowerCase()}...`}
+            value={picking ? "Haz clic en el mapa..." : selectedName || query || (value ? `${value.lat.toFixed(4)}, ${value.lon.toFixed(4)}` : "")}
+            onChange={(e) => handleInput(e.target.value)}
+            onFocus={() => { if (results.length > 0) setShowResults(true); }}
+            className={`flex-1 text-sm px-3 py-2 rounded-lg border outline-none transition-colors ${
+              picking ? `${borderActive} text-${color}-400` : "border-gray-700 bg-gray-800/50 text-gray-200 focus:border-gray-500"
+            }`}
+            style={{ background: picking ? undefined : "rgba(31,41,55,0.5)" }}
+            readOnly={picking}
+          />
+          <button
+            onClick={onPick}
+            title="Seleccionar en mapa"
+            className={`shrink-0 px-2 py-2 rounded-lg border transition-colors ${
+              picking ? `${borderActive}` : "border-gray-700 bg-gray-800/50 hover:border-gray-500"
+            }`}
+          >
+            <MapPin className={`w-3.5 h-3.5 ${picking ? `text-${color}-400` : "text-gray-400"}`} />
+          </button>
+        </div>
+
+        {/* Search results dropdown */}
+        {showResults && results.length > 0 && (
+          <div
+            className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden shadow-xl z-50"
+            style={{ background: "rgba(15,23,42,0.95)", border: "1px solid rgba(255,255,255,0.1)" }}
+          >
+            {results.map((r, i) => (
+              <button
+                key={i}
+                onClick={() => handleSelect(r)}
+                className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0"
+              >
+                {r.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
