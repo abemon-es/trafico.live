@@ -29,6 +29,7 @@ import {
 } from "./heatmap";
 
 export const revalidate = 86400; // Daily — historical data
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

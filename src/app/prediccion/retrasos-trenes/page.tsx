@@ -27,6 +27,7 @@ import { StructuredData } from "@/components/seo/StructuredData";
 import { PunctualityDonut, TrendChart, HourlyChart } from "./delay-charts";
 
 export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

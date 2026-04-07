@@ -32,6 +32,7 @@ import { HistoryChart, SeasonalityChart } from "./fuel-charts";
 import type { HistoryPoint, SeasonalityPoint } from "./fuel-charts";
 
 export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

@@ -35,6 +35,7 @@ import {
 } from "@/components/inteligencia/AccidentTrendChart";
 
 export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const CYCLIST_COLOR = "#059669"; // green

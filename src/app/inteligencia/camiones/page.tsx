@@ -40,6 +40,7 @@ import {
 } from "@/components/inteligencia/AccidentTrendChart";
 
 export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const ACCENT_COLOR = "#6366f1"; // indigo for trucks

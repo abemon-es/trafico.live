@@ -43,6 +43,7 @@ import { AccidentYearChart, IMDProvinceChart } from "./charts";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 
 export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
