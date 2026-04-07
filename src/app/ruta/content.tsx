@@ -25,6 +25,23 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
+async function resolveLocation(q: string): Promise<SearchResult[]> {
+  const res = await fetch(`/api/search/resolve-location?q=${encodeURIComponent(q)}`);
+  const data = await res.json();
+  if (!data.resolved || !data.location) return [];
+  const results: SearchResult[] = [
+    { name: data.location.name, lat: data.location.lat, lon: data.location.lng },
+  ];
+  if (data.alternatives) {
+    for (const alt of data.alternatives) {
+      if (alt.lat && alt.lng) {
+        results.push({ name: `${alt.name} (${alt.type === "province" ? "provincia" : "ciudad"})`, lat: alt.lat, lon: alt.lng });
+      }
+    }
+  }
+  return results;
+}
+
 export default function RutaContent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -240,16 +257,7 @@ export default function RutaContent() {
             value={origin}
             picking={picking === "origin"}
             onPick={() => startPicking("origin")}
-            onSearch={async (q) => {
-              const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`);
-              const data = await res.json();
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              return (data.results || data.hits || []).map((r: any) => ({
-                name: String(r.name || r.document?.name || q),
-                lat: Number(r.lat || r.document?.lat || 0),
-                lon: Number(r.lng || r.lon || r.document?.lng || r.document?.lon || 0),
-              }));
-            }}
+            onSearch={resolveLocation}
             onSelect={(point) => {
               setOrigin(point);
               if (originMarkerRef.current) originMarkerRef.current.remove();
@@ -268,16 +276,7 @@ export default function RutaContent() {
             value={destination}
             picking={picking === "destination"}
             onPick={() => startPicking("destination")}
-            onSearch={async (q) => {
-              const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`);
-              const data = await res.json();
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              return (data.results || data.hits || []).map((r: any) => ({
-                name: String(r.name || r.document?.name || q),
-                lat: Number(r.lat || r.document?.lat || 0),
-                lon: Number(r.lng || r.lon || r.document?.lng || r.document?.lon || 0),
-              }));
-            }}
+            onSearch={resolveLocation}
             onSelect={(point) => {
               setDestination(point);
               if (destMarkerRef.current) destMarkerRef.current.remove();
