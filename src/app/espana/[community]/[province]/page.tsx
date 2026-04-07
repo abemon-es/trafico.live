@@ -7,6 +7,15 @@ import { LocationShell } from "@/components/location/LocationShell";
 import { HeroSection } from "@/components/location/HeroSection";
 import { StatsBar } from "@/components/location/StatsBar";
 import { SectionSkeleton } from "@/components/location/SectionSkeleton";
+import Link from "next/link";
+import {
+  Train,
+  Plane,
+  Ship,
+  Wind as WindIcon,
+  Fuel,
+  AlertTriangle,
+} from "lucide-react";
 import {
   IncidentsSection,
   CamerasSection,
@@ -33,6 +42,34 @@ export const revalidate = 300;
 export const dynamicParams = true;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
+// Province codes with coastline (includes islands)
+const COASTAL_PROVINCE_CODES = new Set([
+  "04", // Almería
+  "11", // Cádiz
+  "18", // Granada
+  "21", // Huelva
+  "29", // Málaga
+  "03", // Alicante
+  "12", // Castellón
+  "46", // Valencia
+  "08", // Barcelona
+  "17", // Girona
+  "43", // Tarragona
+  "07", // Baleares
+  "35", // Las Palmas
+  "38", // Santa Cruz de Tenerife
+  "15", // A Coruña
+  "27", // Lugo
+  "36", // Pontevedra
+  "33", // Asturias
+  "39", // Cantabria
+  "48", // Bizkaia
+  "20", // Gipuzkoa
+  "30", // Murcia
+  "51", // Ceuta
+  "52", // Melilla
+]);
 
 type Props = {
   params: Promise<{ community: string; province: string }>;
@@ -268,6 +305,58 @@ export default async function ProvincePage({ params }: Props) {
             )}
           </section>
         )}
+        {/* Sub-page links */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+            Ver más sobre {prov.name}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Link
+              href={`/espana/${community}/${provSlug}/trenes`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+            >
+              <Train className="w-5 h-5 text-tl-500 shrink-0" />
+              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-600">Trenes</span>
+            </Link>
+            <Link
+              href={`/espana/${community}/${provSlug}/aviacion`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+            >
+              <Plane className="w-5 h-5 text-tl-500 shrink-0" />
+              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-600">Aviación</span>
+            </Link>
+            {COASTAL_PROVINCE_CODES.has(prov.code) && (
+              <Link
+                href={`/espana/${community}/${provSlug}/maritimo`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-sea-300 hover:bg-tl-sea-50 transition-all group"
+              >
+                <Ship className="w-5 h-5 text-tl-sea-500 shrink-0" />
+                <span className="text-sm font-medium text-gray-900 group-hover:text-tl-sea-600">Marítimo</span>
+              </Link>
+            )}
+            <Link
+              href={`/espana/${community}/${provSlug}/calidad-aire`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+            >
+              <WindIcon className="w-5 h-5 text-tl-500 shrink-0" />
+              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-600">Calidad del aire</span>
+            </Link>
+            <Link
+              href={`/espana/${community}/${provSlug}/combustible`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-amber-300 hover:bg-tl-amber-50 transition-all group"
+            >
+              <Fuel className="w-5 h-5 text-tl-amber-500 shrink-0" />
+              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-amber-600">Combustible</span>
+            </Link>
+            <Link
+              href={`/espana/${community}/${provSlug}/accidentes`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-red-300 hover:bg-red-50 transition-all group"
+            >
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+              <span className="text-sm font-medium text-gray-900 group-hover:text-red-600">Accidentes</span>
+            </Link>
+          </div>
+        </section>
       </LocationShell>
     </>
   );
