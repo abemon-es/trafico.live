@@ -36,6 +36,10 @@ import {
   Mountain,
   CircleDollarSign,
   GitCompareArrows,
+  Train,
+  Plane,
+  Bus,
+  CloudRain,
   type LucideIcon,
 } from "lucide-react";
 
@@ -300,6 +304,15 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         ],
       },
       {
+        title: "Buques y tráfico",
+        items: [
+          { name: "Directorio de buques", href: "/maritimo/buques", icon: Ship, description: "30.000+ buques rastreados" },
+          { name: "Por tipo de buque", href: "/maritimo/buques/tipo/carga", icon: Ship, description: "Carga, petrolero, pesca..." },
+          { name: "Zonas marítimas", href: "/maritimo/zonas", icon: Map, description: "11 zonas costeras" },
+          { name: "Ferries", href: "/maritimo/ferries", icon: Ship, description: "Rutas y horarios" },
+        ],
+      },
+      {
         title: "Meteorología y seguridad",
         items: [
           { name: "Meteorología costera", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas y previsiones AEMET" },
@@ -345,6 +358,26 @@ export const megaMenuPanels: MegaMenuPanel[] = [
           { name: "Barcelona", href: "/ciudad/barcelona", icon: MapPin },
           { name: "Valencia", href: "/ciudad/valencia", icon: MapPin },
           { name: "Sevilla", href: "/ciudad/sevilla", icon: MapPin },
+        ],
+      },
+      {
+        title: "Transporte multimodal",
+        items: [
+          { name: "Trenes y estaciones", href: "/trenes", icon: Train, description: "Red ferroviaria" },
+          { name: "Aeropuertos", href: "/aviacion", icon: Plane, description: "46 aeropuertos AENA" },
+          { name: "Transporte público", href: "/transporte-publico", icon: Bus, description: "Metro, bus, tranvía" },
+          { name: "Corredores", href: "/corredores", icon: Route, description: "Coche vs tren vs avión" },
+        ],
+      },
+      {
+        title: "Inteligencia",
+        items: [
+          { name: "Pulso provincial", href: "/pulso", icon: Activity, description: "Estado en tiempo real" },
+          { name: "Lluvia y accidentes", href: "/inteligencia/lluvia-y-accidentes", icon: CloudRain, description: "Correlación meteorológica" },
+          { name: "Hora punta", href: "/inteligencia/hora-punta-y-accidentes", icon: Clock, description: "Cuándo es más peligroso" },
+          { name: "Precio combustible", href: "/prediccion/precio-combustible", icon: TrendingUp, description: "Predicción y tendencias" },
+          { name: "Retrasos trenes", href: "/prediccion/retrasos-trenes", icon: Train, description: "Puntualidad Renfe" },
+          { name: "Guías", href: "/guias", icon: BookOpen, description: "8 guías completas" },
         ],
       },
       {
@@ -472,6 +505,8 @@ export const footerColumns: FooterColumn[] = [
       { name: "Mapa marítimo", href: "/maritimo/mapa" },
       { name: "Meteorología", href: "/maritimo/meteorologia" },
       { name: "Seguridad", href: "/maritimo/seguridad" },
+      { name: "Buques", href: "/maritimo/buques" },
+      { name: "Zonas marítimas", href: "/maritimo/zonas" },
       { name: "Noticias", href: "/maritimo/noticias" },
     ],
   },
@@ -484,11 +519,14 @@ export const footerColumns: FooterColumn[] = [
       { name: "Comunidades", href: "/comunidad-autonoma" },
       { name: "Provincias", href: "/espana" },
       { name: "Ciudades", href: "/ciudad" },
-      { name: "Municipios", href: "/municipio" },
-      { name: "Portugal", href: "/portugal" },
-      { name: "Andorra", href: "/andorra" },
-      { name: "Noticias", href: "/noticias" },
-      { name: "Informe diario", href: "/informe-diario" },
+      { name: "Trenes", href: "/trenes" },
+      { name: "Aeropuertos", href: "/aviacion" },
+      { name: "Transporte público", href: "/transporte-publico" },
+      { name: "Corredores", href: "/corredores" },
+      { name: "Pulso", href: "/pulso" },
+      { name: "Guías", href: "/guias" },
+      { name: "Calidad del aire", href: "/calidad-aire" },
+      { name: "Clima", href: "/clima" },
     ],
   },
   {
