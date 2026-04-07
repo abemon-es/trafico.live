@@ -67,6 +67,12 @@ export async function GET(
       );
     }
 
+    // ── Route type breakdown ──
+    const routeTypeBreakdown: Record<number, number> = {};
+    for (const r of operator.routes) {
+      routeTypeBreakdown[r.routeType] = (routeTypeBreakdown[r.routeType] || 0) + 1;
+    }
+
     const response = {
       success: true,
       operator: {
@@ -77,9 +83,11 @@ export async function GET(
         mode: operator.mode,
         feedUrl: operator.feedUrl,
         hasRealtime: operator.hasRealtime,
+        isOfficial: operator.isOfficial,
         updatedAt: operator.updatedAt,
         routeCount: operator.routes.length,
         stopCount: operator.stops.length,
+        routeTypeBreakdown,
         routes: operator.routes.map((r) => ({
           routeId: r.routeId,
           shortName: r.shortName,
