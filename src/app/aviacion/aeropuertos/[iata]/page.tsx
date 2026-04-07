@@ -296,23 +296,22 @@ export default async function AirportDetailPage({ params }: Props) {
   const slug = getAirportSlug(airport);
   const runways = (runwaysByIcao[airport.icao] ?? []).filter((r) => !r.closed);
 
-  // Build pax stats for chart (yearly aggregates from monthly data)
-  const paxStats = airport.statistics
-    .filter((s) => s.metric === "pax" && s.periodType === "monthly")
-    .reduce<Record<number, number>>((acc, s) => {
-      const year = new Date(s.periodStart).getFullYear();
-      acc[year] = (acc[year] ?? 0) + Number(s.value);
-      return acc;
-    }, {});
+  // Build pax stats for chart
+  // Data may be stored as "annual" (Eurostat AVIA_PAOA) or "monthly" periodType
+  const paxRecords = airport.statistics.filter((s) => s.metric === "pax");
+
+  const paxStats = paxRecords.reduce<Record<number, number>>((acc, s) => {
+    const year = new Date(s.periodStart).getFullYear();
+    acc[year] = (acc[year] ?? 0) + Number(s.value);
+    return acc;
+  }, {});
 
   const paxChartData = Object.entries(paxStats)
     .map(([year, total]) => ({ year: Number(year), pasajeros: total }))
     .sort((a, b) => a.year - b.year);
 
-  // Latest monthly pax
-  const latestPax = airport.statistics.find(
-    (s) => s.metric === "pax" && s.periodType === "monthly"
-  );
+  // Latest pax record (sorted desc by periodStart from the query)
+  const latestPax = paxRecords[0] ?? null;
 
   // JSON-LD
   const airportSchema = {
@@ -485,7 +484,7 @@ export default async function AirportDetailPage({ params }: Props) {
 
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 flex items-center gap-1">
               <Info className="w-3 h-3" />
-              Datos anuales agregados de estadisticas mensuales. Fuente: Eurostat AVIA_PAOA / AENA.
+              Datos anuales de pasajeros. Fuente: Eurostat AVIA_PAOA / AENA.
             </p>
           </section>
         )}
