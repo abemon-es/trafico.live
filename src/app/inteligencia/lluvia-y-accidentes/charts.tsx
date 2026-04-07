@@ -41,6 +41,16 @@ const MONTH_LABELS = [
 ];
 
 const WEATHER_COLORS: Record<string, string> = {
+  // Numeric codes (DGT microdata)
+  "1": "var(--color-tl-amber-400, #d48139)",
+  "2": "var(--color-tl-500, #366cf8)",
+  "3": "#2563eb",
+  "4": "#9ca3af",
+  "5": "#94a3b8",
+  "6": "#64748b",
+  "7": "#6ee7b7",
+  "999": "#d1d5db",
+  // Legacy string keys
   clear: "var(--color-tl-amber-400, #d48139)",
   rain: "var(--color-tl-500, #366cf8)",
   fog: "#9ca3af",
@@ -56,6 +66,16 @@ const WEATHER_COLORS: Record<string, string> = {
 };
 
 const WEATHER_LABELS: Record<string, string> = {
+  // Numeric codes (DGT microdata)
+  "1": "Buen tiempo",
+  "2": "Lluvia debil",
+  "3": "Lluvia fuerte",
+  "4": "Niebla",
+  "5": "Nieve",
+  "6": "Granizo",
+  "7": "Viento fuerte",
+  "999": "Desconocido",
+  // Legacy string keys
   clear: "Despejado",
   rain: "Lluvia",
   fog: "Niebla",
@@ -71,11 +91,11 @@ const WEATHER_LABELS: Record<string, string> = {
 };
 
 function getWeatherLabel(wc: string): string {
-  return WEATHER_LABELS[wc.toLowerCase()] ?? wc;
+  return WEATHER_LABELS[wc] ?? WEATHER_LABELS[wc.toLowerCase()] ?? wc;
 }
 
 function getWeatherColor(wc: string): string {
-  return WEATHER_COLORS[wc.toLowerCase()] ?? "#6b7280";
+  return WEATHER_COLORS[wc] ?? WEATHER_COLORS[wc.toLowerCase()] ?? "#6b7280";
 }
 
 // ---------------------------------------------------------------------------

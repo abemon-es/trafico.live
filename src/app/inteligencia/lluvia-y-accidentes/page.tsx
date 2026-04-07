@@ -67,6 +67,7 @@ async function getRainAccidentData() {
   });
 
   // Build province rain multiplier table
+  // weatherCondition stores NUMERIC CODES: 1=clear, 2=lluvia debil, 3=lluvia fuerte, 4=niebla, 5=nieve, 6=granizo, 7=viento
   const provinceMap = new Map<
     string,
     {
@@ -91,21 +92,13 @@ async function getRainAccidentData() {
       });
     }
     const entry = provinceMap.get(prov)!;
-    const wc = (row.weatherCondition ?? "").toLowerCase();
-    if (
-      wc === "rain" ||
-      wc === "lluvia" ||
-      wc.includes("rain") ||
-      wc.includes("lluv")
-    ) {
+    const wc = row.weatherCondition ?? "";
+    // Codes 2 (lluvia debil) and 3 (lluvia fuerte) = rain
+    if (wc === "2" || wc === "3") {
       entry.rain += row._count._all;
       entry.rainFatalities += row._sum.fatalities ?? 0;
-    } else if (
-      wc === "clear" ||
-      wc === "buen tiempo" ||
-      wc.includes("clear") ||
-      wc.includes("buen")
-    ) {
+    // Code 1 = buen tiempo / clear
+    } else if (wc === "1") {
       entry.clear += row._count._all;
       entry.clearFatalities += row._sum.fatalities ?? 0;
     }
@@ -161,12 +154,9 @@ async function getRainAccidentData() {
   const totalAccidents = await prisma.accidentMicrodata.count({
     where: { weatherCondition: { not: null } },
   });
+  // Codes 2 (lluvia debil) and 3 (lluvia fuerte) = rain
   const totalRainAccidents = Array.from(weatherTotals.entries())
-    .filter(
-      ([wc]) =>
-        wc.toLowerCase().includes("rain") ||
-        wc.toLowerCase().includes("lluv")
-    )
+    .filter(([wc]) => wc === "2" || wc === "3")
     .reduce((s, [, c]) => s + c, 0);
 
   const totalFatalities = await prisma.accidentMicrodata.aggregate({

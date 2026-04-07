@@ -88,6 +88,16 @@ const ROAD_TYPE_LABELS: Record<string, string> = {
 };
 
 const WEATHER_LABELS: Record<string, string> = {
+  // Numeric codes stored by DGT microdata collector
+  "1": "Buen tiempo",
+  "2": "Lluvia debil",
+  "3": "Lluvia fuerte",
+  "4": "Niebla",
+  "5": "Nieve",
+  "6": "Granizo",
+  "7": "Viento fuerte",
+  "999": "Desconocido",
+  // Legacy string keys (kept for backwards compatibility)
   clear: "Despejado",
   rain: "Lluvia",
   fog: "Niebla",
@@ -118,7 +128,41 @@ export function getRoadTypeLabel(rt: string): string {
 }
 
 export function getWeatherLabel(wc: string): string {
-  return WEATHER_LABELS[wc.toLowerCase()] ?? wc;
+  // Try exact match first (for numeric codes), then lowercase
+  return WEATHER_LABELS[wc] ?? WEATHER_LABELS[wc.toLowerCase()] ?? wc;
+}
+
+/** Weather condition codes 2 (lluvia debil) and 3 (lluvia fuerte) */
+export function isRainWeather(wc: string | null): boolean {
+  return wc === "2" || wc === "3";
+}
+
+/** Weather condition code 1 (buen tiempo / despejado) */
+export function isClearWeather(wc: string | null): boolean {
+  return wc === "1";
+}
+
+/** Weather condition code 4 (niebla) */
+export function isFogWeather(wc: string | null): boolean {
+  return wc === "4";
+}
+
+/** Weather condition code 7 (viento fuerte) */
+export function isWindWeather(wc: string | null): boolean {
+  return wc === "7";
+}
+
+/** Get weather icon type for numeric code */
+export function getWeatherIconType(wc: string): "rain" | "clear" | "fog" | "wind" | "snow" | "other" {
+  switch (wc) {
+    case "1": return "clear";
+    case "2": case "3": return "rain";
+    case "4": return "fog";
+    case "5": return "snow";
+    case "6": return "other"; // granizo
+    case "7": return "wind";
+    default: return "other";
+  }
 }
 
 export function getLightLabel(lc: string): string {
