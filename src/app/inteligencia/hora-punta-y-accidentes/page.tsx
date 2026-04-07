@@ -138,6 +138,11 @@ async function getHourAccidentData() {
     pedestrian: Number(r.pedestrian),
   }));
 
+  // Check if vehicle type data is available (all booleans may be false)
+  const hasVehicleData = vehicleByHour.some(
+    (r) => r.car > 0 || r.motorcycle > 0 || r.truck > 0 || r.bicycle > 0 || r.pedestrian > 0
+  );
+
   // 4. Summary stats
   const totalAccidents = await prisma.accidentMicrodata.count({
     where: { hour: { not: null } },
@@ -174,6 +179,7 @@ async function getHourAccidentData() {
     weekdayCount,
     nightCount,
     nightFatalities,
+    hasVehicleData,
   };
 }
 
@@ -549,7 +555,16 @@ export default async function HoraPuntaYAccidentesPage() {
             Tipo de vehiculo por hora
           </h2>
         </div>
-        <VehicleByHourChart data={data.vehicleByHour} />
+        {data.hasVehicleData ? (
+          <VehicleByHourChart data={data.vehicleByHour} />
+        ) : (
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Los datos de clasificacion por tipo de vehiculo estan siendo procesados.
+              Esta seccion se actualizara automaticamente cuando esten disponibles.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* Attribution */}
