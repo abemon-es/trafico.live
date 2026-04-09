@@ -187,10 +187,10 @@ async function getAccessToken(refreshToken: string): Promise<string> {
 
 /** Write the filtered feed list to data/mobilitydata-feeds.json (project root). */
 function writeFeedsFile(feeds: MobilityFeedRow[]): void {
-  // Resolve relative to project root (3 levels up from this collector file)
+  // Resolve relative to project root (/app/) — 2 levels up from tasks/<name>/
   const outPath = resolve(
     dirname(new URL(import.meta.url).pathname),
-    "../../../../data/mobilitydata-feeds.json"
+    "../../data/mobilitydata-feeds.json"
   );
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, JSON.stringify(feeds, null, 2), "utf-8");
