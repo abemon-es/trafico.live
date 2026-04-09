@@ -410,7 +410,7 @@ export default async function PortDetailPage({ params }: Props) {
   // Vessel category grouping
   const vesselsByCategory: Record<string, typeof vessels> = {};
   for (const v of vessels) {
-    const cat = getShipCategory(v.vessel.shipType);
+    const cat = getShipCategory(v.vessel?.shipType ?? null);
     if (!vesselsByCategory[cat]) vesselsByCategory[cat] = [];
     vesselsByCategory[cat].push(v);
   }
