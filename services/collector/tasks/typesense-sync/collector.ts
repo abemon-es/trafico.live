@@ -335,6 +335,22 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     token_separators: ["-"],
     default_sorting_field: "maxPrice",
   },
+  airports: {
+    name: "airports",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "icao", type: "string" },
+      { name: "iata", type: "string", optional: true },
+      { name: "name", type: "string" },
+      { name: "city", type: "string", optional: true },
+      { name: "province", type: "string", optional: true, facet: true },
+      { name: "location", type: "geopoint", optional: true },
+      { name: "elevation", type: "int32", optional: true },
+      { name: "isAena", type: "bool", facet: true },
+      { name: "embedding", type: "float[]", embed: { from: ["name", "city", "province", "iata", "icao"], model_config: { model_name: "ts/multilingual-e5-small" } } } as CollectionFieldSchema,
+    ] as CollectionFieldSchema[],
+    token_separators: ["-"],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -808,6 +824,19 @@ async function loadTollRoads(prisma: PrismaClient) {
   }));
 }
 
+async function loadAirports(prisma: PrismaClient) {
+  const rows = await prisma.airport.findMany({
+    select: { id: true, icao: true, iata: true, name: true, city: true, province: true,
+      latitude: true, longitude: true, elevation: true, isAena: true },
+  });
+  return rows.map((a) => ({
+    id: a.id, icao: a.icao, iata: a.iata || undefined,
+    name: a.name, city: a.city || undefined, province: a.province || undefined,
+    location: [Number(a.latitude), Number(a.longitude)],
+    elevation: a.elevation ?? undefined, isAena: a.isAena,
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // Loader registry
 // ---------------------------------------------------------------------------
@@ -822,6 +851,7 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
   zbe_zones: loadZBEZones, risk_zones: loadRiskZones, variable_panels: loadVariablePanels,
   maritime_stations: loadMaritimeStations, portugal_stations: loadPortugalStations,
   traffic_stations: loadTrafficStations, toll_roads: loadTollRoads,
+  airports: loadAirports,
 };
 
 // ---------------------------------------------------------------------------

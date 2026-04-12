@@ -30,6 +30,8 @@ import {
   HourDistributionChart,
   RoadTypeChart,
   DayOfWeekChart,
+} from "@/components/inteligencia/AccidentTrendChart";
+import {
   getDayLabel,
   getWeatherLabel,
   getRoadTypeLabel,
@@ -37,7 +39,7 @@ import {
   type HourDistributionItem,
   type RoadTypeBreakdownItem,
   type DayOfWeekItem,
-} from "@/components/inteligencia/AccidentTrendChart";
+} from "@/components/inteligencia/accident-labels";
 
 export const revalidate = 86400;
 export const dynamic = "force-dynamic";

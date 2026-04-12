@@ -28,11 +28,13 @@ import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import {
   YearTrendChart,
   HourDistributionChart,
+} from "@/components/inteligencia/AccidentTrendChart";
+import {
   getDayLabel,
   getLightLabel,
   type YearTrendItem,
   type HourDistributionItem,
-} from "@/components/inteligencia/AccidentTrendChart";
+} from "@/components/inteligencia/accident-labels";
 
 export const revalidate = 86400;
 export const dynamic = "force-dynamic";

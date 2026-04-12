@@ -12,7 +12,11 @@
  * 4. Compute route stats (distance, duration, avg speed)
  */
 
-import { PrismaClient, VoyageStatus } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+
+// VoyageStatus is not yet defined in the Prisma schema; use string literals directly.
+const VoyageStatus = { ARRIVED: "ARRIVED", IN_TRANSIT: "IN_TRANSIT" } as const;
+type VoyageStatus = (typeof VoyageStatus)[keyof typeof VoyageStatus];
 import { log, logError } from "../../shared/utils.js";
 
 const TASK = "voyage-detector";
