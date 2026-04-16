@@ -6,7 +6,7 @@ Real-time Spanish multimodal transport intelligence platform. Aggregates data fr
 **Managed by:** Certus SPV, SLU
 **Developed by:** [Abemon](https://abemon.es)
 **Brand:** `~/Desarrollos/.claude-brands/trafico-live.md`
-**Deployed on:** Coolify (hetzner-prod) — split web/collectors | DB: Postgres+PostGIS on hetzner-dev via PgBouncer
+**Deployed on:** Docker Compose + Traefik on `compute` (hetzner-prod, 168.119.34.248) — split web/collectors stacks, web auto-deployed via webhook (`deploy.abemon.es`) | DB: Postgres+PostGIS on `primary` (hetzner) via PgBouncer
 **Email:** Cloudflare Email Routing → catch-all to operator
 
 ## Stack
@@ -113,7 +113,7 @@ npm run db:seed      # Seed database
 - Valid tasks: `v16`, `incident`, `panel`, `detector`, `intensity`, `weather`, `camera`, `radar`, `charger`, `speedlimit`, `gas-station`, `maritime-fuel`, `insights`, `risk-zones`, `zbe`, `imd`, `andorra`, `portugal-weather`, `portugal-fuel`, `historical-accidents`, `portugal-accidents`, `renfe-gtfs`, `renfe-alerts`, `renfe-ld-realtime`, `maritime-forecast`, `sasemar`, `typesense-sync`, `cnmc-fuel`, `aemet-historical`, `mobility-od`, `accident-microdata`, `ais-stream`, `ferry-gtfs`, `transit-gtfs`, `renfe-positions`, `city-traffic`, `dgt-extras`, `mobilitydata-sync`, `ine-stats`, `opensky`, `aena-stats`, `air-quality`, `air-quality-ccaa`, `ourairports-runways`, `puertos-estado`
 - 7 Docker containers in `docker-compose.collectors.yml`: realtime (11 tasks), frequent (3), fuel (3), daily (11), weekly (8), ais (always-on WebSocket), + cron schedules in `services/collector/crontabs/`
 - Total ~5.2 GB RAM allocated across containers (1536m realtime, 256m frequent, 512m fuel, 1536m daily, 1024m weekly, 192m ais)
-- Runs on hetzner-prod via Coolify (separate app from web)
+- Runs on `compute` as a separate Docker Compose stack from the web app (compose project `trafico-live`, working dir `/opt/apps/trafico-live`)
 - IMD data also collected monthly from hetzner-dev cron (`/opt/trafico/imd-import.sh`)
 - Data sources: DGT (DATEX II XML + accident microdata XLSX), AEMET (alerts + historical climate + ICA air quality via MITECO), SCT, Euskadi, Madrid (informo.madrid.es), Barcelona (bcn.cat/transit), Valencia (opendatasoft), Zaragoza, MINETUR, CNMC (fuel price history), Ministry ArcGIS REST API + BigData O-D matrices, INE (transport statistics JSON API), MobilityData (126 Spanish GTFS feeds), OpenSky Network (aircraft ADS-B), aisstream.io (AIS vessel tracking WebSocket), Andorra, Portugal (IPMA, DGEG), Renfe (GTFS + GTFS-RT + undocumented LD fleet API)
 
@@ -215,7 +215,7 @@ npm run db:seed      # Seed database
 | `src/app/globals.css` | Tailwind v4 config + brand tokens (OKLCH) |
 | `src/app/sitemap.ts` | Dynamic sitemap generation |
 | `docker-compose.collectors.yml` | All collector service definitions + cron schedules |
-| `docker-compose.web.yml` | Web app service definition (separate Coolify deploy) |
+| `docker-compose.web.yml` | Web app service definition (deployed to `/opt/trafico` via webhook) |
 | `src/lib/typesense.ts` | Typesense client + 26 collection schemas |
 | `services/collector/tasks/typesense-sync/` | Daily Typesense sync (26 collections, geo-search) |
 | `src/app/api/search/route.ts` | Multi-collection search API (Cmd+K) |
@@ -290,7 +290,7 @@ npm run db:seed      # Seed database
 | Typesense | :6442 | 26 collections, daily sync, geo-search |
 | Loki | `10.100.0.2:3100` | Docker log driver, batch 400 |
 | Sentry/GlitchTip | HTTPS tunnel `/monitoring` | Client 50% replays, server 25% traces, collector 10% |
-| Coolify | hetzner-prod | Split: web app + collectors as separate Docker Compose apps |
+| Deploy | `compute` (hetzner-prod) | Plain Docker Compose + Traefik. Web auto-deploys via `deploy.abemon.es` webhook → `/opt/trafico`. Collectors at `/opt/apps/trafico-live` (manual deploy). |
 | Tile server | tiles.trafico.live:8088 | nginx + Martin, Traefik SSL, 18 PMTiles + 8 dynamic sources |
 
 ### Vector Tile Server (`tiles.trafico.live`)
