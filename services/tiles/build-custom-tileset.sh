@@ -66,9 +66,12 @@ if [ "$MODE" = "planet" ]; then
   NODEMAP_STORAGE="mmap"
   FEATURE_STORAGE="mmap"
   PLANETILER_EXTRA_ARGS="${PLANETILER_EXTRA_ARGS:---parallel_tmp_io=true}"
-  # Hard memory cap: container can't OOM the host; if it hits this, only this
-  # container dies, web + collectors keep running. 180g leaves 70g for rest.
-  DOCKER_MEM_LIMIT="${DOCKER_MEM_LIMIT:-180g}"
+  # No cgroup memory cap in planet mode: mmap'd page-cache usage counts toward
+  # the cgroup limit, and the node cache + feature temp + page cache easily push
+  # past 180 GB in Pass 2, triggering cgroup-level OOMkill mid-build. Trust the
+  # host OOM killer instead — if anything ever has to die under pressure, its
+  # oom_score will be highest for Planetiler anyway (biggest RSS).
+  DOCKER_MEM_LIMIT=""
 else
   INPUT_PBF="$MERGED_PBF"
   OUTPUT="$OUTPUT_DIR/trafico-iberia.pmtiles"
@@ -180,8 +183,12 @@ build_tiles() {
   # No CPU/IO throttling in planet mode — we want every free core. If the web or
   # collectors get CPU-starved we'd see it in load avg; even 60 threads keeps 4
   # cores spare on a 64-core box and the Linux scheduler handles the rest.
+  # Build the --memory flag only if a cap is set (empty = no cgroup cap).
+  MEM_FLAG=""
+  [ -n "$DOCKER_MEM_LIMIT" ] && MEM_FLAG="--memory=$DOCKER_MEM_LIMIT"
+
   docker run --rm \
-    --memory="$DOCKER_MEM_LIMIT" \
+    $MEM_FLAG \
     --log-driver=json-file --log-opt max-size=10m --log-opt max-file=3 \
     -v "$WORK_DIR:/data" \
     -v "$OUTPUT_DIR:/output" \
