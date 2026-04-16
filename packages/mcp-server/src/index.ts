@@ -1178,6 +1178,341 @@ server.tool(
 );
 
 // ===========================================================================
+// MARITIME TOOLS
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// get_port_activity
+// ---------------------------------------------------------------------------
+server.tool(
+  "get_port_activity",
+  "Obtiene la actividad reciente en un puerto español: buques en zona, llegadas y salidas de voyages, con info del puerto.",
+  {
+    portSlug: z.string().describe("Slug del puerto (p.ej. 'barcelona', 'valencia', 'algeciras')"),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .default(20)
+      .describe("Número máximo de voyages a devolver (por defecto 20)"),
+  },
+  async ({ portSlug, limit }) => {
+    try {
+      // Fetch vessels currently near the port and recent voyages in parallel
+      const [vesselData, arrivalsData, departuresData] = await Promise.all([
+        api(`/api/maritimo/puertos/${encodeURIComponent(portSlug)}/buques`, { limit: String(limit) }) as Promise<{
+          success?: boolean;
+          error?: string;
+          port?: { name: string; latitude: number; longitude: number };
+          radiusKm?: number;
+          total?: number;
+          byCategory?: Record<string, number>;
+          vessels?: Array<{
+            mmsi: number;
+            name: string | null;
+            category: string;
+            flag: string | null;
+            destination: string | null;
+            navStatusLabel: string;
+            sog: number | null;
+            updatedAt: string;
+          }>;
+        }>,
+        api("/api/maritimo/voyages", { arrivalPort: portSlug, limit: String(limit) }) as Promise<{
+          voyages?: Array<{
+            id: string;
+            mmsi: number;
+            vessel: { name: string | null; flag: string | null; shipType: number | null } | null;
+            departurePort: string | null;
+            departedAt: string;
+            arrivalPort: string | null;
+            arrivedAt: string | null;
+            distanceNm: number | null;
+            durationH: number | null;
+            avgSpeedKn: number | null;
+            status: string;
+          }>;
+          total?: number;
+        }>,
+        api("/api/maritimo/voyages", { departurePort: portSlug, limit: String(limit) }) as Promise<{
+          voyages?: Array<{
+            id: string;
+            mmsi: number;
+            vessel: { name: string | null; flag: string | null; shipType: number | null } | null;
+            departurePort: string | null;
+            departedAt: string;
+            arrivalPort: string | null;
+            arrivedAt: string | null;
+            distanceNm: number | null;
+            durationH: number | null;
+            avgSpeedKn: number | null;
+            status: string;
+          }>;
+          total?: number;
+        }>,
+      ]);
+
+      if (vesselData.error && !vesselData.success) {
+        return {
+          content: [{ type: "text" as const, text: `Puerto '${portSlug}' no encontrado.` }],
+          isError: true,
+        };
+      }
+
+      const portName = vesselData.port?.name ?? portSlug;
+      const vessels = vesselData.vessels ?? [];
+      const arrivals = arrivalsData.voyages ?? [];
+      const departures = departuresData.voyages ?? [];
+
+      const result = {
+        port: {
+          slug: portSlug,
+          name: portName,
+          latitude: vesselData.port?.latitude ?? null,
+          longitude: vesselData.port?.longitude ?? null,
+        },
+        currentVessels: {
+          total: vesselData.total ?? vessels.length,
+          byCategory: vesselData.byCategory ?? {},
+          vessels: vessels.map((v) => ({
+            mmsi: v.mmsi,
+            name: v.name,
+            category: v.category,
+            flag: v.flag,
+            destination: v.destination,
+            navStatus: v.navStatusLabel,
+            speedKn: v.sog,
+            updatedAt: v.updatedAt,
+          })),
+        },
+        recentArrivals: {
+          total: arrivalsData.total ?? arrivals.length,
+          voyages: arrivals.map((v) => ({
+            id: v.id,
+            mmsi: v.mmsi,
+            vesselName: v.vessel?.name ?? null,
+            vesselFlag: v.vessel?.flag ?? null,
+            departurePort: v.departurePort,
+            departedAt: v.departedAt,
+            arrivedAt: v.arrivedAt,
+            distanceNm: v.distanceNm,
+            durationH: v.durationH,
+            avgSpeedKn: v.avgSpeedKn,
+            status: v.status,
+          })),
+        },
+        recentDepartures: {
+          total: departuresData.total ?? departures.length,
+          voyages: departures.map((v) => ({
+            id: v.id,
+            mmsi: v.mmsi,
+            vesselName: v.vessel?.name ?? null,
+            vesselFlag: v.vessel?.flag ?? null,
+            arrivalPort: v.arrivalPort,
+            departedAt: v.departedAt,
+            arrivedAt: v.arrivedAt,
+            distanceNm: v.distanceNm,
+            durationH: v.durationH,
+            avgSpeedKn: v.avgSpeedKn,
+            status: v.status,
+          })),
+        },
+      };
+
+      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return errResponse(err);
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// get_vessel_voyage_history
+// ---------------------------------------------------------------------------
+server.tool(
+  "get_vessel_voyage_history",
+  "Obtiene el historial de viajes (voyages) de un buque identificado por MMSI, ordenados por tiempo descendente.",
+  {
+    mmsi: z.number().int().describe("MMSI del buque (número de 9 dígitos)"),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .default(20)
+      .describe("Número máximo de voyages a devolver (por defecto 20)"),
+  },
+  async ({ mmsi, limit }) => {
+    try {
+      const [vesselData, voyagesData] = await Promise.all([
+        api(`/api/maritimo/buques/${mmsi}`) as Promise<{
+          success?: boolean;
+          error?: string;
+          vessel?: {
+            mmsi: number;
+            name: string | null;
+            imo: string | null;
+            callsign: string | null;
+            shipType: number | null;
+            category: string;
+            flag: string | null;
+            length: number | null;
+            beam: number | null;
+            draught: number | null;
+            destination: string | null;
+            eta: string | null;
+          };
+          latestPosition?: {
+            latitude: number;
+            longitude: number;
+            sog: number | null;
+            navStatusLabel: string;
+            createdAt: string;
+          } | null;
+          nearestPort?: { name: string; slug: string; distanceKm: number } | null;
+        }>,
+        api("/api/maritimo/voyages", { mmsi: String(mmsi), limit: String(limit) }) as Promise<{
+          voyages?: Array<{
+            id: string;
+            mmsi: number;
+            vessel: { name: string | null; flag: string | null; shipType: number | null } | null;
+            departurePort: string | null;
+            departedAt: string;
+            arrivalPort: string | null;
+            arrivedAt: string | null;
+            distanceNm: number | null;
+            durationH: number | null;
+            avgSpeedKn: number | null;
+            status: string;
+            positionCount: number;
+          }>;
+          total?: number;
+        }>,
+      ]);
+
+      const voyages = voyagesData.voyages ?? [];
+
+      const result = {
+        vessel: vesselData.vessel
+          ? {
+              mmsi: vesselData.vessel.mmsi,
+              name: vesselData.vessel.name,
+              imo: vesselData.vessel.imo,
+              flag: vesselData.vessel.flag,
+              shipType: vesselData.vessel.shipType,
+              category: vesselData.vessel.category,
+              length: vesselData.vessel.length,
+              destination: vesselData.vessel.destination,
+              eta: vesselData.vessel.eta,
+            }
+          : { mmsi },
+        latestPosition: vesselData.latestPosition ?? null,
+        nearestPort: vesselData.nearestPort ?? null,
+        voyageHistory: {
+          total: voyagesData.total ?? voyages.length,
+          voyages: voyages.map((v) => ({
+            id: v.id,
+            departurePort: v.departurePort,
+            departedAt: v.departedAt,
+            arrivalPort: v.arrivalPort,
+            arrivedAt: v.arrivedAt,
+            distanceNm: v.distanceNm,
+            durationH: v.durationH,
+            avgSpeedKn: v.avgSpeedKn,
+            status: v.status,
+            positionCount: v.positionCount,
+          })),
+        },
+      };
+
+      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return errResponse(err);
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// get_recent_voyages
+// ---------------------------------------------------------------------------
+server.tool(
+  "get_recent_voyages",
+  "Obtiene voyages marítimos recientes en España. Filtra por estado (IN_TRANSIT / ARRIVED) y fecha de inicio.",
+  {
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(200)
+      .default(50)
+      .describe("Número máximo de voyages (por defecto 50)"),
+    status: z
+      .enum(["IN_TRANSIT", "ARRIVED"])
+      .optional()
+      .describe("Filtra por estado: IN_TRANSIT (en tránsito) o ARRIVED (llegado)"),
+    since: z
+      .string()
+      .optional()
+      .describe("Fecha ISO (YYYY-MM-DD) — solo voyages con departedAt >= esta fecha"),
+  },
+  async ({ limit, status, since }) => {
+    try {
+      const params: Record<string, string> = { limit: String(limit) };
+      if (status) params.status = status;
+      if (since) params.since = since;
+
+      const data = (await api("/api/maritimo/voyages", params)) as {
+        voyages?: Array<{
+          id: string;
+          mmsi: number;
+          vessel: { name: string | null; flag: string | null; shipType: number | null } | null;
+          departurePort: string | null;
+          departedAt: string;
+          arrivalPort: string | null;
+          arrivedAt: string | null;
+          distanceNm: number | null;
+          durationH: number | null;
+          avgSpeedKn: number | null;
+          status: string;
+          positionCount: number;
+        }>;
+        total?: number;
+        limit?: number;
+        offset?: number;
+      };
+
+      const voyages = data.voyages ?? [];
+
+      const result = {
+        total: data.total ?? voyages.length,
+        returned: voyages.length,
+        filters: { status: status ?? null, since: since ?? null },
+        voyages: voyages.map((v) => ({
+          id: v.id,
+          mmsi: v.mmsi,
+          vesselName: v.vessel?.name ?? null,
+          vesselFlag: v.vessel?.flag ?? null,
+          departurePort: v.departurePort,
+          departedAt: v.departedAt,
+          arrivalPort: v.arrivalPort,
+          arrivedAt: v.arrivedAt,
+          distanceNm: v.distanceNm,
+          durationH: v.durationH,
+          avgSpeedKn: v.avgSpeedKn,
+          status: v.status,
+          positionCount: v.positionCount,
+        })),
+      };
+
+      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    } catch (err) {
+      return errResponse(err);
+    }
+  }
+);
+
+// ===========================================================================
 // Entry point
 // ===========================================================================
 async function main(): Promise<void> {

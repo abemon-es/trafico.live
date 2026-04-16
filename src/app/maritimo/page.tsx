@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { VoyagesList } from "@/components/maritimo/VoyagesList";
 
 export const revalidate = 300;
 
@@ -654,6 +655,11 @@ export default async function MaritimoPage() {
             </div>
           </section>
         )}
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Recent voyages                                                    */}
+        {/* ---------------------------------------------------------------- */}
+        <VoyagesList />
 
         {/* ---------------------------------------------------------------- */}
         {/* SEO text                                                          */}

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { PortActivity } from "@/components/maritimo/PortActivity";
 
 export const revalidate = 3600;
 
@@ -897,6 +898,11 @@ export default async function PortDetailPage({ params }: Props) {
               Demografico (MITERD). Datos orientativos — verifica con la estacion antes de zarpar.
             </p>
           </section>
+
+          {/* ============================================================= */}
+          {/* SECTION: Port activity (port calls + voyages)               */}
+          {/* ============================================================= */}
+          <PortActivity slug={slug} />
 
           {/* Back link */}
           <div className="pt-6 border-t border-gray-200 dark:border-gray-800">

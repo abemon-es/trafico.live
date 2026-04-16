@@ -159,7 +159,7 @@ npm run db:seed      # Seed database
 ### Railway Network (Renfe + ADIF)
 - **Source (static):** Renfe GTFS — Cercanías (`ssl.renfe.com/ftransit/`) + AVE/LD (`ssl.renfe.com/gtransit/`)
   - Stations from `stops.txt` (quirky CSV with single-quoted fields), routes, shapes (Cercanías only)
-  - 2,154 stations, 1,248 routes, 14 commercial brands, 12 Cercanías networks
+  - 1,506 unique stations (1,159 Cercanías + 1,008 AV/LD − 661 shared), 1,251 routes, 14 commercial brands, 12 Cercanías networks
   - CC-BY 4.0, no auth required
 - **Source (real-time alerts):** Renfe GTFS-RT — `gtfsrt.renfe.com/alerts.json`, `trip_updates.json`, `trip_updates_LD.json`
   - Service alerts, cancellations, significant delays (>5 min), 20s cadence, no auth
