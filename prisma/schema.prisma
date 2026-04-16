@@ -1504,6 +1504,42 @@ model SpanishPort {
   @@index([coastalZone])
 }
 
+// Global UN/LOCODE port catalog (116k entries, ISO country + 3-letter code).
+// Used by voyage-detector to resolve any world port from AIS coordinates.
+// SpanishPort is the curated Spanish subset with slugs; Port is the worldwide
+// table with canonical UN/LOCODE ids — `PortCall.portCode` stores Port.id.
+model Port {
+  id           String   @id
+  name         String
+  nameLocal    String?
+  country      String   @db.Char(2)
+  subdivision  String?
+  latitude     Decimal? @db.Decimal(9, 6)
+  longitude    Decimal? @db.Decimal(9, 6)
+  status       String?
+  iata         String?
+  fnPort       Boolean  @default(false)
+  fnRail       Boolean  @default(false)
+  fnRoad       Boolean  @default(false)
+  fnAirport    Boolean  @default(false)
+  fnPostal     Boolean  @default(false)
+  fnMultimodal Boolean  @default(false)
+  fnFixed      Boolean  @default(false)
+  fnInland     Boolean  @default(false)
+  fnBorder     Boolean  @default(false)
+  timezone     String?
+  remarks      String?
+  dateUpdated  String?
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  @@index([country])
+  @@index([fnPort])
+  @@index([iata])
+  @@index([latitude, longitude])
+  @@index([name])
+}
+
 // ============================================
 // LOCATION STATS (Cached aggregates per geo scope)
 // ============================================
