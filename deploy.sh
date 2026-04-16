@@ -8,9 +8,8 @@ ENV_FILE="/opt/apps/trafico-live/.env"
 echo "Building $IMAGE..."
 DOCKER_BUILDKIT=0 docker build -f Dockerfile -t "$IMAGE" .
 
-echo "Stopping old container..."
-docker stop "$APP_NAME" 2>/dev/null || true
-docker rm "$APP_NAME" 2>/dev/null || true
+echo "Removing old container (if any)..."
+docker rm -f "$APP_NAME" 2>/dev/null || true
 
 echo "Starting $APP_NAME..."
 docker run -d \
