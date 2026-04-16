@@ -168,6 +168,8 @@ build_tiles() {
   # `nice`/`ionice` only apply on the Docker daemon side; pass them via --cpu-shares /
   # --blkio-weight to let the build yield CPU + I/O when the web/collector containers
   # are busy. These are soft caps that only kick in under contention.
+  # Planetiler expects the schema YAML as the FIRST positional argument (ConfiguredMapMain),
+  # not as a --schema= flag — the entrypoint otherwise treats it as a sample-name lookup.
   docker run --rm \
     --cpu-shares=512 \
     --blkio-weight=200 \
@@ -176,7 +178,7 @@ build_tiles() {
     -v "$SCHEMA_DIR/trafico-schema.yml:/schema.yml:ro" \
     -e JAVA_TOOL_OPTIONS="-Xmx$JAVA_HEAP" \
     "$IMAGE" \
-    --schema=/schema.yml \
+    /schema.yml \
     --osm-path="/data/$(basename "$INPUT_PBF")" \
     --output="/output/$(basename "$OUTPUT")" \
     --maxzoom=14 \
