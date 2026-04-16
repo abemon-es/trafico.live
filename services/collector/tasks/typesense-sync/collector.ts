@@ -351,6 +351,42 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     ] as CollectionFieldSchema[],
     token_separators: ["-"],
   },
+
+  voyages: {
+    name: "voyages",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "mmsi", type: "int32" },
+      { name: "departurePort", type: "string", optional: true, facet: true },
+      { name: "arrivalPort", type: "string", optional: true, facet: true },
+      { name: "departedAt", type: "int64", sort: true },
+      { name: "arrivedAt", type: "int64", optional: true, sort: true },
+      { name: "distanceNm", type: "float", optional: true },
+      { name: "durationH", type: "float", optional: true },
+      { name: "avgSpeedKn", type: "float", optional: true },
+      { name: "status", type: "string", facet: true },
+      { name: "positionCount", type: "int32" },
+      { name: "vesselName", type: "string", optional: true },
+      { name: "vesselFlag", type: "string", optional: true, facet: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "departedAt",
+  },
+
+  port_calls: {
+    name: "port_calls",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "mmsi", type: "int32" },
+      { name: "portCode", type: "string", optional: true, facet: true },
+      { name: "portName", type: "string", optional: true },
+      { name: "arrivedAt", type: "int64", sort: true },
+      { name: "departedAt", type: "int64", optional: true, sort: true },
+      { name: "durationH", type: "float", optional: true },
+      { name: "ongoing", type: "bool", facet: true },
+      { name: "location", type: "geopoint" },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "arrivedAt",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -837,6 +873,73 @@ async function loadAirports(prisma: PrismaClient) {
   }));
 }
 
+async function loadVoyages(prisma: PrismaClient) {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const rows = await prisma.voyage.findMany({
+    where: { departedAt: { gte: since } },
+    select: {
+      id: true, mmsi: true, departurePort: true, arrivalPort: true,
+      departedAt: true, arrivedAt: true, distanceNm: true, durationH: true,
+      avgSpeedKn: true, status: true, positionCount: true,
+    },
+    orderBy: { departedAt: "desc" },
+    take: 10000,
+  });
+
+  // Join vessel name+flag by mmsi
+  const mmsiList = [...new Set(rows.map((r) => r.mmsi))];
+  const vessels = await prisma.vessel.findMany({
+    where: { mmsi: { in: mmsiList } },
+    select: { mmsi: true, name: true, flag: true },
+  });
+  const vesselMap = new Map(vessels.map((v) => [v.mmsi, v]));
+
+  return rows.map((r) => {
+    const vessel = vesselMap.get(r.mmsi);
+    return {
+      id: r.id,
+      mmsi: r.mmsi,
+      departurePort: r.departurePort || undefined,
+      arrivalPort: r.arrivalPort || undefined,
+      departedAt: r.departedAt.getTime(),
+      arrivedAt: r.arrivedAt ? r.arrivedAt.getTime() : undefined,
+      distanceNm: r.distanceNm ?? undefined,
+      durationH: r.durationH ?? undefined,
+      avgSpeedKn: r.avgSpeedKn ?? undefined,
+      status: r.status,
+      positionCount: r.positionCount,
+      vesselName: vessel?.name || undefined,
+      vesselFlag: vessel?.flag || undefined,
+    };
+  });
+}
+
+async function loadPortCalls(prisma: PrismaClient) {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const rows = await prisma.portCall.findMany({
+    where: { arrivedAt: { gte: since } },
+    select: {
+      id: true, mmsi: true, portCode: true, portName: true,
+      arrivedAt: true, departedAt: true, durationH: true,
+      latitude: true, longitude: true,
+    },
+    orderBy: { arrivedAt: "desc" },
+    take: 10000,
+  });
+
+  return rows.map((r) => ({
+    id: r.id,
+    mmsi: r.mmsi,
+    portCode: r.portCode || undefined,
+    portName: r.portName || undefined,
+    arrivedAt: r.arrivedAt.getTime(),
+    departedAt: r.departedAt ? r.departedAt.getTime() : undefined,
+    durationH: r.durationH ?? undefined,
+    ongoing: r.departedAt === null,
+    location: [Number(r.latitude), Number(r.longitude)] as [number, number],
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // Loader registry
 // ---------------------------------------------------------------------------
@@ -852,6 +955,7 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
   maritime_stations: loadMaritimeStations, portugal_stations: loadPortugalStations,
   traffic_stations: loadTrafficStations, toll_roads: loadTollRoads,
   airports: loadAirports,
+  voyages: loadVoyages, port_calls: loadPortCalls,
 };
 
 // ---------------------------------------------------------------------------

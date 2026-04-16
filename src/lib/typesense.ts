@@ -457,6 +457,42 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "icaLabel", type: "string", optional: true, facet: true },
     ] as CollectionFieldSchema[],
   },
+
+  voyages: {
+    name: "voyages",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "mmsi", type: "int32" },
+      { name: "departurePort", type: "string", optional: true, facet: true },
+      { name: "arrivalPort", type: "string", optional: true, facet: true },
+      { name: "departedAt", type: "int64", sort: true },
+      { name: "arrivedAt", type: "int64", optional: true, sort: true },
+      { name: "distanceNm", type: "float", optional: true },
+      { name: "durationH", type: "float", optional: true },
+      { name: "avgSpeedKn", type: "float", optional: true },
+      { name: "status", type: "string", facet: true },
+      { name: "positionCount", type: "int32" },
+      { name: "vesselName", type: "string", optional: true },
+      { name: "vesselFlag", type: "string", optional: true, facet: true },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "departedAt",
+  },
+
+  port_calls: {
+    name: "port_calls",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "mmsi", type: "int32" },
+      { name: "portCode", type: "string", optional: true, facet: true },
+      { name: "portName", type: "string", optional: true },
+      { name: "arrivedAt", type: "int64", sort: true },
+      { name: "departedAt", type: "int64", optional: true, sort: true },
+      { name: "durationH", type: "float", optional: true },
+      { name: "ongoing", type: "bool", facet: true },
+      { name: "location", type: "geopoint" },
+    ] as CollectionFieldSchema[],
+    default_sorting_field: "arrivedAt",
+  },
 };
 
 // Strip embedding fields when vector search is disabled (prevents Typesense errors
