@@ -343,6 +343,21 @@ const PROVINCE_MAP_CODES = Array.from({ length: 52 }, (_, i) =>
   String(i + 1).padStart(2, "0")
 );
 
+const CERCANIAS_NETWORK_SLUGS = [
+  "madrid",
+  "barcelona",
+  "valencia",
+  "sevilla",
+  "malaga",
+  "bilbao",
+  "asturias",
+  "santander",
+  "cadiz",
+  "murcia-alicante",
+  "zaragoza",
+  "san-sebastian",
+];
+
 const MARITIME_ZONE_SLUGS = [
   "galicia",
   "cantabrico-occidental",
@@ -812,6 +827,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily" as const,
       priority: 0.8,
     },
+    ...CERCANIAS_NETWORK_SLUGS.map((network) => ({
+      url: `${BASE_URL}/trenes/cercanias/${network}`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.75,
+    })),
     {
       url: `${BASE_URL}/trenes/lineas`,
       lastModified: today,
@@ -828,6 +849,18 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       url: `${BASE_URL}/aviacion`,
       lastModified: today,
       changeFrequency: "daily" as const,
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/aviacion/aeropuertos`,
+      lastModified: today,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/accidentes`,
+      lastModified: today,
+      changeFrequency: "monthly" as const,
       priority: 0.85,
     },
     {
