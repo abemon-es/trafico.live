@@ -38,7 +38,6 @@ export const LAYER_GROUPS: LayerGroup[] = [
       { id: "sensors-circle", label: "Sensores Madrid", defaultOn: false },
       { id: "radars-circle", label: "Radares", defaultOn: false },
       { id: "gas-stations-circle", label: "Gasolineras", defaultOn: false },
-      { id: "accidents-circle", label: "Accidentes (hist.)", defaultOn: false },
       { id: "road-segments-line", label: "IMD carreteras", defaultOn: false },
       { id: "roads-traffic", label: "Tráfico en vivo", defaultOn: false },
     ],

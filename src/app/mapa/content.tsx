@@ -27,7 +27,7 @@ const STYLE_KEY_MAP: Record<string, LayerStyleName> = {
   "sensors-circle": "sensorsCircle",
   "radars-circle": "radarsCircle",
   "gas-stations-circle": "gasStationsCircle",
-  "accidents-circle": "accidentsCircle",
+  // "accidents-circle" disabled — accidents.pmtiles not yet generated.
   "road-segments-line": "roadSegmentsLine",
   "railway-routes-line": "railwayRoutesLine",
   "railway-stations-circle": "railwayStationsCircle",
@@ -181,7 +181,6 @@ const CLICKABLE_LAYERS = new Set([
   "chargers-circle",
   "stations-circle",
   "sensors-circle",
-  "accidents-circle",
   "climate-stations-circle",
 ]);
 
@@ -200,13 +199,15 @@ export default function MapaContent() {
 
   // Apply live traffic data to road coloring layer
   useEffect(() => {
-    if (!mapRef.current || !trafficData?.data) return;
+    if (!mapRef.current) return;
+    const sensors = Array.isArray(trafficData?.data) ? trafficData.data : [];
+    if (sensors.length === 0) return;
     const map = mapRef.current;
     if (!map.getLayer("roads-traffic")) return;
 
     // Group sensors by roadNumber, keep worst serviceLevel per road
     const roadMap = new Map<string, number>();
-    for (const sensor of trafficData.data) {
+    for (const sensor of sensors) {
       const ref = sensor.roadNumber || sensor.ref;
       if (!ref) continue;
       const current = roadMap.get(ref) ?? 0;

@@ -1071,10 +1071,9 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
             if (!m.getCanvas()) return;
             addTileLayer(m, "aircraftSymbol");
             addTileLayer(m, "vesselsSymbol");
-            addTileLayer(m, "vesselHeadingLines");
           });
           // Start hidden — visibility useEffects will set them when they fire
-          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "vessel-heading-lines", "climate-stations-circle"]) {
+          for (const lid of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "climate-stations-circle"]) {
             if (m.getLayer(lid)) m.setLayoutProperty(lid, "visibility", "none");
           }
 
@@ -1245,11 +1244,10 @@ const TrafficMap = forwardRef<TrafficMapRef, TrafficMapProps>(function TrafficMa
       if (!_mapForIcons.getCanvas()) return;
       addTileLayer(_mapForIcons, "aircraftSymbol");
       addTileLayer(_mapForIcons, "vesselsSymbol");
-      addTileLayer(_mapForIcons, "vesselHeadingLines");
     });
 
     // Tile layers start hidden — visibility controlled by activeLayers
-    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "vessel-heading-lines", "climate-stations-circle"]) {
+    for (const layerId of ["cameras-circle", "chargers-circle", "gas-stations-circle", "radars-circle", "incidents-circle", "roadworks-circle", "panels-circle", "sensors-circle", "city-sensors-circle", "portugal-gas-circle", "road-segments-line", "railway-routes-line", "transit-routes-line", "ferry-routes-line", "railway-stations-circle", "transit-stops-circle", "ferry-stops-circle", "airports-circle", "ports-circle", "aircraft-circle", "vessels-circle", "aircraft-symbol", "vessels-symbol", "climate-stations-circle"]) {
       if (map.current.getLayer(layerId)) {
         map.current.setLayoutProperty(layerId, "visibility", "none");
       }

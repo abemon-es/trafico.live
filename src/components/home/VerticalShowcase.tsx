@@ -93,7 +93,7 @@ function NavColumn({
               ? (stats[link.statKey] as number).toLocaleString("es-ES")
               : null;
           return (
-            <li key={link.href}>
+            <li key={`${link.href}-${link.label}`}>
               <Link
                 href={link.href}
                 className="flex items-center justify-between py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
@@ -151,7 +151,7 @@ export function VerticalShowcase() {
           <div className="flex flex-wrap gap-2">
             {DESTACADO_LINKS.map((link) => (
               <Link
-                key={link.href}
+                key={`${link.href}-${link.label}`}
                 href={link.href}
                 className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-tl-400 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
               >

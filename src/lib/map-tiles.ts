@@ -34,6 +34,13 @@ const MAP_COLORS = {
 const CARTO_VOYAGER_URL = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 const CARTO_DARK_URL = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
+// Protomaps hosted glyph CDN — serves Noto Sans Regular/Medium/Italic reliably.
+// Self-hosted PBFs on tiles.trafico.live have a wire-type 4 encoding issue that
+// MapLibre cannot parse, so we delegate glyphs to the Protomaps CDN.
+// Fontstacks available: "Noto Sans Regular", "Noto Sans Medium", "Noto Sans Italic".
+// (Bold is NOT available → use Medium with larger text-size instead.)
+const GLYPHS_URL = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
+
 // ─── PMTiles protocol ────────────────────────────────────────────────────────
 
 /**
@@ -79,7 +86,6 @@ export const SOURCE_LAYERS = {
   fleet: "fleet",
   aircraft: "aircraft",
   vessels: "vessels",
-  vesselHeadings: "vessel_headings",
   citySensors: "city_sensors",
   emergencies: "emergencies",
   roadworks: "roadworks",
@@ -189,11 +195,8 @@ export const TILE_SOURCES = {
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.panels,
   },
-  accidents: {
-    url: `pmtiles://${TILES_BASE}/tiles/accidents.pmtiles`,
-    type: "vector" as const,
-    sourceLayer: SOURCE_LAYERS.accidents,
-  },
+  // accidents: PMTiles not yet generated on the tile server — layer disabled.
+  // Re-enable once services/tiles/generate-pmtiles.sh publishes accidents.pmtiles.
 
   // ── Dynamic Martin tile sources (TileJSON endpoint) ──
   sensors: {
@@ -220,11 +223,6 @@ export const TILE_SOURCES = {
     url: `${TILES_BASE}/dynamic/vessels`,
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.vessels,
-  },
-  vesselHeadings: {
-    url: `${TILES_BASE}/dynamic/vessel_headings`,
-    type: "vector" as const,
-    sourceLayer: SOURCE_LAYERS.vesselHeadings,
   },
   citySensors: {
     url: `${TILES_BASE}/dynamic/city_sensors`,
@@ -316,7 +314,7 @@ export function getProtomapsStyle(): StyleSpecification {
 
   return {
     version: 8,
-    glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
+    glyphs: GLYPHS_URL,
     sources: {
       iberia: {
         type: "vector",
@@ -324,13 +322,36 @@ export function getProtomapsStyle(): StyleSpecification {
         promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
+      // Iberian landmass mask — paints land on top of the sea-coloured background.
+      // Required because the OSM-derived tileset does not include ocean polygons;
+      // without this, everything outside an inland water feature renders as sea.
+      "iberia-land": {
+        type: "geojson",
+        data: "/geo/iberia-landmass.geojson",
+        attribution: "",
+      },
     },
     layers: [
-      // ── Background + terrain ─────────────────────────────────────────
-      { id: "background", type: "background", paint: { "background-color": "#f8f9fa" } },
-      // No earth layer in custom tileset — background color covers land
+      // ── Sea-coloured background (covers the entire map outside land) ─
+      { id: "background", type: "background", paint: { "background-color": "#cfdef5" } },
 
-      // ── Water — ocean/sea, strong blue to contrast with land ───────
+      // ── Landmass fill — Iberia + neighbouring countries ─────────────
+      {
+        id: "land-fill", type: "fill", source: "iberia-land",
+        paint: { "fill-color": "#f6f7f9", "fill-antialias": true },
+      },
+      // Soft coastline halo just inside the land (subtle brand-tinted line)
+      {
+        id: "land-halo", type: "line", source: "iberia-land",
+        paint: {
+          "line-color": "#9fb6dc",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.4, 8, 1.0, 12, 1.4],
+          "line-opacity": ["interpolate", ["linear"], ["zoom"], 3, 0.4, 8, 0.55, 12, 0.35],
+          "line-blur": 0.6,
+        },
+      },
+
+      // ── Inland water — rivers, lakes, reservoirs ───────────────────
       { id: "water", type: "fill", source: S, "source-layer": "water",
         paint: { "fill-color": "#a3c4f3", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.85, 12, 0.7] },
       },
@@ -383,15 +404,17 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Boundaries (country → region → municipality) ─────────────────
+      // Country borders — subtle solid line (the land-halo provides the coastline).
       {
         id: "boundary-country", type: "line", source: S, "source-layer": "boundaries",
         filter: ["==", "admin_level", 2],
         paint: {
           "line-color": "#6b8cce",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.5, 14, 3],
-          "line-dasharray": [5, 2],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.6, 8, 1.4, 14, 2],
+          "line-opacity": 0.55,
         },
       },
+      // Regions (CCAA) — dashed brand line, stronger at high zoom.
       {
         id: "boundary-region", type: "line", source: S, "source-layer": "boundaries",
         filter: ["==", "admin_level", 4],
@@ -400,7 +423,7 @@ export function getProtomapsStyle(): StyleSpecification {
           "line-color": MAP_COLORS.primaryLight,
           "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 8, 1, 14, 2],
           "line-dasharray": [3, 2],
-          "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 7, 0.7],
+          "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.25, 7, 0.55, 12, 0.7],
         },
       },
       {
@@ -415,14 +438,17 @@ export function getProtomapsStyle(): StyleSpecification {
         },
       },
 
-      // ── Roads — casings (white outlines for legibility) ──────────────
+      // ── Roads — casings (outlines for legibility + brand accent) ────
+      // Motorways/trunks get a slightly darker brand casing so they "pop"
+      // against the landmass; lower-order roads use a softer white casing.
       {
         id: "roads-highway-casing", type: "line", source: S, "source-layer": "roads",
         filter: ["in", "highway", "motorway", "trunk"],
         paint: {
-          "line-color": "#ffffff",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 5, 14, 12],
-          "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 7, 0.8],
+          "line-color": "#173a9a",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.8, 10, 6, 14, 13],
+          "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 7, 0.9, 10, 0.95],
+          "line-blur": 0.2,
         },
       },
       {
@@ -432,7 +458,7 @@ export function getProtomapsStyle(): StyleSpecification {
         paint: {
           "line-color": "#ffffff",
           "line-width": ["interpolate", ["linear"], ["zoom"], 8, 2, 10, 4, 14, 8],
-          "line-opacity": 0.8,
+          "line-opacity": 0.85,
         },
       },
 
@@ -441,16 +467,22 @@ export function getProtomapsStyle(): StyleSpecification {
         id: "roads-highway", type: "line", source: S, "source-layer": "roads",
         filter: ["in", "highway", "motorway", "trunk"],
         paint: {
-          "line-color": ["interpolate", ["linear"], ["zoom"], 5, MAP_COLORS.primaryLight, 10, "#7da4f0"],
-          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.8, 10, 3, 14, 8],
+          // Brand gradient: deep tl-700 at country scale → tl-500 mid → tl-400 zoomed in.
+          "line-color": [
+            "interpolate", ["linear"], ["zoom"],
+            5, "#1b4bd5",   // tl-600
+            9, "#3b6cf8",   // tl-500
+            13, "#5b8aff",  // tl-400
+          ],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.0, 10, 3.5, 14, 9],
         },
       },
       {
         id: "roads-major", type: "line", source: S, "source-layer": "roads",
         filter: ["in", "highway", "primary", "secondary"],
         paint: {
-          "line-color": "#b8cdff",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 10, 1.5, 14, 5],
+          "line-color": "#94b6ff", // tl-300
+          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.3, 10, 1.8, 14, 5],
         },
       },
       {
@@ -458,8 +490,8 @@ export function getProtomapsStyle(): StyleSpecification {
         filter: ["==", "highway", "tertiary"],
         minzoom: 6,
         paint: {
-          "line-color": "#dde8ff",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 8, 0.3, 11, 1, 14, 3],
+          "line-color": "#c9d8ef",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.15, 8, 0.4, 11, 1.1, 14, 3],
         },
       },
       {
@@ -467,7 +499,7 @@ export function getProtomapsStyle(): StyleSpecification {
         filter: ["in", "highway", "residential", "unclassified", "living_street"],
         minzoom: 9,
         paint: {
-          "line-color": "#e8eeff",
+          "line-color": "#dde5f4",
           "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.3, 14, 2, 16, 3],
         },
       },
@@ -505,15 +537,15 @@ export function getProtomapsStyle(): StyleSpecification {
       },
       // transit-ferry layer removed — custom tileset has no ferry routes in railways source-layer
 
-      // ── Road ref shields (highway numbers) ──────────────────────────
+      // ── Road ref shields (highway numbers like A-3, AP-7, N-340) ───
       {
         id: "road-ref-shields", type: "symbol", source: S, "source-layer": "roads",
         filter: ["all", ["has", "ref"], ["in", "highway", "motorway", "trunk", "primary", "secondary"]],
         minzoom: 7,
         layout: {
           "text-field": ["get", "ref"],
-          "text-font": ["Noto Sans Bold"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 7, 8, 12, 10],
+          "text-font": ["Noto Sans Medium"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 11, 14, 13],
           "symbol-placement": "line",
           "text-rotation-alignment": "viewport",
           "symbol-spacing": 500,
@@ -521,9 +553,10 @@ export function getProtomapsStyle(): StyleSpecification {
           "text-keep-upright": true,
         },
         paint: {
-          "text-color": "#1e40af",
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 2,
+          "text-color": "#ffffff",
+          "text-halo-color": "#1b4bd5",
+          "text-halo-width": 2.4,
+          "text-halo-blur": 0.2,
         },
       },
 
@@ -534,7 +567,7 @@ export function getProtomapsStyle(): StyleSpecification {
         maxzoom: 7,
         layout: {
           "text-field": textEs,
-          "text-font": ["Noto Sans Bold"],
+          "text-font": ["Noto Sans Medium"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18],
           "text-transform": "uppercase",
           "text-letter-spacing": 0.15,
@@ -724,7 +757,7 @@ export function getProtomapsDarkStyle(): StyleSpecification {
 
   return {
     version: 8,
-    glyphs: `${TILES_BASE}/fonts/{fontstack}/{range}.pbf`,
+    glyphs: GLYPHS_URL,
     sources: {
       iberia: {
         type: "vector",
@@ -732,14 +765,31 @@ export function getProtomapsDarkStyle(): StyleSpecification {
         promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
+      "iberia-land": {
+        type: "geojson",
+        data: "/geo/iberia-landmass.geojson",
+        attribution: "",
+      },
     },
     layers: [
-      { id: "background", type: "background", paint: { "background-color": "#0b0f1a" } },
-      // No earth layer in custom tileset — background color covers land
+      // Sea-coloured background
+      { id: "background", type: "background", paint: { "background-color": "#0c1828" } },
 
-      // Water — ocean only, faded at zoom
+      // Landmass fill — dark slate
+      { id: "land-fill", type: "fill", source: "iberia-land",
+        paint: { "fill-color": "#151c2b", "fill-antialias": true } },
+      { id: "land-halo", type: "line", source: "iberia-land",
+        paint: {
+          "line-color": "#263049",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.3, 8, 0.8, 12, 1.2],
+          "line-opacity": 0.7,
+          "line-blur": 0.6,
+        },
+      },
+
+      // Inland water — rivers, lakes
       { id: "water", type: "fill", source: S, "source-layer": "water",
-        paint: { "fill-color": "#0c2d4a", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.7, 12, 0.4] } },
+        paint: { "fill-color": "#0c2d4a", "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 8, 0.85, 12, 0.7] } },
 
       // Landuse — parks only at high zoom
       { id: "landuse-park", type: "fill", source: S, "source-layer": "landuse",
@@ -762,20 +812,29 @@ export function getProtomapsDarkStyle(): StyleSpecification {
       // Boundaries
       { id: "boundary-country", type: "line", source: S, "source-layer": "boundaries",
         filter: ["==", "admin_level", 2],
-        paint: { "line-color": "#4b6ca8", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.5, 14, 3], "line-dasharray": [5, 2] } },
+        paint: { "line-color": "#3b5998", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.6, 8, 1.4, 14, 2], "line-opacity": 0.55 } },
       { id: "boundary-region", type: "line", source: S, "source-layer": "boundaries",
         filter: ["==", "admin_level", 4], minzoom: 4,
-        paint: { "line-color": "#3b5998", "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 8, 1, 14, 2], "line-dasharray": [3, 2], "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 7, 0.5] } },
+        paint: { "line-color": "#3b5998", "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 8, 1, 14, 2], "line-dasharray": [3, 2], "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.25, 7, 0.5, 12, 0.65] } },
 
-      // Road casings (dark outlines)
+      // Road casings — slightly darker than land, soft glow effect
       { id: "roads-highway-casing", type: "line", source: S, "source-layer": "roads",
         filter: ["in", "highway", "motorway", "trunk"],
-        paint: { "line-color": "#0b0f1a", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 5, 14, 12], "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 7, 0.6] } },
+        paint: { "line-color": "#0a1222", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.8, 10, 6, 14, 13], "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 7, 0.8, 10, 0.9], "line-blur": 0.3 } },
 
-      // Roads
+      // Roads — brand-blue fills with gradient
       { id: "roads-highway", type: "line", source: S, "source-layer": "roads",
         filter: ["in", "highway", "motorway", "trunk"],
-        paint: { "line-color": ["interpolate", ["linear"], ["zoom"], 5, "#3b6cf8", 10, "#5b8aff"], "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.8, 10, 3, 14, 8] } },
+        paint: {
+          "line-color": [
+            "interpolate", ["linear"], ["zoom"],
+            5, "#3b6cf8",   // tl-500
+            9, "#5b8aff",   // tl-400
+            13, "#94b6ff",  // tl-300
+          ],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.0, 10, 3.5, 14, 9],
+        },
+      },
       { id: "roads-major", type: "line", source: S, "source-layer": "roads",
         filter: ["in", "highway", "primary", "secondary"],
         paint: { "line-color": "#374151", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 10, 1.5, 14, 5] } },
@@ -795,16 +854,16 @@ export function getProtomapsDarkStyle(): StyleSpecification {
         paint: { "line-color": "#4b5563", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 10, 1, 14, 2], "line-dasharray": [4, 3] } },
       // transit-ferry layer removed — custom tileset has no ferry routes in railways source-layer
 
-      // Road ref shields
+      // Road ref shields — tl-400 text on deep background halo
       { id: "road-ref-shields", type: "symbol", source: S, "source-layer": "roads",
         filter: ["all", ["has", "ref"], ["in", "highway", "motorway", "trunk", "primary", "secondary"]], minzoom: 7,
-        layout: { "text-field": ["get", "ref"], "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 8, 12, 10], "symbol-placement": "line", "text-rotation-alignment": "viewport", "symbol-spacing": 500, "text-max-angle": 30, "text-keep-upright": true },
-        paint: { "text-color": "#7da4f0", "text-halo-color": "#0b0f1a", "text-halo-width": 2 } },
+        layout: { "text-field": ["get", "ref"], "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 11, 14, 13], "symbol-placement": "line", "text-rotation-alignment": "viewport", "symbol-spacing": 500, "text-max-angle": 30, "text-keep-upright": true },
+        paint: { "text-color": "#e8eeff", "text-halo-color": "#1b4bd5", "text-halo-width": 2.4, "text-halo-blur": 0.3 } },
 
       // Place labels
       { id: "places-country", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "country"], maxzoom: 7,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18], "text-transform": "uppercase", "text-letter-spacing": 0.15, "text-max-width": 8 },
+        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18], "text-transform": "uppercase", "text-letter-spacing": 0.15, "text-max-width": 8 },
         paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 2 } },
       { id: "places-state", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "state"], minzoom: 4, maxzoom: 9,
@@ -1193,29 +1252,6 @@ export const LAYER_STYLES = {
     },
   },
 
-  // ── Vessel heading lines (course projection, proportional to speed) ──
-  vesselHeadingLines: {
-    id: "vessel-heading-lines",
-    type: "line",
-    source: "vesselHeadings",
-    "source-layer": SOURCE_LAYERS.vesselHeadings,
-    paint: {
-      "line-color": [
-        "match", ["coalesce", ["get", "category"], "OTHER"],
-        "CARGO", "#16a34a",
-        "TANKER", "#d97706",
-        "FISHING", "#0891b2",
-        "PASSENGER", "#dc2626",
-        "FERRY", "#e11d48",
-        "CRUISE", "#9333ea",
-        "TUG", "#64748b",
-        "#94a3b8",
-      ],
-      "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 1.5, 14, 2.5],
-      "line-opacity": 0.6,
-    },
-  },
-
   // ── Fleet symbol (replaces fleetCircle visually) ──
   fleetSymbol: {
     id: "fleet-symbol",
@@ -1434,25 +1470,7 @@ export const LAYER_STYLES = {
     },
   },
 
-  // ── Accident microdata (historical hotspots) ──
-  accidentsCircle: {
-    id: "accidents-circle",
-    type: "circle",
-    source: "accidents",
-    "source-layer": SOURCE_LAYERS.accidents,
-    paint: {
-      "circle-color": [
-        "match", ["get", "severity"],
-        "FATAL", "#dc2626",
-        "GRAVE", "#ea580c",
-        "#f59e0b",
-      ],
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 2, 8, 4, 12, 7],
-      "circle-stroke-width": 1,
-      "circle-stroke-color": "#ffffff",
-      "circle-opacity": 0.7,
-    },
-  },
+  // (accidentsCircle removed — accidents.pmtiles not yet generated.)
 
   // ── Road segments (IMD traffic flow polylines) ──
   roadSegmentsLine: {

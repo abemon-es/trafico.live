@@ -504,36 +504,8 @@ export default function MaritimeMap() {
       // Ferry stop circles
       map.addLayer(LAYER_STYLES.ferryStopsCircle as maplibregl.AddLayerObject);
 
-      // Vessel heading lines (course projection, proportional to speed)
-      map.addSource("vessel-headings", {
-        type: "vector",
-        tiles: ["https://tiles.trafico.live/dynamic/vessel_headings/{z}/{x}/{y}"],
-        minzoom: 3,
-        maxzoom: 14,
-      });
-      map.addLayer({
-        id: "vessel-heading-lines",
-        type: "line",
-        source: "vessel-headings",
-        "source-layer": "vessel_headings",
-        paint: {
-          "line-color": [
-            "match", ["coalesce", ["get", "category"], "OTHER"],
-            "CARGO", "#16a34a",
-            "TANKER", "#d97706",
-            "FISHING", "#0891b2",
-            "PASSENGER", "#dc2626",
-            "FERRY", "#e11d48",
-            "CRUISE", "#9333ea",
-            "TUG", "#64748b",
-            "#94a3b8",
-          ],
-          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 1.5, 14, 2.5],
-          "line-opacity": 0.6,
-        },
-      } as maplibregl.AddLayerObject);
-
       // Vessel positions — category icons with color + rotation
+      // (Heading lines omitted — Martin does not serve vessel_headings; icon rotation via `cog` conveys direction.)
       loadTransportIcons(map).then(() => {
         if (!map.getCanvas()) return;
         map.addLayer({
