@@ -2093,6 +2093,55 @@ model VesselPosition {
   @@index([createdAt])
 }
 
+enum VoyageStatus {
+  IN_TRANSIT
+  ARRIVED
+}
+
+model PortCall {
+  id         String    @id @default(cuid())
+  mmsi       Int
+  latitude   Decimal   @db.Decimal(9, 6)
+  longitude  Decimal   @db.Decimal(9, 6)
+  arrivedAt  DateTime  @db.Timestamptz
+  departedAt DateTime? @db.Timestamptz
+  durationH  Float?
+  navStatus  Int?
+  portName   String?
+  portCode   String?
+  voyageId   String?
+  createdAt  DateTime  @default(now()) @db.Timestamptz
+
+  @@index([mmsi, arrivedAt(sort: Desc)])
+  @@index([portCode])
+  @@index([portName])
+}
+
+model Voyage {
+  id            String       @id @default(cuid())
+  mmsi          Int
+  departurePort String?
+  departureLat  Decimal?     @db.Decimal(9, 6)
+  departureLng  Decimal?     @db.Decimal(9, 6)
+  departedAt    DateTime     @db.Timestamptz
+  arrivalPort   String?
+  arrivalLat    Decimal?     @db.Decimal(9, 6)
+  arrivalLng    Decimal?     @db.Decimal(9, 6)
+  arrivedAt     DateTime?    @db.Timestamptz
+  distanceNm    Float?
+  durationH     Float?
+  avgSpeedKn    Float?
+  status        VoyageStatus @default(IN_TRANSIT)
+  positionCount Int          @default(0)
+  createdAt     DateTime     @default(now()) @db.Timestamptz
+  updatedAt     DateTime     @default(now()) @updatedAt @db.Timestamptz
+
+  @@index([departurePort])
+  @@index([arrivalPort])
+  @@index([mmsi, departedAt(sort: Desc)])
+  @@index([status])
+}
+
 model FerryRoute {
   id          String  @id @default(cuid())
   operator    String
