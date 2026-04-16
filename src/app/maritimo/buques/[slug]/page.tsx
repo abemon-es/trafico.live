@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import dynamic from "next/dynamic";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
 import {
@@ -14,10 +15,19 @@ import {
   Clock,
   ArrowRight,
   ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { VesselVoyageHistory } from "@/components/maritimo/VesselVoyageHistory";
+import { VesselOverview } from "@/components/maritimo/VesselOverview";
+import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
+import { NAV_STATUS, shipTypeLabel, cleanDestination, cleanEta } from "@/lib/ais-labels";
+
+const VesselLiveMap = dynamic(
+  () => import("@/components/maritimo/VesselLiveMap").then((m) => m.VesselLiveMap),
+  { ssr: false }
+);
 
 export const revalidate = 120;
 export const dynamicParams = true;
@@ -58,21 +68,7 @@ function classifyShipType(type: number | null): {
     return { label: "SAR", slug: "sar", color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-100 dark:bg-orange-900/40" };
   if (type === 55)
     return { label: "Policia", slug: "policia", color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-100 dark:bg-blue-900/40" };
-  return { label: "Otro", slug: "otro", color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-100 dark:bg-gray-800" };
-}
-
-function decodeNavStatus(status: number | null): string {
-  const map: Record<number, string> = {
-    0: "Navegando a motor",
-    1: "Fondeado",
-    2: "Sin gobierno",
-    3: "Maniobrabilidad restringida",
-    5: "Amarrado",
-    6: "Varado",
-    7: "Pescando",
-    8: "Navegando a vela",
-  };
-  return status !== null ? map[status] ?? "Desconocido" : "Desconocido";
+  return { label: shipTypeLabel(type), slug: "otro", color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-100 dark:bg-gray-800" };
 }
 
 function flagEmoji(code: string | null): string {
@@ -179,12 +175,18 @@ const getVessel = cache(async (mmsi: number) => {
   return prisma.vessel.findUnique({ where: { mmsi } });
 });
 
-const getPositions = cache(async (mmsi: number) => {
+const getLatestPosition = cache(async (mmsi: number) => {
   const since48h = new Date(Date.now() - 48 * 3600_000);
-  return prisma.vesselPosition.findMany({
+  return prisma.vesselPosition.findFirst({
     where: { mmsi, createdAt: { gte: since48h } },
     orderBy: { createdAt: "desc" },
-    take: 100,
+  });
+});
+
+const getPositionCount = cache(async (mmsi: number) => {
+  const since48h = new Date(Date.now() - 48 * 3600_000);
+  return prisma.vesselPosition.count({
+    where: { mmsi, createdAt: { gte: since48h } },
   });
 });
 
@@ -219,36 +221,42 @@ const getNearestPort = cache(async (lat: number, lng: number) => {
 // ---------------------------------------------------------------------------
 
 interface PageProps {
-  params: Promise<{ mmsi: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { mmsi: mmsiStr } = await params;
-  const mmsi = parseInt(mmsiStr, 10);
-  if (isNaN(mmsi)) return { title: "Buque no encontrado" };
+  const { slug } = await params;
+  const { mmsi } = parseVesselSlug(slug);
+  if (!mmsi) return { title: "Buque no encontrado" };
 
   const vessel = await getVessel(mmsi);
   if (!vessel) return { title: "Buque no encontrado" };
 
   const name = vessel.name || `Buque MMSI ${mmsi}`;
   const category = classifyShipType(vessel.shipType);
-  const flagStr = vessel.flag ? ` (${flagName(vessel.flag)})` : "";
+  const flagStr = vessel.flag ? ` (${vessel.flag})` : "";
   const imoStr = vessel.imo ? `, IMO: ${vessel.imo}` : "";
-  const destStr = vessel.destination ? `. Destino: ${vessel.destination}` : "";
+  const cleanDest = cleanDestination(vessel.destination);
+  const destStr = cleanDest ? `. Destino: ${cleanDest}` : "";
+  const latestPos = await getLatestPosition(mmsi);
+  const posStr = latestPos
+    ? `, ultima posicion ${timeAgo(latestPos.createdAt)}`
+    : "";
 
-  const title = `${name}${flagStr} — Posicion y seguimiento AIS`;
-  const description = `Seguimiento en tiempo real del buque ${name} (MMSI: ${mmsi}${imoStr}). Tipo: ${category.label}${destStr}. Datos AIS actualizados.`;
+  const canonicalSlug = vesselSlug(mmsi, vessel.name);
+  const title = `${name}${flagStr} — ${category.label} en tiempo real | Trafico.live`;
+  const description = `Seguimiento en tiempo real del buque ${name} (MMSI: ${mmsi}${imoStr}). Tipo: ${category.label}${destStr}${posStr}. Datos AIS actualizados.`;
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${BASE_URL}/maritimo/buques/${mmsi}`,
+      canonical: `${BASE_URL}/maritimo/buques/${canonicalSlug}`,
     },
     openGraph: {
       title,
       description,
-      url: `${BASE_URL}/maritimo/buques/${mmsi}`,
+      url: `${BASE_URL}/maritimo/buques/${canonicalSlug}`,
       siteName: "trafico.live",
       locale: "es_ES",
       type: "website",
@@ -261,27 +269,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // ---------------------------------------------------------------------------
 
 export default async function VesselPage({ params }: PageProps) {
-  const { mmsi: mmsiStr } = await params;
-  const mmsi = parseInt(mmsiStr, 10);
+  const { slug } = await params;
+  const { mmsi } = parseVesselSlug(slug);
 
-  if (isNaN(mmsi) || mmsi < 100000000 || mmsi > 999999999) {
+  if (!mmsi || mmsi < 100000000 || mmsi > 999999999) {
     notFound();
   }
 
   const vessel = await getVessel(mmsi);
   if (!vessel) notFound();
 
-  const positions = await getPositions(mmsi);
+  // Canonical slug for this vessel
+  const canonicalSlug = vesselSlug(mmsi, vessel.name);
+
+  // Redirect mmsi-only or stale-slug URLs to canonical slug (301)
+  if (slug !== canonicalSlug) {
+    redirect(`/maritimo/buques/${canonicalSlug}`);
+  }
+
+  const latestPos = await getLatestPosition(mmsi);
+  const positionCount = await getPositionCount(mmsi);
 
   // Quality gate: no name AND no positions in last 30 days
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3600_000);
-  const hasRecentPositions = positions.some((p) => p.createdAt > thirtyDaysAgo);
+  const hasRecentPositions = latestPos ? latestPos.createdAt > thirtyDaysAgo : false;
   if (!vessel.name && !hasRecentPositions) {
     notFound();
   }
 
   const category = classifyShipType(vessel.shipType);
-  const latestPos = positions[0] ?? null;
   const latestLat = latestPos ? Number(latestPos.latitude) : null;
   const latestLng = latestPos ? Number(latestPos.longitude) : null;
 
@@ -291,7 +307,21 @@ export default async function VesselPage({ params }: PageProps) {
       : null;
 
   const displayName = vessel.name || `Buque MMSI ${mmsi}`;
-  const isRecent = latestPos ? Date.now() - latestPos.createdAt.getTime() < 10 * 60_000 : false;
+
+  // Signal age thresholds
+  const signalAgeMs = latestPos ? Date.now() - latestPos.createdAt.getTime() : Infinity;
+  const isRecent = signalAgeMs < 10 * 60_000;      // < 10 min
+  const isSignalLost = signalAgeMs > 15 * 60_000;  // > 15 min
+
+  // Sanitize AIS fields
+  const cleanDest = cleanDestination(vessel.destination);
+  const cleanEtaDate = cleanEta(vessel.eta ?? null);
+
+  // Nav status label (from latest position row, not vessel table)
+  const navStatusLabel =
+    latestPos?.navStatus != null
+      ? (NAV_STATUS[latestPos.navStatus] ?? `Estado ${latestPos.navStatus}`)
+      : "Desconocido";
 
   // JSON-LD: Vehicle schema
   const vehicleSchema = {
@@ -300,7 +330,7 @@ export default async function VesselPage({ params }: PageProps) {
     name: displayName,
     identifier: `MMSI:${mmsi}`,
     description: `Buque ${category.label.toLowerCase()}${vessel.flag ? ` de bandera ${flagName(vessel.flag)}` : ""}. MMSI: ${mmsi}${vessel.imo ? `, IMO: ${vessel.imo}` : ""}.`,
-    url: `${BASE_URL}/maritimo/buques/${mmsi}`,
+    url: `${BASE_URL}/maritimo/buques/${canonicalSlug}`,
     ...(vessel.flag && {
       nationality: {
         "@type": "Country",
@@ -320,7 +350,7 @@ export default async function VesselPage({ params }: PageProps) {
             { name: "Inicio", href: "/" },
             { name: "Maritimo", href: "/maritimo" },
             { name: "Buques", href: "/maritimo" },
-            { name: displayName, href: `/maritimo/buques/${mmsi}` },
+            { name: displayName, href: `/maritimo/buques/${canonicalSlug}` },
           ]}
         />
       </div>
@@ -391,6 +421,36 @@ export default async function VesselPage({ params }: PageProps) {
       <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
 
         {/* ---------------------------------------------------------------- */}
+        {/* Live map with current position + 24h track                        */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Mapa en vivo">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-tl-sea-500" />
+            Mapa en vivo
+          </h2>
+          <VesselLiveMap
+            mmsi={vessel.mmsi}
+            name={vessel.name}
+            initialPosition={
+              latestPos
+                ? {
+                    lat: Number(latestPos.latitude),
+                    lng: Number(latestPos.longitude),
+                    sog: latestPos.sog,
+                    cog: latestPos.cog,
+                    heading: latestPos.heading,
+                  }
+                : undefined
+            }
+          />
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Vessel overview: status + 30d stats + top ports                   */}
+        {/* ---------------------------------------------------------------- */}
+        <VesselOverview mmsi={vessel.mmsi} />
+
+        {/* ---------------------------------------------------------------- */}
         {/* Current status card                                               */}
         {/* ---------------------------------------------------------------- */}
         <section aria-label="Estado actual">
@@ -400,77 +460,103 @@ export default async function VesselPage({ params }: PageProps) {
           </h2>
           <div className="rounded-2xl border border-tl-sea-200 dark:border-tl-sea-800/50 bg-white dark:bg-gray-900 shadow-sm p-6">
             {latestPos ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {/* Nav status */}
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Estado de navegacion</div>
-                  <div className="flex items-center gap-2">
-                    {isRecent && (
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
+              <>
+                {/* Signal lost banner */}
+                {isSignalLost && (
+                  <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-sm">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    <span>
+                      Senal perdida — ultima posicion {timeAgo(latestPos.createdAt)}. Los datos de velocidad y rumbo pueden no ser actuales.
+                    </span>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {/* Nav status */}
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Estado de navegacion</div>
+                    <div className="flex items-center gap-2">
+                      {isRecent && (
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
+                        </span>
+                      )}
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                        {navStatusLabel}
                       </span>
-                    )}
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      {decodeNavStatus(latestPos.navStatus)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Speed (SOG) */}
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Velocidad (SOG)</div>
-                  <div className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                    {latestPos.sog !== null ? `${latestPos.sog.toFixed(1)} kn` : "N/D"}
-                  </div>
-                </div>
-
-                {/* Course (COG) */}
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Rumbo (COG)</div>
-                  <div className="flex items-center gap-2">
-                    <Compass className="w-5 h-5 text-tl-sea-500" />
-                    <span className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                      {latestPos.cog !== null ? `${latestPos.cog.toFixed(0)}° ${compassDirection(latestPos.cog)}` : "N/D"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Heading */}
-                {latestPos.heading !== null && latestPos.heading !== 511 && (
-                  <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Proa</div>
-                    <div className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                      {latestPos.heading}° {compassDirection(latestPos.heading)}
                     </div>
                   </div>
-                )}
 
-                {/* Destination */}
-                {vessel.destination && (
+                  {/* Speed (SOG) — dimmed if signal lost */}
                   <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Destino</div>
-                    <div className="font-semibold text-gray-900 dark:text-gray-100">
-                      {vessel.destination}
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      Velocidad (SOG){isSignalLost ? " *" : ""}
+                    </div>
+                    <div className={`font-mono text-lg font-bold ${isSignalLost ? "text-gray-400 dark:text-gray-600" : "text-tl-sea-700 dark:text-tl-sea-300"}`}>
+                      {latestPos.sog !== null ? `${Number(latestPos.sog).toFixed(1)} kn` : "N/D"}
                     </div>
                   </div>
-                )}
 
-                {/* ETA */}
-                {vessel.eta && (
+                  {/* Course (COG) — dimmed if signal lost */}
                   <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">ETA</div>
-                    <div className="font-mono text-gray-900 dark:text-gray-100">
-                      {new Date(vessel.eta).toLocaleDateString("es-ES", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      Rumbo (COG){isSignalLost ? " *" : ""}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Compass className="w-5 h-5 text-tl-sea-500" />
+                      <span className={`font-mono text-lg font-bold ${isSignalLost ? "text-gray-400 dark:text-gray-600" : "text-tl-sea-700 dark:text-tl-sea-300"}`}>
+                        {latestPos.cog !== null ? `${Number(latestPos.cog).toFixed(0)}° ${compassDirection(Number(latestPos.cog))}` : "N/D"}
+                      </span>
                     </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Heading */}
+                  {latestPos.heading !== null && latestPos.heading !== 511 && (
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Proa</div>
+                      <div className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300">
+                        {latestPos.heading}° {compassDirection(latestPos.heading)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Destination — sanitized */}
+                  {cleanDest && (
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Destino</div>
+                      <div className="font-semibold text-gray-900 dark:text-gray-100">
+                        {cleanDest}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ETA — sanitized */}
+                  {cleanEtaDate && (
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">ETA</div>
+                      <div className="font-mono text-gray-900 dark:text-gray-100">
+                        {cleanEtaDate.toLocaleDateString("es-ES", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Last signal timestamp */}
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      Ultima senal
+                    </div>
+                    <div className="text-sm text-gray-900 dark:text-gray-100">
+                      {timeAgo(latestPos.createdAt)}
+                    </div>
+                  </div>
+                </div>
+              </>
             ) : (
               <p className="text-gray-500 dark:text-gray-400">
                 Sin datos de posicion recientes.
@@ -510,7 +596,7 @@ export default async function VesselPage({ params }: PageProps) {
                   <div className="bg-white dark:bg-gray-900 p-5">
                     <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Calado</div>
                     <div className="font-mono text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {vessel.draught.toFixed(1)} m
+                      {Number(vessel.draught).toFixed(1)} m
                     </div>
                   </div>
                 )}
@@ -542,7 +628,7 @@ export default async function VesselPage({ params }: PageProps) {
                   <div className="bg-white dark:bg-gray-900 p-5">
                     <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Dimensiones</div>
                     <div className="font-mono text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {vessel.length} x {vessel.beam}{vessel.draught ? ` x ${vessel.draught.toFixed(1)}` : ""} m
+                      {vessel.length} x {vessel.beam}{vessel.draught ? ` x ${Number(vessel.draught).toFixed(1)}` : ""} m
                     </div>
                   </div>
                 )}
@@ -552,7 +638,7 @@ export default async function VesselPage({ params }: PageProps) {
         )}
 
         {/* ---------------------------------------------------------------- */}
-        {/* Position trail                                                    */}
+        {/* Position                                                          */}
         {/* ---------------------------------------------------------------- */}
         <section aria-label="Ultima posicion">
           <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -598,10 +684,10 @@ export default async function VesselPage({ params }: PageProps) {
                   </div>
                 )}
 
-                {positions.length > 1 && (
+                {positionCount > 1 && (
                   <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {positions.length} posiciones registradas en las ultimas 48 horas
+                      {positionCount} posiciones registradas en las ultimas 48 horas
                     </div>
                   </div>
                 )}

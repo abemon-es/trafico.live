@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
+import { vesselSlug } from "@/lib/vessel-utils";
 import {
   Ship,
   Anchor,
@@ -620,7 +621,7 @@ export default async function ZoneDetailPage({
                         >
                           <td className="px-4 py-3">
                             <Link
-                              href={`/maritimo/buques/${v.mmsi}`}
+                              href={`/maritimo/buques/${vesselSlug(v.mmsi, v.name ?? null)}`}
                               className="font-semibold text-tl-sea-700 dark:text-tl-sea-300 hover:underline"
                             >
                               {v.name || `MMSI ${v.mmsi}`}

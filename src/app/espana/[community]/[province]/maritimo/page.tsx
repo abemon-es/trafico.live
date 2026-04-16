@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Ship, ArrowLeft, Anchor, Navigation, CloudRain, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { vesselSlug } from "@/lib/vessel-utils";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -324,7 +325,7 @@ export default async function ProvinceMaritimePage({ params }: Props) {
               {recentVessels.slice(0, 20).map((vessel) => (
                 <Link
                   key={vessel.mmsi}
-                  href={`/maritimo/buques/${vessel.mmsi}`}
+                  href={`/maritimo/buques/${vesselSlug(vessel.mmsi, vessel.name ?? null)}`}
                   className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-tl-300 hover:bg-tl-50 transition-all group"
                 >
                   <div className="flex-1 min-w-0">
