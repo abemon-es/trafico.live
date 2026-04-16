@@ -9,6 +9,21 @@ interface StatsResponse {
   incidents?: number;
   cameras?: number;
   radars?: number;
+  panels?: number;
+  chargers?: number;
+  zbeZones?: number;
+  trafficStations?: number;
+  railwayRoutes?: number;
+  railwayStations?: number;
+  airports?: number;
+  flights?: number;
+  vessels?: number;
+  ferryRoutes?: number;
+  transitOperators?: number;
+  airQualityStations?: number;
+  climateStations?: number;
+  accidentRecords?: number;
+  maritimeStations?: number;
   [key: string]: unknown;
 }
 
@@ -21,7 +36,7 @@ const COLUMN_1 = {
     { label: "Cortes de tráfico", href: "/cortes-trafico", statKey: null },
     { label: "Cámaras DGT", href: "/camaras", statKey: "cameras" as const },
     { label: "Radares", href: "/radares", statKey: "radars" as const },
-    { label: "Paneles DGT", href: "/paneles", statKey: null },
+    { label: "Paneles DGT", href: "/paneles", statKey: "panels" as const },
     { label: "Alertas meteorológicas", href: "/alertas-meteo", statKey: null },
     { label: "Balizas V16", href: "/mapa", statKey: null },
     { label: "Mejor hora para viajar", href: "/mejor-hora", statKey: null },
@@ -35,8 +50,8 @@ const COLUMN_2 = {
     { label: "Precio diésel hoy", href: "/precio-diesel-hoy", statKey: null },
     { label: "Gasolineras baratas", href: "/gasolineras/baratas", statKey: null },
     { label: "Gasolineras 24h", href: "/gasolineras-24-horas", statKey: null },
-    { label: "Cargadores EV", href: "/carga-ev", statKey: null },
-    { label: "Electrolineras", href: "/electrolineras", statKey: null },
+    { label: "Cargadores EV", href: "/carga-ev", statKey: "chargers" as const },
+    { label: "Electrolineras", href: "/electrolineras", statKey: "chargers" as const },
     { label: "Cuánto cuesta cargar", href: "/cuanto-cuesta-cargar", statKey: null },
     { label: "Etiqueta ambiental", href: "/etiqueta-ambiental", statKey: null },
   ],
@@ -48,9 +63,9 @@ const COLUMN_3 = {
     { label: "Autopistas", href: "/carreteras/autopistas", statKey: null },
     { label: "Autovías", href: "/carreteras/autovias", statKey: null },
     { label: "Nacionales", href: "/carreteras/nacionales", statKey: null },
-    { label: "Zonas ZBE", href: "/zbe", statKey: null },
+    { label: "Zonas ZBE", href: "/zbe", statKey: "zbeZones" as const },
     { label: "Puntos negros", href: "/puntos-negros", statKey: null },
-    { label: "Estaciones de aforo", href: "/estaciones-aforo", statKey: null },
+    { label: "Estaciones de aforo", href: "/estaciones-aforo", statKey: "trafficStations" as const },
     { label: "Intensidad IMD", href: "/intensidad", statKey: null },
     { label: "Comunidades autónomas", href: "/espana", statKey: null },
     { label: "Provincias", href: "/provincias", statKey: null },
@@ -62,19 +77,19 @@ const COLUMN_3 = {
 const COLUMN_4 = {
   heading: "Transporte multimodal",
   links: [
-    { label: "Trenes en tiempo real", href: "/trenes", statKey: null },
-    { label: "Estaciones de tren", href: "/trenes/estaciones", statKey: null },
-    { label: "Líneas de tren", href: "/trenes/lineas", statKey: null },
+    { label: "Trenes en tiempo real", href: "/trenes", statKey: "railwayRoutes" as const },
+    { label: "Estaciones de tren", href: "/trenes/estaciones", statKey: "railwayStations" as const },
+    { label: "Líneas de tren", href: "/trenes/lineas", statKey: "railwayRoutes" as const },
     { label: "Cercanías", href: "/trenes/cercanias", statKey: null },
-    { label: "Vuelos en vivo", href: "/aviacion", statKey: null },
-    { label: "Aeropuertos AENA", href: "/aviacion/aeropuertos", statKey: null },
-    { label: "Marítimo (barcos AIS)", href: "/maritimo", statKey: null },
-    { label: "Combustible marítimo", href: "/maritimo/combustible", statKey: null },
-    { label: "Calidad del aire", href: "/calidad-aire", statKey: null },
-    { label: "Transporte público", href: "/transporte-publico", statKey: null },
+    { label: "Vuelos en vivo", href: "/aviacion", statKey: "flights" as const },
+    { label: "Aeropuertos AENA", href: "/aviacion/aeropuertos", statKey: "airports" as const },
+    { label: "Marítimo (barcos AIS)", href: "/maritimo", statKey: "vessels" as const },
+    { label: "Combustible marítimo", href: "/maritimo/combustible", statKey: "maritimeStations" as const },
+    { label: "Calidad del aire", href: "/calidad-aire", statKey: "airQualityStations" as const },
+    { label: "Transporte público", href: "/transporte-publico", statKey: "transitOperators" as const },
     { label: "Estadísticas transporte", href: "/estadisticas-transporte", statKey: null },
-    { label: "Accidentes históricos", href: "/accidentes", statKey: null },
-    { label: "Clima / meteorología", href: "/clima", statKey: null },
+    { label: "Accidentes históricos", href: "/accidentes", statKey: "accidentRecords" as const },
+    { label: "Clima / meteorología", href: "/clima", statKey: "climateStations" as const },
   ],
 };
 
@@ -89,7 +104,26 @@ const DESTACADO_LINKS = [
   { label: "MCP Server", href: "/api-docs#mcp" },
 ];
 
-type StatKey = "incidents" | "cameras" | "radars" | null;
+type StatKey =
+  | "incidents"
+  | "cameras"
+  | "radars"
+  | "panels"
+  | "chargers"
+  | "zbeZones"
+  | "trafficStations"
+  | "railwayRoutes"
+  | "railwayStations"
+  | "airports"
+  | "flights"
+  | "vessels"
+  | "ferryRoutes"
+  | "transitOperators"
+  | "airQualityStations"
+  | "climateStations"
+  | "accidentRecords"
+  | "maritimeStations"
+  | null;
 
 function NavColumn({
   heading,

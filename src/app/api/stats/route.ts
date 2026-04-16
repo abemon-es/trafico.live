@@ -15,6 +15,22 @@ interface Stats {
   cameras: number;
   chargers: number;
   zbeZones: number;
+  radars: number;
+  panels: number;
+  gasStations: number;
+  roads: number;
+  trafficStations: number;
+  railwayRoutes: number;
+  railwayStations: number;
+  airports: number;
+  flights: number;
+  vessels: number;
+  ferryRoutes: number;
+  transitOperators: number;
+  airQualityStations: number;
+  climateStations: number;
+  accidentRecords: number;
+  maritimeStations: number;
   lastUpdated: string;
   source: string;
   bySeverity: {
@@ -46,6 +62,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
     }
 
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000);
+
     // Query current counts from database in parallel
     const [
       v16Count,
@@ -59,6 +77,22 @@ export async function GET(request: NextRequest) {
       chargerCount,
       cameraCount,
       zbeCount,
+      radarCount,
+      panelCount,
+      gasStationCount,
+      roadCount,
+      trafficStationCount,
+      railwayRouteCount,
+      railwayStationCount,
+      airportCount,
+      flightCount,
+      vesselCount,
+      ferryRouteCount,
+      transitOperatorCount,
+      airQualityStationCount,
+      climateStationCount,
+      accidentRecordCount,
+      maritimeStationCount,
     ] = await Promise.all([
       // Active V16 beacons count
       prisma.v16BeaconEvent.count({ where: { isActive: true } }),
@@ -121,6 +155,23 @@ export async function GET(request: NextRequest) {
 
       // ZBE zone count from database (populated by zbe-collector)
       prisma.zBEZone.count(),
+
+      prisma.radar.count({ where: { isActive: true } }),
+      prisma.variablePanel.count({ where: { isActive: true } }),
+      prisma.gasStation.count(),
+      prisma.road.count(),
+      prisma.trafficStation.count(),
+      prisma.railwayRoute.count(),
+      prisma.railwayStation.count(),
+      prisma.airport.count(),
+      prisma.aircraftPosition.count({ where: { createdAt: { gte: fifteenMinAgo } } }),
+      prisma.vessel.count(),
+      prisma.ferryRoute.count(),
+      prisma.transitOperator.count(),
+      prisma.airQualityStation.count(),
+      prisma.climateStation.count(),
+      prisma.accidentMicrodata.count(),
+      prisma.maritimeStation.count(),
     ]);
 
     // Build severity breakdown
@@ -222,6 +273,22 @@ export async function GET(request: NextRequest) {
       cameras: cameraCount,
       chargers: chargerCount,
       zbeZones: zbeCount,
+      radars: radarCount,
+      panels: panelCount,
+      gasStations: gasStationCount,
+      roads: roadCount,
+      trafficStations: trafficStationCount,
+      railwayRoutes: railwayRouteCount,
+      railwayStations: railwayStationCount,
+      airports: airportCount,
+      flights: flightCount,
+      vessels: vesselCount,
+      ferryRoutes: ferryRouteCount,
+      transitOperators: transitOperatorCount,
+      airQualityStations: airQualityStationCount,
+      climateStations: climateStationCount,
+      accidentRecords: accidentRecordCount,
+      maritimeStations: maritimeStationCount,
       lastUpdated: lastUpdated.toISOString(),
       source: "database",
       bySeverity,
@@ -246,6 +313,22 @@ export async function GET(request: NextRequest) {
         cameras: 0,
         chargers: 0,
         zbeZones: 0,
+        radars: 0,
+        panels: 0,
+        gasStations: 0,
+        roads: 0,
+        trafficStations: 0,
+        railwayRoutes: 0,
+        railwayStations: 0,
+        airports: 0,
+        flights: 0,
+        vessels: 0,
+        ferryRoutes: 0,
+        transitOperators: 0,
+        airQualityStations: 0,
+        climateStations: 0,
+        accidentRecords: 0,
+        maritimeStations: 0,
         lastUpdated: new Date().toISOString(),
         source: "error",
         bySeverity: { LOW: 0, MEDIUM: 0, HIGH: 0, VERY_HIGH: 0 },

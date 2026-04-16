@@ -1245,6 +1245,53 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     // DB unavailable — skip dynamic port pages
   }
 
+  // Transit operator detail pages (/transporte-publico/[operator])
+  const transitOperators = await prisma.transitOperator.findMany({
+    select: { mdbId: true },
+    orderBy: { mdbId: "asc" },
+  });
+  const transitOperatorPages: SitemapEntry[] = transitOperators.map((op) => ({
+    url: `${BASE_URL}/transporte-publico/${encodeURIComponent(op.mdbId)}`,
+    lastModified: today,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
+  // Airport detail pages (/aviacion/aeropuertos/[iata])
+  const airports = await prisma.airport.findMany({
+    select: { iata: true },
+    where: { iata: { not: null } },
+    orderBy: { iata: "asc" },
+  });
+  const airportPages: SitemapEntry[] = airports
+    .filter((a) => a.iata)
+    .map((a) => ({
+      url: `${BASE_URL}/aviacion/aeropuertos/${a.iata!.toLowerCase()}`,
+      lastModified: today,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+
+  // Vessel detail pages (/maritimo/buques/[mmsi]) — only vessels with recent positions
+  let vesselPages: SitemapEntry[] = [];
+  try {
+    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const recentPositions = await prisma.vesselPosition.findMany({
+      select: { mmsi: true },
+      distinct: ["mmsi"],
+      where: { createdAt: { gte: sevenDaysAgo } },
+      orderBy: { mmsi: "asc" },
+    });
+    vesselPages = recentPositions.map((v) => ({
+      url: `${BASE_URL}/maritimo/buques/${v.mmsi}`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.55,
+    }));
+  } catch {
+    // DB unavailable — skip dynamic vessel pages
+  }
+
   return [
     ...staticPages,
     ...cityPages,
@@ -1253,6 +1300,9 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     ...provincePages,
     ...communityPages,
     ...maritimePortPages,
+    ...transitOperatorPages,
+    ...airportPages,
+    ...vesselPages,
   ];
 }
 
