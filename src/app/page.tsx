@@ -1,8 +1,17 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Activity, AlertTriangle, Anchor, Ban, BarChart3, Camera, Cloud, Fuel, Map, MapPin, Newspaper, Radar, Route, Zap } from "lucide-react";
+import { Activity, AlertTriangle, Anchor, Ban, BarChart3, Bus, Camera, Cloud, Fuel, Map, MapPin, Newspaper, Plane, Radar, Route, Train, Wind, Zap } from "lucide-react";
 import prisma from "@/lib/db";
 import { HomeClient } from "./HomeClient";
+import {
+  StructuredData,
+  generateDatasetSchema,
+  generateBreadcrumbSchema,
+  generateServiceSchema,
+  generateSpeakableSchema,
+  generateItemListSchema,
+  generateFAQSchema,
+} from "@/components/seo/StructuredData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -46,6 +55,15 @@ const SECTION_LINKS = [
   { href: "/puntos-negros", label: "Puntos negros", Icon: AlertTriangle },
   { href: "/andorra", label: "Andorra", Icon: Map },
   { href: "/portugal", label: "Portugal", Icon: Map },
+  { href: "/trenes", label: "Trenes Renfe en vivo", Icon: Train },
+  { href: "/aviacion", label: "Vuelos en tiempo real", Icon: Plane },
+  { href: "/calidad-aire", label: "Calidad del aire", Icon: Wind },
+  { href: "/transporte-publico", label: "Transporte público", Icon: Bus },
+  { href: "/estadisticas-transporte", label: "Estadísticas multimodales", Icon: BarChart3 },
+  { href: "/accidentes", label: "Puntos negros y accidentes", Icon: AlertTriangle },
+  { href: "/clima", label: "Clima histórico", Icon: Cloud },
+  { href: "/corredores", label: "Corredores de transporte", Icon: Route },
+  { href: "/insights", label: "Insights de movilidad", Icon: Newspaper },
 ];
 
 async function getHomeStats() {
@@ -69,74 +87,168 @@ async function getHomeStats() {
 export default async function HomePage() {
   const stats = await getHomeStats();
 
+  const faqSchema = generateFAQSchema({
+    questions: [
+      {
+        question: "¿Qué es trafico.live?",
+        answer:
+          "trafico.live es la plataforma de inteligencia multimodal más completa de España. Integra datos en tiempo real de tráfico, trenes Renfe, vuelos, barcos, calidad del aire, combustible y transporte público desde 18+ fuentes oficiales en una única plataforma.",
+      },
+      {
+        question: "¿De dónde provienen los datos?",
+        answer:
+          "De 18+ fuentes oficiales: DGT (tráfico), AEMET (meteorología), Renfe (trenes GTFS + GPS), AENA (aeropuertos), MITECO (calidad del aire ICA), Ministerio de Transportes y Movilidad Sostenible, MINETUR + CNMC (combustible), INE (estadísticas), MobilityData (GTFS transporte público), OpenSky Network (aviación ADS-B), aisstream.io (barcos AIS), Puertos del Estado, más SCT Catalunya, Euskadi, Madrid Informo, Barcelona Transit, Valencia, Zaragoza, IPMA Portugal, DGEG Portugal y Mobilitat Andorra.",
+      },
+      {
+        question: "¿Con qué frecuencia se actualizan los datos?",
+        answer:
+          "Depende de la fuente: barcos AIS en streaming continuo, tráfico e incidencias cada 60-120 segundos, intensidad de sensores de Madrid cada 5 minutos, aviones OpenSky cada 15 minutos, calidad del aire cada hora, combustible diario, estadísticas INE mensuales, climáticos históricos diarios.",
+      },
+      {
+        question: "¿Qué territorios cubre?",
+        answer:
+          "52 provincias y 19 comunidades autónomas de España (incluyendo Ceuta, Melilla y Canarias), Portugal (meteorología IPMA + 3.000 gasolineras DGEG), Andorra (Mobilitat) y Gibraltar. Cobertura marítima en las tres fachadas (Mediterráneo, Atlántico, Cantábrico) con 197 puertos.",
+      },
+      {
+        question: "¿Qué datos únicos ofrece trafico.live frente a otras apps?",
+        answer:
+          "Combinación multimodal única: 14.400 estaciones de aforo DGT con IMD histórico, GPS en directo de ~115 trenes de largo recorrido Renfe, flujos origen-destino del estudio BigData del Ministerio, microdatos per-accidente 2019-2023, precios pre-tax CNMC desde 2016, 900 estaciones AEMET desde 2019, 565 estaciones de calidad del aire MITECO, tracking AIS de barcos en tiempo real, datos GTFS de 15+ operadores de transporte público y API pública con tiers gratuito/PRO/Enterprise.",
+      },
+    ],
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema({
+    items: [{ name: "Inicio", url: BASE_URL }],
+  });
+
+  const serviceSchema = generateServiceSchema({
+    name: "Inteligencia de tráfico y movilidad multimodal",
+    description:
+      "Servicio de información en tiempo real de tráfico, trenes, vuelos, barcos, calidad del aire y combustible para toda España, Portugal y Andorra.",
+    url: BASE_URL,
+    provider: { name: "trafico.live", url: BASE_URL },
+    serviceType: "Traffic and mobility intelligence",
+    areaServed: "España",
+  });
+
+  const speakableSchema = generateSpeakableSchema({
+    url: BASE_URL,
+    cssSelector: ["h1", ".sr-only p", ".hero-headline"],
+  });
+
+  const datasets = [
+    generateDatasetSchema({
+      name: "Incidencias de tráfico DGT en tiempo real",
+      description:
+        "Catálogo unificado de incidencias viales activas en España (DATEX II). Cobertura: autopistas, autovías y nacionales gestionadas por la DGT, más Cataluña (SCT), Euskadi y Canarias.",
+      url: `${BASE_URL}/incidencias`,
+      keywords: ["tráfico", "incidencias", "DATEX II", "DGT"],
+      temporalCoverage: "2024-01-01/..",
+      spatialCoverage: "España",
+      creator: { name: "Dirección General de Tráfico", url: "https://www.dgt.es" },
+      distribution: [{ encodingFormat: "application/json", contentUrl: `${BASE_URL}/api/incidents` }],
+      variableMeasured: ["incidencias activas", "tipo", "severidad", "ubicación"],
+    }),
+    generateDatasetSchema({
+      name: "Intensidad Media Diaria (IMD) de carreteras españolas",
+      description:
+        "14.400 estaciones de aforo con datos de Intensidad Media Diaria por tramo. Mapa Tráfico del Ministerio de Transportes.",
+      url: `${BASE_URL}/intensidad`,
+      keywords: ["IMD", "aforo", "intensidad tráfico"],
+      temporalCoverage: "2017-01-01/..",
+      spatialCoverage: "España",
+      creator: {
+        name: "Ministerio de Transportes y Movilidad Sostenible",
+        url: "https://www.transportes.gob.es",
+      },
+      distribution: [{ encodingFormat: "application/json", contentUrl: `${BASE_URL}/api/trafico/imd` }],
+      variableMeasured: ["IMD vehículos/día", "tipo de vía", "provincia"],
+    }),
+    generateDatasetSchema({
+      name: "Precios de combustible España (histórico CNMC)",
+      description:
+        "Precios diarios provinciales de gasolina 95, 98, diésel A y diésel Premium desde 2016, incluyendo precios pre-tax (PAI).",
+      url: `${BASE_URL}/gasolineras`,
+      keywords: ["combustible", "gasolina", "diésel", "CNMC"],
+      temporalCoverage: "2016-01-01/..",
+      spatialCoverage: "España",
+      creator: { name: "CNMC - MINETUR", url: "https://www.cnmc.es" },
+      distribution: [
+        { encodingFormat: "application/json", contentUrl: `${BASE_URL}/api/combustible/historico` },
+      ],
+      variableMeasured: [
+        "precio gasolina 95",
+        "precio gasolina 98",
+        "precio diésel",
+        "precio diésel Premium",
+      ],
+    }),
+    generateDatasetSchema({
+      name: "Calidad del aire ICA en España",
+      description:
+        "565 estaciones de calidad del aire con Índice de Calidad del Aire (ICA 1-6) y mediciones de NO2, PM10, PM2.5, O3, SO2 y CO.",
+      url: `${BASE_URL}/calidad-aire`,
+      keywords: ["calidad del aire", "ICA", "NO2", "PM10", "MITECO"],
+      temporalCoverage: "2024-01-01/..",
+      spatialCoverage: "España",
+      creator: { name: "MITECO", url: "https://www.miteco.gob.es" },
+      distribution: [{ encodingFormat: "application/json", contentUrl: `${BASE_URL}/api/calidad-aire` }],
+      variableMeasured: ["ICA", "NO2", "PM10", "PM2.5", "O3", "SO2", "CO"],
+    }),
+    generateDatasetSchema({
+      name: "Red ferroviaria española (Renfe)",
+      description:
+        "2.154 estaciones, 1.248 rutas, 14 marcas comerciales y ~115 trenes de largo recorrido con GPS en directo.",
+      url: `${BASE_URL}/trenes`,
+      keywords: ["Renfe", "trenes", "GTFS", "ferrocarril", "Cercanías"],
+      temporalCoverage: "2024-01-01/..",
+      spatialCoverage: "España",
+      creator: { name: "Renfe Operadora", url: "https://www.renfe.com" },
+      distribution: [
+        { encodingFormat: "application/json", contentUrl: `${BASE_URL}/api/trenes/estaciones` },
+      ],
+      variableMeasured: ["estaciones", "rutas", "posiciones GPS", "alertas de servicio"],
+    }),
+  ];
+
+  const multimodalItemList = generateItemListSchema({
+    name: "Verticales de datos trafico.live",
+    items: [
+      { name: "Tráfico en carretera", url: `${BASE_URL}/trafico` },
+      { name: "Trenes Renfe", url: `${BASE_URL}/trenes` },
+      { name: "Aviación", url: `${BASE_URL}/aviacion` },
+      { name: "Marítimo", url: `${BASE_URL}/maritimo` },
+      { name: "Calidad del aire", url: `${BASE_URL}/calidad-aire` },
+      { name: "Transporte público", url: `${BASE_URL}/transporte-publico` },
+      { name: "Combustible", url: `${BASE_URL}/gasolineras` },
+      { name: "Cargadores EV", url: `${BASE_URL}/carga-ev` },
+    ],
+    itemListOrder: "Unordered",
+  });
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* SSR content — hidden visually, crawlable by search engines */}
       <div className="sr-only">
-        <h1>Tráfico en Tiempo Real en España — Incidencias, Cámaras DGT, Radares y Combustible</h1>
+        <h2>Plataforma de inteligencia multimodal para España, Portugal y Andorra</h2>
         <p>
-          trafico.live es la plataforma de inteligencia vial más completa de España. Consulta el estado del tráfico
-          en tiempo real con datos oficiales de la DGT, AEMET, Ministerio de Transportes, MINETUR, SCT Catalunya,
-          Euskadi, Valencia, IPMA Portugal, DGEG Portugal y Mobilitat Andorra. Más de {stats.incidentCount.toLocaleString("es-ES")} incidencias
-          activas, {stats.cameraCount.toLocaleString("es-ES")} cámaras de tráfico en directo, {stats.radarCount.toLocaleString("es-ES")} radares
-          de velocidad, {stats.stationCount.toLocaleString("es-ES")} gasolineras con precios actualizados
-          y {stats.chargerCount.toLocaleString("es-ES")} puntos de carga eléctrica en toda la Península Ibérica.
+          trafico.live es la plataforma de inteligencia multimodal más completa de la Península Ibérica.
+          Agrega datos oficiales en tiempo real de 18+ fuentes: DGT, AEMET, Renfe, AENA, MITECO,
+          Ministerio de Transportes y Movilidad Sostenible, MINETUR, CNMC, INE, SCT Catalunya, Euskadi,
+          Madrid Informo, SCT Valencia, Barcelona Transit, Zaragoza, IPMA Portugal, DGEG Portugal,
+          Mobilitat Andorra, MobilityData, OpenSky, aisstream.io y Puertos del Estado.
+          Cobertura: {stats.incidentCount.toLocaleString("es-ES")} incidencias, {stats.cameraCount.toLocaleString("es-ES")} cámaras,{" "}
+          {stats.radarCount.toLocaleString("es-ES")} radares, {stats.stationCount.toLocaleString("es-ES")} gasolineras,{" "}
+          {stats.chargerCount.toLocaleString("es-ES")} puntos de carga, 2.154 estaciones de tren, 46 aeropuertos AENA,
+          565 estaciones de calidad del aire, 197 puertos y 15+ operadores de transporte público.
         </p>
         <nav aria-label="Secciones principales">
           {SECTION_LINKS.map(({ href, label }) => (
             <Link key={href} href={href}>{label}</Link>
           ))}
         </nav>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              "mainEntity": [
-                {
-                  "@type": "Question",
-                  "name": "¿Qué es trafico.live?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": `trafico.live es la plataforma de inteligencia vial más completa de España. Agrega datos en tiempo real de ${stats.incidentCount.toLocaleString("es-ES")} incidencias activas, ${stats.cameraCount.toLocaleString("es-ES")} cámaras DGT, ${stats.radarCount.toLocaleString("es-ES")} radares, ${stats.stationCount.toLocaleString("es-ES")} gasolineras y ${stats.chargerCount.toLocaleString("es-ES")} puntos de carga eléctrica en toda la Península Ibérica.`
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "¿De dónde provienen los datos de tráfico?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Los datos provienen de 12 fuentes oficiales: DGT (Dirección General de Tráfico), AEMET (meteorología), Ministerio de Transportes, MINETUR (precios de combustible), Madrid Informo, SCT Catalunya, Gobierno Vasco (Euskadi), Generalitat Valenciana, IPMA Portugal, DGEG Portugal, Mobilitat Andorra y el servicio ArcGIS REST del Ministerio de Fomento."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "¿Con qué frecuencia se actualizan los datos?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Las incidencias de tráfico y balizas V16 se actualizan cada 60 segundos. Los detectores de velocidad DGT cada 5 minutos. Los precios de combustible se actualizan diariamente desde el Ministerio. Las cámaras DGT muestran imágenes en directo."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "¿Qué territorios cubre trafico.live?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "trafico.live cubre las 52 provincias y 19 comunidades autónomas de España (incluyendo Ceuta, Melilla y Canarias), además de Portugal (más de 3.000 gasolineras y meteorología IPMA), Andorra (incidencias y cámaras de Mobilitat) y Gibraltar."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "¿Cómo funciona el mapa interactivo?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "El mapa interactivo utiliza MapLibre GL JS y muestra datos en tiempo real sobre el territorio español. Puedes hacer clic en cualquier provincia para ver sus datos de tráfico, incidencias, cámaras, radares y gasolineras. También puedes usar la geolocalización para ver automáticamente los datos de tu zona."
-                  }
-                },
-              ]
-            })
-          }}
+        <StructuredData
+          data={[faqSchema, breadcrumbSchema, serviceSchema, speakableSchema, multimodalItemList, ...datasets]}
         />
       </div>
 
