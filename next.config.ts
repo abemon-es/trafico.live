@@ -47,6 +47,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    staticGenerationMaxConcurrency: 4,
+    staticGenerationMinPagesPerWorker: 50,
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
