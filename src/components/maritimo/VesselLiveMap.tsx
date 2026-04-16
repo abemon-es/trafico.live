@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import useSWR from "swr";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
+import { getProtomapsDarkStyle } from "@/lib/map-tiles";
 import { Crosshair, AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
@@ -102,19 +106,11 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
 
     (async () => {
       try {
-        const [maplibregl, { initPMTilesProtocolAsync }, { getProtomapsDarkStyle }] =
-          await Promise.all([
-            import("maplibre-gl"),
-            import("@/lib/pmtiles-protocol"),
-            import("@/lib/map-tiles"),
-          ]);
-
-        await import("maplibre-gl/dist/maplibre-gl.css");
         await initPMTilesProtocolAsync();
 
         if (!mapRef.current) return;
 
-        map = new maplibregl.default.Map({
+        map = new maplibregl.Map({
           container: mapRef.current,
           style: getProtomapsDarkStyle(),
           center: initCenter,
@@ -123,7 +119,7 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
         });
 
         map.addControl(
-          new maplibregl.default.NavigationControl({ showCompass: true }),
+          new maplibregl.NavigationControl({ showCompass: true }),
           "top-right"
         );
 
