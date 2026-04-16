@@ -55,11 +55,14 @@ if [ "$MODE" = "planet" ]; then
   # Use 75 % of cores (leaves headroom for collectors + web).
   DEFAULT_THREADS=$(( $(nproc) * 3 / 4 ))
   THREADS="${THREADS:-$DEFAULT_THREADS}"
-  # Large heap for the feature writer; node positions go off-heap via nodemap-storage=ram.
-  JAVA_HEAP="${JAVA_HEAP:-20g}"
-  # Spill features to disk (cheap) but keep the node lookup table in RAM (fast).
+  # Per Planetiler PLANET.md:
+  #   mmap for both storages uses disk backing → safe, predictable memory.
+  #   Upgrade nodemap-storage=ram only if the node cache (~40 GB for planet) fits
+  #   in addition to the feature storage + heap; otherwise JVM OOMs when decoding
+  #   large PBF blobs.
+  JAVA_HEAP="${JAVA_HEAP:-32g}"
   NODEMAP_TYPE="array"
-  NODEMAP_STORAGE="ram"
+  NODEMAP_STORAGE="mmap"
   FEATURE_STORAGE="mmap"
 else
   INPUT_PBF="$MERGED_PBF"
