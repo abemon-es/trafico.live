@@ -12,11 +12,7 @@
  * 4. Compute route stats (distance, duration, avg speed)
  */
 
-import { PrismaClient } from "@prisma/client";
-
-// VoyageStatus is not yet defined in the Prisma schema; use string literals directly.
-const VoyageStatus = { ARRIVED: "ARRIVED", IN_TRANSIT: "IN_TRANSIT" } as const;
-type VoyageStatus = (typeof VoyageStatus)[keyof typeof VoyageStatus];
+import { PrismaClient, VoyageStatus } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 
 const TASK = "voyage-detector";
@@ -58,20 +54,18 @@ async function resolvePort(
   lng: number
 ): Promise<{ portName: string; portCode: string } | null> {
   const result = await prisma.$queryRaw<
-    Array<{ id: string; name: string; dist_nm: number }>
+    Array<{ id: string; name: string; slug: string; dist_nm: number }>
   >`
-    SELECT id, name,
+    SELECT id, name, slug,
       (point(longitude::float, latitude::float) <-> point(${lng}::float, ${lat}::float)) * 60 as dist_nm
-    FROM "Port"
-    WHERE "fnPort" = true
-      AND latitude IS NOT NULL
-      AND latitude BETWEEN ${lat - 1}::numeric AND ${lat + 1}::numeric
+    FROM "SpanishPort"
+    WHERE latitude BETWEEN ${lat - 1}::numeric AND ${lat + 1}::numeric
       AND longitude BETWEEN ${lng - 1}::numeric AND ${lng + 1}::numeric
     ORDER BY point(longitude::float, latitude::float) <-> point(${lng}::float, ${lat}::float)
     LIMIT 1
   `;
   if (result.length > 0 && result[0].dist_nm < 10) {
-    return { portName: result[0].name, portCode: result[0].id };
+    return { portName: result[0].name, portCode: result[0].slug };
   }
   return null;
 }
