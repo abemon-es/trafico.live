@@ -26,7 +26,7 @@ docker run -d \
   -l "traefik.http.routers.trafico-live.entrypoints=https" \
   -l "traefik.http.routers.trafico-live.tls.certresolver=letsencrypt" \
   -l "traefik.http.services.trafico-live.loadbalancer.server.port=3000" \
-  --health-cmd "node -e \"fetch(http://localhost:3000/api/health).then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))\"" \
+  --health-cmd "node -e \"fetch('http://localhost:3000/api/health').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))\"" \
   --health-interval 30s \
   --health-timeout 5s \
   --health-start-period 30s \
