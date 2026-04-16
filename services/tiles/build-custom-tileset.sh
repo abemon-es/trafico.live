@@ -176,6 +176,7 @@ build_tiles() {
   docker run --rm \
     --cpu-shares=512 \
     --blkio-weight=200 \
+    --log-driver=json-file --log-opt max-size=10m --log-opt max-file=3 \
     -v "$WORK_DIR:/data" \
     -v "$OUTPUT_DIR:/output" \
     -v "$SCHEMA_DIR/trafico-schema.yml:/schema.yml:ro" \
