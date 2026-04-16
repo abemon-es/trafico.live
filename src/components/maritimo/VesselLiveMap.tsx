@@ -149,6 +149,8 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
     const map = mapInstanceRef.current;
     if (!map || !mapReady || !track) return;
 
+    try {
+
     const trackFeature = track.features.find((f) => f.geometry.type === "LineString");
     const pointFeature = track.features.find((f) => f.geometry.type === "Point");
     if (!trackFeature || !pointFeature) return;
@@ -214,8 +216,9 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
     if (map.getSource("vessel-position")) {
       (map.getSource("vessel-position") as { setData: (d: unknown) => void }).setData(posGeoJSON);
     } else {
-      // Create canvas icon: arrow (moving) or circle (stopped)
-      function makeMarkerIcon(moving: boolean): HTMLCanvasElement {
+      // Create marker icon as ImageData (MapLibre 5 requires ImageData, ImageBitmap,
+      // or {width,height,data} — HTMLCanvasElement throws "mismatched image size").
+      function makeMarkerIcon(moving: boolean): ImageData {
         const size = 32;
         const canvas = document.createElement("canvas");
         canvas.width = size;
@@ -231,14 +234,12 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
           ctx.lineTo(size / 2, size - 10);
           ctx.lineTo(6, size - 4);
           ctx.closePath();
-          // White halo
           ctx.strokeStyle = "#ffffff";
           ctx.lineWidth = 2.5;
           ctx.stroke();
           ctx.fillStyle = "#eab308";
           ctx.fill();
         } else {
-          // Circle
           ctx.beginPath();
           ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
           ctx.strokeStyle = "#ffffff";
@@ -247,14 +248,14 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
           ctx.fillStyle = "#eab308";
           ctx.fill();
         }
-        return canvas;
+        return ctx.getImageData(0, 0, size, size);
       }
 
-      const arrowCanvas = makeMarkerIcon(true);
-      const circleCanvas = makeMarkerIcon(false);
+      const arrowImage = makeMarkerIcon(true);
+      const circleImage = makeMarkerIcon(false);
 
-      if (!map.hasImage("vessel-arrow")) map.addImage("vessel-arrow", arrowCanvas, { pixelRatio: 1 });
-      if (!map.hasImage("vessel-circle")) map.addImage("vessel-circle", circleCanvas, { pixelRatio: 1 });
+      if (!map.hasImage("vessel-arrow")) map.addImage("vessel-arrow", arrowImage, { pixelRatio: 1 });
+      if (!map.hasImage("vessel-circle")) map.addImage("vessel-circle", circleImage, { pixelRatio: 1 });
 
       map.addSource("vessel-position", { type: "geojson", data: posGeoJSON });
       map.addLayer({
@@ -294,6 +295,10 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
           "line-opacity": 0.9,
         },
       });
+    }
+    } catch (err) {
+      console.error("[VesselLiveMap] layer update failed", err);
+      setMapError(true);
     }
   }, [track, mapReady]);
 
