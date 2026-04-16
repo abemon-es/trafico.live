@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
@@ -21,13 +20,9 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { VesselVoyageHistory } from "@/components/maritimo/VesselVoyageHistory";
 import { VesselOverview } from "@/components/maritimo/VesselOverview";
+import { VesselLiveMap } from "@/components/maritimo/VesselLiveMap";
 import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
 import { NAV_STATUS, shipTypeLabel, cleanDestination, cleanEta } from "@/lib/ais-labels";
-
-const VesselLiveMap = dynamic(
-  () => import("@/components/maritimo/VesselLiveMap").then((m) => m.VesselLiveMap),
-  { ssr: false }
-);
 
 export const revalidate = 120;
 export const dynamicParams = true;
