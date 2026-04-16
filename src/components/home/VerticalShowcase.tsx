@@ -39,7 +39,6 @@ const COLUMN_2 = {
     { label: "Electrolineras", href: "/electrolineras", statKey: null },
     { label: "Cuánto cuesta cargar", href: "/cuanto-cuesta-cargar", statKey: null },
     { label: "Etiqueta ambiental", href: "/etiqueta-ambiental", statKey: null },
-    { label: "Combustible marítimo", href: "/maritimo/combustible", statKey: null },
   ],
 };
 
@@ -60,6 +59,25 @@ const COLUMN_3 = {
   ],
 };
 
+const COLUMN_4 = {
+  heading: "Transporte multimodal",
+  links: [
+    { label: "Trenes en tiempo real", href: "/trenes", statKey: null },
+    { label: "Estaciones de tren", href: "/trenes/estaciones", statKey: null },
+    { label: "Líneas de tren", href: "/trenes/lineas", statKey: null },
+    { label: "Cercanías", href: "/trenes/cercanias", statKey: null },
+    { label: "Vuelos en vivo", href: "/aviacion", statKey: null },
+    { label: "Aeropuertos AENA", href: "/aviacion/aeropuertos", statKey: null },
+    { label: "Marítimo (barcos AIS)", href: "/maritimo", statKey: null },
+    { label: "Combustible marítimo", href: "/maritimo/combustible", statKey: null },
+    { label: "Calidad del aire", href: "/calidad-aire", statKey: null },
+    { label: "Transporte público", href: "/transporte-publico", statKey: null },
+    { label: "Estadísticas transporte", href: "/estadisticas-transporte", statKey: null },
+    { label: "Accidentes históricos", href: "/accidentes", statKey: null },
+    { label: "Clima / meteorología", href: "/clima", statKey: null },
+  ],
+};
+
 const DESTACADO_LINKS = [
   { label: "Semana Santa 2026", href: "/semana-santa-2026" },
   { label: "Puente de Mayo 2026", href: "/puente-mayo-2026" },
@@ -67,7 +85,8 @@ const DESTACADO_LINKS = [
   { label: "Informe diario", href: "/informe-diario" },
   { label: "Profesional", href: "/profesional" },
   { label: "Ciclistas", href: "/ciclistas" },
-  { label: "API", href: "/api-docs" },
+  { label: "API Premium", href: "/api-docs" },
+  { label: "MCP Server", href: "/api-docs#mcp" },
 ];
 
 type StatKey = "incidents" | "cameras" | "radars" | null;
@@ -132,15 +151,16 @@ export function VerticalShowcase() {
             Explora trafico.live
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed">
-            La plataforma de inteligencia de tráfico más completa de España. Datos en tiempo real de incidencias, cámaras, radares, precios de combustible, cargadores eléctricos, zonas ZBE, estaciones de aforo y meteorología, todo integrado en un único lugar.
+            La plataforma de inteligencia de transporte más completa de España. Datos en tiempo real de tráfico, trenes, vuelos, barcos AIS, calidad del aire, precios de combustible, cargadores eléctricos, zonas ZBE y meteorología, todo integrado en un único lugar.
           </p>
         </div>
 
-        {/* Three-column nav */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+        {/* Four-column nav */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           <NavColumn heading={COLUMN_1.heading} links={COLUMN_1.links} stats={s} />
           <NavColumn heading={COLUMN_2.heading} links={COLUMN_2.links} stats={s} />
           <NavColumn heading={COLUMN_3.heading} links={COLUMN_3.links} stats={s} />
+          <NavColumn heading={COLUMN_4.heading} links={COLUMN_4.links} stats={s} />
         </div>
 
         {/* Destacado pills */}

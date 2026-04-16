@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     template: "%s | trafico.live",
   },
   description:
-    "Tráfico en tiempo real en España: incidencias, cámaras DGT, radares, precios de combustible y cargadores eléctricos. Datos oficiales actualizados.",
+    "Tráfico en tiempo real en España: incidencias DGT, trenes Renfe, vuelos, barcos AIS, calidad del aire, combustible y cargadores EV. Datos oficiales actualizados cada minuto.",
   keywords: [
     "tráfico",
     "tráfico en tiempo real",
@@ -54,12 +54,29 @@ export const metadata: Metadata = {
     "zonas bajas emisiones",
     "carreteras España",
     "V16",
+    "trenes tiempo real",
+    "Renfe en vivo",
+    "vuelos España",
+    "AENA aeropuertos",
+    "barcos AIS",
+    "puertos España",
+    "calidad del aire",
+    "ICA MITECO",
+    "estaciones aforo DGT",
+    "IMD tráfico",
+    "puntos negros",
+    "accidentes carretera",
+    "transporte público",
+    "GTFS España",
+    "OpenSky",
+    "Cercanías Madrid",
+    "Cercanías Barcelona",
   ],
   authors: [{ name: "Abemon", url: "https://abemon.es" }],
   openGraph: {
     title: "trafico.live — Tráfico España en Tiempo Real",
     description:
-      "Incidencias, cámaras, radares, combustible y cargadores eléctricos en toda España. Datos oficiales DGT actualizados cada 60 segundos.",
+      "Mapa unificado: tráfico, trenes, vuelos, barcos, calidad del aire y combustible. Datos oficiales DGT, AEMET, Renfe, AENA, MITECO en tiempo real.",
     url: BASE_URL,
     siteName: "trafico.live",
     locale: "es_ES",
@@ -77,7 +94,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@traficolive",
     title: "trafico.live — Tráfico España en Tiempo Real",
-    description: "Inteligencia vial en tiempo real para toda España",
+    description: "Inteligencia de movilidad en tiempo real: carreteras, trenes, vuelos, puertos, aire.",
     images: [`${BASE_URL}/og-image.webp`],
   },
   robots: {
@@ -104,7 +121,7 @@ export const viewport: Viewport = {
 const organizationSchema = generateOrganizationSchema({
   name: "trafico.live",
   url: BASE_URL,
-  description: "Plataforma de inteligencia vial en tiempo real para España. Datos oficiales de la DGT incluyendo incidencias, cámaras, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones.",
+  description: "Plataforma de inteligencia multimodal en tiempo real para España. Datos oficiales de DGT, AEMET, Renfe, AENA, MITECO, MobilityData, OpenSky: tráfico, trenes, vuelos, barcos, calidad del aire, combustible, cargadores eléctricos y zonas de bajas emisiones.",
   logo: `${BASE_URL}/icon.svg`,
   sameAs: [],
   contactPoint: {
@@ -143,6 +160,20 @@ const siteNavSchema = generateSiteNavigationSchema([
   { name: "Noticias", url: `${BASE_URL}/noticias` },
   { name: "Profesional", url: `${BASE_URL}/profesional` },
   { name: "API", url: `${BASE_URL}/api-docs` },
+  { name: "Trenes en vivo", url: `${BASE_URL}/trenes` },
+  { name: "Estaciones tren", url: `${BASE_URL}/trenes/estaciones` },
+  { name: "Cercanías", url: `${BASE_URL}/trenes/cercanias` },
+  { name: "Aviación", url: `${BASE_URL}/aviacion` },
+  { name: "Aeropuertos AENA", url: `${BASE_URL}/aviacion/aeropuertos` },
+  { name: "Marítimo", url: `${BASE_URL}/maritimo` },
+  { name: "Calidad del aire", url: `${BASE_URL}/calidad-aire` },
+  { name: "Transporte público", url: `${BASE_URL}/transporte-publico` },
+  { name: "Estadísticas transporte", url: `${BASE_URL}/estadisticas-transporte` },
+  { name: "Accidentes", url: `${BASE_URL}/accidentes` },
+  { name: "Clima", url: `${BASE_URL}/clima` },
+  { name: "Corredores", url: `${BASE_URL}/corredores` },
+  { name: "Insights", url: `${BASE_URL}/insights` },
+  { name: "Blog", url: `${BASE_URL}/blog` },
 ]);
 
 export default function RootLayout({
@@ -157,6 +188,9 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://tiles.trafico.live" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://tiles.trafico.live" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://www.google-analytics.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}

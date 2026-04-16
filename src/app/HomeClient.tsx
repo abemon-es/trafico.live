@@ -13,65 +13,53 @@ export interface HomeStats {
   detectorCount: number;
 }
 
+// SSR-enabled (no maplibre/browser globals at module scope)
 const LiveCounterStrip = dynamic(
-  () => import("@/components/home/LiveCounterStrip").then((m) => m.LiveCounterStrip),
-  { ssr: false }
+  () => import("@/components/home/LiveCounterStrip").then((m) => m.LiveCounterStrip)
 );
+// HeroMapUnified is safe to SSR — it wraps UnifiedMap in its own dynamic({ ssr: false }) internally
 const HeroMapUnified = dynamic(
-  () => import("@/components/home/HeroMapUnified").then((m) => m.HeroMapUnified),
-  { ssr: false }
+  () => import("@/components/home/HeroMapUnified").then((m) => m.HeroMapUnified)
 );
 const IncidentTicker = dynamic(
-  () => import("@/components/home/IncidentTicker").then((m) => m.IncidentTicker),
-  { ssr: false }
+  () => import("@/components/home/IncidentTicker").then((m) => m.IncidentTicker)
 );
 const VerticalShowcase = dynamic(
-  () => import("@/components/home/VerticalShowcase").then((m) => m.VerticalShowcase),
-  { ssr: false }
+  () => import("@/components/home/VerticalShowcase").then((m) => m.VerticalShowcase)
 );
 const LiveTrafficFlow = dynamic(
-  () => import("@/components/home/LiveTrafficFlow").then((m) => m.LiveTrafficFlow),
-  { ssr: false }
+  () => import("@/components/home/LiveTrafficFlow").then((m) => m.LiveTrafficFlow)
 );
+// TwoMaps: static Link-based content, no map rendering at this layer
 const TwoMaps = dynamic(
-  () => import("@/components/home/TwoMaps").then((m) => m.TwoMaps),
-  { ssr: false }
+  () => import("@/components/home/TwoMaps").then((m) => m.TwoMaps)
 );
 const RoadsSection = dynamic(
-  () => import("@/components/home/RoadsSection").then((m) => m.RoadsSection),
-  { ssr: false }
+  () => import("@/components/home/RoadsSection").then((m) => m.RoadsSection)
 );
 const FuelSection = dynamic(
-  () => import("@/components/home/FuelSection").then((m) => m.FuelSection),
-  { ssr: false }
+  () => import("@/components/home/FuelSection").then((m) => m.FuelSection)
 );
 const CrossBorder = dynamic(
-  () => import("@/components/home/CrossBorder").then((m) => m.CrossBorder),
-  { ssr: false }
+  () => import("@/components/home/CrossBorder").then((m) => m.CrossBorder)
 );
 const CityIntelligence = dynamic(
-  () => import("@/components/home/CityIntelligence").then((m) => m.CityIntelligence),
-  { ssr: false }
+  () => import("@/components/home/CityIntelligence").then((m) => m.CityIntelligence)
 );
 const AdvancedFeatures = dynamic(
-  () => import("@/components/home/AdvancedFeatures").then((m) => m.AdvancedFeatures),
-  { ssr: false }
+  () => import("@/components/home/AdvancedFeatures").then((m) => m.AdvancedFeatures)
 );
 const DataStory = dynamic(
-  () => import("@/components/home/DataStory").then((m) => m.DataStory),
-  { ssr: false }
+  () => import("@/components/home/DataStory").then((m) => m.DataStory)
 );
 const ProfessionalBanner = dynamic(
-  () => import("@/components/home/ProfessionalBanner").then((m) => m.ProfessionalBanner),
-  { ssr: false }
+  () => import("@/components/home/ProfessionalBanner").then((m) => m.ProfessionalBanner)
 );
 const EditorialSection = dynamic(
-  () => import("@/components/home/EditorialSection").then((m) => m.EditorialSection),
-  { ssr: false }
+  () => import("@/components/home/EditorialSection").then((m) => m.EditorialSection)
 );
 const TerritorialGrid = dynamic(
-  () => import("@/components/home/TerritorialGrid").then((m) => m.TerritorialGrid),
-  { ssr: false }
+  () => import("@/components/home/TerritorialGrid").then((m) => m.TerritorialGrid)
 );
 
 function StripSkeleton() {

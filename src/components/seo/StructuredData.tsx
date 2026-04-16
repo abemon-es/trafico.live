@@ -221,10 +221,14 @@ interface DatasetSchemaProps {
   name: string;
   description: string;
   url: string;
-  keywords: string[];
-  dateModified?: Date;
-  spatialCoverage?: string;
+  keywords?: string[];
   temporalCoverage?: string;
+  spatialCoverage?: string;
+  license?: string;
+  creator?: { name: string; url?: string };
+  distribution?: Array<{ encodingFormat: string; contentUrl: string }>;
+  dateModified?: Date;
+  variableMeasured?: string[];
 }
 
 export function generateDatasetSchema({
@@ -232,9 +236,13 @@ export function generateDatasetSchema({
   description,
   url,
   keywords,
-  dateModified,
-  spatialCoverage,
   temporalCoverage,
+  spatialCoverage,
+  license = "https://creativecommons.org/licenses/by/4.0/",
+  creator,
+  distribution,
+  dateModified,
+  variableMeasured,
 }: DatasetSchemaProps): BaseStructuredData {
   return {
     "@context": "https://schema.org",
@@ -242,21 +250,36 @@ export function generateDatasetSchema({
     name,
     description,
     url,
-    keywords: keywords.join(", "),
-    ...(dateModified && { dateModified: dateModified.toISOString() }),
-    ...(spatialCoverage && { spatialCoverage }),
+    ...(keywords && keywords.length > 0 && { keywords: keywords.join(", ") }),
     ...(temporalCoverage && { temporalCoverage }),
-    creator: {
-      "@type": "Organization",
-      name: "trafico.live",
-      url: "https://trafico.live",
-    },
-    license: "https://creativecommons.org/licenses/by/4.0/",
+    ...(spatialCoverage && {
+      spatialCoverage: { "@type": "Place", name: spatialCoverage },
+    }),
+    license,
+    creator: creator
+      ? { "@type": "Organization", name: creator.name, ...(creator.url && { url: creator.url }) }
+      : { "@type": "Organization", name: "trafico.live", url: "https://trafico.live" },
+    ...(distribution &&
+      distribution.length > 0 && {
+        distribution: distribution.map((d) => ({
+          "@type": "DataDownload",
+          encodingFormat: d.encodingFormat,
+          contentUrl: d.contentUrl,
+        })),
+      }),
+    ...(dateModified && { dateModified: dateModified.toISOString() }),
+    ...(variableMeasured &&
+      variableMeasured.length > 0 && {
+        variableMeasured: variableMeasured.map((v) => ({
+          "@type": "PropertyValue",
+          name: v,
+        })),
+      }),
   };
 }
 
 interface FAQSchemaProps {
-  questions: { question: string; answer: string }[];
+  questions: Array<{ question: string; answer: string }>;
 }
 
 export function generateFAQSchema({ questions }: FAQSchemaProps): BaseStructuredData {
@@ -270,6 +293,115 @@ export function generateFAQSchema({ questions }: FAQSchemaProps): BaseStructured
         "@type": "Answer",
         text: q.answer,
       },
+    })),
+  };
+}
+
+interface BreadcrumbSchemaProps {
+  items: Array<{ name: string; url: string }>;
+}
+
+export function generateBreadcrumbSchema({ items }: BreadcrumbSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+interface ServiceSchemaProps {
+  name: string;
+  description: string;
+  url: string;
+  provider: { name: string; url: string };
+  serviceType: string;
+  areaServed?: string;
+  availableChannel?: { url: string; name: string };
+}
+
+export function generateServiceSchema({
+  name,
+  description,
+  url,
+  provider,
+  serviceType,
+  areaServed,
+  availableChannel,
+}: ServiceSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name,
+    description,
+    url,
+    serviceType,
+    provider: {
+      "@type": "Organization",
+      name: provider.name,
+      url: provider.url,
+    },
+    ...(areaServed && {
+      areaServed: { "@type": "Country", name: areaServed },
+    }),
+    ...(availableChannel && {
+      availableChannel: {
+        "@type": "ServiceChannel",
+        serviceUrl: availableChannel.url,
+        name: availableChannel.name,
+      },
+    }),
+  };
+}
+
+interface SpeakableSchemaProps {
+  url: string;
+  cssSelector?: string[];
+  xpath?: string[];
+}
+
+export function generateSpeakableSchema({
+  url,
+  cssSelector = [".sr-only h1", ".hero-headline"],
+  xpath,
+}: SpeakableSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": url,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      ...(cssSelector && cssSelector.length > 0 && { cssSelector }),
+      ...(xpath && xpath.length > 0 && { xpath }),
+    },
+  };
+}
+
+interface ItemListSchemaProps {
+  name: string;
+  items: Array<{ name: string; url: string; position?: number }>;
+  itemListOrder?: "Ascending" | "Descending" | "Unordered";
+}
+
+export function generateItemListSchema({
+  name,
+  items,
+  itemListOrder = "Unordered",
+}: ItemListSchemaProps): BaseStructuredData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    itemListOrder: `https://schema.org/ItemList${itemListOrder}`,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: item.position ?? index + 1,
+      name: item.name,
+      url: item.url,
     })),
   };
 }
