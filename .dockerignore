@@ -1,0 +1,59 @@
+# Docker build context — only what the trafico-web image needs.
+# Without this, 225 GB of tile build artifacts under /opt/trafico/tiles/build/
+# were being tar'd into every build, breaking COPY with "read/write on closed pipe".
+
+# Build artifacts from Planetiler / OSRM / tippecanoe (on compute only)
+tiles/build/
+tiles/dist/
+tiles/*.pbf
+tiles/*.osrm*
+tiles/*.pmtiles
+
+# Dependencies — installed inside the image
+node_modules/
+packages/*/node_modules/
+.pnp.*
+
+# Next.js output — rebuilt inside the image
+.next/
+out/
+
+# Environment + secrets
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# CI / editor / OS
+.github/
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Test + coverage
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.playwright-mcp/
+
+# Blitz / Claude session state
+.blitz/
+.claude/
+.claude-session
+.claude-profiles/
+
+# Docs that don't ship in the image
+docs/
+*.md
+!README.md
+
+# Backup / scratch files
+*.bak
+*.bak-*
+*.sql.gz
+nav-snapshot.md
