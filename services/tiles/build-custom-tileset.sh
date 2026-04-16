@@ -52,18 +52,21 @@ PLANETILER_JAR="$WORK_DIR/planetiler.jar"
 if [ "$MODE" = "planet" ]; then
   INPUT_PBF="$PLANET_PBF"
   OUTPUT="$OUTPUT_DIR/trafico-planet.pmtiles"
-  # Use 75 % of cores (leaves headroom for collectors + web).
-  DEFAULT_THREADS=$(( $(nproc) * 3 / 4 ))
+  # Push compute: 60 of 64 cores. Leaves 4 for web + collectors + ssh.
+  DEFAULT_THREADS=$(( $(nproc) - 4 ))
   THREADS="${THREADS:-$DEFAULT_THREADS}"
-  # Per Planetiler PLANET.md:
-  #   mmap for both storages uses disk backing → safe, predictable memory.
-  #   Upgrade nodemap-storage=ram only if the node cache (~40 GB for planet) fits
-  #   in addition to the feature storage + heap; otherwise JVM OOMs when decoding
-  #   large PBF blobs.
-  JAVA_HEAP="${JAVA_HEAP:-32g}"
+  # Per Planetiler PLANET.md recommended high-throughput profile:
+  #   Node cache (~80 GB) stays on mmap (disk) — won't fit in RAM alongside
+  #   feature storage + JVM heap (would need ~180 GB free, we only have ~90).
+  #   Feature storage goes to RAM — typical peak ~40-50 GB, dramatic speedup
+  #   vs mmap (3-4× per Planetiler benchmarks).
+  #   parallel_tmp_io removes the artificial IO parallelism cap (safe once the
+  #   hot temp path is RAM-backed).
+  JAVA_HEAP="${JAVA_HEAP:-50g}"
   NODEMAP_TYPE="array"
   NODEMAP_STORAGE="mmap"
-  FEATURE_STORAGE="mmap"
+  FEATURE_STORAGE="ram"
+  PLANETILER_EXTRA_ARGS="${PLANETILER_EXTRA_ARGS:---parallel_tmp_io=true}"
 else
   INPUT_PBF="$MERGED_PBF"
   OUTPUT="$OUTPUT_DIR/trafico-iberia.pmtiles"
@@ -72,6 +75,7 @@ else
   NODEMAP_TYPE="array"
   NODEMAP_STORAGE="ram"
   FEATURE_STORAGE="mmap"
+  PLANETILER_EXTRA_ARGS="${PLANETILER_EXTRA_ARGS:-}"
 fi
 
 echo "=============================================="
@@ -168,14 +172,12 @@ build_tiles() {
   START=$(date +%s)
   IMAGE="ghcr.io/onthegomap/planetiler:latest"
 
-  # `nice`/`ionice` only apply on the Docker daemon side; pass them via --cpu-shares /
-  # --blkio-weight to let the build yield CPU + I/O when the web/collector containers
-  # are busy. These are soft caps that only kick in under contention.
-  # Planetiler expects the schema YAML as the FIRST positional argument (ConfiguredMapMain),
-  # not as a --schema= flag — the entrypoint otherwise treats it as a sample-name lookup.
+  # Planetiler expects the schema YAML as the FIRST positional argument
+  # (ConfiguredMapMain). --schema= flag is treated as a sample-name lookup and fails.
+  # No CPU/IO throttling in planet mode — we want every free core. If the web or
+  # collectors get CPU-starved we'd see it in load avg; even 60 threads keeps 4
+  # cores spare on a 64-core box and the Linux scheduler handles the rest.
   docker run --rm \
-    --cpu-shares=512 \
-    --blkio-weight=200 \
     --log-driver=json-file --log-opt max-size=10m --log-opt max-file=3 \
     -v "$WORK_DIR:/data" \
     -v "$OUTPUT_DIR:/output" \
@@ -191,7 +193,8 @@ build_tiles() {
     --nodemap-type="$NODEMAP_TYPE" \
     --nodemap-storage="$NODEMAP_STORAGE" \
     --storage="$FEATURE_STORAGE" \
-    --threads="$THREADS"
+    --threads="$THREADS" \
+    $PLANETILER_EXTRA_ARGS
 
   END=$(date +%s)
   ELAPSED=$(( END - START ))
