@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { VesselVoyageHistory } from "@/components/maritimo/VesselVoyageHistory";
 
 export const revalidate = 120;
 export const dynamicParams = true;
@@ -612,6 +613,11 @@ export default async function VesselPage({ params }: PageProps) {
             )}
           </div>
         </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Voyage history (client component with SWR)                       */}
+        {/* ---------------------------------------------------------------- */}
+        <VesselVoyageHistory mmsi={mmsi} />
 
         {/* ---------------------------------------------------------------- */}
         {/* Related vessels                                                   */}
