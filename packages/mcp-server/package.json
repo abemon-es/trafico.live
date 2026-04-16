@@ -1,13 +1,17 @@
 {
   "name": "@trafico/mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for trafico.live — Spanish traffic intelligence for AI assistants",
+  "description": "MCP server exposing trafico.live real-time Spanish transport data (traffic, maritime/AIS, railway, aviation, air quality, fuel prices) to AI assistants",
   "type": "module",
+  "private": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "trafico-mcp": "./dist/index.js"
+    "trafico-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "start": "node dist/index.js"
   },
   "dependencies": {
@@ -16,11 +20,34 @@
   "devDependencies": {
     "typescript": "^5"
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "trafico",
+    "transport",
+    "spain",
+    "ais",
+    "aircraft",
+    "railway",
+    "traffic",
+    "model-context-protocol"
+  ],
+  "author": "Abemon <mj@abemon.es> (https://abemon.es)",
   "license": "MIT",
+  "homepage": "https://trafico.live",
   "repository": {
     "type": "git",
-    "url": "https://github.com/abemon-es/trafico.live",
+    "url": "git+https://github.com/abemon-es/trafico.live.git",
     "directory": "packages/mcp-server"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
