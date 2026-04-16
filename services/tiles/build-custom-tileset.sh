@@ -55,18 +55,20 @@ if [ "$MODE" = "planet" ]; then
   # Push compute: 60 of 64 cores. Leaves 4 for web + collectors + ssh.
   DEFAULT_THREADS=$(( $(nproc) - 4 ))
   THREADS="${THREADS:-$DEFAULT_THREADS}"
-  # Per Planetiler PLANET.md recommended high-throughput profile:
-  #   Node cache (~80 GB) stays on mmap (disk) — won't fit in RAM alongside
-  #   feature storage + JVM heap (would need ~180 GB free, we only have ~90).
-  #   Feature storage goes to RAM — typical peak ~40-50 GB, dramatic speedup
-  #   vs mmap (3-4× per Planetiler benchmarks).
-  #   parallel_tmp_io removes the artificial IO parallelism cap (safe once the
-  #   hot temp path is RAM-backed).
-  JAVA_HEAP="${JAVA_HEAP:-50g}"
+  # Planet build — stable profile after crash-loop investigation:
+  #   --storage=ram is tempting but grew unbounded in Pass 2 and OOM'd three
+  #   runs in a row. mmap is the right choice; the OS page cache (we leave
+  #   >150 GB free) keeps the hot features in RAM anyway.
+  #   Smaller heap (30g) frees RAM for page cache — counter-intuitive but
+  #   mmap throughput is very sensitive to cache size.
+  JAVA_HEAP="${JAVA_HEAP:-30g}"
   NODEMAP_TYPE="array"
   NODEMAP_STORAGE="mmap"
-  FEATURE_STORAGE="ram"
+  FEATURE_STORAGE="mmap"
   PLANETILER_EXTRA_ARGS="${PLANETILER_EXTRA_ARGS:---parallel_tmp_io=true}"
+  # Hard memory cap: container can't OOM the host; if it hits this, only this
+  # container dies, web + collectors keep running. 180g leaves 70g for rest.
+  DOCKER_MEM_LIMIT="${DOCKER_MEM_LIMIT:-180g}"
 else
   INPUT_PBF="$MERGED_PBF"
   OUTPUT="$OUTPUT_DIR/trafico-iberia.pmtiles"
@@ -76,6 +78,7 @@ else
   NODEMAP_STORAGE="ram"
   FEATURE_STORAGE="mmap"
   PLANETILER_EXTRA_ARGS="${PLANETILER_EXTRA_ARGS:-}"
+  DOCKER_MEM_LIMIT="${DOCKER_MEM_LIMIT:-16g}"
 fi
 
 echo "=============================================="
@@ -178,6 +181,7 @@ build_tiles() {
   # collectors get CPU-starved we'd see it in load avg; even 60 threads keeps 4
   # cores spare on a 64-core box and the Linux scheduler handles the rest.
   docker run --rm \
+    --memory="$DOCKER_MEM_LIMIT" \
     --log-driver=json-file --log-opt max-size=10m --log-opt max-file=3 \
     -v "$WORK_DIR:/data" \
     -v "$OUTPUT_DIR:/output" \
