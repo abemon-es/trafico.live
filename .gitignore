@@ -27,7 +27,9 @@
 # blitz sessions & claude
 .blitz/
 .claude/worktrees/
+.claude-session
 .playwright-mcp/
+nav-snapshot.md
 
 # debug
 npm-debug.log*
