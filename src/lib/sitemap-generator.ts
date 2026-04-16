@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 
@@ -1272,24 +1273,24 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.7,
     }));
 
-  // Vessel detail pages (/maritimo/buques/[mmsi]) — only vessels with recent positions
+  // Vessel detail pages (/maritimo/buques/[mmsi]) — only vessels seen recently.
+  // Uses Vessel relation filter (avoids slow DISTINCT scan of ~millions of positions).
   let vesselPages: SitemapEntry[] = [];
   try {
     const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const recentPositions = await prisma.vesselPosition.findMany({
+    const activeVessels = await prisma.vessel.findMany({
       select: { mmsi: true },
-      distinct: ["mmsi"],
-      where: { createdAt: { gte: sevenDaysAgo } },
+      where: { positions: { some: { createdAt: { gte: sevenDaysAgo } } } },
       orderBy: { mmsi: "asc" },
     });
-    vesselPages = recentPositions.map((v) => ({
+    vesselPages = activeVessels.map((v) => ({
       url: `${BASE_URL}/maritimo/buques/${v.mmsi}`,
       lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.55,
     }));
-  } catch {
-    // DB unavailable — skip dynamic vessel pages
+  } catch (err) {
+    reportApiError(err, "sitemap vessel pages");
   }
 
   return [
