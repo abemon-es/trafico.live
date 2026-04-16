@@ -318,13 +318,16 @@ export function getProtomapsStyle(): StyleSpecification {
     sources: {
       iberia: {
         type: "vector",
-        url: `pmtiles://${TILES_BASE}/tiles/trafico-iberia.pmtiles`,
+        url: `pmtiles://${TILES_BASE}/tiles/trafico-planet.pmtiles`,
         promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
-      // Iberian landmass mask — paints land on top of the sea-coloured background.
-      // Required because the OSM-derived tileset does not include ocean polygons;
-      // without this, everything outside an inland water feature renders as sea.
+      // Landmass mask — paints land on top of the sea-coloured background.
+      // Kept as a fallback: at zoom 0-4 the `trafico-planet` tileset still lacks
+      // ocean polygons (Planetiler does not emit them from OSM without
+      // water-polygons-split) so we draw Iberia + a rough land slab for the
+      // neighbouring countries. The style itself paints water features from the
+      // tileset on top of this mask, so inland rivers/lakes remain blue.
       "iberia-land": {
         type: "geojson",
         data: "/geo/iberia-landmass.geojson",
@@ -761,7 +764,7 @@ export function getProtomapsDarkStyle(): StyleSpecification {
     sources: {
       iberia: {
         type: "vector",
-        url: `pmtiles://${TILES_BASE}/tiles/trafico-iberia.pmtiles`,
+        url: `pmtiles://${TILES_BASE}/tiles/trafico-planet.pmtiles`,
         promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
