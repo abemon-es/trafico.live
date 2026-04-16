@@ -1273,14 +1273,23 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.7,
     }));
 
-  // Vessel detail pages (/maritimo/buques/[mmsi]) — only vessels seen recently.
-  // Uses Vessel relation filter (avoids slow DISTINCT scan of ~millions of positions).
+  // Vessel detail pages (/maritimo/buques/[mmsi]) — must match the page's
+  // render gates in src/app/maritimo/buques/[mmsi]/page.tsx to avoid sitemap 404s:
+  //   1. MMSI in valid 9-digit range (100M..999M)  — filters AIS base stations / SARTs
+  //   2. Vessel row exists (covered by findMany source)
+  //   3. Has a name OR a position in the last 48h (page's quality gate)
   let vesselPages: SitemapEntry[] = [];
   try {
-    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const last48h = new Date(today.getTime() - 48 * 60 * 60 * 1000);
     const activeVessels = await prisma.vessel.findMany({
       select: { mmsi: true },
-      where: { positions: { some: { createdAt: { gte: sevenDaysAgo } } } },
+      where: {
+        mmsi: { gte: 100_000_000, lte: 999_999_999 },
+        OR: [
+          { name: { not: null } },
+          { positions: { some: { createdAt: { gte: last48h } } } },
+        ],
+      },
       orderBy: { mmsi: "asc" },
     });
     vesselPages = activeVessels.map((v) => ({
