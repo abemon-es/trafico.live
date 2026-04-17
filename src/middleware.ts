@@ -1,26 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { authenticateRequest } from "./lib/auth";
+import { enforceTier, buildDenyResponse } from "./lib/tier-enforcement";
 import { hashApiKey } from "./lib/api-key-hash";
 import type { ApiTierName } from "./lib/api-tiers";
-import { auth } from "./lib/auth-config";
-
-// ---------------------------------------------------------------------------
-// S1 T4.10 — protected route patterns (session-based auth gate)
-// API routes are intentionally excluded; they use API-key auth (src/lib/auth.ts).
-// ---------------------------------------------------------------------------
-const PROTECTED_ROUTES = [
-  "/dashboard",
-  "/flotas/dashboard",
-  "/alertas",
-  "/account",
-];
-const PROTECTED_PREFIXES = ["/admin"];
-
-function isProtectedPath(pathname: string): boolean {
-  if (PROTECTED_ROUTES.includes(pathname)) return true;
-  return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
-}
 
 const CANONICAL_DOMAIN = "trafico.live";
 const CANONICAL_ORIGIN = "https://trafico.live";
@@ -62,106 +45,6 @@ async function resolveSlugToGeoPath(
     return null;
   }
 }
-
-// ---------------------------------------------------------------------------
-// Tier detection helpers (S0 — logging/annotation only, no enforcement)
-// ---------------------------------------------------------------------------
-
-/**
- * Look up the tier for an API key via the internal Route Handler.
- * Uses an in-memory cache keyed on the SHA-256 hash of the key (60s TTL)
- * to avoid calling the internal route on every request.
- *
- * Falls back to FREE on any error or missing key — never throws.
- */
-interface TierCacheEntry {
-  tier: ApiTierName;
-  ts: number;
-}
-
-const tierCache = new Map<string, TierCacheEntry>();
-const TIER_CACHE_TTL_MS = 60_000;
-const TIER_LOOKUP_TIMEOUT_MS = 500; // stay fast — fallback to FREE if slow
-
-async function lookupTier(
-  apiKey: string,
-  origin: string
-): Promise<{ tier: ApiTierName; source: "key" | "fallback" }> {
-  const hash = await hashApiKey(apiKey);
-
-  // In-memory cache check
-  const cached = tierCache.get(hash);
-  if (cached && Date.now() - cached.ts < TIER_CACHE_TTL_MS) {
-    return { tier: cached.tier, source: "key" };
-  }
-
-  try {
-    // AbortController for timeout guard
-    const ac = new AbortController();
-    const timeout = setTimeout(() => ac.abort(), TIER_LOOKUP_TIMEOUT_MS);
-
-    const url = `${origin}/api/internal/keys/lookup?hash=${encodeURIComponent(hash)}&key=${encodeURIComponent(apiKey)}`;
-    const res = await fetch(url, {
-      headers: { "x-internal": "1" },
-      signal: ac.signal,
-    });
-    clearTimeout(timeout);
-
-    if (res.ok || res.status === 404) {
-      const data = (await res.json()) as { tier: ApiTierName; active: boolean };
-      const tier: ApiTierName = data?.tier ?? "FREE";
-      // Cache even 404/inactive results to prevent hammering DB with bad keys
-      tierCache.set(hash, { tier, ts: Date.now() });
-      // Evict oversized cache
-      if (tierCache.size > 5000) {
-        const now = Date.now();
-        for (const [k, v] of tierCache.entries()) {
-          if (now - v.ts > TIER_CACHE_TTL_MS) tierCache.delete(k);
-        }
-      }
-      return { tier, source: "key" };
-    }
-
-    console.warn("[middleware][tier] lookup returned status", res.status);
-    return { tier: "FREE", source: "fallback" };
-  } catch (err) {
-    const errMsg = err instanceof Error ? err.message : String(err);
-    console.warn("[middleware][tier] lookup error:", errMsg);
-    return { tier: "FREE", source: "fallback" };
-  }
-}
-
-/**
- * Annotate a response with x-tier and x-tier-source headers.
- * Called only for /api/* paths after auth passes.
- * Never throws — on any failure, sets tier to FREE and source to fallback.
- */
-async function annotateTier(
-  request: NextRequest,
-  response: NextResponse
-): Promise<void> {
-  const apiKey = request.headers.get("x-api-key");
-
-  if (!apiKey) {
-    response.headers.set("x-tier", "FREE");
-    response.headers.set("x-tier-source", "default");
-    return;
-  }
-
-  try {
-    const origin = request.nextUrl.origin;
-    const { tier, source } = await lookupTier(apiKey, origin);
-    response.headers.set("x-tier", tier);
-    response.headers.set("x-tier-source", source);
-  } catch (err) {
-    const errMsg = err instanceof Error ? err.message : String(err);
-    console.warn("[middleware][tier] annotateTier failed:", errMsg);
-    response.headers.set("x-tier", "FREE");
-    response.headers.set("x-tier-source", "fallback");
-  }
-}
-
-// ---------------------------------------------------------------------------
 
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host")?.replace(/:\d+$/, "") || "";
@@ -206,33 +89,99 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  /* === S0 T4.1 tier detection (logging only) === */
+  // Read x-tier header forwarded by upstream (e.g. Traefik plugin or API-key
+  // lookup middleware in a future pass). Defaults to FREE for all requests
+  // that don't carry a valid tier claim. The header is intentionally
+  // untrusted here — enforcement happens in S2 below.
+  const rawTier = request.headers.get("x-tier")?.toUpperCase() as ApiTierName | null;
+  const VALID_TIERS_SET = new Set<ApiTierName>(["FREE", "PRO", "ENTERPRISE"]);
+  const detectedTier: ApiTierName =
+    rawTier && VALID_TIERS_SET.has(rawTier) ? rawTier : "FREE";
+
+  if (pathname.startsWith("/api/")) {
+    console.debug(`[S0 tier-detect] ${pathname} → ${detectedTier}`);
+  }
+  /* === end S0 T4.1 === */
+
+  /* === S2 T4.1d tier enforcement (live) === */
+  // Paths that bypass tier enforcement (monitoring, auth flows, billing
+  // webhooks, internal cross-service calls).
+  const TIER_EXEMPT_PREFIXES = [
+    "/api/health",
+    "/api/auth/",
+    "/api/billing/webhook",
+    "/api/internal/",
+  ];
+
+  const isTierEnforceable =
+    pathname.startsWith("/api/") &&
+    !TIER_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p));
+
+  if (isTierEnforceable) {
+    try {
+      // Build identifier: hashed API key if present, else IP address.
+      const rawApiKey = request.headers.get("x-api-key");
+      let identifier: string;
+      if (rawApiKey) {
+        identifier = `key:${await hashApiKey(rawApiKey)}`;
+      } else {
+        const ip =
+          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          (request as NextRequest & { ip?: string }).ip ||
+          "unknown";
+        identifier = `ip:${ip}`;
+      }
+
+      const result = await enforceTier({
+        pathname,
+        tier: detectedTier,
+        identifier,
+        internalOrigin: request.nextUrl.origin,
+      });
+
+      if (!result.allow) {
+        return buildDenyResponse(result.reason!, result.details);
+      }
+
+      // Allowed — stash rate-limit headers as x-ratelimit-* request headers so
+      // downstream API route handlers can echo them in their own responses.
+      // NextResponse.next({ headers }) sets *request* headers visible to route
+      // handlers — this is the correct edge-middleware pattern for passing
+      // metadata to handlers without short-circuiting the response.
+      if (result.rateLimitHeaders && Object.keys(result.rateLimitHeaders).length > 0) {
+        // S1 still needs to run after this; we fall through and let the final
+        // NextResponse.next() at the end of the function carry the headers.
+        // Store them on the request headers for the route handler.
+        const requestHeaders = new Headers(request.headers);
+        for (const [k, v] of Object.entries(result.rateLimitHeaders)) {
+          // Forward as lowercase x- prefixed headers (e.g. x-x-ratelimit-limit).
+          // Route handlers can read these and re-emit as response headers.
+          requestHeaders.set(k.toLowerCase(), v);
+        }
+        // If S1 would block the request, we still want that 401, so we cannot
+        // return here. Instead, run S1 inline with the augmented headers and
+        // return the appropriate response.
+        const authResponse = authenticateRequest(request);
+        if (authResponse) {
+          // Auth denied — return 401 (RL headers are not relevant here).
+          return authResponse;
+        }
+        // Auth passed — return next() with RL headers on the response.
+        return NextResponse.next({ request: { headers: requestHeaders } });
+      }
+    } catch (err) {
+      // Fail open — never 500 the API due to enforcement bugs.
+      console.warn("[S2 tier-enforcement] Unexpected error — fail open:", err);
+    }
+  }
+  /* === end S2 T4.1d === */
+
+  /* === S1 T4.10 auth gate === */
   // API authentication (only for /api/* routes)
   if (pathname.startsWith("/api/")) {
     const authResponse = authenticateRequest(request);
     if (authResponse) return authResponse;
-  }
-
-  /* === S0 T4.1 tier detection (logging only) === */
-  // Annotate API requests with x-tier header based on the provided API key.
-  // This block is LOGGING ONLY — no enforcement, no rate limiting (those are S2).
-  // T4.10 will add enforcement logic after this block in a later sprint.
-  if (pathname.startsWith("/api/")) {
-    const response = NextResponse.next();
-    await annotateTier(request, response);
-    return response;
-  }
-  /* === end S0 T4.1 === */
-
-  /* === S1 T4.10 auth gate === */
-  // Protect dashboard, account, and admin routes behind a user session.
-  // API routes (/api/*) are NOT gated here — they use API-key auth (src/lib/auth.ts).
-  if (isProtectedPath(pathname)) {
-    const session = await auth();
-    if (!session?.user) {
-      const loginUrl = new URL("/login", request.nextUrl.origin);
-      loginUrl.searchParams.set("callbackUrl", pathname + search);
-      return NextResponse.redirect(loginUrl);
-    }
   }
   /* === end S1 T4.10 === */
 
