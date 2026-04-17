@@ -66,6 +66,8 @@ const VALID_TASKS = [
   "health-check",
   // Voyage analytics
   "voyage-detector",
+  // Weather radar
+  "eumetsat-radar",
 ];
 
 if (!TASK) {
