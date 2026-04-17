@@ -656,3 +656,24 @@ Todo código que toque `<TraficoMap>` o el `LayerRegistry` debe cumplir:
 | `weather-radar` | Brief no especifica fuente | Fuente: EUMETSAT OPERA, marcada como P2 en VERDICT | No disponible en v1; el layer existe en el registry pero `OFF` en todos los presets hasta Fase 2 |
 | `maritime-fuel` | Brief lo pone en `maritime.static` | Incluido en `maritime.static` pero ON solo en preset `combustible`, OFF en `maritimo` | La capa de precios marítimos es relevante para el vertical de combustible, no para la navegación marítima general |
 | `mobility-od` | Brief lo pone en `road.historical` | Marcado `OFF` en `trafico`, `ON` (disponible) en `all` | Los datos están en DB pero la visualización de flujo O-D requiere un tipo de layer chord/flow no estándar en MapLibre; se incluye en registry pero la implementación es Fase 3 |
+
+---
+
+## Phase 4 — Legacy Cleanup
+
+Phase 4 migrated HomeClient, DashboardClient, `/mapa` dashboard, `/gasolineras/mapa`, and added hero maps to `/trafico` and `/maritimo` hubs. All six migration targets now use `<TraficoMap>` exclusively. See `docs/audit-2026-04-17/phase4-cleanup.md` for the full deletable-file audit.
+
+**Status:** Migrations complete on branch `feat/og-images-vertical-hubs`. Cleanup deferred until all Phase 4 changes merge to main.
+
+**Files deletable after Phase 4 merges:** 17 files (10 orphans + 7 auxiliaries), ~6 297 lines.  
+**Additional files pending Phase 5 migration:** 4 files (InteractiveBaseMap, IncidentMarker, HistoricalMap, ProvinceHeatmap), ~1 883 lines.  
+**Grand total on full completion:** 21 files, ~8 180 lines removed.
+
+### Immediately safe to delete (no callers today)
+
+- `src/components/map/EmbedMap.tsx` — 79 lines, zero app-level callers
+- `src/components/home/HeroMapUnified.tsx` — 61 lines, HomeClient already uses `TraficoMap` directly
+
+### Remaining specialization (keep)
+
+- `src/components/maritimo/VesselLiveMap.tsx` — valid single-vessel track view for `/maritimo/buques/[slug]`; migrate to `<TraficoMap entity={{ type: 'vessel', id }}>` in Phase 3/5.
