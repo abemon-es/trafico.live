@@ -24,11 +24,36 @@ import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
 import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
 import { NAV_STATUS, shipTypeLabel, cleanDestination, cleanEta } from "@/lib/ais-labels";
 
-export const revalidate = 120;
+// ~10K vessels in the catalog — prerender nothing and regenerate on demand.
+// Live AIS positions still come from the /api/maritimo endpoint every 20s,
+// so page-level ISR only needs to cover vessel metadata drift (destination,
+// ETA, flag changes). 1h is a safe bucket for that.
+export const revalidate = 3600;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
   return [];
+}
+
+/**
+ * Sitemap helper: exposes the canonical slug list for buque entity pages.
+ * Consumed by `src/lib/sitemap-generator.ts`.
+ *
+ * We cap at 5,000 to keep sitemap payloads reasonable — vessels without
+ * recent positions are lower-value for SEO anyway.
+ */
+export async function getSlugList(): Promise<string[]> {
+  try {
+    const vessels = await prisma.vessel.findMany({
+      select: { mmsi: true, name: true },
+      orderBy: { updatedAt: "desc" },
+      take: 5000,
+    });
+    return vessels.map((v) => vesselSlug(v.mmsi, v.name));
+  } catch (error) {
+    console.error("getSlugList(/maritimo/buques) failed:", error);
+    return [];
+  }
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -354,9 +379,53 @@ export default async function VesselPage({ params }: PageProps) {
     ...(additionalProperties.length > 0 && { additionalProperty: additionalProperties }),
   };
 
+  // Optional WatercraftLocation schema — only emit when we actually have a
+  // fresh AIS fix. Schema.org WatercraftLocation is the canonical type for
+  // "where a vessel currently is", with GeoCoordinates + observation time.
+  const watercraftLocationSchema =
+    latestPos != null
+      ? {
+          "@context": "https://schema.org",
+          "@type": "WatercraftLocation",
+          name: `Posición AIS de ${displayName}`,
+          description: [
+            `Última posición reportada vía AIS el ${new Date(latestPos.createdAt).toISOString()}.`,
+            `Estado: ${navStatusLabel}.`,
+            cleanDest ? `Destino declarado: ${cleanDest}.` : null,
+          ]
+            .filter(Boolean)
+            .join(" "),
+          url: `${BASE_URL}/maritimo/buques/${canonicalSlug}`,
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: Number(latestPos.latitude),
+            longitude: Number(latestPos.longitude),
+          },
+          observationDate: new Date(latestPos.createdAt).toISOString(),
+          ...(latestPos.sog != null && {
+            speed: {
+              "@type": "QuantitativeValue",
+              value: latestPos.sog,
+              unitText: "knots",
+            },
+          }),
+          ...(latestPos.cog != null && {
+            direction: {
+              "@type": "QuantitativeValue",
+              value: latestPos.cog,
+              unitText: "degrees",
+            },
+          }),
+        }
+      : null;
+
+  const structuredData = watercraftLocationSchema
+    ? [vehicleSchema, watercraftLocationSchema]
+    : vehicleSchema;
+
   return (
     <>
-      <StructuredData data={vehicleSchema} />
+      <StructuredData data={structuredData} />
 
       {/* Breadcrumbs */}
       <div className="max-w-7xl mx-auto px-4 pt-6">
