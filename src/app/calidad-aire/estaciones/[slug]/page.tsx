@@ -372,8 +372,8 @@ export default async function AirQualityStationPage({ params }: PageProps) {
         >
           <div className="h-[420px] w-full">
             <TraficoMap
-              preset="weather"
-              entity={{ type: "air-quality-station", id: station.stationId }}
+              preset="meteo"
+              entity={{ type: "aq-station", id: station.stationId }}
             />
           </div>
         </section>

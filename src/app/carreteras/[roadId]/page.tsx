@@ -276,7 +276,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
         >
           <div className="h-[420px] w-full">
             <TraficoMap
-              preset="infrastructure"
+              preset="trafico"
               entity={{ type: "road", id: road.id }}
             />
           </div>
