@@ -9,6 +9,7 @@ import { megaMenuPanels, ACCENT_STYLES } from "./NavData";
 import { useNavState } from "./useNavState";
 import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSearch";
 import { SearchIcon } from "@/components/search/SearchIcon";
+import { useFocusTrap } from "@/lib/a11y/focus-trap";
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -47,6 +48,11 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
           )}
           <input ref={inputRef} type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar..."
+            role="combobox"
+            aria-label="Buscar ciudades, carreteras o gasolineras"
+            aria-expanded={hasQuery && flatResults.length > 0}
+            aria-controls="mobile-search-results-listbox"
+            aria-autocomplete="list"
             className="w-full pl-9 pr-8 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-tl-300 dark:focus:ring-tl-700"
             autoComplete="off" autoCorrect="off" spellCheck={false}
           />
@@ -110,21 +116,24 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
 
         {/* Grouped results */}
         {hasQuery && flatResults.length > 0 && (
-          <div className="py-2">
+          <div id="mobile-search-results-listbox" role="listbox" aria-label="Resultados de búsqueda" className="py-2">
             <div className="px-4 pb-2">
               <p className="text-[11px] text-gray-400 dark:text-gray-500">
                 <span className="font-mono font-semibold text-gray-600 dark:text-gray-300">{flatResults.length}</span> resultado{flatResults.length !== 1 ? "s" : ""}
               </p>
             </div>
-            {groups.map(({ category, meta, items }) => (
+            {groups.map(({ category, meta, items }, groupIdx) => (
               <div key={category} className="mb-1">
                 <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-4 py-1.5 border-b border-gray-100/80 dark:border-gray-800/40">
                   <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em]">{meta.label}</span>
                   <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2">{items.length}</span>
                 </div>
-                {items.map((result) => (
+                {items.map((result, itemIdx) => (
                   <Link
                     key={result.href + result.title} href={result.href} prefetch={false}
+                    id={`mobile-search-result-${groupIdx}-${itemIdx}`}
+                    role="option"
+                    aria-selected={false}
                     onClick={(e) => { e.preventDefault(); navigate(result.href); }}
                     className="flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-tl-50 dark:active:bg-tl-900/20 transition-colors"
                   >
@@ -288,6 +297,7 @@ function AccordionSection({
                           <Link
                             href={item.href}
                             prefetch={false}
+                            aria-current={active ? "page" : undefined}
                             className={`
                               flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors
                               ${
@@ -328,10 +338,16 @@ function AccordionSection({
 // ─── Mobile Menu ──────────────────────────────────────────────────────────────
 
 export function MobileMenu() {
-  const { mobileMenuOpen } = useNavState();
+  const { mobileMenuOpen, closeAll } = useNavState();
   const reduceMotion = useReducedMotion();
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const [searchActive, setSearchActive] = useState(false);
+  const containerRef = useFocusTrap<HTMLDivElement>({
+    active: mobileMenuOpen,
+    onEscape: closeAll,
+    initialFocus: "container",
+    returnFocus: true,
+  });
 
   // Reset search when menu closes
   useEffect(() => {
@@ -343,6 +359,10 @@ export function MobileMenu() {
       {mobileMenuOpen && (
         <motion.div
           id="mobile-nav"
+          ref={containerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menú principal"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
