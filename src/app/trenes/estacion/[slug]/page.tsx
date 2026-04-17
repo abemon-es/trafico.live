@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import type { RailwayServiceType } from "@prisma/client";
+import { StationEntityMap } from "./entity-map";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -106,22 +107,26 @@ async function getStation(slug: string) {
   return station;
 }
 
-/* ---------- static params ---------- */
+/* ---------- static params / slug catalog ---------- */
 
-export async function generateStaticParams() {
+/**
+ * Full slug catalog for sitemaps and `/ir` resolver (HS10 consumer T1.9).
+ * Returns every station with a slug — 2,154 entries.
+ */
+export async function getSlugList(): Promise<string[]> {
   const stations = await prisma.railwayStation.findMany({
-    where: {
-      slug: { not: null },
-      OR: [{ locationType: 1 }, { parentId: null }],
-    },
+    where: { slug: { not: null } },
     select: { slug: true },
     orderBy: { name: "asc" },
-    take: 200,
   });
-
   return stations
-    .filter((s) => s.slug != null)
-    .map((s) => ({ slug: s.slug! }));
+    .map((s) => s.slug)
+    .filter((s): s is string => s != null);
+}
+
+export async function generateStaticParams() {
+  const slugs = await getSlugList();
+  return slugs.map((slug) => ({ slug }));
 }
 
 /* ---------- metadata ---------- */
@@ -344,20 +349,12 @@ export default async function EstacionDetallePage({ params }: Props) {
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <h2 className="font-heading text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center gap-2">
             <Navigation className="w-5 h-5 text-tl-600 dark:text-tl-400" />
-            Ubicacion
+            Ubicacion y trenes en vivo
           </h2>
         </div>
-        <div className="aspect-[2/1] md:aspect-[3/1] bg-gray-100 dark:bg-gray-800 relative">
-          {/* Static map image via OpenStreetMap tile */}
-          <img
-            src={`https://staticmap.openstreetmap.de/staticmap.php?center=${stationLat},${stationLng}&zoom=14&size=900x300&markers=${stationLat},${stationLng},red-pushpin`}
-            alt={`Mapa de la estacion de ${station.name}`}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute bottom-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-gray-500 dark:text-gray-400">
-            Datos: OpenStreetMap
-          </div>
+        <div className="h-[320px] md:h-[420px] bg-gray-100 dark:bg-gray-800 relative">
+          <p className="sr-only">Mapa interactivo de la red ferroviaria centrado en {station.name}</p>
+          <StationEntityMap stationId={station.id} center={[stationLng, stationLat]} />
         </div>
       </section>
 
@@ -562,37 +559,53 @@ export default async function EstacionDetallePage({ params }: Props) {
         </Link>
       </div>
 
-      {/* --- JSON-LD --- */}
+      {/* --- JSON-LD (TrainStation is a Place subtype; adds TravelAction) --- */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "TrainStation",
-            name: station.name,
-            description: `Estacion de tren ${station.name}${station.provinceName ? ` en ${station.provinceName}` : ""}`,
-            url: `${BASE_URL}/trenes/estacion/${slug}`,
-            geo: {
-              "@type": "GeoCoordinates",
-              latitude: stationLat,
-              longitude: stationLng,
-            },
-            address: {
-              "@type": "PostalAddress",
-              addressLocality: station.municipality || undefined,
-              addressRegion: station.provinceName || undefined,
-              addressCountry: "ES",
-            },
-            ...(station.wheelchair === 1
-              ? { amenityFeature: { "@type": "LocationFeatureSpecification", name: "Accesibilidad para silla de ruedas", value: true } }
-              : {}),
-            isAccessibleForFree: true,
-            publicAccess: true,
-            publisher: {
-              "@type": "Organization",
-              name: "trafico.live",
-              url: BASE_URL,
-            },
+            "@graph": [
+              {
+                "@type": ["TrainStation", "Place"],
+                "@id": `${BASE_URL}/trenes/estacion/${slug}#place`,
+                name: station.name,
+                description: `Estacion de tren ${station.name}${station.provinceName ? ` en ${station.provinceName}` : ""}`,
+                url: `${BASE_URL}/trenes/estacion/${slug}`,
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: stationLat,
+                  longitude: stationLng,
+                },
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: station.municipality || undefined,
+                  addressRegion: station.provinceName || undefined,
+                  addressCountry: "ES",
+                },
+                ...(station.wheelchair === 1
+                  ? { amenityFeature: { "@type": "LocationFeatureSpecification", name: "Accesibilidad para silla de ruedas", value: true } }
+                  : {}),
+                isAccessibleForFree: true,
+                publicAccess: true,
+                publisher: {
+                  "@type": "Organization",
+                  name: "trafico.live",
+                  url: BASE_URL,
+                },
+              },
+              {
+                "@type": "TravelAction",
+                name: `Viajar en tren hacia ${station.name}`,
+                fromLocation: { "@type": "TrainStation", name: "Estacion de origen" },
+                toLocation: { "@id": `${BASE_URL}/trenes/estacion/${slug}#place` },
+                provider: {
+                  "@type": "Organization",
+                  name: "Renfe Operadora",
+                  url: "https://www.renfe.com",
+                },
+              },
+            ],
           }),
         }}
       />

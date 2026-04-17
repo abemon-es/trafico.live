@@ -30,7 +30,7 @@ const TraficoMap = dynamic(
 import type { MapPreset, EntityType } from "@/lib/map-layers/types";
 
 export interface TraficoMapProps {
-  /** Preset group — activates a curated layer set (e.g. "trafico-live", "aviation-live", "maritime-live") */
+  /** Preset group — activates a curated layer set (e.g. "trafico", "aviacion", "maritimo") */
   preset?: MapPreset;
 
   /** Which layers to mount on initial render. Overrides preset defaults if provided. */
@@ -75,19 +75,22 @@ export interface TraficoMapProps {
 
 ## 3. Presets (MapPreset)
 
-Defined in `src/lib/map-layers/registry.ts`. A preset selects a coherent set of layers for a use case. **Preset = product surface, not data source.**
+Defined in `src/lib/map-layers/types.ts` + `src/lib/map-layers/registry.ts`. A preset selects a coherent set of layers for a vertical.
+
+`MapPreset = VerticalId | "home" | "all" | "minimal"` where `VerticalId = "maritimo" | "aviacion" | "trenes" | "trafico" | "transporte-publico" | "meteo" | "combustible"`.
 
 | Preset | Surface | Default layers (illustrative) |
 |---|---|---|
-| `trafico-live` | `/`, `/trafico`, province/city pages | `dgt-incidents`, `roads-ref`, `cameras`, `radars`, `variable-panels`, `traffic-sensors` |
-| `maritime-live` | `/maritimo`, `/barcos` | `ais-vessels`, `ferry-routes`, `ports`, `maritime-stations` |
-| `aviation-live` | `/aviacion`, `/vuelos` | `aircraft-positions`, `airports`, `airport-runways` |
-| `rail-live` | `/trenes`, `/trenes/live` | `railway-fleet-ld`, `railway-cercanias-positions`, `railway-routes`, `railway-stations` |
-| `transit` | `/transporte-publico`, city transit | `transit-routes`, `transit-stops`, `transit-operators` |
-| `weather` | `/meteo`, `/calidad-aire` | `weather-stations`, `air-quality`, `weather-alerts`, `radar-composite` (S1) |
-| `fuel` | `/combustible`, `/gasolineras`, `/gasolineras/cerca` | `gas-stations`, `ev-chargers`, `fuel-prices-choropleth` |
-| `infrastructure` | `/carreteras`, `/estaciones-aforo`, entity pages | `imd-flows`, `counting-stations`, `road-network`, `tolls` |
-| `entity-focus` | `/trenes/estacion/[slug]`, `/maritimo/puertos/[slug]`, etc. | minimal; consumer typically passes `entity` + custom `initialLayers` |
+| `trafico` | `/trafico`, `/`, province/city pages | `dgt-incidents`, `roads-ref`, `cameras`, `radars`, `variable-panels`, `traffic-sensors` |
+| `maritimo` | `/maritimo`, `/barcos` | `ais-vessels`, `ferry-routes`, `ports`, `maritime-stations` |
+| `aviacion` | `/aviacion`, `/vuelos` | `aircraft-positions`, `airports`, `airport-runways` |
+| `trenes` | `/trenes`, `/trenes/live`, entity station/line pages | `railway-fleet-ld`, `railway-cercanias-positions`, `railway-routes`, `railway-stations` |
+| `transporte-publico` | `/transporte-publico`, city transit | `transit-routes`, `transit-stops`, `transit-operators` |
+| `meteo` | `/meteo`, `/calidad-aire/estaciones/[slug]` | `weather-stations`, `air-quality`, `weather-alerts`, `radar-composite` (S1) |
+| `combustible` | `/combustible`, `/gasolineras`, `/gasolineras/cerca` | `gas-stations`, `ev-chargers`, `fuel-prices-choropleth` |
+| `home` | `/` homepage | curated cross-vertical highlights |
+| `all` | admin / debug views | every layer in registry |
+| `minimal` | entity-focus views | basemap only; consumer passes `entity` + custom `initialLayers` |
 
 **Preset → layer resolution** happens in `useMapLayers` hook. Consumers may override with `initialLayers` (force set) or `availableLayers` (whitelist what's toggleable).
 
@@ -97,22 +100,21 @@ Defined in `src/lib/map-layers/registry.ts`. A preset selects a coherent set of 
 
 ```ts
 export type EntityType =
-  | "gas-station"
-  | "radar"
-  | "camera"
-  | "ev-charger"
-  | "variable-panel"
-  | "railway-station"
-  | "airport"
-  | "port"
-  | "maritime-station"
-  | "traffic-station"   // counting
   | "road"              // by ref
-  | "air-quality-station"
-  | "weather-station"
   | "vessel"            // MMSI
-  | "incident";         // active DGT
+  | "port"
+  | "train-station"
+  | "rail-line"
+  | "airport"           // by IATA
+  | "flight"
+  | "gas-station"
+  | "weather-station"
+  | "aq-station"        // air quality
+  | "radar"
+  | "camera";
 ```
+
+**Note:** `ev-charger`, `variable-panel`, `traffic-station` (counting), `maritime-station`, `incident` surface as layer toggles within presets rather than entity-focus targets. Add a new type to `types.ts` + coord resolution if you need entity focus on those.
 
 When `entity` is supplied the map will, on load:
 1. Look up coords via the appropriate layer or API fallback
@@ -174,11 +176,11 @@ The following legacy components are REMOVED. All call sites migrate to `<Trafico
 | Legacy | Replacement |
 |---|---|
 | `InteractiveBaseMap` | `<TraficoMap preset="..." />` |
-| `HistoricalMap` | `<TraficoMap preset="trafico-live" />` + time-slider overlay (phase 2) |
-| `ProvinceHeatmap` | `<TraficoMap preset="infrastructure" initialLayers={["province-choropleth"]} />` |
-| `VesselLiveMap` | `<TraficoMap preset="maritime-live" entity={{ type: "vessel", id: mmsi }} />` |
-| `LocationMap` / `LocationMapSection` | `<TraficoMap preset="entity-focus" entity={...} initialView={...} />` |
-| `StationLocationMap` | `<TraficoMap preset="fuel" entity={{ type: "gas-station", id }} />` |
+| `HistoricalMap` | `<TraficoMap preset="trafico" />` + time-slider overlay (phase 2) |
+| `ProvinceHeatmap` | `<TraficoMap preset="trafico" initialLayers={["province-choropleth"]} />` |
+| `VesselLiveMap` | `<TraficoMap preset="maritimo" entity={{ type: "vessel", id: mmsi }} />` |
+| `LocationMap` / `LocationMapSection` | `<TraficoMap preset="minimal" entity={...} initialView={...} />` |
+| `StationLocationMap` | `<TraficoMap preset="combustible" entity={{ type: "gas-station", id }} />` |
 
 Consumers **must not** import maplibre-gl directly. If a use case isn't covered, open a ticket for a new `preset` or `EntityType`.
 

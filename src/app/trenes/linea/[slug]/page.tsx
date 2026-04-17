@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
-import { Prisma } from "@prisma/client";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import {
   Train,
@@ -126,26 +125,27 @@ type Props = {
 };
 
 // ──────────────────────────────────────────────────────────────
-// Static params generation
+// Static params + slug catalog (HS10 consumer T1.9)
 // ──────────────────────────────────────────────────────────────
 
-export async function generateStaticParams() {
+/**
+ * Full slug catalog for sitemaps and `/ir` resolver.
+ * Returns every route with a slug — 1,248 entries.
+ */
+export async function getSlugList(): Promise<string[]> {
   const routes = await prisma.railwayRoute.findMany({
-    where: {
-      slug: { not: null },
-      OR: [
-        { NOT: { shapeGeoJSON: { equals: Prisma.DbNull } } },
-        { stopsCount: { gt: 2 } },
-      ],
-    },
+    where: { slug: { not: null } },
     select: { slug: true },
-    take: 300,
     orderBy: { tripCount: "desc" },
   });
-
   return routes
-    .filter((r): r is { slug: string } => r.slug !== null)
-    .map((r) => ({ slug: r.slug }));
+    .map((r) => r.slug)
+    .filter((s): s is string => s != null);
+}
+
+export async function generateStaticParams() {
+  const slugs = await getSlugList();
+  return slugs.map((slug) => ({ slug }));
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -305,17 +305,7 @@ export default async function LineaDetailPage({ params }: Props) {
   const displayName = routeDisplayName(route.shortName, route.longName, route.originName, route.destName);
   const serviceLabel = SERVICE_TYPE_LABELS[route.serviceType] || route.serviceType.replace(/_/g, " ");
 
-  // Prepare map data
-  const hasShape = route.shapeGeoJSON !== null;
-  const originStation = orderedStations.length > 0 ? orderedStations[0] : null;
-  const destStation = orderedStations.length > 1 ? orderedStations[orderedStations.length - 1] : null;
-  const originCoords: [number, number] | null = originStation
-    ? [Number(originStation.longitude), Number(originStation.latitude)]
-    : null;
-  const destCoords: [number, number] | null = destStation
-    ? [Number(destStation.longitude), Number(destStation.latitude)]
-    : null;
-
+  // Prepare map data — bounds from stop coordinates
   const mapStops = orderedStations
     .filter((s) => s.latitude && s.longitude)
     .map((s) => ({
@@ -323,6 +313,7 @@ export default async function LineaDetailPage({ params }: Props) {
       lng: Number(s.longitude),
       lat: Number(s.latitude),
     }));
+  const hasMap = mapStops.length > 0;
 
   // Breadcrumbs
   const breadcrumbs = [
@@ -333,54 +324,79 @@ export default async function LineaDetailPage({ params }: Props) {
     { name: displayName, href: `/trenes/linea/${slug}` },
   ];
 
-  // JSON-LD structured data
+  // JSON-LD: TrainTrip (Trip subtype for train travel) + TravelAction
+  const tripId = `${BASE_URL}/trenes/linea/${slug}#trip`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Trip",
-    name: `${brandLabel} ${displayName}`,
-    description: route.originName && route.destName
-      ? `Línea ${brandLabel} ${displayName} de ${route.originName} a ${route.destName}`
-      : `Línea ${brandLabel} ${displayName}`,
-    url: `${BASE_URL}/trenes/linea/${slug}`,
-    provider: {
-      "@type": "Organization",
-      name: "Renfe Operadora",
-      url: "https://www.renfe.com",
-    },
-    ...(route.originName && {
-      itinerary: {
-        "@type": "ItemList",
-        numberOfItems: route.stopsCount || orderedStations.length,
-        itemListElement: orderedStations.slice(0, 30).map((s, i) => ({
-          "@type": "ListItem",
-          position: i + 1,
-          name: s.name,
-          ...(s.latitude && s.longitude && {
-            item: {
-              "@type": "TrainStation",
+    "@graph": [
+      {
+        "@type": ["TrainTrip", "Trip"],
+        "@id": tripId,
+        name: `${brandLabel} ${displayName}`,
+        description:
+          route.originName && route.destName
+            ? `Línea ${brandLabel} ${displayName} de ${route.originName} a ${route.destName}`
+            : `Línea ${brandLabel} ${displayName}`,
+        url: `${BASE_URL}/trenes/linea/${slug}`,
+        provider: {
+          "@type": "Organization",
+          name: "Renfe Operadora",
+          url: "https://www.renfe.com",
+        },
+        trainName: route.shortName || displayName,
+        trainNumber: route.shortName || undefined,
+        ...(route.originName && {
+          departureStation: {
+            "@type": "TrainStation",
+            name: route.originName,
+          },
+        }),
+        ...(route.destName && {
+          arrivalStation: {
+            "@type": "TrainStation",
+            name: route.destName,
+          },
+        }),
+        ...(route.originName && {
+          itinerary: {
+            "@type": "ItemList",
+            numberOfItems: route.stopsCount || orderedStations.length,
+            itemListElement: orderedStations.slice(0, 30).map((s, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
               name: s.name,
-              geo: {
-                "@type": "GeoCoordinates",
-                latitude: Number(s.latitude),
-                longitude: Number(s.longitude),
-              },
-            },
-          }),
-        })),
+              ...(s.latitude && s.longitude && {
+                item: {
+                  "@type": "TrainStation",
+                  name: s.name,
+                  geo: {
+                    "@type": "GeoCoordinates",
+                    latitude: Number(s.latitude),
+                    longitude: Number(s.longitude),
+                  },
+                },
+              }),
+            })),
+          },
+        }),
       },
-    }),
-    ...(route.originName && {
-      departureStation: {
-        "@type": "TrainStation",
-        name: route.originName,
+      {
+        "@type": "TravelAction",
+        name: `Viajar en ${brandLabel} ${displayName}`,
+        ...(route.originName && {
+          fromLocation: { "@type": "TrainStation", name: route.originName },
+        }),
+        ...(route.destName && {
+          toLocation: { "@type": "TrainStation", name: route.destName },
+        }),
+        provider: {
+          "@type": "Organization",
+          name: "Renfe Operadora",
+          url: "https://www.renfe.com",
+        },
+        instrument: { "@id": tripId },
       },
-    }),
-    ...(route.destName && {
-      arrivalStation: {
-        "@type": "TrainStation",
-        name: route.destName,
-      },
-    }),
+    ],
   };
 
   return (
@@ -428,19 +444,14 @@ export default async function LineaDetailPage({ params }: Props) {
         </section>
 
         {/* ── Route map ──────────────────────────────────────── */}
-        {hasShape && (
+        {hasMap && (
           <section>
             <h2 className="font-heading font-semibold text-gray-900 dark:text-gray-100 text-lg mb-3 flex items-center gap-2">
               <Route className="w-5 h-5" style={{ color: brandColor }} />
-              Mapa del recorrido
+              Mapa del recorrido y trenes en vivo
             </h2>
-            <RouteMap
-              shapeGeoJSON={route.shapeGeoJSON as unknown as GeoJSON.Geometry}
-              color={brandColor}
-              origin={originCoords}
-              destination={destCoords}
-              stops={mapStops}
-            />
+            <p className="sr-only">Mapa interactivo de la red ferroviaria con la linea {displayName}</p>
+            <RouteMap stops={mapStops} color={brandColor} />
           </section>
         )}
 

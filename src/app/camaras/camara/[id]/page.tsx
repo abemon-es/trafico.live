@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { StructuredData } from "@/components/seo/StructuredData";
 import { Camera, MapPin, Route, Clock, ArrowRight, CheckCircle, XCircle } from "lucide-react";
 
 export const revalidate = 3600;
@@ -41,8 +43,44 @@ export default async function CameraDetailPage({ params }: Props) {
   if (!data) notFound();
   const { camera, nearby } = data;
 
+  // VideoObject JSON-LD: the DGT camera image is a periodically refreshed
+  // "live" video-equivalent stream. Expose it to search engines so it can
+  // appear in Google video results.
+  const videoSchema = camera.thumbnailUrl
+    ? {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        name: `Cámara de tráfico ${camera.name}`,
+        description: `Imagen en directo de la cámara de tráfico de la DGT en ${camera.name}${camera.roadNumber ? ` (${camera.roadNumber}${camera.kmPoint ? `, km ${Number(camera.kmPoint).toFixed(1)}` : ""})` : ""}${camera.provinceName ? `, ${camera.provinceName}` : ""}. Actualización periódica desde el centro de gestión de tráfico.`,
+        thumbnailUrl: [camera.thumbnailUrl],
+        contentUrl: camera.thumbnailUrl,
+        uploadDate: camera.lastUpdated.toISOString(),
+        isLiveBroadcast: true,
+        isFamilyFriendly: true,
+        publisher: {
+          "@type": "Organization",
+          name: "Dirección General de Tráfico (DGT)",
+          url: "https://www.dgt.es",
+        },
+        ...(camera.latitude && camera.longitude
+          ? {
+              contentLocation: {
+                "@type": "Place",
+                name: camera.name,
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: Number(camera.latitude),
+                  longitude: Number(camera.longitude),
+                },
+              },
+            }
+          : {}),
+      }
+    : null;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {videoSchema && <StructuredData data={videoSchema} />}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={[{ name: "Inicio", href: "/" }, { name: "Cámaras", href: "/camaras" }, ...(camera.provinceName ? [{ name: camera.provinceName, href: `/provincias/${camera.province}` }] : []), { name: camera.name, href: `/camaras/camara/${id}` }]} />
         <div className="mb-6">
@@ -55,7 +93,15 @@ export default async function CameraDetailPage({ params }: Props) {
         </div>
         {camera.thumbnailUrl && (
           <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 mb-8 border border-gray-200 dark:border-gray-800">
-            <img src={camera.thumbnailUrl} alt={`Cámara de tráfico ${camera.name}`} className="w-full h-full object-cover" loading="eager" />
+            <Image
+              src={camera.thumbnailUrl}
+              alt={`Cámara de tráfico ${camera.name}`}
+              fill
+              sizes="(max-width: 768px) 100vw, 896px"
+              className="object-cover"
+              priority
+              unoptimized
+            />
             <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">DGT · Actualización periódica</div>
           </div>
         )}

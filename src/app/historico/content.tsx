@@ -3,7 +3,6 @@
 import { fetcher } from "@/lib/fetcher";
 import { useState } from "react";
 import useSWR from "swr";
-import dynamic from "next/dynamic";
 import {
   AlertTriangle,
   Clock,
@@ -18,21 +17,7 @@ import {
 import { BreakdownChart, type ChartDataItem } from "@/components/stats/BreakdownCharts";
 import { V16InfoSection } from "@/components/v16/V16InfoSection";
 
-// Dynamic import for map to avoid SSR issues
-const HistoricalMap = dynamic(
-  () => import("@/components/map/HistoricalMap").then((mod) => mod.HistoricalMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="h-6 w-48 bg-gray-200 animate-pulse rounded" />
-        </div>
-        <div className="h-[400px] bg-gray-100 dark:bg-gray-900 animate-pulse" />
-      </div>
-    ),
-  }
-);
+import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
 
 
 // Types
@@ -557,21 +542,6 @@ export function HistoricoContent() {
     ? (realtimeData?.count || 0) > 0
     : dailyData?.success && dailyData.data.totals.daysWithData > 0;
 
-  // Transform realtime data to map format for the HistoricalMap component
-  const mapBeacons = isRealtime
-    ? (realtimeData?.beacons || []).map((b) => ({
-        id: b.id,
-        lat: b.lat,
-        lng: b.lng,
-        activatedAt: b.activatedAt,
-        road: b.road,
-        province: b.province,
-        severity: b.severity,
-        durationSecs: null,
-        severityWeight: { LOW: 1, MEDIUM: 2, HIGH: 3, VERY_HIGH: 4 }[b.severity] || 1,
-      }))
-    : mapData?.data?.beacons || [];
-
   // Get data start date from daily API response
   const dataStartDate = dailyData?.data?.dataStartDate || null;
 
@@ -697,13 +667,15 @@ export function HistoricoContent() {
           </div>
         )}
 
-        {/* Historical Map */}
+        {/* Historical Map — live incidents/roadworks. TODO(phase 2): time-slider
+             + V16 beacon heatmap layer (needs new registry layer id `v16-beacons`). */}
         <div className="mb-8">
-          <HistoricalMap
-            beacons={mapBeacons}
-            clusters={isRealtime ? undefined : mapData?.data?.clusters}
-            isLoading={isRealtime ? realtimeLoading : mapLoading}
-            height="400px"
+          <TraficoMapEmbed
+            height={400}
+            initialView={{ center: [-3.7038, 40.4168], zoom: 6 }}
+            preset="trafico-live"
+            initialLayers={["incidents", "roadworks"]}
+            controls={{ layerPanel: true, legend: true, themeToggle: true }}
           />
         </div>
 
