@@ -2,12 +2,12 @@
 # Without this, 225 GB of tile build artifacts under /opt/trafico/tiles/build/
 # were being tar'd into every build, breaking COPY with "read/write on closed pipe".
 
-# Build artifacts from Planetiler / OSRM / tippecanoe (on compute only)
-tiles/build/
-tiles/dist/
-tiles/*.pbf
-tiles/*.osrm*
-tiles/*.pmtiles
+# Build artifacts from Planetiler / OSRM / tippecanoe (on compute only).
+# Match at ANY depth — compute has /opt/trafico/tiles/tiles/*.pmtiles (2 levels),
+# /opt/trafico/tiles/build/*.osm.pbf (mixed), etc. A previous single-level
+# pattern missed the 75 GB planet pmtiles and blew up `docker build`.
+tiles/
+services/tiles/build/
 
 # Dependencies — installed inside the image
 node_modules/
