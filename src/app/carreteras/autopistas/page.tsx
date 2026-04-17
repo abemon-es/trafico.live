@@ -2,6 +2,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Car, Camera, Radar, AlertTriangle, MapPin } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -211,6 +212,39 @@ export default async function AutopistasPage() {
               por el País Vasco, y la AP-4 (Autopista del Sur) que enlaza Sevilla con Cádiz.
             </p>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <FAQAccordion
+            title="Preguntas frecuentes sobre las autopistas españolas"
+            items={[
+              {
+                question: "¿Qué diferencia hay entre autopista y autovía en España?",
+                answer:
+                  "Ambas son vías de gran capacidad con calzadas separadas. La diferencia principal es que las autopistas (AP) son de peaje y se diseñan con estándares geométricos más estrictos (pendientes y radios de curva), mientras que las autovías (A) son gratuitas y pueden tener accesos más próximos o pendientes algo mayores.",
+              },
+              {
+                question: "¿Cuál es la velocidad máxima en autopista?",
+                answer:
+                  "120 km/h para turismos y motocicletas, 100 km/h para furgonetas, 90 km/h para camiones, autobuses y vehículos con remolque, salvo señalización específica que indique un límite inferior por tramo.",
+              },
+              {
+                question: "¿Se han liberalizado los peajes de las autopistas españolas?",
+                answer:
+                  "Sí. Entre 2018 y 2021 el Estado asumió la titularidad de varias autopistas radiales (AP-1, AP-7 costa catalana, AP-2, AP-4, AP-7 levantina…) que pasaron a ser de uso gratuito al caducar la concesión. El peaje continúa en vías gestionadas por concesionarias privadas.",
+              },
+              {
+                question: "¿Cómo sé en tiempo real si hay incidencias en una autopista concreta?",
+                answer:
+                  "En trafico.live puedes abrir la ficha de cada autopista (por ejemplo /carreteras/AP-7) y ver cámaras, radares, incidencias activas de la DGT y estaciones de aforo con intensidad media diaria. Los datos provienen del feed DATEX II de la DGT y se refrescan automáticamente.",
+              },
+              {
+                question: "¿Dónde puedo consultar el IMD (Intensidad Media Diaria) por autopista?",
+                answer:
+                  "En la sección de estaciones de aforo y en /intensidad. Cada autopista cuenta con estaciones permanentes y primarias del Ministerio de Transportes que publican IMD anual, desglosada por vehículos ligeros y pesados.",
+              },
+            ]}
+          />
         </div>
       </main>
     </div>
