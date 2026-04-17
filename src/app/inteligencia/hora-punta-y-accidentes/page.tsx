@@ -35,7 +35,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title:
-    "Hora punta y accidentes — Cuando es mas peligroso conducir | trafico.live",
+    "Hora punta y accidentes — Cuando es mas peligroso conducir",
   description:
     "Analisis de los horarios mas peligrosos para conducir en Espana. Mapa de calor hora x dia de la semana, picos de peligrosidad y distribucion por tipo de vehiculo. Datos DGT 2019-2023.",
   alternates: {

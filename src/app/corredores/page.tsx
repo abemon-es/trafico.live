@@ -11,7 +11,7 @@ export const revalidate = 3600;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Corredores de Transporte en Espana — Coche vs Tren vs Avion | trafico.live",
+  title: "Corredores de Transporte en Espana — Coche vs Tren vs Avion",
   description:
     "Compara los principales corredores de transporte en Espana: tiempo, coste, emisiones CO2 y condiciones en tiempo real. Madrid-Barcelona, Madrid-Sevilla, Madrid-Valencia y 9 rutas mas.",
   alternates: { canonical: `${BASE_URL}/corredores` },

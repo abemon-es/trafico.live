@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!prov) return { title: "Provincia no encontrada" };
 
   return {
-    title: `Accidentes de tráfico en ${prov.name} — Histórico 2011-2024 | trafico.live`,
+    title: `Accidentes de tráfico en ${prov.name} — Histórico 2011-2024`,
     description: `Evolución de la siniestralidad vial en ${prov.name}: accidentes, fallecidos y heridos desde 2011 hasta 2024. Datos oficiales de la DGT con análisis de tendencias.`,
     alternates: { canonical: `${BASE_URL}/analisis/accidentes/${provincia}` },
     openGraph: {

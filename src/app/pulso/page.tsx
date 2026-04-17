@@ -30,7 +30,7 @@ export const revalidate = 120;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Pulso de Espana — Estado del transporte por provincia en tiempo real | trafico.live",
+  title: "Pulso de Espana — Estado del transporte por provincia en tiempo real",
   description:
     "Estado del transporte en las 52 provincias espanolas: incidencias de trafico, calidad del aire y precios de combustible actualizados en tiempo real.",
   alternates: { canonical: `${BASE_URL}/pulso` },

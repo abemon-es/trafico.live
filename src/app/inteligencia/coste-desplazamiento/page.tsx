@@ -24,7 +24,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title:
-    "Calculadora de coste de viaje — Coche vs Tren vs Avion | trafico.live",
+    "Calculadora de coste de viaje — Coche vs Tren vs Avion",
   description:
     "Compara el coste, tiempo, emisiones CO2 y seguridad de viajar en coche, tren o avion entre las principales ciudades espanolas. Datos reales de combustible CNMC y accidentes DGT.",
   alternates: { canonical: `${BASE_URL}/inteligencia/coste-desplazamiento` },

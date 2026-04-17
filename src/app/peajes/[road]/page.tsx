@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getData(road);
   if (!data) return { title: "Peaje no encontrado" };
   const { tollRoad: r } = data;
-  const title = `Peaje ${r.id} ${r.fromCity} – ${r.toCity} — Tarifas ${r.year} | trafico.live`;
+  const title = `Peaje ${r.id} ${r.fromCity} – ${r.toCity} — Tarifas ${r.year}`;
   const description = `Tarifa del peaje ${r.id} (${r.fromCity} – ${r.toCity}): ${Number(r.maxPrice).toFixed(2)}€ vehículos ligeros. Operador: ${r.operator}. ${r.segments.length} tramos con precios detallados.${r.expires ? ` Concesión hasta ${r.expires}.` : ""}`;
   return {
     title, description,
