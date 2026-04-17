@@ -11,8 +11,8 @@
  */
 
 import type { Metadata } from "next";
-import dynamicImport from "next/dynamic";
 import Link from "next/link";
+import { AviationHeroMap } from "./AviationHeroMap";
 import { prisma } from "@/lib/db";
 import {
   Plane,
@@ -30,16 +30,6 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
-
-const TraficoMap = dynamicImport(
-  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[500px] bg-tl-50 dark:bg-slate-900 animate-pulse" />
-    ),
-  }
-);
 
 export const dynamic = "force-dynamic";
 
@@ -438,12 +428,7 @@ export default async function AviacionPage() {
               Ver mapa completo <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-          <TraficoMap
-            preset="aviacion"
-            controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
-            initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
-            className="w-full h-[500px] md:h-[600px] rounded-xl overflow-hidden"
-          />
+          <AviationHeroMap />
         </section>
 
         {/* ---------------------------------------------------------------- */}
