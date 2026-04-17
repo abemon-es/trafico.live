@@ -13,6 +13,7 @@
 
 import { PrismaClient, RailwayServiceType } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { triggerPmtilesRegen, layersForTask } from "../transit-gtfs/post-hook.js";
 import { createReadStream } from "fs";
 import { writeFile, mkdtemp, rm } from "fs/promises";
 import { tmpdir } from "os";
@@ -497,4 +498,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Complete: ${totalStations} stations, ${totalRoutes} routes`);
+
+  await triggerPmtilesRegen(layersForTask("renfe-gtfs"));
 }

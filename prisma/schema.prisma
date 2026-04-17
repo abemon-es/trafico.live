@@ -125,18 +125,18 @@ model TrafficIncident {
 // ============================================
 
 model TrafficDetector {
-  id         String  @id // DGT detector ID
-  road       String
-  kmPoint    Float?
-  direction  String?
-  latitude   Decimal @db.Decimal(9, 6)
-  longitude  Decimal @db.Decimal(9, 6)
-  province   String?
-  lanes      Int?
-  isActive   Boolean @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  readings   TrafficReading[]
+  id        String           @id // DGT detector ID
+  road      String
+  kmPoint   Float?
+  direction String?
+  latitude  Decimal          @db.Decimal(9, 6)
+  longitude Decimal          @db.Decimal(9, 6)
+  province  String?
+  lanes     Int?
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  readings  TrafficReading[]
 
   @@index([road])
   @@index([province])
@@ -144,14 +144,14 @@ model TrafficDetector {
 }
 
 model TrafficReading {
-  id         String   @id @default(cuid())
+  id         String          @id @default(cuid())
   detectorId String
   detector   TrafficDetector @relation(fields: [detectorId], references: [id], onDelete: Cascade)
-  intensity  Int      // vehicles/hour
-  speed      Float?   // km/h average
-  occupancy  Float?   // % lane occupancy
-  measuredAt DateTime @db.Timestamptz
-  fetchedAt  DateTime @default(now()) @db.Timestamptz
+  intensity  Int // vehicles/hour
+  speed      Float? // km/h average
+  occupancy  Float? // % lane occupancy
+  measuredAt DateTime        @db.Timestamptz
+  fetchedAt  DateTime        @default(now()) @db.Timestamptz
 
   @@index([detectorId, measuredAt])
   @@index([measuredAt])
@@ -167,17 +167,17 @@ model RoadRiskZone {
   road             String
   fromKm           Float
   toKm             Float
-  startLat         Decimal @db.Decimal(9, 6)
-  startLng         Decimal @db.Decimal(9, 6)
-  endLat           Decimal? @db.Decimal(9, 6)
-  endLng           Decimal? @db.Decimal(9, 6)
+  startLat         Decimal      @db.Decimal(9, 6)
+  startLng         Decimal      @db.Decimal(9, 6)
+  endLat           Decimal?     @db.Decimal(9, 6)
+  endLng           Decimal?     @db.Decimal(9, 6)
   province         String?
   municipalityCode String? // INE 5-digit code
   description      String?
   severity         String?
   sourceUpdated    DateTime?
-  isActive         Boolean @default(true)
-  createdAt        DateTime @default(now())
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
 
   @@index([type])
   @@index([road])
@@ -186,10 +186,10 @@ model RoadRiskZone {
 }
 
 enum RiskZoneType {
-  INVIVE       // Speed enforcement intensification
-  MOTORCYCLE   // High motorcycle accident rate
-  WILDLIFE     // Wildlife-vehicle collision hotspot
-  CAMINO       // Camino de Santiago parallel/intersection risk
+  INVIVE // Speed enforcement intensification
+  MOTORCYCLE // High motorcycle accident rate
+  WILDLIFE // Wildlife-vehicle collision hotspot
+  CAMINO // Camino de Santiago parallel/intersection risk
 }
 
 // ============================================
@@ -197,32 +197,32 @@ enum RiskZoneType {
 // ============================================
 
 model AndorraIncident {
-  id          String   @id @default(cuid())
-  sourceId    Int      @unique // mobilitat.ad incident ID
-  category    String   // BLAU, TARONJA, VERMELL, etc.
+  id          String    @id @default(cuid())
+  sourceId    Int       @unique // mobilitat.ad incident ID
+  category    String // BLAU, TARONJA, VERMELL, etc.
   categoryId  Int
   title       String
-  description String?  @db.Text
-  latitude    Decimal  @db.Decimal(9, 6)
-  longitude   Decimal  @db.Decimal(9, 6)
-  startedAt   DateTime @db.Timestamptz
+  description String?   @db.Text
+  latitude    Decimal   @db.Decimal(9, 6)
+  longitude   Decimal   @db.Decimal(9, 6)
+  startedAt   DateTime  @db.Timestamptz
   endedAt     DateTime? @db.Timestamptz
-  isActive    Boolean  @default(true)
-  fetchedAt   DateTime @default(now()) @db.Timestamptz
+  isActive    Boolean   @default(true)
+  fetchedAt   DateTime  @default(now()) @db.Timestamptz
 
   @@index([isActive])
   @@index([startedAt])
 }
 
 model AndorraCamera {
-  id        String  @id // camera slug from mobilitat.ad
-  name      String
-  latitude  Decimal @db.Decimal(9, 6)
-  longitude Decimal @db.Decimal(9, 6)
-  elevation Int?    // meters
-  route     String? // CG1, CG2, etc.
-  imageUrl  String
-  isActive  Boolean @default(true)
+  id          String   @id // camera slug from mobilitat.ad
+  name        String
+  latitude    Decimal  @db.Decimal(9, 6)
+  longitude   Decimal  @db.Decimal(9, 6)
+  elevation   Int? // meters
+  route       String? // CG1, CG2, etc.
+  imageUrl    String
+  isActive    Boolean  @default(true)
   lastUpdated DateTime @default(now())
 
   @@index([route])
@@ -234,17 +234,17 @@ model AndorraCamera {
 // ============================================
 
 model PortugalWeatherAlert {
-  id          String   @id @default(cuid())
-  alertId     String   @unique // IPMA warning ID
-  type        String   // Agitação Marítima, Nevoeiro, Precipitação, etc.
-  severity    String   // green, yellow, orange, red
-  areaCode    String   // IPMA area code
+  id          String    @id @default(cuid())
+  alertId     String    @unique // IPMA warning ID
+  type        String // Agitação Marítima, Nevoeiro, Precipitação, etc.
+  severity    String // green, yellow, orange, red
+  areaCode    String // IPMA area code
   areaName    String?
-  startedAt   DateTime @db.Timestamptz
+  startedAt   DateTime  @db.Timestamptz
   endedAt     DateTime? @db.Timestamptz
-  description String?  @db.Text
-  isActive    Boolean  @default(true)
-  fetchedAt   DateTime @default(now()) @db.Timestamptz
+  description String?   @db.Text
+  isActive    Boolean   @default(true)
+  fetchedAt   DateTime  @default(now()) @db.Timestamptz
 
   @@index([isActive])
   @@index([severity])
@@ -252,29 +252,29 @@ model PortugalWeatherAlert {
 }
 
 model PortugalGasStation {
-  id            String   @id // DGEG station ID
-  name          String
-  latitude      Decimal  @db.Decimal(9, 6)
-  longitude     Decimal  @db.Decimal(9, 6)
-  address       String?
-  locality      String?
-  postalCode    String?
-  district      String?  // Portuguese district name
-  districtId    String?  // District numeric ID
-  municipality  String?
+  id             String  @id // DGEG station ID
+  name           String
+  latitude       Decimal @db.Decimal(9, 6)
+  longitude      Decimal @db.Decimal(9, 6)
+  address        String?
+  locality       String?
+  postalCode     String?
+  district       String? // Portuguese district name
+  districtId     String? // District numeric ID
+  municipality   String?
   municipalityId String?
-  brand         String?
+  brand          String?
 
   // Fuel prices (EUR)
-  priceGasoleoSimples   Decimal? @db.Decimal(5, 3)
-  priceGasoleoEspecial  Decimal? @db.Decimal(5, 3)
-  priceGasoleoColorido  Decimal? @db.Decimal(5, 3)
-  priceGasolina95       Decimal? @db.Decimal(5, 3)
+  priceGasoleoSimples     Decimal? @db.Decimal(5, 3)
+  priceGasoleoEspecial    Decimal? @db.Decimal(5, 3)
+  priceGasoleoColorido    Decimal? @db.Decimal(5, 3)
+  priceGasolina95         Decimal? @db.Decimal(5, 3)
   priceGasolina95Especial Decimal? @db.Decimal(5, 3)
-  priceGasolina98       Decimal? @db.Decimal(5, 3)
+  priceGasolina98         Decimal? @db.Decimal(5, 3)
   priceGasolina98Especial Decimal? @db.Decimal(5, 3)
-  priceGPL              Decimal? @db.Decimal(5, 3)
-  priceGNC              Decimal? @db.Decimal(5, 3)
+  priceGPL                Decimal? @db.Decimal(5, 3)
+  priceGNC                Decimal? @db.Decimal(5, 3)
 
   // Station info
   stationType String? // road, urban
@@ -292,20 +292,20 @@ model PortugalGasStation {
 }
 
 model PortugalGasStationPriceHistory {
-  id         String   @id @default(cuid())
+  id         String             @id @default(cuid())
   stationId  String
   station    PortugalGasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
-  recordedAt DateTime @db.Date
+  recordedAt DateTime           @db.Date
 
-  priceGasoleoSimples    Decimal? @db.Decimal(5, 3)
-  priceGasoleoEspecial   Decimal? @db.Decimal(5, 3)
-  priceGasoleoColorido   Decimal? @db.Decimal(5, 3)
-  priceGasolina95        Decimal? @db.Decimal(5, 3)
+  priceGasoleoSimples     Decimal? @db.Decimal(5, 3)
+  priceGasoleoEspecial    Decimal? @db.Decimal(5, 3)
+  priceGasoleoColorido    Decimal? @db.Decimal(5, 3)
+  priceGasolina95         Decimal? @db.Decimal(5, 3)
   priceGasolina95Especial Decimal? @db.Decimal(5, 3)
-  priceGasolina98        Decimal? @db.Decimal(5, 3)
+  priceGasolina98         Decimal? @db.Decimal(5, 3)
   priceGasolina98Especial Decimal? @db.Decimal(5, 3)
-  priceGPL               Decimal? @db.Decimal(5, 3)
-  priceGNC               Decimal? @db.Decimal(5, 3)
+  priceGPL                Decimal? @db.Decimal(5, 3)
+  priceGNC                Decimal? @db.Decimal(5, 3)
 
   @@unique([stationId, recordedAt])
   @@index([stationId])
@@ -763,43 +763,45 @@ model Road {
 }
 
 model TollRoad {
-  id       String @id
-  name     String
-  slug     String @unique
-  operator String
-  isSeitt  Boolean @default(false)
-  expires  String?
-  fromCity String
-  toCity   String
-  totalKm  Decimal @db.Decimal(7, 2)
-  minPrice Decimal @db.Decimal(6, 2)
-  maxPrice Decimal @db.Decimal(6, 2)
-  roadId   String? @unique
-  road     Road?   @relation(fields: [roadId], references: [id])
-  segments TollSegment[]
+  id              String        @id
+  name            String
+  slug            String        @unique
+  operator        String
+  isSeitt         Boolean       @default(false)
+  expires         String?
+  fromCity        String
+  toCity          String
+  totalKm         Decimal       @db.Decimal(7, 2)
+  minPrice        Decimal       @db.Decimal(6, 2)
+  maxPrice        Decimal       @db.Decimal(6, 2)
+  roadId          String?       @unique
+  road            Road?         @relation(fields: [roadId], references: [id])
+  segments        TollSegment[]
   freeAltRoad     String?
-  freeAltKm       Decimal? @db.Decimal(7, 2)
+  freeAltKm       Decimal?      @db.Decimal(7, 2)
   freeAltExtraMin Int?
   freeAltDesc     String?
-  year     Int      @default(2026)
-  source   String   @default("Ministerio de Transportes")
-  updatedAt DateTime @default(now()) @updatedAt
+  year            Int           @default(2026)
+  source          String        @default("Ministerio de Transportes")
+  updatedAt       DateTime      @default(now()) @updatedAt
+
   @@index([operator])
   @@index([isSeitt])
 }
 
 model TollSegment {
-  id         String   @id @default(cuid())
-  tollRoadId String
-  tollRoad   TollRoad @relation(fields: [tollRoadId], references: [id], onDelete: Cascade)
-  fromPoint  String
-  toPoint    String
-  km         Decimal  @db.Decimal(7, 2)
-  priceLigeros  Decimal  @db.Decimal(6, 2)
-  pricePesados1 Decimal? @db.Decimal(6, 2)
-  pricePesados2 Decimal? @db.Decimal(6, 2)
+  id               String   @id @default(cuid())
+  tollRoadId       String
+  tollRoad         TollRoad @relation(fields: [tollRoadId], references: [id], onDelete: Cascade)
+  fromPoint        String
+  toPoint          String
+  km               Decimal  @db.Decimal(7, 2)
+  priceLigeros     Decimal  @db.Decimal(6, 2)
+  pricePesados1    Decimal? @db.Decimal(6, 2)
+  pricePesados2    Decimal? @db.Decimal(6, 2)
   priceLigerosCash Decimal? @db.Decimal(6, 2)
-  sortOrder  Int @default(0)
+  sortOrder        Int      @default(0)
+
   @@index([tollRoadId])
 }
 
@@ -823,11 +825,11 @@ model SpeedLimit {
   endLng   Decimal? @db.Decimal(9, 6)
 
   // Speed limit details
-  speedLimit      Int // km/h (20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120)
-  speedLimitType  SpeedLimitType @default(GENERAL)
-  vehicleType     VehicleCategory? // Specific vehicle type restriction
-  laneType        LaneType? // Specific lane restriction
-  direction       Direction?
+  speedLimit     Int // km/h (20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120)
+  speedLimitType SpeedLimitType   @default(GENERAL)
+  vehicleType    VehicleCategory? // Specific vehicle type restriction
+  laneType       LaneType? // Specific lane restriction
+  direction      Direction?
 
   // Conditions (when limit applies)
   isConditional Boolean @default(false)
@@ -860,19 +862,19 @@ model SpeedLimit {
 // ============================================
 
 model TrafficIntensity {
-  id            String   @id @default(cuid())
-  sensorId      Int // Madrid PM sensor ID (idelem)
-  description   String? // Location description
-  intensity     Int // Vehicles/hour
-  occupancy     Int? // Occupancy percentage
-  load          Int? // Load percentage
-  serviceLevel  Int // 0=fluid, 1=slow, 2=holdups, 3=congestion
-  saturation    Int? // Saturation intensity (capacity)
-  latitude      Decimal  @db.Decimal(9, 6)
-  longitude     Decimal  @db.Decimal(9, 6)
-  source        String   @default("MADRID") // City source
-  recordedAt    DateTime @default(now()) @db.Timestamptz
-  error         Boolean  @default(false)
+  id           String   @id @default(cuid())
+  sensorId     Int // Madrid PM sensor ID (idelem)
+  description  String? // Location description
+  intensity    Int // Vehicles/hour
+  occupancy    Int? // Occupancy percentage
+  load         Int? // Load percentage
+  serviceLevel Int // 0=fluid, 1=slow, 2=holdups, 3=congestion
+  saturation   Int? // Saturation intensity (capacity)
+  latitude     Decimal  @db.Decimal(9, 6)
+  longitude    Decimal  @db.Decimal(9, 6)
+  source       String   @default("MADRID") // City source
+  recordedAt   DateTime @default(now()) @db.Timestamptz
+  error        Boolean  @default(false)
 
   @@unique([sensorId, source, recordedAt])
   @@index([source, recordedAt])
@@ -881,16 +883,16 @@ model TrafficIntensity {
 
 // Aggregated hourly traffic profile per sensor
 model HourlyTrafficProfile {
-  id         String @id @default(cuid())
-  sensorId   Int
-  source     String @default("MADRID")
-  dayOfWeek  Int // 0=Sunday, 6=Saturday
-  hour       Int // 0-23
-  avgIntensity   Int
-  avgOccupancy   Int?
+  id              String   @id @default(cuid())
+  sensorId        Int
+  source          String   @default("MADRID")
+  dayOfWeek       Int // 0=Sunday, 6=Saturday
+  hour            Int // 0-23
+  avgIntensity    Int
+  avgOccupancy    Int?
   avgServiceLevel Decimal? @db.Decimal(3, 2) // 0.00-3.00
-  sampleCount    Int // Number of observations
-  updatedAt  DateTime @default(now()) @db.Timestamptz
+  sampleCount     Int // Number of observations
+  updatedAt       DateTime @default(now()) @db.Timestamptz
 
   @@unique([sensorId, source, dayOfWeek, hour])
   @@index([source, dayOfWeek, hour])
@@ -998,26 +1000,26 @@ enum RiskType {
 // ============================================
 
 model TrafficStation {
-  id           String       @id @default(cuid())
-  stationCode  String // DGT station code (e.g., "M-301-5")
-  province     String? // INE 2-digit code
-  provinceName String?
+  id               String       @id @default(cuid())
+  stationCode      String // DGT station code (e.g., "M-301-5")
+  province         String? // INE 2-digit code
+  provinceName     String?
   municipalityCode String? // INE 5-digit code
-  roadNumber   String // "A-1", "N-340", "AP-7"
-  roadType     RoadType?
-  kmPoint      Decimal      @db.Decimal(7, 2)
-  stationType  StationType? // PERMANENT, SEMI_PERMANENT, PRIMARY, SECONDARY, COVERAGE
-  lanes        String? // Number of lanes description
-  configuration String? // Station configuration
-  population   String? // Nearest population
-  latitude     Decimal      @db.Decimal(9, 6)
-  longitude    Decimal      @db.Decimal(9, 6)
-  year         Int // Year of data
-  imd          Int? // IMD total at this station
-  imdLigeros   Int? // Light vehicles IMD
-  imdPesados   Int? // Heavy vehicles IMD
-  percentPesados Decimal?   @db.Decimal(5, 2)
-  daysRecorded Int? // Days of actual measurement
+  roadNumber       String // "A-1", "N-340", "AP-7"
+  roadType         RoadType?
+  kmPoint          Decimal      @db.Decimal(7, 2)
+  stationType      StationType? // PERMANENT, SEMI_PERMANENT, PRIMARY, SECONDARY, COVERAGE
+  lanes            String? // Number of lanes description
+  configuration    String? // Station configuration
+  population       String? // Nearest population
+  latitude         Decimal      @db.Decimal(9, 6)
+  longitude        Decimal      @db.Decimal(9, 6)
+  year             Int // Year of data
+  imd              Int? // IMD total at this station
+  imdLigeros       Int? // Light vehicles IMD
+  imdPesados       Int? // Heavy vehicles IMD
+  percentPesados   Decimal?     @db.Decimal(5, 2)
+  daysRecorded     Int? // Days of actual measurement
 
   flows TrafficFlow[]
 
@@ -1085,17 +1087,17 @@ model GasStation {
   name String // Rótulo (brand name: REPSOL, CEPSA, etc.)
 
   // Location
-  latitude  Decimal @db.Decimal(9, 6)
-  longitude Decimal @db.Decimal(9, 6)
-  address   String?
-  postalCode String? @db.VarChar(5)
-  locality  String?
-  municipality String?
+  latitude         Decimal @db.Decimal(9, 6)
+  longitude        Decimal @db.Decimal(9, 6)
+  address          String?
+  postalCode       String? @db.VarChar(5)
+  locality         String?
+  municipality     String?
   municipalityCode String? // INE code for relation
 
   // Administrative
-  province     String? // INE 2-digit code
-  provinceName String?
+  province      String? // INE 2-digit code
+  provinceName  String?
   communityCode String? // INE 2-digit code
 
   // Road association (for road listings)
@@ -1124,17 +1126,17 @@ model GasStation {
   priceBiodiesel     Decimal? @db.Decimal(5, 3) // Biodiesel
 
   // Station info
-  schedule    String? // "L-D: 24H" or "L-S: 08:00-22:00"
-  is24h       Boolean @default(false)
-  margin      String? // D (right), I (left), N (not applicable)
-  saleType    String? // P (public), R (restricted)
+  schedule String? // "L-D: 24H" or "L-S: 08:00-22:00"
+  is24h    Boolean @default(false)
+  margin   String? // D (right), I (left), N (not applicable)
+  saleType String? // P (public), R (restricted)
 
   // Timestamps
   lastPriceUpdate DateTime @db.Timestamptz
   lastUpdated     DateTime @default(now()) @db.Timestamptz
 
   // Relations
-  priceHistory  GasStationPriceHistory[]
+  priceHistory GasStationPriceHistory[]
 
   @@index([province])
   @@index([municipality])
@@ -1190,20 +1192,20 @@ model GasStationPriceHistory {
   station    GasStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
   recordedAt DateTime   @db.Date // One record per day
 
-  priceGasoleoA        Decimal? @db.Decimal(5, 3)
-  priceGasoleoB        Decimal? @db.Decimal(5, 3)
-  priceGasoleoPremium  Decimal? @db.Decimal(5, 3)
-  priceGasolina95E5    Decimal? @db.Decimal(5, 3)
-  priceGasolina95E10   Decimal? @db.Decimal(5, 3)
-  priceGasolina98E5    Decimal? @db.Decimal(5, 3)
-  priceGasolina98E10   Decimal? @db.Decimal(5, 3)
-  priceGLP             Decimal? @db.Decimal(5, 3)
-  priceGNC             Decimal? @db.Decimal(5, 3)
-  priceGNL             Decimal? @db.Decimal(5, 3)
-  priceHidrogeno       Decimal? @db.Decimal(5, 3)
-  priceGasoleoNuevoA   Decimal? @db.Decimal(5, 3)
-  priceBioetanol       Decimal? @db.Decimal(5, 3)
-  priceBiodiesel       Decimal? @db.Decimal(5, 3)
+  priceGasoleoA       Decimal? @db.Decimal(5, 3)
+  priceGasoleoB       Decimal? @db.Decimal(5, 3)
+  priceGasoleoPremium Decimal? @db.Decimal(5, 3)
+  priceGasolina95E5   Decimal? @db.Decimal(5, 3)
+  priceGasolina95E10  Decimal? @db.Decimal(5, 3)
+  priceGasolina98E5   Decimal? @db.Decimal(5, 3)
+  priceGasolina98E10  Decimal? @db.Decimal(5, 3)
+  priceGLP            Decimal? @db.Decimal(5, 3)
+  priceGNC            Decimal? @db.Decimal(5, 3)
+  priceGNL            Decimal? @db.Decimal(5, 3)
+  priceHidrogeno      Decimal? @db.Decimal(5, 3)
+  priceGasoleoNuevoA  Decimal? @db.Decimal(5, 3)
+  priceBioetanol      Decimal? @db.Decimal(5, 3)
+  priceBiodiesel      Decimal? @db.Decimal(5, 3)
 
   @@unique([stationId, recordedAt])
   @@index([stationId])
@@ -1231,29 +1233,29 @@ model MaritimePriceHistory {
 // ============================================
 
 enum MaritimeZoneType {
-  COASTAL   // Costa (8 zones: Galicia, Cantábrico, Catalano-balear, etc.)
+  COASTAL // Costa (8 zones: Galicia, Cantábrico, Catalano-balear, etc.)
   HIGH_SEAS // Alta mar (6 areas: Atlántico norte/sur, Mediterráneo norte/sur, etc.)
 }
 
 model MaritimeWeatherForecast {
-  id       String          @id @default(cuid())
-  zoneId   String          // AEMET zone/area numeric ID as string
-  zoneName String          // Human-readable name (e.g. "Galicia", "Cantábrico occidental")
+  id       String           @id @default(cuid())
+  zoneId   String // AEMET zone/area numeric ID as string
+  zoneName String // Human-readable name (e.g. "Galicia", "Cantábrico occidental")
   zoneType MaritimeZoneType
 
-  issuedAt   DateTime       @db.Timestamptz // When AEMET issued this forecast
-  validFrom  DateTime?      @db.Timestamptz
-  validUntil DateTime?      @db.Timestamptz
-  fetchedAt  DateTime       @db.Timestamptz
+  issuedAt   DateTime  @db.Timestamptz // When AEMET issued this forecast
+  validFrom  DateTime? @db.Timestamptz
+  validUntil DateTime? @db.Timestamptz
+  fetchedAt  DateTime  @db.Timestamptz
 
   // Extracted metrics (nullable — not always parseable from prose)
   waveHeightMin Decimal? @db.Decimal(4, 1) // metres
   waveHeightMax Decimal? @db.Decimal(4, 1) // metres
-  windForceMin  Int?                        // Beaufort scale
-  windForceMax  Int?                        // Beaufort scale
-  windSpeedKmh  Int?                        // km/h (when given as speed)
-  seaState      String?                     // "marejadilla", "marejada", "fuerte marejada", etc.
-  visibility    String?                     // "buena", "regular", "mala"
+  windForceMin  Int? // Beaufort scale
+  windForceMax  Int? // Beaufort scale
+  windSpeedKmh  Int? // km/h (when given as speed)
+  seaState      String? // "marejadilla", "marejada", "fuerte marejada", etc.
+  visibility    String? // "buena", "regular", "mala"
 
   // Full forecast text stored as JSON { "text": "...", "periods": [...] }
   forecast Json
@@ -1295,16 +1297,16 @@ model FuelPriceDailyStats {
 
 // Price alert subscriptions for fuel price notifications
 model PriceAlert {
-  id            String   @id @default(cuid())
-  email         String
-  fuelType      String   // "gasoleoA" or "gasolina95"
-  targetPrice   Decimal  @db.Decimal(5,3)  // e.g. 1.300
-  province      String?  // optional province filter (INE code)
-  provinceName  String?
-  isActive      Boolean  @default(true)
-  lastNotified  DateTime?
-  createdAt     DateTime @default(now())
-  unsubscribeToken String @unique @default(cuid())
+  id               String    @id @default(cuid())
+  email            String
+  fuelType         String // "gasoleoA" or "gasolina95"
+  targetPrice      Decimal   @db.Decimal(5, 3) // e.g. 1.300
+  province         String? // optional province filter (INE code)
+  provinceName     String?
+  isActive         Boolean   @default(true)
+  lastNotified     DateTime?
+  createdAt        DateTime  @default(now())
+  unsubscribeToken String    @unique @default(cuid())
 
   @@index([email])
   @@index([isActive, fuelType])
@@ -1312,15 +1314,15 @@ model PriceAlert {
 
 // Weekly digest email subscribers
 model DigestSubscriber {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   email            String
-  province         String?  // optional: personalize by province (INE code)
+  province         String? // optional: personalize by province (INE code)
   provinceName     String?
-  isActive         Boolean  @default(true)
+  isActive         Boolean   @default(true)
   confirmedAt      DateTime? // null until email confirmed (double opt-in)
   lastSentAt       DateTime?
-  unsubscribeToken String   @unique @default(cuid())
-  createdAt        DateTime @default(now())
+  unsubscribeToken String    @unique @default(cuid())
+  createdAt        DateTime  @default(now())
 
   @@unique([email])
   @@index([isActive, confirmedAt])
@@ -1358,28 +1360,28 @@ enum ArticleStatus {
 }
 
 model Article {
-  id              String          @id @default(cuid())
-  slug            String          @unique
-  title           String
-  summary         String          @db.Text
-  body            String          @db.Text
-  category        ArticleCategory
-  status          ArticleStatus   @default(PUBLISHED)
+  id       String          @id @default(cuid())
+  slug     String          @unique
+  title    String
+  summary  String          @db.Text
+  body     String          @db.Text
+  category ArticleCategory
+  status   ArticleStatus   @default(PUBLISHED)
 
   source          String?
   sourceUrl       String?
   province        String?
   imageUrl        String?
   readTime        String?
-  isAutoGenerated Boolean         @default(false)
-  featured        Boolean         @default(false)
-  editorialWeight Int             @default(5) // Feed ranking: 1-10 (monthly=10, weekly=7, daily=5, provincial=2)
+  isAutoGenerated Boolean @default(false)
+  featured        Boolean @default(false)
+  editorialWeight Int     @default(5) // Feed ranking: 1-10 (monthly=10, weekly=7, daily=5, provincial=2)
 
-  tags            ArticleTag[]
+  tags ArticleTag[]
 
-  publishedAt     DateTime        @default(now()) @db.Timestamptz
-  createdAt       DateTime        @default(now()) @db.Timestamptz
-  updatedAt       DateTime        @updatedAt
+  publishedAt DateTime @default(now()) @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt
 
   @@index([category])
   @@index([status, publishedAt])
@@ -1416,11 +1418,11 @@ model ArticleTag {
 // Coverage: 2019–2024 (years published by SASEMAR)
 
 enum MaritimeEmergencyType {
-  RESCUE      // Salvamento / búsqueda y rescate
-  POLLUTION   // Contaminación marina
-  MEDICAL     // Evacuación médica / asistencia sanitaria
-  ASSISTANCE  // Auxilio / remolque / asistencia técnica
-  OTHER       // Otros servicios
+  RESCUE // Salvamento / búsqueda y rescate
+  POLLUTION // Contaminación marina
+  MEDICAL // Evacuación médica / asistencia sanitaria
+  ASSISTANCE // Auxilio / remolque / asistencia técnica
+  OTHER // Otros servicios
 }
 
 model MaritimeEmergency {
@@ -1428,35 +1430,35 @@ model MaritimeEmergency {
   sourceId String @unique // External ID from SASEMAR ArcGIS (OBJECTID or constructed key)
 
   // Temporal
-  year        Int
-  occurredAt  DateTime? @db.Timestamptz // Full datetime when available
-  reportedAt  DateTime? @db.Timestamptz // When SASEMAR received the call
+  year       Int
+  occurredAt DateTime? @db.Timestamptz // Full datetime when available
+  reportedAt DateTime? @db.Timestamptz // When SASEMAR received the call
 
   // Classification
-  type        MaritimeEmergencyType @default(OTHER)
-  subtype     String? // Raw category string from source (e.g. "Persona caída al mar")
-  severity    String? // "grave", "leve", "sin víctimas", etc.
+  type     MaritimeEmergencyType @default(OTHER)
+  subtype  String? // Raw category string from source (e.g. "Persona caída al mar")
+  severity String? // "grave", "leve", "sin víctimas", etc.
 
   // Location
-  latitude    Decimal?  @db.Decimal(9, 6)
-  longitude   Decimal?  @db.Decimal(9, 6)
-  zone        String?   // SASEMAR maritime zone (e.g. "Estrecho", "Atlántico Norte")
-  description String?   @db.Text
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
+  zone        String? // SASEMAR maritime zone (e.g. "Estrecho", "Atlántico Norte")
+  description String?  @db.Text
 
   // Nearest coastal province (inferred from lat/lng bounding box)
   province     String? // INE 2-digit code
   provinceName String?
 
   // Vessel / rescue data (where available)
-  vesselType  String? // "velero", "motoembarcación", "buque mercante", etc.
+  vesselType      String? // "velero", "motoembarcación", "buque mercante", etc.
   personsInvolved Int?
   personsSaved    Int?
   personsMissing  Int?
   personsDeceased Int?
 
   // Ingestion metadata
-  importedAt  DateTime @default(now()) @db.Timestamptz
-  dataSource  String   @default("sasemar-arcgis") // "sasemar-arcgis" or "sasemar-local-file"
+  importedAt DateTime @default(now()) @db.Timestamptz
+  dataSource String   @default("sasemar-arcgis") // "sasemar-arcgis" or "sasemar-local-file"
 
   @@index([year])
   @@index([type])
@@ -1472,20 +1474,20 @@ model MaritimeEmergency {
 
 enum PortType {
   COMMERCIAL // Major commercial / cargo ports
-  FISHING    // Fishing ports and fish markets (lonjas)
-  SPORTS     // Sports and recreational marinas
-  MIXED      // Multi-use ports
+  FISHING // Fishing ports and fish markets (lonjas)
+  SPORTS // Sports and recreational marinas
+  MIXED // Multi-use ports
 }
 
 model SpanishPort {
-  id           String   @id @default(cuid())
-  slug         String   @unique // URL-friendly identifier
-  name         String   // Canonical port name (from MaritimeStation.port)
-  type         PortType @default(MIXED)
+  id   String   @id @default(cuid())
+  slug String   @unique // URL-friendly identifier
+  name String // Canonical port name (from MaritimeStation.port)
+  type PortType @default(MIXED)
 
   // Location (centroid of station coordinates)
-  latitude  Decimal  @db.Decimal(9, 6)
-  longitude Decimal  @db.Decimal(9, 6)
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
 
   // Administrative
   province     String? // INE province code (2 digits)
@@ -1545,54 +1547,54 @@ model Port {
 // ============================================
 
 model LocationStats {
-  id                    String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Geographic scope
-  scopeType             String   // "community", "province", "municipality"
-  scopeCode             String   // INE code
-  scopeName             String   // Human-readable name
+  scopeType String // "community", "province", "municipality"
+  scopeCode String // INE code
+  scopeName String // Human-readable name
 
   // Static infrastructure counts
-  cameraCount           Int      @default(0)
-  radarCount            Int      @default(0)
-  gasStationCount       Int      @default(0)
-  evChargerCount        Int      @default(0)
-  speedLimitCount       Int      @default(0)
-  trafficStationCount   Int      @default(0)
-  trafficFlowCount      Int      @default(0)
-  roadCount             Int      @default(0)
-  riskZoneCount         Int      @default(0)
-  panelCount            Int      @default(0)
-  zbeCount              Int      @default(0)
-  articleCount          Int      @default(0)
+  cameraCount         Int @default(0)
+  radarCount          Int @default(0)
+  gasStationCount     Int @default(0)
+  evChargerCount      Int @default(0)
+  speedLimitCount     Int @default(0)
+  trafficStationCount Int @default(0)
+  trafficFlowCount    Int @default(0)
+  roadCount           Int @default(0)
+  riskZoneCount       Int @default(0)
+  panelCount          Int @default(0)
+  zbeCount            Int @default(0)
+  articleCount        Int @default(0)
 
   // Real-time counts
-  activeIncidentCount   Int      @default(0)
-  activeV16Count        Int      @default(0)
-  activeWeatherAlerts   Int      @default(0)
+  activeIncidentCount Int @default(0)
+  activeV16Count      Int @default(0)
+  activeWeatherAlerts Int @default(0)
 
   // Fuel price aggregates
-  avgDieselPrice        Decimal? @db.Decimal(5, 3)
-  avgGasoline95Price    Decimal? @db.Decimal(5, 3)
-  minDieselPrice        Decimal? @db.Decimal(5, 3)
-  minGasoline95Price    Decimal? @db.Decimal(5, 3)
+  avgDieselPrice     Decimal? @db.Decimal(5, 3)
+  avgGasoline95Price Decimal? @db.Decimal(5, 3)
+  minDieselPrice     Decimal? @db.Decimal(5, 3)
+  minGasoline95Price Decimal? @db.Decimal(5, 3)
 
   // Historical accidents (latest year)
-  accidentsLatestYear   Int?
-  fatalitiesLatestYear  Int?
-  accidentYear          Int?
+  accidentsLatestYear  Int?
+  fatalitiesLatestYear Int?
+  accidentYear         Int?
 
   // IMD summary
-  avgIMD                Int?
-  maxIMD                Int?
+  avgIMD Int?
+  maxIMD Int?
 
   // Freshness tracking
-  staticUpdatedAt       DateTime  @default(now()) @db.Timestamptz
-  realtimeUpdatedAt     DateTime  @default(now()) @db.Timestamptz
-  pricesUpdatedAt       DateTime? @db.Timestamptz
+  staticUpdatedAt   DateTime  @default(now()) @db.Timestamptz
+  realtimeUpdatedAt DateTime  @default(now()) @db.Timestamptz
+  pricesUpdatedAt   DateTime? @db.Timestamptz
 
-  createdAt             DateTime  @default(now()) @db.Timestamptz
-  updatedAt             DateTime  @updatedAt @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   @@unique([scopeType, scopeCode])
   @@index([scopeType])
@@ -1604,14 +1606,14 @@ model LocationStats {
 // ============================================
 
 model Redirect {
-  id          String   @id @default(cuid())
-  source      String   @unique // URL path, e.g. "/old-page"
-  destination String   // Target path or full URL
-  permanent   Boolean  @default(true) // true = 301, false = 302
-  hits        Int      @default(0) // Track usage for cleanup
+  id          String    @id @default(cuid())
+  source      String    @unique // URL path, e.g. "/old-page"
+  destination String // Target path or full URL
+  permanent   Boolean   @default(true) // true = 301, false = 302
+  hits        Int       @default(0) // Track usage for cleanup
   lastHitAt   DateTime? @db.Timestamptz
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  note        String?  // Why this redirect exists
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  note        String? // Why this redirect exists
 
   @@index([source])
 }
@@ -1652,13 +1654,13 @@ enum RailwayAlertEffect {
 }
 
 model RailwayStation {
-  id           String  @id @default(cuid())
-  stopId       String  @unique // GTFS stop_id
-  code         String? // Renfe station code (e.g. "60000" for Atocha)
-  name         String
-  slug         String? @unique // URL-safe name (e.g. "madrid-atocha")
-  latitude     Decimal @db.Decimal(9, 6)
-  longitude    Decimal @db.Decimal(9, 6)
+  id        String  @id @default(cuid())
+  stopId    String  @unique // GTFS stop_id
+  code      String? // Renfe station code (e.g. "60000" for Atocha)
+  name      String
+  slug      String? @unique // URL-safe name (e.g. "madrid-atocha")
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
 
   // Classification
   parentId     String? // GTFS parent_station (for grouped stops)
@@ -1666,22 +1668,22 @@ model RailwayStation {
   platformCode String? // Platform number/code
 
   // Administrative (reverse-geocoded)
-  province     String? // INE 2-digit
-  provinceName String?
-  community    String? // INE 2-digit community
+  province      String? // INE 2-digit
+  provinceName  String?
+  community     String? // INE 2-digit community
   communityName String?
-  municipality String?
+  municipality  String?
 
   // Network (for Cercanías: Madrid, Barcelona, etc.)
-  network      String?
+  network String?
 
   // Service info
   serviceTypes RailwayServiceType[] // Which services stop here
-  wheelchair   Int?    @default(0) // GTFS wheelchair_boarding: 0=unknown, 1=yes, 2=no
+  wheelchair   Int?                 @default(0) // GTFS wheelchair_boarding: 0=unknown, 1=yes, 2=no
 
   // Metadata
-  source       String  @default("RENFE_GTFS")
-  fetchedAt    DateTime @default(now()) @db.Timestamptz
+  source    String   @default("RENFE_GTFS")
+  fetchedAt DateTime @default(now()) @db.Timestamptz
 
   @@index([name])
   @@index([slug])
@@ -1693,8 +1695,8 @@ model RailwayStation {
 }
 
 model RailwayRoute {
-  id          String  @id @default(cuid())
-  routeId     String  @unique // GTFS route_id
+  id          String             @id @default(cuid())
+  routeId     String             @unique // GTFS route_id
   slug        String? // URL-safe (e.g. "ave-madrid-malaga")
   agencyId    String? // GTFS agency_id
   shortName   String? // Line name: "C1", "C3", "R1"
@@ -1705,29 +1707,29 @@ model RailwayRoute {
   textColor   String? // Text color hex (GTFS route_text_color)
 
   // Route endpoints (resolved from stop_times)
-  originName  String? // e.g. "Madrid Pta.Atocha"
-  originCode  String? // GTFS stop_id of origin
-  destName    String? // e.g. "Málaga María Zambrano"
-  destCode    String? // GTFS stop_id of destination
+  originName String? // e.g. "Madrid Pta.Atocha"
+  originCode String? // GTFS stop_id of origin
+  destName   String? // e.g. "Málaga María Zambrano"
+  destCode   String? // GTFS stop_id of destination
 
   // Network (for Cercanías grouping)
-  network     String? // e.g. "Madrid", "Barcelona", "Valencia"
+  network String? // e.g. "Madrid", "Barcelona", "Valencia"
 
   // Route details
-  stopsCount  Int?    // Number of intermediate stops
-  tripCount   Int?    // Number of daily trips (services)
+  stopsCount Int? // Number of intermediate stops
+  tripCount  Int? // Number of daily trips (services)
 
   // Shape geometry (from shapes.txt)
-  shapeId     String?
-  shapeGeoJSON Json?   // GeoJSON LineString or MultiLineString
+  shapeId      String?
+  shapeGeoJSON Json? // GeoJSON LineString or MultiLineString
 
   // Stop sequence
-  stopIds     String[] // Ordered GTFS stop_ids for this route
-  stopNames   String[] // Ordered stop names for display
+  stopIds   String[] // Ordered GTFS stop_ids for this route
+  stopNames String[] // Ordered stop names for display
 
   // Metadata
-  source      String   @default("RENFE_GTFS")
-  fetchedAt   DateTime @default(now()) @db.Timestamptz
+  source    String   @default("RENFE_GTFS")
+  fetchedAt DateTime @default(now()) @db.Timestamptz
 
   @@index([serviceType])
   @@index([brand])
@@ -1739,34 +1741,34 @@ model RailwayRoute {
 }
 
 model RailwayAlert {
-  id         String  @id @default(cuid())
-  alertId    String  @unique // GTFS-RT alert id (e.g. "AVISO_484283")
+  id      String @id @default(cuid())
+  alertId String @unique // GTFS-RT alert id (e.g. "AVISO_484283")
 
   // Affected entities
-  routeIds   String[] // GTFS route_ids affected
-  stopIds    String[] // GTFS stop_ids affected
-  tripIds    String[] // GTFS trip_ids affected
+  routeIds String[] // GTFS route_ids affected
+  stopIds  String[] // GTFS stop_ids affected
+  tripIds  String[] // GTFS trip_ids affected
 
   // Alert content
-  headerText   String?  @db.Text
-  description  String   @db.Text // Alert description in Spanish
-  url          String?  // External URL with more info
-  cause        String?  // GTFS-RT cause enum as string
-  effect       RailwayAlertEffect @default(UNKNOWN_EFFECT)
+  headerText  String?            @db.Text
+  description String             @db.Text // Alert description in Spanish
+  url         String? // External URL with more info
+  cause       String? // GTFS-RT cause enum as string
+  effect      RailwayAlertEffect @default(UNKNOWN_EFFECT)
 
   // Temporal
   activePeriodStart DateTime  @db.Timestamptz
   activePeriodEnd   DateTime? @db.Timestamptz
 
   // Lifecycle
-  isActive     Boolean  @default(true)
-  firstSeenAt  DateTime @default(now()) @db.Timestamptz
-  lastSeenAt   DateTime @default(now()) @db.Timestamptz
-  fetchedAt    DateTime @default(now()) @db.Timestamptz
+  isActive    Boolean  @default(true)
+  firstSeenAt DateTime @default(now()) @db.Timestamptz
+  lastSeenAt  DateTime @default(now()) @db.Timestamptz
+  fetchedAt   DateTime @default(now()) @db.Timestamptz
 
   // Source
-  source       String   @default("RENFE_GTFS_RT")
-  serviceType  RailwayServiceType?
+  source      String              @default("RENFE_GTFS_RT")
+  serviceType RailwayServiceType?
 
   @@index([isActive])
   @@index([activePeriodStart])
@@ -1777,25 +1779,25 @@ model RailwayAlert {
 
 // Periodic snapshots of fleet-wide delay stats (every 2 min from renfe-alerts collector)
 model RailwayDelaySnapshot {
-  id           String   @id @default(cuid())
-  recordedAt   DateTime @db.Timestamptz // Snapshot timestamp (rounded to 2 min)
+  id         String   @id @default(cuid())
+  recordedAt DateTime @db.Timestamptz // Snapshot timestamp (rounded to 2 min)
 
   // Fleet stats
-  totalTrains  Int      // Trains in circulation
-  onTimeCount  Int      // Trains with delay <= 0
-  slightCount  Int      // Trains with delay 1-5 min
-  moderateCount Int     // Trains with delay 6-15 min
-  severeCount  Int      // Trains with delay > 15 min
-  avgDelay     Decimal  @db.Decimal(5, 1) // Average delay in minutes
-  maxDelay     Int      // Maximum delay in minutes
-  p50Delay     Int?     // Median delay
-  p90Delay     Int?     // 90th percentile delay
+  totalTrains   Int // Trains in circulation
+  onTimeCount   Int // Trains with delay <= 0
+  slightCount   Int // Trains with delay 1-5 min
+  moderateCount Int // Trains with delay 6-15 min
+  severeCount   Int // Trains with delay > 15 min
+  avgDelay      Decimal @db.Decimal(5, 1) // Average delay in minutes
+  maxDelay      Int // Maximum delay in minutes
+  p50Delay      Int? // Median delay
+  p90Delay      Int? // 90th percentile delay
 
   // Punctuality rate (% on-time or <=5 min)
   punctualityRate Decimal @db.Decimal(5, 2) // 0.00 - 100.00
 
   // Per-brand breakdown (JSON for flexibility)
-  brandStats   Json?    // { "AVE": { total, onTime, avgDelay }, "Alvia": { ... } }
+  brandStats Json? // { "AVE": { total, onTime, avgDelay }, "Alvia": { ... } }
 
   @@unique([recordedAt])
   @@index([recordedAt])
@@ -1803,24 +1805,24 @@ model RailwayDelaySnapshot {
 
 // Daily aggregated railway KPIs (computed from snapshots)
 model RailwayDailyStats {
-  id           String   @id @default(cuid())
-  date         DateTime @db.Date
+  id   String   @id @default(cuid())
+  date DateTime @db.Date
 
   // Fleet averages
-  avgTrains    Int      // Average trains in circulation
-  avgDelay     Decimal  @db.Decimal(5, 1)
-  maxDelay     Int
+  avgTrains       Int // Average trains in circulation
+  avgDelay        Decimal @db.Decimal(5, 1)
+  maxDelay        Int
   punctualityRate Decimal @db.Decimal(5, 2) // Daily average punctuality %
 
   // Totals
-  totalAlerts  Int      @default(0) // Alerts created during this day
+  totalAlerts        Int @default(0) // Alerts created during this day
   totalCancellations Int @default(0)
 
   // Per-brand JSON
-  brandStats   Json?
+  brandStats Json?
 
   // Snapshot count (for averaging)
-  snapshotCount Int     @default(0)
+  snapshotCount Int @default(0)
 
   @@unique([date])
   @@index([date])
@@ -1838,11 +1840,11 @@ model RailwayDailyStats {
 model MobilityODFlow {
   id             String   @id @default(cuid())
   date           DateTime @db.Date
-  originProvince String   // INE 2-digit province code
+  originProvince String // INE 2-digit province code
   originName     String?
-  destProvince   String   // INE 2-digit province code
+  destProvince   String // INE 2-digit province code
   destName       String?
-  tripCount      Int      // Number of trips
+  tripCount      Int // Number of trips
   avgDistanceKm  Decimal? @db.Decimal(7, 1)
 
   @@unique([date, originProvince, destProvince])
@@ -1857,18 +1859,18 @@ model MobilityODFlow {
 // Collector: TASK=accident-microdata (one-shot per year)
 
 model AccidentMicrodata {
-  id               String    @id @default(cuid())
-  sourceId         String?   // DGT record identifier
-  year             Int
-  date             DateTime? @db.Date
-  hour             Int?      // 0-23
-  dayOfWeek        Int?      // 1=Mon, 7=Sun
+  id        String    @id @default(cuid())
+  sourceId  String? // DGT record identifier
+  year      Int
+  date      DateTime? @db.Date
+  hour      Int? // 0-23
+  dayOfWeek Int? // 1=Mon, 7=Sun
 
   // Location
   roadNumber       String?
   roadType         RoadType?
   km               Decimal?  @db.Decimal(7, 2)
-  province         String?   // INE 2-digit
+  province         String? // INE 2-digit
   provinceName     String?
   municipality     String?
   municipalityCode String?
@@ -1877,16 +1879,16 @@ model AccidentMicrodata {
   isUrban          Boolean?
 
   // Severity
-  severity         String?   // "fatal", "hospitalized", "minor"
-  fatalities       Int       @default(0)
-  hospitalized     Int       @default(0)
-  minorInjury      Int       @default(0)
+  severity         String? // "fatal", "hospitalized", "minor"
+  fatalities       Int     @default(0)
+  hospitalized     Int     @default(0)
+  minorInjury      Int     @default(0)
   vehiclesInvolved Int?
 
   // Conditions
-  weatherCondition String?   // "clear", "rain", "fog", "snow", etc.
-  lightCondition   String?   // "daylight", "twilight", "night_lit", "night_unlit"
-  roadSurface      String?   // "dry", "wet", "icy", etc.
+  weatherCondition String? // "clear", "rain", "fog", "snow", etc.
+  lightCondition   String? // "daylight", "twilight", "night_lit", "night_unlit"
+  roadSurface      String? // "dry", "wet", "icy", etc.
   causeCode        String?
   causeDescription String?
 
@@ -1917,10 +1919,10 @@ model AccidentMicrodata {
 // Collector: TASK=cnmc-fuel (daily)
 
 model CNMCFuelPrice {
-  id               String   @id @default(cuid())
-  date             DateTime @db.Date
-  province         String   // INE 2-digit code
-  provinceName     String?
+  id           String   @id @default(cuid())
+  date         DateTime @db.Date
+  province     String // INE 2-digit code
+  provinceName String?
 
   // Prices with tax (EUR/L)
   priceGasoleoA     Decimal? @db.Decimal(5, 3)
@@ -1943,15 +1945,15 @@ model CNMCFuelPrice {
 // Collector: TASK=renfe-ld-realtime (every 2 min, rolling 48h)
 
 model RenfeFleetPosition {
-  id             String              @id @default(cuid())
-  trainNumber    String              // e.g. "04204"
-  serviceType    RailwayServiceType?
-  brand          String?             // "AVE", "Alvia", "Avant", etc.
+  id          String              @id @default(cuid())
+  trainNumber String // e.g. "04204"
+  serviceType RailwayServiceType?
+  brand       String? // "AVE", "Alvia", "Avant", etc.
 
   // Position
   latitude  Decimal @db.Decimal(9, 6)
   longitude Decimal @db.Decimal(9, 6)
-  speed     Int?    // km/h
+  speed     Int? // km/h
 
   // Delay
   delay Int? // minutes (positive = late, negative = early)
@@ -1982,15 +1984,15 @@ model RenfeFleetPosition {
 // Collector: TASK=aemet-historical (one-shot inventory + daily incremental)
 
 model ClimateStation {
-  id          String  @id @default(cuid())
-  stationCode String  @unique // AEMET indicativo
-  name        String
-  province    String? // INE 2-digit
+  id           String  @id @default(cuid())
+  stationCode  String  @unique // AEMET indicativo
+  name         String
+  province     String? // INE 2-digit
   provinceName String?
-  latitude    Decimal @db.Decimal(9, 6)
-  longitude   Decimal @db.Decimal(9, 6)
-  altitude    Int?    // meters above sea level
-  isActive    Boolean @default(true)
+  latitude     Decimal @db.Decimal(9, 6)
+  longitude    Decimal @db.Decimal(9, 6)
+  altitude     Int? // meters above sea level
+  isActive     Boolean @default(true)
 
   records ClimateRecord[]
 
@@ -2021,11 +2023,11 @@ model ClimateRecord {
   // Wind
   windSpeed     Decimal? @db.Decimal(4, 1) // km/h average
   windGust      Decimal? @db.Decimal(4, 1) // km/h max gust
-  windDirection String?  // Cardinal direction
+  windDirection String? // Cardinal direction
 
   // Other
   sunHours Decimal? @db.Decimal(4, 1) // hours
-  humidity Int?     // % average relative humidity
+  humidity Int? // % average relative humidity
   pressure Decimal? @db.Decimal(6, 1) // hPa
 
   @@unique([stationId, date])
@@ -2045,25 +2047,25 @@ enum ApiTier {
 }
 
 model ApiKey {
-  id                   String   @id @default(cuid())
-  key                  String   @unique // "tl_pro_..." or "tl_ent_..."
-  name                 String   // Human-readable label
-  email                String
-  tier                 ApiTier  @default(FREE)
+  id    String  @id @default(cuid())
+  key   String  @unique // "tl_pro_..." or "tl_ent_..."
+  name  String // Human-readable label
+  email String
+  tier  ApiTier @default(FREE)
 
   // Stripe billing
   stripeCustomerId     String?
   stripeSubscriptionId String?
 
   // Rate limits (denormalized for fast lookup)
-  rateLimitPerMinute   Int      @default(10)
-  rateLimitPerDay      Int      @default(1000)
+  rateLimitPerMinute Int @default(10)
+  rateLimitPerDay    Int @default(1000)
 
   // Status
-  isActive             Boolean  @default(true)
-  lastUsedAt           DateTime? @db.Timestamptz
-  expiresAt            DateTime? @db.Timestamptz
-  createdAt            DateTime @default(now()) @db.Timestamptz
+  isActive   Boolean   @default(true)
+  lastUsedAt DateTime? @db.Timestamptz
+  expiresAt  DateTime? @db.Timestamptz
+  createdAt  DateTime  @default(now()) @db.Timestamptz
 
   // Relations
   usage ApiUsage[]
@@ -2078,7 +2080,7 @@ model ApiUsage {
   id           String   @id @default(cuid())
   keyId        String
   key          ApiKey   @relation(fields: [keyId], references: [id], onDelete: Cascade)
-  endpoint     String   // "/api/movilidad", "/api/combustible/historico", etc.
+  endpoint     String // "/api/movilidad", "/api/combustible/historico", etc.
   date         DateTime @db.Date
   requestCount Int      @default(0)
 
@@ -2092,19 +2094,19 @@ model ApiUsage {
 // ============================================
 
 model Vessel {
-  id        String   @id @default(cuid())
-  mmsi      Int      @unique
-  imo       Int?
-  name      String?
-  callsign  String?
-  shipType  Int?
-  flag      String?
-  length    Int?
-  beam      Int?
-  draught   Float?
+  id          String    @id @default(cuid())
+  mmsi        Int       @unique
+  imo         Int?
+  name        String?
+  callsign    String?
+  shipType    Int?
+  flag        String?
+  length      Int?
+  beam        Int?
+  draught     Float?
   destination String?
-  eta       DateTime?   @db.Timestamptz
-  updatedAt DateTime    @default(now()) @updatedAt @db.Timestamptz
+  eta         DateTime? @db.Timestamptz
+  updatedAt   DateTime  @default(now()) @updatedAt @db.Timestamptz
 
   positions VesselPosition[]
 
@@ -2123,7 +2125,7 @@ model VesselPosition {
   navStatus Int?
   createdAt DateTime @default(now()) @db.Timestamptz
 
-  vessel    Vessel   @relation(fields: [mmsi], references: [mmsi], onDelete: Cascade)
+  vessel Vessel @relation(fields: [mmsi], references: [mmsi], onDelete: Cascade)
 
   @@index([mmsi, createdAt(sort: Desc)])
   @@index([createdAt])
@@ -2179,17 +2181,17 @@ model Voyage {
 }
 
 model FerryRoute {
-  id          String  @id @default(cuid())
-  operator    String
-  routeId     String
-  routeName   String
-  routeType   Int?
-  routeColor  String?
-  geometry    Json?
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+  id         String   @id @default(cuid())
+  operator   String
+  routeId    String
+  routeName  String
+  routeType  Int?
+  routeColor String?
+  geometry   Json?
+  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  stops       FerryStop[]
-  trips       FerryTrip[]
+  stops FerryStop[]
+  trips FerryTrip[]
 
   @@unique([operator, routeId])
   @@index([operator])
@@ -2203,21 +2205,21 @@ model FerryStop {
   longitude Decimal @db.Decimal(9, 6)
   routeId   String
 
-  route     FerryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  route FerryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
   @@unique([routeId, stopId])
 }
 
 model FerryTrip {
-  id          String  @id @default(cuid())
-  tripId      String
-  routeId     String
-  headsign    String?
-  departsAt   String?
-  arrivesAt   String?
-  serviceDay  String?
+  id         String  @id @default(cuid())
+  tripId     String
+  routeId    String
+  headsign   String?
+  departsAt  String?
+  arrivesAt  String?
+  serviceDay String?
 
-  route       FerryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  route FerryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
   @@unique([routeId, tripId])
   @@index([routeId])
@@ -2228,57 +2230,138 @@ model FerryTrip {
 // ============================================
 
 model TransitOperator {
-  id          String  @id @default(cuid())
-  mdbId       String  @unique
-  name        String
-  city        String?
-  province    String?
-  mode        String
-  feedUrl     String?
-  feedHash    String?
-  isOfficial  Boolean @default(true)
-  hasRealtime Boolean @default(false)
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+  id                   String   @id @default(cuid())
+  mdbId                String   @unique
+  name                 String
+  city                 String?
+  province             String?
+  mode                 String
+  feedUrl              String?
+  feedHash             String?
+  isOfficial           Boolean  @default(true)
+  hasRealtime          Boolean  @default(false)
+  country              String   @default("ES")
+  realtimeTripUrl      String?
+  realtimePositionsUrl String?
+  realtimeAlertsUrl    String?
+  updatedAt            DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  routes      TransitRoute[]
-  stops       TransitStop[]
+  routes TransitRoute[]
+  stops  TransitStop[]
 
   @@index([mode])
   @@index([province])
+  @@index([country])
 }
 
 model TransitRoute {
-  id          String  @id @default(cuid())
-  operatorId  String
-  routeId     String
-  shortName   String?
-  longName    String?
-  routeType   Int
-  routeColor  String?
-  geometry    Json?
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+  id         String   @id @default(cuid())
+  operatorId String
+  routeId    String
+  shortName  String?
+  longName   String?
+  routeType  Int
+  routeColor String?
+  geometry   Json?
+  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  operator    TransitOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  operator TransitOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
 
   @@unique([operatorId, routeId])
   @@index([routeType])
 }
 
 model TransitStop {
-  id         String  @id @default(cuid())
-  operatorId String
-  stopId     String
-  stopName   String
-  latitude   Decimal @db.Decimal(9, 6)
-  longitude  Decimal @db.Decimal(9, 6)
-  parentId   String?
-  locationType Int @default(0)
-  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz
+  id           String   @id @default(cuid())
+  operatorId   String
+  stopId       String
+  stopName     String
+  latitude     Decimal  @db.Decimal(9, 6)
+  longitude    Decimal  @db.Decimal(9, 6)
+  parentId     String?
+  locationType Int      @default(0)
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  operator   TransitOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  operator TransitOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
 
   @@unique([operatorId, stopId])
   @@index([latitude, longitude])
+}
+
+model TransitVehiclePosition {
+  id         String   @id @default(cuid())
+  operatorId String
+  vehicleId  String
+  tripId     String?
+  routeId    String?
+  latitude   Float
+  longitude  Float
+  bearing    Float?
+  speed      Float?
+  timestamp  DateTime
+  fetchedAt  DateTime @default(now())
+
+  @@index([operatorId, fetchedAt(sort: Desc)])
+  @@index([vehicleId, fetchedAt(sort: Desc)])
+  @@index([fetchedAt])
+}
+
+model TransitTrip {
+  id          String  @id @default(cuid())
+  operatorId  String
+  tripId      String
+  routeId     String
+  serviceId   String
+  headsign    String?
+  directionId Int?
+  shapeId     String?
+
+  @@unique([operatorId, tripId])
+  @@index([operatorId, routeId])
+  @@index([operatorId, serviceId])
+}
+
+model TransitStopTime {
+  id            String @id @default(cuid())
+  operatorId    String
+  tripId        String
+  stopId        String
+  arrivalTime   String
+  departureTime String
+  stopSequence  Int
+  pickupType    Int?
+  dropOffType   Int?
+
+  @@index([operatorId, tripId, stopSequence])
+  @@index([operatorId, stopId])
+}
+
+model TransitCalendar {
+  id         String   @id @default(cuid())
+  operatorId String
+  serviceId  String
+  monday     Boolean
+  tuesday    Boolean
+  wednesday  Boolean
+  thursday   Boolean
+  friday     Boolean
+  saturday   Boolean
+  sunday     Boolean
+  startDate  DateTime
+  endDate    DateTime
+
+  @@unique([operatorId, serviceId])
+}
+
+model TransitCalendarDate {
+  id            String   @id @default(cuid())
+  operatorId    String
+  serviceId     String
+  date          DateTime
+  exceptionType Int // 1 = added, 2 = removed (GTFS spec)
+
+  @@index([operatorId, serviceId])
+  @@index([operatorId, date])
 }
 
 // ============================================
@@ -2286,53 +2369,53 @@ model TransitStop {
 // ============================================
 
 model CityTrafficSensor {
-  id          String  @id @default(cuid())
-  city        String
-  sensorId    String
-  streetName  String?
-  latitude    Decimal @db.Decimal(9, 6)
-  longitude   Decimal @db.Decimal(9, 6)
-  direction   String?
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+  id         String   @id @default(cuid())
+  city       String
+  sensorId   String
+  streetName String?
+  latitude   Decimal  @db.Decimal(9, 6)
+  longitude  Decimal  @db.Decimal(9, 6)
+  direction  String?
+  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  readings    CityTrafficReading[]
+  readings CityTrafficReading[]
 
   @@unique([city, sensorId])
   @@index([city])
 }
 
 model CityTrafficReading {
-  id          String   @id @default(cuid())
-  sensorId    String
-  intensity   Int?
-  occupancy   Float?
-  speed       Float?
+  id           String   @id @default(cuid())
+  sensorId     String
+  intensity    Int?
+  occupancy    Float?
+  speed        Float?
   serviceLevel Int?
-  prediction  Int?
-  createdAt   DateTime @default(now()) @db.Timestamptz
+  prediction   Int?
+  createdAt    DateTime @default(now()) @db.Timestamptz
 
-  sensor      CityTrafficSensor @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  sensor CityTrafficSensor @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 
   @@index([sensorId, createdAt(sort: Desc)])
   @@index([createdAt])
 }
 
 model RoadworksZone {
-  id          String   @id @default(cuid())
-  sourceId    String   @unique
+  id          String     @id @default(cuid())
+  sourceId    String     @unique
   roadNumber  String?
   roadType    RoadType?
-  kmStart     Decimal? @db.Decimal(7, 2)
-  kmEnd       Decimal? @db.Decimal(7, 2)
+  kmStart     Decimal?   @db.Decimal(7, 2)
+  kmEnd       Decimal?   @db.Decimal(7, 2)
   direction   Direction?
-  latitude    Decimal  @db.Decimal(9, 6)
-  longitude   Decimal  @db.Decimal(9, 6)
+  latitude    Decimal    @db.Decimal(9, 6)
+  longitude   Decimal    @db.Decimal(9, 6)
   description String?
-  startDate   DateTime? @db.Timestamptz
-  endDate     DateTime? @db.Timestamptz
-  isActive    Boolean  @default(true)
+  startDate   DateTime?  @db.Timestamptz
+  endDate     DateTime?  @db.Timestamptz
+  isActive    Boolean    @default(true)
   province    String?
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+  updatedAt   DateTime   @default(now()) @updatedAt @db.Timestamptz
 
   @@index([isActive])
   @@index([province])
@@ -2344,17 +2427,17 @@ model RoadworksZone {
 // ============================================
 
 model GTFSArchive {
-  id          String   @id @default(cuid())
-  mdbId       String
-  operator    String
-  downloadedAt DateTime @db.Timestamptz
-  hash        String
+  id           String    @id @default(cuid())
+  mdbId        String
+  operator     String
+  downloadedAt DateTime  @db.Timestamptz
+  hash         String
   serviceStart DateTime? @db.Timestamptz
   serviceEnd   DateTime? @db.Timestamptz
-  routeCount  Int?
-  stopCount   Int?
-  tripCount   Int?
-  fileSize    Int?
+  routeCount   Int?
+  stopCount    Int?
+  tripCount    Int?
+  fileSize     Int?
 
   @@unique([mdbId, hash])
   @@index([mdbId, downloadedAt(sort: Desc)])
@@ -2409,25 +2492,25 @@ model AirportStatistic {
   periodStart DateTime @db.Timestamptz
   createdAt   DateTime @default(now()) @db.Timestamptz
 
-  airport     Airport  @relation(fields: [airportId], references: [id], onDelete: Cascade)
+  airport Airport @relation(fields: [airportId], references: [id], onDelete: Cascade)
 
   @@unique([airportId, metric, periodStart])
   @@index([airportId, periodStart(sort: Desc)])
 }
 
 model AircraftPosition {
-  id          String   @id @default(cuid())
-  icao24      String
-  callsign    String?
-  latitude    Decimal  @db.Decimal(9, 6)
-  longitude   Decimal  @db.Decimal(9, 6)
-  altitude    Int?
-  velocity    Float?
-  heading     Float?
-  verticalRate Float?
-  onGround    Boolean  @default(false)
+  id            String   @id @default(cuid())
+  icao24        String
+  callsign      String?
+  latitude      Decimal  @db.Decimal(9, 6)
+  longitude     Decimal  @db.Decimal(9, 6)
+  altitude      Int?
+  velocity      Float?
+  heading       Float?
+  verticalRate  Float?
+  onGround      Boolean  @default(false)
   originCountry String?
-  createdAt   DateTime @default(now()) @db.Timestamptz
+  createdAt     DateTime @default(now()) @db.Timestamptz
 
   @@index([icao24, createdAt(sort: Desc)])
   @@index([createdAt])
@@ -2438,37 +2521,37 @@ model AircraftPosition {
 // ============================================
 
 model AirQualityStation {
-  id          String   @id @default(cuid())
-  stationId   String   @unique // MITECO station code
-  name        String
-  network     String?  // "Red de vigilancia de la calidad del aire"
-  city        String?
-  province    String?  // INE code
-  latitude    Decimal  @db.Decimal(9, 6)
-  longitude   Decimal  @db.Decimal(9, 6)
-  elevation   Int?
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
+  id        String   @id @default(cuid())
+  stationId String   @unique // MITECO station code
+  name      String
+  network   String? // "Red de vigilancia de la calidad del aire"
+  city      String?
+  province  String? // INE code
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+  elevation Int?
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  readings    AirQualityReading[]
+  readings AirQualityReading[]
 
   @@index([province])
   @@index([city])
 }
 
 model AirQualityReading {
-  id          String   @id @default(cuid())
-  stationId   String
-  no2         Float?   // µg/m³
-  pm10        Float?   // µg/m³
-  pm25        Float?   // µg/m³ (PM2.5)
-  o3          Float?   // µg/m³
-  so2         Float?   // µg/m³
-  co          Float?   // mg/m³
-  ica         Int?     // Composite air quality index (1=buena, 2=razonable, 3=moderada, 4=mala, 5=muy mala)
-  icaLabel    String?  // "Buena", "Razonable", etc.
-  createdAt   DateTime @default(now()) @db.Timestamptz
+  id        String   @id @default(cuid())
+  stationId String
+  no2       Float? // µg/m³
+  pm10      Float? // µg/m³
+  pm25      Float? // µg/m³ (PM2.5)
+  o3        Float? // µg/m³
+  so2       Float? // µg/m³
+  co        Float? // mg/m³
+  ica       Int? // Composite air quality index (1=buena, 2=razonable, 3=moderada, 4=mala, 5=muy mala)
+  icaLabel  String? // "Buena", "Razonable", etc.
+  createdAt DateTime @default(now()) @db.Timestamptz
 
-  station     AirQualityStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  station AirQualityStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
 
   @@index([stationId, createdAt(sort: Desc)])
   @@index([createdAt])

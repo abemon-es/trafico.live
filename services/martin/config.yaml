@@ -32,6 +32,9 @@ postgres:
     vessels:
       schema: public
       function: tile_vessels
+    transit_vehicles:
+      schema: public
+      function: tile_transit_vehicles
 
     # --- Maritime ---
     emergencies:

@@ -21,6 +21,7 @@ import { createInterface } from "readline";
 import { join } from "path";
 import { tmpdir } from "os";
 import { log, logError } from "../../shared/utils.js";
+import { triggerPmtilesRegen, layersForTask } from "../transit-gtfs/post-hook.js";
 
 const TASK = "ferry-gtfs";
 
@@ -338,4 +339,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Done: ${totalRoutes} routes, ${totalStops} stops, ${totalTrips} trips`);
+
+  await triggerPmtilesRegen(layersForTask("ferry-gtfs"));
 }

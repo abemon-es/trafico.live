@@ -26,6 +26,9 @@
 
 30 22 * * * TASK=insights npx tsx index.ts 2>&1
 
+# Nightly cleanup — TransitVehiclePosition rolling 48h window
+0 23 * * * psql "$DATABASE_URL" -c "DELETE FROM \"TransitVehiclePosition\" WHERE \"fetchedAt\" < now() - interval '48 hours'" 2>&1
+
 # NOTE: accident-microdata — when added, requires NODE_OPTIONS=--max-old-space-size=512
 # (large CSV parsing, ~400MB peak). Example:
 # 0 1 * * 0 TASK=accident-microdata NODE_OPTIONS=--max-old-space-size=512 npx tsx index.ts 2>&1

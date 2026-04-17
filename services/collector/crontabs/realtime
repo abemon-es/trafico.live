@@ -25,6 +25,10 @@
 */2 * * * * TASK=renfe-ld-realtime npx tsx index.ts 2>&1
 */2 * * * * TASK=renfe-positions npx tsx index.ts 2>&1
 
+# Urban transit GTFS-RT (EMT Madrid, TMB Barcelona) — every 1 min
+# Skips individual feeds if API keys missing; no-op when all skip
+* * * * * TASK=transit-realtime npx tsx index.ts 2>&1
+
 # OpenSky aircraft positions — anonymous limit ~5 req/h, with auth ~100 req/h
 # Register at opensky-network.org and set OPENSKY_USERNAME/PASSWORD for */5 frequency
 */15 * * * * TASK=opensky npx tsx index.ts 2>&1

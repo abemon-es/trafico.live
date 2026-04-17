@@ -5,8 +5,8 @@
  * (no hardcoded list). Downloads, parses, and imports routes + stops for every
  * active Spanish transit operator.
  *
- * Discovery: Downloads MobilityData catalog CSV (~3K rows), filters country=ES,
- * excludes deprecated feeds, processes all remaining (~145 feeds).
+ * Discovery: Downloads MobilityData catalog CSV (~3K rows), filters country=ES|PT,
+ * excludes deprecated feeds, processes all remaining (~145 ES + ~20 PT feeds).
  *
  * Memory-safe: streams trips/shapes for large feeds, batches stop inserts,
  * skips shapes for feeds with >5K stops.
@@ -25,6 +25,8 @@ import { createInterface } from "readline";
 import { join } from "path";
 import { tmpdir } from "os";
 import { log, logError } from "../../shared/utils.js";
+import { triggerPmtilesRegen, layersForTask } from "./post-hook.js";
+import { shouldIngestSchedule, parseAndIngestSchedule } from "./stop-times.js";
 
 const TASK = "transit-gtfs";
 
@@ -44,6 +46,7 @@ interface DiscoveredFeed {
   city: string;
   region: string;
   downloadUrl: string;
+  country: "ES" | "PT";
 }
 
 // ── Discover feeds from MobilityData catalog ─────────────────────────────────
@@ -99,7 +102,7 @@ async function discoverFeeds(): Promise<DiscoveredFeed[]> {
     const status = values[iStatus]?.trim();
     const mdbId = values[iMdbId]?.trim();
 
-    if (country !== "ES") continue;
+    if (country !== "ES" && country !== "PT") continue;
     if (dataType !== "gtfs") continue;
     if (status === "deprecated") continue;
     if (!mdbId || SKIP_FEEDS.has(mdbId)) continue;
@@ -114,10 +117,13 @@ async function discoverFeeds(): Promise<DiscoveredFeed[]> {
       city: values[iCity]?.trim() || "",
       region: values[iRegion]?.trim() || "",
       downloadUrl,
+      country: country as "ES" | "PT",
     });
   }
 
-  log(TASK, `Discovered ${feeds.length} Spanish GTFS feeds from catalog`);
+  const esCount = feeds.filter((f) => f.country === "ES").length;
+  const ptCount = feeds.filter((f) => f.country === "PT").length;
+  log(TASK, `Discovered ${esCount} ES feeds, ${ptCount} PT feeds from catalog`);
   return feeds;
 }
 
@@ -358,17 +364,20 @@ async function processFeed(
         mdbId: mdbIdKey,
         name: feed.name,
         city: feed.city || null,
-        province: null,
+        province: feed.region || null,
         mode,
         feedUrl: feed.downloadUrl,
         feedHash: hash,
+        country: feed.country,
       },
       update: {
         name: feed.name,
         city: feed.city || null,
+        province: feed.region || null,
         mode,
         feedUrl: feed.downloadUrl,
         feedHash: hash,
+        country: feed.country,
       },
     });
 
@@ -441,6 +450,25 @@ async function processFeed(
     }
 
     log(TASK, `${feed.name}: imported ${routeCount} routes, ${stopCount} stops (mode: ${mode})`);
+
+    if (await shouldIngestSchedule(feed.mdbId)) {
+      try {
+        const stats = await parseAndIngestSchedule({
+          prisma,
+          operatorId: operator.id,
+          mdbId: feed.mdbId,
+          gtfsDir: tmpDir,
+          log: (msg) => log(TASK, msg),
+        });
+        log(
+          TASK,
+          `${feed.name}: schedule ingested — ${stats.trips} trips, ${stats.stopTimes} stop_times, ${stats.calendars} calendars, ${stats.calendarDates} exceptions`
+        );
+      } catch (err) {
+        logError(TASK, `${feed.name}: schedule ingest failed`, err);
+      }
+    }
+
     return { routes: routeCount, stops: stopCount };
   } finally {
     if (tmpDir) {
@@ -452,7 +480,7 @@ async function processFeed(
 // ── Main entry point ─────────────────────────────────────────────────────────
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  // Step 1: Discover all Spanish feeds from MobilityData catalog
+  // Step 1: Discover all Spanish + Portuguese feeds from MobilityData catalog
   const feeds = await discoverFeeds();
 
   if (feeds.length === 0) {
@@ -460,7 +488,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
     return;
   }
 
-  log(TASK, `Processing ${feeds.length} Spanish GTFS feeds...`);
+  const esFeeds = feeds.filter((f) => f.country === "ES").length;
+  const ptFeeds = feeds.filter((f) => f.country === "PT").length;
+  log(TASK, `Processing ${feeds.length} GTFS feeds (${esFeeds} ES, ${ptFeeds} PT)...`);
 
   let totalRoutes = 0;
   let totalStops = 0;
@@ -500,4 +530,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
   } catch {
     // Non-fatal
   }
+
+  await triggerPmtilesRegen(layersForTask("transit-gtfs"));
 }

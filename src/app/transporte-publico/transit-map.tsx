@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { Map as MapInstance } from "maplibre-gl";
-import { addTileLayer, setupPMTilesProtocol, SOURCE_LAYERS } from "@/lib/map-tiles";
+import type { Map as MapInstance, VectorTileSource } from "maplibre-gl";
+import { addTileLayer, setupPMTilesProtocol, SOURCE_LAYERS, TILE_SOURCES } from "@/lib/map-tiles";
 import { InteractiveBaseMap } from "@/components/map/InteractiveBaseMap";
 
 export default function TransitMap({ height = "500px" }: { height?: string }) {
+  const mapRef = useRef<MapInstance | null>(null);
+  const [vehiclesVisible, setVehiclesVisible] = useState(true);
+
   const handleMapLoad = useCallback((map: MapInstance) => {
+    mapRef.current = map;
     setupPMTilesProtocol();
 
     // ── Road segments (IMD traffic flow) — below everything ──
@@ -25,6 +29,10 @@ export default function TransitMap({ height = "500px" }: { height?: string }) {
     addTileLayer(map, "railwayStationsCircle");
     addTileLayer(map, "airportsCircle");
     addTileLayer(map, "portsCircle");
+
+    // ── Live transit vehicles (Martin dynamic source, on top) ──
+    addTileLayer(map, "transitVehiclesCircle");
+    addTileLayer(map, "transitVehiclesLabel");
 
     // ── Labels at high zoom ──
     map.addLayer({
@@ -129,18 +137,89 @@ export default function TransitMap({ height = "500px" }: { height?: string }) {
       map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
     }
+
+    // ── Transit vehicles hover popup ──
+    map.on("mouseenter", "transit-vehicles-circle", (e) => {
+      const f = e.features?.[0]; if (!f) return;
+      map.getCanvas().style.cursor = "pointer";
+      const p = f.properties || {};
+      const age = p.ageSeconds != null ? `${p.ageSeconds}s` : "—";
+      const bearingHtml = p.bearing != null
+        ? `<span style="display:inline-block;transform:rotate(${p.bearing}deg);margin-left:4px">↑</span>`
+        : "";
+      popup.setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number]).setHTML(
+        `<div style="font-family:'DM Sans',system-ui;font-size:13px;line-height:1.5">
+          <strong>${p.operatorName || p.vehicleId || ""}</strong>${bearingHtml}
+          <div style="color:#6b7280">${p.mode || ""} · ${age}</div>
+        </div>`
+      ).addTo(map);
+    });
+    map.on("mouseleave", "transit-vehicles-circle", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
+  }, []);
+
+  // ── Toggle transit vehicles layer visibility ──
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const vis = vehiclesVisible ? "visible" : "none";
+    for (const id of ["transit-vehicles-circle", "transit-vehicles-label"]) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", vis);
+    }
+  }, [vehiclesVisible]);
+
+  // ── Poll refresh every 20s: bump cache-buster on the transitVehicles tile source ──
+  // Martin auto-exposes the TileJSON at /dynamic/transit_vehicles; the actual tile
+  // template is /dynamic/transit_vehicles/{z}/{x}/{y}. setTiles() overrides the
+  // tiles array directly, bypassing the TileJSON fetch.
+  useEffect(() => {
+    const TILE_TEMPLATE = `${TILE_SOURCES.transitVehicles.url}/{z}/{x}/{y}`;
+    const id = setInterval(() => {
+      const map = mapRef.current;
+      if (!map || !map.isStyleLoaded()) return;
+      const src = map.getSource("transitVehicles") as VectorTileSource | undefined;
+      if (!src) return;
+      src.setTiles([`${TILE_TEMPLATE}?_=${Date.now()}`]);
+    }, 20_000);
+    return () => clearInterval(id);
   }, []);
 
   return (
-    <InteractiveBaseMap
-      height={height}
-      center={[-3.7, 40.4]}
-      zoom={6}
-      onMapLoad={handleMapLoad}
-      showSidebar={false}
-      showProvinces={true}
-      showCities={false}
-      showQuickAccess={true}
-    />
+    <div style={{ position: "relative" }}>
+      <InteractiveBaseMap
+        height={height}
+        center={[-3.7, 40.4]}
+        zoom={6}
+        onMapLoad={handleMapLoad}
+        showSidebar={false}
+        showProvinces={true}
+        showCities={false}
+        showQuickAccess={true}
+      />
+      <button
+        onClick={() => setVehiclesVisible((v) => !v)}
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          zIndex: 10,
+          background: vehiclesVisible ? "#1b4bd5" : "#f1f5f9",
+          color: vehiclesVisible ? "#ffffff" : "#374151",
+          border: "none",
+          borderRadius: 6,
+          padding: "6px 10px",
+          fontSize: 12,
+          fontFamily: "'DM Sans', system-ui",
+          cursor: "pointer",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+        aria-pressed={vehiclesVisible}
+        aria-label="Mostrar u ocultar vehículos en vivo"
+      >
+        🚍 Vehículos en vivo
+      </button>
+    </div>
   );
 }
