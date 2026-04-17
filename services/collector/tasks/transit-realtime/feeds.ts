@@ -70,12 +70,17 @@ export const REALTIME_FEEDS: RealtimeFeed[] = [
 
   // Bilbobus (Bilbao urban bus) — Ayuntamiento de Bilbao open data
   // CC-BY 4.0 · https://www.bilbao.eus/opendata
+  // DISABLED 2026-04-17: endpoint returns HTTP 200 with Content-Length: 0 for
+  // all requests (tested with curl + various UAs during service hours).
+  // Header sets Content-disposition: attachment; filename=vehiclepositions.pb
+  // so the URL is correct, but the source currently emits no data. Re-enable
+  // when the feed produces payloads again.
   {
     operatorSlug: "bilbobus",
     operatorName: "Bilbobus",
     mdbId: "mdb-2681",
     url: "https://www.bilbao.eus/opendata/datos/bilbobus-gtfs-rt",
-    enabled: true,
+    enabled: false,
     cadenceMs: 30_000,
   },
 
