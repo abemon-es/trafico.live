@@ -5,154 +5,141 @@ import { redis } from "@/lib/redis";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-interface HealthCheck {
-  status: "healthy" | "degraded" | "unhealthy";
-  timestamp: string;
-  checks: {
-    database: {
-      status: "ok" | "error";
-      latencyMs?: number;
-      error?: string;
-    };
-    redis: {
-      status: "ok" | "error" | "unavailable";
-      latencyMs?: number;
-    };
-    collectors?: {
-      v16: { lastUpdate: string | null; stale: boolean };
-      incidents: { lastUpdate: string | null; stale: boolean };
-      gasStations: { lastUpdate: string | null; stale: boolean };
-      intensity: { lastUpdate: string | null; stale: boolean };
-      weather: { lastUpdate: string | null; stale: boolean };
-      panels: { lastUpdate: string | null; stale: boolean };
-      aviacion: { lastUpdate: string | null; stale: boolean };
-    };
-  };
+// Per-task staleness thresholds in seconds
+const STALE_THRESHOLDS: Record<string, number> = {
+  // realtime
+  "v16": 600,
+  "incident": 600,
+  "intensity": 900,
+  "renfe-alerts": 600,
+  "renfe-positions": 600,
+  "renfe-ld-realtime": 600,
+  "panel": 900,
+  "city-traffic": 900,
+  "transit-realtime": 900,
+  // frequent
+  "sasemar": 1800,
+  "maritime-forecast": 7200,
+  // daily
+  "weather": 28800,
+  "camera": 28800,
+  "charger": 28800,
+  "gas-station": 36000,
+  // weekly
+  "radar": 604800,
+  "speedlimit": 604800,
+  "imd": 864000,
+  "renfe-gtfs": 864000,
+  "transit-gtfs": 864000,
+  // default for any unlisted task
+  "_default": 86400,
+};
+
+interface CollectorEntry {
+  task: string;
+  status: string;
+  lastRunAt: string | null;
+  ageSeconds: number | null;
+  threshold: number;
+  stale: boolean;
+  errorMessage?: string | null;
 }
 
-async function checkDatabase(): Promise<HealthCheck["checks"]["database"]> {
+async function checkDatabase(): Promise<{ ok: boolean; latency_ms?: number; error?: string }> {
   const start = Date.now();
   try {
     await prisma.$queryRaw`SELECT 1`;
-    return {
-      status: "ok",
-      latencyMs: Date.now() - start,
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      error: "Database connection failed",
-    };
+    return { ok: true, latency_ms: Date.now() - start };
+  } catch {
+    return { ok: false, error: "Database connection failed" };
   }
 }
 
-async function checkRedis(): Promise<HealthCheck["checks"]["redis"]> {
+async function checkRedis(): Promise<{ ok: boolean; latency_ms?: number }> {
   if (!redis) {
-    return { status: "unavailable" };
+    return { ok: false };
   }
   const start = Date.now();
   try {
     await redis.ping();
-    return {
-      status: "ok",
-      latencyMs: Date.now() - start,
-    };
+    return { ok: true, latency_ms: Date.now() - start };
   } catch {
-    return { status: "error" };
+    return { ok: false };
   }
 }
 
-async function checkCollectors(): Promise<HealthCheck["checks"]["collectors"]> {
-  const staleThreshold = {
-    v16: 10 * 60 * 1000,
-    incidents: 10 * 60 * 1000,
-    gasStations: 10 * 60 * 60 * 1000,
-    intensity: 15 * 60 * 1000,
-    weather: 8 * 60 * 60 * 1000,
-    panels: 15 * 60 * 1000,
-    // OpenSky cron is */15 — allow 30 min before flagging stale
-    aviacion: 30 * 60 * 1000,
-  };
-
+async function checkHeartbeats(): Promise<{
+  collectors: CollectorEntry[];
+  staleCount: number;
+  error?: string;
+}> {
   const now = Date.now();
-
   try {
-    const [latestV16, latestIncident, latestGasStation, latestIntensity, latestWeather, latestPanel, latestAircraft] = await Promise.all([
-      prisma.v16BeaconEvent.findFirst({
-        orderBy: { lastSeenAt: "desc" },
-        select: { lastSeenAt: true },
-      }),
-      prisma.trafficIncident.findFirst({
-        orderBy: { lastSeenAt: "desc" },
-        select: { lastSeenAt: true },
-      }),
-      prisma.gasStation.findFirst({
-        orderBy: { lastUpdated: "desc" },
-        select: { lastUpdated: true },
-      }),
-      prisma.trafficIntensity.findFirst({
-        orderBy: { recordedAt: "desc" },
-        select: { recordedAt: true },
-      }),
-      prisma.weatherAlert.findFirst({
-        orderBy: { fetchedAt: "desc" },
-        select: { fetchedAt: true },
-      }),
-      prisma.variablePanel.findFirst({
-        orderBy: { lastUpdated: "desc" },
-        select: { lastUpdated: true },
-      }),
-      // AircraftPosition uses createdAt (no updatedAt column)
-      prisma.aircraftPosition.findFirst({
-        orderBy: { createdAt: "desc" },
-        select: { createdAt: true },
-      }),
-    ]);
-
-    const check = (date: Date | null | undefined, threshold: number) => ({
-      lastUpdate: date?.toISOString() || null,
-      stale: date ? now - date.getTime() > threshold : true,
+    const rows = await prisma.collectorHeartbeat.findMany({
+      select: {
+        task: true,
+        lastRunAt: true,
+        status: true,
+        errorMessage: true,
+      },
     });
 
-    return {
-      v16: check(latestV16?.lastSeenAt, staleThreshold.v16),
-      incidents: check(latestIncident?.lastSeenAt, staleThreshold.incidents),
-      gasStations: check(latestGasStation?.lastUpdated, staleThreshold.gasStations),
-      intensity: check(latestIntensity?.recordedAt, staleThreshold.intensity),
-      weather: check(latestWeather?.fetchedAt, staleThreshold.weather),
-      panels: check(latestPanel?.lastUpdated, staleThreshold.panels),
-      aviacion: check(latestAircraft?.createdAt, staleThreshold.aviacion),
-    };
-  } catch {
-    return undefined;
+    const collectors: CollectorEntry[] = rows.map((row) => {
+      const threshold = STALE_THRESHOLDS[row.task] ?? STALE_THRESHOLDS["_default"];
+      const ageSeconds = row.lastRunAt
+        ? Math.floor((now - row.lastRunAt.getTime()) / 1000)
+        : null;
+      const stale = ageSeconds === null || ageSeconds > threshold;
+
+      return {
+        task: row.task,
+        status: row.status,
+        lastRunAt: row.lastRunAt?.toISOString() ?? null,
+        ageSeconds,
+        threshold,
+        stale,
+        ...(row.errorMessage ? { errorMessage: row.errorMessage } : {}),
+      };
+    });
+
+    const staleCount = collectors.filter((c) => c.stale).length;
+    return { collectors, staleCount };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return { collectors: [], staleCount: 0, error: `Heartbeat query failed: ${message}` };
   }
 }
 
 export async function GET() {
-  const [database, redisCheck, collectors] = await Promise.all([
+  const [db, redisCheck, heartbeats] = await Promise.all([
     checkDatabase(),
     checkRedis(),
-    checkCollectors(),
+    checkHeartbeats(),
   ]);
 
-  const isHealthy = database.status === "ok";
-  const hasStaleness = collectors
-    ? Object.values(collectors).some((c) => c.stale)
-    : false;
-  const redisDown = redisCheck.status === "error";
+  const dbOk = db.ok;
+  const hasStale = heartbeats.staleCount > 0 || !!heartbeats.error;
+  const redisDown = !redisCheck.ok;
 
-  const health: HealthCheck = {
-    status: !isHealthy ? "unhealthy" : (hasStaleness || redisDown) ? "degraded" : "healthy",
+  const overallStatus = !dbOk
+    ? "unhealthy"
+    : hasStale || redisDown
+    ? "degraded"
+    : "healthy";
+
+  const body = {
+    status: overallStatus,
+    db: { ok: db.ok, latency_ms: db.latency_ms ?? null, ...(db.error ? { error: db.error } : {}) },
+    redis: { ok: redisCheck.ok, latency_ms: redisCheck.latency_ms ?? null },
+    collectors: heartbeats.collectors,
+    staleCount: heartbeats.staleCount,
+    totalCollectors: heartbeats.collectors.length,
+    ...(heartbeats.error ? { collectorsError: heartbeats.error } : {}),
     timestamp: new Date().toISOString(),
-    checks: {
-      database,
-      redis: redisCheck,
-      collectors,
-    },
   };
 
-  return NextResponse.json(health, {
-    status: isHealthy ? 200 : 503,
+  return NextResponse.json(body, {
+    status: dbOk ? 200 : 503,
     headers: {
       "Cache-Control": "no-store, no-cache, must-revalidate",
     },
