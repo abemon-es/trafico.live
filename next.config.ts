@@ -177,9 +177,9 @@ const nextConfig: NextConfig = {
       // Geographic duplicates
       // -----------------------------------------------------------------------
       // /trafico/:city → /ciudad/:city (resolved to /espana/... via middleware)
-      // Exclude /trafico/mapa which is a real page (fullscreen TraficoMap).
+      // Exclude real /trafico/* routes: mapa, opengraph-image, twitter-image, icon.
       {
-        source: "/trafico/:city((?!mapa$).+)",
+        source: "/trafico/:city((?!mapa$|opengraph-image$|twitter-image$|icon$).+)",
         destination: "/ciudad/:city",
         permanent: true,
       },
