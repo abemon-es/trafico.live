@@ -21,7 +21,6 @@ export const metadata: Metadata = buildPageMetadata({
     "Rodalies",
     "trenes España",
   ],
-  changeFrequency: "weekly",
 });
 
 export default function LineasPage() {
