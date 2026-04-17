@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
+import { vesselSlug } from "@/lib/vessel-utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -1273,31 +1274,37 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.7,
     }));
 
-  // Vessel detail pages (/maritimo/buques/[mmsi]) — must match the page's
-  // render gates in src/app/maritimo/buques/[mmsi]/page.tsx to avoid sitemap 404s:
-  //   1. MMSI in valid 9-digit range (100M..999M)  — filters AIS base stations / SARTs
-  //   2. Vessel row exists (covered by findMany source)
-  //   3. Has a name OR a position in the last 48h (page's quality gate)
+  // Vessel detail pages (/maritimo/buques/[slug]) — emit canonical slug URLs
+  // (mmsi + name), matching the redirect target of the page at
+  // src/app/maritimo/buques/[slug]/page.tsx. Only vessels with a name whose
+  // slug is non-empty are included — vessels without a usable slug would
+  // receive a generic {mmsi}-only URL that 307-redirects, which wastes
+  // crawl budget. Also enforces the 9-digit MMSI range to filter AIS
+  // base stations and anomalous broadcasts.
   let vesselPages: SitemapEntry[] = [];
   try {
-    const last48h = new Date(today.getTime() - 48 * 60 * 60 * 1000);
-    const activeVessels = await prisma.vessel.findMany({
-      select: { mmsi: true },
+    const namedVessels = await prisma.vessel.findMany({
+      select: { mmsi: true, name: true, updatedAt: true },
       where: {
         mmsi: { gte: 100_000_000, lte: 999_999_999 },
-        OR: [
-          { name: { not: null } },
-          { positions: { some: { createdAt: { gte: last48h } } } },
-        ],
+        name: { not: null },
       },
       orderBy: { mmsi: "asc" },
     });
-    vesselPages = activeVessels.map((v) => ({
-      url: `${BASE_URL}/maritimo/buques/${v.mmsi}`,
-      lastModified: today,
-      changeFrequency: "daily" as const,
-      priority: 0.55,
-    }));
+    vesselPages = namedVessels.flatMap((v) => {
+      const slug = vesselSlug(v.mmsi, v.name);
+      // vesselSlug falls back to bare mmsi when name has no slugifiable chars —
+      // skip those to keep the sitemap canonical (no redirects).
+      if (!slug.includes("-")) return [];
+      return [
+        {
+          url: `${BASE_URL}/maritimo/buques/${slug}`,
+          lastModified: v.updatedAt ?? today,
+          changeFrequency: "daily" as const,
+          priority: 0.55,
+        },
+      ];
+    });
   } catch (err) {
     reportApiError(err, "sitemap vessel pages");
   }
