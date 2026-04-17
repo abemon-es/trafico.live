@@ -1,25 +1,12 @@
 /**
  * Transit Realtime Feed Configuration
  *
- * Defines the GTFS-RT VehiclePositions feeds for major Spanish urban operators.
- * Each feed entry declares the endpoint, authentication headers, MobilityData ID,
- * and whether the feed is currently active.
+ * Defines the GTFS-RT VehiclePositions feeds for major Spanish + Portuguese
+ * urban operators. Each entry declares the endpoint, optional auth, and the
+ * MobilityData catalog id used to resolve the matching TransitOperator row.
  *
- * Auth keys are read from env vars at runtime (not at module load time) so that
- * missing keys produce WARN logs rather than hard errors at startup.
- *
- * Endpoints:
- *   EMT Madrid:       https://openapi.emtmadrid.es/v2/transport/busemtmad/gtfs-rt/
- *                     Requires OAuth2 clientId + passKey headers.
- *                     Env: EMT_MADRID_CLIENT_ID, EMT_MADRID_PASS_KEY
- *
- *   TMB Barcelona:    https://api.tmb.cat/v1/transit/gtfs-rt/vehicle-positions
- *                     Requires app_id + app_key query params.
- *                     Env: TMB_APP_ID, TMB_APP_KEY
- *
- *   Metro de Madrid:  No public GTFS-RT feed available as of 2026.
- *                     TODO: Monitor https://www.metromadrid.es/es/open-data for future release.
- *                     Placeholder entry, enabled: false.
+ * Auth keys are read from env at runtime (not at module load) so missing
+ * keys produce WARN logs rather than crashing the collector at startup.
  */
 
 export type RealtimeFeed = {
@@ -57,11 +44,57 @@ export function missingEnvVar(...vars: string[]): string | null {
 }
 
 export const REALTIME_FEEDS: RealtimeFeed[] = [
-  // ── EMT Madrid (bus) ─────────────────────────────────────────────────────
-  // GTFS-RT VehiclePositions via EMT OpenAPI v2.
-  // Auth: X-ClientId + passKey headers (OAuth2 client credentials).
-  // Note: EMT issues long-lived passKeys tied to a registered clientId.
-  // Registration: https://opendata.emtmadrid.es/
+  // ── PUBLIC FEEDS — no auth required ───────────────────────────────────────
+
+  // Metro Bilbao — via Consorcio de Transportes de Bizkaia (CTB) S3 bucket
+  // CC-BY 4.0 · https://data.ctb.eus/dataset/metro-bilbao-online
+  {
+    operatorSlug: "metro-bilbao",
+    operatorName: "Metro Bilbao",
+    mdbId: "mdb-1053",
+    url: "https://ctb-gtfs-rt.s3.eu-south-2.amazonaws.com/metro-bilbao-vehicle-positions.pb",
+    enabled: true,
+    cadenceMs: 30_000,
+  },
+
+  // Bizkaibus — Diputación Foral de Bizkaia
+  // CC-BY 4.0 · https://data.ctb.eus/eu/dataset/bizkaibus-viajes-alertas-retrasos-online
+  {
+    operatorSlug: "bizkaibus",
+    operatorName: "Bizkaibus",
+    mdbId: "mdb-1054",
+    url: "https://baliabideak.bizkaia.eus/Bizkaibus/GTFSRealTime/FeedVehiculos.pb",
+    enabled: true,
+    cadenceMs: 30_000,
+  },
+
+  // Bilbobus (Bilbao urban bus) — Ayuntamiento de Bilbao open data
+  // CC-BY 4.0 · https://www.bilbao.eus/opendata
+  {
+    operatorSlug: "bilbobus",
+    operatorName: "Bilbobus",
+    mdbId: "mdb-1055",
+    url: "https://www.bilbao.eus/opendata/datos/bilbobus-gtfs-rt",
+    enabled: true,
+    cadenceMs: 30_000,
+  },
+
+  // Carris Metropolitana (Lisbon metro-area bus) — open API
+  // https://github.com/carrismetropolitana/api
+  {
+    operatorSlug: "carris-metropolitana",
+    operatorName: "Carris Metropolitana",
+    mdbId: "mdb-carris-metropolitana",
+    url: "https://api.carrismetropolitana.pt/vehicles.pb",
+    enabled: true,
+    cadenceMs: 30_000,
+  },
+
+  // ── GATED FEEDS — require registration + API keys ────────────────────────
+
+  // EMT Madrid (bus) — OAuth2 clientId + passKey
+  // Register: https://opendata.emtmadrid.es/
+  // Env: EMT_MADRID_CLIENT_ID, EMT_MADRID_PASS_KEY
   {
     operatorSlug: "emt-madrid",
     operatorName: "EMT Madrid",
@@ -76,10 +109,9 @@ export const REALTIME_FEEDS: RealtimeFeed[] = [
     cadenceMs: 30_000,
   },
 
-  // ── TMB Barcelona (metro + bus) ───────────────────────────────────────────
-  // GTFS-RT VehiclePositions via TMB API.
-  // Auth: app_id and app_key as query params.
-  // Registration: https://developer.tmb.cat/
+  // TMB Barcelona (metro + bus) — app_id + app_key query params
+  // Register: https://developer.tmb.cat/
+  // Env: TMB_APP_ID, TMB_APP_KEY
   {
     operatorSlug: "tmb-barcelona",
     operatorName: "TMB Barcelona",
@@ -90,19 +122,6 @@ export const REALTIME_FEEDS: RealtimeFeed[] = [
       return `https://api.tmb.cat/v1/transit/gtfs-rt/vehicle-positions?app_id=${appId}&app_key=${appKey}`;
     },
     enabled: true,
-    cadenceMs: 30_000,
-  },
-
-  // ── Metro de Madrid ───────────────────────────────────────────────────────
-  // TODO: Metro de Madrid does not currently publish an open GTFS-RT feed.
-  //       Monitor https://www.metromadrid.es/es/open-data for a future release.
-  //       When available, add the URL and set enabled: true.
-  {
-    operatorSlug: "metro-madrid",
-    operatorName: "Metro de Madrid",
-    mdbId: "mdb-1031",
-    url: "https://placeholder.metromadrid.es/gtfs-rt/vehicle-positions.pb",
-    enabled: false,
     cadenceMs: 30_000,
   },
 ];
