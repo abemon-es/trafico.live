@@ -283,27 +283,39 @@ export async function run(prisma: PrismaClient): Promise<void> {
         if (!isNaN(lat) && !isNaN(lon)) stopGeoMap.set(s.stop_id, [lat, lon]);
       }
 
+      // Build per-trip stop sequences first so we can prefer trips that
+      // actually have stops when picking the "representative" trip per route.
+      const tripStopsMap = new Map<string, { stop_id: string; seq: number }[]>();
+      for (const st of stopTimes) {
+        const arr = tripStopsMap.get(st.trip_id) || [];
+        arr.push({ stop_id: st.stop_id, seq: parseInt(st.stop_sequence) || 0 });
+        tripStopsMap.set(st.trip_id, arr);
+      }
+
       // ── Build per-trip data: route→first_trip, trip→shape, trip→ordered_stops ──
+      // Previous impl took the first trip encountered per route, but Renfe's
+      // Cercanías feed interleaves direction-variants where some trips have
+      // 0 stop_times (placeholders / partial directions). Result: ~50% of
+      // Cercanías routes ended up with empty stopNames. Fix: swap in a later
+      // trip when the currently-selected one has no stops and a subsequent
+      // one does.
       const tripRouteMap = new Map<string, string>(); // trip_id → route_id
-      const routeFirstTrip = new Map<string, string>(); // route_id → first trip_id
+      const routeFirstTrip = new Map<string, string>(); // route_id → representative trip_id
       const tripShapeMap = new Map<string, string>(); // route_id → shape_id
       const routeTripCount = new Map<string, number>(); // route_id → count
 
       for (const t of trips) {
         tripRouteMap.set(t.trip_id, t.route_id);
         routeTripCount.set(t.route_id, (routeTripCount.get(t.route_id) || 0) + 1);
-        if (!routeFirstTrip.has(t.route_id)) {
+        const existingFirst = routeFirstTrip.get(t.route_id);
+        const thisHasStops = (tripStopsMap.get(t.trip_id) || []).length > 0;
+        const existingHasStops = existingFirst
+          ? (tripStopsMap.get(existingFirst) || []).length > 0
+          : false;
+        if (!existingFirst || (!existingHasStops && thisHasStops)) {
           routeFirstTrip.set(t.route_id, t.trip_id);
           if (t.shape_id) tripShapeMap.set(t.route_id, t.shape_id);
         }
-      }
-
-      // Build per-trip stop sequences
-      const tripStopsMap = new Map<string, { stop_id: string; seq: number }[]>();
-      for (const st of stopTimes) {
-        const arr = tripStopsMap.get(st.trip_id) || [];
-        arr.push({ stop_id: st.stop_id, seq: parseInt(st.stop_sequence) || 0 });
-        tripStopsMap.set(st.trip_id, arr);
       }
 
       // ── Upsert stations ──
