@@ -1,8 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
-import { MapPin, Loader2 } from "lucide-react";
-import { UnifiedMap } from "@/components/map/UnifiedMap";
+import { MapPin } from "lucide-react";
+import { GasolinerasMapaClient } from "./MapaClient";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -47,31 +46,7 @@ export default function GasolinerasMapaPage() {
       </div>
 
       {/* Map */}
-      <Suspense fallback={
-        <div className="h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-spin" />
-        </div>
-      }>
-        <UnifiedMap
-          initialLayers={{
-            v16: false,
-            incidents: false,
-            cameras: false,
-            chargers: false,
-            zbe: false,
-            weather: false,
-            highways: false,
-            provinces: false,
-            radars: false,
-            riskZones: false,
-            gasStations: true,
-            maritimeStations: true,
-          }}
-          defaultHeight="600px"
-          showStats={false}
-          id="gasolineras-map"
-        />
-      </Suspense>
+      <GasolinerasMapaClient />
 
       {/* Quick Links */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">

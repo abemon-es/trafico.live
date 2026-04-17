@@ -1,12 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Suspense } from "react";
-import { MapPin, Loader2, ChevronLeft, Fuel, List, BarChart3 } from "lucide-react";
+import { MapPin, ChevronLeft, Fuel, List, BarChart3 } from "lucide-react";
 import prisma from "@/lib/db";
 import { getProvinceBounds, getProvinceName, PROVINCE_NAMES } from "@/lib/province-bounds";
 import { provinceSlug } from "@/lib/geo/slugify";
-import { UnifiedMap } from "@/components/map/UnifiedMap";
+import { ProvinceGasolinerasMapaClient } from "./MapaClient";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 300;
@@ -198,23 +197,7 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
 
         {/* Map */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden mb-6">
-          <Suspense
-            fallback={
-              <div className="h-[500px] bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-spin" />
-              </div>
-            }
-          >
-            <UnifiedMap
-              defaultHeight="500px"
-              showStats={false}
-              id={`gasolineras-map-${code}`}
-              initialCenter={bounds.center}
-              initialZoom={bounds.zoom}
-              initialLayers={{ gasStations: true, highways: true }}
-              filterProvince={paddedCode}
-            />
-          </Suspense>
+          <ProvinceGasolinerasMapaClient center={bounds.center} zoom={bounds.zoom} />
         </div>
 
         {/* Quick links */}

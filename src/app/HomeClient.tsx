@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
+import { Map as MapIcon } from "lucide-react";
 
 export interface HomeStats {
   incidentCount: number;
@@ -13,13 +14,28 @@ export interface HomeStats {
   detectorCount: number;
 }
 
+// TraficoMap: ssr: false — depends on MapLibre / browser globals
+const TraficoMap = dynamic(
+  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="w-full bg-tl-50 dark:bg-gray-900 animate-pulse flex items-center justify-center"
+        style={{ height: "calc(70vh - 64px)" }}
+      >
+        <div className="text-center">
+          <MapIcon className="w-14 h-14 text-tl-200 dark:text-tl-800 mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Cargando mapa interactivo...</p>
+        </div>
+      </div>
+    ),
+  }
+);
+
 // SSR-enabled (no maplibre/browser globals at module scope)
 const LiveCounterStrip = dynamic(
   () => import("@/components/home/LiveCounterStrip").then((m) => m.LiveCounterStrip)
-);
-// HeroMapUnified is safe to SSR — it wraps UnifiedMap in its own dynamic({ ssr: false }) internally
-const HeroMapUnified = dynamic(
-  () => import("@/components/home/HeroMapUnified").then((m) => m.HeroMapUnified)
 );
 const IncidentTicker = dynamic(
   () => import("@/components/home/IncidentTicker").then((m) => m.IncidentTicker)
@@ -70,21 +86,6 @@ function StripSkeleton() {
   );
 }
 
-function HeroSkeleton() {
-  return (
-    <div className="py-14 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-14">
-        <div className="flex-1 space-y-4">
-          <div className="h-6 w-48 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-full" />
-          <div className="h-12 w-96 bg-gray-200 dark:bg-gray-800 animate-pulse rounded" />
-          <div className="h-20 w-80 bg-gray-200 dark:bg-gray-800 animate-pulse rounded" />
-        </div>
-        <div className="flex-1 max-w-xl aspect-video bg-gray-200 dark:bg-gray-800 animate-pulse rounded-2xl" />
-      </div>
-    </div>
-  );
-}
-
 function SectionSkeleton() {
   return (
     <div className="py-16 px-6">
@@ -115,9 +116,29 @@ function CardGridSkeleton() {
 export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
   return (
     <>
-      <Suspense fallback={<HeroSkeleton />}>
-        <HeroMapUnified />
-      </Suspense>
+      {/* Hero map — TraficoMap preset="home" (phase 4 migration) */}
+      <section className="relative" style={{ height: "calc(70vh - 64px)" }}>
+        <header className="absolute top-4 left-4 right-4 z-10 pointer-events-none max-w-4xl">
+          <div className="bg-white/90 dark:bg-gray-950/90 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/50 dark:border-gray-800/50 shadow-lg pointer-events-auto">
+            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-tl-600 dark:text-tl-400 mb-1">
+              Inteligencia multimodal en vivo
+            </p>
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50 leading-tight">
+              Tráfico en tiempo real en España
+            </h1>
+            <p className="mt-1.5 text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-2xl">
+              Incidencias DGT, trenes Renfe, vuelos, barcos AIS, calidad del aire y combustible.
+              Datos oficiales actualizados cada minuto.
+            </p>
+          </div>
+        </header>
+        <TraficoMap
+          preset="home"
+          controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
+          initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
+          className="w-full h-full"
+        />
+      </section>
 
       <Suspense fallback={null}>
         <IncidentTicker />
