@@ -264,9 +264,18 @@ async function processFeed(
       select: { feedHash: true },
     });
 
+    // Only trust the hash as "unchanged" if the operator actually has
+    // routes — otherwise a previous failed run may have saved the hash
+    // on a zero-route operator and locked it out of retry.
     if (existing?.feedHash === hash) {
-      log(TASK, `${feed.name}: unchanged (hash match), skipping`);
-      return { routes: 0, stops: 0 };
+      const existingRouteCount = await prisma.transitRoute.count({
+        where: { operator: { mdbId: mdbIdKey } },
+      });
+      if (existingRouteCount > 0) {
+        log(TASK, `${feed.name}: unchanged (hash match, ${existingRouteCount} routes), skipping`);
+        return { routes: 0, stops: 0 };
+      }
+      log(TASK, `${feed.name}: hash match but 0 routes — retrying import`);
     }
 
     // Check if routes.txt and stops.txt exist
@@ -357,7 +366,9 @@ async function processFeed(
       .filter((n) => !isNaN(n));
     const mode = inferMode(routeTypes);
 
-    // Upsert TransitOperator
+    // Upsert TransitOperator — do NOT write feedHash yet. We only mark
+    // the feed as "ingested at this hash" after the route+stop import
+    // actually succeeds, so a partial/OOM run can be retried next time.
     const operator = await prisma.transitOperator.upsert({
       where: { mdbId: mdbIdKey },
       create: {
@@ -367,7 +378,6 @@ async function processFeed(
         province: feed.region || null,
         mode,
         feedUrl: feed.downloadUrl,
-        feedHash: hash,
         country: feed.country,
       },
       update: {
@@ -376,7 +386,6 @@ async function processFeed(
         province: feed.region || null,
         mode,
         feedUrl: feed.downloadUrl,
-        feedHash: hash,
         country: feed.country,
       },
     });
@@ -450,6 +459,16 @@ async function processFeed(
     }
 
     log(TASK, `${feed.name}: imported ${routeCount} routes, ${stopCount} stops (mode: ${mode})`);
+
+    // Commit the hash only after a successful route import. On a zero-route
+    // outcome the hash stays null so next week's run re-tries instead of
+    // permanently skipping the feed. See the related hash-skip guard above.
+    if (routeCount > 0) {
+      await prisma.transitOperator.update({
+        where: { id: operator.id },
+        data: { feedHash: hash },
+      });
+    }
 
     if (await shouldIngestSchedule(feed.mdbId)) {
       try {
