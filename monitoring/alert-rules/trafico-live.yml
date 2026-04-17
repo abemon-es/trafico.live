@@ -1,0 +1,297 @@
+# trafico.live — Grafana/Prometheus alert rules
+# Provisioned via: /etc/grafana/provisioning/alerting/
+# See monitoring/README.md for deployment instructions.
+#
+# IMPORTANT — metrics that require additional exporters (not yet scraped):
+#   - trafico_collector_heartbeat_age_seconds
+#   - trafico_collector_heartbeat_threshold_seconds
+#   See README section "Collector Heartbeat Exporter" for setup.
+
+apiVersion: 1
+
+groups:
+  - name: trafico-live-collectors
+    orgId: 1
+    folder: trafico.live
+    interval: 1m
+    rules:
+
+      - uid: trafico-collector-heartbeat-stale
+        title: TraficoCollectorHeartbeatStale
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              refId: A
+              type: math
+          - refId: B
+            datasourceUid: ${DS_PROMETHEUS}
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              editorMode: code
+              expr: |
+                (
+                  trafico_collector_heartbeat_age_seconds
+                  /
+                  trafico_collector_heartbeat_threshold_seconds
+                ) > 2
+              instant: true
+              legendFormat: "{{task}} (tier={{tier}})"
+              refId: B
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        labels:
+          service: trafico
+          severity: warning
+        annotations:
+          summary: "Collector {{ $labels.task }} is stale"
+          description: |
+            Collector task {{ $labels.task }} (tier={{ $labels.tier }}) heartbeat age is
+            {{ $value | printf "%.0f" }}× its expected cadence threshold.
+            Last data may be out of date. Check container logs: service=collector-{{ $labels.tier }}
+          runbook_url: "https://github.com/abemon-es/trafico.live/blob/main/monitoring/README.md#runbooks"
+        # NOTE: Requires trafico_collector_heartbeat_age_seconds metric.
+        # Deploy the heartbeat exporter before enabling this alert.
+        isPaused: true
+
+  - name: trafico-live-api
+    orgId: 1
+    folder: trafico.live
+    interval: 30s
+    rules:
+
+      - uid: trafico-api-5xx-critical
+        title: TraficoApi5xxSpike
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: ${DS_PROMETHEUS}
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              editorMode: code
+              expr: |
+                sum(
+                  rate(
+                    traefik_service_requests_total{
+                      code=~"5..",
+                      service=~".*trafico.*"
+                    }[5m]
+                  )
+                ) * 60 > 10
+              instant: true
+              legendFormat: "5xx/min"
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        labels:
+          service: trafico
+          severity: critical
+        annotations:
+          summary: "trafico.live 5xx spike — critical (>10/min)"
+          description: |
+            The trafico.live API is returning 5xx errors at a rate above 10/min
+            for the past 2 minutes. Current rate: {{ $value | printf "%.1f" }}/min.
+            Check Traefik logs and Next.js container for root cause.
+          runbook_url: "https://github.com/abemon-es/trafico.live/blob/main/monitoring/README.md#runbooks"
+
+      - uid: trafico-api-5xx-warning
+        title: TraficoApi5xxWarning
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: ${DS_PROMETHEUS}
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              editorMode: code
+              expr: |
+                sum(
+                  rate(
+                    traefik_service_requests_total{
+                      code=~"5..",
+                      service=~".*trafico.*"
+                    }[5m]
+                  )
+                ) * 60 > 3
+              instant: true
+              legendFormat: "5xx/min"
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        labels:
+          service: trafico
+          severity: warning
+        annotations:
+          summary: "trafico.live 5xx elevated (>3/min)"
+          description: |
+            The trafico.live API is returning 5xx errors at a rate above 3/min
+            for the past 5 minutes. Current rate: {{ $value | printf "%.1f" }}/min.
+            Monitor for escalation; check /api/health and GlitchTip for error details.
+          runbook_url: "https://github.com/abemon-es/trafico.live/blob/main/monitoring/README.md#runbooks"
+
+  - name: trafico-live-health
+    orgId: 1
+    folder: trafico.live
+    interval: 60s
+    rules:
+
+      - uid: trafico-health-degraded
+        title: TraficoHealthDegraded
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: ${DS_LOKI}
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              editorMode: code
+              expr: |
+                count_over_time(
+                  {job="blackbox"} |= "trafico.live/api/health" |= "degraded" [3m]
+                ) > 0
+              instant: true
+              legendFormat: "degraded keyword count"
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 3m
+        labels:
+          service: trafico
+          severity: warning
+        annotations:
+          summary: "trafico.live /api/health is degraded"
+          description: |
+            The /api/health endpoint has returned the keyword "degraded" for the past 3 minutes.
+            At least one collector is stale. Check https://trafico.live/api/health for details
+            on which collector is failing and by how long.
+          runbook_url: "https://github.com/abemon-es/trafico.live/blob/main/monitoring/README.md#runbooks"
+
+      - uid: trafico-health-down
+        title: TraficoHealthDown
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: ${DS_PROMETHEUS}
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              editorMode: code
+              expr: |
+                probe_success{instance=~".*trafico.*health.*"} == 0
+                or
+                probe_http_status_code{instance=~".*trafico.*health.*"} >= 500
+              instant: true
+              legendFormat: "probe result"
+              refId: A
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 2m
+        labels:
+          service: trafico
+          severity: critical
+        annotations:
+          summary: "trafico.live /api/health is unreachable"
+          description: |
+            The blackbox probe of https://trafico.live/api/health has returned a non-200
+            status or probe failure for 2 consecutive minutes.
+            The web container may be down. Check: `docker ps` on compute, Traefik logs.
+          runbook_url: "https://github.com/abemon-es/trafico.live/blob/main/monitoring/README.md#runbooks"
+
+  - name: trafico-live-infrastructure
+    orgId: 1
+    folder: trafico.live
+    interval: 60s
+    rules:
+
+      - uid: trafico-db-connections-high
+        title: TraficoDbConnectionsHigh
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: ${DS_PROMETHEUS}
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              editorMode: code
+              expr: |
+                pgbouncer_pools_server_active_connections{database="le_trafico"} > 40
+              instant: true
+              legendFormat: "active connections"
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        labels:
+          service: trafico
+          severity: warning
+        annotations:
+          summary: "PgBouncer connection pool near saturation"
+          description: |
+            The PgBouncer pool for le_trafico has {{ $value }} active server connections
+            (threshold: 40, pool size: 50) for the past 5 minutes.
+            High connection count may indicate N+1 queries, slow queries, or a traffic spike.
+            Check: `pgbouncer_pools_client_waiting_connections` and pg slow query log.
+          runbook_url: "https://github.com/abemon-es/trafico.live/blob/main/monitoring/README.md#runbooks"
+
+      - uid: trafico-redis-memory-high
+        title: TraficoRedisMemoryHigh
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: ${DS_PROMETHEUS}
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              editorMode: code
+              expr: |
+                redis_memory_used_bytes{job="redis-trafico"}
+                /
+                redis_memory_max_bytes{job="redis-trafico"}
+                > 0.8
+              instant: true
+              legendFormat: "memory ratio"
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        labels:
+          service: trafico
+          severity: warning
+        annotations:
+          summary: "Redis memory above 80%"
+          description: |
+            The Redis instance for trafico.live is using {{ $value | humanizePercentage }}
+            of its configured max memory for the past 10 minutes.
+            Risk of eviction of rate-limiting keys or cached API responses.
+            Check for memory leaks or increase Redis maxmemory if needed.
+          runbook_url: "https://github.com/abemon-es/trafico.live/blob/main/monitoring/README.md#runbooks"
