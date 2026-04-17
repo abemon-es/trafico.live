@@ -18,6 +18,9 @@
 import { PrismaClient, RiskZoneType } from "@prisma/client";
 import { ensureArray, log, logError } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
+
+const TASK = "risk-zones";
 
 const TAG = "risk-zones";
 
@@ -389,4 +392,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const totalActive = await prisma.roadRiskZone.count({ where: { isActive: true } });
   log(TAG, `Total active risk zones: ${totalActive}`);
   log(TAG, "Collection completed successfully");
+  await heartbeat(prisma, TASK, allZones.length > 0 ? "ok" : "partial", {
+    zones: allZones.length,
+    totalActive,
+  });
 }

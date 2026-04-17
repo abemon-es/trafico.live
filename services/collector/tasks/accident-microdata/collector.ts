@@ -19,6 +19,7 @@ import { writeFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { log, logError, inferRoadType } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "accident-microdata";
 
@@ -607,4 +608,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   log(TASK, `All done in ${elapsed}s — ${totalImported.toLocaleString()} new records imported, ${totalSkipped.toLocaleString()} already present`);
+  await heartbeat(prisma, TASK, totalImported > 0 ? "ok" : "partial", {
+    imported: totalImported,
+    skipped: totalSkipped,
+    elapsedSecs: elapsed,
+  });
 }

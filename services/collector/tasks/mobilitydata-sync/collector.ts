@@ -26,6 +26,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { writeFileSync, mkdirSync } from "fs";
 import { dirname, resolve } from "path";
 
@@ -393,6 +394,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   if (!refreshToken) {
     log(TASK, "No MOBILITYDATA_REFRESH_TOKEN — skipping historical snapshots (Phase B)");
     log(TASK, "MobilityData sync complete (catalog + archive)");
+    await heartbeat(prisma, TASK, "ok", { phaseB: false });
     return;
   }
 
@@ -403,6 +405,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   } catch (err) {
     logError(TASK, "Failed to obtain access token — skipping Phase B:", err);
     log(TASK, "MobilityData sync complete (catalog only — auth failed)");
+    await heartbeat(prisma, TASK, "partial", { phaseB: false, error: String(err) });
     return;
   }
 
@@ -414,4 +417,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "MobilityData sync complete");
+  await heartbeat(prisma, TASK, "ok", { phaseB: true });
 }

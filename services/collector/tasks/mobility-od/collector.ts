@@ -20,6 +20,7 @@ import { PrismaClient } from "@prisma/client";
 import { createGunzip } from "zlib";
 import { Readable } from "stream";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "mobility-od";
 
@@ -315,4 +316,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Done: ${totalRecords.toLocaleString()} total O-D pairs`);
+  await heartbeat(prisma, TASK, totalRecords > 0 ? "ok" : "partial", { records: totalRecords });
 }

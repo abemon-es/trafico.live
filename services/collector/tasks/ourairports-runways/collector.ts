@@ -6,6 +6,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 
@@ -150,4 +151,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Updated elevation for ${elevUpdated} airports`);
+  await heartbeat(prisma, TASK, airportCount > 0 ? "ok" : "partial", {
+    airports: airportCount,
+    runways: total,
+    elevationsUpdated: elevUpdated,
+  });
 }

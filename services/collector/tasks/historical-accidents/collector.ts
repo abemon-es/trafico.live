@@ -19,6 +19,9 @@ import { PrismaClient } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
+import { heartbeat } from "../../shared/heartbeat.js";
+
+const TASK = "historical-accidents";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -125,10 +128,12 @@ export async function run(prisma: PrismaClient) {
   }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+  const upserted = records.length - skipped;
   console.log(
     `[historical-accidents] Done in ${elapsed}s — ` +
-    `${records.length - skipped} upserted (${skipped} errors)`
+    `${upserted} upserted (${skipped} errors)`
   );
+  await heartbeat(prisma, TASK, upserted > 0 ? "ok" : "error", { upserted, skipped, elapsedSecs: elapsed });
 
   // Summary by year
   for (const year of years) {

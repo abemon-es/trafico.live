@@ -14,6 +14,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "cnmc-fuel";
 
@@ -346,6 +347,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
       orderBy: { date: "desc" },
       select: { date: true },
     });
-    log(TASK, `DB has ${count.toLocaleString()} records, latest: ${newest?.date?.toISOString().slice(0, 10) ?? "none"}`);
-  } catch {}
+    const latestDate = newest?.date?.toISOString().slice(0, 10) ?? null;
+    log(TASK, `DB has ${count.toLocaleString()} records, latest: ${latestDate ?? "none"}`);
+    await heartbeat(prisma, TASK, totalUpserted > 0 ? "ok" : "partial", { upserted: totalUpserted, skipped: totalSkipped, latestDate });
+  } catch {
+    await heartbeat(prisma, TASK, totalUpserted > 0 ? "ok" : "partial", { upserted: totalUpserted, skipped: totalSkipped });
+  }
 }

@@ -6,6 +6,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "puertos-estado";
 const WFS_URL = "https://geoserver.puertos.es/wms-inspire/puertos?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=TN.WaterTransportNetwork.PortArea&OUTPUTFORMAT=application/json";
@@ -123,4 +124,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Upserted ${upserted} state ports`);
+  await heartbeat(prisma, TASK, upserted > 0 ? "ok" : "partial", { upserted });
 }

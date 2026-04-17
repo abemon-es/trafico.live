@@ -13,6 +13,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "ine-stats";
 
@@ -387,4 +388,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
     TASK,
     `Collection complete — total: ${totalUpserted} upserted, ${totalSkipped} skipped`
   );
+  await heartbeat(prisma, TASK, totalUpserted > 0 ? "ok" : "partial", {
+    upserted: totalUpserted,
+    skipped: totalSkipped,
+    seriesFailed,
+  });
 }

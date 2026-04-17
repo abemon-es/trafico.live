@@ -13,6 +13,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "andorra";
 const INCIDENTS_URL = "https://app.mobilitat.ad/api/v1/incidents/ca";
@@ -258,4 +259,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
         })();
 
   log(TASK, `Andorra: ${incidentCount} incidents, ${cameraCount} cameras`);
+  const failed = (incidentsResult.status === "rejected" ? 1 : 0) + (camerasResult.status === "rejected" ? 1 : 0);
+  await heartbeat(prisma, TASK, failed === 0 ? "ok" : (incidentCount + cameraCount > 0 ? "partial" : "error"), {
+    incidents: incidentCount,
+    cameras: cameraCount,
+    failed,
+  });
 }

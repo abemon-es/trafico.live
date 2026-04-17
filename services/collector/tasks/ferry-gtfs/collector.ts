@@ -22,6 +22,7 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { log, logError } from "../../shared/utils.js";
 import { triggerPmtilesRegen, layersForTask } from "../transit-gtfs/post-hook.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "ferry-gtfs";
 
@@ -339,6 +340,12 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Done: ${totalRoutes} routes, ${totalStops} stops, ${totalTrips} trips`);
+
+  await heartbeat(prisma, TASK, totalRoutes > 0 ? "ok" : "partial", {
+    routes: totalRoutes,
+    stops: totalStops,
+    trips: totalTrips,
+  });
 
   await triggerPmtilesRegen(layersForTask("ferry-gtfs"));
 }
