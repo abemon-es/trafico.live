@@ -5,7 +5,8 @@ import { prisma } from "@/lib/db";
 import { Fuel, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown, Minus, ChevronRight, Tag } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedByArea } from "@/components/seo/RelatedByArea";
-import { PriceComparisonCard, StationRanking, StationLocationMap, PriceHistoryChart } from "@/components/gas-stations";
+import { PriceComparisonCard, StationRanking, PriceHistoryChart } from "@/components/gas-stations";
+import { TraficoMapCard } from "@/components/map/TraficoMapCard";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
 export const revalidate = 86400;
@@ -359,12 +360,13 @@ export default async function StationDetailPage({ params }: Props) {
       {/* Two column layout: Map + Quick stats */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         {/* Embedded Map */}
-        <StationLocationMap
+        <TraficoMapCard
           latitude={Number(station.latitude)}
           longitude={Number(station.longitude)}
           name={station.name}
-          stationType="terrestrial"
-          stationId={station.id}
+          preset="fuel"
+          entity={{ type: "gas-station", id: station.id }}
+          mapPageUrl={`/gasolineras/mapa?lat=${station.latitude}&lng=${station.longitude}&zoom=15`}
           height={280}
         />
 
