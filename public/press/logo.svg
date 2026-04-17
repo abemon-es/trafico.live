@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" fill="none" role="img" aria-label="trafico.live logo">
+  <!-- Mark: circle with tl initials -->
+  <circle cx="25" cy="25" r="20" fill="#1b4bd5"/>
+  <text x="25" y="30" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="14" fill="#ffffff">tl</text>
+  <!-- Wordmark -->
+  <text x="52" y="32" font-family="sans-serif" font-weight="700" font-size="18" fill="#1b4bd5">trafico</text>
+  <text x="116" y="32" font-family="sans-serif" font-weight="400" font-size="18" fill="#366cf8">.live</text>
+</svg>
