@@ -177,8 +177,9 @@ const nextConfig: NextConfig = {
       // Geographic duplicates
       // -----------------------------------------------------------------------
       // /trafico/:city → /ciudad/:city (resolved to /espana/... via middleware)
+      // Exclude /trafico/mapa which is a real page (fullscreen TraficoMap).
       {
-        source: "/trafico/:city",
+        source: "/trafico/:city((?!mapa$).+)",
         destination: "/ciudad/:city",
         permanent: true,
       },
