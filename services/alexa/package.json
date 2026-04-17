@@ -1,0 +1,25 @@
+{
+  "name": "trafico-live-alexa-skill",
+  "version": "1.0.0",
+  "description": "Alexa Skill Lambda handler for trafico.live — trains, traffic, fuel",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist",
+    "package": "npm run clean && npm run build && cd dist && zip -r ../skill.zip . && cd ..",
+    "deploy": "npm run package && aws lambda update-function-code --function-name trafico-live-alexa-skill --zip-file fileb://skill.zip",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-model": "^1.89.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20.x"
+  }
+}

@@ -1,0 +1,89 @@
+# Sample utterances per intent — Spanish (es-ES)
+# Used for Alexa skill interaction model training.
+# Slot syntax: {SlotName}
+
+GetTrainArrivalIntent:
+  slots:
+    - name: Station
+      type: AMAZON.City
+    - name: TrainNumber
+      type: AMAZON.NUMBER
+  utterances:
+    - cuándo llega el tren a {Station}
+    - a qué hora llega mi AVE a {Station}
+    - hora de llegada del tren {TrainNumber}
+    - cuánto tarda el tren en llegar a {Station}
+    - el tren número {TrainNumber} dónde está
+    - retraso del tren {TrainNumber}
+    - a qué hora llega el AVE a {Station}
+    - cuándo llega el Alvia a {Station}
+    - hora del tren a {Station}
+    - próximo tren a {Station}
+    - estado del tren {TrainNumber}
+    - lleva retraso el tren a {Station}
+    - tiempo de llegada a {Station}
+    - cuándo llega mi tren a {Station}
+    - a qué hora sale el tren para {Station}
+    - horario del tren a {Station}
+    - tiempo estimado para llegar a {Station}
+    - hay retraso en el tren {TrainNumber}
+    - cuándo llega el cercanías a {Station}
+    - me dices el estado del tren a {Station}
+
+GetRoadTrafficIntent:
+  slots:
+    - name: Road
+      type: AMAZON.SearchQuery
+    - name: Province
+      type: AMAZON.City
+  utterances:
+    - cómo está la {Road}
+    - estado del tráfico en la {Road}
+    - hay retenciones en la {Road}
+    - cómo está el tráfico en {Province}
+    - incidencias en la {Road}
+    - accidentes en la {Road}
+    - está cortada la {Road}
+    - cómo va la {Road}
+    - tráfico en la carretera {Road}
+    - cómo está la autopista {Road}
+    - hay obras en la {Road}
+    - qué pasa en la {Road}
+    - estado de la autovía {Road}
+    - circulación en la {Road}
+    - está fluido el tráfico en la {Road}
+    - problemas en la {Road}
+    - cortes en la {Road}
+    - me dices el estado de la {Road}
+    - cómo circula la {Road} hoy
+    - hay alguna incidencia en la {Road}
+
+GetFuelPriceIntent:
+  slots:
+    - name: FuelType
+      type: FuelTypeType
+    - name: Province
+      type: AMAZON.City
+    - name: City
+      type: AMAZON.City
+  utterances:
+    - precio de la {FuelType} en {Province}
+    - cuánto cuesta la {FuelType} en {City}
+    - precio del {FuelType} hoy en {Province}
+    - gasolinera más barata en {Province}
+    - dónde está la gasolina más barata en {City}
+    - precio de la gasolina en {Province}
+    - precio del gasoil en {Province}
+    - cuánto vale el litro de {FuelType} en {City}
+    - precio del combustible en {Province}
+    - qué precio tiene la {FuelType} en {Province}
+    - precio de la gasolina noventa y cinco en {City}
+    - precio del diesel en {Province}
+    - gasolinera barata en {City}
+    - combustible más económico en {Province}
+    - precio de la gasolina hoy en {City}
+    - cuánto cuesta llenar el depósito en {Province}
+    - precio actual de la gasolina en {Province}
+    - cuánto está la gasolina en {City}
+    - precio de la gasolina en {City} hoy
+    - dónde cargar barato en {Province}
