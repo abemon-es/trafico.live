@@ -1,0 +1,76 @@
+{
+  "common": {
+    "siteName": "trafico.live",
+    "tagline": "Tráfico, trenes, vuelos y barcos en tiempo real",
+    "search": "Buscar",
+    "login": "Entrar",
+    "signup": "Crear cuenta",
+    "logout": "Salir",
+    "loading": "Cargando…",
+    "error": "Algo ha ido mal",
+    "retry": "Reintentar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Borrar",
+    "confirm": "Confirmar",
+    "close": "Cerrar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "trenes": "Trenes",
+    "maritimo": "Marítimo",
+    "aviacion": "Aviación",
+    "trafico": "Tráfico",
+    "gasolineras": "Gasolineras",
+    "aire": "Calidad del aire",
+    "estadisticas": "Estadísticas",
+    "transporte": "Transporte público",
+    "noticias": "Noticias",
+    "api": "API"
+  },
+  "cta": {
+    "exploreMap": "Ver mapa",
+    "createAlert": "Crear alerta",
+    "getApiKey": "Obtener clave API",
+    "subscribe": "Suscribirse",
+    "upgrade": "Mejorar plan",
+    "learnMore": "Más información"
+  },
+  "messages": {
+    "welcome": "Bienvenido a trafico.live",
+    "noResults": "Sin resultados",
+    "comingSoon": "Próximamente",
+    "offline": "Sin conexión"
+  },
+  "footer": {
+    "legal": "Aviso legal",
+    "privacy": "Privacidad",
+    "cookies": "Cookies",
+    "contact": "Contacto",
+    "press": "Prensa",
+    "api": "API",
+    "status": "Estado",
+    "sources": "Fuentes de datos"
+  },
+  "breadcrumbs": {
+    "home": "Inicio",
+    "back": "Volver"
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "contact": "¿No encuentras tu respuesta? Escríbenos."
+  },
+  "locale": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés"
+  },
+  "status": {
+    "healthy": "Operativo",
+    "degraded": "Degradado",
+    "down": "Interrumpido",
+    "allSystemsOperational": "Todos los sistemas operativos",
+    "partialOutage": "Interrupciones parciales",
+    "majorOutage": "Interrupciones mayores"
+  }
+}

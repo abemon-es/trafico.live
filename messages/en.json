@@ -1,0 +1,76 @@
+{
+  "common": {
+    "siteName": "trafico.live",
+    "tagline": "Live traffic, trains, flights and ships",
+    "search": "Search",
+    "login": "Sign in",
+    "signup": "Sign up",
+    "logout": "Sign out",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "trenes": "Trains",
+    "maritimo": "Maritime",
+    "aviacion": "Aviation",
+    "trafico": "Traffic",
+    "gasolineras": "Fuel",
+    "aire": "Air quality",
+    "estadisticas": "Stats",
+    "transporte": "Public transit",
+    "noticias": "News",
+    "api": "API"
+  },
+  "cta": {
+    "exploreMap": "Open map",
+    "createAlert": "Create alert",
+    "getApiKey": "Get API key",
+    "subscribe": "Subscribe",
+    "upgrade": "Upgrade plan",
+    "learnMore": "Learn more"
+  },
+  "messages": {
+    "welcome": "Welcome to trafico.live",
+    "noResults": "No results",
+    "comingSoon": "Coming soon",
+    "offline": "You are offline"
+  },
+  "footer": {
+    "legal": "Legal notice",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "contact": "Contact",
+    "press": "Press",
+    "api": "API",
+    "status": "Status",
+    "sources": "Data sources"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "back": "Back"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "contact": "Can't find what you're looking for? Write to us."
+  },
+  "locale": {
+    "label": "Language",
+    "es": "Spanish",
+    "en": "English"
+  },
+  "status": {
+    "healthy": "Operational",
+    "degraded": "Degraded",
+    "down": "Down",
+    "allSystemsOperational": "All systems operational",
+    "partialOutage": "Partial outage",
+    "majorOutage": "Major outage"
+  }
+}
