@@ -1,45 +1,35 @@
 "use client";
 
-import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { Map as MapIcon } from "lucide-react";
+import RoutingPanel from "./routing-panel";
 
-const UnifiedMap = dynamic(
-  () => import("@/components/map/UnifiedMap").then((m) => m.UnifiedMap),
-  { ssr: false }
+const TraficoMap = dynamic(
+  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="w-full bg-tl-50 dark:bg-slate-900 animate-pulse"
+        style={{ height: "calc(100dvh - 64px)" }}
+      />
+    ),
+  }
 );
 
-const MapaContent = dynamic(() => import("./content"), { ssr: false });
-
-function MapLoading({ label = "Cargando mapa interactivo..." }: { label?: string }) {
-  return (
-    <div className="w-full bg-tl-50 dark:bg-gray-900 animate-pulse flex items-center justify-center" style={{ height: "calc(100dvh - 64px)" }}>
-      <div className="text-center">
-        <MapIcon className="w-14 h-14 text-tl-200 dark:text-tl-800 mx-auto mb-3" />
-        <p className="text-gray-400 text-sm">{label}</p>
-      </div>
-    </div>
-  );
-}
-
-/** Original traffic map client (kept for backwards compatibility) */
-export function MapaClient() {
-  return (
-    <div style={{ height: "calc(100dvh - 64px)" }}>
-      <Suspense fallback={<MapLoading />}>
-        <UnifiedMap defaultHeight="100%" showStats={true} />
-      </Suspense>
-    </div>
-  );
-}
-
-/** New unified infrastructure map client */
+/** Unified infrastructure dashboard — all transport layers via TraficoMap preset="all". */
 export function MapaInfraClient() {
   return (
     <div style={{ height: "calc(100dvh - 64px)" }}>
-      <Suspense fallback={<MapLoading label="Cargando mapa de infraestructuras..." />}>
-        <MapaContent />
-      </Suspense>
+      <TraficoMap
+        preset="all"
+        controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: true }}
+        syncUrl
+        initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
+        className="w-full h-full"
+      >
+        {/* Routing panel preserved as overlay child; map ref not available via TraficoMap API */}
+        <RoutingPanel map={null} />
+      </TraficoMap>
     </div>
   );
 }
