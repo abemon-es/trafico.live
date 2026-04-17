@@ -125,6 +125,12 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Horizontal marquee used by TickerStrip */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 /* Respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
   .gauge-arc {
