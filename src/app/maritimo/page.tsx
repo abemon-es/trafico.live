@@ -18,6 +18,7 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { VoyagesList } from "@/components/maritimo/VoyagesList";
+import { MaritimoHeroMap } from "./MaritimoHeroMap";
 
 export const revalidate = 300;
 
@@ -372,6 +373,25 @@ export default async function MaritimoPage() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
+        {/* Hero map                                                          */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Mapa de tráfico marítimo en tiempo real">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <MapPin className="w-6 h-6 text-tl-sea-500" />
+              Mapa Marítimo
+            </h2>
+            <Link
+              href="/maritimo/mapa"
+              className="flex items-center gap-1 text-sm text-tl-sea-600 dark:text-tl-sea-400 hover:underline"
+            >
+              Pantalla completa <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <MaritimoHeroMap />
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
         {/* Section cards grid                                                */}
         {/* ---------------------------------------------------------------- */}
         <section aria-label="Secciones marítimas">
@@ -476,7 +496,7 @@ export default async function MaritimoPage() {
               </div>
             </Link>
 
-            {/* Mapa Marítimo */}
+            {/* Mapa Marítimo — pantalla completa */}
             <Link
               href="/maritimo/mapa"
               className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-md transition-all"
@@ -489,14 +509,14 @@ export default async function MaritimoPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Mapa Marítimo
+                  Mapa a pantalla completa
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Visualización de estaciones, puertos y alertas
+                  AIS en vivo, rutas de ferries, puertos, combustible y corrientes
                 </p>
               </div>
               <div className="flex items-center gap-1 text-tl-sea-600 dark:text-tl-sea-400 text-sm font-medium group-hover:gap-2 transition-all">
-                Abrir mapa <ArrowRight className="w-4 h-4" />
+                Abrir mapa completo <ArrowRight className="w-4 h-4" />
               </div>
             </Link>
 
