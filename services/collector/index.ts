@@ -62,6 +62,7 @@ const VALID_TASKS = [
   // Air quality
   "air-quality",
   "air-quality-ccaa",
+  "cams-aq",
   // Railway fallback
   "adif-fallback",
   // Failsafe
