@@ -208,6 +208,15 @@ export function Footer() {
               <span className="hidden sm:inline text-ink-300 dark:text-gray-700" aria-hidden="true">
                 &middot;
               </span>
+              <Link
+                href="/divulgacion-afiliados"
+                className="hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+              >
+                Divulgación afiliados
+              </Link>
+              <span className="hidden sm:inline text-ink-300 dark:text-gray-700" aria-hidden="true">
+                &middot;
+              </span>
               <CookieSettingsButton />
             </div>
           </div>
