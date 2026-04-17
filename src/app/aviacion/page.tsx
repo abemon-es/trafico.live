@@ -296,7 +296,7 @@ export default async function AviacionPage() {
           <p className="text-white/75 text-lg md:text-xl max-w-2xl leading-relaxed">
             Aeronaves sobre espacio aéreo español en tiempo real, aeropuertos AENA
             y estadísticas de pasajeros. Datos OpenSky Network y AENA actualizados
-            cada 5 minutos.
+            cada 15 minutos.
           </p>
 
           {/* Live aircraft count pill */}
@@ -401,7 +401,7 @@ export default async function AviacionPage() {
               <div className="flex items-center gap-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-2.5">
                 <Radio className="w-4 h-4 text-[var(--tl-success)]" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Actualización cada 5 minutos · OpenSky Network
+                  Actualización cada 15 minutos · OpenSky Network
                 </span>
               </div>
             </div>
@@ -505,7 +505,7 @@ export default async function AviacionPage() {
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
                   <Info className="w-3 h-3" />
                   Mostrando {recentAircraft.length} aeronaves airborne de la última hora ·
-                  Fuente: OpenSky Network (CC BY 4.0) · Actualización cada 5 min
+                  Fuente: OpenSky Network (CC BY 4.0) · Actualización cada 15 min
                 </p>
               </div>
             </div>
@@ -524,7 +524,7 @@ export default async function AviacionPage() {
                   Datos de aeronaves en recopilación
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  El colector OpenSky actualiza posiciones cada 5 minutos. Vuelve en breve.
+                  El colector OpenSky actualiza posiciones cada 15 minutos. Vuelve en breve.
                 </p>
               </div>
               <div className="flex items-center gap-2 text-xs text-[var(--tl-primary)] dark:text-[var(--tl-info)] bg-[var(--tl-primary-bg)] border border-[var(--tl-primary)]/30 rounded-full px-4 py-1.5">
@@ -748,7 +748,7 @@ export default async function AviacionPage() {
               Las posiciones de aeronaves en trafico.live provienen de la red de receptores
               ADS-B del <strong>OpenSky Network</strong>, una iniciativa colaborativa que
               agrega datos de posicionamiento de aeronaves de todo el mundo bajo licencia
-              Creative Commons (CC BY 4.0). Los datos se actualizan cada 5 minutos.
+              Creative Commons (CC BY 4.0). Los datos se actualizan cada 15 minutos.
             </p>
             <p>
               Las <strong>estadísticas de pasajeros</strong> proceden de los informes mensuales
@@ -758,7 +758,7 @@ export default async function AviacionPage() {
             <p className="text-xs text-gray-400 dark:text-gray-500">
               Fuentes: OpenSky Network (posiciones ADS-B, CC BY 4.0), AENA Aeropuertos
               (catálogo y estadísticas de pasajeros), ENAIRE (espacio aéreo). Datos de
-              aeronaves actualizados cada 5 minutos.
+              aeronaves actualizados cada 15 minutos.
             </p>
           </div>
         </section>

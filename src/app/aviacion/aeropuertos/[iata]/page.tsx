@@ -678,7 +678,7 @@ export default async function AirportDetailPage({ params }: Props) {
         {/* ---------------------------------------------------------------- */}
         <footer className="text-xs text-gray-400 dark:text-gray-500 text-center py-4 border-t border-gray-100 dark:border-gray-800">
           Datos: AENA Aeropuertos, Eurostat AVIA_PAOA, OpenSky Network (CC BY 4.0), OurAirports.
-          Actualizado cada 5 minutos.
+          Posiciones de aeronaves actualizadas cada 15 minutos.
         </footer>
       </div>
     </>
