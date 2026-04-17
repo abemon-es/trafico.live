@@ -1,0 +1,70 @@
+{
+  "locale": "es-ES",
+  "common": {
+    "loading": "Cargando…",
+    "error": "Se produjo un error",
+    "retry": "Reintentar",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar ciudad, carretera, gasolinera…",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "more": "Más",
+    "less": "Menos",
+    "seeAll": "Ver todo",
+    "seeMore": "Ver más",
+    "seeMap": "Ver en el mapa",
+    "liveLabel": "En directo",
+    "updatedEvery60": "Actualizado cada 60 segundos",
+    "skipToContent": "Saltar al contenido"
+  },
+  "nav": {
+    "home": "Inicio",
+    "traffic": "Tráfico",
+    "roads": "Carreteras",
+    "fuel": "Combustible",
+    "maritime": "Marítimo",
+    "aviation": "Aviación",
+    "rail": "Trenes",
+    "transit": "Transporte público",
+    "airQuality": "Calidad del aire",
+    "weather": "Meteorología",
+    "explore": "Explorar",
+    "professional": "Profesional",
+    "pressCenter": "Prensa",
+    "apiDocs": "API REST",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "cta": {
+    "subscribe": "Suscribirse",
+    "tryFree": "Prueba gratis",
+    "getApi": "Obtener API key",
+    "contact": "Contactar",
+    "learnMore": "Saber más",
+    "download": "Descargar",
+    "share": "Compartir"
+  },
+  "messages": {
+    "noResults": "Sin resultados",
+    "noData": "No hay datos disponibles",
+    "loadFailed": "No se pudieron cargar los datos",
+    "tryAgain": "Vuelve a intentarlo en unos segundos o comprueba tu conexión.",
+    "offline": "Sin conexión",
+    "stale": "Datos posiblemente desactualizados"
+  },
+  "footer": {
+    "legal": "Aviso legal",
+    "privacy": "Privacidad",
+    "cookies": "Configurar cookies",
+    "developedBy": "Desarrollado por",
+    "copyright": "© {year} trafico.live"
+  },
+  "breadcrumbs": {
+    "aria": "Ruta de navegación"
+  },
+  "faq": {
+    "heading": "Preguntas frecuentes"
+  }
+}

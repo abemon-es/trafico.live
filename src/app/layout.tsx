@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { CookieConsent } from "@/components/legal/CookieConsent";
+import { SkipLink } from "@/components/ui/SkipLink";
 import { WebVitals } from "@/components/analytics/WebVitals";
 import { StructuredData, generateOrganizationSchema, generateWebSiteSchema, generateSiteNavigationSchema } from "@/components/seo/StructuredData";
 import { SWRProvider } from "@/components/providers/SWRProvider";
@@ -195,10 +196,13 @@ export default function RootLayout({
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
+        <SkipLink />
         <StructuredData data={[organizationSchema, webSiteSchema, siteNavSchema]} />
         <SWRProvider>
           <Header />
-          {children}
+          <main id="main-content" tabIndex={-1}>
+            {children}
+          </main>
           <StickyFooterAd />
           <Footer />
         </SWRProvider>
