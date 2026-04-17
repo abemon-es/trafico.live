@@ -1,7 +1,7 @@
 "use client";
 
 import { fetcher } from "@/lib/fetcher";
-import { useState, useEffect, useCallback } from "react";
+import { useId, useState, useEffect, useCallback } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { Fuel, MapPin, Calculator, Users, Leaf, ChevronRight, Info } from "lucide-react";
@@ -299,6 +299,21 @@ export default function CalculadoraContent() {
 
   const labelClass = "block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide";
 
+  // Stable form-field ids for label ↔ input wiring (WCAG 1.3.1, 3.3.2).
+  const uid = useId();
+  const id = {
+    origen: `${uid}-origen`,
+    destino: `${uid}-destino`,
+    distancia: `${uid}-distancia`,
+    fuelType: `${uid}-fueltype`,
+    consumo: `${uid}-consumo`,
+    precio: `${uid}-precio`,
+    tollRoad: `${uid}-tollroad`,
+    tollSeg: `${uid}-tollseg`,
+    peajes: `${uid}-peajes`,
+    pasajeros: `${uid}-pasajeros`,
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumbs
@@ -337,35 +352,40 @@ export default function CalculadoraContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
             {/* Origen */}
             <div>
-              <label className={labelClass}>Origen</label>
+              <label htmlFor={id.origen} className={labelClass}>Origen</label>
               <input
+                id={id.origen}
                 type="text"
                 className={inputClass}
                 placeholder="Madrid"
                 value={origen}
                 onChange={(e) => setOrigen(e.target.value)}
+                aria-required="true"
               />
             </div>
             {/* Destino */}
             <div>
-              <label className={labelClass}>Destino</label>
+              <label htmlFor={id.destino} className={labelClass}>Destino</label>
               <input
+                id={id.destino}
                 type="text"
                 className={inputClass}
                 placeholder="Barcelona"
                 value={destino}
                 onChange={(e) => setDestino(e.target.value)}
+                aria-required="true"
               />
             </div>
           </div>
 
           {/* Distancia */}
           <div className="mb-5">
-            <label className={labelClass}>
+            <label htmlFor={id.distancia} className={labelClass}>
               Distancia (km)
             </label>
             <div className="flex items-center gap-3">
               <input
+                id={id.distancia}
                 type="number"
                 className={inputClass}
                 min={0}
@@ -373,18 +393,23 @@ export default function CalculadoraContent() {
                 value={distancia || ""}
                 onChange={handleDistanciaChange}
                 placeholder="620"
+                aria-required="true"
               />
               <div className="flex items-center gap-1 text-xs text-gray-400 whitespace-nowrap">
-                <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                <Info className="w-3.5 h-3.5 flex-shrink-0" aria-hidden />
                 km de ida
               </div>
             </div>
           </div>
 
-          {/* Tipo combustible */}
-          <div className="mb-5">
-            <label className={labelClass}>Tipo de combustible</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {/* Tipo combustible — radio-group semantics (WCAG 4.1.2) */}
+          <fieldset className="mb-5">
+            <legend className={labelClass}>Tipo de combustible</legend>
+            <div
+              role="radiogroup"
+              aria-label="Tipo de combustible"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+            >
               {(Object.keys(FUEL_DEFAULTS) as FuelType[]).map((type) => {
                 const d = FUEL_DEFAULTS[type];
                 const isSelected = fuelType === type;
@@ -392,6 +417,8 @@ export default function CalculadoraContent() {
                   <button
                     key={type}
                     type="button"
+                    role="radio"
+                    aria-checked={isSelected}
                     onClick={() => setFuelType(type)}
                     className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-all text-left ${
                       isSelected
@@ -404,36 +431,40 @@ export default function CalculadoraContent() {
                 );
               })}
             </div>
-          </div>
+          </fieldset>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
             {/* Consumo */}
             <div>
-              <label className={labelClass}>
+              <label htmlFor={id.consumo} className={labelClass}>
                 Consumo medio ({defaults.unit}/100km)
               </label>
               <input
+                id={id.consumo}
                 type="number"
                 className={inputClass}
                 min={0}
                 step={0.1}
                 value={consumo || ""}
                 onChange={handleConsumoChange}
+                aria-required="true"
               />
             </div>
 
             {/* Precio */}
             <div>
-              <label className={labelClass}>
+              <label htmlFor={id.precio} className={labelClass}>
                 Precio combustible (€/{defaults.unit})
               </label>
               <input
+                id={id.precio}
                 type="number"
                 className={inputClass}
                 min={0}
                 step={0.001}
                 value={precio || ""}
                 onChange={handlePrecioChange}
+                aria-required="true"
               />
               <p className="text-xs text-gray-400 mt-1">
                 Precio por defecto estimado · ajusta al precio actual
@@ -444,9 +475,15 @@ export default function CalculadoraContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Peajes — toll road selector + manual override */}
             <div>
-              <label className={labelClass}>Peajes (€)</label>
+              <label htmlFor={id.peajes} className={labelClass}>Peajes (€)</label>
               {tollData?.roads && (
-                <select className={`${inputClass} mb-2`} value={tollRoad} onChange={e => setTollRoad(e.target.value)}>
+                <select
+                  id={id.tollRoad}
+                  aria-label="Autopista de peaje"
+                  className={`${inputClass} mb-2`}
+                  value={tollRoad}
+                  onChange={e => setTollRoad(e.target.value)}
+                >
                   <option value="">Sin autopista de peaje</option>
                   {tollData.roads.map(r => (
                     <option key={r.id} value={r.id}>{r.id} — {fmt(r.maxPrice)}€</option>
@@ -454,24 +491,46 @@ export default function CalculadoraContent() {
                 </select>
               )}
               {tollSegs.length > 1 && (
-                <select className={`${inputClass} mb-2 text-xs`} value={peajes} onChange={e => setPeajes(parseFloat(e.target.value) || 0)}>
+                <select
+                  id={id.tollSeg}
+                  aria-label="Tramo de peaje"
+                  className={`${inputClass} mb-2 text-xs`}
+                  value={peajes}
+                  onChange={e => setPeajes(parseFloat(e.target.value) || 0)}
+                >
                   {tollSegs.map((s, i) => (
                     <option key={i} value={s.price}>{s.from} → {s.to} ({s.km} km) — {fmt(s.price)}€</option>
                   ))}
                 </select>
               )}
-              <input type="number" className={inputClass} min={0} step={0.5} value={peajes || ""} onChange={handlePeajesChange} placeholder="0" />
+              <input
+                id={id.peajes}
+                type="number"
+                className={inputClass}
+                min={0}
+                step={0.5}
+                value={peajes || ""}
+                onChange={handlePeajesChange}
+                placeholder="0"
+              />
               <p className="text-xs text-gray-400 mt-1">Selecciona autopista o introduce importe</p>
             </div>
 
-            {/* Pasajeros */}
-            <div>
-              <label className={labelClass}>Número de pasajeros</label>
-              <div className="flex items-center gap-2">
+            {/* Pasajeros — radio-group semantics */}
+            <fieldset>
+              <legend className={labelClass}>Número de pasajeros</legend>
+              <div
+                role="radiogroup"
+                aria-label="Número de pasajeros"
+                className="flex items-center gap-2"
+              >
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
                     key={n}
                     type="button"
+                    role="radio"
+                    aria-checked={pasajeros === n}
+                    aria-label={`${n} ${n === 1 ? "pasajero" : "pasajeros"}`}
                     onClick={() => setPasajeros(n)}
                     className={`w-9 h-9 rounded-lg border text-sm font-bold transition-all ${
                       pasajeros === n
@@ -483,7 +542,7 @@ export default function CalculadoraContent() {
                   </button>
                 ))}
               </div>
-            </div>
+            </fieldset>
           </div>
         </div>
 
