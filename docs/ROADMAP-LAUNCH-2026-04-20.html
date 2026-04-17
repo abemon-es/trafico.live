@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>trafico.live — Roadmap Launch 2026-04-20</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tl-600: #1b4bd5; --tl-700: #173a9a; --tl-500: #3b6cf8;
+    --tl-400: #5b8aff; --tl-300: #94b6ff; --tl-200: #c0d5ff;
+    --tl-100: #dde8ff; --tl-50: #f0f5ff;
+    --tl-amber-600: #b56200; --tl-amber-500: #d48139;
+    --signal-red: #dc2626; --signal-green: #059669; --signal-amber: #d48139;
+    --ink-900: #0b0f1a; --ink-800: #1f2937; --ink-700: #374151;
+    --ink-600: #4b5563; --ink-500: #6b7280; --ink-400: #94a3b8;
+    --ink-300: #cbd5e1; --ink-200: #e5e7eb; --ink-100: #f1f5f9;
+    --ink-50: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  @page {
+    size: A4;
+    margin: 16mm 14mm 20mm 14mm;
+    @bottom-left { content: "trafico.live — Roadmap Launch · 2026-04-20"; font-family: 'DM Sans'; font-size: 8pt; color: #94a3b8; }
+    @bottom-right { content: "pág. " counter(page) " / " counter(pages); font-family: 'JetBrains Mono'; font-size: 8pt; color: #94a3b8; }
+  }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'DM Sans', sans-serif; font-size: 9.5pt; line-height: 1.55; color: var(--ink-800); margin: 0; }
+
+  .cover {
+    min-height: 245mm; padding: 24mm 0 0 0;
+    background: radial-gradient(ellipse 70% 60% at 85% -10%, var(--tl-100) 0, transparent 55%), radial-gradient(ellipse 60% 50% at -5% 110%, var(--tl-50) 0, transparent 50%), #fff;
+    page-break-after: always; position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ""; position: absolute; top: 0; right: 0; width: 55mm; height: 55mm;
+    background: repeating-linear-gradient(45deg, var(--tl-600) 0, var(--tl-600) 3px, transparent 3px, transparent 10px);
+    opacity: 0.08;
+  }
+  .cover-inner { position: relative; z-index: 1; }
+  .cover-logo { font-family: 'Exo 2'; font-weight: 800; font-size: 28pt; letter-spacing: -0.5pt; color: var(--ink-900); line-height: 1; }
+  .cover-logo .dot, .cover-logo .live { color: var(--tl-600); }
+  .cover-logo .live { font-weight: 600; }
+  .cover-kicker { font-family: 'JetBrains Mono'; font-size: 8pt; letter-spacing: 0.15em; text-transform: uppercase; color: var(--tl-600); margin: 36pt 0 10pt 0; font-weight: 500; }
+  .cover-title { font-family: 'Exo 2'; font-weight: 800; font-size: 40pt; line-height: 1.03; color: var(--ink-900); letter-spacing: -1.5pt; margin: 0 0 14pt 0; max-width: 160mm; }
+  .cover-sub { font-size: 13pt; line-height: 1.5; color: var(--ink-700); max-width: 155mm; margin-bottom: 28pt; }
+
+  .launch-box {
+    margin-top: 16pt; padding: 18pt 20pt;
+    background: linear-gradient(135deg, var(--tl-600) 0%, var(--tl-500) 100%);
+    color: white; border-radius: 8pt;
+    max-width: 175mm;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14pt;
+  }
+  .launch-stat { }
+  .launch-stat .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 22pt; line-height: 1; letter-spacing: -1pt; }
+  .launch-stat .l { font-family: 'DM Sans'; font-size: 8.5pt; margin-top: 6pt; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .cover-meta { margin-top: 24pt; padding: 14pt 16pt; background: #fff; border: 1px solid var(--ink-200); border-left: 3pt solid var(--tl-600); border-radius: 4pt; max-width: 155mm; font-size: 9.5pt; }
+  .cover-meta dt { float: left; clear: left; width: 46mm; padding-right: 8pt; color: var(--ink-500); font-family: 'JetBrains Mono'; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.1em; padding-top: 2pt; }
+  .cover-meta dd { margin-left: 46mm; margin-bottom: 6pt; color: var(--ink-800); }
+  .cover-meta dd:last-child { margin-bottom: 0; }
+
+  main { padding: 0 0 30pt 0; }
+
+  h1 { font-family: 'Exo 2'; font-weight: 700; font-size: 21pt; color: var(--ink-900); margin: 30pt 0 14pt 0; padding-bottom: 6pt; border-bottom: 2pt solid var(--tl-600); letter-spacing: -0.5pt; page-break-after: avoid; }
+  h1 .num { font-family: 'JetBrains Mono'; color: var(--tl-600); margin-right: 10pt; font-weight: 400; font-size: 15pt; }
+  h2 { font-family: 'Exo 2'; font-weight: 700; font-size: 13pt; color: var(--ink-900); margin: 20pt 0 8pt 0; letter-spacing: -0.3pt; page-break-after: avoid; }
+  h3 { font-family: 'Exo 2'; font-weight: 600; font-size: 11pt; color: var(--tl-700); margin: 14pt 0 6pt 0; page-break-after: avoid; }
+  p { margin: 0 0 9pt 0; }
+  strong { color: var(--ink-900); font-weight: 700; }
+
+  .callout { background: var(--tl-50); border-left: 3pt solid var(--tl-600); padding: 12pt 14pt; margin: 12pt 0; border-radius: 4pt; font-size: 10pt; }
+  .callout-red { background: #fff5f5; border-left-color: var(--signal-red); }
+  .callout-amber { background: #fffaf0; border-left-color: var(--signal-amber); }
+  .callout-green { background: #f0fdf4; border-left-color: var(--signal-green); }
+  .callout-title { font-family: 'Exo 2'; font-weight: 700; font-size: 9.5pt; color: var(--tl-600); margin-bottom: 4pt; text-transform: uppercase; letter-spacing: 0.06em; }
+  .callout-red .callout-title { color: var(--signal-red); }
+  .callout-amber .callout-title { color: var(--tl-amber-600); }
+  .callout-green .callout-title { color: var(--signal-green); }
+
+  ul, ol { margin: 0 0 10pt 0; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code { font-family: 'JetBrains Mono'; font-size: 8.5pt; background: var(--ink-100); color: var(--tl-700); padding: 1pt 5pt; border-radius: 3pt; border: 1px solid var(--ink-200); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin: 8pt 0 14pt 0; page-break-inside: auto; }
+  table tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  th { text-align: left; font-family: 'Exo 2'; font-weight: 700; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-700); background: var(--tl-50); padding: 6pt 8pt; border-bottom: 1.5pt solid var(--tl-300); }
+  td { padding: 6pt 8pt; border-bottom: 0.5pt solid var(--ink-200); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: var(--ink-50); }
+  td.num, th.num { font-family: 'JetBrains Mono'; text-align: right; white-space: nowrap; }
+  td.tag { font-family: 'JetBrains Mono'; font-weight: 700; text-align: center; width: 12mm; font-size: 8pt; }
+  td.tag.s0 { background: var(--ink-100); color: var(--ink-700); }
+  td.tag.s1 { background: var(--tl-50); color: var(--tl-600); }
+  td.tag.s2 { background: #eef5ff; color: var(--tl-500); }
+  td.tag.s3 { background: #fffaf0; color: var(--tl-amber-600); }
+  td.tag.s4 { background: #f0fdf4; color: var(--signal-green); }
+  td.tag.go { background: var(--tl-600); color: white; font-weight: 700; }
+
+  .decisions {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; margin: 12pt 0;
+  }
+  .decision {
+    border: 1px solid var(--ink-200); border-radius: 5pt; padding: 10pt 12pt;
+    background: #fff;
+    border-left: 3pt solid var(--tl-600);
+  }
+  .decision-q { font-family: 'Exo 2'; font-weight: 700; font-size: 9pt; color: var(--ink-900); margin-bottom: 3pt; }
+  .decision-q .tag { font-family: 'JetBrains Mono'; background: var(--tl-50); color: var(--tl-600); padding: 1pt 6pt; border-radius: 3pt; font-size: 7.5pt; margin-right: 6pt; font-weight: 700; }
+  .decision-a { font-size: 9.5pt; color: var(--ink-700); }
+
+  .agent-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin: 10pt 0;
+  }
+  .agent-card {
+    background: #fff; border: 1px solid var(--ink-200); border-radius: 5pt; padding: 8pt 10pt;
+    font-size: 8pt; line-height: 1.35;
+  }
+  .agent-num {
+    display: inline-block; background: var(--tl-600); color: white; font-family: 'JetBrains Mono';
+    font-size: 7.5pt; font-weight: 700; padding: 1pt 6pt; border-radius: 3pt; margin-bottom: 4pt;
+  }
+  .agent-title {
+    font-family: 'Exo 2'; font-weight: 700; font-size: 9pt; color: var(--ink-900); display: block; margin-bottom: 3pt;
+  }
+
+  .session-header {
+    background: linear-gradient(135deg, var(--tl-600) 0%, var(--tl-500) 100%);
+    color: white; padding: 16pt 20pt; border-radius: 8pt; margin: 24pt 0 12pt 0;
+    page-break-after: avoid;
+  }
+  .session-header h1 {
+    color: white; border-bottom: none; margin: 0 0 4pt 0; font-size: 20pt;
+  }
+  .session-header h1 .num { color: rgba(255,255,255,0.7); }
+  .session-header .meta {
+    font-family: 'JetBrains Mono'; font-size: 8pt; opacity: 0.85; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  .page-break { page-break-before: always; }
+
+  .footer-last { margin-top: 30pt; padding-top: 14pt; border-top: 1px solid var(--ink-200); font-size: 7.5pt; color: var(--ink-500); text-align: center; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="cover-inner">
+    <div class="cover-logo">trafico<span class="dot">.</span><span class="live">live</span></div>
+
+    <div class="cover-kicker">Roadmap Launch · Internal</div>
+    <h1 class="cover-title">Plan de lanzamiento lunes 20 abril</h1>
+    <div class="cover-sub">
+      4 sesiones de trabajo · 9 agentes paralelos · 27.000 páginas nuevas · 7 verticales unificados ·
+      el mapa de España como el mayor sistema de inteligencia de transporte que nadie está construyendo.
+    </div>
+
+    <div class="launch-box">
+      <div class="launch-stat"><div class="v">72h</div><div class="l">Al launch</div></div>
+      <div class="launch-stat"><div class="v">4</div><div class="l">Sesiones</div></div>
+      <div class="launch-stat"><div class="v">36</div><div class="l">Agentes totales</div></div>
+      <div class="launch-stat"><div class="v">7</div><div class="l">Hubs pulidos</div></div>
+      <div class="launch-stat"><div class="v">27K</div><div class="l">URLs SSG</div></div>
+      <div class="launch-stat"><div class="v">9</div><div class="l">Componentes → 1</div></div>
+    </div>
+
+    <dl class="cover-meta">
+      <dt>Launch objetivo</dt><dd>Lunes <strong>20 de abril de 2026</strong>, 09:00 CEST</dd>
+      <dt>Ventana ejecución</dt><dd>Jueves 17 tarde → Domingo 19 noche</dd>
+      <dt>Criterio Go/No-Go</dt><dd>Todo o nada — delay a miércoles 22 si falta algo</dd>
+      <dt>Roadmap master</dt><dd><code>docs/ROADMAP-LAUNCH-2026-04-20.md</code></dd>
+      <dt>Decisiones cerradas</dt><dd>8 de 8 preguntas respondidas por el usuario</dd>
+    </dl>
+  </div>
+</section>
+
+<main>
+
+<h1><span class="num">00</span>Las 8 decisiones cerradas</h1>
+
+<p>El roadmap está construido directamente desde 8 decisiones consecutivas del usuario. Cualquier ítem fuera de estas decisiones es <strong>Fase 2 post-launch</strong> y no se trabaja hasta después del lunes.</p>
+
+<div class="decisions">
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q1</span>Tipo de lanzamiento</div>
+    <div class="decision-a"><strong>A — Soft launch técnico</strong>. Consumer-focus. Sin B2B, API pública, MCP, Stripe tiers ni páginas profesional.</div>
+  </div>
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q2</span>Hero feature</div>
+    <div class="decision-a"><strong>B — 7 verticales con hubs pulidos</strong>. Resuelve el problema central: "las features se pierden".</div>
+  </div>
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q3</span>Profundidad hubs</div>
+    <div class="decision-a"><strong>A — Los 7 al mismo nivel full-feature</strong>. Hero map + stats + ticker + tiles + FAQ cada uno.</div>
+  </div>
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q4</span>Entity pages</div>
+    <div class="decision-a"><strong>A — Full 27K URLs SSG</strong>. Estaciones + líneas + aeropuertos + puertos + buques + carreteras + gasolineras + estaciones meteo/AQ.</div>
+  </div>
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q5</span>Migración mapa</div>
+    <div class="decision-a"><strong>A — Hard cutover sesión 1</strong>. 9 componentes actuales reemplazados por <code>&lt;TraficoMap&gt;</code> + borrado de ~5300 líneas.</div>
+  </div>
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q6</span>P0 del audit</div>
+    <div class="decision-a"><strong>A — Paralelo sesión 1</strong>. Los 6 items P0 del audit se fixan con agentes dedicados a la par de la refactor.</div>
+  </div>
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q7</span>Live features nuevas</div>
+    <div class="decision-a"><strong>TODO — A + B + D</strong>. Weather radar + AEMET forecast + CAMS AQ + Renfe RT boards + AENA boards + ADIF fallback.</div>
+  </div>
+  <div class="decision">
+    <div class="decision-q"><span class="tag">Q8</span>Go/No-Go Monday</div>
+    <div class="decision-a"><strong>A — Todo o nada</strong>. Si domingo 23:59 falta algo del scope, launch se pospone al miércoles 22.</div>
+  </div>
+</div>
+
+<!-- ─── Scope ─── -->
+
+<h1 class="page-break"><span class="num">01</span>Scope</h1>
+
+<h2>Dentro del scope (lunes)</h2>
+
+<h3>Infraestructura</h3>
+<ul>
+  <li><strong><code>&lt;TraficoMap&gt;</code> unificado</strong> — 1 componente reemplaza los 9 actuales. Hard cutover sesión 1, +20 páginas migradas simultáneamente.</li>
+  <li><strong><code>LayerRegistry</code> centralizado</strong> — catálogo canónico de ~40 capas agrupadas por vertical.</li>
+  <li><strong><code>&lt;TraficoMap entity={…}&gt;</code></strong> — prop que centra el mapa y resalta la entidad (road, vessel, train, flight, port, station, …).</li>
+</ul>
+
+<h3>7 verticales con hubs pulidos al mismo nivel</h3>
+
+<table>
+  <thead><tr><th>Vertical</th><th>URL hub</th><th>URL fullscreen</th><th>Estado</th></tr></thead>
+  <tbody>
+    <tr><td>Marítimo</td><td><code>/maritimo</code></td><td><code>/maritimo/mapa</code></td><td>Existente → rework full</td></tr>
+    <tr><td>Aéreo</td><td><code>/aviacion</code></td><td><code>/aviacion/mapa</code></td><td>Existente → rework full + boards</td></tr>
+    <tr><td>Ferroviario</td><td><code>/trenes</code></td><td><code>/trenes/mapa</code></td><td>Existente → rework full + ADIF + boards</td></tr>
+    <tr><td>Tráfico vial</td><td><code>/trafico</code></td><td><code>/trafico/mapa</code></td><td>Existente → rework full</td></tr>
+    <tr><td>Transporte público</td><td><code>/transporte-publico</code></td><td><code>/transporte-publico/mapa</code></td><td>Existente → rework full</td></tr>
+    <tr><td>Meteo</td><td><code>/meteo</code></td><td><code>/meteo/mapa</code></td><td><strong>Nuevo</strong> — radar EUMETSAT + forecast AEMET</td></tr>
+    <tr><td>Combustible</td><td><code>/combustible</code></td><td><code>/combustible/mapa</code></td><td><strong>Nuevo</strong> — consolida terrestre + marítimo + EV + histórico</td></tr>
+  </tbody>
+</table>
+
+<p>Plus <code>/calidad-aire</code> como hub secundario (ligero) con CAMS forecast.</p>
+
+<h3>Entity pages SSG (~27.553 URLs)</h3>
+
+<table>
+  <thead><tr><th>Tipo</th><th>URL pattern</th><th class="num">Volumen</th></tr></thead>
+  <tbody>
+    <tr><td>Estaciones ferroviarias</td><td><code>/trenes/estacion/[slug]</code></td><td class="num">2.154</td></tr>
+    <tr><td>Líneas ferroviarias</td><td><code>/trenes/linea/[slug]</code></td><td class="num">1.248</td></tr>
+    <tr><td>Aeropuertos AENA</td><td><code>/aviacion/aeropuertos/[iata]</code></td><td class="num">42</td></tr>
+    <tr><td>Puertos estatales</td><td><code>/maritimo/puertos/[slug]</code></td><td class="num">50</td></tr>
+    <tr><td>Carreteras nacionales</td><td><code>/carreteras/[ref]</code></td><td class="num">300</td></tr>
+    <tr><td>Buques activos</td><td><code>/maritimo/buques/[slug]</code></td><td class="num">~10.000</td></tr>
+    <tr><td>Gasolineras</td><td><code>/gasolineras/[id]</code></td><td class="num">12.294</td></tr>
+    <tr><td>Estaciones meteorológicas AEMET</td><td><code>/meteo/estaciones/[slug]</code></td><td class="num">900</td></tr>
+    <tr><td>Estaciones calidad aire</td><td><code>/calidad-aire/estaciones/[slug]</code></td><td class="num">565</td></tr>
+    <tr><td><strong>Total</strong></td><td></td><td class="num"><strong>~27.553</strong></td></tr>
+  </tbody>
+</table>
+
+<h3>Live features nuevas</h3>
+<ul>
+  <li><strong>Weather radar EUMETSAT OPERA</strong> como capa de mapa (coste: gratis)</li>
+  <li><strong>AEMET forecast horario municipal</strong> — 8.131 municipios, 48h</li>
+  <li><strong>CAMS AQ 5-day forecast</strong> (Copernicus, gratis)</li>
+  <li><strong>Renfe GTFS-RT departure boards</strong> por estación</li>
+  <li><strong>AENA departures/arrivals</strong> por aeropuerto</li>
+  <li><strong>ADIF fallback</strong> para Renfe LD (redundancia)</li>
+</ul>
+
+<h3>P0 del audit (todos completados)</h3>
+<ul>
+  <li>AIS roto corregido (aisstream.io reactivado o switch a datalastic.com)</li>
+  <li>Aviación no miente sobre frescura ("5 min" → "15 min" o se ajusta cron)</li>
+  <li>OSRM broken desactivado (no se expone en UI)</li>
+  <li>18 collectors con heartbeat + tabla <code>CollectorRun</code></li>
+  <li>Secrets sacados de URLs (<code>?key=</code> → header)</li>
+  <li><code>voyage-detector</code> + <code>sasemar</code> programados en cron</li>
+</ul>
+
+<h2 class="page-break">Fuera del scope (Fase 2 post-launch)</h2>
+
+<div class="callout callout-amber">
+  <div class="callout-title">Decisión Q1 — descartado del lunes</div>
+  Activación Stripe tiers · API pública documentada (OpenAPI) · MCP server público ·
+  Páginas <code>/profesional</code>, <code>/api-docs</code>, billing, keys ·
+  Outreach B2B · OpenTripPlanner journey planning · Corridor intelligence dashboard ·
+  Cross-joins analíticos (incidents × weather, accidents × climate, vessel × port calls).
+</div>
+
+<!-- ─── Calendario ─── -->
+
+<h1 class="page-break"><span class="num">02</span>Calendario</h1>
+
+<table>
+  <thead><tr><th class="tag">Sesión</th><th>Fecha</th><th class="num">Duración</th><th>Foco</th><th class="num">Agentes</th></tr></thead>
+  <tbody>
+    <tr><td class="tag s0">S0</td><td>jue 17 abr (hoy)</td><td class="num">1-2h</td><td>Limpieza P0 instantáneos (manual, sin agentes)</td><td class="num">0</td></tr>
+    <tr><td class="tag s1">S1</td><td>vie 18 abr</td><td class="num">6h</td><td><code>&lt;TraficoMap&gt;</code> + P0 restantes + infra weather/AEMET/CAMS</td><td class="num">9</td></tr>
+    <tr><td class="tag s2">S2</td><td>sáb 19 abr</td><td class="num">6h</td><td>7 verticales hubs + boards + ADIF</td><td class="num">9</td></tr>
+    <tr><td class="tag s3">S3</td><td>dom 19 abr AM</td><td class="num">6h</td><td>27K entity pages SSG</td><td class="num">9</td></tr>
+    <tr><td class="tag s4">S4</td><td>dom 19 abr PM</td><td class="num">6h</td><td>Polish + QA + deploy + assets launch</td><td class="num">9</td></tr>
+    <tr><td class="tag go">GO</td><td>lun 20 abr · 09:00</td><td class="num">—</td><td>🚀 Production live</td><td class="num">—</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── Session headers and agent grids ─── -->
+
+<div class="session-header">
+  <h1><span class="num">S0</span>Limpieza P0 instantáneos</h1>
+  <div class="meta">Jueves 17 tarde · 1-2h · manual · cero agentes</div>
+</div>
+
+<p>Antes de arrancar la maquinaria de 9 agentes, pulir los <strong>6 items "instantáneos"</strong> que no requieren delegación:</p>
+
+<ul>
+  <li>Quitar claim "actualización cada 5 minutos" en <code>/aviacion</code> (3 lugares) — real es 15 min.</li>
+  <li>Quitar claim "tiempo real" en <code>/maritimo</code> mientras AIS siga degradado.</li>
+  <li>Arreglar <code>AircraftPosition.updatedAt</code> field mismatch en <code>/api/health</code>.</li>
+  <li>Deshabilitar endpoint <code>/api/route</code> (OSRM no desplegado).</li>
+  <li>Añadir cron para <code>voyage-detector</code> (weekly) y <code>sasemar</code> (daily).</li>
+  <li>Decisión AIS: <strong>30min troubleshoot</strong> aisstream.io, si no → switch datalastic.com.</li>
+</ul>
+
+<!-- ─── Session 1 ─── -->
+
+<div class="session-header">
+  <h1><span class="num">S1</span>Fundamentos + infra weather/AEMET/CAMS</h1>
+  <div class="meta">Viernes 18 · 6h · 9 agentes paralelos</div>
+</div>
+
+<div class="agent-grid">
+  <div class="agent-card"><span class="agent-num">AGT 1</span><span class="agent-title">Core TraficoMap</span>Construye <code>&lt;TraficoMap&gt;</code> + <code>LayerRegistry</code> + <code>useMapLayers</code> + presets + entity prop.</div>
+  <div class="agent-card"><span class="agent-num">AGT 2</span><span class="agent-title">Hard cutover migración</span>Reemplaza 9 componentes viejos en 20+ pages. Borra ~5.300 líneas.</div>
+  <div class="agent-card"><span class="agent-num">AGT 3</span><span class="agent-title">Heartbeats collectors</span>Añade heartbeat + tabla <code>CollectorRun</code> a los 18 sin heartbeat.</div>
+  <div class="agent-card"><span class="agent-num">AGT 4</span><span class="agent-title">Security secrets</span><code>?key=</code> → header <code>X-API-KEY</code> en cron/admin routes.</div>
+  <div class="agent-card"><span class="agent-num">AGT 5</span><span class="agent-title">Weather radar EUMETSAT</span>Collector <code>eumetsat-radar</code> + layer <code>weather-radar</code> en registry.</div>
+  <div class="agent-card"><span class="agent-num">AGT 6</span><span class="agent-title">AEMET forecast</span>Collector forecast horario 8.131 municipios + tabla + API.</div>
+  <div class="agent-card"><span class="agent-num">AGT 7</span><span class="agent-title">CAMS AQ forecast</span>Collector Copernicus 5-day + tabla <code>AqForecast</code> + API.</div>
+  <div class="agent-card"><span class="agent-num">AGT 8</span><span class="agent-title">Renfe ADIF fallback</span>Adapter ADIF Mallas. Auto-fallback si Renfe LD 404.</div>
+  <div class="agent-card"><span class="agent-num">AGT 9</span><span class="agent-title">Nav + skeleton verticales</span>Mega menu + footer + sitemap + skeleton <code>/meteo</code> <code>/combustible</code>.</div>
+</div>
+
+<!-- ─── Session 2 ─── -->
+
+<div class="session-header">
+  <h1><span class="num">S2</span>7 verticales hubs + boards</h1>
+  <div class="meta">Sábado 19 · 6h · 9 agentes paralelos</div>
+</div>
+
+<div class="agent-grid">
+  <div class="agent-card"><span class="agent-num">AGT 1</span><span class="agent-title">/maritimo hub</span>Hero map (vessels + ports + shipping + currents + bathymetry). Ticker SASEMAR. Tiles. FAQ.</div>
+  <div class="agent-card"><span class="agent-num">AGT 2</span><span class="agent-title">/aviacion hub + boards</span>Hub + departures/arrivals boards top 5 aeropuertos en hero.</div>
+  <div class="agent-card"><span class="agent-num">AGT 3</span><span class="agent-title">/trenes hub + boards + ADIF</span>Hub + live boards top 10 estaciones + ADIF integration.</div>
+  <div class="agent-card"><span class="agent-num">AGT 4</span><span class="agent-title">/trafico hub</span>Hub completo + ticker incidencias.</div>
+  <div class="agent-card"><span class="agent-num">AGT 5</span><span class="agent-title">/transporte-publico hub</span>Hub + directory 15+ operadores.</div>
+  <div class="agent-card"><span class="agent-num">AGT 6</span><span class="agent-title">/meteo hub (NUEVO)</span>Weather radar EUMETSAT + alertas AEMET + forecast nacional.</div>
+  <div class="agent-card"><span class="agent-num">AGT 7</span><span class="agent-title">/combustible hub (NUEVO)</span>Consolida gasolineras + EV + histórico + marítimo.</div>
+  <div class="agent-card"><span class="agent-num">AGT 8</span><span class="agent-title">/calidad-aire hub</span>Hub ligero con CAMS forecast overlay.</div>
+  <div class="agent-card"><span class="agent-num">AGT 9</span><span class="agent-title">Home + nav + cross-links</span>Home con los 7 verticales como tiles. Mega menu update. Cross-vertical links.</div>
+</div>
+
+<!-- ─── Session 3 ─── -->
+
+<div class="session-header">
+  <h1><span class="num">S3</span>27K entity pages SSG</h1>
+  <div class="meta">Domingo 19 AM · 6h · 9 agentes paralelos</div>
+</div>
+
+<div class="agent-grid">
+  <div class="agent-card"><span class="agent-num">AGT 1</span><span class="agent-title">Estaciones tren</span><code>/trenes/estacion/[slug]</code> — 2.154 URLs. Info + live board + delay history.</div>
+  <div class="agent-card"><span class="agent-num">AGT 2</span><span class="agent-title">Líneas tren</span><code>/trenes/linea/[slug]</code> — 1.248 URLs. Origen + paradas + shape + brand.</div>
+  <div class="agent-card"><span class="agent-num">AGT 3</span><span class="agent-title">Aeropuertos</span><code>/aviacion/aeropuertos/[iata]</code> — 42 URLs. Runways + boards + pax.</div>
+  <div class="agent-card"><span class="agent-num">AGT 4</span><span class="agent-title">Puertos estatales</span><code>/maritimo/puertos/[slug]</code> — 50 URLs. Vessels docked + actividad + combustible.</div>
+  <div class="agent-card"><span class="agent-num">AGT 5</span><span class="agent-title">Carreteras nacionales</span><code>/carreteras/[ref]</code> — 300 URLs. IMD + live speed + incidentes.</div>
+  <div class="agent-card"><span class="agent-num">AGT 6</span><span class="agent-title">Buques activos</span><code>/maritimo/buques/[slug]</code> — ~10K URLs. Track + voyage + port calls.</div>
+  <div class="agent-card"><span class="agent-num">AGT 7</span><span class="agent-title">Gasolineras</span><code>/gasolineras/[id]</code> — 12.294 URLs. Precios + histórico + comparación.</div>
+  <div class="agent-card"><span class="agent-num">AGT 8</span><span class="agent-title">Estaciones meteo</span><code>/meteo/estaciones/[slug]</code> — 900 URLs. Temp + precip + forecast.</div>
+  <div class="agent-card"><span class="agent-num">AGT 9</span><span class="agent-title">Estaciones AQ</span><code>/calidad-aire/estaciones/[slug]</code> — 565 URLs. ICA + pollutants + forecast.</div>
+</div>
+
+<!-- ─── Session 4 ─── -->
+
+<div class="session-header">
+  <h1><span class="num">S4</span>Polish + QA + deploy + launch assets</h1>
+  <div class="meta">Domingo 19 PM · 6h · 9 agentes paralelos</div>
+</div>
+
+<div class="agent-grid">
+  <div class="agent-card"><span class="agent-num">AGT 1</span><span class="agent-title">Visual QA hubs</span>Playwright screenshots de los 8 hubs + 8 fullscreens en light/dark.</div>
+  <div class="agent-card"><span class="agent-num">AGT 2</span><span class="agent-title">Entity smoke tests</span>100 URLs random × 9 templates = 900 tests de carga + SEO.</div>
+  <div class="agent-card"><span class="agent-num">AGT 3</span><span class="agent-title">Performance</span>Lighthouse home + 7 hubs + 20 entities. Bundle size. CWV.</div>
+  <div class="agent-card"><span class="agent-num">AGT 4</span><span class="agent-title">SEO</span>Sitemap completa. Canonicals. JSON-LD. robots.txt. OG images.</div>
+  <div class="agent-card"><span class="agent-num">AGT 5</span><span class="agent-title">Accessibility</span>Axe audit home + 7 hubs. Contraste. Keyboard nav. Alt text.</div>
+  <div class="agent-card"><span class="agent-num">AGT 6</span><span class="agent-title">Dark mode parity</span>Cada página dark. TraficoMap dark. Contraste. Legibilidad.</div>
+  <div class="agent-card"><span class="agent-num">AGT 7</span><span class="agent-title">Mobile responsive</span>375/768/1024 en 8 hubs + sample entity pages.</div>
+  <div class="agent-card"><span class="agent-num">AGT 8</span><span class="agent-title">Monitoring</span>Dashboard Grafana + alert rules Loki + Uptime Kuma.</div>
+  <div class="agent-card"><span class="agent-num">AGT 9</span><span class="agent-title">Launch assets</span>Blog post borrador + screenshots + changelog + social copy.</div>
+</div>
+
+<!-- ─── Riesgos ─── -->
+
+<h1 class="page-break"><span class="num">03</span>Riesgos y mitigaciones</h1>
+
+<table>
+  <thead><tr><th>Riesgo</th><th class="num">Prob.</th><th class="num">Impacto</th><th>Mitigación</th></tr></thead>
+  <tbody>
+    <tr><td>TraficoMap migration rompe páginas silenciosamente</td><td class="num">Media</td><td class="num">Alta</td><td>Agente 2 S1 hace Playwright smoke tests post-migración</td></tr>
+    <tr><td>Build 27K páginas &gt; 60 min</td><td class="num">Media</td><td class="num">Media</td><td>ISR para templates de mayor volumen (buques, gasolineras)</td></tr>
+    <tr><td>EUMETSAT / CAMS / AEMET auth falla</td><td class="num">Baja-Media</td><td class="num">Media</td><td>/meteo hub sin forecast/radar, fallback a alertas hasta martes</td></tr>
+    <tr><td>AIS sigue roto al lunes</td><td class="num">Media</td><td class="num">Alta</td><td>Switch a datalastic.com free tier (~1h integración)</td></tr>
+    <tr><td>Next 16 rechaza ssr:false introducido por algún agente</td><td class="num">Baja</td><td class="num">Alta</td><td>Agente 1 S1 establece patrones canónicos documentados</td></tr>
+    <tr><td>/var/lib/docker se llena durante builds</td><td class="num">Baja</td><td class="num">Alta</td><td>Cron horario prune ya instalado. Monitor disk</td></tr>
+    <tr><td>OpenSky rate limit más duro</td><td class="num">Baja</td><td class="num">Media</td><td>Credenciales OpenSky (registro gratis) — requiere email del usuario</td></tr>
+    <tr><td>DB connection pool saturado</td><td class="num">Baja</td><td class="num">Alta</td><td>PgBouncer ya wired. Monitor pool durante builds</td></tr>
+  </tbody>
+</table>
+
+<h2>Plan de rollback</h2>
+<ul>
+  <li><strong>Git tag</strong> <code>pre-launch-2026-04-17</code> al arrancar S0 — último commit estable pre-roadmap.</li>
+  <li><strong>Docker image</strong> <code>trafico-web:pre-launch</code> taggeada antes de S1.</li>
+  <li><strong>Rollback 60s</strong>: <code>docker tag pre-launch latest && docker restart trafico-live</code>.</li>
+</ul>
+
+<h2>Plan de contingencia Go/No-Go (decisión Q8)</h2>
+<div class="callout callout-red">
+  <div class="callout-title">Si domingo 23:59 falta CUALQUIER cosa del scope</div>
+  <strong>DELAY automático al miércoles 22 abril 09:00</strong>. Lunes y martes se usan para cerrar gaps.
+  No hay half-launch, no hay publicación parcial. Consistencia > velocidad.
+</div>
+
+<!-- ─── Dependencias del usuario ─── -->
+
+<h1 class="page-break"><span class="num">04</span>Lo que necesito de ti antes de arrancar</h1>
+
+<table>
+  <thead><tr><th>Elemento</th><th>Por qué</th><th>Cuándo</th></tr></thead>
+  <tbody>
+    <tr><td>Credenciales <strong>OpenSky Network</strong> (user + password)</td><td>Aumentar rate limit para aviación (free en opensky-network.org)</td><td>Antes de S1 viernes</td></tr>
+    <tr><td>Credenciales <strong>CAMS / Copernicus</strong></td><td>Acceso AQ forecast 5-day (registro free en ads.atmosphere.copernicus.eu)</td><td>Antes de S1 viernes</td></tr>
+    <tr><td>Decisión <strong>AIS fix</strong></td><td>¿reactivar aisstream.io o switch datalastic.com?</td><td>S0 ahora</td></tr>
+    <tr><td>Confirmar URLs canónicas</td><td>Mantener las actuales + añadir <code>/meteo</code> y <code>/combustible</code></td><td>Default ok, confirmar</td></tr>
+  </tbody>
+</table>
+
+<h2>Acción inmediata</h2>
+<div class="callout callout-green">
+  <div class="callout-title">Siguiente paso</div>
+  Si este plan está bien, <strong>arranco Sesión 0 ahora mismo</strong>: 1-2h de limpieza P0 instantáneos (no requiere agentes).
+  Fin de sesión: git tag <code>pre-launch-2026-04-17</code>, ready para S1 mañana viernes.
+</div>
+
+<!-- ─── Fase 2 ─── -->
+
+<h1 class="page-break"><span class="num">05</span>Fase 2 — después del miércoles 22</h1>
+
+<p>Lo que se pospone expresamente (no se trabaja antes del launch):</p>
+
+<ol>
+  <li><strong>Stripe tier enforcement + billing portal</strong> — activar FREE/PRO/ENT en runtime con rate limits reales.</li>
+  <li><strong>API pública documentada</strong> — OpenAPI 3.1 + <code>/api-docs</code> renovado con Swagger UI.</li>
+  <li><strong>MCP server público</strong> — publicar <code>@trafico/mcp-server</code> en npm para que agentes IA consuman la data.</li>
+  <li><strong><code>/profesional</code> landing B2B</strong> con pricing y casos de uso.</li>
+  <li><strong>Outreach B2B dirigido</strong> — 20-30 logística 3PL / aseguradoras / operadores con demo personalizada.</li>
+  <li><strong>OpenTripPlanner</strong> journey planning multimodal — el primer planner road+rail+ferry en España.</li>
+  <li><strong>Corridor intelligence dashboard</strong> — Madrid-Bcn, Madrid-Valencia, Madrid-Sevilla como producto B2B.</li>
+  <li><strong>Cross-joins analíticos</strong> — <code>TrafficIncident × WeatherAlert</code>, <code>AccidentMicrodata × ClimateRecord</code>, <code>Vessel × PortCall</code> dwell time.</li>
+  <li><strong>Submarine cables overlay</strong> (TeleGeography gratis), pipelines, power grid.</li>
+  <li><strong>3D terrain + hillshade</strong> (SRTM/Copernicus DEM).</li>
+</ol>
+
+<p class="footer-last">
+  trafico.live · Inteligencia multimodal de transporte — Certus SPV, SLU · Desarrollado por Abemon<br>
+  Roadmap Launch · 17-04-2026 · Lanzamiento objetivo: 20-04-2026 09:00 CEST
+</p>
+
+</main>
+
+</body>
+</html>

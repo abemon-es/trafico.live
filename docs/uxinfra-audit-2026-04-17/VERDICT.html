@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>trafico.live — UX + Infra + Data Flow Verdict</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tl-600: #1b4bd5; --tl-700: #173a9a; --tl-500: #3b6cf8;
+    --tl-400: #5b8aff; --tl-300: #94b6ff; --tl-200: #c0d5ff;
+    --tl-100: #dde8ff; --tl-50: #f0f5ff;
+    --tl-amber-600: #b56200; --tl-amber-500: #d48139;
+    --signal-red: #dc2626; --signal-green: #059669; --signal-amber: #d48139;
+    --ink-900: #0b0f1a; --ink-800: #1f2937; --ink-700: #374151;
+    --ink-600: #4b5563; --ink-500: #6b7280; --ink-400: #94a3b8;
+    --ink-300: #cbd5e1; --ink-200: #e5e7eb; --ink-100: #f1f5f9;
+    --ink-50: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  @page {
+    size: A4; margin: 16mm 14mm 20mm 14mm;
+    @bottom-left { content: "trafico.live — UX + Infra + Data Flow Verdict · 2026-04-17"; font-family: 'DM Sans'; font-size: 8pt; color: #94a3b8; }
+    @bottom-right { content: "pág. " counter(page) " / " counter(pages); font-family: 'JetBrains Mono'; font-size: 8pt; color: #94a3b8; }
+  }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'DM Sans', sans-serif; font-size: 9.5pt; line-height: 1.55; color: var(--ink-800); margin: 0; }
+
+  .cover {
+    min-height: 245mm; padding: 24mm 0 0 0;
+    background: radial-gradient(ellipse 70% 60% at 85% -10%, var(--tl-100) 0, transparent 55%), radial-gradient(ellipse 60% 50% at -5% 110%, var(--tl-50) 0, transparent 50%), #fff;
+    page-break-after: always; position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ""; position: absolute; top: 0; right: 0; width: 55mm; height: 55mm;
+    background: repeating-linear-gradient(45deg, var(--tl-600) 0, var(--tl-600) 3px, transparent 3px, transparent 10px);
+    opacity: 0.08;
+  }
+  .cover-inner { position: relative; z-index: 1; }
+  .cover-logo { font-family: 'Exo 2'; font-weight: 800; font-size: 28pt; letter-spacing: -0.5pt; color: var(--ink-900); line-height: 1; }
+  .cover-logo .dot, .cover-logo .live { color: var(--tl-600); }
+  .cover-logo .live { font-weight: 600; }
+  .cover-kicker { font-family: 'JetBrains Mono'; font-size: 8pt; letter-spacing: 0.15em; text-transform: uppercase; color: var(--tl-600); margin: 36pt 0 10pt 0; font-weight: 500; }
+  .cover-title { font-family: 'Exo 2'; font-weight: 800; font-size: 42pt; line-height: 1.03; color: var(--ink-900); letter-spacing: -1.5pt; margin: 0 0 14pt 0; max-width: 165mm; }
+  .cover-sub { font-size: 13pt; line-height: 1.5; color: var(--ink-700); max-width: 155mm; margin-bottom: 28pt; }
+
+  .cover-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt;
+    margin-top: 24pt; max-width: 175mm;
+  }
+  .stat { background: #fff; border: 1px solid var(--ink-200); border-radius: 6pt; padding: 12pt 10pt; }
+  .stat-value { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 20pt; color: var(--tl-600); line-height: 1; letter-spacing: -1pt; }
+  .stat-label { font-family: 'DM Sans'; font-size: 8pt; color: var(--ink-500); margin-top: 6pt; text-transform: uppercase; letter-spacing: 0.08em; }
+  .stat-hint { font-family: 'DM Sans'; font-size: 8pt; color: var(--ink-700); margin-top: 3pt; line-height: 1.3; }
+  .stat.amber .stat-value { color: var(--tl-amber-600); }
+  .stat.red .stat-value { color: var(--signal-red); }
+  .stat.green .stat-value { color: var(--signal-green); }
+
+  .cover-meta {
+    margin-top: 24pt; padding: 14pt 16pt; background: #fff;
+    border: 1px solid var(--ink-200); border-left: 3pt solid var(--tl-600);
+    border-radius: 4pt; max-width: 155mm; font-size: 9.5pt;
+  }
+  .cover-meta dt { float: left; clear: left; width: 46mm; padding-right: 8pt;
+    color: var(--ink-500); font-family: 'JetBrains Mono'; font-size: 7.5pt;
+    text-transform: uppercase; letter-spacing: 0.1em; padding-top: 2pt; }
+  .cover-meta dd { margin-left: 46mm; margin-bottom: 6pt; color: var(--ink-800); }
+  .cover-meta dd:last-child { margin-bottom: 0; }
+
+  main { padding: 0 0 30pt 0; }
+  h1 {
+    font-family: 'Exo 2'; font-weight: 700; font-size: 21pt;
+    color: var(--ink-900); margin: 30pt 0 14pt 0;
+    padding-bottom: 6pt; border-bottom: 2pt solid var(--tl-600);
+    letter-spacing: -0.5pt; page-break-after: avoid;
+  }
+  h1 .num { font-family: 'JetBrains Mono'; color: var(--tl-600); margin-right: 10pt; font-weight: 400; font-size: 15pt; }
+  h2 { font-family: 'Exo 2'; font-weight: 700; font-size: 13pt; color: var(--ink-900); margin: 20pt 0 8pt 0; letter-spacing: -0.3pt; page-break-after: avoid; }
+  h3 { font-family: 'Exo 2'; font-weight: 600; font-size: 11pt; color: var(--tl-700); margin: 14pt 0 6pt 0; page-break-after: avoid; }
+  p { margin: 0 0 9pt 0; }
+  strong { color: var(--ink-900); font-weight: 700; }
+
+  .callout { background: var(--tl-50); border-left: 3pt solid var(--tl-600); padding: 12pt 14pt; margin: 12pt 0; border-radius: 4pt; font-size: 10pt; }
+  .callout-red { background: #fff5f5; border-left-color: var(--signal-red); }
+  .callout-amber { background: #fffaf0; border-left-color: var(--signal-amber); }
+  .callout-green { background: #f0fdf4; border-left-color: var(--signal-green); }
+  .callout-title { font-family: 'Exo 2'; font-weight: 700; font-size: 9.5pt; color: var(--tl-600); margin-bottom: 4pt; text-transform: uppercase; letter-spacing: 0.06em; }
+  .callout-red .callout-title { color: var(--signal-red); }
+  .callout-amber .callout-title { color: var(--tl-amber-600); }
+  .callout-green .callout-title { color: var(--signal-green); }
+
+  ul, ol { margin: 0 0 10pt 0; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code { font-family: 'JetBrains Mono'; font-size: 8.5pt; background: var(--ink-100); color: var(--tl-700); padding: 1pt 5pt; border-radius: 3pt; border: 1px solid var(--ink-200); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin: 8pt 0 14pt 0; page-break-inside: auto; }
+  table tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  th { text-align: left; font-family: 'Exo 2'; font-weight: 700; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-700); background: var(--tl-50); padding: 6pt 8pt; border-bottom: 1.5pt solid var(--tl-300); }
+  td { padding: 6pt 8pt; border-bottom: 0.5pt solid var(--ink-200); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: var(--ink-50); }
+  td.num, th.num { font-family: 'JetBrains Mono'; text-align: right; white-space: nowrap; }
+  td.priority { font-family: 'JetBrains Mono'; font-weight: 700; text-align: center; width: 14mm; font-size: 8pt; }
+  td.priority.p0 { color: var(--signal-red); background: #fff5f5; }
+  td.priority.p1 { color: var(--tl-amber-600); background: #fffaf0; }
+  td.priority.p2 { color: var(--tl-600); }
+  td.score { font-family: 'JetBrains Mono'; font-weight: 700; text-align: center; width: 12mm; font-size: 10pt; }
+  td.score.low { color: var(--signal-red); }
+  td.score.mid { color: var(--tl-amber-600); }
+  td.score.good { color: var(--signal-green); }
+
+  .perspectivas { display: grid; grid-template-columns: 1fr; gap: 10pt; margin: 12pt 0; }
+  .perspectiva { border: 1px solid var(--ink-200); border-radius: 6pt; padding: 12pt 14pt; background: #fff; }
+  .perspectiva-header { display: flex; align-items: baseline; gap: 8pt; margin-bottom: 6pt; padding-bottom: 5pt; border-bottom: 1px solid var(--ink-100); }
+  .perspectiva-tag { font-family: 'JetBrains Mono'; font-size: 7pt; color: #fff; background: var(--tl-600); padding: 2pt 6pt; border-radius: 3pt; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+  .perspectiva-title { font-family: 'Exo 2'; font-weight: 700; font-size: 11pt; color: var(--ink-900); }
+
+  .page-break { page-break-before: always; }
+  .footer-last { margin-top: 30pt; padding-top: 14pt; border-top: 1px solid var(--ink-200); font-size: 7.5pt; color: var(--ink-500); text-align: center; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="cover-inner">
+    <div class="cover-logo">trafico<span class="dot">.</span><span class="live">live</span></div>
+
+    <div class="cover-kicker">UX + Infra + Data Flow Audit · Internal</div>
+    <h1 class="cover-title">Infraestructura viva, 8 chains rotos, 32 violaciones WCAG</h1>
+    <div class="cover-sub">
+      9 agentes paralelos trazaron el flujo completo de datos (collector → DB → API → UI) y
+      auditaron componentes, templates, móvil, accesibilidad, performance, stack, monitoring y deploy.
+      <strong>Diagnóstico: 73% del sistema fluye bien, 27% tiene roturas invisibles al equipo.</strong>
+    </div>
+
+    <div class="cover-stats">
+      <div class="stat green"><div class="stat-value">22/30</div><div class="stat-label">Data chains OK</div><div class="stat-hint">73% del sistema fluye</div></div>
+      <div class="stat red"><div class="stat-value">8</div><div class="stat-label">Chains rotos</div><div class="stat-hint">invisibles al equipo</div></div>
+      <div class="stat amber"><div class="stat-value">32</div><div class="stat-label">WCAG AA fails</div><div class="stat-hint">8 críticas</div></div>
+      <div class="stat red"><div class="stat-value">36/43</div><div class="stat-label">Collectors sin monitor</div><div class="stat-hint">stale invisible</div></div>
+      <div class="stat amber"><div class="stat-value">153</div><div class="stat-label">Componentes</div><div class="stat-hint">15 canónicos, 98 ad-hoc</div></div>
+      <div class="stat red"><div class="stat-value">60%</div><div class="stat-label">Mobile ocupado</div><div class="stat-hint">layer panel en iPhone</div></div>
+      <div class="stat amber"><div class="stat-value">600</div><div class="stat-label">Cap req/s</div><div class="stat-hint">PgBouncer 25 conn</div></div>
+      <div class="stat"><div class="stat-value">€180</div><div class="stat-label">Coste mes</div><div class="stat-hint">infra actual</div></div>
+    </div>
+
+    <dl class="cover-meta">
+      <dt>Metodología</dt><dd>9 subagentes paralelos: 5 UX + 3 infra + 1 data flow end-to-end</dd>
+      <dt>Perspectivas comité</dt><dd>Producto / Técnica-Infra / Integridad de Datos</dd>
+      <dt>Cobertura</dt><dd>~3.200 líneas de informes · 9 dimensiones</dd>
+      <dt>Integración</dt><dd>Actualiza el <code>ROADMAP-LAUNCH-2026-04-20</code> (+45-50h distribuidas)</dd>
+      <dt>Archivo maestro</dt><dd><code>docs/uxinfra-audit-2026-04-17/VERDICT.md</code></dd>
+    </dl>
+  </div>
+</section>
+
+<main>
+
+<h1><span class="num">00</span>Tesis central</h1>
+
+<div class="callout">
+  <div class="callout-title">El comité en una frase</div>
+  <strong>73% del sistema fluye correctamente end-to-end; 27% tiene rupturas que el equipo desconocía.</strong>
+  La infra de observabilidad es madura (Grafana + Loki + Prometheus + Pushover) pero no observa la capa de datos: <strong>36 de 43 collectors no tienen staleness monitoring</strong>, lo que explica por qué durante el audit mismo encontramos aviation stale 41 min sin alerta alguna. UX tiene los huesos (5 archetypes, 10 layouts) pero 153 componentes de los cuales solo 15 canónicos y 98 ad-hoc generan inconsistencia visual y de código. Mobile es disfuncional en las dos páginas más visibles: el layer panel tapa 60% de iPhone.
+</div>
+
+<h2>Scores por dimensión</h2>
+
+<table>
+  <thead><tr><th>Dimensión</th><th class="score">Score</th><th>Hallazgo</th></tr></thead>
+  <tbody>
+    <tr><td>Componentes canónicos</td><td class="score low">2/10</td><td>153 total, ~15 canónicos, <code>StatCard</code> x11, FAQ inline x29</td></tr>
+    <tr><td>Templates consistencia</td><td class="score mid">5/10</td><td>5 archetypes, 10 páginas desvían (incluye <code>/trenes</code>)</td></tr>
+    <tr><td>Mobile UX</td><td class="score low">3/10</td><td>Layer panel 60% iPhone, checkboxes 16px, sin safe-area</td></tr>
+    <tr><td>Accesibilidad WCAG AA</td><td class="score low">3/10</td><td>32 violaciones, 8 críticas, sin skip link, sin <code>&lt;main&gt;</code></td></tr>
+    <tr><td>Performance</td><td class="score mid">5/10</td><td>recharts sync = 1.2MB parse burst en trenes+intensidad</td></tr>
+    <tr><td>Stack infra</td><td class="score mid">6/10</td><td>10 containers healthy, SPOF Postgres sin replica</td></tr>
+    <tr><td>Monitoring</td><td class="score mid">6/10</td><td>Infra madura, 36/43 collectors sin staleness rules</td></tr>
+    <tr><td>Deploy pipeline</td><td class="score low">4/10</td><td>5-15s downtime, sin blue-green, sin smoke tests</td></tr>
+    <tr><td>Disaster recovery</td><td class="score mid">5/10</td><td>Hourly R2 backups, RTO 1-4h, sin cross-DC</td></tr>
+    <tr><td><strong>Data flow E2E</strong></td><td class="score mid">7/10</td><td><strong>22/30 OK, 8 chains rotos</strong></td></tr>
+  </tbody>
+</table>
+
+<!-- ─── 3 Perspectivas ─── -->
+
+<h1 class="page-break"><span class="num">01</span>Veredicto del comité · 3 perspectivas</h1>
+
+<div class="perspectivas">
+  <div class="perspectiva">
+    <div class="perspectiva-header">
+      <span class="perspectiva-tag">Producto / UX</span>
+      <span class="perspectiva-title">¿Qué experimenta el usuario?</span>
+    </div>
+    <p><strong>Positivo.</strong> Base estructural existe — 5 archetypes detectables, 10 layouts, home + hubs cargan razonablemente, desktop experience coherente.</p>
+    <p><strong>Negativo (inmediato):</strong></p>
+    <ol>
+      <li><strong>Mobile es disfuncional</strong> en las 2 páginas más visibles. <code>/maritimo/mapa</code> y <code>/trenes</code>: layer panel ocupa 60% de iPhone. Checkboxes 16×16px cuando Apple HIG exige 44×44.</li>
+      <li><strong>32 violaciones WCAG AA</strong> (8 críticas). Sin <code>&lt;main&gt;</code> landmark, sin skip link. Usuarios teclado tabulan 8+ veces para llegar al contenido.</li>
+      <li><strong>Componentes caóticos.</strong> <code>StatCard</code> inline 11 veces, <code>FAQAccordion</code> inline en 29 páginas, no hay Button system. Cualquier cambio brand = 50+ archivos.</li>
+      <li><strong><code>/trenes</code> es el hub con más tráfico pero el más desviado</strong> del patrón canónico. Sin gradient hero, sin stats grid, breadcrumbs manuales.</li>
+    </ol>
+  </div>
+
+  <div class="perspectiva">
+    <div class="perspectiva-header">
+      <span class="perspectiva-tag">Técnica / Infra</span>
+      <span class="perspectiva-title">¿Aguanta?</span>
+    </div>
+    <p><strong>Positivo.</strong> <strong>Monitoring infra es madura</strong> — Prometheus + Loki + Grafana + Pushover + Blackbox + Beyla eBPF + Tempo. Nivel de SaaS serio. 10 containers healthy en Hetzner AX102 con headroom. Backups hourly a Cloudflare R2. Planetiler rebuild pipeline maduro.</p>
+    <p><strong>Negativo (urgente):</strong></p>
+    <ol>
+      <li><strong>36/43 collectors sin staleness monitoring.</strong> Toda la infra Grafana no observa la capa de datos. Aviation stale 41 min DURANTE el audit sin alerta firing.</li>
+      <li><strong>PgBouncer 25-connection pool cap a 600 req/s.</strong> Cuello de botella antes que CPU/RAM. A 100K DAU se rompe.</li>
+      <li><strong>Postgres sin replica.</strong> SPOF #1. Si cae, 121 endpoints caen a la vez.</li>
+      <li><strong>Deploy maturity 4/10.</strong> 5-15s downtime por deploy, sin blue-green, sin smoke tests.</li>
+      <li><strong><code>.env</code> permisos permisivos</strong> — credenciales legibles por cualquier proceso del host.</li>
+    </ol>
+  </div>
+
+  <div class="perspectiva">
+    <div class="perspectiva-header">
+      <span class="perspectiva-tag">Integridad de Datos</span>
+      <span class="perspectiva-title">¿Fluye lo que debería?</span>
+    </div>
+    <p>El agente de data flow descubrió <strong>8 chains rotos (27%)</strong> que ningún otro audit captó:</p>
+    <table style="margin-top:8pt;">
+      <thead><tr><th class="num">#</th><th>Dominio</th><th>Rotura</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Air Quality</td><td>Silent fail desde 3-abr (MITECO source)</td></tr>
+        <tr><td class="num">2</td><td>Movilidad corredores</td><td>API default a ayer pero data acaba 2024-01-07 → <code>[]</code></td></tr>
+        <tr><td class="num">3</td><td>SASEMAR emergencies</td><td>30-day filter excluye histórico 2019-2023</td></tr>
+        <tr><td class="num">4</td><td>/aviacion/aeropuertos</td><td>404 — no existe <code>page.tsx</code></td></tr>
+        <tr><td class="num">5</td><td>IMD flows</td><td>max año 2019, refresh 2022 no corrió</td></tr>
+        <tr><td class="num">6</td><td>Climate stations</td><td>947 stations + 4.4M records orphan — UI no consume</td></tr>
+        <tr><td class="num">7</td><td>Transit stops</td><td>225K stops en DB, sin API endpoint</td></tr>
+        <tr><td class="num">8</td><td>CollectorHeartbeat</td><td>Migration missing — P2021 en cada cycle</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8pt;"><strong>Traducción:</strong> hay datos de calidad que el usuario nunca verá porque el camino hasta el navegador está cortado. Estimación: <strong>~27% de fuga de valor</strong>.</p>
+  </div>
+</div>
+
+<!-- ─── Matriz ─── -->
+
+<h1 class="page-break"><span class="num">02</span>Matriz de prioridades integrada</h1>
+
+<div class="callout callout-amber">
+  <div class="callout-title">Integración con ROADMAP-LAUNCH-2026-04-20</div>
+  Este audit añade <strong>~45-50h adicionales</strong> distribuidas. Capacity revisado: S1 y S2 quedan ligeramente sobredimensionadas (+6h cada). Opciones: extender sesiones, recortar items a Fase 2, o delay al miércoles (decisión Q8 lo permite).
+</div>
+
+<h2>P0 — Sesión 1 del sprint</h2>
+
+<table>
+  <thead><tr><th class="num">#</th><th>Acción</th><th class="num">h</th><th>Origen</th><th class="priority">Prio</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>Debug collector <code>air-quality</code> (MITECO source broken)</td><td class="num">2h</td><td>DATA 08</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">2</td><td>Fix <code>/api/movilidad/corredores</code> date fallback</td><td class="num">30m</td><td>DATA 08</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">3</td><td>Remove SASEMAR 30-day filter</td><td class="num">15m</td><td>DATA 08</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">4</td><td>Create <code>/src/app/aviacion/aeropuertos/page.tsx</code> (catalog)</td><td class="num">1h</td><td>DATA 08</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">5</td><td>Run <code>prisma migrate deploy</code> para <code>CollectorHeartbeat</code></td><td class="num">5m</td><td>DATA 08</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">6</td><td>Fix recharts sync imports en <code>/trenes</code> y <code>/intensidad</code></td><td class="num">30m</td><td>UX 05</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">7</td><td>Add skip-to-content link + <code>&lt;main id="main-content"&gt;</code></td><td class="num">2h</td><td>UX 04</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">8</td><td>Extend <code>/api/health</code> a 43 collectors + Grafana alerta</td><td class="num">4h</td><td>INFRA 07</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">9</td><td><code>chmod 600 .env</code> + rotate credenciales expuestas</td><td class="num">30m</td><td>INFRA 09</td><td class="priority p0">P0</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Total P0 añadido:</strong> ~10h distribuidas entre agentes libres.</p>
+
+<h2>P1 — Integrado en sprint (sin sesión extra)</h2>
+
+<table>
+  <thead><tr><th class="num">#</th><th>Acción</th><th>Sesión</th><th>Origen</th></tr></thead>
+  <tbody>
+    <tr><td class="num">10</td><td>Canonical <code>&lt;Button&gt;</code> system (variantes + tamaños)</td><td>S1 agent 1</td><td>UX 01</td></tr>
+    <tr><td class="num">11</td><td>Canonical <code>&lt;StatCard&gt;</code> (eliminar 11 copias inline)</td><td>S2 verticales</td><td>UX 01</td></tr>
+    <tr><td class="num">12</td><td>Template <code>&lt;VerticalHub&gt;</code> obligatorio para 7 hubs</td><td>S2 agents 1-7</td><td>UX 02</td></tr>
+    <tr><td class="num">13</td><td>Rework <code>/trenes</code> al patrón canónico</td><td>S2 agent 3</td><td>UX 02</td></tr>
+    <tr><td class="num">14</td><td>Default layer panel collapsed en <code>&lt;md</code> viewports</td><td>S4 mobile</td><td>UX 03</td></tr>
+    <tr><td class="num">15</td><td>Touch targets 16px → 44px minimum</td><td>S4 mobile</td><td>UX 03</td></tr>
+    <tr><td class="num">16</td><td><code>aria-current</code>, <code>aria-live</code>, <code>aria-label</code> icon buttons</td><td>S4 a11y</td><td>UX 04</td></tr>
+    <tr><td class="num">17</td><td>Focus trap en modals + cookie consent</td><td>S4 a11y</td><td>UX 04</td></tr>
+    <tr><td class="num">18</td><td><code>&lt;img&gt;</code> → <code>next/image</code> en cameras pages</td><td>S4 perf</td><td>UX 05</td></tr>
+    <tr><td class="num">19</td><td>Fix CF <code>CF-Cache-Status: DYNAMIC</code> sitewide</td><td>S4 perf</td><td>UX 05</td></tr>
+    <tr><td class="num">20</td><td>Create <code>/meteo/estaciones/[slug]</code> + <code>/trenes/estacion/[slug]</code></td><td>S3 entity</td><td>DATA 08</td></tr>
+    <tr><td class="num">21</td><td>Create <code>/api/transporte/stops</code> endpoint (225K stops)</td><td>S3 entity</td><td>DATA 08</td></tr>
+    <tr><td class="num">22</td><td>Re-trigger IMD 2022 collector + auto refresh</td><td>S1 free</td><td>DATA 08</td></tr>
+    <tr><td class="num">23</td><td>PgBouncer 25 → 50 connections</td><td>S4 deploy</td><td>INFRA 09</td></tr>
+  </tbody>
+</table>
+
+<h2 class="page-break">P2 — Post-launch (Fase 2 desde miércoles 22)</h2>
+
+<table>
+  <thead><tr><th class="num">#</th><th>Acción</th><th>Origen</th></tr></thead>
+  <tbody>
+    <tr><td class="num">24</td><td>Postgres read replica (secondary para reads)</td><td>INFRA 06/09</td></tr>
+    <tr><td class="num">25</td><td>Second web container + load balancer</td><td>INFRA 09</td></tr>
+    <tr><td class="num">26</td><td>Sentry release tagging en deploy pipeline</td><td>INFRA 07</td></tr>
+    <tr><td class="num">27</td><td><code>trafico-live.json</code> Grafana dashboard dedicado</td><td>INFRA 07</td></tr>
+    <tr><td class="num">28</td><td>Blue-green deploys</td><td>INFRA 09</td></tr>
+    <tr><td class="num">29</td><td>Full canonical component library (<code>src/components/ui/</code>)</td><td>UX 01</td></tr>
+    <tr><td class="num">30</td><td>Storybook o dev preview de componentes</td><td>UX 01</td></tr>
+    <tr><td class="num">31</td><td>Safe-area insets across all pages</td><td>UX 03</td></tr>
+    <tr><td class="num">32</td><td>aisstream.io fallback (datalastic.com) aunque hoy funcione</td><td>INFRA 06</td></tr>
+    <tr><td class="num">33</td><td>Canonical <code>&lt;FAQAccordion&gt;</code> + <code>&lt;TickerStrip&gt;</code></td><td>UX 01</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── Expectativas ─── -->
+
+<h1 class="page-break"><span class="num">03</span>Expectativa post-launch</h1>
+
+<table>
+  <thead><tr><th>Métrica técnica</th><th class="num">Pre-audit</th><th class="num">Post-launch</th><th class="num">Delta</th></tr></thead>
+  <tbody>
+    <tr><td>Chains de datos OK</td><td class="num">73% (22/30)</td><td class="num">100% (30/30)</td><td class="num">+8 chains</td></tr>
+    <tr><td>WCAG AA violations</td><td class="num">32</td><td class="num">&lt;5</td><td class="num">-85%</td></tr>
+    <tr><td>Components ad-hoc</td><td class="num">~98</td><td class="num">~60</td><td class="num">-40%</td></tr>
+    <tr><td>Monitoring collector coverage</td><td class="num">7/43</td><td class="num">43/43</td><td class="num">+515%</td></tr>
+    <tr><td>Mobile usability score</td><td class="num">3/10</td><td class="num">7/10</td><td class="num">+133%</td></tr>
+    <tr><td>Performance (home JS parse)</td><td class="num">1.2MB burst</td><td class="num">~600KB</td><td class="num">-50%</td></tr>
+    <tr><td>PgBouncer capacity</td><td class="num">600 req/s</td><td class="num">1.200 req/s</td><td class="num">2×</td></tr>
+  </tbody>
+</table>
+
+<h2>Métricas de negocio (estimado)</h2>
+<ul>
+  <li><strong>~30% reducción bounce rate móvil</strong> tras fix del layer panel</li>
+  <li><strong>~15% mejora CWV scores</strong> tras recharts dynamic + next/image</li>
+  <li><strong>~25% menos duplicación contenido</strong> (sinergia con SEO audit)</li>
+  <li><strong>~10% uplift orgánico</strong> a 3-4 semanas tras indexación entity pages</li>
+</ul>
+
+<!-- ─── Tres riesgos ─── -->
+
+<h1 class="page-break"><span class="num">04</span>Tres riesgos que el comité destaca</h1>
+
+<div class="callout callout-red">
+  <div class="callout-title">Riesgo #1 — Mobile no funcional</div>
+  <strong>El layer panel móvil es un crítico no discutible.</strong> Si lanzamos con <code>/maritimo/mapa</code> y <code>/trenes</code> inusables en iPhone, el feedback será "es lento" o "no funciona" — percepción errónea pero real. Fix S4 obligatorio.
+</div>
+
+<div class="callout callout-red">
+  <div class="callout-title">Riesgo #2 — Chains de datos rotos</div>
+  <strong>Los 8 chain breaks deben resolverse antes del launch.</strong> Particularmente air-quality (stale desde 3-abr), SASEMAR (30-day filter) y <code>/aviacion/aeropuertos</code> (404). Son 3 horas totales pero son bugs de producto visibles.
+</div>
+
+<div class="callout callout-red">
+  <div class="callout-title">Riesgo #3 — Monitoring coverage 7/43</div>
+  <strong>Es el riesgo sistémico más grande.</strong> Aviation stale 41 min durante el audit sin alerta implica que post-launch problemas similares pasarán invisibles hasta que usuarios se quejen. Fix S4 de 4h resuelve 515% de mejora en cobertura.
+</div>
+
+<!-- ─── Decisión final ─── -->
+
+<h1><span class="num">05</span>Recomendación final</h1>
+
+<div class="callout callout-green">
+  <div class="callout-title">Decisión</div>
+  <strong>Sí al launch lunes</strong> con el scope ampliado tras los 3 audits consolidados (launch + SEO/UX + UX/Infra/Data).
+  <strong>Delay a miércoles</strong> es la válvula de escape si S1 o S2 se desbordan — decisión Q8 lo permite.
+</div>
+
+<h2>Orden sugerido de próximos pasos</h2>
+<ol>
+  <li>Tú apruebas este verdict (o pides cambios).</li>
+  <li>Actualizo el <code>ROADMAP-LAUNCH-2026-04-20</code> con los 23 items P0/P1 integrados.</li>
+  <li>Regenero el PDF ejecutivo del roadmap con scope actualizado.</li>
+  <li>Arrancamos S1 mañana viernes — 9 agentes con scope claro.</li>
+</ol>
+
+<h2>Archivos de referencia</h2>
+<ul>
+  <li><code>01-component-library.md</code> — Inventory de 153 componentes</li>
+  <li><code>02-page-templates.md</code> — 5 archetypes + 10 deviaciones</li>
+  <li><code>03-mobile-responsive.md</code> — 18 issues en 3 breakpoints</li>
+  <li><code>04-accessibility.md</code> — 32 WCAG AA violaciones</li>
+  <li><code>05-performance.md</code> — Real page weights + JS bundle</li>
+  <li><code>06-stack-inventory.md</code> — 10 containers + arquitectura</li>
+  <li><code>07-monitoring.md</code> — Coverage gap 7/43</li>
+  <li><code>08-data-flow.md</code> — <strong>30 dominios trazados E2E, 8 rotos</strong></li>
+  <li><code>09-deploy-scale-cost.md</code> — Deploy + SPOFs + coste</li>
+</ul>
+
+<p class="footer-last">
+  trafico.live · Inteligencia multimodal de transporte — Certus SPV, SLU · Desarrollado por Abemon<br>
+  UX + Infra + Data Flow Audit · 17-04-2026 · Integrable con ROADMAP-LAUNCH-2026-04-20
+</p>
+
+</main>
+
+</body>
+</html>

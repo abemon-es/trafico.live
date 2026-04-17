@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>trafico.live — SEO + UX Audit Verdict</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tl-600: #1b4bd5; --tl-700: #173a9a; --tl-500: #3b6cf8;
+    --tl-400: #5b8aff; --tl-300: #94b6ff; --tl-200: #c0d5ff;
+    --tl-100: #dde8ff; --tl-50: #f0f5ff;
+    --tl-amber-600: #b56200; --tl-amber-500: #d48139;
+    --signal-red: #dc2626; --signal-green: #059669; --signal-amber: #d48139;
+    --ink-900: #0b0f1a; --ink-800: #1f2937; --ink-700: #374151;
+    --ink-600: #4b5563; --ink-500: #6b7280; --ink-400: #94a3b8;
+    --ink-300: #cbd5e1; --ink-200: #e5e7eb; --ink-100: #f1f5f9;
+    --ink-50: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  @page {
+    size: A4; margin: 16mm 14mm 20mm 14mm;
+    @bottom-left { content: "trafico.live — SEO + UX Audit Verdict · 2026-04-17"; font-family: 'DM Sans'; font-size: 8pt; color: #94a3b8; }
+    @bottom-right { content: "pág. " counter(page) " / " counter(pages); font-family: 'JetBrains Mono'; font-size: 8pt; color: #94a3b8; }
+  }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'DM Sans', sans-serif; font-size: 9.5pt; line-height: 1.55; color: var(--ink-800); margin: 0; }
+
+  .cover {
+    min-height: 245mm; padding: 24mm 0 0 0;
+    background: radial-gradient(ellipse 70% 60% at 85% -10%, var(--tl-100) 0, transparent 55%), radial-gradient(ellipse 60% 50% at -5% 110%, var(--tl-50) 0, transparent 50%), #fff;
+    page-break-after: always; position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ""; position: absolute; top: 0; right: 0; width: 55mm; height: 55mm;
+    background: repeating-linear-gradient(45deg, var(--tl-600) 0, var(--tl-600) 3px, transparent 3px, transparent 10px);
+    opacity: 0.08;
+  }
+  .cover-inner { position: relative; z-index: 1; }
+  .cover-logo { font-family: 'Exo 2'; font-weight: 800; font-size: 28pt; letter-spacing: -0.5pt; color: var(--ink-900); line-height: 1; }
+  .cover-logo .dot, .cover-logo .live { color: var(--tl-600); }
+  .cover-logo .live { font-weight: 600; }
+  .cover-kicker { font-family: 'JetBrains Mono'; font-size: 8pt; letter-spacing: 0.15em; text-transform: uppercase; color: var(--tl-600); margin: 36pt 0 10pt 0; font-weight: 500; }
+  .cover-title { font-family: 'Exo 2'; font-weight: 800; font-size: 42pt; line-height: 1.03; color: var(--ink-900); letter-spacing: -1.5pt; margin: 0 0 14pt 0; max-width: 165mm; }
+  .cover-sub { font-size: 13pt; line-height: 1.5; color: var(--ink-700); max-width: 155mm; margin-bottom: 28pt; }
+
+  .cover-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt;
+    margin-top: 24pt; max-width: 175mm;
+  }
+  .stat {
+    background: #fff; border: 1px solid var(--ink-200); border-radius: 6pt; padding: 12pt 10pt;
+  }
+  .stat-value {
+    font-family: 'JetBrains Mono'; font-weight: 700; font-size: 22pt;
+    color: var(--tl-600); line-height: 1; letter-spacing: -1pt;
+  }
+  .stat-label {
+    font-family: 'DM Sans'; font-size: 8pt; color: var(--ink-500);
+    margin-top: 6pt; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .stat-hint {
+    font-family: 'DM Sans'; font-size: 8pt; color: var(--ink-700);
+    margin-top: 3pt; line-height: 1.3;
+  }
+  .stat.amber .stat-value { color: var(--tl-amber-600); }
+  .stat.red .stat-value { color: var(--signal-red); }
+  .stat.green .stat-value { color: var(--signal-green); }
+
+  .cover-meta {
+    margin-top: 24pt; padding: 14pt 16pt; background: #fff;
+    border: 1px solid var(--ink-200); border-left: 3pt solid var(--tl-600);
+    border-radius: 4pt; max-width: 155mm; font-size: 9.5pt;
+  }
+  .cover-meta dt { float: left; clear: left; width: 46mm; padding-right: 8pt;
+    color: var(--ink-500); font-family: 'JetBrains Mono'; font-size: 7.5pt;
+    text-transform: uppercase; letter-spacing: 0.1em; padding-top: 2pt; }
+  .cover-meta dd { margin-left: 46mm; margin-bottom: 6pt; color: var(--ink-800); }
+  .cover-meta dd:last-child { margin-bottom: 0; }
+
+  main { padding: 0 0 30pt 0; }
+  h1 {
+    font-family: 'Exo 2'; font-weight: 700; font-size: 21pt;
+    color: var(--ink-900); margin: 30pt 0 14pt 0;
+    padding-bottom: 6pt; border-bottom: 2pt solid var(--tl-600);
+    letter-spacing: -0.5pt; page-break-after: avoid;
+  }
+  h1 .num {
+    font-family: 'JetBrains Mono'; color: var(--tl-600);
+    margin-right: 10pt; font-weight: 400; font-size: 15pt;
+  }
+  h2 {
+    font-family: 'Exo 2'; font-weight: 700; font-size: 13pt;
+    color: var(--ink-900); margin: 20pt 0 8pt 0;
+    letter-spacing: -0.3pt; page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'Exo 2'; font-weight: 600; font-size: 11pt;
+    color: var(--tl-700); margin: 14pt 0 6pt 0; page-break-after: avoid;
+  }
+  p { margin: 0 0 9pt 0; }
+  strong { color: var(--ink-900); font-weight: 700; }
+
+  .callout {
+    background: var(--tl-50); border-left: 3pt solid var(--tl-600);
+    padding: 12pt 14pt; margin: 12pt 0; border-radius: 4pt; font-size: 10pt;
+  }
+  .callout-red { background: #fff5f5; border-left-color: var(--signal-red); }
+  .callout-amber { background: #fffaf0; border-left-color: var(--signal-amber); }
+  .callout-green { background: #f0fdf4; border-left-color: var(--signal-green); }
+  .callout-title {
+    font-family: 'Exo 2'; font-weight: 700; font-size: 9.5pt;
+    color: var(--tl-600); margin-bottom: 4pt;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .callout-red .callout-title { color: var(--signal-red); }
+  .callout-amber .callout-title { color: var(--tl-amber-600); }
+  .callout-green .callout-title { color: var(--signal-green); }
+
+  ul, ol { margin: 0 0 10pt 0; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code {
+    font-family: 'JetBrains Mono'; font-size: 8.5pt;
+    background: var(--ink-100); color: var(--tl-700);
+    padding: 1pt 5pt; border-radius: 3pt; border: 1px solid var(--ink-200);
+  }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: 8.5pt;
+    margin: 8pt 0 14pt 0; page-break-inside: auto;
+  }
+  table tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  th {
+    text-align: left; font-family: 'Exo 2'; font-weight: 700;
+    font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink-700); background: var(--tl-50);
+    padding: 6pt 8pt; border-bottom: 1.5pt solid var(--tl-300);
+  }
+  td {
+    padding: 6pt 8pt; border-bottom: 0.5pt solid var(--ink-200);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: var(--ink-50); }
+  td.num, th.num { font-family: 'JetBrains Mono'; text-align: right; white-space: nowrap; }
+  td.priority {
+    font-family: 'JetBrains Mono'; font-weight: 700; text-align: center;
+    width: 14mm; font-size: 8pt;
+  }
+  td.priority.p0 { color: var(--signal-red); background: #fff5f5; }
+  td.priority.p1 { color: var(--tl-amber-600); background: #fffaf0; }
+  td.priority.p2 { color: var(--tl-600); }
+  td.priority.p3 { color: var(--ink-500); }
+
+  .perspectivas {
+    display: grid; grid-template-columns: 1fr; gap: 10pt; margin: 12pt 0;
+  }
+  .perspectiva {
+    border: 1px solid var(--ink-200); border-radius: 6pt;
+    padding: 12pt 14pt; background: #fff;
+  }
+  .perspectiva-header {
+    display: flex; align-items: baseline; gap: 8pt;
+    margin-bottom: 6pt; padding-bottom: 5pt;
+    border-bottom: 1px solid var(--ink-100);
+  }
+  .perspectiva-tag {
+    font-family: 'JetBrains Mono'; font-size: 7pt; color: #fff;
+    background: var(--tl-600); padding: 2pt 6pt; border-radius: 3pt;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+  }
+  .perspectiva-title {
+    font-family: 'Exo 2'; font-weight: 700; font-size: 11pt; color: var(--ink-900);
+  }
+
+  .page-break { page-break-before: always; }
+  .footer-last {
+    margin-top: 30pt; padding-top: 14pt; border-top: 1px solid var(--ink-200);
+    font-size: 7.5pt; color: var(--ink-500); text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="cover-inner">
+    <div class="cover-logo">trafico<span class="dot">.</span><span class="live">live</span></div>
+
+    <div class="cover-kicker">SEO + UX Audit Verdict · Internal</div>
+    <h1 class="cover-title">Infraestructura sólida, empaquetado roto</h1>
+    <div class="cover-sub">
+      9 agentes paralelos analizaron SEO técnico, on-site, content gap,
+      470 keywords en tres familias y la UX completa (header, footer, design system).
+      Diagnóstico: <strong>trafico.live puede dominar el nicho multimodal español</strong>
+      tras 12h de fixes básicos que bloquean el ranking hoy.
+    </div>
+
+    <div class="cover-stats">
+      <div class="stat"><div class="stat-value">322</div><div class="stat-label">Páginas totales</div><div class="stat-hint">124 static + 198 templates</div></div>
+      <div class="stat"><div class="stat-value">470</div><div class="stat-label">Keywords analizadas</div><div class="stat-hint">25% cobertura parcial</div></div>
+      <div class="stat amber"><div class="stat-value">57</div><div class="stat-label">Títulos dup</div><div class="stat-hint">47 doble suffix</div></div>
+      <div class="stat amber"><div class="stat-value">32</div><div class="stat-label">Sin canonical</div><div class="stat-hint">falsa duplicate-content</div></div>
+      <div class="stat red"><div class="stat-value">117</div><div class="stat-label">Sin og:image</div><div class="stat-hint">sharing feo</div></div>
+      <div class="stat red"><div class="stat-value">4K</div><div class="stat-label">URLs missing sitemap</div><div class="stat-hint">stations + lines + AQ</div></div>
+      <div class="stat"><div class="stat-value">76→57</div><div class="stat-label">Footer links</div><div class="stat-hint">-25% tras redesign</div></div>
+      <div class="stat green"><div class="stat-value">18h</div><div class="stat-label">Total fix time</div><div class="stat-hint">cabe en sprint launch</div></div>
+    </div>
+
+    <dl class="cover-meta">
+      <dt>Metodología</dt><dd>9 subagentes paralelos + síntesis comité 3 perspectivas</dd>
+      <dt>Cobertura</dt><dd>3.279 líneas de informes · 9 dimensiones</dd>
+      <dt>Integración</dt><dd>Se acopla al <code>ROADMAP-LAUNCH-2026-04-20</code> (add-on 18h)</dd>
+      <dt>Archivo maestro</dt><dd><code>docs/seo-audit-2026-04-17/VERDICT.md</code></dd>
+    </dl>
+  </div>
+</section>
+
+<main>
+
+<h1><span class="num">00</span>Tesis central</h1>
+
+<div class="callout">
+  <div class="callout-title">El comité en una frase</div>
+  <strong>trafico.live tiene la infraestructura SEO para dominar el nicho multimodal español, pero cada página individual lleva errores básicos que bloquean ese dominio.</strong>
+  El contenido principal existe; el empaquetado (titles, canonicals, H1, OG images) tiene defectos reparables en menos de 24 horas.
+  El <em>chrome</em> (header navy + footer sobrecargado) trabaja contra la experiencia, no a favor.
+  Un push de 2 sesiones (~12h) en P0 + P1 sube drásticamente tanto ranking orgánico como percepción de marca.
+</div>
+
+<p>Cifras clave consolidadas de los 9 informes:</p>
+
+<table>
+  <thead><tr><th>Dimensión</th><th>Hallazgo</th></tr></thead>
+  <tbody>
+    <tr><td>Sitemap completeness</td><td>62/100 — faltan ~4.000 URLs (rail stations + lines + AQ + climate)</td></tr>
+    <tr><td>Structured data</td><td>45% coverage — home + gasolineras ricas, resto pobre</td></tr>
+    <tr><td>Titles duplicados</td><td>57, de los cuales 47 con <code>| trafico.live | trafico.live</code> doble suffix</td></tr>
+    <tr><td>Canonical</td><td>32 páginas sin <code>alternates.canonical</code></td></tr>
+    <tr><td>H1</td><td>30 páginas sin H1 · 2 con H1 duplicado</td></tr>
+    <tr><td>OG images</td><td>117 páginas sin og:image</td></tr>
+    <tr><td>Orphans</td><td>3 páginas sin links entrantes</td></tr>
+    <tr><td>Breadcrumbs</td><td>Ausentes en todo el subárbol <code>/trenes/*</code> y data platform</td></tr>
+    <tr><td>Thin content</td><td>15-25 páginas bajo 300 palabras</td></tr>
+    <tr><td>Keywords analizadas</td><td>470 (100 marítimo/aéreo + 270 road/rail/transit + 100 meteo/fuel/AQ)</td></tr>
+    <tr><td>Keyword coverage</td><td>~25% parcial · ~75% sin cobertura directa</td></tr>
+    <tr><td>Header</td><td>Navy dominante crea conflicto con contenido light · 12 issues</td></tr>
+    <tr><td>Footer</td><td>76 links oversaturado · duplicación estructural</td></tr>
+    <tr><td>Design tokens</td><td>18 modificaciones para paleta white-first</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── 3 Perspectivas ─── -->
+
+<h1 class="page-break"><span class="num">01</span>Veredicto del comité · 3 perspectivas</h1>
+
+<div class="perspectivas">
+  <div class="perspectiva">
+    <div class="perspectiva-header">
+      <span class="perspectiva-tag">SEO Técnico</span>
+      <span class="perspectiva-title">¿Qué ve Google?</span>
+    </div>
+    <p><strong>Fortalezas.</strong> Sitemap existe (14 shards, ~41K URLs), robots correcto, Next.js 16 metadata API consistente en la mayoría de layouts, structured data en home + gasolineras.</p>
+    <p><strong>Fallos graves (P0):</strong></p>
+    <ul>
+      <li><strong>47 títulos con doble suffix</strong> <code>Algo | trafico.live | trafico.live</code> — el layout root añade <code>| trafico.live</code> automático y 47 pages ya lo tienen embebido. Google muestra literal.</li>
+      <li><strong>32 páginas sin <code>alternates.canonical</code></strong> — todas auto-reportan la home como canonical; masiva falsa duplicate-content.</li>
+      <li><strong>117 páginas sin og:image</strong> — sharing en redes es feo.</li>
+      <li><strong>Sitemap falta 4K URLs</strong> — rail stations + lines + AQ + climate ausentes.</li>
+    </ul>
+    <p><strong>Fallos medios (P1):</strong> structured data inconsistente — falta <code>Place</code>, <code>Product</code>, <code>FlightReservation</code>, <code>Event</code>. Cameras usan <code>&lt;img&gt;</code> crudo (CLS). Home intermittent 502 en CF cache miss.</p>
+  </div>
+
+  <div class="perspectiva">
+    <div class="perspectiva-header">
+      <span class="perspectiva-tag">Keywords + Content</span>
+      <span class="perspectiva-title">¿Qué buscan los usuarios?</span>
+    </div>
+    <p><strong>Oportunidades top ranked por ROI:</strong></p>
+    <ol>
+      <li><strong>42 aeropuertos × salidas/llegadas</strong> — 200K+ búsquedas/mes combinadas. Template reutilizable desde DB. Coincide con S3 entity pages del roadmap launch.</li>
+      <li><strong>2.154 estaciones tren × incidencias/próximos</strong> — Renfe GTFS-RT ya lo tenemos. Volumen agregado similar. Coincide con S3.</li>
+      <li><strong>"radar aviones España tiempo real"</strong> (50K+/mo) — FlightRadar24 domina; tenemos OpenSky, falta landing SEO-optimizada.</li>
+      <li><strong>"estado del mar España"</strong> (10-100K/mo) — AEMET tiene data pero UX pobre; construir <code>/maritimo/estado-del-mar</code>.</li>
+      <li><strong>"retrasos Renfe hoy"</strong> (L) — tenemos data tiempo real sin landing dedicada.</li>
+      <li><strong>DANA + alertas AEMET con angle "impacto tráfico"</strong> — nadie combina tiempo + carreteras.</li>
+      <li><strong>Madrid triple pack</strong>: <code>/madrid/tiempo</code> + <code>/madrid/gasolineras-baratas</code> + <code>/madrid/calidad-aire</code> — ninguna competencia integra los tres.</li>
+      <li><strong>Radar lluvia España</strong> — tenemos MapLibre + llega EUMETSAT en S1, falta landing SEO.</li>
+      <li><strong>Bilbao transit</strong> — near-zero competition para metro + Euskotren tiempo real.</li>
+    </ol>
+    <p><strong>Content gap top-5 a crear (Fase 2):</strong></p>
+    <ol>
+      <li>Ferry Baleares/Canarias guide (M — 6h)</li>
+      <li>Aeropuertos España ranking listicle (S — 3h)</li>
+      <li>ICA calidad del aire explainer (S — 3h)</li>
+      <li>DANA evergreen + landings estacionales (M — 6h)</li>
+      <li>Radar lluvia cómo funciona (S — 3h)</li>
+    </ol>
+  </div>
+
+  <div class="perspectiva">
+    <div class="perspectiva-header">
+      <span class="perspectiva-tag">UX / Brand</span>
+      <span class="perspectiva-title">¿Qué percibe el usuario?</span>
+    </div>
+    <p><strong>Problema central.</strong> Conflicto visual: contenido en blanco/light dentro de un chrome dark navy (header + footer). Esto rompe percepción de "profesional limpio", crea islas de contraste agresivo, dificulta reading flow, obliga a mantener dos paletas en paralelo.</p>
+    <p><strong>Solución: full white-first design system.</strong> Dark mode sigue disponible pero opt-in, no default.</p>
+    <table>
+      <thead><tr><th>Componente</th><th>De</th><th>A</th><th class="num">h</th></tr></thead>
+      <tbody>
+        <tr><td>Header</td><td>Navy <code>tl-950</code> gradient</td><td><code>bg-white/95 backdrop-blur</code></td><td class="num">4-6h</td></tr>
+        <tr><td>Footer</td><td>Navy + 76 links</td><td>White + 57 links 5 cols</td><td class="num">2-3h</td></tr>
+        <tr><td>Tokens</td><td>2 backgrounds</td><td>6 bg scale + 4 shadow levels</td><td class="num">1h</td></tr>
+        <tr><td>Cards</td><td>Variados</td><td>Canónico <code>bg-white border shadow-xs</code></td><td class="num">2h</td></tr>
+        <tr><td>CTAs</td><td>Mixto</td><td><code>bg-tl-600 text-white</code></td><td class="num">1h</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Total refactor UI:</strong> 10-12h — cabe en Sesión 4 del launch roadmap.</p>
+    <p><strong>Accesibilidad.</strong> Focus rings pierden contraste sobre white — <code>focus-visible:ring-tl-600</code> obligatorio. Target WCAG AA en los 8 hubs.</p>
+  </div>
+</div>
+
+<!-- ─── Prioridades ─── -->
+
+<h1 class="page-break"><span class="num">02</span>Matriz de prioridades integrada con launch</h1>
+
+<div class="callout callout-amber">
+  <div class="callout-title">Integración con ROADMAP-LAUNCH-2026-04-20</div>
+  Este audit añade <strong>~18 horas</strong> distribuidas al sprint launch. No cambia la decisión Q8 (todo o nada · delay miércoles). Con 9 agentes paralelos, son ~2h por agente efectivas repartidas en las sesiones.
+</div>
+
+<h2>P0 — Pre-launch (Sesión 1, +2 agentes)</h2>
+<table>
+  <thead><tr><th class="num">#</th><th>Acción</th><th class="num">h</th><th>Por qué P0</th><th class="priority">Prio</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>Fix 47 doble-suffix titles (template root layout o páginas individuales)</td><td class="num">2h</td><td>Google muestra literal "| trafico.live | trafico.live"</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">2</td><td>Añadir <code>alternates.canonical</code> a 32 páginas</td><td class="num">1h</td><td>Resuelve falsa duplicate-content masiva</td><td class="priority p0">P0</td></tr>
+    <tr><td class="num">3</td><td>Generar <code>opengraph-image.tsx</code> dinámico por vertical + entity</td><td class="num">3h</td><td>117 páginas sin OG = sharing feo</td><td class="priority p0">P0</td></tr>
+  </tbody>
+</table>
+
+<h2>P1 — Durante launch sprint (integrado en sesiones existentes)</h2>
+<table>
+  <thead><tr><th class="num">Sesión</th><th>Item añadido</th><th>Agente</th><th class="num">h</th></tr></thead>
+  <tbody>
+    <tr><td class="num">S2</td><td>Header redesign navy → white</td><td>Agente 9 ampliado</td><td class="num">4-6h</td></tr>
+    <tr><td class="num">S2</td><td>Footer redesign 76 → 57 links</td><td>Agente 9 ampliado</td><td class="num">2-3h</td></tr>
+    <tr><td class="num">S2</td><td>Design system tokens white-first</td><td>Agente 9 ampliado</td><td class="num">1-2h</td></tr>
+    <tr><td class="num">S3</td><td>Sitemap incluye 4K URLs faltantes</td><td>Automático al generar entity pages</td><td class="num">0h</td></tr>
+    <tr><td class="num">S3</td><td>Structured data per entity (<code>Place</code>, <code>Product</code>, …)</td><td>Agentes 1-9 en cada template</td><td class="num">0h</td></tr>
+    <tr><td class="num">S3</td><td>Breadcrumbs en <code>/trenes/*</code> + data platform</td><td>Agente 2</td><td class="num">1h</td></tr>
+    <tr><td class="num">S4</td><td>RelatedLinks activación cross-vertical</td><td>Agente 4</td><td class="num">2h</td></tr>
+    <tr><td class="num">S4</td><td>H1 fixes en 30 páginas sin H1</td><td>Agente 2</td><td class="num">1h</td></tr>
+    <tr><td class="num">S4</td><td>Orphan pages (3) — fix links o delete</td><td>Agente 4</td><td class="num">30min</td></tr>
+  </tbody>
+</table>
+
+<h2>P2 — Post-launch (Fase 2, desde miércoles 22)</h2>
+<table>
+  <thead><tr><th>Bloque</th><th>Acciones</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Content production</strong></td><td>5 guías priority (ferry, aeropuertos ranking, ICA, DANA, radar lluvia) + 4 más del content gap</td></tr>
+    <tr><td><strong>Local SEO</strong></td><td>Madrid triple pack, Bilbao transit, 10 ZBE city pages 2026</td></tr>
+    <tr><td><strong>Entity expansion</strong></td><td>Cercanías Madrid incidencias × 12 líneas · Puntualidad AVE monthly stats</td></tr>
+    <tr><td><strong>Seasonal</strong></td><td>DANA evergreen + operación salida/retorno (Semana Santa, verano, Navidad)</td></tr>
+    <tr><td><strong>Bilbao transit</strong></td><td>Landing near-zero competition con metro + Euskotren</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── Expectativas ─── -->
+
+<h1 class="page-break"><span class="num">03</span>Expectativas post-launch</h1>
+
+<table>
+  <thead><tr><th>Métrica</th><th>Esperado</th><th>Timeframe</th></tr></thead>
+  <tbody>
+    <tr><td>Orgánico vía entity pages (27K URLs SSG)</td><td>~10% crecimiento</td><td>3-4 semanas tras indexación</td></tr>
+    <tr><td>Orgánico vía top keyword landings</td><td>~5% crecimiento</td><td>2-3 semanas</td></tr>
+    <tr><td>Reducción duplicación (titles + canonicals)</td><td>~50% menos duplicate-content flags</td><td>Semanas 2-4</td></tr>
+    <tr><td>Mejora percepción marca (white + limpio)</td><td>Inmediata</td><td>Desde launch</td></tr>
+    <tr><td>Share-friendly en redes (og:images)</td><td>Inmediata</td><td>Desde launch</td></tr>
+    <tr><td>CTR SERP (títulos únicos + descriptions)</td><td>+10-15% promedio</td><td>4-6 semanas</td></tr>
+  </tbody>
+</table>
+
+<h2>Integración final con launch</h2>
+
+<div class="callout callout-green">
+  <div class="callout-title">Decisión recomendada</div>
+  <strong>Sí al launch lunes</strong> con este scope ampliado.
+  Los 3 P0 SEO son show-stoppers — no tiene sentido lanzar con 47 títulos feos en Google.
+  Header + footer white-first dobla el impacto del launch visualmente.
+  P2 content production arranca el miércoles 22 como Fase 2.
+</div>
+
+<h2>Archivos de referencia</h2>
+<ul>
+  <li><code>01-technical-seo.md</code> — Audit técnico (sitemap, canonicals, CWV, structured data)</li>
+  <li><code>02-on-site-seo.md</code> — Audit on-site (titles, H1, internal linking, breadcrumbs)</li>
+  <li><code>03-content-gap.md</code> — Gap análisis + top 20 content pieces a crear</li>
+  <li><code>04-keywords-maritime-aerial.md</code> — 100 keywords marítimo + aéreo</li>
+  <li><code>05-keywords-road-rail-transit.md</code> — 270 keywords road + rail + transit (primary + long-tail)</li>
+  <li><code>06-keywords-weather-fuel-aq.md</code> — 120 keywords meteo + fuel + AQ</li>
+  <li><code>07-header-redesign.md</code> — Spec completo del header redesign</li>
+  <li><code>08-footer-redesign.md</code> — Spec del footer redesign (76→57 links)</li>
+  <li><code>09-design-overhaul.md</code> — Spec del design system white-first (18 tokens)</li>
+</ul>
+
+<p class="footer-last">
+  trafico.live · Inteligencia multimodal de transporte — Certus SPV, SLU · Desarrollado por Abemon<br>
+  SEO + UX Audit Verdict · 17-04-2026 · Integrable con ROADMAP-LAUNCH-2026-04-20
+</p>
+
+</main>
+
+</body>
+</html>
