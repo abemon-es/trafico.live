@@ -20,6 +20,7 @@
 
 import { PrismaClient, MaritimeEmergencyType } from "@prisma/client";
 import * as fs from "fs";
+import { heartbeat } from "../../shared/heartbeat.js";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { log, logError } from "../../shared/utils.js";
@@ -575,4 +576,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   if (errors > 0) {
     logError(TASK, `${errors} records failed to upsert — check logs above for details`);
   }
+  await heartbeat(prisma, TASK, errors === 0 ? "ok" : "partial", { upserted, errors });
 }

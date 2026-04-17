@@ -14,6 +14,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "health-check";
 
@@ -140,4 +141,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "Health check complete");
+  await heartbeat(prisma, TASK, stale.length === 0 ? "ok" : "partial", { healthy: healthy.length, stale: stale.length, empty: empty.length, errors: errors.length });
 }

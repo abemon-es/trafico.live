@@ -17,6 +17,7 @@
 import { PrismaClient } from "@prisma/client";
 import { ensureArray, log, logError } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TAG = "zbe";
 
@@ -600,4 +601,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const totalInDb = await prisma.zBEZone.count();
   log(TAG, `Total ZBE zones in DB: ${totalInDb}`);
   log(TAG, "Collection completed successfully");
+  await heartbeat(prisma, TAG, failed === 0 ? "ok" : "partial", { upserted, failed, total: totalInDb });
 }

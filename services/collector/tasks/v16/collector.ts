@@ -10,6 +10,7 @@ import { PROVINCES, PROVINCE_TO_COMMUNITY, COMMUNITIES } from "../../shared/prov
 import { ensureArray, parseDateTime } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
 import { aggregateStats } from "./aggregator.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const DGT_URL = process.env.DGT_DATEX_URL ||
   "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
@@ -399,9 +400,11 @@ export async function run(prisma: PrismaClient) {
     }
 
     console.log("[collector] Collection completed successfully");
+    await heartbeat(prisma, "v16", "ok", { new: newBeacons.length, updated: existingIds.length, missing: missingBeaconIds.length });
 
   } catch (error) {
     console.error("[collector] Fatal error:", error);
+    await heartbeat(prisma, "v16", "error", { error: String(error) });
     throw error;
   }
   // Note: Let dispatcher handle cleanup

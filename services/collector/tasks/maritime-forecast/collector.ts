@@ -14,6 +14,7 @@
 
 import { PrismaClient, MaritimeZoneType } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "maritime-forecast";
 const AEMET_BASE_URL = "https://opendata.aemet.es/opendata/api";
@@ -349,4 +350,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   log(TASK, `Maritime forecast: ${coastalUpdated} coastal, ${highSeasUpdated} high seas zones updated${failed > 0 ? `, ${failed} failed` : ""}`);
   log(TASK, `Finished at ${new Date().toISOString()}`);
+  await heartbeat(prisma, TASK, failed === 0 ? "ok" : (coastalUpdated + highSeasUpdated > 0 ? "partial" : "error"), { coastal: coastalUpdated, highSeas: highSeasUpdated, failed });
 }

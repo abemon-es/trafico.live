@@ -15,6 +15,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
 import { utmToWgs84 as utmToWgs84Raw } from "../imd/utm-converter.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "intensity";
 const MADRID_URL = "https://informo.madrid.es/informo/tmadrid/pm.xml";
@@ -241,8 +242,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
     );
     const congested = readings.filter((r) => r.serviceLevel >= 2).length;
     log(TASK, `Avg intensity: ${avgIntensity} veh/h, congested sensors: ${congested}/${readings.length}`);
+    await heartbeat(prisma, TASK, "ok", { readings: readings.length, upserted, congested });
   } catch (error) {
     logError(TASK, "Failed:", error);
+    await heartbeat(prisma, TASK, "error", { error: String(error) });
     throw error;
   }
 }

@@ -18,6 +18,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "portugal-fuel";
 const BASE_URL = "https://precoscombustiveis.dgeg.gov.pt/api/PrecoComb";
@@ -386,4 +387,5 @@ export async function run(prisma: PrismaClient) {
     TASK,
     `Completed in ${elapsed}s — ${upserted} stations upserted, ${historyResult.count} history records`
   );
+  await heartbeat(prisma, TASK, upserted > 0 ? "ok" : "partial", { upserted, historyRecords: historyResult.count });
 }

@@ -11,6 +11,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { PROVINCES } from "../../shared/provinces.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const MINETUR_API_URL =
   "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/";
@@ -460,4 +461,5 @@ export async function run(prisma: PrismaClient) {
 
   const elapsed = ((Date.now() - now.getTime()) / 1000).toFixed(1);
   console.log(`[gas-station] Completed in ${elapsed}s — ${processed} stations updated`);
+  await heartbeat(prisma, "gas-station", processed > 0 ? "ok" : "partial", { processed, elapsed });
 }

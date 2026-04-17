@@ -10,6 +10,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "portugal-weather";
 const IPMA_WARNINGS_URL = "https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json";
@@ -175,8 +176,10 @@ export async function run(prisma: PrismaClient) {
     for (const stat of stats) {
       log(TASK, `  ${stat.severity} (${stat.isActive ? "active" : "inactive"}): ${stat._count}`);
     }
+    await heartbeat(prisma, TASK, "ok", {});
   } catch (error) {
     logError(TASK, "Fatal error", error);
+    await heartbeat(prisma, TASK, "error", { error: String(error) });
     throw error;
   }
 

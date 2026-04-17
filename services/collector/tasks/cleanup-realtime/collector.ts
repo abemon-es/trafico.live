@@ -12,6 +12,7 @@
 
 import type { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "cleanup-realtime";
 
@@ -23,8 +24,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
       where: { fetchedAt: { lt: cutoff } },
     });
     log(TASK, `Deleted ${count} TransitVehiclePosition rows older than ${cutoff.toISOString()}`);
+    await heartbeat(prisma, TASK, "ok", { deleted: count });
   } catch (err) {
     logError(TASK, "TransitVehiclePosition cleanup failed", err);
+    await heartbeat(prisma, TASK, "error", { error: String(err) });
     throw err;
   }
 }

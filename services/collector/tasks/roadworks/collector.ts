@@ -23,6 +23,7 @@
 import { PrismaClient, RoadType, Direction } from "@prisma/client";
 import { ensureArray, log, logError, inferRoadType } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TAG = "roadworks";
 
@@ -461,4 +462,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const totalActive = await prisma.roadworksZone.count({ where: { isActive: true } });
   log(TAG, `Total active roadworks zones: ${totalActive}`);
   log(TAG, `Completed at ${new Date().toISOString()}`);
+  await heartbeat(prisma, TAG, errors === 0 ? "ok" : "partial", { created, updated, errors, total: totalActive });
 }

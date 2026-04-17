@@ -11,6 +11,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 export async function run(prisma: PrismaClient): Promise<void> {
   const now = new Date();
@@ -246,4 +247,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   console.log(`[daily-stats] LocationStats: ${locUpdated}/${provinces.length + communities.length} scopes updated`);
   console.log("[daily-stats] Done");
+  await heartbeat(prisma, "daily-stats", "ok", { locationScopes: locUpdated });
 }
