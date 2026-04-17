@@ -15,6 +15,7 @@
 
 import { PrismaClient, RailwayAlertEffect, RailwayServiceType } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "renfe-alerts";
 
@@ -310,8 +311,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
     // ── Delay snapshot from live fleet ──
     await captureDelaySnapshot(prisma);
 
+    await heartbeat(prisma, TASK, "ok", { alerts: alertCount, cerTrips: cerTripCount, ldTrips: ldTripCount });
+
   } catch (error) {
     logError(TASK, "Failed:", error);
+    await heartbeat(prisma, TASK, "error", { error: String(error) });
     throw error;
   }
 }

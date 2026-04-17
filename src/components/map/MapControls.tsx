@@ -78,6 +78,7 @@ export interface ActiveLayers {
   aircraft: boolean;
   vessels: boolean;
   climateStations: boolean;
+  accidents: boolean;
 }
 
 export interface IncidentFilters {
@@ -219,6 +220,7 @@ const CATEGORIES: { title: string; layers: LayerDef[] }[] = [
     layers: [
       { key: "climateStations", label: "Estaciones AEMET", icon: <CloudRain className="w-4 h-4" /> },
       { key: "roadSegments", label: "IMD carreteras", icon: <Route className="w-4 h-4" /> },
+      { key: "accidents", label: "Accidentes DGT (2019-23)", icon: <ShieldAlert className="w-4 h-4" /> },
     ],
   },
 ];

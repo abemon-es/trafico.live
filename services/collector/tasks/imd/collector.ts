@@ -14,6 +14,7 @@
 
 import { PrismaClient, RoadType, StationType } from "@prisma/client";
 import { log, logError, inferRoadType } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { normalizeProvince } from "../../shared/provinces.js";
 import {
   fetchAllFeatures,
@@ -433,4 +434,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, `\n=== IMD Collection Complete ===`);
   log(TASK, `Total stations: ${totalStations}`);
   log(TASK, `Total segments: ${totalSegments}`);
+  await heartbeat(prisma, TASK, totalStations > 0 ? "ok" : "partial", {
+    stations: totalStations,
+    segments: totalSegments,
+    years: years.length,
+  });
 }

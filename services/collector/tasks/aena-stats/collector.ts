@@ -22,6 +22,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "aena-stats";
 
@@ -422,4 +423,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "AENA stats collector complete");
+  await heartbeat(prisma, TASK, upserted > 0 ? "ok" : "partial", { upserted, skipped, errors: errors.length });
 }

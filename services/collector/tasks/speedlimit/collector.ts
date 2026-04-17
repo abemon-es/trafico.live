@@ -17,9 +17,11 @@
 
 import { PrismaClient, Direction, RoadType, SpeedLimitType } from "@prisma/client";
 import { PROVINCES } from "../../shared/provinces.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TNITS_URL = "https://infocar.dgt.es/tnits/limitesVelocidad.xml";
 
+const TASK = "speedlimit";
 const TAG = "[speedlimit]";
 
 // ── UTM Zone 30N → WGS84 conversion ──────────────────────────────────
@@ -327,4 +329,5 @@ export async function run(prisma: PrismaClient) {
   const total = await prisma.speedLimit.count();
   console.log(`${TAG} Total: ${total} speed limits`);
   console.log(`${TAG} Collection completed successfully`);
+  await heartbeat(prisma, TASK, upserted > 0 ? "ok" : "partial", { upserted, skipped, total });
 }

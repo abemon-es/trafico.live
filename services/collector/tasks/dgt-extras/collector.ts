@@ -21,6 +21,7 @@
 import { PrismaClient, Direction, RoadType } from "@prisma/client";
 import { log, logError, ensureArray, inferRoadType } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "dgt-extras";
 
@@ -344,4 +345,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "DGT extras collection complete");
+  await heartbeat(prisma, TASK, upserted > 0 ? "ok" : "partial", { upserted });
 }

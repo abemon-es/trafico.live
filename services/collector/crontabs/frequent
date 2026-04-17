@@ -4,3 +4,12 @@
 0 */6 * * * TASK=maritime-forecast npx tsx index.ts 2>&1
 0 */6 * * * TASK=portugal-weather npx tsx index.ts 2>&1
 # NOTE: air-quality runs in the realtime crontab (hourly at :00) — do NOT add here
+
+# Voyage detector — groups VesselPosition rows into PortCalls & Voyages (hourly)
+# Idempotent upsert; requires AIS positions to be flowing (ais-stream container)
+0 * * * * TASK=voyage-detector npx tsx index.ts 2>&1
+
+# SASEMAR maritime emergencies — historical ArcGIS upsert (every 15 min)
+# Source: opendata-sasemar.hub.arcgis.com (2019-2024 historical records)
+# Idempotent: upserts by external ID; safe to run frequently
+*/15 * * * * TASK=sasemar npx tsx index.ts 2>&1

@@ -32,6 +32,7 @@ import GtfsRtLib from "gtfs-realtime-bindings";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { transit_realtime } = GtfsRtLib as any;
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { REALTIME_FEEDS, missingEnvVar, type RealtimeFeed } from "./feeds.js";
 
 const TASK = "transit-realtime";
@@ -272,6 +273,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   );
 
   let totalWritten = 0;
+  let feedsFailed = 0;
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     const slug = enabledFeeds[i].operatorSlug;
@@ -281,10 +283,16 @@ export async function run(prisma: PrismaClient): Promise<void> {
       // processFeed() is not supposed to throw, but guard anyway
       logError(TASK, `[${slug}] Unexpected rejection:`, r.reason);
       Sentry.captureException(r.reason, { tags: { task: TASK, feed: slug } });
+      feedsFailed++;
     }
   }
 
   log(TASK, `Done — total positions written this pass: ${totalWritten}`);
+  await heartbeat(prisma, TASK, feedsFailed === 0 ? "ok" : (totalWritten > 0 ? "partial" : "error"), {
+    written: totalWritten,
+    feeds: enabledFeeds.length,
+    feedsFailed,
+  });
 
   // ── TODO: Retention ───────────────────────────────────────────────────────
   // Add a nightly cleanup (via cron or DB trigger):

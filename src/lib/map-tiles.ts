@@ -197,8 +197,11 @@ export const TILE_SOURCES = {
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.panels,
   },
-  // accidents: PMTiles not yet generated on the tile server — layer disabled.
-  // Re-enable once services/tiles/generate-pmtiles.sh publishes accidents.pmtiles.
+  accidents: {
+    url: `pmtiles://${TILES_BASE}/tiles/accidents.pmtiles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.accidents,
+  },
 
   // ── Dynamic Martin tile sources (TileJSON endpoint) ──
   sensors: {
@@ -1875,7 +1878,25 @@ export const LAYER_STYLES = {
     },
   },
 
-  // (accidentsCircle removed — accidents.pmtiles not yet generated.)
+  // ── Accident microdata (DGT 2019-2023, ~500K points) — default off ──
+  accidentsCircle: {
+    id: "accidents-circle",
+    type: "circle",
+    source: "accidents",
+    "source-layer": SOURCE_LAYERS.accidents,
+    paint: {
+      "circle-color": [
+        "match", ["coalesce", ["get", "severity"], "minor"],
+        "fatal",        MAP_COLORS.trafficRed,     // #dc2626 — mortal
+        "hospitalized", MAP_COLORS.trafficOrange,  // #f97316 — grave
+        MAP_COLORS.trafficYellow,                  // #eab308 — minor / default
+      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 2, 8, 4, 12, 7],
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": 0.75,
+    },
+  },
 
   // ── Live transit vehicles (Martin dynamic source) ──
   transitVehiclesCircle: {

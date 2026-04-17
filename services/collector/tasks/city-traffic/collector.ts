@@ -14,6 +14,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "city-traffic";
 
@@ -706,4 +707,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   await cleanup(prisma);
 
   log(TASK, "City traffic collection complete");
+  await heartbeat(prisma, TASK, totalReadings > 0 ? "ok" : "partial", { sensors: totalSensors, readings: totalReadings });
 }

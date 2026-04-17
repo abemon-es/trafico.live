@@ -32,6 +32,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "air-quality-ccaa";
 
@@ -1115,4 +1116,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "CCAA air quality collector complete");
+  const sourcesFailed = 5 - sources.length;
+  await heartbeat(prisma, TASK, sourcesFailed === 0 ? "ok" : (sources.length > 0 ? "partial" : "error"), {
+    sourcesFailed,
+    sources: sources.length,
+  });
 }

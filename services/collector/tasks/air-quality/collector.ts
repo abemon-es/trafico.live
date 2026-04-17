@@ -32,6 +32,7 @@
 import { PrismaClient } from "@prisma/client";
 import https from "node:https";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 // Reusable HTTPS agent that skips cert verification for MITECO (incomplete cert chain)
 const mitecoAgent = new https.Agent({ rejectUnauthorized: false });
@@ -660,4 +661,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "Air quality collector complete");
+  await heartbeat(prisma, TASK, readings > 0 ? "ok" : (upserted > 0 ? "partial" : "error"), {
+    stations: upserted,
+    readings,
+    errors: errors.length,
+  });
 }

@@ -776,12 +776,12 @@ SELECT json_build_object(
     ),
     'properties', json_build_object(
       'year', year,
-      'month', month,
+      'month', EXTRACT(MONTH FROM date)::int,
       'severity', severity,
-      'numVehicles', "numVehicles",
-      'numVictims', "numVictims",
-      'numDeaths', "numDeaths",
-      'roadType', "roadType",
+      'fatalities', fatalities,
+      'hospitalized', hospitalized,
+      'vehiclesInvolved', "vehiclesInvolved",
+      'roadType', "roadType"::text,
       'roadNumber', "roadNumber",
       'province', province
     )

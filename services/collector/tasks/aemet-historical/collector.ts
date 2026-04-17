@@ -13,6 +13,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "aemet-historical";
 const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
@@ -492,4 +493,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
     TASK,
     `Finished — chunks=${chunkCount} totalInserted=${totalInserted} totalSkipped=${totalSkipped}`
   );
+  await heartbeat(prisma, TASK, totalInserted > 0 ? "ok" : "partial", {
+    chunks: chunkCount,
+    inserted: totalInserted,
+    skipped: totalSkipped,
+    stations: codeToId.size,
+  });
 }

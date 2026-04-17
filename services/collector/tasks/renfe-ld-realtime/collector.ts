@@ -14,6 +14,7 @@
 
 import { PrismaClient, RailwayServiceType } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "renfe-ld-realtime";
 
@@ -280,7 +281,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
       where: { fetchedAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } },
     });
     log(TASK, `Active fleet positions (last 5min): ${totalActive}`);
+    await heartbeat(prisma, TASK, stored > 0 ? "ok" : "partial", { stored, skipped, activePositions: totalActive });
   } catch {
     // Non-fatal — stats are informational only
+    await heartbeat(prisma, TASK, stored > 0 ? "ok" : "partial", { stored, skipped });
   }
 }

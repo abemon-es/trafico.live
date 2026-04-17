@@ -13,6 +13,7 @@
 
 import { PrismaClient, RailwayServiceType } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { triggerPmtilesRegen, layersForTask } from "../transit-gtfs/post-hook.js";
 import { createReadStream } from "fs";
 import { writeFile, mkdtemp, rm } from "fs/promises";
@@ -380,9 +381,19 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
       // ── Upsert routes with enriched metadata ──
       let routeCount = 0;
+      let ghostSkipped = 0;
       for (const route of routes) {
         const shortName = route.route_short_name || "";
         if (shortName === "BUS") continue;
+
+        // Skip ghost routes — route_id present in routes.txt but zero trips
+        // reference it in trips.txt. Renfe's Cercanías feed has ~300 of
+        // these; they produce empty detail pages with no origin/dest/stops.
+        const tripCount = routeTripCount.get(route.route_id) || 0;
+        if (tripCount === 0) {
+          ghostSkipped++;
+          continue;
+        }
 
         const { brand, serviceType } = classifyRoute(shortName, isCercanias);
 
@@ -500,7 +511,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
       }
 
       totalRoutes += routeCount;
-      log(TASK, `${feed.name}: upserted ${routeCount} routes`);
+      log(TASK, `${feed.name}: upserted ${routeCount} routes${ghostSkipped > 0 ? ` (skipped ${ghostSkipped} ghost routes with 0 trips)` : ""}`);
 
     } catch (error) {
       logError(TASK, `Failed processing feed ${feed.name}:`, error);
@@ -510,6 +521,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Complete: ${totalStations} stations, ${totalRoutes} routes`);
+
+  await heartbeat(prisma, TASK, totalStations > 0 ? "ok" : "partial", {
+    stations: totalStations,
+    routes: totalRoutes,
+  });
 
   await triggerPmtilesRegen(layersForTask("renfe-gtfs"));
 }

@@ -25,6 +25,7 @@ interface HealthCheck {
       intensity: { lastUpdate: string | null; stale: boolean };
       weather: { lastUpdate: string | null; stale: boolean };
       panels: { lastUpdate: string | null; stale: boolean };
+      aviacion: { lastUpdate: string | null; stale: boolean };
     };
   };
 }
@@ -69,12 +70,14 @@ async function checkCollectors(): Promise<HealthCheck["checks"]["collectors"]> {
     intensity: 15 * 60 * 1000,
     weather: 8 * 60 * 60 * 1000,
     panels: 15 * 60 * 1000,
+    // OpenSky cron is */15 — allow 30 min before flagging stale
+    aviacion: 30 * 60 * 1000,
   };
 
   const now = Date.now();
 
   try {
-    const [latestV16, latestIncident, latestGasStation, latestIntensity, latestWeather, latestPanel] = await Promise.all([
+    const [latestV16, latestIncident, latestGasStation, latestIntensity, latestWeather, latestPanel, latestAircraft] = await Promise.all([
       prisma.v16BeaconEvent.findFirst({
         orderBy: { lastSeenAt: "desc" },
         select: { lastSeenAt: true },
@@ -99,6 +102,11 @@ async function checkCollectors(): Promise<HealthCheck["checks"]["collectors"]> {
         orderBy: { lastUpdated: "desc" },
         select: { lastUpdated: true },
       }),
+      // AircraftPosition uses createdAt (no updatedAt column)
+      prisma.aircraftPosition.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
     ]);
 
     const check = (date: Date | null | undefined, threshold: number) => ({
@@ -113,6 +121,7 @@ async function checkCollectors(): Promise<HealthCheck["checks"]["collectors"]> {
       intensity: check(latestIntensity?.recordedAt, staleThreshold.intensity),
       weather: check(latestWeather?.fetchedAt, staleThreshold.weather),
       panels: check(latestPanel?.lastUpdated, staleThreshold.panels),
+      aviacion: check(latestAircraft?.createdAt, staleThreshold.aviacion),
     };
   } catch {
     return undefined;

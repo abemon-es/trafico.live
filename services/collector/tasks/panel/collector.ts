@@ -15,6 +15,9 @@ import { PrismaClient, PanelMessageType, Direction } from "@prisma/client";
 import { PROVINCES } from "../../shared/provinces.js";
 import { ensureArray } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
+
+const TASK = "panel";
 
 const DGT_PANELS_LOCATIONS_URL =
   "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/paneles/content.xml";
@@ -458,9 +461,11 @@ export async function run(prisma: PrismaClient) {
     }
 
     console.log("[panel-collector] Collection completed successfully");
+    await heartbeat(prisma, TASK, "ok", { total: totalActive, withMessage });
 
   } catch (error) {
     console.error("[panel-collector] Fatal error:", error);
+    await heartbeat(prisma, TASK, "error", { error: String(error) });
     throw error;
   }
 }

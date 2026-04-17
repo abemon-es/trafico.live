@@ -15,6 +15,9 @@ import Typesense from "typesense";
 import type { CollectionCreateSchema } from "typesense/lib/Typesense/Collections";
 import type { CollectionFieldSchema } from "typesense/lib/Typesense/Collection";
 import { getTypesenseClient } from "../../shared/typesense.js";
+import { heartbeat } from "../../shared/heartbeat.js";
+
+const TASK = "typesense-sync";
 
 // ---------------------------------------------------------------------------
 // Collection schemas (mirror of src/lib/typesense.ts)
@@ -1142,5 +1145,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  console.log(`[typesense-sync] ${mode} sync complete in ${((Date.now() - start) / 1000).toFixed(1)}s`, totals);
+  const elapsedSecs = ((Date.now() - start) / 1000).toFixed(1);
+  const totalDocs = Object.values(totals).reduce((s, v) => s + v, 0);
+  const failedLoads = loaded.filter((r) => r.status === "rejected").length;
+  console.log(`[typesense-sync] ${mode} sync complete in ${elapsedSecs}s`, totals);
+  await heartbeat(prisma, TASK, failedLoads === 0 ? "ok" : "partial", {
+    mode,
+    collections: names.length,
+    totalDocs,
+    failedLoads,
+    elapsedSecs: parseFloat(elapsedSecs),
+  });
 }

@@ -10,6 +10,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "backfill-profiles";
 
@@ -82,9 +83,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
       WHERE "source" = 'MADRID'
     `;
     log(TASK, `Profile coverage: ${coverage[0].slots}/168 time slots, ${coverage[0].sensors} sensors`);
+    await heartbeat(prisma, TASK, "ok", {
+      profileRows: Number(result),
+      slots: Number(coverage[0].slots),
+      sensors: Number(coverage[0].sensors),
+    });
 
   } catch (error) {
     logError(TASK, "Backfill failed:", error);
+    await heartbeat(prisma, TASK, "error", { error: String(error) });
     throw error;
   }
 }
