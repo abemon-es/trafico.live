@@ -13,7 +13,6 @@ export { SpeedLimitsSection } from "./SpeedLimitsSection";
 export { RoadsSection } from "./RoadsSection";
 export { NewsSection } from "./NewsSection";
 export { V16Section } from "./V16Section";
-export { LocationMapSection } from "./LocationMapSection";
 export { EVGrowthSection } from "./EVGrowthSection";
 export { IntelligenceSection } from "./IntelligenceSection";
 export { FuelPriceEvolution } from "./FuelPriceEvolution";
