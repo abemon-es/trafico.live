@@ -11,6 +11,7 @@ import { ProvinceContextBanner } from "@/components/location/ProvinceContextBann
 import { NearbyCities } from "@/components/location/NearbyCities";
 import { CityFAQ } from "@/components/location/CityFAQ";
 import { CitySeoProse } from "@/components/location/CitySeoProse";
+import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
 import {
   IncidentsSection,
   CamerasSection,
@@ -27,7 +28,6 @@ import {
   RoadsSection,
   NewsSection,
   V16Section,
-  LocationMapSection,
   EVGrowthSection,
   IntelligenceSection,
   FuelPriceEvolution,
@@ -225,11 +225,25 @@ export default async function MunicipalityPage({ params }: Props) {
 
         {/* Map with all infrastructure */}
         <Suspense fallback={<SectionSkeleton title="Mapa" />}>
-          <LocationMapSection
-            center={entity.center}
-            entityName={name}
-            provinceCode={provinceCode}
-          />
+          <section
+            id="mapa"
+            aria-label={`Mapa de trafico de ${name}`}
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden"
+          >
+            <div className="h-[480px] relative">
+              <TraficoMapEmbed
+                preset="trafico-live"
+                initialLayers={["incidents", "cameras", "radars", "gas-stations", "chargers"]}
+                initialView={
+                  entity.center
+                    ? { center: [entity.center.lng, entity.center.lat], zoom: 12 }
+                    : undefined
+                }
+                wrapperClassName="h-full border-0 rounded-none"
+                height={480}
+              />
+            </div>
+          </section>
         </Suspense>
 
         {/* KPI strip */}

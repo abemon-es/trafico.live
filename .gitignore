@@ -31,6 +31,11 @@
 .playwright-mcp/
 nav-snapshot.md
 
+# Playwright — reports and run artifacts (baselines ARE committed)
+/playwright-report/
+/test-results/
+/tests/visual/results/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -70,6 +75,7 @@ preview-map-styles.html
 *.svg
 !public/**/*.svg
 !public/**/*.png
+!tests/**/*.png
 snapshot-*.md
 .wrangler/
 

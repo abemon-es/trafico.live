@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   LineChart,
@@ -22,21 +21,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { provinceSlug } from "@/lib/geo/slugify";
-import type { ProvinceDataPoint } from "@/components/map/ProvinceHeatmap";
-
-// Dynamic import for ProvinceHeatmap — no SSR
-const ProvinceHeatmap = dynamic(
-  () =>
-    import("@/components/map/ProvinceHeatmap").then((m) => m.ProvinceHeatmap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[480px] bg-gray-100 dark:bg-gray-900 animate-pulse rounded-xl flex items-center justify-center">
-        <span className="text-sm text-gray-400">Cargando mapa...</span>
-      </div>
-    ),
-  }
-);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -169,9 +153,6 @@ export function AccidentesClient({
       ? latestYear
       : availableYears[availableYears.length - 1] ?? latestYear;
   const [selectedYear, setSelectedYear] = useState<number>(defaultYear);
-  const [choroplethMetric, setChoroplethMetric] = useState<
-    "accidents" | "fatalities" | "ratePer100k"
-  >("accidents");
 
   // When year changes, fetch province data from the API
   const [provinceData, setProvinceData] = useState<ProvinceRow[]>(byProvince);
@@ -199,32 +180,6 @@ export function AccidentesClient({
     },
     [latestYear, byProvince]
   );
-
-  // Build choropleth data from current province data
-  const choroplethData: ProvinceDataPoint[] = provinceData.map((p) => {
-    const val =
-      choroplethMetric === "accidents"
-        ? p.accidents
-        : choroplethMetric === "fatalities"
-        ? p.fatalities
-        : p.ratePer100k;
-
-    return {
-      province: p.province,
-      value: val,
-      label:
-        choroplethMetric === "ratePer100k"
-          ? `${val.toFixed(2)} / 100k hab.`
-          : formatNumber(val),
-    };
-  });
-
-  const metricLabel =
-    choroplethMetric === "accidents"
-      ? "Accidentes"
-      : choroplethMetric === "fatalities"
-      ? "Víctimas mortales"
-      : "Mortalidad por 100k hab.";
 
   // YoY trend
   const yoyNum = yoyAccidents ? parseFloat(yoyAccidents) : null;
@@ -370,74 +325,39 @@ export function AccidentesClient({
         </div>
       </section>
 
-      {/* ── 3. Province choropleth ─────────────────────────────────────────── */}
-      <section aria-labelledby="mapa-heading">
+      {/* ── 3. Province ranking table ─────────────────────────────────────── */}
+      {/* TODO(phase 2): province choropleth via unified TraficoMap — awaits a
+          `province-choropleth` LayerRegistry entry bound to the ProvinceRow
+          metrics. Until then, the ranking table below surfaces the same data. */}
+      <section aria-labelledby="ranking-heading">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2
-            id="mapa-heading"
+            id="ranking-heading"
             className="text-xl font-heading font-semibold text-gray-900 dark:text-gray-100"
           >
-            Mapa por provincia
+            Ranking de provincias — {selectedYear}
           </h2>
 
-          {/* Controls */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Year selector */}
-            <div className="relative">
-              <select
-                value={selectedYear}
-                onChange={(e) => handleYearChange(Number(e.target.value))}
-                className="appearance-none bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-tl-500 cursor-pointer"
-              >
-                {availableYears
-                  .slice()
-                  .reverse()
-                  .map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-            </div>
-
-            {/* Metric selector */}
-            <div className="relative">
-              <select
-                value={choroplethMetric}
-                onChange={(e) =>
-                  setChoroplethMetric(
-                    e.target.value as "accidents" | "fatalities" | "ratePer100k"
-                  )
-                }
-                className="appearance-none bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-tl-500 cursor-pointer"
-              >
-                <option value="accidents">Accidentes</option>
-                <option value="fatalities">Víctimas mortales</option>
-                <option value="ratePer100k">Mortalidad / 100k hab.</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-            </div>
+          {/* Year selector */}
+          <div className="relative">
+            <select
+              value={selectedYear}
+              onChange={(e) => handleYearChange(Number(e.target.value))}
+              disabled={provinceLoading}
+              className="appearance-none bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-tl-500 cursor-pointer disabled:opacity-50"
+            >
+              {availableYears
+                .slice()
+                .reverse()
+                .map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
           </div>
         </div>
-
-        <ProvinceHeatmap
-          data={choroplethData}
-          metric={`${metricLabel} — ${selectedYear}`}
-          colorScale={["#fef9c3", "#7f1d1d"]}
-          height="480px"
-          isLoading={provinceLoading}
-        />
-      </section>
-
-      {/* ── 4. Province ranking table ─────────────────────────────────────── */}
-      <section aria-labelledby="ranking-heading">
-        <h2
-          id="ranking-heading"
-          className="text-xl font-heading font-semibold text-gray-900 dark:text-gray-100 mb-4"
-        >
-          Ranking de provincias — {selectedYear}
-        </h2>
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
