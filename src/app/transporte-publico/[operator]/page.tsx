@@ -234,10 +234,17 @@ type Props = {
 export async function generateStaticParams() {
   const operators = await prisma.transitOperator.findMany({
     where: { routes: { some: {} } },
-    select: { mdbId: true },
+    select: { name: true },
   });
-
-  return operators.map((op) => ({ operator: op.mdbId }));
+  const seen = new Set<string>();
+  const params: { operator: string }[] = [];
+  for (const op of operators) {
+    const slug = slugify(op.name);
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    params.push({ operator: slug });
+  }
+  return params;
 }
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
@@ -270,12 +277,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "transporte p\u00fablico Espa\u00f1a",
     ],
     alternates: {
-      canonical: `${BASE_URL}/transporte-publico/${operator.mdbId}`,
+      canonical: `${BASE_URL}/transporte-publico/${slugify(operator.name)}`,
     },
     openGraph: {
       title,
       description,
-      url: `${BASE_URL}/transporte-publico/${operator.mdbId}`,
+      url: `${BASE_URL}/transporte-publico/${slugify(operator.name)}`,
       siteName: "trafico.live",
       locale: "es_ES",
       type: "website",
@@ -326,7 +333,7 @@ export default async function OperatorDetailPage({ params }: Props) {
     "@type": "Dataset",
     name: `${operator.name} \u2014 Transporte p\u00fablico`,
     description: `Datos GTFS de ${operator.name}${operator.city ? ` en ${operator.city}` : ""}: ${routes.length} rutas, ${operator.stopCount} paradas.`,
-    url: `${BASE_URL}/transporte-publico/${operator.mdbId}`,
+    url: `${BASE_URL}/transporte-publico/${slugify(operator.name)}`,
     keywords: [
       operator.name,
       "GTFS",

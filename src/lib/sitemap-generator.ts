@@ -1,7 +1,7 @@
 import prisma from "@/lib/db";
 import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
-import { provinceSlug } from "@/lib/geo/slugify";
+import { provinceSlug, slugify } from "@/lib/geo/slugify";
 import { vesselSlug } from "@/lib/vessel-utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -1247,17 +1247,29 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     // DB unavailable — skip dynamic port pages
   }
 
-  // Transit operator detail pages (/transporte-publico/[operator])
+  // Transit operator detail pages (/transporte-publico/[operator]) — emit
+  // slugified name for SEO-friendly URLs (e.g. "metro-madrid", not "mdb-794").
+  // The page at [operator]/page.tsx resolves both slug and mdbId via fallback,
+  // but we only emit the slug to keep the sitemap canonical. Duplicate slugs
+  // (same operator registered twice with identical names) are deduped.
   const transitOperators = await prisma.transitOperator.findMany({
-    select: { mdbId: true },
-    orderBy: { mdbId: "asc" },
+    select: { name: true, updatedAt: true },
+    orderBy: { name: "asc" },
   });
-  const transitOperatorPages: SitemapEntry[] = transitOperators.map((op) => ({
-    url: `${BASE_URL}/transporte-publico/${encodeURIComponent(op.mdbId)}`,
-    lastModified: today,
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
+  const seenOperatorSlugs = new Set<string>();
+  const transitOperatorPages: SitemapEntry[] = transitOperators.flatMap((op) => {
+    const slug = slugify(op.name);
+    if (!slug || seenOperatorSlugs.has(slug)) return [];
+    seenOperatorSlugs.add(slug);
+    return [
+      {
+        url: `${BASE_URL}/transporte-publico/${slug}`,
+        lastModified: op.updatedAt ?? today,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+    ];
+  });
 
   // Airport detail pages (/aviacion/aeropuertos/[iata])
   const airports = await prisma.airport.findMany({
