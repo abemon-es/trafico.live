@@ -78,7 +78,7 @@ async function getHubData() {
       where: { isActive: true, severity: "HIGH" },
       orderBy: { startedAt: "desc" },
       take: 5,
-      select: { id: true, description: true, roadName: true, province: true, severity: true },
+      select: { id: true, description: true, roadNumber: true, province: true, severity: true },
     }),
     prisma.cityTrafficSensor.count().catch(() => 0),
   ]);
@@ -162,7 +162,7 @@ export default async function TraficoHubPage() {
     ...data.recentSevere.map((i): TickerItem => ({
       id: `sev-${i.id}`,
       icon: <Radio className="w-3.5 h-3.5" />,
-      label: `${i.roadName ?? "Vía"} · ${i.province ?? ""}`,
+      label: `${i.roadNumber ?? "Vía"} · ${i.province ?? ""}`,
       tone: "danger",
     })),
   ];
@@ -244,7 +244,7 @@ export default async function TraficoHubPage() {
                 <AlertTriangle className="w-4 h-4 text-signal-red mt-0.5 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-                    {i.roadName ?? "Vía sin identificar"} · {i.province ?? "España"}
+                    {i.roadNumber ?? "Vía sin identificar"} · {i.province ?? "España"}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
                     {i.description}
