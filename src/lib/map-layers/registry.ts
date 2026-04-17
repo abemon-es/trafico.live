@@ -658,6 +658,44 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     ],
   },
 
+  // ── Province choropleth (S0 stub) ─────────────────────────────────────────
+  // TODO(S1): wire province-choropleth to /api/estadisticas/accidentes with a
+  // data-driven fill-color expression (interpolate over value or ratePer100k).
+  // For S0 the layer renders flat-filled province polygons so the preset +
+  // layer id exist — ProvinceHeatmap.tsx has been deleted.
+  {
+    id: "province-choropleth",
+    group: "road.historical",
+    label: "Mapa por provincias",
+    description: "Coropleta provincial (stub S0 — métrica por provincia pendiente de S1)",
+    source: { type: "geojson", ref: "/geo/spain-provinces.geojson" },
+    interactive: false,
+    minZoom: 3,
+    maxZoom: 10,
+    style: [
+      {
+        id: "province-choropleth-fill",
+        type: "fill",
+        source: "province-choropleth",
+        paint: {
+          "fill-color": "#94b6ff",
+          "fill-opacity": 0.35,
+        },
+      },
+      {
+        id: "province-choropleth-outline",
+        type: "line",
+        source: "province-choropleth",
+        paint: {
+          "line-color": "#1e3a8a",
+          "line-width": 0.6,
+          "line-opacity": 0.6,
+        },
+      },
+    ],
+    legend: [{ color: "#94b6ff", label: "Provincia (datos pendientes S1)" }],
+  },
+
   // ── Accident microdata (static PMTiles) ───────────────────────────────────
   // TODO: accidents-heatmap agent will add a heatmap variant. Once LAYER_STYLES
   // in map-tiles.ts has "accidentsHeatmap", add "accidents-heatmap" entry here.

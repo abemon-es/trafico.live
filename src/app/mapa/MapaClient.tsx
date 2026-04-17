@@ -19,7 +19,11 @@ const TraficoMap = dynamic(
 /** Unified infrastructure dashboard — all transport layers via TraficoMap preset="all". */
 export function MapaInfraClient() {
   return (
-    <div style={{ height: "calc(100dvh - 64px)" }}>
+    <main
+      id="main-content"
+      tabIndex={-1}
+      style={{ height: "calc(100dvh - 64px)" }}
+    >
       <TraficoMap
         preset="all"
         controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: true }}
@@ -30,6 +34,6 @@ export function MapaInfraClient() {
         {/* Routing panel preserved as overlay child; map ref not available via TraficoMap API */}
         <RoutingPanel map={null} />
       </TraficoMap>
-    </div>
+    </main>
   );
 }

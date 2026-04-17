@@ -21,6 +21,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { provinceSlug } from "@/lib/geo/slugify";
+import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -325,10 +326,29 @@ export function AccidentesClient({
         </div>
       </section>
 
-      {/* ── 3. Province ranking table ─────────────────────────────────────── */}
-      {/* TODO(phase 2): province choropleth via unified TraficoMap — awaits a
-          `province-choropleth` LayerRegistry entry bound to the ProvinceRow
-          metrics. Until then, the ranking table below surfaces the same data. */}
+      {/* ── 3. Province choropleth (S0 stub) ──────────────────────────────── */}
+      {/* TODO(S1): swap flat fill for data-driven `fill-color` expression in
+          the `province-choropleth` LayerRegistry entry so the map reflects the
+          metric selector. Until then, the map renders outlined provinces and
+          the ranking table below carries the per-metric values. */}
+      <section aria-labelledby="mapa-heading">
+        <h2
+          id="mapa-heading"
+          className="text-xl font-heading font-semibold text-gray-900 dark:text-gray-100 mb-4"
+        >
+          Mapa por provincia
+        </h2>
+        <TraficoMapEmbed
+          height={420}
+          initialView={{ center: [-3.7, 40.4], zoom: 5 }}
+          preset="entity-focus"
+          initialLayers={["province-choropleth"]}
+          availableLayers={["province-choropleth", "accidents"]}
+          controls={{ layerPanel: true, legend: true, themeToggle: false }}
+        />
+      </section>
+
+      {/* ── 4. Province ranking table ─────────────────────────────────────── */}
       <section aria-labelledby="ranking-heading">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2
