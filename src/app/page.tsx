@@ -84,8 +84,27 @@ async function getHomeStats() {
   }
 }
 
+async function getCommunitiesWithProvinces() {
+  try {
+    return await prisma.community.findMany({
+      select: {
+        slug: true,
+        name: true,
+        provinces: {
+          select: { slug: true, name: true },
+          orderBy: { name: "asc" },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+  } catch {
+    return [];
+  }
+}
+
 export default async function HomePage() {
   const stats = await getHomeStats();
+  const communities = await getCommunitiesWithProvinces();
 
   const faqSchema = generateFAQSchema({
     questions: [
@@ -226,6 +245,39 @@ export default async function HomePage() {
     itemListOrder: "Unordered",
   });
 
+  // Build province items: communities with provinces that have valid slugs
+  const provinceItems = communities.flatMap((c) =>
+    c.slug
+      ? c.provinces
+          .filter((p) => p.slug)
+          .map((p) => ({
+            name: p.name,
+            url: `${BASE_URL}/espana/${c.slug}/${p.slug}`,
+          }))
+      : []
+  );
+
+  const provincesItemList = generateItemListSchema({
+    name: "Provincias de España",
+    numberOfItems: 52,
+    items: provinceItems,
+    itemListOrder: "Ascending",
+  });
+
+  const ccaaItems = communities
+    .filter((c) => c.slug)
+    .map((c) => ({
+      name: c.name,
+      url: `${BASE_URL}/comunidad-autonoma/${c.slug}`,
+    }));
+
+  const ccaaItemList = generateItemListSchema({
+    name: "Comunidades Autónomas de España",
+    numberOfItems: 19,
+    items: ccaaItems,
+    itemListOrder: "Ascending",
+  });
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* SSR content — hidden visually, crawlable by search engines */}
@@ -248,7 +300,7 @@ export default async function HomePage() {
           ))}
         </nav>
         <StructuredData
-          data={[faqSchema, breadcrumbSchema, serviceSchema, speakableSchema, multimodalItemList, ...datasets]}
+          data={[faqSchema, breadcrumbSchema, serviceSchema, speakableSchema, multimodalItemList, provincesItemList, ccaaItemList, ...datasets]}
         />
       </div>
 

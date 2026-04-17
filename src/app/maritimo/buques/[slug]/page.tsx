@@ -319,19 +319,39 @@ export default async function VesselPage({ params }: PageProps) {
       : "Desconocido";
 
   // JSON-LD: Vehicle schema
+  const identifiers: object[] = [
+    { "@type": "PropertyValue", propertyID: "MMSI", value: mmsi },
+  ];
+  if (vessel.imo) {
+    identifiers.push({ "@type": "PropertyValue", propertyID: "IMO", value: vessel.imo });
+  }
+  if (vessel.callsign) {
+    identifiers.push({ "@type": "PropertyValue", propertyID: "callsign", value: vessel.callsign });
+  }
+
+  const additionalProperties: object[] = [];
+  if (vessel.length) {
+    additionalProperties.push({ "@type": "PropertyValue", name: "Length", value: vessel.length, unitText: "m" });
+  }
+  if (vessel.beam) {
+    additionalProperties.push({ "@type": "PropertyValue", name: "Beam", value: vessel.beam, unitText: "m" });
+  }
+  if (vessel.draught) {
+    additionalProperties.push({ "@type": "PropertyValue", name: "Draught", value: Number(vessel.draught), unitText: "m" });
+  }
+
   const vehicleSchema = {
     "@context": "https://schema.org",
     "@type": "Vehicle",
     name: displayName,
-    identifier: `MMSI:${mmsi}`,
+    identifier: identifiers,
     description: `Buque ${category.label.toLowerCase()}${vessel.flag ? ` de bandera ${flagName(vessel.flag)}` : ""}. MMSI: ${mmsi}${vessel.imo ? `, IMO: ${vessel.imo}` : ""}.`,
     url: `${BASE_URL}/maritimo/buques/${canonicalSlug}`,
+    vehicleConfiguration: category.label,
     ...(vessel.flag && {
-      nationality: {
-        "@type": "Country",
-        name: flagName(vessel.flag),
-      },
+      countryOfOrigin: { "@type": "Country", name: flagName(vessel.flag) },
     }),
+    ...(additionalProperties.length > 0 && { additionalProperty: additionalProperties }),
   };
 
   return (

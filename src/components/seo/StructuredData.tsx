@@ -385,17 +385,20 @@ interface ItemListSchemaProps {
   name: string;
   items: Array<{ name: string; url: string; position?: number }>;
   itemListOrder?: "Ascending" | "Descending" | "Unordered";
+  numberOfItems?: number;
 }
 
 export function generateItemListSchema({
   name,
   items,
   itemListOrder = "Unordered",
+  numberOfItems,
 }: ItemListSchemaProps): BaseStructuredData {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name,
+    ...(numberOfItems !== undefined && { numberOfItems }),
     itemListOrder: `https://schema.org/ItemList${itemListOrder}`,
     itemListElement: items.map((item, index) => ({
       "@type": "ListItem",
