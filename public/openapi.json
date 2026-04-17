@@ -1,0 +1,1264 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "trafico.live API",
+    "version": "1.0.0",
+    "description": "API REST multimodal para España: tráfico en tiempo real, trenes Renfe, posiciones AIS marítimas, aeronaves OpenSky, calidad del aire MITECO y precios de combustible MINETUR.\n\n## Autenticación\n\nTodas las peticiones deben incluir el header `X-API-Key` con tu clave personal. Las claves tienen el prefijo `tl_free_`, `tl_pro_` o `tl_ent_` según el plan.\n\n## Límites de uso (rate limiting)\n\n| Plan | req/min | req/día | Precio |\n|------|---------|---------|--------|\n| FREE | 10 | 1.000 | Gratis |\n| PRO | 60 | 50.000 | 49 €/mes |\n| ENTERPRISE | 300 | 500.000 | 149 €/mes |\n\nLas respuestas incluyen los headers `X-RateLimit-Limit`, `X-RateLimit-Remaining` y `X-RateLimit-Reset`.\n\n## Formatos de respuesta\n\n- **JSON** — Todos los endpoints (por defecto)\n- **GeoJSON** — Endpoints con geometría aceptan `?format=geojson`\n\n## Fechas y coordenadas\n\n- Fechas en ISO 8601 UTC (`2026-04-17T10:30:00Z`)\n- Coordenadas en WGS84 (EPSG:4326)",
+    "contact": {
+      "name": "trafico.live API",
+      "email": "api@trafico.live",
+      "url": "https://trafico.live/api-landing"
+    },
+    "license": {
+      "name": "Datos de uso libre (fuentes oficiales)",
+      "url": "https://trafico.live/legal/terminos-api"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://trafico.live/api",
+      "description": "Producción"
+    }
+  ],
+  "security": [
+    {
+      "apiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Clave de API. Obtén la tuya en https://trafico.live/api-docs#obtener-clave"
+      }
+    },
+    "schemas": {
+      "Incident": {
+        "type": "object",
+        "description": "Incidencia de tráfico en la red viaria española",
+        "required": ["id", "type", "road", "lat", "lon", "created_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "SP_INC_20260417_0041",
+            "description": "Identificador único de la incidencia"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["ACCIDENT", "ROADWORK", "WEATHER", "CONGESTION", "CLOSURE", "HAZARD", "VEHICLE_BREAKDOWN", "EVENT"],
+            "description": "Tipo de incidencia"
+          },
+          "effect": {
+            "type": "string",
+            "enum": ["ROAD_CLOSED", "SLOW_TRAFFIC", "RESTRICTED", "DIVERSION", "OTHER_EFFECT"],
+            "description": "Efecto sobre la circulación"
+          },
+          "cause": {
+            "type": "string",
+            "enum": ["ROADWORK", "ACCIDENT", "WEATHER", "RESTRICTION", "OTHER_CAUSE"],
+            "description": "Causa de la incidencia"
+          },
+          "road": {
+            "type": "string",
+            "example": "A-4",
+            "description": "Código de carretera"
+          },
+          "km": {
+            "type": "number",
+            "format": "float",
+            "example": 28.3,
+            "description": "Punto kilométrico"
+          },
+          "province": {
+            "type": "string",
+            "example": "Madrid",
+            "description": "Provincia"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+            "description": "Severidad"
+          },
+          "description": {
+            "type": "string",
+            "example": "Accidente con retención sentido Córdoba",
+            "description": "Descripción textual"
+          },
+          "delay_minutes": {
+            "type": "integer",
+            "example": 22,
+            "nullable": true,
+            "description": "Retraso estimado en minutos"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "example": 40.3456
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "example": -3.7632
+          },
+          "source": {
+            "type": "string",
+            "enum": ["DGT", "SCT", "EUSKADI", "MADRID", "NAVARRA", "OTHER"],
+            "description": "Fuente de datos"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-17T10:47:00Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "Station": {
+        "type": "object",
+        "description": "Estación de aforo de tráfico del Ministerio de Transportes",
+        "required": ["id", "code", "lat", "lon"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador interno"
+          },
+          "code": {
+            "type": "string",
+            "example": "0100000001",
+            "description": "Código de estación del Ministerio"
+          },
+          "name": {
+            "type": "string",
+            "example": "Madrid - A-1 pk 3.5",
+            "nullable": true
+          },
+          "roadNumber": {
+            "type": "string",
+            "example": "A-1"
+          },
+          "km": {
+            "type": "number",
+            "format": "float",
+            "example": 3.5,
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": ["PERMANENT", "SEMI_PERMANENT", "PRIMARY", "SECONDARY", "COVERAGE"],
+            "description": "Tipo de estación"
+          },
+          "province": {
+            "type": "string",
+            "example": "28",
+            "description": "Código INE de provincia (2 dígitos)"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "example": 40.4523
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "example": -3.6918
+          },
+          "imd": {
+            "type": "integer",
+            "example": 78432,
+            "nullable": true,
+            "description": "Intensidad Media Diaria más reciente"
+          },
+          "year": {
+            "type": "integer",
+            "example": 2022,
+            "nullable": true,
+            "description": "Año del dato IMD"
+          }
+        }
+      },
+      "Vessel": {
+        "type": "object",
+        "description": "Posición AIS de un buque",
+        "required": ["mmsi", "lat", "lon", "timestamp"],
+        "properties": {
+          "mmsi": {
+            "type": "string",
+            "example": "224143760",
+            "description": "Maritime Mobile Service Identity (9 dígitos)"
+          },
+          "imo": {
+            "type": "string",
+            "example": "9234567",
+            "nullable": true,
+            "description": "Número IMO del buque"
+          },
+          "name": {
+            "type": "string",
+            "example": "BALEARIA EXPRESS",
+            "nullable": true
+          },
+          "callsign": {
+            "type": "string",
+            "example": "EBXR",
+            "nullable": true
+          },
+          "vessel_type": {
+            "type": "integer",
+            "example": 60,
+            "nullable": true,
+            "description": "Código de tipo AIS (60=Passenger, 70=Cargo, 80=Tanker…)"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "example": 38.9124
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "example": 1.4233
+          },
+          "sog": {
+            "type": "number",
+            "format": "float",
+            "example": 12.4,
+            "nullable": true,
+            "description": "Velocidad sobre el fondo en nudos"
+          },
+          "cog": {
+            "type": "number",
+            "format": "float",
+            "example": 245.0,
+            "nullable": true,
+            "description": "Rumbo sobre el fondo en grados"
+          },
+          "heading": {
+            "type": "number",
+            "format": "float",
+            "example": 247.0,
+            "nullable": true,
+            "description": "Proa verdadera en grados"
+          },
+          "status": {
+            "type": "integer",
+            "example": 0,
+            "nullable": true,
+            "description": "Estado de navegación AIS (0=Bajo motor, 1=Fondeado…)"
+          },
+          "destination": {
+            "type": "string",
+            "example": "PALMA DE MALLORCA",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-17T10:45:00Z"
+          }
+        }
+      },
+      "RailwayStation": {
+        "type": "object",
+        "description": "Estación ferroviaria de la red Renfe / ADIF",
+        "required": ["id", "name", "lat", "lon"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Madrid Atocha"
+          },
+          "slug": {
+            "type": "string",
+            "example": "madrid-atocha"
+          },
+          "network": {
+            "type": "string",
+            "example": "Madrid",
+            "nullable": true,
+            "description": "Red de Cercanías (si aplica)"
+          },
+          "province": {
+            "type": "string",
+            "example": "Madrid",
+            "nullable": true
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "example": 40.4068
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "example": -3.6918
+          },
+          "brands": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["AVE", "Cercanías"],
+            "description": "Marcas comerciales Renfe que operan esta estación"
+          }
+        }
+      },
+      "GasStation": {
+        "type": "object",
+        "description": "Gasolinera con precios actualizados",
+        "required": ["id", "name", "lat", "lon"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "REPSOL MADRID NORTE"
+          },
+          "brand": {
+            "type": "string",
+            "example": "REPSOL",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "example": "Madrid"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "example": 40.4912
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "example": -3.7201
+          },
+          "gasolina_95": {
+            "type": "number",
+            "format": "float",
+            "example": 1.629,
+            "nullable": true,
+            "description": "Precio gasolina 95 en €/L (3 decimales)"
+          },
+          "gasolina_98": {
+            "type": "number",
+            "format": "float",
+            "example": 1.789,
+            "nullable": true
+          },
+          "diesel_a": {
+            "type": "number",
+            "format": "float",
+            "example": 1.499,
+            "nullable": true,
+            "description": "Precio gasóleo A en €/L"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Airport": {
+        "type": "object",
+        "description": "Aeropuerto AENA",
+        "required": ["iata", "name", "lat", "lon"],
+        "properties": {
+          "iata": {
+            "type": "string",
+            "example": "MAD",
+            "description": "Código IATA de 3 letras"
+          },
+          "icao": {
+            "type": "string",
+            "example": "LEMD",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Madrid-Barajas Adolfo Suárez"
+          },
+          "city": {
+            "type": "string",
+            "example": "Madrid"
+          },
+          "province": {
+            "type": "string",
+            "example": "Madrid"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "example": 40.4719
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "example": -3.5626
+          },
+          "pax_annual": {
+            "type": "integer",
+            "example": 60284536,
+            "nullable": true,
+            "description": "Pasajeros anuales (último año disponible Eurostat)"
+          }
+        }
+      },
+      "AirQualityReading": {
+        "type": "object",
+        "description": "Lectura de calidad del aire de una estación MITECO",
+        "properties": {
+          "station_id": { "type": "string" },
+          "station_name": { "type": "string", "example": "Madrid - Escuelas Aguirre" },
+          "province": { "type": "string", "example": "Madrid" },
+          "lat": { "type": "number", "format": "float" },
+          "lon": { "type": "number", "format": "float" },
+          "ica": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6,
+            "example": 2,
+            "description": "Índice de Calidad del Aire MITECO (1=Buena … 6=Muy mala)"
+          },
+          "no2": { "type": "number", "format": "float", "nullable": true, "description": "NO₂ en µg/m³" },
+          "pm10": { "type": "number", "format": "float", "nullable": true, "description": "PM10 en µg/m³" },
+          "pm25": { "type": "number", "format": "float", "nullable": true, "description": "PM2.5 en µg/m³" },
+          "o3": { "type": "number", "format": "float", "nullable": true, "description": "O₃ en µg/m³" },
+          "so2": { "type": "number", "format": "float", "nullable": true, "description": "SO₂ en µg/m³" },
+          "measured_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": { "type": "string", "example": "Invalid API key" },
+          "code": { "type": "string", "example": "AUTH_REQUIRED", "nullable": true }
+        }
+      },
+      "PaginatedMeta": {
+        "type": "object",
+        "properties": {
+          "total": { "type": "integer", "example": 1234 },
+          "limit": { "type": "integer", "example": 500 },
+          "offset": { "type": "integer", "example": 0 },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "API key inválida o ausente",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Límite de peticiones superado",
+        "headers": {
+          "X-RateLimit-Limit": { "schema": { "type": "integer" } },
+          "X-RateLimit-Remaining": { "schema": { "type": "integer" } },
+          "X-RateLimit-Reset": { "schema": { "type": "integer" }, "description": "Unix timestamp en segundos" }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "Province": {
+        "name": "province",
+        "in": "query",
+        "description": "Nombre de provincia o código INE de 2 dígitos",
+        "schema": { "type": "string" },
+        "example": "Madrid"
+      },
+      "LimitParam": {
+        "name": "limit",
+        "in": "query",
+        "description": "Número máximo de resultados (default 500, max 3000)",
+        "schema": { "type": "integer", "minimum": 1, "maximum": 3000, "default": 500 }
+      },
+      "OffsetParam": {
+        "name": "offset",
+        "in": "query",
+        "description": "Desplazamiento para paginación",
+        "schema": { "type": "integer", "minimum": 0, "default": 0 }
+      },
+      "GeoJsonFormat": {
+        "name": "format",
+        "in": "query",
+        "description": "Formato de respuesta: `json` (default) o `geojson`",
+        "schema": { "type": "string", "enum": ["json", "geojson"] }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Tráfico", "description": "Incidencias, intensidad, aforos y obras en la red viaria" },
+    { "name": "Combustible", "description": "Gasolineras, precios y tendencias" },
+    { "name": "Trenes", "description": "Red ferroviaria Renfe: estaciones, rutas, alertas y posiciones GPS" },
+    { "name": "Marítimo", "description": "Posiciones AIS de buques, puertos y ferries" },
+    { "name": "Aviación", "description": "Aeronaves en vuelo y aeropuertos AENA" },
+    { "name": "Calidad del aire", "description": "Índice ICA de 506 estaciones MITECO" },
+    { "name": "Estadísticas", "description": "Datos históricos de movilidad y transporte (INE, CNMC)" },
+    { "name": "Búsqueda", "description": "Búsqueda full-text sobre 26 colecciones" }
+  ],
+  "paths": {
+    "/incidents": {
+      "get": {
+        "tags": ["Tráfico"],
+        "operationId": "getIncidents",
+        "summary": "Incidencias activas",
+        "description": "Devuelve las incidencias de tráfico activas en la red viaria española. Fuente: DGT DATEX II, SCT, Euskadi, Madrid. Actualización cada 60 segundos.\n\n**Tier mínimo:** FREE",
+        "parameters": [
+          { "$ref": "#/components/parameters/Province" },
+          {
+            "name": "road",
+            "in": "query",
+            "description": "Filtrar por código de carretera (e.g. `A-4`)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Tipo de incidencia",
+            "schema": {
+              "type": "string",
+              "enum": ["ACCIDENT", "ROADWORK", "WEATHER", "CONGESTION", "CLOSURE", "HAZARD", "VEHICLE_BREAKDOWN", "EVENT"]
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "description": "Severidad mínima",
+            "schema": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de incidencias activas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedMeta" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "incidents": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Incident" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/estaciones-aforo": {
+      "get": {
+        "tags": ["Tráfico"],
+        "operationId": "getEstacionesAforo",
+        "summary": "Estaciones de aforo de tráfico",
+        "description": "Catálogo de más de 14.400 estaciones de conteo del Ministerio de Transportes. Incluye IMD anual. Soporta salida GeoJSON.\n\n**Tier mínimo:** FREE",
+        "parameters": [
+          { "$ref": "#/components/parameters/Province" },
+          {
+            "name": "road",
+            "in": "query",
+            "description": "Filtrar por número de carretera (e.g. `A-1`)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Tipo de estación",
+            "schema": { "type": "string", "enum": ["PERMANENT", "SEMI_PERMANENT", "PRIMARY", "SECONDARY", "COVERAGE"] }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "description": "Año del dato IMD",
+            "schema": { "type": "integer", "example": 2022 }
+          },
+          {
+            "name": "minIMD",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "maxIMD",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          { "$ref": "#/components/parameters/GeoJsonFormat" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estaciones de aforo (JSON o GeoJSON según `format`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedMeta" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "stations": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Station" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "application/geo+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["FeatureCollection"] },
+                    "features": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/gas-stations": {
+      "get": {
+        "tags": ["Combustible"],
+        "operationId": "getGasStations",
+        "summary": "Gasolineras con precios",
+        "description": "Más de 11.000 gasolineras con precios por tipo de combustible, coordenadas y operador. Actualización varias veces al día desde MINETUR.\n\n**Tier mínimo:** FREE",
+        "parameters": [
+          { "$ref": "#/components/parameters/Province" },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Marca de la gasolinera (e.g. `REPSOL`, `CEPSA`)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fuel",
+            "in": "query",
+            "description": "Tipo de combustible (filtra solo gasolineras que tienen ese precio)",
+            "schema": { "type": "string", "enum": ["gasolina_95", "gasolina_98", "diesel_a", "diesel_premium", "glp", "gnc", "gnl"] }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitud para búsqueda por cercanía",
+            "schema": { "type": "number", "format": "float" }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "Longitud para búsqueda por cercanía",
+            "schema": { "type": "number", "format": "float" }
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "description": "Radio en km para búsqueda por cercanía (default 5)",
+            "schema": { "type": "number", "format": "float", "default": 5 }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de gasolineras",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedMeta" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "stations": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/GasStation" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/combustible/historico": {
+      "get": {
+        "tags": ["Combustible"],
+        "operationId": "getFuelHistory",
+        "summary": "Serie histórica de precios de combustible",
+        "description": "Precios medios provinciales diarios desde 2016. Fuente: CNMC CKAN.\n\n**Tier mínimo:** PRO",
+        "parameters": [
+          { "$ref": "#/components/parameters/Province" },
+          {
+            "name": "fuel",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["gasolina_95", "diesel_a", "glp"] }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Fecha de inicio ISO 8601 (YYYY-MM-DD)",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Fecha de fin ISO 8601 (YYYY-MM-DD)",
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie histórica de precios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fuel": { "type": "string" },
+                    "province": { "type": "string", "nullable": true },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": { "type": "string", "format": "date" },
+                          "price": { "type": "number", "format": "float", "description": "€/L" },
+                          "price_before_tax": { "type": "number", "format": "float", "nullable": true }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/trenes/estaciones": {
+      "get": {
+        "tags": ["Trenes"],
+        "operationId": "getRailwayStations",
+        "summary": "Estaciones ferroviarias",
+        "description": "Catálogo de 2.154 estaciones Renfe (Cercanías + AVE + Larga Distancia). Coordenadas, nombre ADIF, marcas y redes.\n\n**Tier mínimo:** FREE",
+        "parameters": [
+          { "$ref": "#/components/parameters/Province" },
+          {
+            "name": "network",
+            "in": "query",
+            "description": "Red de Cercanías (e.g. `Madrid`, `Barcelona`)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Marca Renfe (e.g. `AVE`, `Cercanías`)",
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          { "$ref": "#/components/parameters/GeoJsonFormat" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estaciones ferroviarias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedMeta" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "stations": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/RailwayStation" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/trenes/alertas": {
+      "get": {
+        "tags": ["Trenes"],
+        "operationId": "getRailwayAlerts",
+        "summary": "Alertas de servicio Renfe",
+        "description": "Alertas activas de servicio Renfe: cancelaciones, retrasos >5 min. Fuente GTFS-RT. Actualización cada 2 minutos.\n\n**Tier mínimo:** FREE",
+        "parameters": [
+          {
+            "name": "network",
+            "in": "query",
+            "description": "Filtrar por red de Cercanías",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de alertas activas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer" },
+                    "updated_at": { "type": "string", "format": "date-time" },
+                    "alerts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "header": { "type": "string" },
+                          "description": { "type": "string", "nullable": true },
+                          "cause": { "type": "string", "enum": ["UNKNOWN_CAUSE", "ACCIDENT", "WEATHER", "TECHNICAL_PROBLEM", "DEMONSTRATION", "STRIKE", "OTHER_CAUSE"] },
+                          "effect": { "type": "string", "enum": ["NO_SERVICE", "REDUCED_SERVICE", "SIGNIFICANT_DELAYS", "DETOUR", "ADDITIONAL_SERVICE", "MODIFIED_SERVICE", "OTHER_EFFECT"] },
+                          "routes": { "type": "array", "items": { "type": "string" } },
+                          "start": { "type": "string", "format": "date-time", "nullable": true },
+                          "end": { "type": "string", "format": "date-time", "nullable": true }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/trenes/posiciones": {
+      "get": {
+        "tags": ["Trenes"],
+        "operationId": "getTrainPositions",
+        "summary": "Posiciones GPS de trenes en tiempo real",
+        "description": "Posiciones GPS de ~115 trenes de Larga Distancia activos. Incluye retraso estimado en minutos. Actualización cada 2 minutos.\n\n**Tier mínimo:** PRO",
+        "parameters": [
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filtrar por marca Renfe (e.g. `AVE`, `Alvia`)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GeoJSON FeatureCollection con posiciones de trenes",
+            "content": {
+              "application/geo+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["FeatureCollection"] },
+                    "updated_at": { "type": "string", "format": "date-time" },
+                    "features": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string", "enum": ["Feature"] },
+                          "geometry": {
+                            "type": "object",
+                            "properties": {
+                              "type": { "type": "string", "enum": ["Point"] },
+                              "coordinates": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+                            }
+                          },
+                          "properties": {
+                            "type": "object",
+                            "properties": {
+                              "train_id": { "type": "string" },
+                              "brand": { "type": "string" },
+                              "origin": { "type": "string" },
+                              "destination": { "type": "string" },
+                              "delay_minutes": { "type": "integer", "nullable": true }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/maritimo": {
+      "get": {
+        "tags": ["Marítimo"],
+        "operationId": "getVesselPositions",
+        "summary": "Posiciones AIS de buques",
+        "description": "Posiciones AIS en tiempo real de buques en aguas españolas. Buffer de 48 horas. Fuente: aisstream.io. ~10.900 posiciones/minuto procesadas.\n\n**Tier mínimo:** PRO",
+        "parameters": [
+          {
+            "name": "bbox",
+            "in": "query",
+            "description": "Bounding box geográfico: `min_lon,min_lat,max_lon,max_lat`",
+            "schema": { "type": "string", "example": "-9.5,36.0,3.3,43.8" }
+          },
+          {
+            "name": "vessel_type",
+            "in": "query",
+            "description": "Código de tipo de buque AIS",
+            "schema": { "type": "integer" }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/GeoJsonFormat" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posiciones de buques (JSON o GeoJSON)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer" },
+                    "updated_at": { "type": "string", "format": "date-time" },
+                    "vessels": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Vessel" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/maritimo/ferries": {
+      "get": {
+        "tags": ["Marítimo"],
+        "operationId": "getFerryRoutes",
+        "summary": "Rutas de ferry",
+        "description": "Rutas de ferry activas con horarios y operadores (Fred. Olsen, Baleària, Vizcaya Bridge…). Fuente GTFS.\n\n**Tier mínimo:** FREE",
+        "responses": {
+          "200": {
+            "description": "Lista de rutas de ferry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer" },
+                    "routes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "operator": { "type": "string", "example": "Baleària" },
+                          "origin": { "type": "string", "example": "Barcelona" },
+                          "destination": { "type": "string", "example": "Palma de Mallorca" },
+                          "duration_minutes": { "type": "integer", "nullable": true },
+                          "frequency": { "type": "string", "nullable": true }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/aviacion": {
+      "get": {
+        "tags": ["Aviación"],
+        "operationId": "getAircraftPositions",
+        "summary": "Aeronaves en vuelo sobre España",
+        "description": "Posiciones en tiempo real de aeronaves sobre España vía OpenSky Network (ADS-B). Actualización cada 15 minutos.\n\n**Tier mínimo:** PRO",
+        "parameters": [
+          {
+            "name": "bbox",
+            "in": "query",
+            "description": "Bounding box: `min_lon,min_lat,max_lon,max_lat`",
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/LimitParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "GeoJSON con posiciones de aeronaves",
+            "content": {
+              "application/geo+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["FeatureCollection"] },
+                    "count": { "type": "integer" },
+                    "updated_at": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/aviacion/aeropuertos": {
+      "get": {
+        "tags": ["Aviación"],
+        "operationId": "getAirports",
+        "summary": "Aeropuertos AENA",
+        "description": "Catálogo de 42 aeropuertos AENA con estadísticas de pasajeros (Eurostat AVIA_PAOA, 2019-2025) y geometría de pistas.\n\n**Tier mínimo:** PRO",
+        "parameters": [
+          { "$ref": "#/components/parameters/Province" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de aeropuertos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer" },
+                    "airports": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Airport" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/calidad-aire": {
+      "get": {
+        "tags": ["Calidad del aire"],
+        "operationId": "getAirQuality",
+        "summary": "Calidad del aire ICA",
+        "description": "Lecturas horarias del Índice de Calidad del Aire (ICA 1-6) de 565 estaciones MITECO + extensiones autonómicas. Contaminantes: NO₂, PM10, PM2.5, O₃, SO₂, CO.\n\n**Tier mínimo:** FREE",
+        "parameters": [
+          { "$ref": "#/components/parameters/Province" },
+          {
+            "name": "ica_max",
+            "in": "query",
+            "description": "Devuelve solo estaciones con ICA ≤ este valor",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 6 }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/GeoJsonFormat" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lecturas de calidad del aire",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer" },
+                    "updated_at": { "type": "string", "format": "date-time" },
+                    "readings": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AirQualityReading" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/estadisticas": {
+      "get": {
+        "tags": ["Estadísticas"],
+        "operationId": "getTransportStats",
+        "summary": "Estadísticas de transporte",
+        "description": "Estadísticas de transporte del INE y CNMC: viajeros por modo, toneladas, accidentes. Agregación por periodo.\n\n**Tier mínimo:** PRO",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "Modo de transporte",
+            "schema": { "type": "string", "enum": ["road", "rail", "air", "maritime"] }
+          },
+          {
+            "name": "groupBy",
+            "in": "query",
+            "description": "Agrupar por",
+            "schema": { "type": "string", "enum": ["year", "quarter", "month", "province"] }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estadísticas agregadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mode": { "type": "string", "nullable": true },
+                    "groupBy": { "type": "string" },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "period": { "type": "string" },
+                          "passengers": { "type": "integer", "nullable": true },
+                          "tons": { "type": "number", "nullable": true },
+                          "vehicles": { "type": "integer", "nullable": true }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": ["Búsqueda"],
+        "operationId": "search",
+        "summary": "Búsqueda full-text multicolección",
+        "description": "Búsqueda sobre 26 colecciones Typesense: gasolineras, carreteras, cámaras, municipios, ZBE, estaciones ferroviarias, aeropuertos, paradas de tránsito, radares, alertas meteorológicas…\n\n**Tier mínimo:** FREE",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Consulta de búsqueda",
+            "schema": { "type": "string", "minLength": 2, "example": "A-6 Madrid" }
+          },
+          {
+            "name": "collections",
+            "in": "query",
+            "description": "Colecciones a buscar (coma-separadas). Por defecto: todas.",
+            "schema": { "type": "string", "example": "gas_stations,roads" }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitud para ordenar por proximidad",
+            "schema": { "type": "number", "format": "float" }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "Longitud para ordenar por proximidad",
+            "schema": { "type": "number", "format": "float" }
+          },
+          { "$ref": "#/components/parameters/LimitParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultados de búsqueda agrupados por colección",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "total": { "type": "integer" },
+                    "results": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "found": { "type": "integer" },
+                          "hits": { "type": "array", "items": { "type": "object" } }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    }
+  }
+}
