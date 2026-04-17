@@ -2557,3 +2557,18 @@ model AirQualityReading {
   @@index([createdAt])
   @@index([ica])
 }
+
+// ============================================
+// COLLECTOR MONITORING
+// ============================================
+
+model CollectorHeartbeat {
+  task         String   @id
+  lastRunAt    DateTime @default(now()) @db.Timestamptz
+  status       String   // 'ok' | 'error' | 'partial'
+  meta         Json?
+  errorMessage String?
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  @@map("collector_heartbeats")
+}
