@@ -70,8 +70,10 @@ async function checkCollectors(): Promise<HealthCheck["checks"]["collectors"]> {
     intensity: 15 * 60 * 1000,
     weather: 8 * 60 * 60 * 1000,
     panels: 15 * 60 * 1000,
-    // OpenSky cron is */15 — allow 30 min before flagging stale
-    aviacion: 30 * 60 * 1000,
+    // OpenSky cron is */15 — allow 60 min (4 missed runs) before flagging stale.
+    // 30 min was too tight: container restarts leave a gap until the next cron
+    // tick, which fires up to 15 min after start, causing false degraded alerts.
+    aviacion: 60 * 60 * 1000,
   };
 
   const now = Date.now();
