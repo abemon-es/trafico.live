@@ -297,7 +297,7 @@ export default async function MeteoStationPage({ params }: PageProps) {
         >
           <div className="h-[420px] w-full">
             <TraficoMap
-              preset="weather"
+              preset="meteo"
               entity={{ type: "weather-station", id: station.stationCode }}
             />
           </div>
