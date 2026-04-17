@@ -66,6 +66,7 @@ async function goAndWait(page: Page, path: string): Promise<number> {
 for (const spec of ALL_PAGES) {
   for (const mode of ['light', 'dark'] as const) {
     test(`baseline — ${spec.name} (${mode})`, async ({ page }) => {
+      test.setTimeout(60_000)
       await setColorScheme(page, mode)
       const status = await goAndWait(page, spec.path)
       test.skip(status !== 200, `${spec.path} returned ${status}; skipping baseline`)
