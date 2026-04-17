@@ -1252,7 +1252,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // The page at [operator]/page.tsx resolves both slug and mdbId via fallback,
   // but we only emit the slug to keep the sitemap canonical. Duplicate slugs
   // (same operator registered twice with identical names) are deduped.
+  // Only emit operators whose GTFS feed has been successfully ingested
+  // (matches the filter used in the page's generateStaticParams).
+  // ~73 of 89 catalog entries have no routes/stops because their feeds
+  // weren't processed yet — those are thin landing pages.
   const transitOperators = await prisma.transitOperator.findMany({
+    where: { routes: { some: {} } },
     select: { name: true, updatedAt: true },
     orderBy: { name: "asc" },
   });
