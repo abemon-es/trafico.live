@@ -2,6 +2,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Construction, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -243,6 +244,42 @@ export default async function RegionalesPage() {
               tramo específico.
             </p>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <FAQAccordion
+            title="Preguntas frecuentes sobre carreteras autonómicas y provinciales"
+            items={[
+              {
+                question: "¿Quién es responsable del mantenimiento de estas carreteras?",
+                answer:
+                  "Depende del prefijo. Las carreteras autonómicas (M-, B-, CM-, EX-, CV-…) las mantiene la consejería de carreteras o fomento de cada comunidad autónoma. Las provinciales y comarcales las gestionan las diputaciones provinciales, consells insulars o cabildos.",
+              },
+              {
+                question:
+                  "¿Por qué la M-30 tiene velocidad máxima 70 y no 90 km/h?",
+                answer:
+                  "La M-30 es una vía urbana de alta capacidad dentro del término municipal de Madrid. Aunque tiene calzadas separadas, está señalizada como vía urbana con límites entre 50 y 70 km/h por criterios de seguridad vial y convivencia con accesos frecuentes.",
+              },
+              {
+                question: "¿Hay radares en carreteras autonómicas?",
+                answer:
+                  "Sí. Muchas comunidades autónomas operan sus propios cinemómetros en carreteras regionales, además de los radares de la DGT. trafico.live muestra únicamente los radares reportados por la DGT y los servicios autonómicos que publican sus datos en abierto.",
+              },
+              {
+                question:
+                  "¿Las carreteras con prefijos GC-, TF-, FV- son solo de Canarias?",
+                answer:
+                  "Sí. Gran Canaria (GC-), Tenerife (TF-), Fuerteventura (FV-), Lanzarote (LZ-), La Palma (LP-), La Gomera (TF-), El Hierro (HI-). Las gestiona el cabildo insular correspondiente, no la comunidad autónoma.",
+              },
+              {
+                question:
+                  "¿Puedo ver una carretera autonómica concreta con sus incidencias?",
+                answer:
+                  "Sí. Abre /carreteras/[código] — por ejemplo /carreteras/M-40 o /carreteras/CV-30 — para ver cámaras, incidencias activas, radares, estaciones de aforo cercanas y la geometría de la vía sobre el mapa.",
+              },
+            ]}
+          />
         </div>
       </main>
     </div>
