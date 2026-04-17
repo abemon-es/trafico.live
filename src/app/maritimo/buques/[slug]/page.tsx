@@ -20,7 +20,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { VesselVoyageHistory } from "@/components/maritimo/VesselVoyageHistory";
 import { VesselOverview } from "@/components/maritimo/VesselOverview";
-import { VesselLiveMap } from "@/components/maritimo/VesselLiveMap";
+import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
 import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
 import { NAV_STATUS, shipTypeLabel, cleanDestination, cleanEta } from "@/lib/ais-labels";
 
@@ -443,20 +443,18 @@ export default async function VesselPage({ params }: PageProps) {
             <MapPin className="w-5 h-5 text-tl-sea-500" />
             Mapa en vivo
           </h2>
-          <VesselLiveMap
-            mmsi={vessel.mmsi}
-            name={vessel.name}
-            initialPosition={
+          <TraficoMapEmbed
+            preset="maritime-live"
+            entity={{ type: "vessel", id: String(vessel.mmsi) }}
+            initialView={
               latestPos
                 ? {
-                    lat: Number(latestPos.latitude),
-                    lng: Number(latestPos.longitude),
-                    sog: latestPos.sog,
-                    cog: latestPos.cog,
-                    heading: latestPos.heading,
+                    center: [Number(latestPos.longitude), Number(latestPos.latitude)],
+                    zoom: 10,
                   }
                 : undefined
             }
+            controls={{ layerPanel: true, legend: true, themeToggle: true }}
           />
         </section>
 
