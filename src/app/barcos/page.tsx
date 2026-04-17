@@ -1,16 +1,6 @@
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { Ship, Anchor, Map as MapIcon, Info, ArrowRight } from "lucide-react";
-
-const TraficoMap = dynamic(
-  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-full w-full bg-tl-50 dark:bg-slate-900 animate-pulse" />
-    ),
-  },
-);
+import { TraficoMap } from "@/components/map/TraficoMapClient";
 
 export const revalidate = 60;
 

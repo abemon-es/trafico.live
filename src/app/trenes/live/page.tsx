@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { Train, Construction, ArrowRight } from "lucide-react";
-
-const TraficoMap = dynamic(
-  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-full w-full bg-tl-50 dark:bg-slate-900 animate-pulse" />
-    ),
-  },
-);
+import { TraficoMap } from "@/components/map/TraficoMapClient";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
