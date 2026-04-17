@@ -1,147 +1,111 @@
-# trafico.live — status board
+# trafico.live — status board T4
 
 > Source of truth: `docs/ROADMAP-MASTER-2026.md`
-> Última actualización: 2026-04-17
+> Última actualización: 2026-04-17 (post wave B · S1-S4 scaffolded)
 
 ## T4 — Platform + Money (10 sub-agents)
 
-Branch base: `team4` · Lead: platform lead · Roadmap: `docs/ROADMAP-TEAM-4-PLATFORM.md`
+Branch: `team4` · Worktree: `/private/tmp/trafico-t4` · Roadmap: `docs/ROADMAP-TEAM-4-PLATFORM.md`
 
-| # | Sub-agent | Owns | Status | Sprint | Branch |
-|---|-----------|------|--------|--------|--------|
-| **4.1** | Stripe tiers + middleware enforcement + refunds + VAT | `src/app/api/billing/**`, `src/lib/stripe.ts`, `src/lib/api-tiers.ts`, `src/middleware.ts` | pending | S0→S2 | `team4-4.1-stripe` |
-| **4.2** | `/api` landing + Swagger + customer support | `src/app/api-landing/**`, `src/app/api-docs/**`, `public/openapi.json`, `src/app/ayuda/**` | pending | S0→S2 | `team4-4.2-api-landing` |
-| **4.3** | Dashboard cliente | `src/app/dashboard/**` | pending | S2→S3 | `team4-4.3-dashboard` |
-| **4.4** | MCP npm publish + Discord | `src/mcp/**`, `packages/mcp-server/**` | pending | S3 | `team4-4.4-mcp` |
-| **4.5** | Chatbot widget (Claude API + MCP) | `src/components/chat/**`, `src/app/api/chat/route.ts` | pending | S0→S3 | `team4-4.5-chatbot` |
-| **4.6** | Alexa + Google Assistant skills | `services/alexa/**`, `services/google-action/**` | pending | S4 | `team4-4.6-voice` |
-| **4.7** | Flotas SaaS | `src/app/flotas/**`, `src/app/api/flotas/**`, prisma `FleetVehicle/FleetPosition` (PR → T3.6) | pending | S4 | `team4-4.7-flotas` |
-| **4.8** | Analytics funnel + alertas + legal pages + affiliates dashboard | `src/lib/analytics.ts`, `src/app/alertas/**`, `src/app/api/alerts/**`, `src/app/{aviso-legal,privacidad,cookies}/page.tsx`, `src/app/admin/affiliates/**`, prisma `UserAlert/AffiliateOffer/AffiliateClick/RouteODPair` (PR → T3.6) | **in_progress (S0+)** | S0→S4 | `team4-4.8-analytics-alerts` |
-| **4.9** | Distribution loop + ayuntamientos + press kit | `services/collector/tasks/weekly-digest/**`, `src/app/ayuntamiento/[slug]/**`, `src/app/prensa/**`, `src/app/recursos/**` | pending | S1→S5 | `team4-4.9-distribution` |
-| **4.10** | Auth (NextAuth) + accounts + status + i18n EN | `src/app/(auth)/**`, `src/app/account/**`, `src/app/status/**`, `src/lib/auth-client.ts`, `src/middleware.ts` (auth ↔ 4.1 tier), next-intl base | pending | S1→S2 | `team4-4.10-auth-status-i18n` |
+| # | Sub-agent | Status | Commits | Notes |
+|---|-----------|--------|---------|-------|
+| **4.1** | Stripe + middleware tier detection + rate-limit + refunds | **shipped S0+S1+S2 scaffolds** · pending live mode | `1e43ae2d`, `acfade61` | Webhook 4 handlers + clampInt · tier-rate-limit.ts Redis sliding window · portal/refund endpoints · PRO=49€ |
+| **4.2** | `/api-landing` + `/api-docs` + OpenAPI 3.1 | **shipped S0** | `5f05b244` | 14 paths, 8 reusable schemas, TierCard + CurlExample + RequestAccessForm |
+| **4.3** | Dashboard cliente (layout + keys CRUD + usage Recharts + billing + alertas) | **shipped S2-S3** | `ea30ebb0` | 17 files, sidebar, CSV export, Stripe portal integration |
+| **4.4** | MCP npm package + release workflow | **scaffolded S3** · npm publish manual step pending | `ead21453` + prior | @trafico/mcp-server HTTP-based · GH Actions release on tag `mcp-v*` · 17 tools |
+| **4.5** | Chatbot widget | **skeleton S0** · live S3 pending Claude API | `b5ce1533` | FAB + drawer + placeholder · /api/chat stub 503 · T2.3 mounts `<ChatWidget/>` |
+| **4.6** | Alexa + Google Assistant skills | pending S4 | — | — |
+| **4.7** | Flotas SaaS (landing + dashboard + onboarding + ingest API) | **shipped S4 scaffold** | `e63cb2f3` | 3-tier pricing · /flotas/dashboard live map · per-fleet isolation · T2 TraficoMap consumer |
+| **4.8** | Analytics funnel + legal + skeletons + /noticias ticker + alertas + admin/affiliates | **shipped S0+S4** | `595d4724`, `5d262ff8`, `6c5635da`, `00a9eca6`, `598d6306`, `16db0437` | 8 GA4 events · RGPD+LSSI pages · 8 skeletons · live TickerStrip · /alertas CRUD + Web Push SW · admin dashboard stub |
+| **4.9** | Distribution loop: afiliados guide + newsletter + lead magnet | **shipped S0+S1** · weekly-digest S5 pending | `6a4fe684`, `dc025a91` | 6 programas · disclosure templates · Resend lib · double opt-in · /recursos/guia-multimodal 1.5K palabras |
+| **4.10** | NextAuth + /status LIVE + i18n EN | **shipped S1** | `37f933fa`, `2f980293`, `b9c5c3fb`, `7e929b23` | Magic link + Google + GitHub · middleware gate · /status polling 30s · 8 next-intl namespaces ES+EN |
 
-### S0+ checklist (jue 17 noche → sáb 19)
+## Shipped (18 commits on team4 post S0+S1)
 
-- [ ] **4.8** GA4 Admin → Data Streams → internal traffic + bot filter (screenshots pre/post) — USER UI ACTION, 15min
-- [ ] **4.8** Decisión `/noticias`: rework `<TickerStrip>` consumiendo `/api/incidencias?live=true` (recomendado) vs deprecar — ver §A abajo
-- [ ] **4.8** GA4 event funnel custom: 8 events críticos en `src/lib/analytics.ts` — **BLOCKED: edit reverted 2026-04-17, needs user confirmation** (detalle §B)
-- [ ] **4.8** Esqueleto routes `/api`, `/api-docs`, `/dashboard`, `/flotas`, `/alertas`, `/ayuntamiento/[slug]` con "coming soon"
-- [ ] **4.8** T&C + Privacidad + Cookies pages updated (LSSI + GDPR) — 3 páginas nuevas (`/privacidad`, `/cookies` no existen; `aviso-legal` sí)
-- [ ] **4.1** Stripe sandbox setup + webhook `/api/billing/webhook` + 3 tier products + price IDs en env
-- [ ] **4.1** Middleware detecta API key → header `x-tier` (logging only, sin enforcement)
-- [ ] **4.2** `/api` landing comercial + `/api-docs` Swagger UI
-- [ ] **4.8** LLMs.txt + FAQ schema en 7 hubs (coordinado T2.8, T4 provee contenido FAQ)
-- [ ] **4.5** Skeleton chatbot widget bottom-right en hubs (placeholder)
-- [ ] **4.8** Submit sitemap shards nuevos a GSC
+- [x] STATUS-TEAM4.md
+- [x] analytics.ts 8 events (pricing_click, api_docs_click, newsletter_signup, vertical_click, cta_click, affiliate_click, search_submit, embed_view)
+- [x] `/noticias` rework con `<TickerStrip>` + LiveIncidentBadge
+- [x] 3 páginas legales (aviso-legal actualizado · /privacidad · /cookies)
+- [x] 8 skeletons `coming-soon` con `noindex`
+- [x] Stripe sandbox setup (webhook 4 handlers + clampInt)
+- [x] Middleware x-tier detection (logging only)
+- [x] `/api-landing` comercial + `/api-docs` + `public/openapi.json`
+- [x] Chatbot widget skeleton
+- [x] 6 programas afiliados researched + disclosure templates
+- [x] NextAuth v5 (5 auth pages + middleware gate)
+- [x] `/status` LIVE (30s refresh, collectors + history + incidents)
+- [x] i18n EN base (8 namespaces)
+- [x] Newsletter Resend + `/recursos/guia-multimodal` lead magnet
+- [x] Tier rate-limit (Redis) + enforcement helpers + Stripe portal/refund endpoints
+- [x] Dashboard FULL (keys CRUD + Recharts usage + billing + alertas summary)
+- [x] Flotas SaaS landing + dashboard + onboarding
+- [x] /alertas CRUD + Web Push service worker + 3-step wizard
+- [x] /admin/affiliates dashboard skeleton
+- [x] @trafico/mcp-server npm package + GH Actions release workflow (`mcp-v*` tag)
 
-### Criterio salida S0 T4
+## Pendientes usuario (acción fuera del código)
 
-- [ ] Stripe sandbox responde a webhooks
-- [ ] GA4 event funnel custom verified en DebugView
-- [ ] T&C/Privacy/Cookies actualizados
-- [ ] `/api` landing live con tiers visibles
-- [ ] Sitemap submitted GSC
+- [ ] **Aplicar a 6 programas afiliados** HOY — `docs/AFFILIATE-PROGRAMS-APPLICATIONS.md` (~90 min)
+- [ ] **GA4 Admin → internal traffic + bot filter** (15 min)
+- [ ] **Stripe dashboard** crear 3 productos test + webhook endpoint → env IDs (`docs/STRIPE-SANDBOX-SETUP.md`)
+- [ ] **Resend setup** (DKIM/SPF/DMARC + Audience ID) — `docs/NEWSLETTER-SETUP.md`
+- [ ] **Google OAuth + GitHub OAuth apps** + callback URLs — `docs/AUTH-SETUP.md`
+- [ ] **Web Push VAPID keys** — `docs/ALERTS-SYSTEM.md`
+- [ ] **npm install**: `next-auth@beta @auth/prisma-adapter next-intl resend`
+- [ ] **npm publish** `@trafico/mcp-server@1.0.0` (push tag `mcp-v1.0.0` → GH Actions publica automático con provenance)
 
-### Handshakes T4
+## Prisma PR proposals abiertas → T3.6
 
-| HS | Rol | Counterparty | Sprint | Contract |
-|----|-----|--------------|--------|----------|
-| HS7 | Produce | T4.3, T4.5, todos `/api/*` | S2 | Headers `x-tier` en requests autenticados |
-| HS8 | Consume | T3.1 | S0 | `CollectorHeartbeat` table para `/status` page |
-| HS9 | Produce | T2.4 (chatbot embed) | S3 | MCP tools list firmada vie S2 |
+| Proposal | Modelos | Archivo |
+|---|---|---|
+| T4.10 auth | User, Account, Session, VerificationToken (+ApiKey.userId FK) | `docs/PRISMA-PROPOSAL-T4-AUTH.md` |
+| T4.10 status | StatusIncident | `docs/PRISMA-PROPOSAL-T4-STATUS.md` |
+| T4.9 newsletter | NewsletterSubscription | `docs/PRISMA-PROPOSAL-T4-NEWSLETTER.md` |
+| T4.7 fleet | FleetClient, FleetVehicle, FleetPosition | `docs/PRISMA-PROPOSAL-T4-FLEET.md` |
+| T4.8 alertas | UserAlert, PushSubscription, AffiliateOffer, AffiliateClick + 4 enums | `docs/PRISMA-PROPOSAL-T4-ALERTS.md` |
+| T4.1 key-hash | ApiKey.keyHash (unique) + ApiKey.status enum | inline TODO en `src/app/api/internal/keys/lookup/route.ts` |
 
-### Sync rules
+## Pendientes código (S2-S5)
 
-- Prisma changes → siempre PR de propuesta a T3.6 ANTES de implementar
-- `src/middleware.ts` → coordinated 4.1 ↔ 4.10 (auth + tier viven juntos)
-- Daily merge `team4` → `integration` 23:30
-- Demo viernes: 1 vista cada 2 sub-agents (rotación) + sales pipeline
+- T4.1 Stripe **live mode** (partner agreement + Tax EU VAT) — S1
+- T4.1 Tier **enforcement** mounted en middleware (B5 helpers listos; B1 middleware tiene auth gate pero falta wire `enforceTier` + 402/429 responses en `/api/*`) — S2
+- T4.2 Resend cable en RequestAccessForm · Crisp widget · `/ayuda` FAQ 10 artículos — S1-S2
+- T4.3 Stripe portal redirect · invoice PDF polish — S2-S3
+- T4.4 `npm publish @trafico/mcp-server@1.0.0` · Discord server config — S3
+- T4.5 Claude API streaming + MCP tool calls + tier-based rate limit — S3
+- T4.6 Alexa skill + Google Assistant action — S4
+- T4.7 Fleet features: historial rutas, reports PDF, alertas por vehículo — S4
+- T4.8 Alert matching engine (cron UserAlert × incidents → Resend/Push/Telegram) — S4
+- T4.8 Affiliate tracking real `/ir/[partner]/[slug]` → AffiliateClick (coordina T1 que owns /ir) — S4
+- T4.9 weekly-digest collector · Bluesky/X auto-post AEMET extreme · monthly PDF · 20 ayuntamientos outreach · `/prensa` press kit · `/ayuntamiento/[slug]` datos reales — S5
 
-### Dependencias externas pendientes (aplicar HOY)
+## Integraciones cross-team pendientes
 
-**Afiliados (1-3 sem aprobación):**
-- [ ] Skyscanner Partners
-- [ ] Trainline Partners (**CRÍTICO** — Renfe/OUIGO/Iryo)
-- [ ] DirectFerries
-- [ ] FlixBus + BlaBlaCarBus
-- [ ] Awin (puente)
-- [ ] Rakuten
+- **T2.3** monta `<ChatWidget />` + `<NextIntlClientProvider>` en `src/app/layout.tsx`
+- **T2** cablea `trackVerticalClick` en nav header (patrones en `docs/ANALYTICS-FUNNEL.md`)
+- **T1** cablea `trackAffiliateClick` en `/ir/[partner]/[slug]` antes del 302
+- **T3.6** merge de 6 proposals Prisma (lista arriba)
+- **T3.1** `CollectorHeartbeat` ya existe · `/status` consume OK
 
-**Servicios:**
-- [ ] Stripe partner agreement (aplicar S0 vie, <7d aprobado)
-- [ ] Resend API key (ya hay? verificar)
-- [ ] Crisp account (S2 lun)
-- [ ] Cloudflare R2 bucket (S5)
-- [ ] Telegram bot token (S4)
-- [ ] Discord server admin (S3)
+## Handshakes T4
 
-### Métricas éxito T4
+| HS | Rol | Counterparty | Sprint | Estado |
+|----|-----|--------------|--------|--------|
+| HS7 | Produce | T4.3, T4.5, todos `/api/*` | S2 | Headers `x-tier` disponibles en middleware (logging) |
+| HS8 | Consume | T3.1 | S0 | `CollectorHeartbeat` + `/api/status/collectors` ✓ |
+| HS9 | Produce | T2.4 (chatbot embed) | S3 | MCP tools list via npm package (17 tools) |
+
+## Métricas target
 
 - 3 clientes PRO (49€/mes) piloto S2
-- Newsletter 1.000 suscriptores S5
+- 1.000 suscriptores newsletter S5
 - 100 conversaciones chatbot/día S3
-- 5 ayuntamientos firmados piloto S5
-- 1.000 instalaciones MCP npm package S5
-- GDPR consent verified pre-launch
+- 5 ayuntamientos firmados S5
+- 1.000 instalaciones @trafico/mcp-server en npm S5
+- GDPR consent verificado pre-launch (T2.8 owns banner)
 
----
+## Branches y merge
 
-## §A — Decisión `/noticias` (S0+)
-
-**Contexto:**
-- GA4: 39 views, 8 engaged, **34s avg** → bounce alto
-- GSC: `/noticias/informe-diario-2026-04-02` aparece pos 8 con 0 clicks
-- Consume nav + crawl budget sin retorno monetizable
-- Actualmente pulls de tabla `Article` con categorías DAILY_REPORT / WEEKLY_REPORT / PRICE_ALERT / etc.
-
-**Recomendación: REWORK como live ticker**
-
-1. Conservar señal SEO (pos 8 en query "informe diario tráfico") → **NO deprecar**
-2. Reemplazar landing actual por `<TickerStrip>` consumiendo `/api/incidencias?live=true`
-3. Mantener categoría archive bajo `/noticias/[slug]` (informes diarios auto generados por colector)
-4. Añadir sección "hoy en las carreteras" con contador vivo (sesiones → lecturas engaged con duration target 90s+)
-
-**Implementación (S0 sáb 19, 2h):**
-- `src/app/noticias/page.tsx` → reemplaza hero por `<TickerStrip>` + lista de informes últimos 7d
-- `src/components/noticias/TickerStrip.tsx` → nueva (SWR sobre `/api/incidencias?live=true`, refresh 60s)
-- Mantener `metadata` + breadcrumbs + structured data intactos
-
-**Alternativa: DEPRECAR**
-- Remove from nav, add `noindex` + remove from sitemap, 410 Gone en slugs — solo si rework no cabe en S0
-
----
-
-## §B — GA4 event funnel custom (BLOCKED)
-
-**Contexto (`docs/seo-audit-2026-04-17/10-gsc-ga4.md §3.5`):**
-
-Eventos GA4 actuales en 90d:
-```
-1.600 page_view · 200 session_start · 533 user_engagement
-    3 click · 1 form_start · 1 form_submit · 70 search
-```
-
-**Faltan 8 events BLOQUEANTES para post-launch attribution:**
-
-| Event | Qué mide | Source params |
-|-------|----------|---------------|
-| `pricing_click` | tier upgrade intent | tier (PRO/ENTERPRISE), source |
-| `api_docs_click` | developer acquisition | source, endpoint |
-| `newsletter_signup` | distribution loop seed | source, lead_magnet |
-| `vertical_click` | hub navigation | vertical, source |
-| `cta_click` | primary CTA conversion | cta_id, cta_text, source |
-| `affiliate_click` | revenue attribution | partner, route, product, value (EUR), source |
-| `search_submit` | query form submission | search_term, source |
-| `embed_view` | external embed reach | embed_type, embed_origin |
-
-**Estado:** primer intento de edit a `src/lib/analytics.ts` (añadiendo las 8 funciones) fue **revertido por el sistema** el 2026-04-17. El file sigue en su estado original (6 helpers legacy: `trackSearch`, `trackPriceAlert`, `trackMapInteraction`, `trackFilter`, `trackOutbound`, `trackEntityView`).
-
-**Acción pendiente:** usuario confirma autorización para extender `analytics.ts`, o indica alternativa (nuevo archivo `src/lib/analytics-funnel.ts`?).
-
-**Próximo paso una vez desbloqueado:**
-- Extender `analytics.ts` con 8 helpers
-- Cablear `trackPricingClick` en `/api` landing tier buttons
-- Cablear `trackVerticalClick` en nav primary links (src/components/layout/PrimaryNav o equivalente)
-- Cablear `trackAffiliateClick` en `/ir` redirect handler (T1) — coordinar contract con T1
-- Cablear `trackNewsletterSignup` en footer signup (S1)
-- Verificar en GA4 DebugView que los 8 events disparan
+- Solo `team4` — sub-agents no tienen branches propias esta sprint (worktree constraint en el entorno multi-agent)
+- Daily merge `team4` → `integration` a las 23:30
+- Demo viernes: rotación de 2 sub-agents por semana
