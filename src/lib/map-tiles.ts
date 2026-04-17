@@ -336,10 +336,13 @@ export function getProtomapsStyle(): StyleSpecification {
         data: "/geo/world/land.geojson",
         attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
       },
-      // World countries for country labels
+      // World country label points (one Point per country at NE's LABEL_X/Y)
+      // — the full countries polygon source would emit one label per polygon
+      // in a MultiPolygon (Spain → mainland + Baleares + Canarias + Ceuta + ...),
+      // causing multiple "ESPAÑA" labels on the map.
       "world-countries": {
         type: "geojson",
-        data: "/geo/world/countries.geojson",
+        data: "/geo/world/country-labels.geojson",
         attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
       },
       // World states/provinces for admin-1 labels
