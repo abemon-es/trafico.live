@@ -2,6 +2,13 @@
 # Serves real-time PostGIS layers as vector tiles (MVT)
 # Tables use lat/lng decimals — geometry constructed via SQL functions
 
+# Prometheus metrics at /_/metrics (same port as tile API)
+observability:
+  metrics:
+    add_labels:
+      service: martin-tile
+      env: prod
+
 postgres:
   connection_string: ${DATABASE_URL}
   pool_size: 4

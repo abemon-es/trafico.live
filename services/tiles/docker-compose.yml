@@ -29,9 +29,21 @@ services:
       - DATABASE_URL=${DATABASE_URL}
     expose:
       - "3000"
+    ports:
+      - "10.100.0.2:3089:3000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s
       timeout: 3s
       retries: 5
       start_period: 10s
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: tiles-nginx-exporter
+    command: ["--nginx.scrape-uri=http://tiles/nginx_status"]
+    ports:
+      - "10.100.0.2:9113:9113"
+    depends_on:
+      - tiles
+    restart: unless-stopped
