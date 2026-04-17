@@ -44,7 +44,7 @@ services:
     <<: *osrm-base
     container_name: trafico-osrm-car
     ports:
-      - "10.100.0.3:5000:5000"
+      - "10.100.0.2:5000:5000"
     volumes:
       - /opt/trafico/osrm/car:/data:ro
     logging:
@@ -67,7 +67,7 @@ services:
     <<: *osrm-base
     container_name: trafico-osrm-bike
     ports:
-      - "10.100.0.3:5001:5000"
+      - "10.100.0.2:5001:5000"
     volumes:
       - /opt/trafico/osrm/bike:/data:ro
     logging:
@@ -90,7 +90,7 @@ services:
     <<: *osrm-base
     container_name: trafico-osrm-foot
     ports:
-      - "10.100.0.3:5002:5000"
+      - "10.100.0.2:5002:5000"
     volumes:
       - /opt/trafico/osrm/foot:/data:ro
     logging:
