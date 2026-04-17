@@ -1,17 +1,56 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('flow 03 — TraficoMap layer toggle', () => {
-  test.fixme('user toggles a map layer on/off without errors', async () => {
-    /* TODO after 2.1 TraficoMap unification lands.
-     * Steps:
-     *  1. goto('/trafico')
-     *  2. wait for .maplibregl-canvas to be visible
-     *  3. click the layer-panel toggle (aria-label "Panel de capas")
-     *  4. wait for aria-expanded="true"
-     *  5. click the "Cámaras" layer switch
-     *  6. assert switch aria-checked flips to 'true'
-     *  7. capture page.on('console') errors — assert none
-     *  8. click again — switch flips to 'false'
-     */
+  test('user toggles a map layer on/off without errors', async ({ page }) => {
+    test.setTimeout(45_000)
+
+    // Pre-accept cookies so the banner doesn't overlay the panel.
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem(
+          'trafico_cookie_consent',
+          JSON.stringify({ analytics: true, version: '1', timestamp: new Date().toISOString() }),
+        )
+      } catch {
+        /* storage unavailable */
+      }
+    })
+
+    const consoleErrors: string[] = []
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text())
+    })
+
+    await page.goto('/trafico')
+    // Canvas mounts after MapLibre init — give it time
+    await expect(page.locator('.maplibregl-canvas')).toBeVisible({ timeout: 15_000 })
+
+    // Layer panel opens by default (state: open = true in TraficoMapControls).
+    // Target a known layer present in the trafico preset via its aria-label.
+    const camaras = page.locator('input[type="checkbox"][aria-label="Cámaras de tráfico"]')
+    await expect(camaras).toBeAttached()
+
+    const initiallyChecked = await camaras.isChecked()
+
+    // Clicking the label row toggles — direct input is sr-only, but <label>
+    // wraps the whole row so any click on the row text works.
+    const camarasRow = page.locator('label', { has: camaras })
+    await camarasRow.click()
+    // Wait for React state to flip
+    await expect(camaras).toBeChecked({ checked: !initiallyChecked })
+
+    // Flip back
+    await camarasRow.click()
+    await expect(camaras).toBeChecked({ checked: initiallyChecked })
+
+    // Filter out well-known upstream errors unrelated to the layer-toggle
+    // logic: WebGL context init warnings, tile-server 502s (tiles.trafico.live
+    // is a separate infra dependency), resource-load failures.
+    const realErrors = consoleErrors.filter(
+      (e) =>
+        !/WebGL|GPU|Content Security Policy|ChunkLoad/i.test(e) &&
+        !/tiles\.trafico\.live|AJAXError|Failed to load resource|\b502\b|\b503\b/i.test(e),
+    )
+    expect(realErrors, realErrors.join('\n---\n')).toHaveLength(0)
   })
 })
