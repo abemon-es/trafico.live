@@ -1,13 +1,10 @@
 "use client";
 
 import { fetcher } from "@/lib/fetcher";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
-import type { Map as MapInstance } from "maplibre-gl";
-import { InteractiveBaseMap } from "@/components/map/InteractiveBaseMap";
+import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -23,12 +20,10 @@ import type { IncidentEffect, IncidentCause } from "@/lib/parsers/datex2";
 import { IncidentFilters } from "@/components/incidents/IncidentFilters";
 import { IncidentModal, type IncidentData } from "@/components/incidents/IncidentModal";
 import {
-  createIncidentMarkerElement,
-  createSimpleMarkerElement,
-  EFFECT_COLORS,
-  EFFECT_LABELS,
-  CAUSE_LABELS,
-} from "@/components/map/IncidentMarker";
+  INCIDENT_EFFECT_COLORS as EFFECT_COLORS,
+  INCIDENT_EFFECT_LABELS as EFFECT_LABELS,
+  INCIDENT_CAUSE_LABELS as CAUSE_LABELS,
+} from "@/lib/labels";
 
 interface IncidentFeature {
   type: "Feature";
@@ -90,15 +85,6 @@ export function IncidenciasContent() {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [selectedIncident, setSelectedIncident] = useState<IncidentFeature | null>(null);
 
-  const mapInstanceRef = useRef<MapInstance | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-
-  const handleMapLoad = useCallback((mapInstance: MapInstance) => {
-    mapInstanceRef.current = mapInstance;
-    setIsMapLoaded(true);
-  }, []);
-
   // Build API URL with filters
   const apiUrl = useMemo(() => {
     const params = new URLSearchParams();
@@ -121,41 +107,10 @@ export function IncidenciasContent() {
   );
 
 
-  // Update markers when data changes
-  useEffect(() => {
-    if (!mapInstanceRef.current || !isMapLoaded || !data?.geojson?.features) return;
-
-    // Clear existing markers
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
-
-    const features = data.geojson.features;
-    const useDetailedMarkers = features.length < 100;
-
-    features.forEach((feature) => {
-      const { effect, cause } = feature.properties;
-      const [lng, lat] = feature.geometry.coordinates;
-
-      const el = useDetailedMarkers
-        ? createIncidentMarkerElement(effect, cause, 28)
-        : createSimpleMarkerElement(effect, 14);
-
-      // Add click handler — flyTo incident then open modal
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo({ center: [lng, lat], zoom: Math.max(mapInstanceRef.current.getZoom(), 10), duration: 800 });
-        }
-        setSelectedIncident(feature);
-      });
-
-      const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
-        .setLngLat([lng, lat])
-        .addTo(mapInstanceRef.current!);
-
-      markersRef.current.push(marker);
-    });
-  }, [data?.geojson?.features, isMapLoaded]);
+  // Map markers are served by the `incidents` tile layer via the registry.
+  // TODO(phase 2): propagate activeEffects/activeCauses filters into the tile
+  // source (needs tile-url query params), and wire click → modal on the map.
+  // For now, the list view is the interactive surface for incident detail.
 
   const handleEffectToggle = (effect: IncidentEffect) => {
     setActiveEffects((prev) =>
@@ -320,15 +275,13 @@ export function IncidenciasContent() {
 
           {/* Map — always rendered (hidden in list view) to avoid re-init */}
           <div className={viewMode !== "map" || isLoading || error ? "hidden" : ""}>
-            <InteractiveBaseMap
-              height="600px"
-              center={SPAIN_CENTER}
-              zoom={6}
-              onMapLoad={handleMapLoad}
-              showSidebar={true}
-              showProvinces={true}
-              showCities={true}
-              showQuickAccess={true}
+            <TraficoMapEmbed
+              height={600}
+              initialView={{ center: SPAIN_CENTER, zoom: 6 }}
+              preset="trafico-live"
+              initialLayers={["incidents", "roadworks"]}
+              controls={{ layerPanel: true, legend: true, themeToggle: true }}
+              wrapperClassName="border-0 rounded-none"
             />
           </div>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { MapPin, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -216,6 +217,41 @@ export default async function NacionalesPage() {
               las principales ciudades españolas.
             </p>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <FAQAccordion
+            title="Preguntas frecuentes sobre las carreteras nacionales"
+            items={[
+              {
+                question: "¿Cuál es la diferencia entre N y A?",
+                answer:
+                  "Las N son carreteras nacionales convencionales (un carril por sentido con adelantamientos permitidos) mientras que las A son autovías de alta capacidad con calzadas separadas. Muchas carreteras N históricas (N-II, N-III, N-IV…) fueron desdobladas como autovías y mantienen trazados paralelos.",
+              },
+              {
+                question:
+                  "¿Qué velocidad máxima tienen las carreteras nacionales?",
+                answer:
+                  "En carreteras convencionales, el límite genérico es 90 km/h para turismos y motocicletas, y 80 km/h para camiones y vehículos con remolque. En tramos 2+1 o con arcén ancho puede señalizarse 100 km/h. Dentro de travesías urbanas, 50 km/h salvo señal contraria.",
+              },
+              {
+                question: "¿Las carreteras nacionales tienen radares de tramo?",
+                answer:
+                  "Sí. La DGT ha desplegado radares de tramo especialmente en carreteras N con alta siniestralidad. En la ficha de cada carretera nacional puedes ver los radares activos y su ubicación kilométrica aproximada.",
+              },
+              {
+                question:
+                  "¿Por qué algunas N tienen números romanos (N-I, N-II…) y otras números árabes?",
+                answer:
+                  "Las seis radiales históricas que parten de Madrid se mantienen en numeración romana por tradición (N-I Irún, N-II Barcelona, N-III Valencia, N-IV Cádiz, N-V Badajoz, N-VI A Coruña). El resto de la red (N-120, N-240, N-340, N-630…) utiliza números de 3 dígitos asignados por zona geográfica.",
+              },
+              {
+                question: "¿Dónde veo las incidencias activas en una nacional?",
+                answer:
+                  "Abre la ficha /carreteras/[código] (por ejemplo /carreteras/N-340) y consulta incidencias DGT en tiempo real: obras, accidentes, cortes y restricciones meteorológicas. Los datos vienen del feed DATEX II oficial.",
+              },
+            ]}
+          />
         </div>
       </main>
     </div>

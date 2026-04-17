@@ -1,44 +1,35 @@
-/**
- * /calidad-aire — Calidad del Aire en España
- *
- * Server-side page with real data from AirQualityStation + AirQualityReading models.
- * Data source: Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO)
- */
-
 import type { Metadata } from "next";
-import Link from "next/link";
-import { prisma } from "@/lib/db";
 import {
   Wind,
   MapPin,
-  AlertTriangle,
-  Info,
-  CheckCircle2,
-  XCircle,
   Activity,
-  ArrowRight,
-  ChevronRight,
-  BarChart3,
+  AlertTriangle,
+  Map as MapIcon,
+  CheckCircle2,
 } from "lucide-react";
-import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import prisma from "@/lib/db";
+import { VerticalHub } from "@/components/ui/VerticalHub";
+import { StatCard } from "@/components/ui/StatCard";
+import { TickerStrip, type TickerItem } from "@/components/ui/TickerStrip";
+import { FAQAccordion } from "@/components/ui/FAQAccordion";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { RelatedLinks } from "@/components/ui/RelatedLinks";
+import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { slugify } from "@/lib/geo/slugify";
+import { CalidadAireHeroMap } from "./CalidadAireHeroMap";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Calidad del Aire en España — Índice ICA en tiempo real | trafico.live",
+  title: "Calidad del Aire España — Índice ICA MITECO en tiempo real",
   description:
-    "Índice de Calidad del Aire (ICA) por provincia. NO₂, PM10, PM2.5, O₃, SO₂ en tiempo real. Datos de la Red de Vigilancia del Ministerio para la Transición Ecológica (MITECO).",
-  alternates: {
-    canonical: `${BASE_URL}/calidad-aire`,
-  },
+    "Índice ICA (MITECO) por estación: NO₂, PM10, PM2.5, O₃, SO₂, CO. 565 estaciones de la Red Nacional de Vigilancia + extensiones CCAA (Madrid, Cataluña, Euskadi, Andalucía).",
+  alternates: { canonical: `${BASE_URL}/calidad-aire` },
   openGraph: {
-    title: "Calidad del Aire en España — Índice ICA",
-    description:
-      "Contaminación atmosférica en tiempo real. Estaciones MITECO con índice ICA, NO₂, PM10, PM2.5 y O₃ por provincia.",
+    title: "Calidad del Aire España — ICA en vivo",
+    description: "Contaminación atmosférica en tiempo real. 565 estaciones MITECO.",
     url: `${BASE_URL}/calidad-aire`,
     siteName: "trafico.live",
     locale: "es_ES",
@@ -46,785 +37,286 @@ export const metadata: Metadata = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// ICA helpers
-// ---------------------------------------------------------------------------
+async function getHubData() {
+  const since1h = new Date(Date.now() - 60 * 60 * 1000);
 
-interface IcaConfig {
-  label: string;
-  color: string; // CSS color used inline (no tl-* token exists for these env colors)
-  bgClass: string;
-  textClass: string;
-  borderClass: string;
-  description: string;
-}
+  const [totalStations, provinceGroups, latestReadings] = await Promise.all([
+    prisma.airQualityStation.count(),
+    prisma.airQualityStation.groupBy({
+      by: ["province"],
+      where: { province: { not: null } },
+      _count: true,
+    }),
+    prisma.airQualityReading.findMany({
+      where: { createdAt: { gte: since1h }, ica: { not: null } },
+      orderBy: { createdAt: "desc" },
+      take: 1000,
+      select: { ica: true, no2: true, pm10: true, pm25: true, o3: true, stationId: true },
+    }),
+  ]);
 
-const ICA_CONFIG: Record<number, IcaConfig> = {
-  1: {
-    label: "Buena",
-    color: "#059669",
-    bgClass: "bg-emerald-50 dark:bg-emerald-900/20",
-    textClass: "text-emerald-700 dark:text-emerald-400",
-    borderClass: "border-emerald-200 dark:border-emerald-800",
-    description: "La calidad del aire es satisfactoria.",
-  },
-  2: {
-    label: "Razonable",
-    color: "#d97706",
-    bgClass: "bg-amber-50 dark:bg-amber-900/20",
-    textClass: "text-amber-700 dark:text-amber-400",
-    borderClass: "border-amber-200 dark:border-amber-800",
-    description: "Calidad aceptable. Puede afectar a personas sensibles.",
-  },
-  3: {
-    label: "Moderada",
-    color: "#ea580c",
-    bgClass: "bg-orange-50 dark:bg-orange-900/20",
-    textClass: "text-orange-700 dark:text-orange-400",
-    borderClass: "border-orange-200 dark:border-orange-800",
-    description: "Grupos sensibles pueden experimentar efectos.",
-  },
-  4: {
-    label: "Mala",
-    color: "#dc2626",
-    bgClass: "bg-red-50 dark:bg-red-900/20",
-    textClass: "text-red-700 dark:text-red-400",
-    borderClass: "border-red-200 dark:border-red-800",
-    description: "Puede causar problemas de salud en toda la población.",
-  },
-  5: {
-    label: "Muy mala",
-    color: "#7c3aed",
-    bgClass: "bg-purple-50 dark:bg-purple-900/20",
-    textClass: "text-purple-700 dark:text-purple-400",
-    borderClass: "border-purple-200 dark:border-purple-800",
-    description: "Aviso sanitario. Toda la población puede verse afectada.",
-  },
-};
+  const icaBuckets = [0, 0, 0, 0, 0, 0, 0];
+  for (const r of latestReadings) {
+    if (r.ica !== null && r.ica !== undefined && r.ica >= 1 && r.ica <= 6) icaBuckets[r.ica] += 1;
+  }
 
-const PROVINCE_NAMES: Record<string, string> = {
-  "01": "Álava",
-  "02": "Albacete",
-  "03": "Alicante",
-  "04": "Almería",
-  "05": "Ávila",
-  "06": "Badajoz",
-  "07": "Baleares",
-  "08": "Barcelona",
-  "09": "Burgos",
-  "10": "Cáceres",
-  "11": "Cádiz",
-  "12": "Castellón",
-  "13": "Ciudad Real",
-  "14": "Córdoba",
-  "15": "A Coruña",
-  "16": "Cuenca",
-  "17": "Girona",
-  "18": "Granada",
-  "19": "Guadalajara",
-  "20": "Gipuzkoa",
-  "21": "Huelva",
-  "22": "Huesca",
-  "23": "Jaén",
-  "24": "León",
-  "25": "Lleida",
-  "26": "La Rioja",
-  "27": "Lugo",
-  "28": "Madrid",
-  "29": "Málaga",
-  "30": "Murcia",
-  "31": "Navarra",
-  "32": "Ourense",
-  "33": "Asturias",
-  "34": "Palencia",
-  "35": "Las Palmas",
-  "36": "Pontevedra",
-  "37": "Salamanca",
-  "38": "Santa Cruz de Tenerife",
-  "39": "Cantabria",
-  "40": "Segovia",
-  "41": "Sevilla",
-  "42": "Soria",
-  "43": "Tarragona",
-  "44": "Teruel",
-  "45": "Toledo",
-  "46": "Valencia",
-  "47": "Valladolid",
-  "48": "Bizkaia",
-  "49": "Zamora",
-  "50": "Zaragoza",
-  "51": "Ceuta",
-  "52": "Melilla",
-};
+  const totalRated = icaBuckets.slice(1).reduce((s, v) => s + v, 0);
+  const goodPct = totalRated > 0 ? ((icaBuckets[1] + icaBuckets[2]) / totalRated) * 100 : 0;
+  const badPct =
+    totalRated > 0 ? ((icaBuckets[4] + icaBuckets[5] + icaBuckets[6]) / totalRated) * 100 : 0;
 
-// ---------------------------------------------------------------------------
-// Data fetching
-// ---------------------------------------------------------------------------
-
-async function getStationsWithReadings() {
-  const stations = await prisma.airQualityStation.findMany({
-    include: {
-      readings: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-      },
-    },
-    orderBy: [{ province: "asc" }, { name: "asc" }],
-  });
-
-  return stations.map((s) => ({
-    id: s.id,
-    stationId: s.stationId,
-    name: s.name,
-    city: s.city,
-    province: s.province,
-    network: s.network,
-    latitude: Number(s.latitude),
-    longitude: Number(s.longitude),
-    latestReading: s.readings[0] ?? null,
-  }));
-}
-
-async function getPageStats(
-  stations: Awaited<ReturnType<typeof getStationsWithReadings>>
-) {
-  const total = stations.length;
-  const withReading = stations.filter((s) => s.latestReading !== null).length;
-  const goodIca = stations.filter(
-    (s) => s.latestReading?.ica !== null && s.latestReading?.ica !== undefined && s.latestReading.ica <= 2
-  ).length;
-  const badIca = stations.filter(
-    (s) => s.latestReading?.ica !== null && s.latestReading?.ica !== undefined && s.latestReading.ica >= 4
-  ).length;
-  const provinces = new Set(
-    stations.map((s) => s.province).filter(Boolean)
-  ).size;
-
-  // Count per ICA level (1-5)
-  const byIca: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  for (const s of stations) {
-    const level = s.latestReading?.ica;
-    if (level != null && level >= 1 && level <= 5) {
-      byIca[level] = (byIca[level] ?? 0) + 1;
+  // Worst stations (top 5 by ICA number in last hour)
+  const byStation = new Map<string, number>();
+  for (const r of latestReadings) {
+    if (r.ica !== null && r.ica !== undefined) {
+      const prev = byStation.get(r.stationId) ?? 0;
+      if (r.ica > prev) byStation.set(r.stationId, r.ica);
     }
   }
+  const worstIds = [...byStation.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id]) => id);
+  const worstStations =
+    worstIds.length > 0
+      ? await prisma.airQualityStation.findMany({
+          where: { id: { in: worstIds } },
+          select: { id: true, name: true, city: true, province: true },
+        })
+      : [];
 
-  return { total, withReading, goodIca, badIca, provinces, byIca };
+  return {
+    totalStations,
+    provinceCount: provinceGroups.length,
+    icaBuckets,
+    totalRated,
+    goodPct,
+    badPct,
+    worstStations,
+    readingsCount: latestReadings.length,
+  };
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+const ICA_LABELS = ["—", "Buena", "Razonable", "Moderada", "Mala", "Muy mala", "Extremadamente mala"];
+const ICA_COLORS = [
+  "text-gray-400",
+  "text-signal-green",
+  "text-tl-amber-400",
+  "text-tl-amber-500",
+  "text-signal-red",
+  "text-purple-500",
+  "text-purple-700",
+];
 
-function formatPollutant(value: number | null | undefined, unit: string): string {
-  if (value === null || value === undefined) return "—";
-  return `${value.toLocaleString("es-ES", { maximumFractionDigits: 1 })} ${unit}`;
-}
+const FAQ_ITEMS = [
+  {
+    question: "¿Qué es el índice ICA?",
+    answer:
+      "El ICA (Índice de Calidad del Aire) es un número del 1 al 6 definido por el Ministerio para la Transición Ecológica (MITECO) que resume en una escala única los niveles de NO₂, PM10, PM2.5, O₃ y SO₂ medidos en una estación. 1 = Buena · 2 = Razonable · 3 = Moderada · 4 = Mala · 5 = Muy mala · 6 = Extremadamente mala.",
+  },
+  {
+    question: "¿De qué red de estaciones se obtienen los datos?",
+    answer:
+      "La Red Nacional de Vigilancia del MITECO cuenta con 565 estaciones: urbanas de tráfico, de fondo urbano/suburbano/rural, industriales y estaciones de referencia. Publicamos datos adicionales de las redes autonómicas de Madrid (20 min), Cataluña (diario), Euskadi y Andalucía.",
+  },
+  {
+    question: "¿Con qué frecuencia se actualiza?",
+    answer:
+      "El feed principal (ica.miteco.es/datos/ica-ultima-hora.csv) se actualiza cada hora — licencia CC-BY 4.0. La Comunidad de Madrid publica cada 20 minutos y el resto de CCAA con cadencias específicas. Mantenemos las últimas 72 horas en caliente y el histórico completo en caliente reducida.",
+  },
+  {
+    question: "¿Qué contaminantes se miden?",
+    answer:
+      "NO₂ (dióxido de nitrógeno), PM10 (partículas < 10 µm), PM2.5 (partículas < 2.5 µm), O₃ (ozono), SO₂ (dióxido de azufre) y CO (monóxido de carbono). No todas las estaciones miden todos los contaminantes; la estación de referencia más completa es Madrid Plaza Elíptica.",
+  },
+  {
+    question: "¿Qué hacer cuando el ICA es malo?",
+    answer:
+      "Si una estación cercana reporta ICA ≥ 4 (mala), grupos sensibles (asma, EPOC, niños, mayores) deben evitar el ejercicio al aire libre y ventilar menos. En nivel 5-6 (muy mala / extremadamente mala) las recomendaciones sanitarias aplican a toda la población. Consulta el protocolo anti-contaminación de tu municipio para medidas de restricción del tráfico.",
+  },
+];
 
-function getIcaConfig(ica: number | null | undefined): IcaConfig | null {
-  if (ica === null || ica === undefined) return null;
-  return ICA_CONFIG[ica] ?? null;
-}
+export default async function CalidadAireHubPage() {
+  const data = await getHubData();
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
+  const breadcrumbs = [{ name: "Calidad del aire", href: "/calidad-aire" }];
 
-export default async function CalidadAirePage() {
-  const stations = await getStationsWithReadings();
-  const stats = await getPageStats(stations);
-
-  // Group stations by province
-  const byProvince: Record<string, typeof stations> = {};
-  for (const s of stations) {
-    const prov = s.province ?? "XX";
-    if (!byProvince[prov]) byProvince[prov] = [];
-    byProvince[prov].push(s);
-  }
-  const sortedProvinces = Object.keys(byProvince).sort((a, b) => {
-    const nameA = PROVINCE_NAMES[a] ?? a;
-    const nameB = PROVINCE_NAMES[b] ?? b;
-    return nameA.localeCompare(nameB, "es");
-  });
-
-  const webPageSchema = {
+  const placeSchema = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: "Calidad del Aire en España — Índice ICA en tiempo real",
-    description:
-      "Portal de calidad del aire con índice ICA, NO₂, PM10, PM2.5 y O₃ por provincia. Datos MITECO.",
+    "@type": "Place",
+    name: "España — Red Nacional de Vigilancia de la Calidad del Aire",
+    description: "565 estaciones MITECO + redes autonómicas de Madrid, Cataluña, Euskadi y Andalucía.",
+    url: `${BASE_URL}/calidad-aire`,
+    geo: { "@type": "GeoShape", box: "27.6 -18.3 43.8 4.3" },
+  };
+
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Calidad del Aire en España",
     url: `${BASE_URL}/calidad-aire`,
     inLanguage: "es",
-    publisher: {
-      "@type": "Organization",
-      name: "trafico.live",
-      url: BASE_URL,
-    },
+    about: { "@type": "Place", name: "España" },
+    publisher: { "@type": "Organization", name: "trafico.live", url: BASE_URL },
   };
 
-  const datasetSchema = {
-    "@context": "https://schema.org",
-    "@type": "Dataset",
-    name: "Red de Vigilancia de la Calidad del Aire — España",
-    description:
-      "Lecturas del Índice de Calidad del Aire (ICA) de estaciones MITECO: NO₂, PM10, PM2.5, O₃, SO₂, CO.",
-    url: `${BASE_URL}/calidad-aire`,
-    keywords:
-      "calidad del aire, ICA, contaminación, NO2, PM10, PM2.5, ozono, España, MITECO",
-    spatialCoverage: "España",
-    creator: {
-      "@type": "Organization",
-      name: "Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO)",
-      url: "https://www.miteco.gob.es",
+  const ticker: TickerItem[] = [
+    { id: "stations", icon: <MapPin className="w-3.5 h-3.5" />, label: "Estaciones totales", value: data.totalStations },
+    { id: "good", icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: "Calidad buena/razonable", value: `${data.goodPct.toFixed(0)}%`, tone: "positive" },
+    { id: "bad", icon: <AlertTriangle className="w-3.5 h-3.5" />, label: "Mala/muy mala", value: `${data.badPct.toFixed(0)}%`, tone: data.badPct > 20 ? "danger" : "warning" },
+    { id: "provinces", icon: <MapPin className="w-3.5 h-3.5" />, label: "Provincias cubiertas", value: data.provinceCount },
+    { id: "readings", icon: <Activity className="w-3.5 h-3.5" />, label: "Lecturas última hora", value: data.readingsCount.toLocaleString("es-ES") },
+  ];
+
+  const hero = (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3 max-w-3xl">
+        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-tl-sea-600 dark:text-tl-sea-400">
+          <Wind className="w-4 h-4" />
+          trafico.live · Calidad del aire
+        </span>
+        <h1 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 dark:text-gray-50 leading-tight">
+          Calidad del aire en España
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+          Índice ICA (MITECO) en {data.totalStations} estaciones de la Red Nacional de Vigilancia +
+          redes autonómicas. NO₂, PM10, PM2.5, O₃, SO₂ y CO con actualización horaria.
+        </p>
+        <div className="flex flex-wrap gap-3 mt-2">
+          <ButtonLink href="/calidad-aire/provincia" variant="primary" icon={<MapIcon className="w-4 h-4" />}>
+            Ver por provincia
+          </ButtonLink>
+          <ButtonLink href="/calidad-aire/estacion" variant="secondary">
+            Directorio estaciones
+          </ButtonLink>
+          <ButtonLink href="/meteo" variant="ghost">
+            Meteorología
+          </ButtonLink>
+        </div>
+      </div>
+      <CalidadAireHeroMap />
+    </div>
+  );
+
+  const stats = (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <StatCard label="Estaciones" value={data.totalStations.toLocaleString("es-ES")} hint="MITECO + CCAA" icon={MapPin} accent="tl-sea" />
+      <StatCard label="Buena/razonable" value={`${data.goodPct.toFixed(0)}%`} hint="ICA 1-2" icon={CheckCircle2} accent="tl" />
+      <StatCard label="Mala/muy mala" value={`${data.badPct.toFixed(0)}%`} hint="ICA 4-6" icon={AlertTriangle} accent={data.badPct > 20 ? "tl-amber" : "tl"} />
+      <StatCard label="Lecturas (1h)" value={data.readingsCount.toLocaleString("es-ES")} hint="frescas" icon={Activity} accent="tl-sea" />
+    </div>
+  );
+
+  const sections = [
+    {
+      id: "distribucion",
+      title: "Distribución por nivel ICA",
+      description: "Porcentaje de estaciones por nivel en la última hora.",
+      content: (
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+          {[1, 2, 3, 4, 5, 6].map((lvl) => {
+            const count = data.icaBuckets[lvl] ?? 0;
+            const pct = data.totalRated > 0 ? (count / data.totalRated) * 100 : 0;
+            return (
+              <div
+                key={lvl}
+                className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 text-center"
+              >
+                <p className={`text-[11px] font-semibold uppercase tracking-wide ${ICA_COLORS[lvl]}`}>
+                  {ICA_LABELS[lvl]}
+                </p>
+                <p className="mt-1 text-2xl font-data font-semibold text-gray-900 dark:text-gray-100">
+                  {count}
+                </p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">{pct.toFixed(0)}%</p>
+              </div>
+            );
+          })}
+        </div>
+      ),
     },
-    license: "https://www.miteco.gob.es/es/ministerio/transparencia-y-participacion-publica/reutilizacion-de-la-informacion.html",
-  };
+    {
+      id: "peores",
+      title: "Estaciones con peor ICA ahora",
+      description: "Estaciones con el índice ICA más elevado en la última hora.",
+      content:
+        data.worstStations.length > 0 ? (
+          <ul className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+            {data.worstStations.map((s) => (
+              <li key={s.id} className="flex items-center gap-3 px-5 py-4">
+                <AlertTriangle className="w-4 h-4 text-signal-red shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                    {s.name}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {[s.city, s.province].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Sin datos suficientes en la última hora.
+          </p>
+        ),
+    },
+    {
+      id: "pollutants",
+      title: "Contaminantes medidos",
+      description: "Seis contaminantes principales con validez legal según Directiva 2008/50/CE.",
+      content: (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[
+            { name: "NO₂", desc: "Dióxido de nitrógeno · tráfico rodado" },
+            { name: "PM10", desc: "Partículas < 10 µm" },
+            { name: "PM2.5", desc: "Partículas finas < 2.5 µm" },
+            { name: "O₃", desc: "Ozono troposférico" },
+            { name: "SO₂", desc: "Dióxido de azufre · industria" },
+            { name: "CO", desc: "Monóxido de carbono" },
+          ].map((p) => (
+            <div
+              key={p.name}
+              className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4"
+            >
+              <p className="font-data text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {p.name}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
+  const faq = <FAQAccordion items={FAQ_ITEMS} title="Preguntas frecuentes — calidad del aire" />;
 
   return (
     <>
-      <StructuredData data={webPageSchema} />
-      <StructuredData data={datasetSchema} />
-
-      {/* Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-4 pt-6">
-        <Breadcrumbs
+      <StructuredData data={[placeSchema, collectionSchema]} />
+      <VerticalHub
+        breadcrumbs={<Breadcrumbs items={breadcrumbs} />}
+        hero={hero}
+        ticker={<TickerStrip items={ticker} label="Calidad del aire en vivo" />}
+        stats={stats}
+        sections={sections}
+        faq={faq}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <RelatedLinks
+          columns={3}
           items={[
-            { name: "Inicio", href: "/" },
-            { name: "Calidad del Aire", href: "/calidad-aire" },
+            { title: "Meteorología", description: "AEMET — alertas y clima histórico", href: "/meteo", icon: Wind },
+            { title: "Tráfico vial", description: "Impacto de los protocolos anti-contaminación", href: "/trafico", icon: MapPin },
+            { title: "Transporte público", description: "Alternativa al coche privado", href: "/transporte-publico", icon: MapPin },
           ]}
         />
-      </div>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Hero                                                                */}
-      {/* ------------------------------------------------------------------ */}
-      <section
-        className="relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, #0f2817 0%, #0d4a2e 40%, #0a7a4f 80%, #059669 100%)",
-        }}
-      >
-        {/* Decorative blobs */}
-        <div
-          className="pointer-events-none absolute -bottom-16 -right-16 w-80 h-80 rounded-full opacity-10"
-          style={{ background: "#34d399" }}
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute top-6 right-28 w-40 h-40 rounded-full opacity-5"
-          style={{ background: "#6ee7b7" }}
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute top-20 left-1/3 w-24 h-24 rounded-full opacity-5"
-          style={{ background: "#a7f3d0" }}
-          aria-hidden="true"
-        />
-
-        <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-20">
-          <div className="flex items-center gap-3 mb-4">
-            <Wind className="w-10 h-10 text-emerald-300" />
-            <span className="font-heading text-emerald-300 text-sm font-semibold uppercase tracking-widest">
-              trafico.live / Calidad del Aire
-            </span>
-          </div>
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            Calidad del Aire en España
-          </h1>
-          <p className="text-emerald-100 text-lg md:text-xl max-w-2xl leading-relaxed">
-            Índice de Calidad del Aire (ICA) en tiempo real. Concentración de
-            NO₂, PM10, PM2.5 y O₃ por provincia. Red de Vigilancia MITECO,
-            actualización cada hora.
-          </p>
-
-          {stats.total > 0 && (
-            <div className="mt-6 inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-white text-sm font-semibold font-mono">
-                {stats.withReading.toLocaleString("es-ES")} estaciones con datos ahora
-              </span>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Stats strip                                                       */}
-        {/* ---------------------------------------------------------------- */}
-        <section aria-label="Estadísticas de calidad del aire">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
-            {/* Total estaciones */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="w-5 h-5 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Estaciones
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-[var(--tl-primary)] dark:text-[var(--tl-info)]">
-                {stats.total.toLocaleString("es-ES")}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                en red MITECO
-              </div>
-            </div>
-
-            {/* ICA buena/razonable */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="w-5 h-5 text-[var(--tl-success)]" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  ICA buena/razonable
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-[var(--tl-success)]">
-                {stats.goodIca.toLocaleString("es-ES")}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                estaciones con ICA ≤ 2
-              </div>
-            </div>
-
-            {/* ICA mala/muy mala */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-2">
-                <XCircle className="w-5 h-5 text-[var(--tl-danger)]" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  ICA mala/muy mala
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-[var(--tl-danger)]">
-                {stats.badIca.toLocaleString("es-ES")}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                estaciones con ICA ≥ 4
-              </div>
-            </div>
-
-            {/* Provincias */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-5 h-5 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Provincias
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-[var(--tl-primary)] dark:text-[var(--tl-info)]">
-                {stats.provinces.toLocaleString("es-ES")}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                con medición activa
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* ICA distribution bar                                              */}
-        {/* ---------------------------------------------------------------- */}
-        {stats.withReading > 0 && (
-          <section aria-label="Distribución del índice ICA">
-            <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-              Distribución ICA — {stats.withReading.toLocaleString("es-ES")} estaciones con datos
-            </h2>
-
-            {/* Stacked bar */}
-            <div className="flex h-8 w-full rounded-lg overflow-hidden" role="img" aria-label="Barra de distribución ICA">
-              {Object.entries(ICA_CONFIG).map(([level, cfg]) => {
-                const count = stats.byIca[Number(level)] ?? 0;
-                const pct = stats.withReading > 0 ? (count / stats.withReading) * 100 : 0;
-                if (pct === 0) return null;
-                return (
-                  <div
-                    key={level}
-                    style={{ width: `${pct.toFixed(1)}%`, backgroundColor: cfg.color }}
-                    title={`ICA ${level} ${cfg.label}: ${count} estaciones (${pct.toFixed(1)}%)`}
-                    className="transition-all"
-                  />
-                );
-              })}
-            </div>
-
-            {/* Legend row with percentages */}
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-              {Object.entries(ICA_CONFIG).map(([level, cfg]) => {
-                const count = stats.byIca[Number(level)] ?? 0;
-                const pct = stats.withReading > 0 ? (count / stats.withReading) * 100 : 0;
-                return (
-                  <div key={level} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                    <span
-                      className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-                      style={{ backgroundColor: cfg.color }}
-                      aria-hidden="true"
-                    />
-                    <span className="font-medium">{cfg.label}</span>
-                    <span className="font-mono text-gray-500 dark:text-gray-500">
-                      {count} ({pct.toFixed(0)}%)
-                    </span>
-                  </div>
-                );
-              })}
-              {(() => {
-                const noData = stats.total - stats.withReading;
-                return noData > 0 ? (
-                  <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-600">
-                    <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0 bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
-                    <span>Sin datos</span>
-                    <span className="font-mono">{noData}</span>
-                  </div>
-                ) : null;
-              })()}
-            </div>
-          </section>
-        )}
-
-        {/* ---------------------------------------------------------------- */}
-        {/* ICA legend                                                        */}
-        {/* ---------------------------------------------------------------- */}
-        <section aria-label="Leyenda del índice ICA">
-          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <Info className="w-5 h-5 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-            Índice de Calidad del Aire (ICA)
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-            {Object.entries(ICA_CONFIG).map(([level, cfg]) => (
-              <div
-                key={level}
-                className={`rounded-xl border p-4 ${cfg.bgClass} ${cfg.borderClass}`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: cfg.color }}
-                    aria-hidden="true"
-                  />
-                  <span className={`font-heading font-bold text-sm ${cfg.textClass}`}>
-                    {level} — {cfg.label}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  {cfg.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Station grid by province                                          */}
-        {/* ---------------------------------------------------------------- */}
-        {stations.length === 0 ? (
-          /* Empty state */
-          <section
-            className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-12 text-center"
-            aria-label="Sin datos disponibles"
-          >
-            <Wind className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-            <h2 className="font-heading text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Datos en proceso de carga
-            </h2>
-            <p className="text-gray-500 dark:text-gray-500 max-w-md mx-auto text-sm">
-              El colector MITECO actualiza cada hora. Los datos estarán disponibles
-              en breve. Si el problema persiste, consulta el estado del servicio.
-            </p>
-          </section>
-        ) : (
-          <section aria-label="Estaciones por provincia">
-            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
-              <Wind className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-              Estaciones por provincia
-            </h2>
-
-            <div className="space-y-8">
-              {sortedProvinces.map((prov) => {
-                const provStations = byProvince[prov];
-                const provinceName = PROVINCE_NAMES[prov] ?? `Provincia ${prov}`;
-
-                return (
-                  <div key={prov}>
-                    {/* Province header */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                      <Link
-                        href={`/calidad-aire/provincia/${slugify(provinceName)}`}
-                        className="font-heading font-semibold text-gray-800 dark:text-gray-200 hover:text-[var(--tl-primary)] transition-colors"
-                      >
-                        <h3 className="inline">{provinceName}</h3>
-                      </Link>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">
-                        {provStations.length} estaciones
-                      </span>
-                      <Link
-                        href={`/calidad-aire/provincia/${slugify(provinceName)}`}
-                        className="text-xs text-[var(--tl-primary)] dark:text-[var(--tl-info)] hover:underline flex items-center gap-0.5"
-                      >
-                        Ver todas <ArrowRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-
-                    {/* Station cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {provStations.map((station) => {
-                        const reading = station.latestReading;
-                        const icaCfg = getIcaConfig(reading?.ica);
-
-                        return (
-                          <Link
-                            key={station.id}
-                            href={`/calidad-aire/estacion/${station.stationId}`}
-                            className="block rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-4 hover:shadow-md hover:border-[var(--tl-primary)] transition-all"
-                          >
-                            {/* Station name + ICA badge */}
-                            <div className="flex items-start justify-between gap-2 mb-3">
-                              <div>
-                                <div className="font-semibold text-sm text-gray-900 dark:text-gray-100 leading-tight">
-                                  {station.name}
-                                </div>
-                                {station.city && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                    {station.city}
-                                  </div>
-                                )}
-                              </div>
-                              {icaCfg ? (
-                                <span
-                                  className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${icaCfg.bgClass} ${icaCfg.textClass} ${icaCfg.borderClass}`}
-                                >
-                                  <span
-                                    className="w-1.5 h-1.5 rounded-full"
-                                    style={{ backgroundColor: icaCfg.color }}
-                                    aria-hidden="true"
-                                  />
-                                  {icaCfg.label}
-                                </span>
-                              ) : (
-                                <span className="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
-                                  Sin datos
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Pollutant values */}
-                            {reading ? (
-                              <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-                                <div>
-                                  <dt className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                                    NO₂
-                                  </dt>
-                                  <dd className="font-mono text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                    {formatPollutant(reading.no2, "µg/m³")}
-                                  </dd>
-                                </div>
-                                <div>
-                                  <dt className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                                    PM10
-                                  </dt>
-                                  <dd className="font-mono text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                    {formatPollutant(reading.pm10, "µg/m³")}
-                                  </dd>
-                                </div>
-                                <div>
-                                  <dt className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                                    PM2.5
-                                  </dt>
-                                  <dd className="font-mono text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                    {formatPollutant(reading.pm25, "µg/m³")}
-                                  </dd>
-                                </div>
-                                <div>
-                                  <dt className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                                    O₃
-                                  </dt>
-                                  <dd className="font-mono text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                    {formatPollutant(reading.o3, "µg/m³")}
-                                  </dd>
-                                </div>
-                              </dl>
-                            ) : (
-                              <p className="text-xs text-gray-400 dark:text-gray-500 italic">
-                                Sin lectura reciente
-                              </p>
-                            )}
-
-                            {/* Timestamp */}
-                            {reading?.createdAt && (
-                              <div className="mt-2.5 pt-2 border-t border-gray-100 dark:border-gray-800 text-[10px] text-gray-400 dark:text-gray-600 font-mono">
-                                {new Date(reading.createdAt).toLocaleString("es-ES", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </div>
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Related pages nav cards                                           */}
-        {/* ---------------------------------------------------------------- */}
-        <section aria-label="Páginas relacionadas">
-          <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-5">
-            Más datos ambientales y de tráfico
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-            <div className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-[var(--tl-primary)] hover:shadow-md transition-all">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--tl-primary-bg)" }}
-              >
-                <Wind className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  API Calidad del Aire
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Datos ICA de {stats.total} estaciones en formato JSON y GeoJSON
-                </p>
-              </div>
-              <a
-                href="/api/calidad-aire"
-                target="_blank"
-                rel="noopener"
-                className="flex items-center gap-1 text-[var(--tl-primary)] dark:text-[var(--tl-info)] text-sm font-medium group-hover:gap-2 transition-all"
-              >
-                Ver datos JSON <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-
-            <div className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-[var(--tl-primary)] hover:shadow-md transition-all">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--tl-primary-bg)" }}
-              >
-                <Activity className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Incidencias de tráfico
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Accidentes, obras y retenciones en carreteras españolas en tiempo real
-                </p>
-              </div>
-              <Link
-                href="/incidencias"
-                className="flex items-center gap-1 text-[var(--tl-primary)] dark:text-[var(--tl-info)] text-sm font-medium group-hover:gap-2 transition-all"
-              >
-                Ver incidencias <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-[var(--tl-primary)] hover:shadow-md transition-all">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--tl-primary-bg)" }}
-              >
-                <MapPin className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Estaciones de aforo
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  14.400+ estaciones de conteo de tráfico con datos IMD por carretera
-                </p>
-              </div>
-              <Link
-                href="/estaciones-aforo"
-                className="flex items-center gap-1 text-[var(--tl-primary)] dark:text-[var(--tl-info)] text-sm font-medium group-hover:gap-2 transition-all"
-              >
-                Ver estaciones <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* SEO text                                                          */}
-        {/* ---------------------------------------------------------------- */}
-        <section
-          className="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60 p-8"
-          aria-label="Información sobre la calidad del aire en España"
-        >
-          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Calidad del Aire en España
-          </h2>
-          <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 space-y-3">
-            <p>
-              La <strong>Red de Vigilancia de la Calidad del Aire</strong> del Ministerio para
-              la Transición Ecológica y el Reto Demográfico (MITECO) monitoriza en tiempo real
-              los principales contaminantes atmosféricos en todo el territorio español. Con más
-              de 565 estaciones distribuidas por las 52 provincias, la red proporciona datos
-              horarios de dióxido de nitrógeno (NO₂), partículas PM10 y PM2.5, ozono troposférico
-              (O₃), dióxido de azufre (SO₂) y monóxido de carbono (CO).
-            </p>
-            <p>
-              El <strong>Índice de Calidad del Aire (ICA)</strong> es un indicador sintético que
-              resume el estado de la contaminación atmosférica en una escala de 1 a 5, desde
-              «Buena» hasta «Muy mala». Se calcula a partir de las concentraciones individuales
-              de cada contaminante y toma el valor más desfavorable. Los umbrales de los
-              contaminantes siguen la normativa europea de calidad del aire (Directiva
-              2008/50/CE) y la metodología establecida por el MITECO.
-            </p>
-            <p>
-              La contaminación atmosférica es especialmente relevante en las grandes áreas
-              metropolitanas. <strong>Madrid</strong> y <strong>Barcelona</strong> concentran
-              el mayor número de estaciones de vigilancia, dado el peso del tráfico rodado,
-              la actividad industrial y la densidad de población. Las zonas costeras
-              mediterráneas y las cuencas fluviales del interior también presentan episodios
-              recurrentes de contaminación por ozono en verano, principalmente por la reacción
-              fotoquímica de los precursores emitidos por el tráfico y la industria.
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
-              Fuente: Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO) —
-              Red de Vigilancia de la Calidad del Aire. Datos actualizados cada hora. Los valores
-              mostrados son orientativos; para decisiones sanitarias, consulte siempre las fuentes
-              oficiales del MITECO.
-            </p>
-          </div>
-        </section>
-
-        {/* Attribution footer */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-400 dark:text-gray-500 pb-2">
-          <div className="flex items-center gap-1.5">
-            <Info className="w-3 h-3" />
-            <span>
-              Datos: © MITECO — Red de Vigilancia de la Calidad del Aire · Actualización horaria
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/incidencias"
-              className="flex items-center gap-1 hover:text-[var(--tl-primary)] transition-colors"
-            >
-              Incidencias <ChevronRight className="w-3 h-3" />
-            </Link>
-            <Link
-              href="/estaciones-aforo"
-              className="flex items-center gap-1 hover:text-[var(--tl-primary)] transition-colors"
-            >
-              Estaciones de aforo <ChevronRight className="w-3 h-3" />
-            </Link>
-          </div>
-        </div>
-
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-6">
+          Fuentes: MITECO (ica.miteco.es — CC-BY 4.0), Comunidad de Madrid, Generalitat de
+          Catalunya, Gobierno Vasco, Junta de Andalucía.
+        </p>
       </div>
     </>
   );

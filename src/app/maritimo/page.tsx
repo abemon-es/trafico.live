@@ -1,23 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import prisma from "@/lib/db";
 import {
   Anchor,
   Ship,
   Waves,
   Fuel,
-  CloudRain,
   MapPin,
   AlertTriangle,
   Navigation,
-  BarChart3,
-  Newspaper,
-  ArrowRight,
-  ChevronRight,
+  Radio,
+  Compass,
+  Droplets,
 } from "lucide-react";
-import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import prisma from "@/lib/db";
+import { VerticalHub } from "@/components/ui/VerticalHub";
+import { StatCard } from "@/components/ui/StatCard";
+import { TickerStrip, type TickerItem } from "@/components/ui/TickerStrip";
+import { FAQAccordion } from "@/components/ui/FAQAccordion";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { RelatedLinks } from "@/components/ui/RelatedLinks";
+import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { VoyagesList } from "@/components/maritimo/VoyagesList";
 import { MaritimoHeroMap } from "./MaritimoHeroMap";
 
 export const revalidate = 300;
@@ -25,16 +28,14 @@ export const revalidate = 300;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Información Marítima en España — Combustible, Meteorología y Puertos",
+  title: "Tráfico Marítimo España — AIS en vivo, puertos y ferries",
   description:
-    "Consulta precios de combustible marítimo, meteorología costera, puertos y seguridad marítima en España. Datos oficiales actualizados.",
-  alternates: {
-    canonical: `${BASE_URL}/maritimo`,
-  },
+    "Posiciones AIS de buques en tiempo real, puertos del Estado, rutas de ferries, combustible náutico y alertas costeras AEMET. Datos oficiales actualizados.",
+  alternates: { canonical: `${BASE_URL}/maritimo` },
   openGraph: {
-    title: "Información Marítima en España — Combustible, Meteorología y Puertos",
+    title: "Tráfico Marítimo España — AIS en vivo, puertos y ferries",
     description:
-      "Precios de combustible marítimo, meteorología costera, puertos y seguridad marítima en España.",
+      "Posiciones AIS, puertos, ferries, combustible náutico y alertas costeras.",
     url: `${BASE_URL}/maritimo`,
     siteName: "trafico.live",
     locale: "es_ES",
@@ -42,689 +43,295 @@ export const metadata: Metadata = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// Data fetching
-// ---------------------------------------------------------------------------
+async function getHubData() {
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-async function getStats() {
-  const [maritimeCount, coastalAlerts, priceAggregates, portCount] = await Promise.all([
+  const [
+    vesselsActive,
+    portsOperational,
+    ferryRoutes,
+    maritimeStations,
+    coastalAlerts,
+    recentAlerts,
+    cheapestFuel,
+  ] = await Promise.all([
+    prisma.vesselPosition.findMany({
+      where: { createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } },
+      distinct: ["mmsi"],
+      select: { mmsi: true },
+    }).then((r) => r.length),
+    prisma.spanishPort.count(),
+    prisma.ferryRoute.count(),
     prisma.maritimeStation.count(),
-    prisma.weatherAlert.count({
+    prisma.weatherAlert.count({ where: { type: "COASTAL", isActive: true } }),
+    prisma.weatherAlert.findMany({
       where: { type: "COASTAL", isActive: true },
-    }),
-    prisma.maritimeStation.aggregate({
-      _avg: {
-        priceGasoleoA: true,
-        priceGasoleoB: true,
-        priceGasolina95E5: true,
-      },
+      orderBy: [{ severity: "desc" }, { startedAt: "desc" }],
+      take: 5,
+      select: { id: true, severity: true, provinceName: true, province: true, description: true, startedAt: true },
     }),
     prisma.maritimeStation.findMany({
-      where: { port: { not: null } },
-      distinct: ["port"],
-      select: { port: true },
-    }).then((r: { port: string | null }[]) => r.length),
+      where: { priceGasoleoA: { not: null } },
+      orderBy: { priceGasoleoA: "asc" },
+      take: 5,
+      select: { id: true, name: true, port: true, provinceName: true, priceGasoleoA: true },
+    }),
   ]);
-
-  // Normalize priceGasoleoB: bulk pricing is per 1000L → convert to per-litre
-  const rawAvgB = priceAggregates._avg.priceGasoleoB
-    ? Number(priceAggregates._avg.priceGasoleoB)
-    : null;
-  const avgGasoleoB = rawAvgB && rawAvgB > 10 ? rawAvgB / 1000 : rawAvgB;
 
   return {
-    maritimeCount,
+    vesselsActive,
+    portsOperational,
+    ferryRoutes,
+    maritimeStations,
     coastalAlerts,
-    avgGasoleoA: priceAggregates._avg.priceGasoleoA,
-    avgGasoleoB,
-    avgGasolina95: priceAggregates._avg.priceGasolina95E5
-      ? Number(priceAggregates._avg.priceGasolina95E5)
-      : null,
-    portCount,
+    recentAlerts,
+    cheapestFuel,
+    since24h,
   };
 }
 
-async function getActiveCoastalAlerts() {
-  return prisma.weatherAlert.findMany({
-    where: { type: "COASTAL", isActive: true },
-    orderBy: [{ severity: "desc" }, { startedAt: "desc" }],
-    take: 6,
-    select: {
-      id: true,
-      alertId: true,
-      severity: true,
-      province: true,
-      provinceName: true,
-      description: true,
-      startedAt: true,
-    },
-  });
-}
+const FAQ_ITEMS = [
+  {
+    question: "¿Qué es el sistema AIS?",
+    answer:
+      "El AIS (Automatic Identification System) es un sistema obligatorio en buques mayores de 300 TRB en viajes internacionales y en todos los buques de pasaje. Cada barco emite por VHF su identificador MMSI, posición, rumbo y velocidad, permitiendo su seguimiento en tiempo real. trafico.live recibe estas emisiones vía aisstream.io bajo licencia CC-BY.",
+  },
+  {
+    question: "¿Por qué no veo todos los barcos en el mapa?",
+    answer:
+      "No todos los buques emiten AIS: embarcaciones pequeñas, deportivas o militares pueden estar exentas o apagarlo voluntariamente. Además, la cobertura costera depende de receptores terrestres y satélite; zonas alejadas pueden tener actualizaciones más espaciadas. Mostramos únicamente las posiciones recibidas en las últimas horas.",
+  },
+  {
+    question: "¿Con qué frecuencia se actualizan los datos marítimos?",
+    answer:
+      "Las posiciones AIS se reciben de forma continua vía WebSocket (varios miles por minuto). Los puertos, rutas de ferries y catálogos GTFS se sincronizan a diario. Los precios de combustible náutico del MITERD se actualizan cada 24 horas y las alertas costeras AEMET cada 5 minutos.",
+  },
+  {
+    question: "¿Qué cubre la red de puertos del Estado?",
+    answer:
+      "España cuenta con 46 puertos de interés general gestionados por Puertos del Estado, más decenas de puertos autonómicos deportivos y pesqueros. El catálogo de trafico.live integra los 46 estatales (WFS INSPIRE) y añade puertos de recreo derivados del catálogo AENA.",
+  },
+  {
+    question: "¿Puedo consultar ferries y horarios?",
+    answer:
+      "Sí. Integramos los GTFS de Fred. Olsen, Baleària y Vizcaya, con rutas, escalas y horarios oficiales. Para rutas internacionales no cubiertas por GTFS mostramos el catálogo estático de travesías comerciales. Consulta /maritimo/ferries para el detalle.",
+  },
+];
 
-async function getCheapestMaritimeStations() {
-  return prisma.maritimeStation.findMany({
-    where: { priceGasoleoA: { not: null } },
-    orderBy: { priceGasoleoA: "asc" },
-    take: 5,
-    select: {
-      id: true,
-      name: true,
-      port: true,
-      locality: true,
-      provinceName: true,
-      priceGasoleoA: true,
-    },
-  });
-}
+export default async function MaritimoHubPage() {
+  const data = await getHubData();
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+  const breadcrumbs = [{ name: "Marítimo", href: "/maritimo" }];
 
-function formatPrice(price: unknown): string {
-  if (price == null) return "N/D";
-  const num =
-    typeof price === "object" && price !== null && "toNumber" in price
-      ? (price as { toNumber: () => number }).toNumber()
-      : Number(price);
-  return `${num.toFixed(3)} €`;
-}
-
-function severityLabel(severity: string): string {
-  switch (severity) {
-    case "HIGH":
-      return "Alta";
-    case "MEDIUM":
-      return "Media";
-    case "LOW":
-      return "Baja";
-    default:
-      return severity;
-  }
-}
-
-function severityClasses(severity: string): { card: string; badge: string } {
-  switch (severity) {
-    case "HIGH":
-      return {
-        card: "border-red-300 bg-red-50 dark:border-red-800/50 dark:bg-red-900/20",
-        badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-      };
-    case "MEDIUM":
-      return {
-        card: "border-tl-amber-300 bg-tl-amber-50 dark:border-tl-amber-800/50 dark:bg-tl-amber-900/20",
-        badge:
-          "bg-tl-amber-100 text-tl-amber-700 dark:bg-tl-amber-900/40 dark:text-tl-amber-300",
-      };
-    default:
-      return {
-        card: "border-tl-sea-200 bg-tl-sea-50 dark:border-tl-sea-800/50 dark:bg-tl-sea-900/20",
-        badge: "bg-tl-sea-100 text-tl-sea-700 dark:bg-tl-sea-900/40 dark:text-tl-sea-300",
-      };
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
-export default async function MaritimoPage() {
-  const [stats, coastalAlerts, cheapestStations] = await Promise.all([
-    getStats(),
-    getActiveCoastalAlerts(),
-    getCheapestMaritimeStations(),
-  ]);
-
-  const webPageSchema = {
+  const placeSchema = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: "Información Marítima España — Combustible, Meteorología y Puertos",
-    description:
-      "Portal marítimo con precios de combustible náutico, meteorología costera, directorio de puertos y seguridad marítima en España.",
+    "@type": "Place",
+    name: "Litoral y puertos de España",
+    description: "Aguas jurisdiccionales españolas, red de puertos del Estado y principales rutas de ferry.",
+    geo: { "@type": "GeoShape", box: "35.0 -10.0 44.0 5.0" },
+    url: `${BASE_URL}/maritimo`,
+  };
+
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Tráfico Marítimo España",
     url: `${BASE_URL}/maritimo`,
     inLanguage: "es",
-    publisher: {
-      "@type": "Organization",
-      name: "trafico.live",
-      url: BASE_URL,
-    },
+    about: { "@type": "Place", name: "España" },
+    publisher: { "@type": "Organization", name: "trafico.live", url: BASE_URL },
   };
+
+  const ticker: TickerItem[] = [
+    { id: "vessels", icon: <Ship className="w-3.5 h-3.5" />, label: "Buques AIS última hora", value: data.vesselsActive.toLocaleString("es-ES") },
+    { id: "ports", icon: <Anchor className="w-3.5 h-3.5" />, label: "Puertos del Estado", value: data.portsOperational },
+    { id: "ferries", icon: <Navigation className="w-3.5 h-3.5" />, label: "Rutas de ferry", value: data.ferryRoutes },
+    { id: "stations", icon: <Fuel className="w-3.5 h-3.5" />, label: "Estaciones náuticas", value: data.maritimeStations.toLocaleString("es-ES") },
+    ...data.recentAlerts.map((a) => ({
+      id: `alert-${a.id}`,
+      icon: <AlertTriangle className="w-3.5 h-3.5" />,
+      label: `Alerta costera · ${a.provinceName ?? a.province}`,
+      tone: (a.severity === "HIGH" ? "danger" : a.severity === "MEDIUM" ? "warning" : "default") as TickerItem["tone"],
+    })),
+  ];
+
+  const hero = (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3 max-w-3xl">
+        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-tl-sea-600 dark:text-tl-sea-400">
+          <Anchor className="w-4 h-4" />
+          trafico.live · Marítimo
+        </span>
+        <h1 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 dark:text-gray-50 leading-tight">
+          Tráfico marítimo en España
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+          Posiciones AIS en directo, red de puertos del Estado, rutas de ferries y
+          combustible náutico. Alertas costeras AEMET actualizadas cada 5 minutos.
+        </p>
+        <div className="flex flex-wrap gap-3 mt-2">
+          <ButtonLink href="/maritimo/mapa" variant="primary" icon={<Navigation className="w-4 h-4" />}>
+            Abrir mapa completo
+          </ButtonLink>
+          <ButtonLink href="/maritimo/puertos" variant="secondary">
+            Ver puertos
+          </ButtonLink>
+          <ButtonLink href="/maritimo/ferries" variant="ghost">
+            Rutas de ferry
+          </ButtonLink>
+        </div>
+      </div>
+      <div className="h-[500px] md:h-[600px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+        <MaritimoHeroMap />
+      </div>
+    </div>
+  );
+
+  const stats = (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <StatCard label="Buques activos" value={data.vesselsActive.toLocaleString("es-ES")} hint="última hora" icon={Ship} accent="tl-sea" />
+      <StatCard label="Puertos" value={data.portsOperational} hint="del Estado" icon={Anchor} accent="tl-sea" />
+      <StatCard label="Rutas de ferry" value={data.ferryRoutes} hint="activas" icon={Navigation} accent="tl-sea" />
+      <StatCard label="Alertas costeras" value={data.coastalAlerts} hint="AEMET ahora" icon={AlertTriangle} accent={data.coastalAlerts > 0 ? "tl-amber" : "tl-sea"} />
+    </div>
+  );
+
+  const sections = [
+    {
+      id: "buques",
+      title: "Buques en tiempo real",
+      description: "Posiciones AIS en aguas españolas, actualizadas de forma continua vía aisstream.io.",
+      content: (
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+            <Radio className="w-4 h-4 text-signal-green animate-pulse" />
+            <span>
+              <span className="font-data font-semibold">{data.vesselsActive.toLocaleString("es-ES")}</span>{" "}
+              buques recibidos en la última hora
+            </span>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <ButtonLink href="/barcos" variant="secondary">Tracker live</ButtonLink>
+            <ButtonLink href="/maritimo/mapa" variant="ghost">Abrir en mapa</ButtonLink>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "ferries",
+      title: "Ferries y travesías",
+      description: "Rutas GTFS de Fred. Olsen, Baleària y Vizcaya, con escalas y horarios oficiales.",
+      content: (
+        <RelatedLinks
+          columns={3}
+          title=""
+          items={[
+            { title: "Fred. Olsen Express", description: "Canarias · rápidos interinsulares", href: "/maritimo/ferries", icon: Ship },
+            { title: "Baleària", description: "Baleares, Ceuta y Algeria", href: "/maritimo/ferries", icon: Ship },
+            { title: "Naviera Armas", description: "Canarias y norte de África", href: "/maritimo/ferries", icon: Ship },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "puertos",
+      title: "Puertos del Estado",
+      description: `Catálogo INSPIRE de ${data.portsOperational} puertos de interés general.`,
+      content: (
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Geometría oficial de muelles, dársenas y zonas portuarias importada desde el WFS
+            de Puertos del Estado, con las 28 Autoridades Portuarias que gestionan la red.
+          </p>
+          <div className="mt-4">
+            <ButtonLink href="/maritimo/puertos" variant="primary" icon={<Anchor className="w-4 h-4" />}>
+              Ver directorio de puertos
+            </ButtonLink>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "combustible",
+      title: "Combustible marítimo",
+      description: "Precios diarios del MITERD en estaciones náuticas: gasóleo A, gasóleo B y gasolina 95.",
+      content:
+        data.cheapestFuel.length > 0 ? (
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+            {data.cheapestFuel.map((s, idx) => (
+              <div key={s.id} className="flex items-center gap-4 px-5 py-4">
+                <span className="w-7 h-7 rounded-full bg-tl-sea-100 dark:bg-tl-sea-900/30 text-tl-sea-700 dark:text-tl-sea-300 font-data font-bold text-sm inline-flex items-center justify-center">
+                  {idx + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">{s.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {s.port ? `${s.port} · ${s.provinceName ?? ""}` : s.provinceName ?? "—"}
+                  </div>
+                </div>
+                <div className="text-right font-data font-semibold text-tl-sea-700 dark:text-tl-sea-300">
+                  {s.priceGasoleoA ? `${Number(s.priceGasoleoA).toFixed(3)} €` : "—"}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 dark:text-gray-400">Sin datos de precios disponibles.</p>
+        ),
+    },
+    {
+      id: "calidad-mar",
+      title: "Meteorología y calidad del mar",
+      description: "Alertas costeras AEMET, oleaje, viento y temperatura superficial del agua.",
+      content: (
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Droplets className="w-5 h-5 text-tl-sea-500" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="font-data font-semibold">{data.coastalAlerts}</span> alertas costeras activas
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Compass className="w-5 h-5 text-tl-sea-500" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">AEMET · MITERD</span>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <ButtonLink href="/maritimo/meteorologia" variant="primary">Meteorología marítima</ButtonLink>
+            <ButtonLink href="/maritimo/seguridad" variant="ghost">SASEMAR</ButtonLink>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  const faq = <FAQAccordion items={FAQ_ITEMS} title="Preguntas frecuentes — tráfico marítimo" />;
 
   return (
     <>
-      <StructuredData data={webPageSchema} />
-
-      {/* Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-4 pt-6">
-        <Breadcrumbs
+      <StructuredData data={[placeSchema, collectionSchema]} />
+      <VerticalHub
+        breadcrumbs={<Breadcrumbs items={breadcrumbs} />}
+        hero={hero}
+        ticker={<TickerStrip items={ticker} label="Datos marítimos en vivo" />}
+        stats={stats}
+        sections={sections}
+        faq={faq}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <RelatedLinks
+          columns={3}
           items={[
-            { name: "Inicio", href: "/" },
-            { name: "Marítimo", href: "/maritimo" },
+            { title: "Aviación en España", description: "Aeronaves sobre el espacio aéreo y aeropuertos AENA", href: "/aviacion", icon: MapPin },
+            { title: "Red ferroviaria", description: "Trenes en vivo, estaciones y líneas de Cercanías/AVE", href: "/trenes", icon: MapPin },
+            { title: "Transporte público", description: "Metro, autobús y tranvía con datos GTFS", href: "/transporte-publico", icon: MapPin },
           ]}
         />
-      </div>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Hero                                                                */}
-      {/* ------------------------------------------------------------------ */}
-      <section
-        className="relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, var(--color-tl-sea-800) 0%, var(--color-tl-sea-600) 50%, var(--color-tl-sea-500) 100%)",
-        }}
-      >
-        {/* Decorative wave rings */}
-        <div
-          className="pointer-events-none absolute -bottom-12 -right-12 w-72 h-72 rounded-full opacity-10"
-          style={{ background: "var(--color-tl-sea-300)" }}
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute -top-8 -left-8 w-48 h-48 rounded-full opacity-10"
-          style={{ background: "var(--color-tl-sea-200)" }}
-          aria-hidden="true"
-        />
-
-        <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-20">
-          <div className="flex items-center gap-3 mb-4">
-            <Anchor className="w-10 h-10 text-tl-sea-200" />
-            <span className="font-heading text-tl-sea-200 text-sm font-semibold uppercase tracking-widest">
-              trafico.live / Marítimo
-            </span>
-          </div>
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            Información Marítima España
-          </h1>
-          <p className="text-tl-sea-100 text-lg md:text-xl max-w-2xl leading-relaxed">
-            Precios de combustible náutico en tiempo real, meteorología costera,
-            directorio de puertos y datos de seguridad marítima para toda España.
-          </p>
-          <div className="flex flex-wrap gap-3 mt-8">
-            <Link
-              href="/maritimo/combustible"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors"
-              style={{
-                background: "var(--color-tl-sea-300)",
-                color: "var(--color-tl-sea-900)",
-              }}
-            >
-              <Fuel className="w-4 h-4" />
-              Ver combustible
-            </Link>
-            <Link
-              href="/maritimo/mapa"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm border border-tl-sea-400 text-tl-sea-100 hover:bg-tl-sea-700 transition-colors"
-            >
-              <Navigation className="w-4 h-4" />
-              Abrir mapa
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Quick stats row                                                   */}
-        {/* ---------------------------------------------------------------- */}
-        <section aria-label="Estadísticas rápidas">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Estaciones marítimas */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50">
-              <div className="flex items-center gap-2 mb-2">
-                <Anchor className="w-5 h-5 text-tl-sea-500 dark:text-tl-sea-400" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Estaciones náuticas
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                {stats.maritimeCount.toLocaleString("es-ES")}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                combustible marítimo
-              </div>
-            </div>
-
-            {/* Alertas costeras */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-tl-amber-200 dark:border-tl-amber-800/50">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-5 h-5 text-tl-amber-500 dark:text-tl-amber-400" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Alertas costeras
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-tl-amber-700 dark:text-tl-amber-300">
-                {stats.coastalAlerts.toLocaleString("es-ES")}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                activas ahora
-              </div>
-            </div>
-
-            {/* Puertos */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50">
-              <div className="flex items-center gap-2 mb-2">
-                <Ship className="w-5 h-5 text-tl-sea-500 dark:text-tl-sea-400" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Puertos españoles
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                {stats.portCount}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                puertos con combustible
-              </div>
-            </div>
-
-            {/* Precio medio Gasóleo A */}
-            <div className="rounded-xl border p-5 bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50">
-              <div className="flex items-center gap-2 mb-2">
-                <Waves className="w-5 h-5 text-tl-sea-500 dark:text-tl-sea-400" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Precio medio Gasóleo A
-                </span>
-              </div>
-              <div className="font-mono text-3xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                {formatPrice(stats.avgGasoleoA)}
-              </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                estaciones marítimas
-              </div>
-            </div>
-          </div>
-
-          {/* Extended fuel price stats */}
-          {(stats.avgGasoleoB != null || stats.avgGasolina95 != null) && (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {stats.avgGasoleoB != null && (
-                <div className="rounded-xl border p-4 bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: "var(--color-tl-sea-100)" }}>
-                    <Fuel className="w-5 h-5 text-tl-sea-600 dark:text-tl-sea-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Precio medio Gasóleo B</div>
-                    <div className="font-mono text-xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                      {formatPrice(stats.avgGasoleoB)}
-                    </div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">uso profesional (flota pesquera)</div>
-                  </div>
-                </div>
-              )}
-              {stats.avgGasolina95 != null && (
-                <div className="rounded-xl border p-4 bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: "var(--color-tl-sea-100)" }}>
-                    <Fuel className="w-5 h-5 text-tl-sea-600 dark:text-tl-sea-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Precio medio Gasolina 95</div>
-                    <div className="font-mono text-xl font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                      {formatPrice(stats.avgGasolina95)}
-                    </div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">embarcaciones de recreo</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Hero map                                                          */}
-        {/* ---------------------------------------------------------------- */}
-        <section aria-label="Mapa de tráfico marítimo en tiempo real">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <MapPin className="w-6 h-6 text-tl-sea-500" />
-              Mapa Marítimo
-            </h2>
-            <Link
-              href="/maritimo/mapa"
-              className="flex items-center gap-1 text-sm text-tl-sea-600 dark:text-tl-sea-400 hover:underline"
-            >
-              Pantalla completa <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <MaritimoHeroMap />
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Section cards grid                                                */}
-        {/* ---------------------------------------------------------------- */}
-        <section aria-label="Secciones marítimas">
-          <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-            Explora el portal marítimo
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-            {/* Combustible Marítimo */}
-            <Link
-              href="/maritimo/combustible"
-              className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-md transition-all"
-            >
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--color-tl-sea-100)" }}
-              >
-                <Fuel className="w-6 h-6 text-tl-sea-600 dark:text-tl-sea-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Combustible Marítimo
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Precios de combustible en puertos y estaciones marítimas
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-tl-sea-600 dark:text-tl-sea-400 text-sm font-medium group-hover:gap-2 transition-all">
-                Ver precios <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
-
-            {/* Meteorología Marítima */}
-            <Link
-              href="/maritimo/meteorologia"
-              className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-md transition-all"
-            >
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--color-tl-sea-100)" }}
-              >
-                <CloudRain className="w-6 h-6 text-tl-sea-600 dark:text-tl-sea-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Meteorología Marítima
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Previsiones costeras, oleaje y alertas
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-tl-sea-600 dark:text-tl-sea-400 text-sm font-medium group-hover:gap-2 transition-all">
-                Ver meteorología <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
-
-            {/* Puertos de España */}
-            <Link
-              href="/maritimo/puertos"
-              className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-md transition-all"
-            >
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--color-tl-sea-100)" }}
-              >
-                <Anchor className="w-6 h-6 text-tl-sea-600 dark:text-tl-sea-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Puertos de España
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Directorio de puertos comerciales, deportivos y pesqueros
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-tl-sea-600 dark:text-tl-sea-400 text-sm font-medium group-hover:gap-2 transition-all">
-                Ver puertos <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
-
-            {/* Seguridad Marítima */}
-            <Link
-              href="/maritimo/seguridad"
-              className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-md transition-all"
-            >
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--color-tl-sea-100)" }}
-              >
-                <Navigation className="w-6 h-6 text-tl-sea-600 dark:text-tl-sea-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Seguridad Marítima
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Datos de emergencias y rescates (SASEMAR)
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-tl-sea-600 dark:text-tl-sea-400 text-sm font-medium group-hover:gap-2 transition-all">
-                Ver seguridad <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
-
-            {/* Mapa Marítimo — pantalla completa */}
-            <Link
-              href="/maritimo/mapa"
-              className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-md transition-all"
-            >
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--color-tl-sea-100)" }}
-              >
-                <MapPin className="w-6 h-6 text-tl-sea-600 dark:text-tl-sea-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Mapa a pantalla completa
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  AIS en vivo, rutas de ferries, puertos, combustible y corrientes
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-tl-sea-600 dark:text-tl-sea-400 text-sm font-medium group-hover:gap-2 transition-all">
-                Abrir mapa completo <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
-
-            {/* Noticias Marítimas */}
-            <Link
-              href="/maritimo/noticias"
-              className="group flex flex-col gap-4 p-6 rounded-xl border bg-white dark:bg-gray-900 border-tl-sea-200 dark:border-tl-sea-800/50 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-md transition-all"
-            >
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
-                style={{ background: "var(--color-tl-sea-100)" }}
-              >
-                <Newspaper className="w-6 h-6 text-tl-sea-600 dark:text-tl-sea-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  Noticias Marítimas
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Informes y novedades del sector marítimo
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-tl-sea-600 dark:text-tl-sea-400 text-sm font-medium group-hover:gap-2 transition-all">
-                Ver noticias <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Active coastal alerts                                             */}
-        {/* ---------------------------------------------------------------- */}
-        {coastalAlerts.length > 0 && (
-          <section aria-label="Alertas costeras activas">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <AlertTriangle className="w-6 h-6 text-tl-amber-500" />
-                Alertas Costeras Activas
-              </h2>
-              <Link
-                href="/maritimo/meteorologia"
-                className="flex items-center gap-1 text-sm text-tl-sea-600 dark:text-tl-sea-400 hover:underline"
-              >
-                Ver todas <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {coastalAlerts.map((alert) => {
-                const cls = severityClasses(alert.severity);
-                return (
-                  <div
-                    key={alert.id}
-                    className={`rounded-lg border p-4 ${cls.card}`}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <Waves className="w-4 h-4 text-tl-sea-600 dark:text-tl-sea-400 flex-shrink-0" />
-                        <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
-                          {alert.provinceName ?? alert.province}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${cls.badge}`}
-                      >
-                        {severityLabel(alert.severity)}
-                      </span>
-                    </div>
-                    {alert.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                        {alert.description}
-                      </p>
-                    )}
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-500 font-mono">
-                      Desde{" "}
-                      {new Date(alert.startedAt).toLocaleDateString("es-ES", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Cheapest maritime fuel                                            */}
-        {/* ---------------------------------------------------------------- */}
-        {cheapestStations.length > 0 && (
-          <section aria-label="Combustible marítimo más barato">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <BarChart3 className="w-6 h-6 text-tl-sea-500" />
-                Gasóleo A más barato
-              </h2>
-              <Link
-                href="/maritimo/combustible"
-                className="flex items-center gap-1 text-sm text-tl-sea-600 dark:text-tl-sea-400 hover:underline"
-              >
-                Ver todas <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 overflow-hidden">
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                {cheapestStations.map((station, index) => (
-                  <div
-                    key={station.id}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-tl-sea-50 dark:hover:bg-tl-sea-900/20 transition-colors"
-                  >
-                    {/* Rank */}
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 font-mono"
-                      style={{
-                        background:
-                          index === 0
-                            ? "var(--color-tl-sea-500)"
-                            : "var(--color-tl-sea-100)",
-                        color:
-                          index === 0
-                            ? "white"
-                            : "var(--color-tl-sea-700)",
-                      }}
-                    >
-                      {index + 1}
-                    </div>
-
-                    {/* Station info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">
-                        {station.name}
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        <MapPin className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">
-                          {station.port
-                            ? `${station.port}${station.provinceName ? ` · ${station.provinceName}` : ""}`
-                            : (station.locality ?? station.provinceName ?? "—")}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Price */}
-                    <div className="flex-shrink-0 text-right">
-                      <div className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300">
-                        {formatPrice(station.priceGasoleoA)}
-                      </div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">
-                        Gasóleo A
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Recent voyages                                                    */}
-        {/* ---------------------------------------------------------------- */}
-        <VoyagesList />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* SEO text                                                          */}
-        {/* ---------------------------------------------------------------- */}
-        <section
-          className="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60 p-8"
-          aria-label="Información sobre el tráfico marítimo español"
-        >
-          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Tráfico Marítimo y Puertos de España
-          </h2>
-          <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 space-y-3">
-            <p>
-              España cuenta con más de <strong>8.000 kilómetros de costa</strong> y es una de las
-              principales potencias marítimas de Europa. Los puertos españoles gestionan anualmente
-              más de 500 millones de toneladas de mercancías, siendo el sistema portuario uno de
-              los pilares de la economía nacional.
-            </p>
-            <p>
-              El <strong>combustible marítimo</strong> en España es distribuido por estaciones
-              náuticas ubicadas en puertos deportivos, pesqueros y comerciales de todo el litoral.
-              Los precios del gasóleo A náutico y la gasolina para embarcaciones se actualizan
-              diariamente a partir de los datos publicados por el Ministerio para la Transición
-              Ecológica y el Reto Demográfico (MITERD).
-            </p>
-            <p>
-              La <strong>meteorología costera</strong> es fundamental para la seguridad en la
-              navegación. La Agencia Estatal de Meteorología (AEMET) emite alertas costeras por
-              oleaje, viento y fenómenos adversos que afectan a las aguas jurisdiccionales
-              españolas. trafico.live integra estas alertas en tiempo real para facilitar la
-              planificación de rutas náuticas.
-            </p>
-            <p>
-              La <strong>Sociedad de Salvamento y Seguridad Marítima (SASEMAR)</strong> es el
-              organismo responsable de los servicios de búsqueda y rescate en aguas españolas,
-              operando desde centros de coordinación distribuidos a lo largo de todo el litoral
-              peninsular e insular. Sus datos de intervención son una referencia clave para
-              la seguridad marítima en España.
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
-              Fuentes: MITERD (precios combustible), AEMET (meteorología costera), SASEMAR
-              (seguridad marítima), Puertos del Estado. Datos actualizados cada 5 minutos.
-            </p>
-          </div>
-        </section>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-6 flex items-center gap-1.5">
+          <Waves className="w-3 h-3" />
+          Fuentes: aisstream.io (AIS, CC-BY), Puertos del Estado (WFS INSPIRE), MITERD (combustible), AEMET (alertas costeras), MobilityData (ferries GTFS).
+        </p>
       </div>
     </>
   );

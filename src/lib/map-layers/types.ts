@@ -1,5 +1,9 @@
 /**
  * Shared types for the trafico.live layer registry system.
+ *
+ * `MapPreset` and `EntityType` follow the frozen HS1 contract in
+ * `docs/TRAFICOMAP-API.md`. Legacy preset aliases (maritimo, aviacion, etc.)
+ * are retained for backward-compat with hub pages still using short vertical ids.
  */
 
 export type VerticalId =
@@ -11,21 +15,48 @@ export type VerticalId =
   | "meteo"
   | "combustible";
 
-export type MapPreset = VerticalId | "home" | "all" | "minimal";
+/** Contract-mandated preset ids (TRAFICOMAP-API.md §3). */
+export type ContractPreset =
+  | "trafico-live"
+  | "maritime-live"
+  | "aviation-live"
+  | "rail-live"
+  | "transit"
+  | "weather"
+  | "fuel"
+  | "infrastructure"
+  | "entity-focus";
 
+/**
+ * Legacy preset aliases — vertical ids + utility buckets. Kept to avoid
+ * breaking hub pages built in parallel. Prefer the contract presets above.
+ */
+export type LegacyPreset = VerticalId | "home" | "all" | "minimal";
+
+export type MapPreset = ContractPreset | LegacyPreset;
+
+/** Contract entity types (TRAFICOMAP-API.md §4). */
 export type EntityType =
-  | "road"
-  | "vessel"
+  | "gas-station"
+  | "radar"
+  | "camera"
+  | "ev-charger"
+  | "variable-panel"
+  | "railway-station"
+  | "airport"
   | "port"
+  | "maritime-station"
+  | "traffic-station"
+  | "road"
+  | "air-quality-station"
+  | "weather-station"
+  | "vessel"
+  | "incident"
+  // Legacy aliases retained for already-written call sites.
   | "train-station"
   | "rail-line"
-  | "airport"
   | "flight"
-  | "gas-station"
-  | "weather-station"
-  | "aq-station"
-  | "radar"
-  | "camera";
+  | "aq-station";
 
 export type SourceType = "pmtiles" | "martin" | "geojson";
 
