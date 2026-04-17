@@ -236,12 +236,12 @@ const SECTION_TABS: SectionTab[] = [
   { id: "todos", label: "Todos", layers: new Set() }, // empty = show all
   {
     id: "trafico",
-    label: "Tr\u00e1fico",
+    label: "Tráfico",
     layers: new Set<keyof ActiveLayers>(["v16", "incidents", "liveSpeed", "dangerScore", "roadworks", "sensors", "citySensors", "cameras", "radars"]),
   },
   {
     id: "maritimo",
-    label: "Mar\u00edtimo",
+    label: "Marítimo",
     layers: new Set<keyof ActiveLayers>(["vessels", "ports", "ferryRoutes", "ferryStops", "maritimeStations"]),
   },
   {
@@ -251,7 +251,7 @@ const SECTION_TABS: SectionTab[] = [
   },
   {
     id: "aviacion",
-    label: "Aviaci\u00f3n",
+    label: "Aviación",
     layers: new Set<keyof ActiveLayers>(["aircraft", "airports"]),
   },
   {

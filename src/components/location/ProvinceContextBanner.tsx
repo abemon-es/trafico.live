@@ -59,7 +59,7 @@ export async function ProvinceContextBanner({
           </a>
           <span className="text-xs text-gray-500">
             — {municipalityCount.toLocaleString("es-ES")} municipios
-            {" \u00B7 "}
+            {" · "}
             {provinceIncidents} incidencia{provinceIncidents !== 1 ? "s" : ""}{" "}
             activa{provinceIncidents !== 1 ? "s" : ""}
           </span>
@@ -68,11 +68,11 @@ export async function ProvinceContextBanner({
           <p className="mt-1.5 flex items-center gap-1.5">
             {comparisonDiff > 0 ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-signal-green/10 text-signal-green text-xs font-data font-bold">
-                <span aria-hidden="true">{"\u2193"}</span> {comparisonDiff}% menos
+                <span aria-hidden="true">{"↓"}</span> {comparisonDiff}% menos
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-signal-red/10 text-signal-red text-xs font-data font-bold">
-                <span aria-hidden="true">{"\u2191"}</span> {Math.abs(comparisonDiff)}% más
+                <span aria-hidden="true">{"↑"}</span> {Math.abs(comparisonDiff)}% más
               </span>
             )}
             <span className="text-xs text-gray-500">

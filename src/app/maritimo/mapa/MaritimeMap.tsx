@@ -571,8 +571,8 @@ export default function MaritimeMap() {
         const p = f.properties || {};
         const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number];
         const speed = p.sog != null ? `${Number(p.sog).toFixed(1)} kn` : "N/D";
-        const course = p.cog != null ? `${Math.round(Number(p.cog))}\u00b0` : "";
-        const heading = p.heading != null ? `${p.heading}\u00b0` : "";
+        const course = p.cog != null ? `${Math.round(Number(p.cog))}°` : "";
+        const heading = p.heading != null ? `${p.heading}°` : "";
         const flagEmoji = p.flag ? String.fromCodePoint(...[...p.flag.toUpperCase()].map((c: string) => 0x1F1E6 - 65 + c.charCodeAt(0))) : "";
         
         // Speed indicator color
