@@ -9,7 +9,13 @@ test.describe('flow 03 — TraficoMap layer toggle', () => {
       try {
         localStorage.setItem(
           'trafico_cookie_consent',
-          JSON.stringify({ analytics: true, version: '1', timestamp: new Date().toISOString() }),
+          JSON.stringify({
+            necessary: true,
+            analytics: true,
+            affiliates: true,
+            version: '2',
+            timestamp: new Date().toISOString(),
+          }),
         )
       } catch {
         /* storage unavailable */
@@ -26,15 +32,19 @@ test.describe('flow 03 — TraficoMap layer toggle', () => {
     await expect(page.locator('.maplibregl-canvas')).toBeVisible({ timeout: 15_000 })
 
     // Layer panel opens by default (state: open = true in TraficoMapControls).
-    // Target a known layer present in the trafico preset via its aria-label.
-    const camaras = page.locator('input[type="checkbox"][aria-label="Cámaras de tráfico"]')
-    await expect(camaras).toBeAttached()
+    // Target the "Cámaras de tráfico" layer. Its checkbox aria-label flips
+    // between "Activar capa ..." and "Desactivar capa ..." depending on state,
+    // so match either via title on the wrapping <label> which is stable.
+    const camarasRow = page
+      .locator('label[title*="Cámaras"], label:has(input[aria-label*="Cámaras"])')
+      .first()
+    await expect(camarasRow).toBeAttached({ timeout: 10_000 })
+    const camaras = camarasRow.locator('input[type="checkbox"]')
 
     const initiallyChecked = await camaras.isChecked()
 
     // Clicking the label row toggles — direct input is sr-only, but <label>
     // wraps the whole row so any click on the row text works.
-    const camarasRow = page.locator('label', { has: camaras })
     await camarasRow.click()
     // Wait for React state to flip
     await expect(camaras).toBeChecked({ checked: !initiallyChecked })

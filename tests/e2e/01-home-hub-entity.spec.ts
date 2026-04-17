@@ -9,7 +9,13 @@ test.describe('flow 01 — home → hub → entity', () => {
       try {
         localStorage.setItem(
           'trafico_cookie_consent',
-          JSON.stringify({ analytics: true, version: '1', timestamp: new Date().toISOString() }),
+          JSON.stringify({
+            necessary: true,
+            analytics: true,
+            affiliates: true,
+            version: '2',
+            timestamp: new Date().toISOString(),
+          }),
         )
       } catch {
         /* storage unavailable */
