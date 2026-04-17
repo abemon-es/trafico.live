@@ -30,7 +30,7 @@ services:
     expose:
       - "3000"
     ports:
-      - "127.0.0.1:3089:3000"
+      - "10.100.0.2:3089:3000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s
@@ -43,7 +43,7 @@ services:
     container_name: tiles-nginx-exporter
     command: ["--nginx.scrape-uri=http://tiles/nginx_status"]
     ports:
-      - "127.0.0.1:9113:9113"
+      - "10.100.0.2:9113:9113"
     depends_on:
       - tiles
     restart: unless-stopped
