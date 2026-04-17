@@ -6,7 +6,7 @@
  * Returns de-duplicated matches sorted by priceLigeros descending.
  */
 
-import tollDataRaw from "@/data/tolls.json";
+import tollDataRaw from "../../data/tolls.json";
 import type { RoutingRoute } from "@/types/routing";
 
 // ---------------------------------------------------------------------------
