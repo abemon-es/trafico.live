@@ -26,14 +26,15 @@ function parseCoord(s: string): number {
 
 /**
  * Gas station collector cron endpoint.
- * Call via: GET /api/cron/gas-stations?key=<API_KEY>
- * Or: GET /api/cron/gas-stations with x-api-key header
+ * Call via: GET /api/cron/gas-stations with `x-api-key: <API_KEY>` header.
  *
- * Coolify cron config: curl -s https://trafico.live/api/cron/gas-stations?key=YOUR_KEY
+ * Cron config: curl -s https://trafico.live/api/cron/gas-stations -H "x-api-key: YOUR_KEY"
+ *
+ * NOTE: the previous `?key=` query-param fallback was removed — secrets in
+ * URLs leak via Cloudflare, Docker and Loki access logs.
  */
 export async function GET(request: NextRequest) {
-  // Auth: require API key (via header or query param for cron compatibility)
-  const apiKey = request.headers.get("x-api-key") || request.nextUrl.searchParams.get("key");
+  const apiKey = request.headers.get("x-api-key");
   const validKeys = process.env.API_KEYS?.split(",").map((k) => k.trim()) || [];
   if (!apiKey || !validKeys.includes(apiKey)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

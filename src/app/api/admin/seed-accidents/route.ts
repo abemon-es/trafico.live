@@ -18,20 +18,20 @@ interface HistoricalAccidentData {
 }
 
 /**
- * POST /api/admin/seed-accidents?key=<API_KEY>
+ * POST /api/admin/seed-accidents  (requires `x-api-key` header)
  *
  * Seeds the HistoricalAccidents table from data/historical-accidents.json.
  * Safe to call multiple times — it upserts by (year, province).
  *
- * Use this to populate production when prisma db seed wasn't run at build time.
+ * Usage:
+ *   curl -X POST "https://trafico.live/api/admin/seed-accidents" \
+ *     -H "x-api-key: YOUR_KEY"
  *
- * Coolify: curl -X POST "https://trafico.live/api/admin/seed-accidents?key=YOUR_KEY"
+ * NOTE: the previous `?key=` query-param fallback was removed — secrets in
+ * URLs leak via access logs (Cloudflare, Docker, Loki).
  */
 export async function POST(request: NextRequest) {
-  // Auth: require API key (via header or query param)
-  const apiKey =
-    request.headers.get("x-api-key") ||
-    request.nextUrl.searchParams.get("key");
+  const apiKey = request.headers.get("x-api-key");
   const validKeys = process.env.API_KEYS?.split(",").map((k) => k.trim()) || [];
   if (!apiKey || !validKeys.includes(apiKey)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
