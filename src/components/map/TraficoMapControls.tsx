@@ -52,7 +52,9 @@ export function TraficoMapControls({
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-900 transition-colors"
-        aria-label="Capas del mapa"
+        aria-label={open ? "Ocultar capas del mapa" : "Mostrar capas del mapa"}
+        aria-expanded={open}
+        aria-controls="trafico-map-layer-panel"
       >
         <span className="flex items-center gap-2 font-semibold text-sm font-['DM_Sans']">
           <Layers className="w-4 h-4 text-tl-600 dark:text-tl-300" aria-hidden />
@@ -83,19 +85,31 @@ export function TraficoMapControls({
 
       {/* Layer list */}
       {open && (
-        <div className="mt-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div
+          id="trafico-map-layer-panel"
+          className="mt-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto"
+        >
           {Object.entries(grouped).map(([groupKey, layers]) => {
             const isCollapsed = collapsedGroups.has(groupKey);
             const activeCount = layers.filter((l) => activeLayers.includes(l.id)).length;
+            const groupPanelId = `trafico-map-group-${groupKey.replace(/\./g, "-")}`;
+            const groupLabel = GROUP_LABELS[groupKey] ?? groupKey;
 
             return (
               <div key={groupKey}>
                 <button
                   onClick={() => toggleGroup(groupKey)}
                   className="w-full flex items-center justify-between px-3 py-2 bg-slate-50/80 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700/50"
+                  aria-expanded={!isCollapsed}
+                  aria-controls={groupPanelId}
+                  aria-label={
+                    isCollapsed
+                      ? `Mostrar capas de ${groupLabel}`
+                      : `Ocultar capas de ${groupLabel}`
+                  }
                 >
                   <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate text-left font-['DM_Sans']">
-                    {GROUP_LABELS[groupKey] ?? groupKey}
+                    {groupLabel}
                   </span>
                   <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
                     {activeCount > 0 && (
@@ -111,7 +125,7 @@ export function TraficoMapControls({
                 </button>
 
                 {!isCollapsed && (
-                  <div className="py-1">
+                  <div className="py-1" id={groupPanelId}>
                     {layers.map((layer) => {
                       const isActive = activeLayers.includes(layer.id);
                       const swatchColor = layer.legend?.[0]?.color;
@@ -127,7 +141,11 @@ export function TraficoMapControls({
                             checked={isActive}
                             onChange={() => onToggle(layer.id)}
                             className="sr-only"
-                            aria-label={layer.label}
+                            aria-label={
+                              isActive
+                                ? `Desactivar capa ${layer.label}`
+                                : `Activar capa ${layer.label}`
+                            }
                           />
                           {/* Custom checkbox */}
                           <span
