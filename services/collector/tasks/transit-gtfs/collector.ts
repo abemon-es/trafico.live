@@ -219,14 +219,40 @@ async function downloadAndExtract(
 ): Promise<{ tmpDir: string; hash: string; sizeKB: number }> {
   log(TASK, `Downloading ${feed.name} (mdb-${feed.mdbId})...`);
 
-  const response = await fetch(feed.downloadUrl, {
-    headers: { "User-Agent": "trafico.live-collector/1.0" },
-    signal: AbortSignal.timeout(180000), // 3 min for large feeds
-    redirect: "follow",
-  });
+  // URL resolution: the MobilityData catalog CSV sometimes stores legacy
+  // storage.googleapis.com URLs in urls.latest that now 404. The canonical
+  // files.mobilitydatabase.org/mdb-{id}/latest.zip endpoint serves the same
+  // feed and is stable. Try canonical first, fall back to the CSV value,
+  // fall back to a direct provider URL stored in feed.downloadUrl.
+  const canonical = `https://files.mobilitydatabase.org/mdb-${feed.mdbId}/latest.zip`;
+  const urlsToTry = canonical === feed.downloadUrl
+    ? [feed.downloadUrl]
+    : [canonical, feed.downloadUrl];
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} for ${feed.downloadUrl}`);
+  let response: Response | null = null;
+  let lastError: string = "";
+  for (const url of urlsToTry) {
+    try {
+      const r = await fetch(url, {
+        headers: { "User-Agent": "trafico.live-collector/1.0" },
+        signal: AbortSignal.timeout(180000),
+        redirect: "follow",
+      });
+      if (r.ok) {
+        response = r;
+        if (url !== feed.downloadUrl) {
+          log(TASK, `${feed.name}: fallback to canonical URL`);
+        }
+        break;
+      }
+      lastError = `HTTP ${r.status} for ${url}`;
+    } catch (err) {
+      lastError = `${(err as Error).message} for ${url}`;
+    }
+  }
+
+  if (!response) {
+    throw new Error(lastError || `All URLs failed for mdb-${feed.mdbId}`);
   }
 
   const buffer = Buffer.from(await response.arrayBuffer());
