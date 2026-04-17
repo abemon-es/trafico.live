@@ -5,7 +5,7 @@ import useSWR from "swr";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
-import { getProtomapsDarkStyle } from "@/lib/map-tiles";
+import { MAP_STYLE_DEFAULT } from "@/lib/map-config";
 import { Crosshair, AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
@@ -112,7 +112,7 @@ export function VesselLiveMap({ mmsi, name, initialPosition }: Props) {
 
         map = new maplibregl.Map({
           container: mapRef.current,
-          style: getProtomapsDarkStyle(),
+          style: MAP_STYLE_DEFAULT,
           center: initCenter,
           zoom: 10,
           attributionControl: false,
