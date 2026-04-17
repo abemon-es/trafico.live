@@ -32,11 +32,10 @@ const MODE_LABELS: Record<string, string> = {
 
 // ── Client components ─────────────────────────────────────────────────────────
 
-// ArrivalsLive owns both the SWR-polling table and the mini-map
-const ArrivalsLive = dynamicImport(
-  () => import("./arrivals-live"),
-  { ssr: false }
-);
+// ArrivalsLive owns both the SWR-polling table and the mini-map.
+// The component already has "use client" so we don't need ssr:false — and
+// Next.js 16 App Router rejects ssr:false in server components at build time.
+const ArrivalsLive = dynamicImport(() => import("./arrivals-live"));
 
 // ── Params ────────────────────────────────────────────────────────────────────
 
