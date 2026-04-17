@@ -17,6 +17,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { PROVINCES } from "../../shared/provinces.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const MINETUR_MARITIME_URL =
   "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/PostesMaritimos/";
@@ -236,4 +237,5 @@ export async function run(prisma: PrismaClient) {
   console.log(
     `[maritime-fuel] Completed in ${elapsed}s — ${processed} stations updated, ${historyResult.count} history records`
   );
+  await heartbeat(prisma, "maritime-fuel", processed > 0 ? "ok" : "partial", { processed, errors, historyRecords: historyResult.count });
 }

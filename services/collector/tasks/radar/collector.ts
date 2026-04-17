@@ -17,6 +17,7 @@ import { PrismaClient, RadarType, Direction } from "@prisma/client";
 import { PROVINCES } from "../../shared/provinces.js";
 import { ensureArray } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const DGT_RADARS_URL =
   "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/radares/content.xml";
@@ -385,9 +386,11 @@ export async function run(prisma: PrismaClient) {
     }
 
     console.log("[radar-collector] Collection completed successfully");
+    await heartbeat(prisma, "radar", "ok", { total: radars.length, fixed: fixedCount, section: sectionCount });
 
   } catch (error) {
     console.error("[radar-collector] Fatal error:", error);
+    await heartbeat(prisma, "radar", "error", { error: String(error) });
     throw error;
   }
 }
