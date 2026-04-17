@@ -62,7 +62,8 @@ services:
     container_name: collector-weekly
     environment:
       CRONTAB_TIER: weekly
-    mem_limit: 1024m
+    mem_limit: 2048m
+    mem_reservation: 1g
     cpus: 1.0
 
   collector-ais:
