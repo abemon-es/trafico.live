@@ -1,0 +1,197 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.3,
+          30.6
+        ]
+      },
+      "properties": {
+        "name": "Suez Canal",
+        "name_es": "Canal de Suez",
+        "type": "canal",
+        "importance": "critical"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.7,
+          9.1
+        ]
+      },
+      "properties": {
+        "name": "Panama Canal",
+        "name_es": "Canal de Panamá",
+        "type": "canal",
+        "importance": "critical"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.4,
+          2.2
+        ]
+      },
+      "properties": {
+        "name": "Strait of Malacca",
+        "name_es": "Estrecho de Malaca",
+        "type": "strait",
+        "importance": "critical"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.3,
+          26.6
+        ]
+      },
+      "properties": {
+        "name": "Strait of Hormuz",
+        "name_es": "Estrecho de Ormuz",
+        "type": "strait",
+        "importance": "critical"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.5,
+          36
+        ]
+      },
+      "properties": {
+        "name": "Strait of Gibraltar",
+        "name_es": "Estrecho de Gibraltar",
+        "type": "strait",
+        "importance": "critical"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.4,
+          51
+        ]
+      },
+      "properties": {
+        "name": "Strait of Dover",
+        "name_es": "Paso de Calais",
+        "type": "strait",
+        "importance": "high"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29,
+          41.2
+        ]
+      },
+      "properties": {
+        "name": "Bosphorus Strait",
+        "name_es": "Estrecho del Bósforo",
+        "type": "strait",
+        "importance": "high"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20,
+          -34.4
+        ]
+      },
+      "properties": {
+        "name": "Cape of Good Hope",
+        "name_es": "Cabo de Buena Esperanza",
+        "type": "cape",
+        "importance": "high"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          43.3,
+          12.6
+        ]
+      },
+      "properties": {
+        "name": "Bab el-Mandeb",
+        "name_es": "Bab el-Mandeb",
+        "type": "strait",
+        "importance": "critical"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -68,
+          -55
+        ]
+      },
+      "properties": {
+        "name": "Drake Passage",
+        "name_es": "Paso del Drake",
+        "type": "passage",
+        "importance": "medium"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141,
+          -10.5
+        ]
+      },
+      "properties": {
+        "name": "Torres Strait",
+        "name_es": "Estrecho de Torres",
+        "type": "strait",
+        "importance": "medium"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77,
+          8
+        ]
+      },
+      "properties": {
+        "name": "Panama Canal (Caribbean)",
+        "name_es": "Canal de Panamá (Caribe)",
+        "type": "canal",
+        "importance": "critical"
+      }
+    }
+  ]
+}

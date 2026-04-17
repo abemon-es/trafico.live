@@ -1,0 +1,1130 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -80,
+            25
+          ],
+          [
+            -79.5,
+            27.5
+          ],
+          [
+            -78.5,
+            30
+          ],
+          [
+            -76,
+            33.5
+          ],
+          [
+            -74.5,
+            36
+          ],
+          [
+            -72,
+            38.5
+          ],
+          [
+            -68,
+            40.5
+          ],
+          [
+            -63,
+            42
+          ],
+          [
+            -55,
+            43.5
+          ],
+          [
+            -45,
+            44.5
+          ],
+          [
+            -35,
+            45
+          ],
+          [
+            -25,
+            47
+          ],
+          [
+            -15,
+            49.5
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Gulf Stream",
+        "name_es": "Corriente del Golfo",
+        "temperature": "warm",
+        "basin": "Atlantic",
+        "speed_kn": 3.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -15,
+            49.5
+          ],
+          [
+            -10,
+            51
+          ],
+          [
+            -5,
+            52.5
+          ],
+          [
+            0,
+            54
+          ],
+          [
+            3,
+            56
+          ],
+          [
+            5,
+            58.5
+          ],
+          [
+            7,
+            61
+          ],
+          [
+            10,
+            63
+          ],
+          [
+            14,
+            66
+          ],
+          [
+            17,
+            69
+          ]
+        ]
+      },
+      "properties": {
+        "name": "North Atlantic Drift",
+        "name_es": "Deriva del Atlántico Norte",
+        "temperature": "warm",
+        "basin": "Atlantic",
+        "speed_kn": 1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -9,
+            43
+          ],
+          [
+            -11,
+            38
+          ],
+          [
+            -13,
+            33
+          ],
+          [
+            -15.5,
+            28
+          ],
+          [
+            -17.5,
+            22
+          ],
+          [
+            -18.5,
+            16
+          ],
+          [
+            -19,
+            12
+          ],
+          [
+            -21,
+            8
+          ],
+          [
+            -23,
+            4
+          ],
+          [
+            -28,
+            2
+          ],
+          [
+            -35,
+            1
+          ],
+          [
+            -42,
+            3
+          ],
+          [
+            -50,
+            8
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Canary Current",
+        "name_es": "Corriente de Canarias",
+        "temperature": "cold",
+        "basin": "Atlantic",
+        "speed_kn": 0.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -20,
+            12
+          ],
+          [
+            -28,
+            13
+          ],
+          [
+            -36,
+            13.5
+          ],
+          [
+            -44,
+            13
+          ],
+          [
+            -52,
+            12.5
+          ],
+          [
+            -58,
+            12
+          ],
+          [
+            -62,
+            11.5
+          ],
+          [
+            -67,
+            11
+          ]
+        ]
+      },
+      "properties": {
+        "name": "North Equatorial Current (Atlantic)",
+        "name_es": "Corriente Ecuatorial Norte (Atlántico)",
+        "temperature": "warm",
+        "basin": "Atlantic",
+        "speed_kn": 0.8
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            10,
+            -3
+          ],
+          [
+            0,
+            -3.5
+          ],
+          [
+            -10,
+            -4
+          ],
+          [
+            -20,
+            -4.5
+          ],
+          [
+            -30,
+            -5
+          ],
+          [
+            -38,
+            -5
+          ],
+          [
+            -45,
+            -4.5
+          ],
+          [
+            -50,
+            -4
+          ]
+        ]
+      },
+      "properties": {
+        "name": "South Equatorial Current (Atlantic)",
+        "name_es": "Corriente Ecuatorial Sur (Atlántico)",
+        "temperature": "warm",
+        "basin": "Atlantic",
+        "speed_kn": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -37,
+            -8
+          ],
+          [
+            -38,
+            -12
+          ],
+          [
+            -39.5,
+            -16
+          ],
+          [
+            -40.5,
+            -20
+          ],
+          [
+            -42,
+            -24
+          ],
+          [
+            -44,
+            -28
+          ],
+          [
+            -47,
+            -32
+          ],
+          [
+            -50,
+            -36
+          ],
+          [
+            -53,
+            -40
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Brazil Current",
+        "name_es": "Corriente de Brasil",
+        "temperature": "warm",
+        "basin": "Atlantic",
+        "speed_kn": 1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            17,
+            -34
+          ],
+          [
+            14.5,
+            -30
+          ],
+          [
+            13,
+            -25
+          ],
+          [
+            12.5,
+            -20
+          ],
+          [
+            12,
+            -15
+          ],
+          [
+            11.5,
+            -10
+          ],
+          [
+            11,
+            -5
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Benguela Current",
+        "name_es": "Corriente de Benguela",
+        "temperature": "cold",
+        "basin": "Atlantic",
+        "speed_kn": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -52,
+            65
+          ],
+          [
+            -54,
+            61
+          ],
+          [
+            -55,
+            57
+          ],
+          [
+            -55.5,
+            53
+          ],
+          [
+            -55,
+            49
+          ],
+          [
+            -53.5,
+            46
+          ],
+          [
+            -52,
+            43
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Labrador Current",
+        "name_es": "Corriente de Labrador",
+        "temperature": "cold",
+        "basin": "Atlantic",
+        "speed_kn": 0.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            122,
+            12
+          ],
+          [
+            124,
+            18
+          ],
+          [
+            126,
+            24
+          ],
+          [
+            129,
+            30
+          ],
+          [
+            132,
+            34
+          ],
+          [
+            137,
+            36
+          ],
+          [
+            142,
+            37
+          ],
+          [
+            148,
+            38
+          ],
+          [
+            155,
+            40
+          ],
+          [
+            162,
+            42
+          ],
+          [
+            170,
+            44
+          ],
+          [
+            178,
+            46
+          ],
+          [
+            -175,
+            47.5
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Kuroshio Current",
+        "name_es": "Corriente de Kuroshio",
+        "temperature": "warm",
+        "basin": "Pacific",
+        "speed_kn": 2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -175,
+            47.5
+          ],
+          [
+            -170,
+            48.5
+          ],
+          [
+            -160,
+            49
+          ],
+          [
+            -150,
+            49.5
+          ],
+          [
+            -140,
+            49
+          ],
+          [
+            -130,
+            48
+          ]
+        ]
+      },
+      "properties": {
+        "name": "North Pacific Current",
+        "name_es": "Corriente del Pacífico Norte",
+        "temperature": "warm",
+        "basin": "Pacific",
+        "speed_kn": 0.8
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -126,
+            50
+          ],
+          [
+            -125,
+            45
+          ],
+          [
+            -124,
+            40
+          ],
+          [
+            -122.5,
+            35
+          ],
+          [
+            -120.5,
+            30
+          ],
+          [
+            -118,
+            25
+          ],
+          [
+            -115,
+            22
+          ]
+        ]
+      },
+      "properties": {
+        "name": "California Current",
+        "name_es": "Corriente de California",
+        "temperature": "cold",
+        "basin": "Pacific",
+        "speed_kn": 0.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -130,
+            48
+          ],
+          [
+            -135,
+            52
+          ],
+          [
+            -140,
+            55
+          ],
+          [
+            -145,
+            57
+          ],
+          [
+            -150,
+            58.5
+          ],
+          [
+            -155,
+            59.5
+          ],
+          [
+            -160,
+            60
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Alaska Current",
+        "name_es": "Corriente de Alaska",
+        "temperature": "warm",
+        "basin": "Pacific",
+        "speed_kn": 0.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -71,
+            -45
+          ],
+          [
+            -72,
+            -40
+          ],
+          [
+            -74,
+            -35
+          ],
+          [
+            -75,
+            -28
+          ],
+          [
+            -77,
+            -22
+          ],
+          [
+            -78.5,
+            -16
+          ],
+          [
+            -80,
+            -10
+          ],
+          [
+            -81,
+            -4
+          ],
+          [
+            -82,
+            0
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Peru (Humboldt) Current",
+        "name_es": "Corriente del Perú (Humboldt)",
+        "temperature": "cold",
+        "basin": "Pacific",
+        "speed_kn": 0.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            154,
+            -24
+          ],
+          [
+            155.5,
+            -28
+          ],
+          [
+            156.5,
+            -32
+          ],
+          [
+            157,
+            -36
+          ],
+          [
+            157.5,
+            -40
+          ],
+          [
+            156,
+            -44
+          ]
+        ]
+      },
+      "properties": {
+        "name": "East Australian Current",
+        "name_es": "Corriente de Australia Oriental",
+        "temperature": "warm",
+        "basin": "Pacific",
+        "speed_kn": 1.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -120,
+            12
+          ],
+          [
+            -140,
+            12.5
+          ],
+          [
+            -160,
+            13
+          ],
+          [
+            -180,
+            13
+          ],
+          [
+            170,
+            13
+          ],
+          [
+            155,
+            12.5
+          ],
+          [
+            140,
+            12
+          ],
+          [
+            130,
+            11.5
+          ],
+          [
+            122,
+            12
+          ]
+        ]
+      },
+      "properties": {
+        "name": "North Equatorial Current (Pacific)",
+        "name_es": "Corriente Ecuatorial Norte (Pacífico)",
+        "temperature": "warm",
+        "basin": "Pacific",
+        "speed_kn": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130,
+            5
+          ],
+          [
+            140,
+            5.5
+          ],
+          [
+            155,
+            6
+          ],
+          [
+            170,
+            6
+          ],
+          [
+            -180,
+            6
+          ],
+          [
+            -165,
+            6.5
+          ],
+          [
+            -150,
+            7
+          ],
+          [
+            -135,
+            7
+          ],
+          [
+            -120,
+            7
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Equatorial Counter Current",
+        "name_es": "Contracorriente Ecuatorial",
+        "temperature": "warm",
+        "basin": "Pacific",
+        "speed_kn": 0.6
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            36,
+            -15
+          ],
+          [
+            36.5,
+            -20
+          ],
+          [
+            37,
+            -25
+          ],
+          [
+            36,
+            -30
+          ],
+          [
+            30,
+            -33
+          ],
+          [
+            25,
+            -35
+          ],
+          [
+            20.5,
+            -34.5
+          ],
+          [
+            18,
+            -32
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Agulhas Current",
+        "name_es": "Corriente de Agulhas",
+        "temperature": "warm",
+        "basin": "Indian",
+        "speed_kn": 2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            114,
+            -32
+          ],
+          [
+            111,
+            -27
+          ],
+          [
+            109,
+            -22
+          ],
+          [
+            107,
+            -17
+          ],
+          [
+            106,
+            -12
+          ],
+          [
+            108,
+            -7
+          ]
+        ]
+      },
+      "properties": {
+        "name": "West Australian Current",
+        "name_es": "Corriente de Australia Occidental",
+        "temperature": "cold",
+        "basin": "Indian",
+        "speed_kn": 0.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            42,
+            -2
+          ],
+          [
+            45,
+            3
+          ],
+          [
+            48,
+            8
+          ],
+          [
+            50,
+            12
+          ],
+          [
+            51,
+            14
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Somali Current",
+        "name_es": "Corriente de Somalia",
+        "temperature": "warm",
+        "basin": "Indian",
+        "speed_kn": 2.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            100,
+            -12
+          ],
+          [
+            85,
+            -11.5
+          ],
+          [
+            70,
+            -11
+          ],
+          [
+            55,
+            -10.5
+          ],
+          [
+            45,
+            -10
+          ],
+          [
+            38,
+            -10
+          ]
+        ]
+      },
+      "properties": {
+        "name": "South Indian Equatorial Current",
+        "name_es": "Corriente Ecuatorial Sur del Índico",
+        "temperature": "warm",
+        "basin": "Indian",
+        "speed_kn": 0.8
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -180,
+            -57
+          ],
+          [
+            -150,
+            -56
+          ],
+          [
+            -120,
+            -57
+          ],
+          [
+            -90,
+            -58
+          ],
+          [
+            -60,
+            -56
+          ],
+          [
+            -30,
+            -55
+          ],
+          [
+            0,
+            -56
+          ],
+          [
+            30,
+            -57
+          ],
+          [
+            60,
+            -57.5
+          ],
+          [
+            90,
+            -57
+          ],
+          [
+            120,
+            -57
+          ],
+          [
+            150,
+            -56
+          ],
+          [
+            180,
+            -57
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Antarctic Circumpolar Current",
+        "name_es": "Corriente Circumpolar Antártica",
+        "temperature": "cold",
+        "basin": "Southern",
+        "speed_kn": 0.8
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -155,
+            73
+          ],
+          [
+            -140,
+            77
+          ],
+          [
+            -130,
+            80
+          ],
+          [
+            -140,
+            82
+          ],
+          [
+            -160,
+            80
+          ],
+          [
+            -175,
+            77
+          ],
+          [
+            -175,
+            73.5
+          ],
+          [
+            -165,
+            72
+          ],
+          [
+            -155,
+            73
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Beaufort Gyre",
+        "name_es": "Giro de Beaufort",
+        "temperature": "cold",
+        "basin": "Arctic",
+        "speed_kn": 0.3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            120,
+            77
+          ],
+          [
+            110,
+            82
+          ],
+          [
+            90,
+            85
+          ],
+          [
+            60,
+            87
+          ],
+          [
+            20,
+            84
+          ],
+          [
+            5,
+            80
+          ],
+          [
+            -3,
+            78
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Transpolar Drift",
+        "name_es": "Deriva Transpolar",
+        "temperature": "cold",
+        "basin": "Arctic",
+        "speed_kn": 0.3
+      }
+    }
+  ]
+}

@@ -1,0 +1,1607 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.1,
+            51.9
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            2.5,
+            48.5
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            9,
+            36.5
+          ],
+          [
+            16,
+            36
+          ],
+          [
+            22,
+            34.5
+          ],
+          [
+            32.3,
+            30.6
+          ],
+          [
+            33.5,
+            27.5
+          ],
+          [
+            38.5,
+            20
+          ],
+          [
+            43.3,
+            12.6
+          ],
+          [
+            50,
+            12
+          ],
+          [
+            60,
+            16
+          ],
+          [
+            72.5,
+            18.5
+          ],
+          [
+            80,
+            8
+          ],
+          [
+            94,
+            4
+          ],
+          [
+            102.4,
+            2.2
+          ],
+          [
+            108,
+            3.5
+          ],
+          [
+            112,
+            10
+          ],
+          [
+            118.5,
+            21
+          ],
+          [
+            121.5,
+            31.2
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Rotterdam–Shanghai",
+        "endpoints": [
+          "Rotterdam",
+          "Shanghai"
+        ],
+        "distance_nm": 11300,
+        "distance_km": 20928,
+        "transit_days": 24,
+        "via": [
+          "Strait of Dover",
+          "Gibraltar",
+          "Suez Canal",
+          "Bab el-Mandeb",
+          "Strait of Malacca"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            121.5,
+            31.2
+          ],
+          [
+            127,
+            34
+          ],
+          [
+            140,
+            38
+          ],
+          [
+            155,
+            41
+          ],
+          [
+            170,
+            44
+          ],
+          [
+            -180,
+            47
+          ],
+          [
+            -165,
+            48
+          ],
+          [
+            -150,
+            46
+          ],
+          [
+            -140,
+            43
+          ],
+          [
+            -130,
+            39
+          ],
+          [
+            -118.5,
+            34
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Shanghai–Los Angeles",
+        "endpoints": [
+          "Shanghai",
+          "Los Angeles"
+        ],
+        "distance_nm": 6400,
+        "distance_km": 11853,
+        "transit_days": 13,
+        "via": [
+          "Transpacific"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -74,
+            40.7
+          ],
+          [
+            -70,
+            42.5
+          ],
+          [
+            -65,
+            43.5
+          ],
+          [
+            -50,
+            45
+          ],
+          [
+            -40,
+            46
+          ],
+          [
+            -30,
+            47
+          ],
+          [
+            -20,
+            48.5
+          ],
+          [
+            -10,
+            50
+          ],
+          [
+            -5,
+            50.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "New York–Rotterdam",
+        "endpoints": [
+          "New York",
+          "Rotterdam"
+        ],
+        "distance_nm": 3500,
+        "distance_km": 6482,
+        "transit_days": 7,
+        "via": [
+          "North Atlantic",
+          "Strait of Dover"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            103.8,
+            1.3
+          ],
+          [
+            102.4,
+            2.2
+          ],
+          [
+            95,
+            5
+          ],
+          [
+            82,
+            8.5
+          ],
+          [
+            72.5,
+            18.5
+          ],
+          [
+            60,
+            16
+          ],
+          [
+            50,
+            12
+          ],
+          [
+            43.3,
+            12.6
+          ],
+          [
+            40,
+            19
+          ],
+          [
+            36,
+            26.5
+          ],
+          [
+            32.3,
+            30.6
+          ],
+          [
+            28,
+            36
+          ],
+          [
+            22,
+            34.5
+          ],
+          [
+            16,
+            36
+          ],
+          [
+            9,
+            36.5
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            2.5,
+            48.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Singapore–Rotterdam",
+        "endpoints": [
+          "Singapore",
+          "Rotterdam"
+        ],
+        "distance_nm": 8300,
+        "distance_km": 15372,
+        "transit_days": 17,
+        "via": [
+          "Strait of Malacca",
+          "Bab el-Mandeb",
+          "Suez Canal",
+          "Gibraltar"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            121.5,
+            31.2
+          ],
+          [
+            118,
+            24
+          ],
+          [
+            108,
+            3.5
+          ],
+          [
+            102.4,
+            2.2
+          ],
+          [
+            94,
+            4
+          ],
+          [
+            85,
+            0
+          ],
+          [
+            75,
+            -10
+          ],
+          [
+            70,
+            -20
+          ],
+          [
+            65,
+            -30
+          ],
+          [
+            50,
+            -38
+          ],
+          [
+            35,
+            -38
+          ],
+          [
+            20,
+            -34.4
+          ],
+          [
+            15,
+            -32
+          ],
+          [
+            12,
+            -20
+          ],
+          [
+            10,
+            -5
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            0,
+            12
+          ],
+          [
+            -5,
+            20
+          ],
+          [
+            -8,
+            28
+          ],
+          [
+            -12,
+            36
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            2.5,
+            48.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Shanghai–Rotterdam (Cape of Good Hope)",
+        "endpoints": [
+          "Shanghai",
+          "Rotterdam"
+        ],
+        "distance_nm": 13000,
+        "distance_km": 24076,
+        "transit_days": 27,
+        "via": [
+          "Strait of Malacca",
+          "Cape of Good Hope",
+          "Gibraltar"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -0.3,
+            39.5
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            -10,
+            35.5
+          ],
+          [
+            -18,
+            35
+          ],
+          [
+            -28,
+            36
+          ],
+          [
+            -38,
+            37.5
+          ],
+          [
+            -50,
+            40
+          ],
+          [
+            -60,
+            41
+          ],
+          [
+            -68,
+            41
+          ],
+          [
+            -74,
+            40.7
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Valencia–New York",
+        "endpoints": [
+          "Valencia",
+          "New York"
+        ],
+        "distance_nm": 3600,
+        "distance_km": 6667,
+        "transit_days": 8,
+        "via": [
+          "Gibraltar",
+          "North Atlantic"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -5.4,
+            36.1
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            -2.5,
+            35.8
+          ],
+          [
+            0,
+            38.5
+          ],
+          [
+            2,
+            41
+          ],
+          [
+            3.5,
+            43
+          ],
+          [
+            -2,
+            44
+          ],
+          [
+            -4,
+            47.5
+          ],
+          [
+            -5,
+            48.5
+          ],
+          [
+            -3.5,
+            49.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Algeciras–Rotterdam",
+        "endpoints": [
+          "Algeciras",
+          "Rotterdam"
+        ],
+        "distance_nm": 1500,
+        "distance_km": 2778,
+        "transit_days": 3,
+        "via": [
+          "Gibraltar",
+          "Bay of Biscay",
+          "Strait of Dover"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -79.5,
+            9.1
+          ],
+          [
+            -85,
+            8
+          ],
+          [
+            -95,
+            10
+          ],
+          [
+            -110,
+            15
+          ],
+          [
+            -125,
+            22
+          ],
+          [
+            -140,
+            28
+          ],
+          [
+            -150,
+            32
+          ],
+          [
+            -160,
+            35.5
+          ],
+          [
+            -170,
+            37
+          ],
+          [
+            -175,
+            37.5
+          ],
+          [
+            175,
+            36.5
+          ],
+          [
+            165,
+            35
+          ],
+          [
+            148,
+            35.5
+          ],
+          [
+            141.5,
+            35
+          ],
+          [
+            139.7,
+            35.4
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Panama–Yokohama",
+        "endpoints": [
+          "Panama",
+          "Yokohama"
+        ],
+        "distance_nm": 7700,
+        "distance_km": 14260,
+        "transit_days": 16,
+        "via": [
+          "Panama Canal",
+          "Transpacific"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            55,
+            25.3
+          ],
+          [
+            56.5,
+            26.6
+          ],
+          [
+            60,
+            22
+          ],
+          [
+            64,
+            18
+          ],
+          [
+            68,
+            14
+          ],
+          [
+            72.5,
+            10
+          ],
+          [
+            76,
+            7
+          ],
+          [
+            80,
+            5
+          ],
+          [
+            90,
+            4
+          ],
+          [
+            94,
+            4
+          ],
+          [
+            100,
+            3
+          ],
+          [
+            102.4,
+            2.2
+          ],
+          [
+            103.8,
+            1.3
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Dubai–Singapore",
+        "endpoints": [
+          "Dubai",
+          "Singapore"
+        ],
+        "distance_nm": 4500,
+        "distance_km": 8334,
+        "transit_days": 9,
+        "via": [
+          "Strait of Hormuz",
+          "Indian Ocean",
+          "Strait of Malacca"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.2,
+            -33.9
+          ],
+          [
+            155,
+            -26
+          ],
+          [
+            154,
+            -18
+          ],
+          [
+            149,
+            -14
+          ],
+          [
+            145,
+            -10
+          ],
+          [
+            141,
+            -8
+          ],
+          [
+            135,
+            -5
+          ],
+          [
+            130,
+            -2
+          ],
+          [
+            120,
+            0
+          ],
+          [
+            112,
+            2
+          ],
+          [
+            107,
+            2
+          ],
+          [
+            103.8,
+            1.3
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Sydney–Singapore",
+        "endpoints": [
+          "Sydney",
+          "Singapore"
+        ],
+        "distance_nm": 4600,
+        "distance_km": 8519,
+        "transit_days": 10,
+        "via": [
+          "Torres Strait",
+          "Banda Sea"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            31,
+            -30
+          ],
+          [
+            35,
+            -25
+          ],
+          [
+            40,
+            -18
+          ],
+          [
+            43.5,
+            -12
+          ],
+          [
+            46,
+            -5
+          ],
+          [
+            50,
+            3
+          ],
+          [
+            55,
+            12
+          ],
+          [
+            50,
+            14
+          ],
+          [
+            43.3,
+            12.6
+          ],
+          [
+            38.5,
+            20
+          ],
+          [
+            33.5,
+            27.5
+          ],
+          [
+            32.3,
+            30.6
+          ],
+          [
+            28,
+            36
+          ],
+          [
+            22,
+            34.5
+          ],
+          [
+            16,
+            36
+          ],
+          [
+            9,
+            36.5
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            2.5,
+            48.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Durban–Rotterdam",
+        "endpoints": [
+          "Durban",
+          "Rotterdam"
+        ],
+        "distance_nm": 7600,
+        "distance_km": 14075,
+        "transit_days": 16,
+        "via": [
+          "Bab el-Mandeb",
+          "Suez Canal",
+          "Gibraltar"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -95.3,
+            29.7
+          ],
+          [
+            -89,
+            28
+          ],
+          [
+            -85,
+            25
+          ],
+          [
+            -80,
+            25
+          ],
+          [
+            -76,
+            30
+          ],
+          [
+            -73,
+            35
+          ],
+          [
+            -70,
+            40
+          ],
+          [
+            -60,
+            43
+          ],
+          [
+            -45,
+            45.5
+          ],
+          [
+            -30,
+            47
+          ],
+          [
+            -15,
+            49.5
+          ],
+          [
+            -5,
+            50.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Houston–Rotterdam",
+        "endpoints": [
+          "Houston",
+          "Rotterdam"
+        ],
+        "distance_nm": 5200,
+        "distance_km": 9630,
+        "transit_days": 11,
+        "via": [
+          "Gulf of Mexico",
+          "Florida Strait",
+          "North Atlantic"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -123.1,
+            49.3
+          ],
+          [
+            -130,
+            49.5
+          ],
+          [
+            -145,
+            49
+          ],
+          [
+            -160,
+            48
+          ],
+          [
+            -175,
+            46.5
+          ],
+          [
+            170,
+            45
+          ],
+          [
+            155,
+            42
+          ],
+          [
+            142,
+            38
+          ],
+          [
+            132,
+            34
+          ],
+          [
+            124,
+            30
+          ],
+          [
+            121.5,
+            31.2
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Vancouver–Shanghai",
+        "endpoints": [
+          "Vancouver",
+          "Shanghai"
+        ],
+        "distance_nm": 4900,
+        "distance_km": 9075,
+        "transit_days": 10,
+        "via": [
+          "Transpacific",
+          "North Pacific"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            114.2,
+            22.3
+          ],
+          [
+            118,
+            24
+          ],
+          [
+            130,
+            28
+          ],
+          [
+            145,
+            35
+          ],
+          [
+            158,
+            40
+          ],
+          [
+            170,
+            43.5
+          ],
+          [
+            -175,
+            45
+          ],
+          [
+            -160,
+            45.5
+          ],
+          [
+            -145,
+            43
+          ],
+          [
+            -135,
+            40
+          ],
+          [
+            -125,
+            36
+          ],
+          [
+            -118.5,
+            34
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Hong Kong–Los Angeles",
+        "endpoints": [
+          "Hong Kong",
+          "Los Angeles"
+        ],
+        "distance_nm": 6200,
+        "distance_km": 11482,
+        "transit_days": 13,
+        "via": [
+          "Transpacific"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -46.3,
+            -23.9
+          ],
+          [
+            -42,
+            -18
+          ],
+          [
+            -35,
+            -8
+          ],
+          [
+            -25,
+            0
+          ],
+          [
+            -15,
+            8
+          ],
+          [
+            -10,
+            15
+          ],
+          [
+            -12,
+            25
+          ],
+          [
+            -12,
+            34
+          ],
+          [
+            -8,
+            38
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            2.5,
+            48.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Santos–Rotterdam",
+        "endpoints": [
+          "Santos",
+          "Rotterdam"
+        ],
+        "distance_nm": 5400,
+        "distance_km": 10001,
+        "transit_days": 11,
+        "via": [
+          "South Atlantic",
+          "Gibraltar"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            18.4,
+            -33.9
+          ],
+          [
+            25,
+            -34
+          ],
+          [
+            35,
+            -30
+          ],
+          [
+            45,
+            -20
+          ],
+          [
+            52,
+            -12
+          ],
+          [
+            58,
+            -4
+          ],
+          [
+            63,
+            3
+          ],
+          [
+            70,
+            8
+          ],
+          [
+            75,
+            10
+          ],
+          [
+            80,
+            8
+          ],
+          [
+            88,
+            5
+          ],
+          [
+            94,
+            4
+          ],
+          [
+            100,
+            3
+          ],
+          [
+            102.4,
+            2.2
+          ],
+          [
+            103.8,
+            1.3
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Cape Town–Singapore",
+        "endpoints": [
+          "Cape Town",
+          "Singapore"
+        ],
+        "distance_nm": 6900,
+        "distance_km": 12779,
+        "transit_days": 14,
+        "via": [
+          "Indian Ocean",
+          "Strait of Malacca"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            9.9,
+            53.5
+          ],
+          [
+            8,
+            55
+          ],
+          [
+            3,
+            55.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            -2,
+            50.5
+          ],
+          [
+            -5,
+            50
+          ],
+          [
+            -10,
+            51
+          ],
+          [
+            -20,
+            50
+          ],
+          [
+            -30,
+            48
+          ],
+          [
+            -40,
+            46.5
+          ],
+          [
+            -50,
+            44.5
+          ],
+          [
+            -60,
+            43
+          ],
+          [
+            -68,
+            41.5
+          ],
+          [
+            -74,
+            40.7
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Hamburg–New York",
+        "endpoints": [
+          "Hamburg",
+          "New York"
+        ],
+        "distance_nm": 3700,
+        "distance_km": 6852,
+        "transit_days": 8,
+        "via": [
+          "Strait of Dover",
+          "North Atlantic"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -58.4,
+            -34.6
+          ],
+          [
+            -52,
+            -30
+          ],
+          [
+            -42,
+            -20
+          ],
+          [
+            -34,
+            -10
+          ],
+          [
+            -25,
+            0
+          ],
+          [
+            -18,
+            8
+          ],
+          [
+            -15,
+            14
+          ],
+          [
+            -16,
+            22
+          ],
+          [
+            -16,
+            30
+          ],
+          [
+            -12,
+            36
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            2.5,
+            48.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Buenos Aires–Rotterdam",
+        "endpoints": [
+          "Buenos Aires",
+          "Rotterdam"
+        ],
+        "distance_nm": 6000,
+        "distance_km": 11112,
+        "transit_days": 13,
+        "via": [
+          "South Atlantic",
+          "Gibraltar"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            121.9,
+            29.9
+          ],
+          [
+            126,
+            32
+          ],
+          [
+            135,
+            37
+          ],
+          [
+            145,
+            40
+          ],
+          [
+            158,
+            42
+          ],
+          [
+            168,
+            44
+          ],
+          [
+            -178,
+            45.5
+          ],
+          [
+            -165,
+            46.5
+          ],
+          [
+            -150,
+            44.5
+          ],
+          [
+            -138,
+            41.5
+          ],
+          [
+            -128,
+            37.5
+          ],
+          [
+            -118.5,
+            34
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Ningbo–Los Angeles",
+        "endpoints": [
+          "Ningbo",
+          "Los Angeles"
+        ],
+        "distance_nm": 6300,
+        "distance_km": 11668,
+        "transit_days": 13,
+        "via": [
+          "Transpacific",
+          "North Pacific"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            23.6,
+            37.9
+          ],
+          [
+            20,
+            37.5
+          ],
+          [
+            16,
+            38
+          ],
+          [
+            12,
+            37.5
+          ],
+          [
+            9,
+            36.5
+          ],
+          [
+            3,
+            37
+          ],
+          [
+            -1,
+            37.5
+          ],
+          [
+            -5.5,
+            36.1
+          ],
+          [
+            -7,
+            37.5
+          ],
+          [
+            -9,
+            39.5
+          ],
+          [
+            -9.5,
+            43.5
+          ],
+          [
+            -5.5,
+            47.5
+          ],
+          [
+            -3,
+            49.5
+          ],
+          [
+            1.3,
+            51.1
+          ],
+          [
+            4.1,
+            51.9
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Piraeus–Rotterdam",
+        "endpoints": [
+          "Piraeus",
+          "Rotterdam"
+        ],
+        "distance_nm": 2600,
+        "distance_km": 4815,
+        "transit_days": 5,
+        "via": [
+          "Mediterranean Sea",
+          "Gibraltar",
+          "Bay of Biscay",
+          "Strait of Dover"
+        ]
+      }
+    }
+  ]
+}

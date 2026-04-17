@@ -322,34 +322,118 @@ export function getProtomapsStyle(): StyleSpecification {
         promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
-      // Landmass mask — paints land on top of the sea-coloured background.
-      // Kept as a fallback: at zoom 0-4 the `trafico-planet` tileset still lacks
-      // ocean polygons (Planetiler does not emit them from OSM without
-      // water-polygons-split) so we draw Iberia + a rough land slab for the
-      // neighbouring countries. The style itself paints water features from the
-      // tileset on top of this mask, so inland rivers/lakes remain blue.
-      "iberia-land": {
+      // World landmass mask — replaces iberia-landmass.geojson with worldwide coverage.
+      // Paints land on top of bathymetry layers. OSM water features paint on top of this.
+      "world-land": {
         type: "geojson",
-        data: "/geo/iberia-landmass.geojson",
+        data: "/geo/world/land.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      // World countries for country labels
+      "world-countries": {
+        type: "geojson",
+        data: "/geo/world/countries.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      // World states/provinces for admin-1 labels
+      "world-states": {
+        type: "geojson",
+        data: "/geo/world/states.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      // Populated places for city labels
+      "world-places": {
+        type: "geojson",
+        data: "/geo/world/places.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      // Ocean bathymetry layers (shallowest → deepest files)
+      "bathymetry-200m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-200m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "bathymetry-1000m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-1000m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "bathymetry-4000m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-4000m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "bathymetry-6000m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-6000m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      // Ocean infrastructure layers
+      "maritime-boundaries": {
+        type: "geojson",
+        data: "/geo/ocean/maritime-boundaries.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "shipping-lanes": {
+        type: "geojson",
+        data: "/geo/ocean/shipping-lanes.geojson",
+        attribution: "",
+      },
+      "ocean-currents": {
+        type: "geojson",
+        data: "/geo/ocean/currents/major-currents.geojson",
+        attribution: "",
+      },
+      "shipping-routes": {
+        type: "geojson",
+        data: "/geo/ocean/routes/major-routes.geojson",
+        attribution: "",
+      },
+      "chokepoints": {
+        type: "geojson",
+        data: "/geo/ocean/routes/chokepoints.geojson",
         attribution: "",
       },
     },
     layers: [
-      // ── Sea-coloured background (covers the entire map outside land) ─
+      // ── Sea-coloured background (deepest ocean — covers entire map) ──
       { id: "background", type: "background", paint: { "background-color": "#cfdef5" } },
 
-      // ── Landmass fill — Iberia + neighbouring countries ─────────────
+      // ── Ocean bathymetry (deepest → shallowest, visible z0-9) ────────
+      // Layer order: background → 6000m → 4000m → 1000m → 200m → land-fill
       {
-        id: "land-fill", type: "fill", source: "iberia-land",
+        id: "bathymetry-6000m", type: "fill", source: "bathymetry-6000m",
+        maxzoom: 9,
+        paint: { "fill-color": "#a4bedf", "fill-opacity": 0.7, "fill-antialias": false },
+      },
+      {
+        id: "bathymetry-4000m", type: "fill", source: "bathymetry-4000m",
+        maxzoom: 9,
+        paint: { "fill-color": "#b3cae6", "fill-opacity": 0.7, "fill-antialias": false },
+      },
+      {
+        id: "bathymetry-1000m", type: "fill", source: "bathymetry-1000m",
+        maxzoom: 9,
+        paint: { "fill-color": "#c4d6ed", "fill-opacity": 0.7, "fill-antialias": false },
+      },
+      {
+        id: "bathymetry-200m", type: "fill", source: "bathymetry-200m",
+        maxzoom: 9,
+        paint: { "fill-color": "#d6e2f2", "fill-opacity": 0.8, "fill-antialias": false },
+      },
+
+      // ── Worldwide landmass fill ───────────────────────────────────────
+      {
+        id: "land-fill", type: "fill", source: "world-land",
         paint: { "fill-color": "#f6f7f9", "fill-antialias": true },
       },
-      // Soft coastline halo just inside the land (subtle brand-tinted line)
+      // Soft coastline halo just inside the land (global coverage)
       {
-        id: "land-halo", type: "line", source: "iberia-land",
+        id: "land-halo", type: "line", source: "world-land",
         paint: {
           "line-color": "#9fb6dc",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.4, 8, 1.0, 12, 1.4],
-          "line-opacity": ["interpolate", ["linear"], ["zoom"], 3, 0.4, 8, 0.55, 12, 0.35],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 0, 0.2, 3, 0.4, 8, 1.0, 12, 1.4],
+          "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.3, 3, 0.4, 8, 0.55, 12, 0.35],
           "line-blur": 0.6,
         },
       },
@@ -438,6 +522,71 @@ export function getProtomapsStyle(): StyleSpecification {
           "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.3, 14, 1],
           "line-dasharray": [2, 2],
           "line-opacity": 0.5,
+        },
+      },
+
+      // ── Maritime EEZ/territorial sea boundaries ───────────────────────
+      {
+        id: "maritime-boundaries", type: "line", source: "maritime-boundaries",
+        minzoom: 3,
+        paint: {
+          "line-color": "#4b6ca8",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 8, 1.0, 12, 1.5],
+          "line-opacity": 0.35,
+          "line-dasharray": [2, 3],
+        },
+      },
+
+      // ── Shipping lanes — glow + solid (brand amber, low opacity) ─────
+      {
+        id: "shipping-lanes-glow", type: "line", source: "shipping-lanes",
+        minzoom: 3,
+        paint: {
+          "line-color": "#d48139",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2, 8, 5, 12, 8],
+          "line-opacity": 0.12,
+          "line-blur": 1,
+        },
+      },
+      {
+        id: "shipping-lanes-solid", type: "line", source: "shipping-lanes",
+        minzoom: 3,
+        paint: {
+          "line-color": "#d48139",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.5, 12, 4],
+          "line-opacity": 0.35,
+          "line-blur": 0,
+        },
+      },
+
+      // ── Ocean currents (warm=red, cold=blue) ─────────────────────────
+      {
+        id: "ocean-currents", type: "line", source: "ocean-currents",
+        minzoom: 2,
+        maxzoom: 10,
+        paint: {
+          "line-color": [
+            "match", ["coalesce", ["get", "temperature"], "warm"],
+            "warm", "#dc3545",
+            "cold", "#0d6efd",
+            "#888888",
+          ],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 8, 2, 12, 3.5],
+          "line-opacity": 0.5,
+          "line-dasharray": [1, 2],
+        },
+      },
+
+      // ── Shipping routes (major maritime routes, dashed amber) ─────────
+      {
+        id: "shipping-routes", type: "line", source: "shipping-routes",
+        minzoom: 3,
+        maxzoom: 9,
+        paint: {
+          "line-color": "#f59e0b",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 6, 2, 9, 3],
+          "line-opacity": 0.55,
+          "line-dasharray": [4, 2],
         },
       },
 
@@ -564,6 +713,7 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — country ──────────────────────────────────────
+      // Biggest: 16-22px uppercase, fades out by z7
       {
         id: "places-country", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "country"],
@@ -571,19 +721,22 @@ export function getProtomapsStyle(): StyleSpecification {
         layout: {
           "text-field": textEs,
           "text-font": ["Noto Sans Medium"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 2, 12, 4, 18, 6, 22],
           "text-transform": "uppercase",
-          "text-letter-spacing": 0.15,
+          "text-letter-spacing": 0.2,
           "text-max-width": 8,
         },
         paint: {
-          "text-color": "#475569",
+          "text-color": "#1f2937",
           "text-halo-color": "#ffffff",
           "text-halo-width": 2,
+          "text-halo-blur": 0.5,
+          "text-opacity": ["interpolate", ["linear"], ["zoom"], 2, 0.8, 5, 1, 6.5, 0.7, 7, 0],
         },
       },
 
       // ── Place labels — state / autonomous community ─────────────────
+      // 9-14px uppercase medium, z4-9
       {
         id: "places-state", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "state"],
@@ -592,46 +745,48 @@ export function getProtomapsStyle(): StyleSpecification {
         layout: {
           "text-field": textEs,
           "text-font": ["Noto Sans Medium"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 13],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 6, 12, 8, 14],
           "text-transform": "uppercase",
-          "text-letter-spacing": 0.1,
+          "text-letter-spacing": 0.12,
           "text-max-width": 10,
         },
         paint: {
-          "text-color": "#64748b",
+          "text-color": "#374151",
           "text-halo-color": "#ffffff",
           "text-halo-width": 1.5,
-          "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.5, 6, 1],
+          "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.4, 5, 0.8, 8, 1],
         },
       },
 
       // ── Place labels — cities ───────────────────────────────────────
+      // 11-20px mixed case, bolder — clearly bigger than towns
       {
         id: "places-city", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "city"],
         layout: {
           "text-field": textEs,
           "text-font": ["Noto Sans Medium"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 15, 12, 18],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 4, 11, 7, 15, 10, 18, 12, 20],
           "text-max-width": 8,
           "text-allow-overlap": false,
         },
         paint: {
           "text-color": "#1e293b",
           "text-halo-color": "#ffffff",
-          "text-halo-width": 1.5,
+          "text-halo-width": 2,
         },
       },
 
       // ── Place labels — towns ────────────────────────────────────────
+      // 9-13px, regular weight — clearly smaller than cities
       {
         id: "places-town", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "town"],
         minzoom: 7,
         layout: {
           "text-field": textEs,
-          "text-font": ["Noto Sans Medium"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 12, 14, 15],
+          "text-font": ["Noto Sans Regular"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 11, 14, 13],
           "text-max-width": 8,
         },
         paint: {
@@ -642,6 +797,7 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — villages ─────────────────────────────────────
+      // 8-11px regular, z10+ — lighter than towns
       {
         id: "places-village", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "village"],
@@ -649,7 +805,7 @@ export function getProtomapsStyle(): StyleSpecification {
         layout: {
           "text-field": textEs,
           "text-font": ["Noto Sans Regular"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 12],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 10, 8, 13, 10, 16, 11],
           "text-max-width": 7,
         },
         paint: {
@@ -660,6 +816,7 @@ export function getProtomapsStyle(): StyleSpecification {
       },
 
       // ── Place labels — suburbs, neighbourhoods ──────────────────────
+      // 7-10px uppercase compact tracking, z12+ — smallest tier
       {
         id: "places-neighbourhood", type: "symbol", source: S, "source-layer": "places",
         filter: ["in", "place", "suburb", "neighbourhood", "locality"],
@@ -667,10 +824,10 @@ export function getProtomapsStyle(): StyleSpecification {
         layout: {
           "text-field": textEs,
           "text-font": ["Noto Sans Regular"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 12],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 12, 7, 15, 9, 17, 10],
           "text-max-width": 6,
           "text-transform": "uppercase",
-          "text-letter-spacing": 0.05,
+          "text-letter-spacing": 0.1,
         },
         paint: {
           "text-color": "#94a3b8",
@@ -745,6 +902,124 @@ export function getProtomapsStyle(): StyleSpecification {
           "text-opacity": 0.8,
         },
       },
+
+      // ── Chokepoints (strategic maritime points) ──────────────────────
+      {
+        id: "chokepoints-circle", type: "circle", source: "chokepoints",
+        minzoom: 3,
+        maxzoom: 10,
+        paint: {
+          "circle-color": "#d48139",
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 3, 7, 5, 10, 7],
+          "circle-stroke-width": 1.5,
+          "circle-stroke-color": "#ffffff",
+          "circle-opacity": 0.8,
+        },
+      },
+      {
+        id: "chokepoints-labels", type: "symbol", source: "chokepoints",
+        minzoom: 4,
+        maxzoom: 10,
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ["Noto Sans Medium"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 11, 10, 12],
+          "text-transform": "uppercase",
+          "text-letter-spacing": 0.1,
+          "text-anchor": "top",
+          "text-offset": [0, 0.8],
+          "text-max-width": 8,
+          "text-allow-overlap": false,
+        },
+        paint: {
+          "text-color": "#d48139",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+          "text-halo-blur": 0.5,
+          "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.7, 7, 1],
+        },
+      },
+
+      // ── World country labels (Natural Earth GeoJSON) ─────────────────
+      // Complementary to the tileset places-country layer; fades out by z7.
+      {
+        id: "world-country-labels", type: "symbol", source: "world-countries",
+        maxzoom: 7,
+        layout: {
+          "text-field": ["coalesce", ["get", "NAME_ES"], ["get", "NAME"]],
+          "text-font": ["Noto Sans Medium"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 4, 16, 6, 20],
+          "text-transform": "uppercase",
+          "text-letter-spacing": 0.15,
+          "text-max-width": 8,
+          "text-allow-overlap": false,
+        },
+        paint: {
+          "text-color": "#1f2937",
+          "text-halo-color": "#f6f7f9",
+          "text-halo-width": 2,
+          "text-halo-blur": 0.5,
+          "text-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.7, 3, 1, 6, 0.9, 7, 0],
+        },
+      },
+
+      // ── World state / admin-1 labels (Natural Earth GeoJSON) ─────────
+      // Visible z4-8, uppercase subtle lettering.
+      {
+        id: "world-state-labels", type: "symbol", source: "world-states",
+        minzoom: 4,
+        maxzoom: 8,
+        layout: {
+          "text-field": ["coalesce", ["get", "name_es"], ["get", "name"]],
+          "text-font": ["Noto Sans Regular"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 4, 8, 6, 11, 8, 13],
+          "text-transform": "uppercase",
+          "text-letter-spacing": 0.12,
+          "text-max-width": 10,
+          "text-allow-overlap": false,
+        },
+        paint: {
+          "text-color": "#374151",
+          "text-halo-color": "#f6f7f9",
+          "text-halo-width": 1.5,
+          "text-halo-blur": 0.5,
+          "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.4, 5, 0.8, 7, 1, 8, 0],
+        },
+      },
+
+      // ── World populated places (Natural Earth GeoJSON) ───────────────
+      // Sorted by SCALERANK: 0 = biggest capitals. Show progressively from z3.
+      {
+        id: "world-places-labels", type: "symbol", source: "world-places",
+        minzoom: 3,
+        layout: {
+          "text-field": ["coalesce", ["get", "NAME_ES"], ["get", "NAME"]],
+          "text-font": ["Noto Sans Medium"],
+          "text-size": [
+            "interpolate", ["linear"], ["zoom"],
+            3, ["interpolate", ["linear"], ["coalesce", ["get", "POP_MAX"], 0], 0, 8, 10000000, 14],
+            6, ["interpolate", ["linear"], ["coalesce", ["get", "POP_MAX"], 0], 0, 10, 10000000, 18],
+            10, ["interpolate", ["linear"], ["coalesce", ["get", "POP_MAX"], 0], 0, 11, 10000000, 20],
+          ],
+          "text-max-width": 8,
+          "text-allow-overlap": false,
+          "symbol-sort-key": ["coalesce", ["get", "SCALERANK"], 99],
+        },
+        filter: [
+          "step", ["zoom"],
+          ["<=", ["coalesce", ["get", "SCALERANK"], 99], 2],
+          5, ["<=", ["coalesce", ["get", "SCALERANK"], 99], 4],
+          7, ["<=", ["coalesce", ["get", "SCALERANK"], 99], 6],
+          9, true,
+        ],
+        paint: {
+          "text-color": "#1e293b",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+          "text-halo-blur": 0.3,
+          "text-opacity": ["interpolate", ["linear"], ["zoom"], 3, 0.8, 5, 1],
+        },
+      },
     ],
   };
 }
@@ -768,23 +1043,98 @@ export function getProtomapsDarkStyle(): StyleSpecification {
         promoteId: { roads: "ref" },
         attribution: "© <a href='https://openstreetmap.org'>OpenStreetMap</a>",
       },
-      "iberia-land": {
+      // World landmass mask — worldwide coverage replacing iberia-specific GeoJSON
+      "world-land": {
         type: "geojson",
-        data: "/geo/iberia-landmass.geojson",
+        data: "/geo/world/land.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "world-countries": {
+        type: "geojson",
+        data: "/geo/world/countries.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "world-states": {
+        type: "geojson",
+        data: "/geo/world/states.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "world-places": {
+        type: "geojson",
+        data: "/geo/world/places.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "bathymetry-200m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-200m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "bathymetry-1000m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-1000m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "bathymetry-4000m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-4000m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "bathymetry-6000m": {
+        type: "geojson",
+        data: "/geo/ocean/bathymetry-6000m.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "maritime-boundaries": {
+        type: "geojson",
+        data: "/geo/ocean/maritime-boundaries.geojson",
+        attribution: "© <a href='https://www.naturalearthdata.com'>Natural Earth</a>",
+      },
+      "shipping-lanes": {
+        type: "geojson",
+        data: "/geo/ocean/shipping-lanes.geojson",
+        attribution: "",
+      },
+      "ocean-currents": {
+        type: "geojson",
+        data: "/geo/ocean/currents/major-currents.geojson",
+        attribution: "",
+      },
+      "shipping-routes": {
+        type: "geojson",
+        data: "/geo/ocean/routes/major-routes.geojson",
+        attribution: "",
+      },
+      "chokepoints": {
+        type: "geojson",
+        data: "/geo/ocean/routes/chokepoints.geojson",
         attribution: "",
       },
     },
     layers: [
-      // Sea-coloured background
+      // Sea-coloured background — deep ocean dark
       { id: "background", type: "background", paint: { "background-color": "#0c1828" } },
 
-      // Landmass fill — dark slate
-      { id: "land-fill", type: "fill", source: "iberia-land",
+      // ── Ocean bathymetry — dark graduated blues (deepest → shallowest, z0-9) ──
+      { id: "bathymetry-6000m", type: "fill", source: "bathymetry-6000m",
+        maxzoom: 9,
+        paint: { "fill-color": "#061a30", "fill-opacity": 0.65, "fill-antialias": false } },
+      { id: "bathymetry-4000m", type: "fill", source: "bathymetry-4000m",
+        maxzoom: 9,
+        paint: { "fill-color": "#082142", "fill-opacity": 0.65, "fill-antialias": false } },
+      { id: "bathymetry-1000m", type: "fill", source: "bathymetry-1000m",
+        maxzoom: 9,
+        paint: { "fill-color": "#0b2a55", "fill-opacity": 0.65, "fill-antialias": false } },
+      { id: "bathymetry-200m", type: "fill", source: "bathymetry-200m",
+        maxzoom: 9,
+        paint: { "fill-color": "#0e3268", "fill-opacity": 0.7, "fill-antialias": false } },
+
+      // Landmass fill — dark slate (worldwide)
+      { id: "land-fill", type: "fill", source: "world-land",
         paint: { "fill-color": "#151c2b", "fill-antialias": true } },
-      { id: "land-halo", type: "line", source: "iberia-land",
+      { id: "land-halo", type: "line", source: "world-land",
         paint: {
           "line-color": "#263049",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.3, 8, 0.8, 12, 1.2],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 0, 0.2, 3, 0.3, 8, 0.8, 12, 1.2],
           "line-opacity": 0.7,
           "line-blur": 0.6,
         },
@@ -819,6 +1169,44 @@ export function getProtomapsDarkStyle(): StyleSpecification {
       { id: "boundary-region", type: "line", source: S, "source-layer": "boundaries",
         filter: ["==", "admin_level", 4], minzoom: 4,
         paint: { "line-color": "#3b5998", "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.3, 8, 1, 14, 2], "line-dasharray": [3, 2], "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.25, 7, 0.5, 12, 0.65] } },
+
+      // ── Maritime EEZ/territorial sea boundaries (dark) ───────────────
+      { id: "maritime-boundaries", type: "line", source: "maritime-boundaries",
+        minzoom: 3,
+        paint: {
+          "line-color": "#6a87c0",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 8, 1.0, 12, 1.5],
+          "line-opacity": 0.35,
+          "line-dasharray": [2, 3],
+        },
+      },
+
+      // ── Shipping lanes (dark) ─────────────────────────────────────────
+      { id: "shipping-lanes-glow", type: "line", source: "shipping-lanes",
+        minzoom: 3,
+        paint: { "line-color": "#f0b86a", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2, 8, 5, 12, 8], "line-opacity": 0.1, "line-blur": 1 },
+      },
+      { id: "shipping-lanes-solid", type: "line", source: "shipping-lanes",
+        minzoom: 3,
+        paint: { "line-color": "#f0b86a", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.5, 12, 4], "line-opacity": 0.3, "line-blur": 0 },
+      },
+
+      // ── Ocean currents (dark — warm red / cold blue, more muted) ─────
+      { id: "ocean-currents", type: "line", source: "ocean-currents",
+        minzoom: 2, maxzoom: 10,
+        paint: {
+          "line-color": ["match", ["coalesce", ["get", "temperature"], "warm"], "warm", "#c0394a", "cold", "#2563eb", "#6b7280"],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 8, 2, 12, 3.5],
+          "line-opacity": 0.4,
+          "line-dasharray": [1, 2],
+        },
+      },
+
+      // ── Shipping routes (dark) ────────────────────────────────────────
+      { id: "shipping-routes", type: "line", source: "shipping-routes",
+        minzoom: 3, maxzoom: 9,
+        paint: { "line-color": "#fbbf24", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 6, 2, 9, 3], "line-opacity": 0.45, "line-dasharray": [4, 2] },
+      },
 
       // Road casings — slightly darker than land, soft glow effect
       { id: "roads-highway-casing", type: "line", source: S, "source-layer": "roads",
@@ -898,6 +1286,57 @@ export function getProtomapsDarkStyle(): StyleSpecification {
         filter: ["in", "highway", "primary", "secondary"], minzoom: 12,
         layout: { "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 16, 11], "symbol-placement": "line", "text-rotation-alignment": "map", "text-max-angle": 30 },
         paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 1 } },
+
+      // ── Chokepoints (dark) ───────────────────────────────────────────
+      { id: "chokepoints-circle", type: "circle", source: "chokepoints",
+        minzoom: 3, maxzoom: 10,
+        paint: { "circle-color": "#fbbf24", "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 3, 7, 5, 10, 7], "circle-stroke-width": 1.5, "circle-stroke-color": "#0b0f1a", "circle-opacity": 0.8 },
+      },
+      { id: "chokepoints-labels", type: "symbol", source: "chokepoints",
+        minzoom: 4, maxzoom: 10,
+        layout: { "text-field": ["get", "name"], "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 11, 10, 12], "text-transform": "uppercase", "text-letter-spacing": 0.1, "text-anchor": "top", "text-offset": [0, 0.8], "text-max-width": 8, "text-allow-overlap": false },
+        paint: { "text-color": "#fbbf24", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5, "text-halo-blur": 0.5, "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.7, 7, 1] },
+      },
+
+      // ── World country labels (dark) ───────────────────────────────────
+      { id: "world-country-labels", type: "symbol", source: "world-countries",
+        maxzoom: 7,
+        layout: { "text-field": ["coalesce", ["get", "NAME_ES"], ["get", "NAME"]], "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 4, 16, 6, 20], "text-transform": "uppercase", "text-letter-spacing": 0.15, "text-max-width": 8, "text-allow-overlap": false },
+        paint: { "text-color": "#cbd5e1", "text-halo-color": "#0b0f1a", "text-halo-width": 2, "text-halo-blur": 0.5, "text-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.7, 3, 1, 6, 0.9, 7, 0] },
+      },
+
+      // ── World state labels (dark) ─────────────────────────────────────
+      { id: "world-state-labels", type: "symbol", source: "world-states",
+        minzoom: 4, maxzoom: 8,
+        layout: { "text-field": ["coalesce", ["get", "name_es"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 8, 6, 11, 8, 13], "text-transform": "uppercase", "text-letter-spacing": 0.12, "text-max-width": 10, "text-allow-overlap": false },
+        paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5, "text-halo-blur": 0.5, "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.4, 5, 0.8, 7, 1, 8, 0] },
+      },
+
+      // ── World populated places (dark) ─────────────────────────────────
+      { id: "world-places-labels", type: "symbol", source: "world-places",
+        minzoom: 3,
+        layout: {
+          "text-field": ["coalesce", ["get", "NAME_ES"], ["get", "NAME"]],
+          "text-font": ["Noto Sans Medium"],
+          "text-size": [
+            "interpolate", ["linear"], ["zoom"],
+            3, ["interpolate", ["linear"], ["coalesce", ["get", "POP_MAX"], 0], 0, 8, 10000000, 14],
+            6, ["interpolate", ["linear"], ["coalesce", ["get", "POP_MAX"], 0], 0, 10, 10000000, 18],
+            10, ["interpolate", ["linear"], ["coalesce", ["get", "POP_MAX"], 0], 0, 11, 10000000, 20],
+          ],
+          "text-max-width": 8,
+          "text-allow-overlap": false,
+          "symbol-sort-key": ["coalesce", ["get", "SCALERANK"], 99],
+        },
+        filter: [
+          "step", ["zoom"],
+          ["<=", ["coalesce", ["get", "SCALERANK"], 99], 2],
+          5, ["<=", ["coalesce", ["get", "SCALERANK"], 99], 4],
+          7, ["<=", ["coalesce", ["get", "SCALERANK"], 99], 6],
+          9, true,
+        ],
+        paint: { "text-color": "#e2e8f0", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5, "text-halo-blur": 0.3, "text-opacity": ["interpolate", ["linear"], ["zoom"], 3, 0.8, 5, 1] },
+      },
 
       // Water labels removed — infrastructure focus
     ],
