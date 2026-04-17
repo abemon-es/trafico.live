@@ -3,6 +3,24 @@ import type { NextRequest } from "next/server";
 import { authenticateRequest } from "./lib/auth";
 import { hashApiKey } from "./lib/api-key-hash";
 import type { ApiTierName } from "./lib/api-tiers";
+import { auth } from "./lib/auth-config";
+
+// ---------------------------------------------------------------------------
+// S1 T4.10 — protected route patterns (session-based auth gate)
+// API routes are intentionally excluded; they use API-key auth (src/lib/auth.ts).
+// ---------------------------------------------------------------------------
+const PROTECTED_ROUTES = [
+  "/dashboard",
+  "/flotas/dashboard",
+  "/alertas",
+  "/account",
+];
+const PROTECTED_PREFIXES = ["/admin"];
+
+function isProtectedPath(pathname: string): boolean {
+  if (PROTECTED_ROUTES.includes(pathname)) return true;
+  return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
 const CANONICAL_DOMAIN = "trafico.live";
 const CANONICAL_ORIGIN = "https://trafico.live";
@@ -204,6 +222,19 @@ export async function middleware(request: NextRequest) {
     return response;
   }
   /* === end S0 T4.1 === */
+
+  /* === S1 T4.10 auth gate === */
+  // Protect dashboard, account, and admin routes behind a user session.
+  // API routes (/api/*) are NOT gated here — they use API-key auth (src/lib/auth.ts).
+  if (isProtectedPath(pathname)) {
+    const session = await auth();
+    if (!session?.user) {
+      const loginUrl = new URL("/login", request.nextUrl.origin);
+      loginUrl.searchParams.set("callbackUrl", pathname + search);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+  /* === end S1 T4.10 === */
 
   return NextResponse.next();
 }
