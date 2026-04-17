@@ -307,6 +307,7 @@ export default withSentryConfig(nextConfig, {
   project: process.env.SENTRY_PROJECT,
   silent: true,
   widenClientFileUpload: true,
+  release: process.env.SENTRY_RELEASE,
   // Tunnel route proxies Sentry events through our domain — avoids ad blockers
   tunnelRoute: "/monitoring",
   // GlitchTip doesn't support Sentry source map upload API,
