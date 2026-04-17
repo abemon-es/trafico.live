@@ -99,6 +99,30 @@
   --color-mode-funicular: #6b7280;
   --color-mode-air: #0891b2;
   --color-mode-maritime: #0369a1;
+
+  /* Ink neutral scale — OKLCH-derived from #111827 (foreground).
+     White-first chrome uses these instead of Tailwind's default gray-*.
+     Tuned for WCAG AA contrast on white (ink-900 AAA, ink-700 AA). */
+  --color-ink-50: #f7f8fa;
+  --color-ink-100: #eef0f4;
+  --color-ink-200: #dfe3ea;
+  --color-ink-300: #c4cbd6;
+  --color-ink-400: #8e98a8;
+  --color-ink-500: #5c6678;
+  --color-ink-600: #3e4657;
+  --color-ink-700: #2a3142;
+  --color-ink-800: #1a2032;
+  --color-ink-900: #111827;
+
+  /* Elevation — four shadow levels.
+     xs: hairline separation (cards at rest)
+     sm: subtle lift (buttons, list items)
+     md: elevated surface (dropdowns, popovers)
+     lg: overlays (mega menu, modals) */
+  --shadow-xs: 0 1px 0 0 rgb(17 24 39 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(17 24 39 / 0.06), 0 1px 1px 0 rgb(17 24 39 / 0.04);
+  --shadow-md: 0 4px 8px -2px rgb(17 24 39 / 0.08), 0 2px 4px -2px rgb(17 24 39 / 0.05);
+  --shadow-lg: 0 12px 24px -8px rgb(17 24 39 / 0.12), 0 6px 12px -6px rgb(17 24 39 / 0.08);
 }
 
 body {
@@ -123,6 +147,12 @@ h1, h2, h3, h4, h5, h6 {
   from {
     stroke-dasharray: 0 213.6;
   }
+}
+
+/* Horizontal marquee used by TickerStrip */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 /* Respect reduced-motion preference */
