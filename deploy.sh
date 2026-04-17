@@ -6,7 +6,7 @@ IMAGE="trafico-web:latest"
 ENV_FILE="/opt/apps/trafico-live/.env"
 
 echo "Building $IMAGE..."
-DOCKER_BUILDKIT=1 docker build -f Dockerfile -t "$IMAGE" .
+DOCKER_BUILDKIT=1 docker build --memory 4096m --memory-swap 4096m -f Dockerfile -t "$IMAGE" .
 
 echo "Removing old container (if any)..."
 docker rm -f "$APP_NAME" 2>/dev/null || true
