@@ -1,0 +1,13 @@
+{
+  "routingDefaults": {
+    "walkReluctance": 2.0,
+    "transferSlack": 120,
+    "numItineraries": 3,
+    "walkBoardCost": 60,
+    "bikeBoardCost": 120,
+    "maxTransfers": 4,
+    "maxWalkDistance": 2000
+  },
+  "language": "es",
+  "updaters": []
+}
