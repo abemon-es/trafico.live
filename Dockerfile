@@ -10,7 +10,9 @@ RUN npm install --ignore-scripts --include=dev
 # Remove prisma.config.ts to avoid dotenv/ts-node issues during generate
 # prisma generate uses schema.prisma directly
 RUN mv prisma.config.ts prisma.config.ts.bak || true
-RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/db" npx prisma generate
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/db" \
+    MIGRATE_DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/db" \
+    npx prisma generate
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
