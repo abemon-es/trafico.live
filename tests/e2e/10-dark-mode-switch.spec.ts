@@ -4,10 +4,16 @@ test.describe('flow 10 — dark mode toggle persists', () => {
   test('user toggles theme, reload preserves choice', async ({ page }) => {
     test.setTimeout(45_000)
 
-    // Start fresh — no stored preference
+    // Pre-accept cookies so the consent dialog does not overlay the
+    // ThemeToggle on first render. Runs on every navigation (including reload)
+    // so it MUST NOT touch the 'theme' key, otherwise the reload-persists
+    // assertion breaks. Playwright contexts start with empty storage anyway.
     await page.addInitScript(() => {
       try {
-        localStorage.removeItem('theme')
+        localStorage.setItem(
+          'trafico_cookie_consent',
+          JSON.stringify({ analytics: true, timestamp: Date.now() }),
+        )
       } catch {
         /* localStorage may be unavailable */
       }
