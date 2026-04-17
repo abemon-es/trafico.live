@@ -2572,3 +2572,47 @@ model CollectorHeartbeat {
 
   @@map("collector_heartbeats")
 }
+
+// ============================================
+// WEATHER FORECAST (AEMET 7-day municipal)
+// ============================================
+
+model WeatherForecast {
+  id           String   @id @default(cuid())
+  stationId    String   // INE 5-digit municipio code (used as station key)
+  municipioCode String  // INE 5-digit municipio code
+  province     String   // INE 2-digit province code
+
+  forecastAt   DateTime @db.Timestamptz // When AEMET issued/elaborated this forecast
+  validAt      DateTime @db.Timestamptz // Calendar day this forecast is valid for (midnight UTC)
+  horizonHours Int      // 0=today, 24=tomorrow, 48=day+2, …, 144=day+6
+
+  // Temperature (°C)
+  tempMin      Decimal? @db.Decimal(5, 1)
+  tempMax      Decimal? @db.Decimal(5, 1)
+  tempFeel     Decimal? @db.Decimal(5, 1) // Sensación térmica (feel-like)
+
+  // Precipitation
+  precipProb   Decimal? @db.Decimal(5, 1) // Probability (0-100 %)
+  precipMm     Decimal? @db.Decimal(6, 1) // Expected accumulation (mm)
+
+  // Wind
+  windSpeed    Decimal? @db.Decimal(5, 1) // km/h
+  windDirDeg   Int?                        // Degrees (0=N, 90=E, 180=S, 270=W; -1=calm)
+  windGust     Decimal? @db.Decimal(5, 1) // Racha máxima km/h
+
+  // Sky / condition
+  skyState     String?  // AEMET sky code (e.g. "11", "12", "13", …)
+  skyLabel     String?  // Human-readable (e.g. "Despejado", "Cubierto")
+
+  humidityPct  Decimal? @db.Decimal(5, 1) // %
+  uvIndex      Decimal? @db.Decimal(4, 1) // UV index (0-11+)
+
+  createdAt    DateTime @default(now()) @db.Timestamptz
+
+  @@unique([stationId, validAt])
+  @@index([province, validAt])
+  @@index([municipioCode, validAt])
+  @@index([forecastAt])
+  @@map("weather_forecasts")
+}
