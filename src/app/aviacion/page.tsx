@@ -11,7 +11,7 @@
  */
 
 import type { Metadata } from "next";
-import { AviationMapWrapper } from "./aviation-map-wrapper";
+import dynamicImport from "next/dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
@@ -30,6 +30,16 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+
+const TraficoMap = dynamicImport(
+  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[500px] bg-tl-50 dark:bg-slate-900 animate-pulse" />
+    ),
+  }
+);
 
 export const dynamic = "force-dynamic";
 
@@ -412,15 +422,28 @@ export default async function AviacionPage() {
         {/* Aviation map                                                     */}
         {/* ---------------------------------------------------------------- */}
         <section className="mb-10">
-          <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Mapa de tráfico aéreo
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Aeropuertos AENA y posiciones de aeronaves en tiempo real (OpenSky Network)
-          </p>
-          <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-            <AviationMapWrapper />
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Mapa de tráfico aéreo
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Aeropuertos AENA y posiciones de aeronaves en tiempo real (OpenSky Network)
+              </p>
+            </div>
+            <Link
+              href="/aviacion/mapa"
+              className="flex items-center gap-1.5 text-sm font-medium text-[var(--tl-primary)] dark:text-[var(--tl-info)] hover:underline"
+            >
+              Ver mapa completo <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
+          <TraficoMap
+            preset="aviacion"
+            controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
+            initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
+            className="w-full h-[500px] md:h-[600px] rounded-xl overflow-hidden"
+          />
         </section>
 
         {/* ---------------------------------------------------------------- */}

@@ -4,7 +4,15 @@ import dynamic from "next/dynamic";
 import { fetcher } from "@/lib/fetcher";
 import { useState, useMemo } from "react";
 
-const TransitMap = dynamic(() => import("./transit-map"), { ssr: false });
+const TraficoMap = dynamic(
+  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[600px] bg-tl-50 dark:bg-slate-900 animate-pulse" />
+    ),
+  }
+);
 import useSWR from "swr";
 import Link from "next/link";
 import {
@@ -248,12 +256,24 @@ export default function TransportePublicoContent() {
 
       {/* Map */}
       <section className="mb-8">
-        <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
-          Mapa de transporte público
-        </h2>
-        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-          <TransitMap height="450px" />
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100">
+            Mapa de transporte público
+          </h2>
+          <Link
+            href="/transporte-publico/mapa"
+            className="flex items-center gap-1 text-sm font-semibold text-[var(--tl-primary)] hover:underline shrink-0"
+          >
+            Ver mapa completo
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
+        <TraficoMap
+          preset="transporte-publico"
+          controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
+          initialView={{ center: [-3.7, 40.4], zoom: 5.8 }}
+          className="w-full h-[600px] rounded-xl overflow-hidden"
+        />
       </section>
 
       {/* Filters + Sort */}
