@@ -9,7 +9,6 @@
  */
 
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -31,15 +30,7 @@ export const dynamicParams = true;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-const TraficoMap = dynamic(
-  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[420px] w-full bg-gray-100 dark:bg-gray-900 animate-pulse rounded-lg" />
-    ),
-  },
-);
+import { TraficoMap } from "@/components/map/TraficoMapClient";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -306,7 +297,7 @@ export default async function MeteoStationPage({ params }: PageProps) {
         >
           <div className="h-[420px] w-full">
             <TraficoMap
-              preset="weather"
+              preset="meteo"
               entity={{ type: "weather-station", id: station.stationCode }}
             />
           </div>

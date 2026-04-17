@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "API de Tráfico - Documentación | trafico.live",
+  title: "API de Tráfico - Documentación",
   description:
     "API REST con 121 endpoints de tráfico, combustible, ferrocarril, meteorología y movilidad en España. Datos en tiempo real + históricos.",
   keywords: [

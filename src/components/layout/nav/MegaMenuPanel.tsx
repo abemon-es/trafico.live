@@ -96,6 +96,7 @@ function CategoryGrid({ panel }: { panel: PanelData }) {
                   <Link
                     href={item.href}
                     prefetch={false}
+                    aria-current={active ? "page" : undefined}
                     className={`
                       flex items-start gap-3 px-2.5 py-2 rounded-xl text-sm transition-all group
                       ${
@@ -162,6 +163,7 @@ function CityStrip({
               key={city.slug}
               href={`/trafico/${city.slug}`}
               prefetch={false}
+              aria-current={cityActive ? "page" : undefined}
               className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors duration-150 ${
                 cityActive
                   ? "bg-tl-500 text-white"
@@ -261,6 +263,12 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
           ref={inputRef} type="text" value={query}
           onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown}
           placeholder="Buscar carreteras, ciudades, gasolineras, herramientas..."
+          role="combobox"
+          aria-label="Buscar ciudades, carreteras, gasolineras o herramientas"
+          aria-expanded={hasQuery && flatResults.length > 0}
+          aria-controls="search-results-listbox"
+          aria-autocomplete="list"
+          aria-activedescendant={hasQuery && flatResults.length > 0 ? `search-result-${activeIndex}` : undefined}
           className="w-full pl-12 pr-20 py-3.5 rounded-xl text-base bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-tl-300 dark:focus:ring-tl-700 transition-colors"
           autoComplete="off" autoCorrect="off" spellCheck={false}
         />
@@ -333,7 +341,7 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
               <p className="text-[10px] text-gray-400 dark:text-gray-500">Desplaza para ver más &darr;</p>
             )}
           </div>
-          <div ref={listRef} className="max-h-[55vh] overflow-y-auto overscroll-contain -mx-2 px-2 scroll-smooth" role="listbox">
+          <div ref={listRef} id="search-results-listbox" className="max-h-[55vh] overflow-y-auto overscroll-contain -mx-2 px-2 scroll-smooth" role="listbox" aria-label="Resultados de búsqueda">
             {groups.map(({ category, meta, items }) => (
               <div key={category} className="mb-2">
                 <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm px-3 py-1.5 -mx-2 border-b border-gray-100/80 dark:border-gray-800/40">
@@ -346,6 +354,7 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
                   return (
                     <Link
                       key={result.href + result.title} href={result.href} prefetch={false}
+                      id={`search-result-${idx}`}
                       data-search-idx={idx} role="option" aria-selected={isActive}
                       onClick={(e) => { e.preventDefault(); navigate(result.href); }}
                       onMouseEnter={() => setActiveIndex(idx)}

@@ -273,7 +273,20 @@ function TraficoMapInner({
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* Map canvas */}
-      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+      <div
+        ref={containerRef}
+        role="application"
+        aria-label="Mapa interactivo de tráfico de España"
+        aria-describedby="trafico-map-alt-description"
+        className="absolute inset-0 w-full h-full"
+      />
+      {/* Screen-reader alternative — lists are the canonical data surface */}
+      <p id="trafico-map-alt-description" className="sr-only">
+        Mapa interactivo con capas de tráfico, infraestructura y datos en
+        tiempo real sobre España. Para una alternativa accesible consulta los
+        listados en /incidencias, /camaras, /radares, /estaciones-aforo y
+        /gasolineras.
+      </p>
 
       {/* Layer toggle panel */}
       {layerPanel && mapReady && (

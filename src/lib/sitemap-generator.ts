@@ -9,8 +9,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // Shard size for paginated sitemaps
 const SHARD_SIZE = 5000;
 
-// ID ranges: 0 = core, 1-99 = gas stations, 100-199 = municipalities, 200-299 = postal codes,
-// 300 = insights, 400-499 = maritime, 500-599 = radars, 600-699 = cameras, 700-799 = EV chargers
+// ID ranges: 0 = core, 1-99 = gas stations, 100-199 = municipalities,
+// 200-299 = postal codes, 300 = insights, 400-499 = maritime,
+// 500-599 = radars, 600-699 = cameras, 700-799 = EV chargers,
+// 800-899 = railway stations, 900-999 = railway lines,
+// 1000-1099 = air quality stations, 1100-1199 = climate stations.
 const GAS_STATION_OFFSET = 1;
 const MUNICIPALITY_OFFSET = 100;
 const POSTAL_CODE_OFFSET = 200;
@@ -19,15 +22,25 @@ const MARITIME_OFFSET = 400;
 const RADAR_OFFSET = 500;
 const CAMERA_OFFSET = 600;
 const CHARGER_OFFSET = 700;
+const RAILWAY_STATION_OFFSET = 800;
+const RAILWAY_LINE_OFFSET = 900;
+const AIR_QUALITY_OFFSET = 1000;
+const CLIMATE_STATION_OFFSET = 1100;
 
 // Fixed upper bounds — generous overestimates, empty shards return [] gracefully.
 const FALLBACK_STATION_SHARDS = 3;
 const FALLBACK_MUNICIPALITY_SHARDS = 3;
-const FALLBACK_POSTAL_CODE_SHARDS = 1;
+// Spain has ~10 000 postal codes with registered stations; one 5k shard
+// truncated a third of them. Three shards provide headroom for new rollups.
+const FALLBACK_POSTAL_CODE_SHARDS = 3;
 const FALLBACK_MARITIME_SHARDS = 1;
 const FALLBACK_RADAR_SHARDS = 1;
 const FALLBACK_CAMERA_SHARDS = 1;
 const FALLBACK_CHARGER_SHARDS = 2;
+const FALLBACK_RAILWAY_STATION_SHARDS = 1; // ~1 506 stations
+const FALLBACK_RAILWAY_LINE_SHARDS = 1;    // ~1 251 routes
+const FALLBACK_AIR_QUALITY_SHARDS = 1;     // ~565 stations
+const FALLBACK_CLIMATE_STATION_SHARDS = 1; // ~900 stations
 
 export interface SitemapEntry {
   url: string;
@@ -73,6 +86,18 @@ export function getSitemapShardIds(): { id: number }[] {
     ...Array.from({ length: FALLBACK_CHARGER_SHARDS }, (_, i) => ({
       id: CHARGER_OFFSET + i,
     })),
+    ...Array.from({ length: FALLBACK_RAILWAY_STATION_SHARDS }, (_, i) => ({
+      id: RAILWAY_STATION_OFFSET + i,
+    })),
+    ...Array.from({ length: FALLBACK_RAILWAY_LINE_SHARDS }, (_, i) => ({
+      id: RAILWAY_LINE_OFFSET + i,
+    })),
+    ...Array.from({ length: FALLBACK_AIR_QUALITY_SHARDS }, (_, i) => ({
+      id: AIR_QUALITY_OFFSET + i,
+    })),
+    ...Array.from({ length: FALLBACK_CLIMATE_STATION_SHARDS }, (_, i) => ({
+      id: CLIMATE_STATION_OFFSET + i,
+    })),
   ];
 }
 
@@ -95,6 +120,18 @@ export async function generateSitemapForShard(
   }
   if (id === INSIGHTS_OFFSET) {
     return insightsSitemap();
+  }
+  if (id >= CLIMATE_STATION_OFFSET) {
+    return climateStationSitemap(id - CLIMATE_STATION_OFFSET);
+  }
+  if (id >= AIR_QUALITY_OFFSET) {
+    return airQualityStationSitemap(id - AIR_QUALITY_OFFSET);
+  }
+  if (id >= RAILWAY_LINE_OFFSET) {
+    return railwayLineSitemap(id - RAILWAY_LINE_OFFSET);
+  }
+  if (id >= RAILWAY_STATION_OFFSET) {
+    return railwayStationSitemap(id - RAILWAY_STATION_OFFSET);
   }
   if (id >= CHARGER_OFFSET) {
     return chargerSitemap(id - CHARGER_OFFSET);
@@ -1586,4 +1623,130 @@ async function chargerSitemap(shardIndex: number): Promise<SitemapEntry[]> {
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// Railway station sitemap shards — /trenes/estacion/[slug]
+// ---------------------------------------------------------------------------
+
+async function railwayStationSitemap(
+  shardIndex: number
+): Promise<SitemapEntry[]> {
+  try {
+    const stations = await prisma.railwayStation.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { slug: true },
+      where: { slug: { not: null } },
+      orderBy: { slug: "asc" },
+    });
+    const today = startOfUtcDay();
+    return stations
+      .filter((s) => !!s.slug)
+      .map((s) => ({
+        url: `${BASE_URL}/trenes/estacion/${s.slug}`,
+        lastModified: today,
+        changeFrequency: "weekly" as const,
+        priority: 0.65,
+      }));
+  } catch (err) {
+    reportApiError(err, "sitemap railway stations");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Railway line sitemap shards — /trenes/linea/[slug]
+// ---------------------------------------------------------------------------
+
+async function railwayLineSitemap(
+  shardIndex: number
+): Promise<SitemapEntry[]> {
+  try {
+    const routes = await prisma.railwayRoute.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { slug: true },
+      where: { slug: { not: null } },
+      orderBy: { slug: "asc" },
+    });
+    const today = startOfUtcDay();
+    const seen = new Set<string>();
+    return routes.flatMap((r) => {
+      if (!r.slug || seen.has(r.slug)) return [];
+      seen.add(r.slug);
+      return [
+        {
+          url: `${BASE_URL}/trenes/linea/${r.slug}`,
+          lastModified: today,
+          changeFrequency: "weekly" as const,
+          priority: 0.65,
+        },
+      ];
+    });
+  } catch (err) {
+    reportApiError(err, "sitemap railway lines");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Air quality station shards — /calidad-aire/estacion/[id]
+// ---------------------------------------------------------------------------
+
+async function airQualityStationSitemap(
+  shardIndex: number
+): Promise<SitemapEntry[]> {
+  try {
+    const stations = await prisma.airQualityStation.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { id: true, updatedAt: true },
+      orderBy: { id: "asc" },
+    });
+    const today = startOfUtcDay();
+    return stations.map((s) => ({
+      url: `${BASE_URL}/calidad-aire/estacion/${encodeURIComponent(s.id)}`,
+      lastModified: s.updatedAt ?? today,
+      changeFrequency: "daily" as const,
+      priority: 0.55,
+    }));
+  } catch (err) {
+    reportApiError(err, "sitemap air quality stations");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Climate station shards — /clima/estacion/[id]
+// ---------------------------------------------------------------------------
+
+async function climateStationSitemap(
+  shardIndex: number
+): Promise<SitemapEntry[]> {
+  try {
+    const stations = await prisma.climateStation.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { id: true },
+      orderBy: { id: "asc" },
+    });
+    const today = startOfUtcDay();
+    return stations.map((s) => ({
+      url: `${BASE_URL}/clima/estacion/${encodeURIComponent(s.id)}`,
+      lastModified: today,
+      changeFrequency: "weekly" as const,
+      priority: 0.55,
+    }));
+  } catch (err) {
+    reportApiError(err, "sitemap climate stations");
+    return [];
+  }
+}
+
+function startOfUtcDay(): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  );
 }

@@ -45,7 +45,7 @@ const PEDESTRIAN_COLOR = "#0ea5e9"; // blue
 
 export const metadata: Metadata = {
   title:
-    "Seguridad de ciclistas y peatones en Espana — Atropellos y accidentes | trafico.live",
+    "Seguridad de ciclistas y peatones en Espana — Atropellos y accidentes",
   description:
     "Analisis de accidentes con ciclistas y peatones en Espana: tendencia anual, horas nocturnas, iluminacion, zonas urbanas. Datos DGT 2019-2023.",
   alternates: {

@@ -38,7 +38,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = buildPageMetadata({
   title:
-    "Prediccion del precio del combustible en Espana — Analisis y tendencias | trafico.live",
+    "Prediccion del precio del combustible en Espana — Analisis y tendencias",
   description:
     "Analisis del precio de gasoleo y gasolina con datos CNMC desde 2016. Tendencias, estacionalidad, ranking por provincia y estimacion para el proximo mes.",
   path: "/prediccion/precio-combustible",

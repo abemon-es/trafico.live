@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
@@ -28,15 +27,7 @@ export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-const TraficoMap = dynamic(
-  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[420px] w-full bg-gray-100 dark:bg-gray-900 animate-pulse rounded-lg" />
-    ),
-  },
-);
+import { TraficoMap } from "@/components/map/TraficoMapClient";
 
 interface PageProps {
   params: Promise<{ roadId: string }>;
@@ -276,7 +267,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
         >
           <div className="h-[420px] w-full">
             <TraficoMap
-              preset="infrastructure"
+              preset="trafico"
               entity={{ type: "road", id: road.id }}
             />
           </div>
