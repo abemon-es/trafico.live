@@ -183,7 +183,7 @@ export async function WeatherCorrelationSection({
               &middot; Tipo:{" "}
               {typeBreakdown.map(([type, count], i) => (
                 <span key={type}>
-                  {i > 0 && " \u00B7 "}
+                  {i > 0 && " · "}
                   {count} {WEATHER_TYPE_LABELS[type] ?? type}
                 </span>
               ))}

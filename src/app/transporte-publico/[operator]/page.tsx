@@ -26,25 +26,25 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // ── GTFS route type labels ────────────────────────────────────────────────────
 
 const ROUTE_TYPE_LABELS: Record<number, string> = {
-  0: "Tranv\u00eda",
+  0: "Tranvía",
   1: "Metro",
-  2: "Cercan\u00edas",
-  3: "Autob\u00fas",
+  2: "Cercanías",
+  3: "Autobús",
   4: "Ferry",
-  5: "Telef\u00e9rico",
-  6: "G\u00f3ndola",
+  5: "Teleférico",
+  6: "Góndola",
   7: "Funicular",
 };
 
 const ROUTE_TYPE_PLURALS: Record<number, string> = {
-  0: "l\u00edneas de tranv\u00eda",
-  1: "l\u00edneas de metro",
-  2: "l\u00edneas de cercan\u00edas",
-  3: "l\u00edneas de autob\u00fas",
+  0: "líneas de tranvía",
+  1: "líneas de metro",
+  2: "líneas de cercanías",
+  3: "líneas de autobús",
   4: "rutas de ferry",
-  5: "l\u00edneas de telef\u00e9rico",
-  6: "l\u00edneas de g\u00f3ndola",
-  7: "l\u00edneas de funicular",
+  5: "líneas de teleférico",
+  6: "líneas de góndola",
+  7: "líneas de funicular",
 };
 
 // ── Mode config ───────────────────────────────────────────────────────────────
@@ -60,8 +60,8 @@ const MODE_COLORS: Record<string, string> = {
 
 const MODE_LABELS: Record<string, string> = {
   metro: "Metro",
-  bus: "Autob\u00fas",
-  tram: "Tranv\u00eda",
+  bus: "Autobús",
+  tram: "Tranvía",
   rail: "Ferrocarril",
   funicular: "Funicular",
   ferry: "Ferry",
@@ -258,8 +258,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = operator.city
-    ? `${operator.name} \u2014 Rutas y paradas de transporte p\u00fablico en ${operator.city}`
-    : `${operator.name} \u2014 Rutas y paradas de transporte p\u00fablico`;
+    ? `${operator.name} — Rutas y paradas de transporte público en ${operator.city}`
+    : `${operator.name} — Rutas y paradas de transporte público`;
   const description = operator.city
     ? `${operator.routeCount} rutas y ${operator.stopCount} paradas de ${operator.name} en ${operator.city}. Datos GTFS actualizados.`
     : `${operator.routeCount} rutas y ${operator.stopCount} paradas de ${operator.name}. Datos GTFS actualizados.`;
@@ -269,12 +269,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     keywords: [
       operator.name,
-      `transporte p\u00fablico ${operator.city ?? ""}`.trim(),
+      `transporte público ${operator.city ?? ""}`.trim(),
       `${MODE_LABELS[operator.mode] ?? operator.mode} ${operator.city ?? ""}`.trim(),
       "GTFS",
       "rutas",
       "paradas",
-      "transporte p\u00fablico Espa\u00f1a",
+      "transporte público España",
     ],
     alternates: {
       canonical: `${BASE_URL}/transporte-publico/${slugify(operator.name)}`,
@@ -331,19 +331,19 @@ export default async function OperatorDetailPage({ params }: Props) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: `${operator.name} \u2014 Transporte p\u00fablico`,
+    name: `${operator.name} — Transporte público`,
     description: `Datos GTFS de ${operator.name}${operator.city ? ` en ${operator.city}` : ""}: ${routes.length} rutas, ${operator.stopCount} paradas.`,
     url: `${BASE_URL}/transporte-publico/${slugify(operator.name)}`,
     keywords: [
       operator.name,
       "GTFS",
-      "transporte p\u00fablico",
+      "transporte público",
       operator.city,
       operator.province,
     ]
       .filter(Boolean)
       .join(", "),
-    spatialCoverage: operator.city ?? operator.province ?? "Espa\u00f1a",
+    spatialCoverage: operator.city ?? operator.province ?? "España",
     creator: {
       "@type": "Organization",
       name: "trafico.live",
@@ -363,7 +363,7 @@ export default async function OperatorDetailPage({ params }: Props) {
       <Breadcrumbs
         items={[
           { name: "Inicio", href: "/" },
-          { name: "Transporte P\u00fablico", href: "/transporte-publico" },
+          { name: "Transporte Público", href: "/transporte-publico" },
           { name: operator.name, href: `/transporte-publico/${operator.mdbId}` },
         ]}
       />
@@ -417,7 +417,7 @@ export default async function OperatorDetailPage({ params }: Props) {
           />
           <StatCard
             icon={<Compass className="w-4 h-4" />}
-            label="Tipos de l\u00ednea"
+            label="Tipos de línea"
             value={typeBreakdown.length.toLocaleString("es-ES")}
             color="text-[var(--tl-info)]"
           />
@@ -438,7 +438,7 @@ export default async function OperatorDetailPage({ params }: Props) {
       {typeBreakdown.length > 0 && (
         <section>
           <h2 className="text-xl font-heading font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Desglose por tipo de l\u00ednea
+            Desglose por tipo de línea
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {typeBreakdown.map((tb) => (
@@ -536,7 +536,7 @@ export default async function OperatorDetailPage({ params }: Props) {
       {/* ── Operator info ──────────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xl font-heading font-bold text-gray-900 dark:text-gray-100 mb-4">
-          Informaci\u00f3n del operador
+          Información del operador
         </h2>
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-3">
           <InfoRow label="Modo" value={modeLabel} />
@@ -551,7 +551,7 @@ export default async function OperatorDetailPage({ params }: Props) {
             />
           )}
           <InfoRow
-            label="\u00daltima actualizaci\u00f3n"
+            label="Última actualización"
             value={operator.updatedAt.toLocaleDateString("es-ES", {
               day: "numeric",
               month: "long",
@@ -589,10 +589,10 @@ export default async function OperatorDetailPage({ params }: Props) {
             <MapPin className="w-5 h-5 text-[var(--tl-primary)] shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Tr\u00e1fico en {provinceLink.name}
+                Tráfico en {provinceLink.name}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Incidencias, gasolineras, c\u00e1maras y m\u00e1s en la provincia
+                Incidencias, gasolineras, cámaras y más en la provincia
               </p>
             </div>
             <ArrowRight className="w-4 h-4 text-[var(--tl-primary)] group-hover:translate-x-0.5 transition-transform" />

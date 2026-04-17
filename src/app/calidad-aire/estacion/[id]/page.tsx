@@ -103,12 +103,12 @@ interface PollutantConfig {
 }
 
 const POLLUTANT_CONFIG: Record<string, PollutantConfig> = {
-  no2: { name: "Dioxido de nitrogeno", symbol: "NO\u2082", unit: "\u00b5g/m\u00b3", greenMax: 40, amberMax: 100 },
-  pm10: { name: "Particulas PM10", symbol: "PM10", unit: "\u00b5g/m\u00b3", greenMax: 50, amberMax: 100 },
-  pm25: { name: "Particulas PM2.5", symbol: "PM2.5", unit: "\u00b5g/m\u00b3", greenMax: 25, amberMax: 50 },
-  o3: { name: "Ozono troposferico", symbol: "O\u2083", unit: "\u00b5g/m\u00b3", greenMax: 100, amberMax: 180 },
-  so2: { name: "Dioxido de azufre", symbol: "SO\u2082", unit: "\u00b5g/m\u00b3", greenMax: 100, amberMax: 350 },
-  co: { name: "Monoxido de carbono", symbol: "CO", unit: "mg/m\u00b3", greenMax: 4, amberMax: 10 },
+  no2: { name: "Dioxido de nitrogeno", symbol: "NO₂", unit: "µg/m³", greenMax: 40, amberMax: 100 },
+  pm10: { name: "Particulas PM10", symbol: "PM10", unit: "µg/m³", greenMax: 50, amberMax: 100 },
+  pm25: { name: "Particulas PM2.5", symbol: "PM2.5", unit: "µg/m³", greenMax: 25, amberMax: 50 },
+  o3: { name: "Ozono troposferico", symbol: "O₃", unit: "µg/m³", greenMax: 100, amberMax: 180 },
+  so2: { name: "Dioxido de azufre", symbol: "SO₂", unit: "µg/m³", greenMax: 100, amberMax: 350 },
+  co: { name: "Monoxido de carbono", symbol: "CO", unit: "mg/m³", greenMax: 4, amberMax: 10 },
 };
 
 // ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ function getPollutantStatusLabel(key: string, value: number | null | undefined):
 }
 
 function formatPollutant(value: number | null | undefined): string {
-  if (value == null) return "\u2014";
+  if (value == null) return "—";
   return value.toLocaleString("es-ES", { maximumFractionDigits: 1 });
 }
 
@@ -205,8 +205,8 @@ export async function generateMetadata({
 
   const provinceName = station.province ? PROVINCE_NAMES[station.province] ?? "" : "";
   const cityStr = station.city ?? provinceName;
-  const title = `Calidad del aire en ${station.name}${cityStr ? ` (${cityStr})` : ""} \u2014 ICA en tiempo real`;
-  const description = `Indice de Calidad del Aire (ICA) en tiempo real en ${station.name}, ${cityStr}. Concentracion de NO\u2082, PM10, PM2.5, O\u2083, SO\u2082 y CO. Red de Vigilancia MITECO.`;
+  const title = `Calidad del aire en ${station.name}${cityStr ? ` (${cityStr})` : ""} — ICA en tiempo real`;
+  const description = `Indice de Calidad del Aire (ICA) en tiempo real en ${station.name}, ${cityStr}. Concentracion de NO₂, PM10, PM2.5, O₃, SO₂ y CO. Red de Vigilancia MITECO.`;
 
   return {
     title: `${title} | trafico.live`,
