@@ -87,7 +87,9 @@ And on the results container (`MobileMenu.tsx:112`-ish, and desktop equivalent):
 
 ## For 2.1 — Map + layer panel
 
-**Owned files:** `src/components/map/TraficoMap.tsx`, `src/components/map/InteractiveBaseMap.tsx`, `src/app/mapa/layer-panel.tsx`, `src/app/mapa/MapaClient.tsx`.
+**Status (2026-04-17 late):** 2.1 reported fixes #2 (MapaClient), #9 (path migrated to `TraficoMapControls.tsx`), #11 (path migrated to `TraficoMap.tsx`) landed on commit 92a5b034 of `team2-2.1-traficomap`. Fix #14 N/A (no geolocation control yet). Fix #8 deferred to S2 (`useTraficoMap()` hook).
+
+**Owned files:** `src/components/map/TraficoMap.tsx`, `src/components/map/TraficoMapControls.tsx`, `src/app/mapa/MapaClient.tsx`. (`InteractiveBaseMap.tsx` and `src/app/mapa/layer-panel.tsx` were deleted in 2.1's refactor.)
 
 ### Fix #2 (map pages) — `<main id="main-content">` wrapper
 
@@ -162,9 +164,21 @@ onLayerToggle: (name, visible) => {
 
 ---
 
-## For 2.2 — Hubs + calculadora + forms
+## For 2.2 — Hub pages (fix #2 main landmark only)
 
-**Owned files:** hub pages + `/calculadora`, `/cuanto-cuesta-cargar`, form components.
+**Status (2026-04-17 late):** 2.2 rejected ownership of `/calculadora` + `/cuanto-cuesta-cargar` (correct — those predate team2 and are NOT in 2.2's 8-hub scope). Awaiting team-lead reassignment; 2.9 volunteered to pick up the forms. Calculator fixes (old sections below) kept for reference.
+
+### Fix #2 for hubs (aviacion, maritimo, meteo, combustible, trafico, trenes, transporte-publico, calidad-aire)
+
+If a hub page's top-level client component returns a `<section>` or `<div>`, either:
+- Add `id="main-content"` to that root (layout.tsx already wraps `{children}` in `<main>`, so a second `<main>` would nest), OR
+- Simply do nothing if `{children}` content is already inside the layout's `<main>` — the skip link target works via `#main-content` on the layout's `<main>`.
+
+Verify with a skip-link smoke test: Tab from URL bar, focus lands on "Saltar al contenido", Enter jumps focus to the page body. If it works, you're fine.
+
+## (DEFERRED — owner TBD) — `/calculadora` + `/cuanto-cuesta-cargar`
+
+**Owner:** pending team-lead reassignment. Likely 2.9 pickup.
 
 ### Fix #3 — Form label associations
 
@@ -249,9 +263,11 @@ When consent is saved, optionally announce `"Preferencias de cookies guardadas."
 
 ---
 
-## For 2.6 — CameraModal + batch B entity pages
+## (DEFERRED — owner TBD) — CameraModal
 
-**Owned files:** `src/components/cameras/CameraModal.tsx`, batch B entity pages.
+**Status (2026-04-17 late):** 2.6 rejected ownership — `src/components/cameras/CameraModal.tsx` is outside their 5-template scope. 2.7 is already merged + marked complete. Awaiting team-lead reassignment; 2.9 volunteered to pick up.
+
+**Owned files:** `src/components/cameras/CameraModal.tsx`.
 
 ### Fix #7 — CameraModal full dialog ARIA + focus trap
 
