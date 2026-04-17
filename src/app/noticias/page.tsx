@@ -1,6 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import prisma from "@/lib/db";
+
+// Loaded with ssr:false to avoid hydration mismatch from marquee animation timer
+const TickerStrip = dynamic(
+  () => import("@/components/noticias/TickerStrip").then((m) => ({ default: m.TickerStrip })),
+  { ssr: false }
+);
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import {
@@ -245,6 +252,19 @@ export default async function NoticiasPage({
             análisis del tráfico en España.
           </p>
         </div>
+
+        {/* Live ticker hero */}
+        <section className="mb-10" aria-label="Tráfico en vivo">
+          <div className="mb-3">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-0.5">
+              Hoy en las carreteras
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Tráfico en vivo actualizado cada 60 segundos
+            </p>
+          </div>
+          <TickerStrip />
+        </section>
 
         {/* Filter tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
