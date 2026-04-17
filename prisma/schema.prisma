@@ -2230,28 +2230,23 @@ model FerryTrip {
 // ============================================
 
 model TransitOperator {
-  id                   String   @id @default(cuid())
-  mdbId                String   @unique
-  name                 String
-  city                 String?
-  province             String?
-  mode                 String
-  feedUrl              String?
-  feedHash             String?
-  isOfficial           Boolean  @default(true)
-  hasRealtime          Boolean  @default(false)
-  country              String   @default("ES")
-  realtimeTripUrl      String?
-  realtimePositionsUrl String?
-  realtimeAlertsUrl    String?
-  updatedAt            DateTime @default(now()) @updatedAt @db.Timestamptz
+  id          String   @id @default(cuid())
+  mdbId       String   @unique
+  name        String
+  city        String?
+  province    String?
+  mode        String
+  feedUrl     String?
+  feedHash    String?
+  isOfficial  Boolean  @default(true)
+  hasRealtime Boolean  @default(false)
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz
 
   routes TransitRoute[]
   stops  TransitStop[]
 
   @@index([mode])
   @@index([province])
-  @@index([country])
 }
 
 model TransitRoute {

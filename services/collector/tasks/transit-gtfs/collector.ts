@@ -378,7 +378,6 @@ async function processFeed(
         province: feed.region || null,
         mode,
         feedUrl: feed.downloadUrl,
-        country: feed.country,
       },
       update: {
         name: feed.name,
@@ -386,7 +385,6 @@ async function processFeed(
         province: feed.region || null,
         mode,
         feedUrl: feed.downloadUrl,
-        country: feed.country,
       },
     });
 
