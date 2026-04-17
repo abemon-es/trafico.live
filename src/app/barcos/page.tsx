@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Ship, Anchor, Map as MapIcon, Info, ArrowRight } from "lucide-react";
-import { TraficoMap } from "@/components/map/TraficoMapClient";
+import { BarcosHeroMap } from "./BarcosHeroMap";
 
 export const revalidate = 60;
 
@@ -8,12 +8,7 @@ export default function BarcosHubPage() {
   return (
     <main className="min-h-screen bg-white dark:bg-slate-950">
       <section className="relative h-[60vh] min-h-[420px] w-full overflow-hidden border-b border-tl-100 dark:border-slate-800">
-        <TraficoMap
-          preset="maritimo"
-          controls={{ layerPanel: false, legend: true, themeToggle: false, fullscreen: false }}
-          initialView={{ center: [-4.0, 38.5], zoom: 5.2 }}
-          className="absolute inset-0"
-        />
+        <BarcosHeroMap />
         <p className="sr-only">Mapa interactivo de buques en tiempo real en aguas españolas.</p>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white/95 via-white/70 to-transparent dark:from-slate-950/95 dark:via-slate-950/70 p-8 md:p-12">
