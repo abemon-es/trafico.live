@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { FocusTrap } from "@/components/a11y/FocusTrap";
 import { readConsent, writeConsent, clearConsent } from "./store";
 import type { ConsentState } from "./types";
 
@@ -74,10 +75,12 @@ export function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div
+    <FocusTrap
+      active={visible}
       role="dialog"
-      aria-modal="false"
-      aria-labelledby="cookie-consent-title"
+      ariaModal
+      ariaLabel="Consentimiento de cookies"
+      initialFocus="first"
       className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-5 animate-in slide-in-from-bottom duration-300"
     >
       <div className="mx-auto max-w-4xl rounded-xl border border-gray-200 bg-white p-5 shadow-2xl md:p-6 dark:border-gray-800 dark:bg-gray-900">
@@ -230,7 +233,7 @@ export function CookieConsent() {
           </div>
         )}
       </div>
-    </div>
+    </FocusTrap>
   );
 }
 
