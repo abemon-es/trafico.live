@@ -2,52 +2,90 @@
 
 ## Summary
 
-Both Martin tile server and nginx tile server are now instrumented for Prometheus scraping.
+**nginx metrics: OPERATIONAL** — `up{job="nginx-tile"} = 1` confirmed.
 
-## Martin Metrics (`job_name: martin-tile`)
+**Martin metrics: BLOCKED** — `ghcr.io/maplibre/martin:v0.15.0` (2025-01-27) does not
+support `/_/metrics`. The feature was added in `martin-v1.0.0` (2025-11-19). Config
+changes and port mapping are in place; only the Dockerfile base image upgrade is needed.
 
-**Endpoint:** `http://10.100.0.2:3089/_/metrics`
-**Config change:** `services/martin/config.yaml` — added `observability.metrics` block
+## nginx Metrics (`job_name: nginx-tile`) — LIVE
 
-Metrics enabled by Martin v0.15 at `/_/metrics`:
-
-- `martin_requests_total` — tile request count (labels: `source`, `format`, `zoom`)
-- `martin_request_duration_seconds` — tile generation latency histogram
-- `martin_db_pool_connections` — active PostGIS pool connections (pool_size=4)
-- `martin_db_pool_idle` — idle PostGIS pool connections
-- `martin_db_query_duration_seconds` — SQL tile function execution time
-- `martin_cache_hits_total` / `martin_cache_misses_total` — tile cache efficiency
-- `martin_tile_size_bytes` — generated tile size histogram
-- Custom labels added: `service=martin-tile`, `env=prod`
-
-Port mapping: `127.0.0.1:3089:3000` (host:container) — Prometheus reaches via `10.100.0.2:3089`
-
-## nginx Metrics (`job_name: nginx-tile`)
-
-**Endpoint:** `http://10.100.0.2:9113/metrics` (nginx-prometheus-exporter sidecar)
+**Endpoint:** `http://10.100.0.2:9113/metrics`
 **Config change:** `services/tiles/nginx.conf` — added `/nginx_status` location
 **Compose change:** `services/tiles/docker-compose.yml` — added `nginx-exporter` service
 
-Metrics exposed by `nginx/nginx-prometheus-exporter` (from `stub_status`):
+Location block added:
+```nginx
+location /nginx_status {
+    stub_status;
+    allow 10.0.0.0/8;
+    allow 127.0.0.1;
+    deny all;
+}
+```
 
+Sidecar service added:
+```yaml
+nginx-exporter:
+  image: nginx/nginx-prometheus-exporter:latest
+  container_name: tiles-nginx-exporter
+  command: ["--nginx.scrape-uri=http://tiles/nginx_status"]
+  ports:
+    - "10.100.0.2:9113:9113"
+```
+
+Metrics now available:
 - `nginx_connections_active` — currently active connections
-- `nginx_connections_accepted_total` — total accepted connections
-- `nginx_connections_handled_total` — total handled connections
+- `nginx_connections_accepted` — total accepted connections (counter)
+- `nginx_connections_handled` — total handled connections (counter)
 - `nginx_connections_reading` — connections reading request
 - `nginx_connections_waiting` — keep-alive connections waiting
 - `nginx_connections_writing` — connections writing response
 - `nginx_http_requests_total` — total requests served
 
-Port mapping: `127.0.0.1:9113:9113` (host:container) — Prometheus reaches via `10.100.0.2:9113`
+## Martin Metrics (`job_name: martin-tile`) — BLOCKED
+
+**Endpoint when unblocked:** `http://10.100.0.2:3089/_/metrics`
+**Config change:** `services/martin/config.yaml` — added `observability.metrics` block
+
+```yaml
+observability:
+  metrics:
+    add_labels:
+      service: martin-tile
+      env: prod
+```
+
+Port mapping added to compose:
+```yaml
+ports:
+  - "10.100.0.2:3089:3000"
+```
+
+**Blocker:** Martin v0.15.0 silently ignores the `observability` config key and returns
+HTTP 404 for `/_/metrics`. Metrics support was introduced in `martin-v1.0.0` (2025-11-19).
+Current Prometheus scrape target shows `up=0` with error "server returned HTTP status 404".
+
+**Upgrade path:**
+```dockerfile
+# services/martin/Dockerfile — change this line:
+FROM ghcr.io/maplibre/martin:v0.15.0
+# to:
+FROM ghcr.io/maplibre/martin:v1.5.0
+```
+Then: `ssh compute 'cd /opt/trafico/tiles && docker compose up -d --build martin'`
+
+Review [martin-v1.0.0 release notes](https://github.com/maplibre/martin/releases/tag/martin-v1.0.0)
+before upgrading (configuration schema may have changed).
 
 ## Recommended Dashboard Panels (PromQL)
 
-### 1. Tile Request Rate (per zoom level)
+### 1. Tile Request Rate (per source, post-upgrade)
 ```promql
-sum by (zoom) (rate(martin_requests_total{job="martin-tile"}[5m]))
+sum by (source) (rate(martin_requests_total{job="martin-tile"}[5m]))
 ```
 
-### 2. Tile Generation P95 Latency
+### 2. Tile Generation P95 Latency (post-upgrade)
 ```promql
 histogram_quantile(0.95,
   sum by (le, source) (
@@ -56,11 +94,9 @@ histogram_quantile(0.95,
 )
 ```
 
-### 3. nginx Cache Hit Ratio (HIT vs MISS via X-Cache-Status)
-Requires nginx `$upstream_cache_status` logging. Proxy metric via access log exporter,
-or use the upstream cache statistics from nginx-exporter request counts:
+### 3. nginx Request Rate (tiles/s)
 ```promql
-rate(nginx_connections_handled_total{job="nginx-tile"}[5m])
+rate(nginx_http_requests_total{job="nginx-tile"}[5m])
 ```
 
 ### 4. Active Connections (nginx)
@@ -68,46 +104,62 @@ rate(nginx_connections_handled_total{job="nginx-tile"}[5m])
 nginx_connections_active{job="nginx-tile"}
 ```
 
-### 5. nginx Bytes Served (requests/s)
+### 5. nginx Connection Accept Rate (health proxy)
 ```promql
-rate(nginx_http_requests_total{job="nginx-tile"}[5m])
+rate(nginx_connections_accepted{job="nginx-tile"}[5m])
 ```
 
-### 6. Martin PostGIS Pool Saturation
+### 6. Martin PostGIS Pool Saturation (post-upgrade)
 ```promql
 martin_db_pool_connections{job="martin-tile"} / 4
 ```
-(pool_size=4 in martin config; alert if > 0.8)
+(pool_size=4; alert threshold 0.8)
 
-### 7. `up{}` Verification
+### 7. Tile Server Health (both jobs)
 ```promql
 up{job=~"martin-tile|nginx-tile"}
 ```
-Should return 2 series with `value=1` once deployed.
+
+## Prometheus Scrape Jobs Added
+
+```yaml
+- job_name: martin-tile
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  metrics_path: /_/metrics
+  static_configs:
+    - targets: ["10.100.0.2:3089"]
+      labels:
+        server: compute
+        service: martin-tile
+
+- job_name: nginx-tile
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  static_configs:
+    - targets: ["10.100.0.2:9113"]
+      labels:
+        server: compute
+        service: nginx-tile
+```
 
 ## Files Changed
 
 | File | Change |
 |------|--------|
 | `services/martin/config.yaml` | Added `observability.metrics` block |
-| `services/tiles/nginx.conf` | Added `/nginx_status` location (allow 10.0.0.0/8) |
-| `services/tiles/docker-compose.yml` | Added Martin port `3089:3000`, added `nginx-exporter` service |
+| `services/tiles/nginx.conf` | Added `/nginx_status` stub_status location |
+| `services/tiles/docker-compose.yml` | Martin port 3089:3000, nginx-exporter service |
+| `~/Desarrollos/observability/prometheus/prometheus.yml` | Added martin-tile + nginx-tile jobs |
+| `~/Desarrollos/server/prod/tiles/docker-compose.yml` | Mirror of compose changes |
+| `~/Desarrollos/server/prod/trafico/tiles/docker-compose.yml` | Mirror of compose changes |
 
-## Prometheus Changes (observability repo)
+## Verification (2026-04-17)
 
-| File | Change |
-|------|--------|
-| `prometheus/prometheus.yml` | Added `martin-tile` and `nginx-tile` scrape jobs |
-
-## Deploy Commands
-
-```bash
-# Tile server (rebuild martin + add nginx-exporter)
-ssh compute 'cd /opt/trafico/tiles && docker compose up -d --build'
-
-# Prometheus (reload scrape config)
-ssh compute 'cd /opt/server-exit/prod/observability && docker compose restart prometheus'
-
-# Verify
-ssh compute 'curl -s "http://10.100.0.2:9090/api/v1/query?query=up{job=~\"martin-tile|nginx-tile\"}"'
 ```
+up{job="nginx-tile",instance="10.100.0.2:9113"} = 1   ← PASSING
+up{job="martin-tile",instance="10.100.0.2:3089"} = 0   ← BLOCKED (v0.15.0)
+```
+
+Note: Ports bound to `10.100.0.2` (WireGuard VPN interface) so Prometheus
+(host networking) can reach them. `127.0.0.1` binding would be unreachable.
