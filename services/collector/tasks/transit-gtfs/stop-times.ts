@@ -22,17 +22,19 @@ const TASK = "stop-times";
 const BATCH_SIZE = 5000;
 const STOP_TIMES_ROW_CAP = 2_000_000;
 
-// Priority urban operators — MDB IDs from MobilityData catalog (country=ES, gtfs, active).
-// Selected by ridership/coverage: EMT Madrid (~800K stop_times), TMB Barcelona (~700K),
-// Metro de Madrid (~400K), Metro de Barcelona (~300K), EMT Valencia (~350K), FGC (~200K).
-// MDB IDs verified against the catalog mdb_source_id column (bit.ly/catalogs-csv).
+// Priority urban operators — MDB IDs match the `feed.mdbId` format used by
+// transit-gtfs (with the "mdb-" prefix). Verified against the live
+// TransitOperator table on 2026-04-17. Selected by ridership/coverage.
 export const PRIORITY_OPERATORS_MDB_IDS = new Set<string>([
-  "674",   // EMT Madrid — Empresa Municipal de Transportes de Madrid (bus)
-  "675",   // Metro de Madrid
-  "686",   // TMB Barcelona — Transports Metropolitans de Barcelona (bus)
-  "687",   // Metro de Barcelona (FMB)
-  "695",   // EMT Valencia — Empresa Municipal de Transports de Valencia
-  "692",   // FGC — Ferrocarrils de la Generalitat de Catalunya
+  "mdb-793",  // EMT Madrid (bus)
+  "mdb-794",  // Metro de Madrid
+  "mdb-792",  // Metro Ligero de Madrid (tram)
+  "mdb-2359", // TMB Barcelona (bus + metro)
+  "mdb-1003", // TRAM Barcelona Trambaix
+  "mdb-1004", // TRAM Barcelona Trambesòs
+  "mdb-795",  // EMT Valencia (bus)
+  "mdb-2830", // FGV Metro Valencia
+  "mdb-1856", // FGC — Ferrocarrils de la Generalitat de Catalunya
 ]);
 
 export async function shouldIngestSchedule(mdbId: string): Promise<boolean> {

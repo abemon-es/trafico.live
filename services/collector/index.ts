@@ -50,7 +50,7 @@ const VALID_TASKS = [
   // Maritime
   "ais-stream", "ferry-gtfs",
   // Transit
-  "transit-gtfs", "renfe-positions", "transit-realtime",
+  "transit-gtfs", "renfe-positions", "transit-realtime", "cleanup-realtime",
   // City traffic
   "city-traffic", "dgt-extras",
   // Historical
