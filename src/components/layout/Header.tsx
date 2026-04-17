@@ -12,14 +12,14 @@ export function Header() {
 
   return (
     <NavStateContext value={navState}>
-      <header className="bg-gradient-to-r from-tl-900 via-tl-950 to-tl-900 border-b border-tl-700/30 sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-md border-b border-ink-200 sticky top-0 z-50 dark:bg-gray-950/95 dark:border-gray-800">
         <nav
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
           aria-label="Navegación principal"
         >
           <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Logo variant="horizontal" size="sm" theme="dark" />
+            {/* Logo — light theme default on white chrome */}
+            <Logo variant="horizontal" size="sm" theme="light" />
 
             {/* Desktop Navigation — mega menu triggers + search */}
             <DesktopNav />
@@ -36,7 +36,7 @@ export function Header() {
                 }
                 aria-expanded={navState.mobileMenuOpen}
                 aria-controls="mobile-nav"
-                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-tl-800/50 hover:text-gray-200"
+                className="md:hidden p-2 rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600 transition-colors dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                 onClick={() =>
                   navState.setMobileMenuOpen(!navState.mobileMenuOpen)
                 }
@@ -57,7 +57,7 @@ export function Header() {
         {/* Backdrop overlay when mega menu is open */}
         {navState.activePanel && (
           <div
-            className="fixed inset-0 top-16 z-30 bg-black/20 backdrop-blur-[2px]"
+            className="fixed inset-0 top-16 z-30 bg-ink-900/10 backdrop-blur-[2px]"
             onClick={navState.closeAll}
             aria-hidden="true"
           />

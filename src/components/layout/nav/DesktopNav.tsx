@@ -129,11 +129,11 @@ export function DesktopNav() {
                 }
               }}
               className={`
-                flex items-center gap-1 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors
+                flex items-center gap-1 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600
                 ${
                   isPanelActive || isOpen
-                    ? "bg-white/10 text-white"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                    ? "bg-ink-100 text-ink-900 dark:bg-white/10 dark:text-white"
+                    : "text-ink-700 hover:bg-ink-50 hover:text-ink-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
                 }
               `}
             >
@@ -148,25 +148,25 @@ export function DesktopNav() {
       })}
 
       {/* Separator + Search trigger */}
-      <div className="w-px h-5 bg-white/10 mx-1" aria-hidden="true" />
+      <div className="w-px h-5 bg-ink-200 mx-1 dark:bg-white/10" aria-hidden="true" />
       <button
         type="button"
         onPointerEnter={() => scheduleOpen("search")}
         onClick={() => (isSearchMode ? closeAll() : openSearch())}
         aria-label="Buscar"
         className={`
-          flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors
+          flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600
           ${
             isSearchMode
-              ? "bg-white/10 text-white"
-              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+              ? "bg-ink-100 text-ink-900 dark:bg-white/10 dark:text-white"
+              : "text-ink-500 hover:bg-ink-50 hover:text-ink-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200"
           }
         `}
       >
         <Search className="w-4 h-4" />
         <kbd
           aria-hidden="true"
-          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 leading-none"
+          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-ink-200 bg-ink-50 px-1.5 py-0.5 text-[10px] font-medium text-ink-500 leading-none dark:border-white/10 dark:bg-white/5 dark:text-gray-400"
         >
           &#8984;K
         </kbd>
