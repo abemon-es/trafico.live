@@ -7,7 +7,8 @@ import { getFromCache, setInCache } from "@/lib/redis";
 // Cache for 10 minutes — historical SASEMAR data changes infrequently
 export const revalidate = 600;
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const DEFAULT_LIMIT = 500;
+const MAX_LIMIT = 5000;
 
 export async function GET(request: NextRequest) {
   const rateLimitResponse = await applyRateLimit(request);
@@ -19,20 +20,37 @@ export async function GET(request: NextRequest) {
     const zone = searchParams.get("zone");
     const province = searchParams.get("province");
     const severity = searchParams.get("severity")?.toLowerCase();
+    const yearParam = searchParams.get("year");
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
+    const limit = Math.min(
+      parseInt(searchParams.get("limit") || String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT,
+      MAX_LIMIT
+    );
 
-    // Build cache key based on filters
-    const cacheKey = `api:maritimo:emergencies:${type ?? "all"}:${zone ?? "all"}:${province ?? "all"}:${severity ?? "all"}`;
+    // Build cache key based on filters (includes new date/year params).
+    const cacheKey = `api:maritimo:emergencies:${type ?? "all"}:${zone ?? "all"}:${province ?? "all"}:${severity ?? "all"}:${yearParam ?? "all"}:${fromParam ?? "all"}:${toParam ?? "all"}:${limit}`;
     const cached = await getFromCache<object>(cacheKey);
     if (cached) {
       return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } });
     }
 
-    const since = new Date(Date.now() - THIRTY_DAYS_MS);
-
+    // SASEMAR data is historical (2019-2023 currently). The old 30-day filter
+    // excluded every row. Default to full dataset; narrow via ?year=YYYY or
+    // ?from/?to (ISO). ?limit caps payload size.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: Record<string, any> = {
-      occurredAt: { gte: since },
-    };
+    const where: Record<string, any> = {};
+    if (yearParam) {
+      const yearNum = parseInt(yearParam, 10);
+      if (Number.isFinite(yearNum)) where.year = yearNum;
+    }
+    if (fromParam || toParam) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const range: Record<string, any> = {};
+      if (fromParam) range.gte = new Date(fromParam);
+      if (toParam) range.lte = new Date(toParam);
+      where.occurredAt = range;
+    }
 
     if (type) {
       where.type = type;
@@ -53,6 +71,7 @@ export async function GET(request: NextRequest) {
     const emergencies = await prisma.maritimeEmergency.findMany({
       where,
       orderBy: { occurredAt: "desc" },
+      take: limit,
       select: {
         id: true,
         sourceId: true,

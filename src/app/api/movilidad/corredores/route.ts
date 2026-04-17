@@ -24,15 +24,29 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 100);
     const excludeSelf = searchParams.get("exclude_self") !== "false";
+    const requestedDate = searchParams.get("date");
 
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = searchParams.get("date") || yesterday.toISOString().slice(0, 10);
-    const date = new Date(dateStr);
+    const cacheKey = `movilidad:corredores:${requestedDate ?? "latest"}:${limit}:${excludeSelf}`;
 
-    const cacheKey = `movilidad:corredores:${dateStr}:${limit}:${excludeSelf}`;
+    const result = await getOrCompute(cacheKey, 3600, async () => {
+      let resolvedDateStr: string;
 
-    const data = await getOrCompute(cacheKey, 3600, async () => {
+      if (requestedDate) {
+        resolvedDateStr = requestedDate;
+      } else {
+        // MobilityODFlow is a one-shot backfill; data currently ends 2024-01-07.
+        // Fall back to the latest available date instead of yesterday (always empty).
+        const latest = await prisma.mobilityODFlow.findFirst({
+          orderBy: { date: "desc" },
+          select: { date: true },
+        });
+        if (!latest) {
+          return { data: [], resolvedDate: null };
+        }
+        resolvedDateStr = latest.date.toISOString().slice(0, 10);
+      }
+
+      const date = new Date(resolvedDateStr);
       const selfFilter = excludeSelf
         ? `AND "originProvince" != "destProvince"`
         : "";
@@ -64,15 +78,24 @@ export async function GET(request: NextRequest) {
         limit
       );
 
-      return corridors.map((c) => ({
-        ...c,
-        tripCount: Number(c.tripCount),
-      }));
+      return {
+        data: corridors.map((c) => ({
+          ...c,
+          tripCount: Number(c.tripCount),
+        })),
+        resolvedDate: resolvedDateStr,
+      };
     });
 
     return NextResponse.json({
-      data,
-      meta: { date: dateStr, limit, excludeSelf },
+      data: result.data,
+      meta: {
+        date: result.resolvedDate,
+        requestedDate,
+        latestFallback: !requestedDate,
+        limit,
+        excludeSelf,
+      },
     });
   } catch (error) {
     return reportApiError(error, "movilidad/corredores");
