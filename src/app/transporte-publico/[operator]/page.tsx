@@ -264,6 +264,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? `${operator.routeCount} rutas y ${operator.stopCount} paradas de ${operator.name} en ${operator.city}. Datos GTFS actualizados.`
     : `${operator.routeCount} rutas y ${operator.stopCount} paradas de ${operator.name}. Datos GTFS actualizados.`;
 
+  // Thin-content guard: catalog entries whose GTFS feed hasn't been
+  // ingested yet show 0 routes. Avoid having Google index those pages.
+  const hasContent = operator.routeCount > 0;
+
   return {
     title: `${title} | trafico.live`,
     description,
@@ -276,6 +280,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "paradas",
       "transporte público España",
     ],
+    robots: hasContent ? undefined : { index: false, follow: true },
     alternates: {
       canonical: `${BASE_URL}/transporte-publico/${slugify(operator.name)}`,
     },
