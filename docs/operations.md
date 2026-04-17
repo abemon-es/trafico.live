@@ -74,6 +74,39 @@ ssh hetzner-prod "cat /opt/trafico/collector.env"
 # DATABASE_URL, REDIS_URL, AEMET_API_KEY, NODE_ENV, TZ
 ```
 
+## Secrets Management
+
+### trafico_admin PostgreSQL password
+
+The `trafico_admin` superuser password is stored on compute in `/etc/default/trafico-admin` (mode 0600, root:root only).
+
+Any script that needs `trafico_admin` credentials must source this file before connecting:
+
+```bash
+# Shell scripts / cron jobs
+. /etc/default/trafico-admin
+# TRAFICO_ADMIN_PASSWORD and TRAFICO_ADMIN_URL are now available
+```
+
+```python
+# Python scripts
+import os
+DB_PASS = os.environ['TRAFICO_ADMIN_PASSWORD']
+```
+
+Scripts that use `trafico_admin`:
+- `enricher/enrich-fast.py` — vessel owner enrichment (run manually)
+- `scripts/enrich-vessel-owners.py` — vessel owner enrichment (remote DB)
+- `scripts/enrich-vessel-owners-local.py` — vessel owner enrichment (local tunnel)
+
+**Never hardcode the password.** Run `enricher/enrich-fast.py` as:
+```bash
+ssh compute
+. /etc/default/trafico-admin && python3 /opt/trafico/enricher/enrich-fast.py
+```
+
+To rotate the password: `ALTER ROLE trafico_admin PASSWORD '...'` in psql, then update `/etc/default/trafico-admin`.
+
 ## Database Operations
 
 ### Connect to PostgreSQL
