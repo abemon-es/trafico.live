@@ -1,16 +1,57 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('flow 10 — dark mode toggle persists', () => {
-  test.fixme('user toggles theme, reload preserves choice', async () => {
-    /* TODO after ThemeToggle a11y label fix (Spanish) lands.
-     * Steps:
-     *  1. goto('/')
-     *  2. assert initial theme (respect prefers-color-scheme)
-     *  3. click ThemeToggle button (aria-label in Spanish: "Cambiar a modo oscuro" / "Cambiar a modo claro")
-     *  4. assert document.documentElement classList contains 'dark' (or whatever scheme)
-     *  5. assert localStorage 'theme' persisted
-     *  6. reload — assert theme persisted
-     *  7. click again — flips back
-     */
+  test('user toggles theme, reload preserves choice', async ({ page }) => {
+    test.setTimeout(45_000)
+
+    // Pre-accept cookies so the consent dialog does not overlay the
+    // ThemeToggle on first render. Runs on every navigation (including reload)
+    // so it MUST NOT touch the 'theme' key, otherwise the reload-persists
+    // assertion breaks. Playwright contexts start with empty storage anyway.
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem(
+          'trafico_cookie_consent',
+          JSON.stringify({ analytics: true, timestamp: Date.now() }),
+        )
+      } catch {
+        /* localStorage may be unavailable */
+      }
+    })
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('/')
+
+    // Light mode should be inactive (no .dark on <html>)
+    await expect(page.locator('html')).not.toHaveClass(/(^|\s)dark(\s|$)/)
+
+    // Find the toggle via Spanish aria-label
+    const toggle = page.getByRole('button', { name: /Activar modo oscuro/i })
+    await expect(toggle).toBeVisible()
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+
+    // Click → dark activated
+    await toggle.click()
+    await expect(page.locator('html')).toHaveClass(/(^|\s)dark(\s|$)/)
+
+    // Label flips to the "back to light" variant
+    const flipped = page.getByRole('button', { name: /Activar modo claro/i })
+    await expect(flipped).toBeVisible()
+    await expect(flipped).toHaveAttribute('aria-pressed', 'true')
+
+    // localStorage persisted
+    const stored = await page.evaluate(() => localStorage.getItem('theme'))
+    expect(stored).toBe('dark')
+
+    // Reload — theme preserved (FOUC-free if the inline script in layout.tsx runs first,
+    // otherwise at minimum restored after hydration)
+    await page.reload()
+    await expect(page.locator('html')).toHaveClass(/(^|\s)dark(\s|$)/)
+    await expect(page.getByRole('button', { name: /Activar modo claro/i })).toBeVisible()
+
+    // Click again — back to light
+    await page.getByRole('button', { name: /Activar modo claro/i }).click()
+    await expect(page.locator('html')).not.toHaveClass(/(^|\s)dark(\s|$)/)
+    const storedAfter = await page.evaluate(() => localStorage.getItem('theme'))
+    expect(storedAfter).toBe('light')
   })
 })
