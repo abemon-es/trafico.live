@@ -5,7 +5,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Cargadores de coches eléctricos cerca de ti | trafico.live",
+  title: "Cargadores de coches eléctricos cerca de ti",
   description:
     "Encuentra los puntos de carga para vehículos eléctricos más cercanos a tu ubicación actual. Mapa interactivo con datos en tiempo real de electrolineras en España.",
   alternates: { canonical: `${BASE_URL}/carga-ev/cerca` },

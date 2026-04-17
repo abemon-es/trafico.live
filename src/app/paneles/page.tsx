@@ -24,7 +24,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
-      "Paneles de Mensaje Variable (PMV) en Carreteras de España | trafico.live",
+      "Paneles de Mensaje Variable (PMV) en Carreteras de España",
     description:
       "Consulta el estado en tiempo real de los 2.463 paneles de mensaje variable (PMV) instalados en las carreteras españolas. Mensajes de tráfico, obras, cierres y condiciones de la vía.",
     keywords: [
@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     openGraph: {
       title:
-        "Paneles de Mensaje Variable (PMV) — Carreteras España | trafico.live",
+        "Paneles de Mensaje Variable (PMV) — Carreteras España",
       description:
         "Estado en tiempo real de los paneles de mensaje variable instalados en la red de carreteras española.",
     },

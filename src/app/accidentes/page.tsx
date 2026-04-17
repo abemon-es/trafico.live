@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Siniestralidad Vial en España 2019-2023 — Accidentes DGT | trafico.live",
+  title: "Siniestralidad Vial en España 2019-2023 — Accidentes DGT",
   description:
     "Estadísticas de accidentes de tráfico en España con datos DGT 2019-2023. Análisis por severidad, provincia, tipo de vía y evolución anual. Microdatos de siniestralidad vial.",
   alternates: {

@@ -98,7 +98,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!prov) return { title: "Provincia no encontrada" };
 
   return {
-    title: `Pulso de ${prov.name} — Estado del transporte en tiempo real | trafico.live`,
+    title: `Pulso de ${prov.name} — Estado del transporte en tiempo real`,
     description: `Estado actual del transporte en ${prov.name}: incidencias de tráfico, alertas meteorológicas, calidad del aire, precios de combustible y estado ferroviario en tiempo real.`,
     alternates: { canonical: `${BASE_URL}/pulso/${prov.slug}` },
     openGraph: {

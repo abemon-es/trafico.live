@@ -35,7 +35,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title:
-    "Lluvia y accidentes de trafico en Espana — Analisis por provincia | trafico.live",
+    "Lluvia y accidentes de trafico en Espana — Analisis por provincia",
   description:
     "Analisis de la correlacion entre la lluvia y los accidentes de trafico en Espana. Multiplicador de riesgo por provincia, estacionalidad mensual y condiciones meteorologicas. Datos DGT 2019-2023.",
   alternates: { canonical: `${BASE_URL}/inteligencia/lluvia-y-accidentes` },

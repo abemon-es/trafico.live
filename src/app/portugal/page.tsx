@@ -21,14 +21,14 @@ export const revalidate = 0;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Portugal — Combustible, Alertas y Tráfico | trafico.live",
+  title: "Portugal — Combustible, Alertas y Tráfico",
   description:
     "Precios de combustible en Portugal, alertas meteorológicas IPMA y estadísticas de accidentes. Compara precios entre España y Portugal.",
   alternates: {
     canonical: `${BASE_URL}/portugal`,
   },
   openGraph: {
-    title: "Portugal — Combustible, Alertas y Tráfico | trafico.live",
+    title: "Portugal — Combustible, Alertas y Tráfico",
     description:
       "Precios de combustible en Portugal, alertas meteorológicas IPMA y estadísticas de accidentes. Compara precios entre España y Portugal.",
     url: `${BASE_URL}/portugal`,
