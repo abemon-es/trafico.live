@@ -35,14 +35,17 @@ import {
 } from "recharts";
 import HeroOverlay from "./hero-overlay";
 
-const RailwayMap = dynamic(() => import("./railway-map"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[650px] bg-gray-50 dark:bg-gray-900 animate-pulse flex items-center justify-center rounded-xl">
-      <Train className="w-12 h-12 text-gray-300" />
-    </div>
-  ),
-});
+const TraficoMap = dynamic(
+  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full bg-tl-50 dark:bg-slate-900 animate-pulse flex items-center justify-center">
+        <Train className="w-12 h-12 text-tl-300" />
+      </div>
+    ),
+  }
+);
 
 const BRAND_COLORS: Record<string, string> = {
   AVE: "#6b21a8", Alvia: "#d48139", Avant: "#7c3aed", Euromed: "#0891b2",
@@ -81,7 +84,6 @@ export default function TrainesContent() {
     fetcher, { refreshInterval: 15000 }
   );
 
-  const trainRoutes = liveData?.routes || null;
   const meta = liveData?.metadata || {};
   const trainCount = meta.count || 0;
   const stats = meta.stats || {};
@@ -110,9 +112,12 @@ export default function TrainesContent() {
     <div>
       {/* HERO MAP — full viewport */}
       <section className="relative" style={{ height: "85vh", minHeight: 600, maxHeight: 900 }}>
-        <div className="absolute inset-0">
-          <RailwayMap trainRoutes={trainRoutes} onTrainClick={(p) => { setSelectedStation(null); setSelectedTrain(p); }} onStationClick={(p) => { setSelectedTrain(null); setSelectedStation(p); }} />
-        </div>
+        <TraficoMap
+          preset="trenes"
+          controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
+          initialView={{ center: [-3.7, 40.4], zoom: 5.8 }}
+          className="absolute inset-0 w-full h-full"
+        />
         <HeroOverlay trainCount={trainCount} totalStations={totalStations} totalRoutes={totalRoutes} alerts={alerts} punctuality={Number(punctuality)} avgDelay={Number(current?.avgDelay ?? 0)} maxDelay={current?.maxDelay ?? null} p50Delay={current?.p50Delay ?? null} loading={loadingTrains} />
       </section>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -160,11 +165,7 @@ export default function TrainesContent() {
 
       {/* Map */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
-        <RailwayMap
-          trainRoutes={trainRoutes}
-          onTrainClick={(p) => { setSelectedStation(null); setSelectedTrain(p); }}
-          onStationClick={(p) => { setSelectedTrain(null); setSelectedStation(p); }}
-        />
+        {/* Map now rendered as the TraficoMap hero above */}
 
         {/* Legend */}
         <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-gray-500 dark:text-gray-400">
@@ -530,11 +531,12 @@ export default function TrainesContent() {
       )}
 
       {/* ── Navigation to sub-pages ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         {[
           { href: "/trenes/estaciones", icon: MapPin, title: "Estaciones", desc: `${totalStations.toLocaleString("es-ES")} estaciones en toda España`, color: "var(--tl-primary)" },
           { href: "/trenes/lineas", icon: Route, title: "Líneas y marcas", desc: `${totalRoutes} rutas: AVE, Alvia, Cercanías...`, color: "var(--tl-accent)" },
           { href: "/trenes/cercanias", icon: Map, title: "Cercanías", desc: "12 redes: Madrid, Barcelona, Valencia...", color: "#059669" },
+          { href: "/trenes/mapa", icon: Map, title: "Mapa completo", desc: "Mapa ampliado con todos los controles", color: "#7c3aed" },
         ].map((link) => (
           <Link
             key={link.href}
