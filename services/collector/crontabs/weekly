@@ -18,3 +18,10 @@
 
 # DGT extras — roadworks/connected cones (placeholder, probes NAP endpoints)
 30 6 * * 0 TASK=dgt-extras npx tsx index.ts 2>&1
+
+# IMD (Intensidad Media Diaria) — Ministry of Transport ArcGIS REST API
+# ~14K counting stations + ~14K road segments for years 2017-2019 + 2022.
+# Data changes rarely so weekly is more than enough; upsert is idempotent.
+# Monthly was specified in docs but the cron was never wired, which left
+# TrafficFlow at 0 rows in prod. Restoring as weekly on Sunday night.
+0 7 * * 0 TASK=imd NODE_OPTIONS=--max-old-space-size=1024 npx tsx index.ts 2>&1
