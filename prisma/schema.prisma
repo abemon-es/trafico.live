@@ -7,7 +7,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  // directUrl bypasses pgbouncer for migrate deploy so the session-level
+  // advisory lock is held on a direct postgres connection and released
+  // when migrate completes — not left dangling on a pooled connection.
+  directUrl = env("MIGRATE_DATABASE_URL")
 }
 
 // ============================================

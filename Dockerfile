@@ -43,5 +43,8 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)throw new Error();process.exit(0)}).catch(()=>process.exit(1))"
 
-# Run migrations as root (needs DDL perms), then drop to nextjs for the app
-CMD ["sh", "-c", "npx prisma migrate deploy 2>&1 || echo '[migrate] Skipped'; exec su -s /bin/sh nextjs -c 'npm start'"]
+# Run migrations using MIGRATE_DATABASE_URL (direct postgres, bypasses pgbouncer)
+# so the session-level advisory lock is properly released after migrate completes.
+# Falls back to DATABASE_URL if MIGRATE_DATABASE_URL is not set.
+# See: https://pris.ly/d/migrate-advisory-locking
+CMD ["sh", "-c", "MIGRATE_DATABASE_URL=${MIGRATE_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy 2>&1 || echo '[migrate] Skipped'; exec su -s /bin/sh nextjs -c 'npm start'"]
