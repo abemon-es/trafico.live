@@ -333,12 +333,14 @@ export default async function OperatorDetailPage({ params }: Props) {
   const modeLabel = MODE_LABELS[operator.mode] ?? operator.mode;
 
   // ── JSON-LD ───────────────────────────────────────────────────────────────
-  const jsonLd = {
+  const canonicalUrl = `${BASE_URL}/transporte-publico/${slugify(operator.name)}`;
+
+  const datasetSchema = {
     "@context": "https://schema.org",
     "@type": "Dataset",
     name: `${operator.name} — Transporte público`,
     description: `Datos GTFS de ${operator.name}${operator.city ? ` en ${operator.city}` : ""}: ${routes.length} rutas, ${operator.stopCount} paradas.`,
-    url: `${BASE_URL}/transporte-publico/${slugify(operator.name)}`,
+    url: canonicalUrl,
     keywords: [
       operator.name,
       "GTFS",
@@ -357,6 +359,41 @@ export default async function OperatorDetailPage({ params }: Props) {
     license: "https://creativecommons.org/licenses/by/4.0/",
     dateModified: operator.updatedAt.toISOString(),
   };
+
+  // Only emit the Organization schema on pages with actual content.
+  // Thin pages (routeCount === 0) are already noindex'd — no need for extra noise.
+  const isPublicTransitMode = ["bus", "metro", "tram"].includes(operator.mode);
+  const orgType =
+    operator.isOfficial && isPublicTransitMode
+      ? "GovernmentOrganization"
+      : "Organization";
+
+  const areaServed = operator.city ?? operator.province;
+
+  const orgSchema =
+    operator.routeCount > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": orgType,
+          name: operator.name,
+          url: canonicalUrl,
+          additionalType: "https://schema.org/TransportService",
+          ...(areaServed && { areaServed }),
+          ...(operator.feedUrl && {
+            dataset: {
+              "@type": "Dataset",
+              name: `GTFS feed for ${operator.name}`,
+              distribution: {
+                "@type": "DataDownload",
+                encodingFormat: "application/zip",
+                contentUrl: operator.feedUrl,
+              },
+            },
+          }),
+        }
+      : null;
+
+  const jsonLd = orgSchema ? [datasetSchema, orgSchema] : datasetSchema;
 
   const MAX_VISIBLE_ROUTES = 50;
 
