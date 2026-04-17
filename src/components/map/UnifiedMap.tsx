@@ -349,6 +349,7 @@ export function UnifiedMap({
         aircraft: initialLayers.aircraft ?? false,
         vessels: initialLayers.vessels ?? false,
         climateStations: initialLayers.climateStations ?? false,
+        accidents: initialLayers.accidents ?? false,
       };
     }
 
@@ -387,6 +388,7 @@ export function UnifiedMap({
         aircraft: urlLayers.includes("aircraft"),
         vessels: urlLayers.includes("vessels"),
         climateStations: urlLayers.includes("climateStations"),
+        accidents: urlLayers.includes("accidents"),
       };
     }
     // Default layers
@@ -422,6 +424,7 @@ export function UnifiedMap({
       aircraft: false,
       vessels: false,
       climateStations: false,
+      accidents: false,
     };
   };
 
