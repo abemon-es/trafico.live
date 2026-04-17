@@ -5,6 +5,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
+import { TraficoHeroMap } from "./TraficoHeroMap";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -154,6 +155,17 @@ export default async function TraficoIndexPage() {
               </div>
             </div>
           </div>
+
+          {/* Hero map */}
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold font-['Exo_2'] text-tl-950 dark:text-tl-50">Mapa del tráfico vial</h2>
+              <Link href="/trafico/mapa" className="text-sm text-tl-600 hover:text-tl-700 inline-flex items-center gap-1 font-['DM_Sans']">
+                Ver mapa completo <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <TraficoHeroMap />
+          </section>
 
           {/* City cards grid */}
           <section aria-labelledby="heading-cities" className="mb-8">
