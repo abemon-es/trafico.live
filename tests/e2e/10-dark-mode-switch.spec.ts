@@ -12,7 +12,13 @@ test.describe('flow 10 — dark mode toggle persists', () => {
       try {
         localStorage.setItem(
           'trafico_cookie_consent',
-          JSON.stringify({ analytics: true, timestamp: Date.now() }),
+          JSON.stringify({
+            necessary: true,
+            analytics: true,
+            affiliates: true,
+            version: '2',
+            timestamp: new Date().toISOString(),
+          }),
         )
       } catch {
         /* localStorage may be unavailable */

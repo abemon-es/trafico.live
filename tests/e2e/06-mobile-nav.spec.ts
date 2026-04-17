@@ -26,7 +26,13 @@ test.describe('flow 06 — mobile nav open/close/link', () => {
       try {
         localStorage.setItem(
           'trafico_cookie_consent',
-          JSON.stringify({ analytics: true, version: '1', timestamp: new Date().toISOString() }),
+          JSON.stringify({
+            necessary: true,
+            analytics: true,
+            affiliates: true,
+            version: '2',
+            timestamp: new Date().toISOString(),
+          }),
         )
       } catch {
         /* storage unavailable */

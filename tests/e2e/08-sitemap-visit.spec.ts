@@ -18,17 +18,11 @@ test.describe('flow 08 — sitemap + robots + llms.txt reachable', () => {
     expect(robots.headers()['content-type']).toMatch(/text\/plain/i)
     expect(await robots.text()).toMatch(/User-agent/i)
 
-    // llms.txt — AI crawler guidance. 2.8 may or may not have shipped it;
-    // if missing, annotate so team-lead sees the gap without failing the suite.
+    // llms.txt — AI crawler guidance. text/plain or text/markdown both valid
+    // per the llms.txt spec (https://llmstxt.org). 2.8 shipped as markdown.
     const llms = await request.get('/llms.txt')
-    if (llms.status() === 200) {
-      expect(llms.headers()['content-type']).toMatch(/text\/plain/i)
-    } else {
-      test.info().annotations.push({
-        type: 'known-gap',
-        description: `llms.txt returned ${llms.status()} — reported to team-lead as 2.8 scope gap`,
-      })
-    }
+    expect(llms.status()).toBe(200)
+    expect(llms.headers()['content-type']).toMatch(/text\/(plain|markdown)/i)
 
     // Fetch a sitemap chunk and sample a few URLs — assert they load non-5xx.
     const chunk = await request.get('/sitemap/0.xml')
