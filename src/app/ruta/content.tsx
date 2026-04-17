@@ -5,7 +5,7 @@ import maplibregl, { addProtocol } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { TILE_SOURCES, addTileSource, LAYER_STYLES, getProtomapsStyle } from "@/lib/map-tiles";
-import { handleMapTileError, MAP_STYLE_VOYAGER, SPAIN_CENTER, SPAIN_ZOOM } from "@/lib/map-config";
+import { SPAIN_CENTER, SPAIN_ZOOM } from "@/lib/map-config";
 import {
   calculateRoute,
   routeToGeoJSON,
@@ -72,17 +72,9 @@ export default function RutaContent() {
       // Already registered
     }
 
-    // Try custom tileset, fall back to CartoDB if it fails
-    let style: string | maplibregl.StyleSpecification;
-    try {
-      style = getProtomapsStyle();
-    } catch {
-      style = MAP_STYLE_VOYAGER;
-    }
-
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style,
+      style: getProtomapsStyle(),
       center: SPAIN_CENTER,
       zoom: SPAIN_ZOOM,
       attributionControl: false,
@@ -90,7 +82,6 @@ export default function RutaContent() {
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
-    handleMapTileError(map);
 
     map.on("load", () => {
       // Add incident overlay (if Martin is available)

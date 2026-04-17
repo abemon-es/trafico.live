@@ -1,11 +1,15 @@
 import type maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import { getProtomapsStyle, getProtomapsDarkStyle } from "@/lib/map-tiles";
-import { isTileServerHealthy, resetTileHealth } from "@/lib/tile-fallback";
 
 // ─── Shared map configuration for all trafico.live maps ───
-
-// ── Self-hosted basemap styles (Planetiler trafico-iberia tileset) ──
+//
+// The CartoDB fallback was removed on 2026-04-17. When a single Martin
+// endpoint 500s (e.g. a materialized view needs refreshing) the whole map
+// was switching to CartoDB Voyager — English labels, generic style,
+// breaking the brand experience on every page. The self-hosted Protomaps
+// basemap must always be served; if tiles.trafico.live is fully down we
+// want the map to render blank rather than fall back to a competitor CDN.
 
 /** Planetiler basemap — light theme (brand-colored, Spanish labels) */
 export const MAP_STYLE_PROTOMAPS = getProtomapsStyle();
@@ -13,18 +17,7 @@ export const MAP_STYLE_PROTOMAPS = getProtomapsStyle();
 /** Planetiler basemap — dark theme (brand-colored, Spanish labels) */
 export const MAP_STYLE_PROTOMAPS_DARK = getProtomapsDarkStyle();
 
-// ── CartoDB fallbacks ──
-
-/** CartoDB Voyager — warm, detailed basemap. Kept as fallback. */
-export const MAP_STYLE_VOYAGER = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
-
-/** CartoDB Dark Matter — dark basemap fallback */
-export const MAP_STYLE_DARK = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
-
-/** CartoDB Positron — light basemap, legacy */
-export const MAP_STYLE_POSITRON = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
-
-/** Default style for all maps — self-hosted Protomaps (Spanish labels, brand colors) */
+/** Default style for all maps — self-hosted Protomaps */
 export const MAP_STYLE_DEFAULT = MAP_STYLE_PROTOMAPS;
 
 /** Spain center (full Iberian Peninsula including Portugal) */
@@ -67,80 +60,29 @@ export const MAP_COLORS = {
 } as const;
 
 /**
- * Force all basemap labels to Spanish.
- * Call this inside map.on("load", ...) after the style is fully loaded.
- *
- * No-op when using the self-hosted Planetiler (iberia) style — labels are already
- * Spanish-native via `["get", "name"]` (Planetiler preserves OSM native names,
- * which are already in Spanish for Spain and Portuguese for Portugal).
+ * No-op on the self-hosted Planetiler style — labels are already native Spanish.
+ * Kept for call-site compatibility with existing maps.
  */
-export function forceSpanishLabels(map: maplibregl.Map): void {
-  try {
-    const style = map.getStyle();
-    // Custom Planetiler (iberia) styles already use Spanish labels — skip patching
-    const isIberia = style?.sources != null && "iberia" in style.sources;
-    if (isIberia) return;
-
-    // CartoDB fallback — patch every symbol layer to prefer Spanish names
-    for (const layer of style.layers) {
-      if (layer.type === "symbol" && layer.layout?.["text-field"]) {
-        try {
-          map.setLayoutProperty(layer.id, "text-field", [
-            "coalesce",
-            ["get", "name:es"],
-            ["get", "name_es"],
-            ["get", "name"],
-          ]);
-        } catch {
-          // Some layers may not support expressions — skip
-        }
-      }
-    }
-  } catch {
-    // Style not loaded yet or other issue — safe to ignore
-  }
+export function forceSpanishLabels(_map: maplibregl.Map): void {
+  // Planetiler (iberia) source already emits Spanish labels via `["get", "name"]`.
+  // This function was used to patch CartoDB's English labels — no longer needed
+  // now that the CartoDB fallback is gone.
 }
 
 /**
- * Get map style with tile server health check.
- * Returns Protomaps if healthy, CartoDB if not.
+ * Get map style. Fallback-free — always returns the self-hosted style.
+ * Async signature preserved for call-site compatibility.
  */
 export async function getMapStyleAsync(theme: "light" | "dark" = "light"): Promise<string | StyleSpecification> {
-  const healthy = await isTileServerHealthy();
-  if (!healthy) {
-    return theme === "dark" ? MAP_STYLE_DARK : MAP_STYLE_VOYAGER;
-  }
   return theme === "dark" ? MAP_STYLE_PROTOMAPS_DARK : MAP_STYLE_PROTOMAPS;
 }
 
 /**
- * Attach to a map instance to auto-switch basemap on tile failures.
- * Requires 5+ consecutive tile errors before falling back to CartoDB.
- * Auto-retries Protomaps after 60s.
+ * No-op. Previously counted tile errors and swapped the style to CartoDB
+ * Voyager after 5 errors — but any transient Martin 500 was enough to trip
+ * it, so the fallback did more harm than good. Kept as a no-op so existing
+ * call-sites don't need to be touched.
  */
-export function handleMapTileError(map: maplibregl.Map): void {
-  let errorCount = 0;
-  let fellBack = false;
-
-  map.on("error", (e) => {
-    const msg = (e.error as Error | undefined)?.message || "";
-    if (msg.includes("tiles.trafico.live") || msg.includes("pmtiles")) {
-      errorCount++;
-      if (errorCount >= 5 && !fellBack) {
-        fellBack = true;
-        resetTileHealth();
-        map.setStyle(MAP_STYLE_VOYAGER);
-        // Retry Protomaps after 60s
-        setTimeout(() => {
-          fetch("https://tiles.trafico.live/health", { mode: "no-cors" })
-            .then(() => {
-              fellBack = false;
-              errorCount = 0;
-              map.setStyle(MAP_STYLE_PROTOMAPS);
-            })
-            .catch(() => { /* still down, stay on fallback */ });
-        }, 60000);
-      }
-    }
-  });
+export function handleMapTileError(_map: maplibregl.Map): void {
+  // Intentionally empty — see module docstring above.
 }

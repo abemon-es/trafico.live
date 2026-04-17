@@ -90,6 +90,8 @@ export const SOURCE_LAYERS = {
   emergencies: "emergencies",
   roadworks: "roadworks",
   roadSegments: "road_segments",
+  // Dynamic layers (Martin tile function names)
+  transitVehicles: "transit_vehicles",
 } as const;
 
 export type SourceLayerName = (typeof SOURCE_LAYERS)[keyof typeof SOURCE_LAYERS];
@@ -243,6 +245,11 @@ export const TILE_SOURCES = {
     url: `pmtiles://${TILES_BASE}/tiles/road-segments.pmtiles`,
     type: "vector" as const,
     sourceLayer: SOURCE_LAYERS.roadSegments,
+  },
+  transitVehicles: {
+    url: `${TILES_BASE}/dynamic/transit_vehicles`,
+    type: "vector" as const,
+    sourceLayer: SOURCE_LAYERS.transitVehicles,
   },
 } as const satisfies Record<string, TileSourceConfig>;
 
@@ -712,51 +719,11 @@ export function getProtomapsStyle(): StyleSpecification {
         },
       },
 
-      // ── Place labels — country ──────────────────────────────────────
-      // Biggest: 16-22px uppercase, fades out by z7
-      {
-        id: "places-country", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "place", "country"],
-        maxzoom: 7,
-        layout: {
-          "text-field": textEs,
-          "text-font": ["Noto Sans Medium"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 2, 12, 4, 18, 6, 22],
-          "text-transform": "uppercase",
-          "text-letter-spacing": 0.2,
-          "text-max-width": 8,
-        },
-        paint: {
-          "text-color": "#1f2937",
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 2,
-          "text-halo-blur": 0.5,
-          "text-opacity": ["interpolate", ["linear"], ["zoom"], 2, 0.8, 5, 1, 6.5, 0.7, 7, 0],
-        },
-      },
-
-      // ── Place labels — state / autonomous community ─────────────────
-      // 9-14px uppercase medium, z4-9
-      {
-        id: "places-state", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "place", "state"],
-        minzoom: 4,
-        maxzoom: 9,
-        layout: {
-          "text-field": textEs,
-          "text-font": ["Noto Sans Medium"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 6, 12, 8, 14],
-          "text-transform": "uppercase",
-          "text-letter-spacing": 0.12,
-          "text-max-width": 10,
-        },
-        paint: {
-          "text-color": "#374151",
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.5,
-          "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.4, 5, 0.8, 8, 1],
-        },
-      },
+      // Country + state labels come from the dedicated Natural Earth `world-*`
+      // symbol layers defined further down — using the tileset's `places-country`
+      // and `places-state` in parallel causes visible duplicates (two "ESPAÑA"
+      // texts on the same map). Removed here, kept only the NE-backed versions
+      // which ship proper Spanish names.
 
       // ── Place labels — cities ───────────────────────────────────────
       // 11-20px mixed case, bolder — clearly bigger than towns
@@ -1251,15 +1218,8 @@ export function getProtomapsDarkStyle(): StyleSpecification {
         layout: { "text-field": ["get", "ref"], "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 7, 9, 10, 11, 14, 13], "symbol-placement": "line", "text-rotation-alignment": "viewport", "symbol-spacing": 500, "text-max-angle": 30, "text-keep-upright": true },
         paint: { "text-color": "#e8eeff", "text-halo-color": "#1b4bd5", "text-halo-width": 2.4, "text-halo-blur": 0.3 } },
 
-      // Place labels
-      { id: "places-country", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "place", "country"], maxzoom: 7,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 3, 12, 6, 18], "text-transform": "uppercase", "text-letter-spacing": 0.15, "text-max-width": 8 },
-        paint: { "text-color": "#9ca3af", "text-halo-color": "#0b0f1a", "text-halo-width": 2 } },
-      { id: "places-state", type: "symbol", source: S, "source-layer": "places",
-        filter: ["==", "place", "state"], minzoom: 4, maxzoom: 9,
-        layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 9, 7, 13], "text-transform": "uppercase", "text-letter-spacing": 0.1, "text-max-width": 10 },
-        paint: { "text-color": "#6b7280", "text-halo-color": "#0b0f1a", "text-halo-width": 1.5, "text-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.5, 6, 1] } },
+      // Country + state labels come from Natural Earth `world-*-labels` below
+      // (see light theme comment) — removed from tileset `places` to avoid duplicate "ESPAÑA".
       { id: "places-city", type: "symbol", source: S, "source-layer": "places",
         filter: ["==", "place", "city"],
         layout: { "text-field": textEs, "text-font": ["Noto Sans Medium"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 15, 12, 18], "text-max-width": 8, "text-allow-overlap": false },
@@ -1913,6 +1873,56 @@ export const LAYER_STYLES = {
   },
 
   // (accidentsCircle removed — accidents.pmtiles not yet generated.)
+
+  // ── Live transit vehicles (Martin dynamic source) ──
+  transitVehiclesCircle: {
+    id: "transit-vehicles-circle",
+    type: "circle",
+    source: "transitVehicles",
+    "source-layer": SOURCE_LAYERS.transitVehicles,
+    paint: {
+      "circle-color": [
+        "match", ["coalesce", ["get", "mode"], "bus"],
+        "bus",       MAP_COLORS.primary,        // #1b4bd5
+        "metro",     MAP_COLORS.amber,           // #d48139
+        "tram",      MAP_COLORS.evGreen,         // #34d399
+        "rail",      MAP_COLORS.primaryLight,    // #94b6ff
+        "funicular", "#6b7280",
+        "#64748b",
+      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2, 14, 5, 18, 8],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+      "circle-opacity": [
+        "interpolate", ["linear"], ["coalesce", ["get", "ageSeconds"], 0],
+        60, 1.0,
+        300, 0.4,
+      ],
+    },
+  },
+
+  // ── Live transit vehicles label (z≥13) ──
+  transitVehiclesLabel: {
+    id: "transit-vehicles-label",
+    type: "symbol",
+    source: "transitVehicles",
+    "source-layer": SOURCE_LAYERS.transitVehicles,
+    minzoom: 13,
+    layout: {
+      "text-field": ["coalesce", ["get", "operatorName"], ["get", "vehicleId"], ""],
+      "text-font": ["Noto Sans Regular"],
+      "text-size": 10,
+      "text-offset": [0, 1.2],
+      "text-anchor": "top",
+      "text-max-width": 8,
+      "text-allow-overlap": false,
+    },
+    paint: {
+      "text-color": "#1e293b",
+      "text-halo-color": "#ffffff",
+      "text-halo-width": 1.2,
+    },
+  },
 
   // ── Road segments (IMD traffic flow polylines) ──
   roadSegmentsLine: {
