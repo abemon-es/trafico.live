@@ -4,10 +4,10 @@
   "streets": true,
   "storage": {
     "osm": [
-      "/data/osm/iberia.osm.pbf"
+      "/var/opentripplanner/iberia.osm.pbf"
     ],
     "gtfs": [
-      "/var/otp/graphs/iberia/gtfs"
+      "/var/opentripplanner/gtfs"
     ]
   },
   "osmCacheDataInMem": false,

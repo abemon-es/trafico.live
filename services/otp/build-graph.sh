@@ -6,7 +6,7 @@
 #
 # Defaults:
 #   pbf_path  = /opt/trafico/tiles/build/iberia.osm.pbf
-#   graph_dir = /var/otp/graphs/iberia
+#   graph_dir = /var/otp
 #
 # Workflow:
 #   1. Validate PBF exists.
@@ -25,7 +25,7 @@
 set -euo pipefail
 
 PBF="${1:-/opt/trafico/tiles/build/iberia.osm.pbf}"
-GRAPH_DIR="${2:-/var/otp/graphs/iberia}"
+GRAPH_DIR="${2:-/var/otp}"
 TMP_DIR="${GRAPH_DIR}.tmp"
 OTP_IMAGE="opentripplanner/opentripplanner:latest"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -63,14 +63,23 @@ echo "[otp-build] $gtfs_count GTFS feeds staged"
 
 echo "[otp-build] starting OTP graph build (this takes 30-45 min)..."
 
+# Stage OSM PBF inside TMP_DIR so OTP build picks it up from a single path
+# alongside the GTFS files (OTP auto-discovers .osm.pbf + gtfs .zip in the
+# data dir passed to --build).
+cp -f "$PBF" "$TMP_DIR/iberia.osm.pbf"
+
+# Use the image's default entrypoint — pass flags; do not hardcode jar path.
+# OTP reads build-config.json from the same dir and writes graph.obj there.
 docker run --rm \
-  -v "$TMP_DIR":/var/otp/graphs/iberia \
-  -v "$(dirname "$PBF")":/data/osm:ro \
+  -v "$TMP_DIR":/var/opentripplanner \
   --memory="13g" \
   --cpus="4" \
+  -e JAVA_TOOL_OPTIONS="-Xmx12G" \
   "$OTP_IMAGE" \
-  java -Xmx12G -jar /opt/opentrip-planner.jar \
-    --build --save /var/otp/graphs/iberia
+  --build --save /var/opentripplanner
+
+# Drop the PBF copy so it isn't carried into the runtime volume.
+rm -f "$TMP_DIR/iberia.osm.pbf"
 
 if [[ ! -f "$TMP_DIR/graph.obj" ]]; then
   echo "[otp-build] ERROR: graph.obj not found after build — OTP may have crashed" >&2

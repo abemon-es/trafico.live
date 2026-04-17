@@ -5,7 +5,7 @@
 # Usage:
 #   ./fetch-gtfs.sh [staging_dir]
 #
-# Default staging_dir: /var/otp/graphs/iberia/gtfs
+# Default staging_dir: /var/otp/gtfs
 #
 # Sources:
 #   services/collector/tasks/transit-gtfs/data/*.zip
@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-STAGING="${1:-/var/otp/graphs/iberia/gtfs}"
+STAGING="${1:-/var/otp/gtfs}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 SOURCES=(
