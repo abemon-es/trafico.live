@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useId, useState, useEffect, useCallback } from "react";
 import {
   X,
   RefreshCw,
@@ -10,6 +10,7 @@ import {
   Play,
   Pause,
 } from "lucide-react";
+import { FocusTrap } from "@/components/a11y/FocusTrap";
 import type { Camera } from "./CameraCard";
 
 interface CameraModalProps {
@@ -22,6 +23,7 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const titleId = useId();
 
   const refreshImage = useCallback(() => {
     setImageKey((k) => k + 1);
@@ -37,15 +39,6 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
     return () => clearInterval(interval);
   }, [autoRefresh, refreshImage]);
 
-  // Close on escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
-
   // Add cache-busting to force reload
   const imageUrl = `${camera.imageUrl}?t=${imageKey}`;
 
@@ -57,22 +50,33 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
       onClick={onClose}
     >
-      <div
+      <FocusTrap
+        active
+        onEscape={onClose}
+        initialFocus="first"
+        returnFocus
+        role="dialog"
+        ariaModal
         className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
       >
+        {/* Inner wrapper stops background click-to-close and hosts aria-labelledby */}
+        <div
+          aria-labelledby={titleId}
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <div>
-            <h2 className="font-semibold text-gray-900 dark:text-gray-100">{camera.name}</h2>
+            <h2 id={titleId} className="font-semibold text-gray-900 dark:text-gray-100">{camera.name}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">{camera.province}</p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:bg-gray-900 rounded-full transition-colors"
-            title="Cerrar"
+            aria-label={`Cerrar detalles de ${camera.name}`}
           >
-            <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <X className="w-5 h-5 text-gray-600 dark:text-gray-400" aria-hidden />
           </button>
         </div>
 
@@ -180,7 +184,8 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
             </p>
           </div>
         </div>
-      </div>
+        </div>
+      </FocusTrap>
     </div>
   );
 }

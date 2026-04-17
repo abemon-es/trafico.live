@@ -19,6 +19,7 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PortActivity } from "@/components/maritimo/PortActivity";
+import { PortEntityMap } from "./entity-map";
 
 export const revalidate = 3600;
 
@@ -302,11 +303,17 @@ function portTypeLabel(type: string | null): string | null {
 // Static params
 // ---------------------------------------------------------------------------
 
+export async function getSlugList(): Promise<string[]> {
+  const ports = await prisma.spanishPort.findMany({
+    select: { slug: true },
+    orderBy: { name: "asc" },
+  });
+  return ports.map((p) => p.slug);
+}
+
 export async function generateStaticParams() {
-  const ports = await getAllPorts();
-  return ports
-    .filter((p) => p.port != null)
-    .map((p) => ({ slug: slugify(p.port as string) }));
+  const slugs = await getSlugList();
+  return slugs.map((slug) => ({ slug }));
 }
 
 // ---------------------------------------------------------------------------
@@ -319,14 +326,18 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getPortStations(slug);
+  const [result, spanishPort] = await Promise.all([
+    getPortStations(slug),
+    getSpanishPort(slug),
+  ]);
 
-  if (!result) {
+  if (!result && !spanishPort) {
     return { title: "Puerto no encontrado" };
   }
 
-  const { portName, stations } = result;
-  const province = stations[0]?.provinceName ?? null;
+  const portName = result?.portName ?? spanishPort?.name ?? slug;
+  const stations = result?.stations ?? [];
+  const province = spanishPort?.provinceName ?? stations[0]?.provinceName ?? null;
   const cheapestGasoleoA = stations
     .map((s) => (s.priceGasoleoA != null ? Number(s.priceGasoleoA) : null))
     .filter((p): p is number => p != null)
@@ -334,13 +345,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `Puerto de ${portName}`,
-    description: `Estaciones de combustible nautico en el Puerto de ${portName}${province ? `, ${province}` : ""}. ${cheapestGasoleoA != null ? `Gasoleo A desde ${cheapestGasoleoA.toFixed(3)} EUR/L.` : ""} ${stations.length} estaciones disponibles. Trafico de buques en tiempo real.`,
+    description: `Puerto de ${portName}${province ? `, ${province}` : ""}. Trafico AIS en tiempo real, conexiones intermodales${stations.length > 0 ? `, ${stations.length} estaciones de combustible` : ""}${cheapestGasoleoA != null ? ` (gasoleo A desde ${cheapestGasoleoA.toFixed(3)} EUR/L)` : ""}.`,
     alternates: {
       canonical: `${BASE_URL}/maritimo/puertos/${slug}`,
     },
     openGraph: {
-      title: `Puerto de ${portName} — Combustible Nautico y Trafico de Buques | trafico.live`,
-      description: `Precios de combustible nautico y trafico maritimo en tiempo real en el Puerto de ${portName}. ${stations.length} estaciones disponibles con datos del MITERD.`,
+      title: `Puerto de ${portName} — Trafico AIS y Combustible Nautico | trafico.live`,
+      description: `Trafico maritimo AIS en tiempo real en el Puerto de ${portName}${stations.length > 0 ? ` y ${stations.length} estaciones de combustible nautico` : ""}.`,
       url: `${BASE_URL}/maritimo/puertos/${slug}`,
       type: "website",
       locale: "es_ES",
@@ -374,16 +385,17 @@ function toNum(value: unknown): number | null {
 
 export default async function PortDetailPage({ params }: Props) {
   const { slug } = await params;
-  const result = await getPortStations(slug);
+  const [stationsResult, spanishPort] = await Promise.all([
+    getPortStations(slug),
+    getSpanishPort(slug),
+  ]);
 
-  if (!result) {
+  if (!stationsResult && !spanishPort) {
     notFound();
   }
 
-  const { portName, stations } = result;
-
-  // Try SpanishPort for authoritative coordinates + metadata
-  const spanishPort = await getSpanishPort(slug);
+  const portName = stationsResult?.portName ?? spanishPort?.name ?? slug;
+  const stations = stationsResult?.stations ?? [];
 
   const province = spanishPort?.provinceName ?? stations[0]?.provinceName ?? null;
   const lat = spanishPort
@@ -443,21 +455,27 @@ export default async function PortDetailPage({ params }: Props) {
   // Port type label
   const typeLabel = portTypeLabel(spanishPort?.type ?? null);
 
-  // JSON-LD LocalBusiness
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": `${BASE_URL}/maritimo/puertos/${slug}`,
+  // JSON-LD: SeaPort (primary) + BreadcrumbList + optional Offer (fuel)
+  const portNode: Record<string, unknown> = {
+    "@type": "SeaPort",
+    "@id": `${BASE_URL}/maritimo/puertos/${slug}#seaport`,
     name: `Puerto de ${portName}`,
-    description: `Estaciones de suministro de combustible nautico en el Puerto de ${portName}`,
+    description: `Puerto maritimo en ${province ?? "Espana"}. Trafico AIS en tiempo real, conexiones intermodales y estaciones de combustible nautico.`,
     url: `${BASE_URL}/maritimo/puertos/${slug}`,
-    ...(province && { address: { "@type": "PostalAddress", addressLocality: province, addressCountry: "ES" } }),
-    ...(lat != null && lon != null && {
-      geo: { "@type": "GeoCoordinates", latitude: lat, longitude: lon },
-      hasMap: googleMapsUrl,
+    ...(province && {
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: province,
+        addressCountry: "ES",
+      },
     }),
+    ...(lat != null &&
+      lon != null && {
+        geo: { "@type": "GeoCoordinates", latitude: lat, longitude: lon },
+        ...(googleMapsUrl && { hasMap: googleMapsUrl }),
+      }),
     ...(cheapestGasoleoA != null && {
-      offers: [
+      makesOffer: [
         {
           "@type": "Offer",
           name: "Gasoleo A",
@@ -472,6 +490,26 @@ export default async function PortDetailPage({ params }: Props) {
         },
       ],
     }),
+  };
+
+  const breadcrumbNode = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: `${BASE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Maritimo", item: `${BASE_URL}/maritimo` },
+      { "@type": "ListItem", position: 3, name: "Puertos", item: `${BASE_URL}/maritimo/puertos` },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: `Puerto de ${portName}`,
+        item: `${BASE_URL}/maritimo/puertos/${slug}`,
+      },
+    ],
+  };
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [portNode, breadcrumbNode],
   };
 
   return (
@@ -573,6 +611,20 @@ export default async function PortDetailPage({ params }: Props) {
         </div>
 
         <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
+          {/* ============================================================= */}
+          {/* SECTION: Live map (maritimo preset + port entity)             */}
+          {/* ============================================================= */}
+          {lat != null && lon != null && (
+            <section className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm">
+              <div className="h-[360px] md:h-[440px] bg-gray-100 dark:bg-gray-800 relative">
+                <p className="sr-only">
+                  Mapa en tiempo real de trafico maritimo en el Puerto de {portName}
+                </p>
+                <PortEntityMap portId={slug} center={[lon, lat]} />
+              </div>
+            </section>
+          )}
+
           {/* ============================================================= */}
           {/* SECTION: Live vessels in port                                  */}
           {/* ============================================================= */}

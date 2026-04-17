@@ -1,0 +1,70 @@
+{
+  "locale": "en-GB",
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "search": "Search",
+    "searchPlaceholder": "Search city, road, petrol station…",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "more": "More",
+    "less": "Less",
+    "seeAll": "See all",
+    "seeMore": "See more",
+    "seeMap": "View on map",
+    "liveLabel": "Live",
+    "updatedEvery60": "Updated every 60 seconds",
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "home": "Home",
+    "traffic": "Traffic",
+    "roads": "Roads",
+    "fuel": "Fuel",
+    "maritime": "Maritime",
+    "aviation": "Aviation",
+    "rail": "Rail",
+    "transit": "Public transit",
+    "airQuality": "Air quality",
+    "weather": "Weather",
+    "explore": "Explore",
+    "professional": "Professional",
+    "pressCenter": "Press",
+    "apiDocs": "REST API",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "cta": {
+    "subscribe": "Subscribe",
+    "tryFree": "Try free",
+    "getApi": "Get API key",
+    "contact": "Contact",
+    "learnMore": "Learn more",
+    "download": "Download",
+    "share": "Share"
+  },
+  "messages": {
+    "noResults": "No results",
+    "noData": "No data available",
+    "loadFailed": "Could not load the data",
+    "tryAgain": "Try again in a few seconds or check your connection.",
+    "offline": "Offline",
+    "stale": "Data may be out of date"
+  },
+  "footer": {
+    "legal": "Legal notice",
+    "privacy": "Privacy",
+    "cookies": "Cookie settings",
+    "developedBy": "Built by",
+    "copyright": "© {year} trafico.live"
+  },
+  "breadcrumbs": {
+    "aria": "Breadcrumb"
+  },
+  "faq": {
+    "heading": "Frequently asked questions"
+  }
+}

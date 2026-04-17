@@ -2,6 +2,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Route, Camera, Radar, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -216,6 +217,40 @@ export default async function AutoviasPage() {
               que vertebra Andalucía.
             </p>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <FAQAccordion
+            title="Preguntas frecuentes sobre las autovías de España"
+            items={[
+              {
+                question: "¿Son gratuitas todas las autovías españolas?",
+                answer:
+                  "Sí. Las autovías del Estado (prefijo A) son de uso gratuito en toda España. Las autovías autonómicas (prefijos AG-, CA-, ME-, SE-, V-, etc.) también lo son. El peaje solo existe en autopistas (AP) y en algunos túneles o vías gestionadas por concesionarias.",
+              },
+              {
+                question:
+                  "¿Qué diferencia hay entre una autovía del Estado y una autovía autonómica?",
+                answer:
+                  "La autovía del Estado (A) depende del Ministerio de Transportes y forma parte de la Red de Carreteras del Estado. Las autovías autonómicas son titularidad de la comunidad autónoma (Xunta, Generalitat, Junta…) y suelen complementar la red estatal a escala regional.",
+              },
+              {
+                question: "¿Puedo circular con bici o ciclomotor por una autovía?",
+                answer:
+                  "No. La autovía está reservada a vehículos de motor capaces de superar los 60 km/h. Ciclomotores, bicicletas, peatones, vehículos agrícolas y de tracción animal tienen expresamente prohibida la circulación.",
+              },
+              {
+                question: "¿Qué cámaras y radares hay en las autovías?",
+                answer:
+                  "Las autovías estatales cuentan con una densa red de cámaras CCTV de la DGT y radares fijos y de tramo. En trafico.live puedes consultar la ficha de cada autovía con el inventario completo de cámaras activas, radares y puntos kilométricos.",
+              },
+              {
+                question: "¿Cómo consulto el IMD de una autovía?",
+                answer:
+                  "Visita /estaciones-aforo o la sección /intensidad. Verás las estaciones permanentes del Ministerio con Intensidad Media Diaria, desglose ligeros/pesados y evolución anual. Cada autovía cuenta con decenas de estaciones repartidas por su trazado.",
+              },
+            ]}
+          />
         </div>
       </main>
     </div>

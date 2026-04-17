@@ -47,7 +47,7 @@ const ACCENT_COLOR = "#f59e0b"; // amber for motos
 
 export const metadata: Metadata = {
   title:
-    "Seguridad vial para motociclistas — Accidentes de moto en Espana | trafico.live",
+    "Seguridad vial para motociclistas — Accidentes de moto en Espana",
   description:
     "Analisis de accidentes de motocicleta en Espana: tendencia anual, horas punta, provincias mas peligrosas, efecto lluvia y fin de semana. Datos DGT 2019-2023.",
   alternates: { canonical: `${BASE_URL}/inteligencia/motociclistas` },

@@ -23,9 +23,11 @@ import { RoadLiveSpeed } from "@/components/roads/RoadLiveSpeed";
 import { labelForEnum } from "@/lib/labels";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
+import { TraficoMap } from "@/components/map/TraficoMapClient";
 
 interface PageProps {
   params: Promise<{ roadId: string }>;
@@ -257,6 +259,19 @@ export default async function RoadDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        {/* Unified infrastructure map — focused on this road */}
+        <section
+          aria-label={`Mapa de ${road.id}`}
+          className="mb-6 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+        >
+          <div className="h-[420px] w-full">
+            <TraficoMap
+              preset="trafico"
+              entity={{ type: "road", id: road.id }}
+            />
+          </div>
+        </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
@@ -771,4 +786,22 @@ export default async function RoadDetailPage({ params }: PageProps) {
       </main>
     </div>
   );
+}
+
+/**
+ * Sitemap helper: exposes the list of road refs this route can render.
+ * Consumed by `src/lib/sitemap-generator.ts` / sitemap builders.
+ */
+export async function getSlugList(): Promise<string[]> {
+  try {
+    const roads = await prisma.road.findMany({
+      where: { type: { in: ["AUTOPISTA", "AUTOVIA", "NACIONAL"] } },
+      select: { id: true },
+      orderBy: { id: "asc" },
+    });
+    return roads.map((r) => r.id);
+  } catch (error) {
+    console.error("getSlugList(/carreteras) failed:", error);
+    return [];
+  }
 }

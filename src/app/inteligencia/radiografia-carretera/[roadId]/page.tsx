@@ -362,7 +362,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const road = await prisma.road.findUnique({ where: { id } });
 
   if (!road) {
-    return { title: "Carretera no encontrada | trafico.live" };
+    return { title: "Carretera no encontrada" };
   }
 
   const typeLabel = roadTypeLabel(road.type);
@@ -370,7 +370,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .map((p) => PROVINCE_NAMES[p] ?? p)
     .join(", ");
 
-  const title = `Radiografia de la ${road.id}: trafico, accidentes y seguridad | trafico.live`;
+  const title = `Radiografia de la ${road.id}: trafico, accidentes y seguridad`;
   const description = `Analisis completo de la ${typeLabel} ${road.id}${road.name ? ` (${road.name})` : ""}. Accidentes 2019-2023, puntos negros, volumen de trafico IMD, radares, camaras e incidencias en tiempo real.${provinceNames ? ` Provincias: ${provinceNames}.` : ""}`;
 
   return {

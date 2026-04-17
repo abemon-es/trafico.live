@@ -18,6 +18,8 @@ const TraficoMap = dynamic(
 
 /** Unified infrastructure dashboard — all transport layers via TraficoMap preset="all". */
 export function MapaInfraClient() {
+  // Root layout already provides <main id="main-content" tabIndex={-1}> —
+  // avoid nested-main by using a plain div for the map viewport.
   return (
     <div style={{ height: "calc(100dvh - 64px)" }}>
       <TraficoMap

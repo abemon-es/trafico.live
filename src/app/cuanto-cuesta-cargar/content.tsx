@@ -1,7 +1,7 @@
 "use client";
 
 import { fetcher } from "@/lib/fetcher";
-import { useState, useMemo } from "react";
+import { useId, useState, useMemo } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import {
@@ -173,16 +173,20 @@ function SliderInput({
   unit: string;
   color: string;
 }) {
+  const id = useId();
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
-        <span className={`text-sm font-bold ${color}`}>
+        <label htmlFor={id} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {label}
+        </label>
+        <span className={`text-sm font-bold ${color}`} aria-hidden>
           {value}
           {unit}
         </span>
       </div>
       <input
+        id={id}
         type="range"
         min={min}
         max={max}
@@ -190,8 +194,12 @@ function SliderInput({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-green-600"
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        aria-valuetext={`${value}${unit}`}
       />
-      <div className="flex justify-between text-xs text-gray-400 mt-1">
+      <div className="flex justify-between text-xs text-gray-400 mt-1" aria-hidden>
         <span>
           {min}
           {unit}
@@ -291,6 +299,11 @@ export default function CuantoCuestaCargarContent() {
 
   const chargeDelta = Math.max(0, targetCharge - currentCharge);
 
+  // Stable ids for label↔input association (WCAG 1.3.1, 3.3.2).
+  const uid = useId();
+  const batteryId = `${uid}-battery`;
+  const priceOverrideId = `${uid}-price-override`;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -329,15 +342,22 @@ export default function CuantoCuestaCargarContent() {
             Calculadora de coste de carga
           </h2>
 
-          {/* Step 1: EV model / battery */}
-          <div className="mb-6">
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+          {/* Step 1: EV model / battery — radio-group semantics */}
+          <fieldset className="mb-6">
+            <legend className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
               1. Selecciona tu vehículo
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            </legend>
+            <div
+              role="radiogroup"
+              aria-label="Modelo de vehículo eléctrico"
+              className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+            >
               {EV_PRESETS.map((ev, i) => (
                 <button
                   key={ev.name}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedPreset === i}
                   onClick={() => setSelectedPreset(i)}
                   className={`text-left rounded-xl border px-3 py-2.5 transition-all text-sm ${
                     selectedPreset === i
@@ -350,6 +370,9 @@ export default function CuantoCuestaCargarContent() {
                 </button>
               ))}
               <button
+                type="button"
+                role="radio"
+                aria-checked={selectedPreset === "custom"}
                 onClick={() => setSelectedPreset("custom")}
                 className={`text-left rounded-xl border px-3 py-2.5 transition-all text-sm ${
                   selectedPreset === "custom"
@@ -364,10 +387,11 @@ export default function CuantoCuestaCargarContent() {
 
             {selectedPreset === "custom" && (
               <div className="mt-4">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                <label htmlFor={batteryId} className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
                   Capacidad de batería (kWh)
                 </label>
                 <input
+                  id={batteryId}
                   type="number"
                   min={5}
                   max={200}
@@ -375,10 +399,11 @@ export default function CuantoCuestaCargarContent() {
                   value={customBattery}
                   onChange={(e) => setCustomBattery(Number(e.target.value))}
                   className="w-36 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  aria-required="true"
                 />
               </div>
             )}
-          </div>
+          </fieldset>
 
           {/* Step 2: Charge levels */}
           <div className="mb-6 space-y-5">
@@ -416,15 +441,22 @@ export default function CuantoCuestaCargarContent() {
             )}
           </div>
 
-          {/* Step 3: Charging type */}
-          <div className="mb-6">
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+          {/* Step 3: Charging type — radio-group semantics */}
+          <fieldset className="mb-6">
+            <legend className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
               3. Tipo de cargador
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            </legend>
+            <div
+              role="radiogroup"
+              aria-label="Tipo de cargador"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+            >
               {CHARGING_TYPES.map((ct) => (
                 <button
                   key={ct.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedCharging === ct.id}
                   onClick={() => {
                     setSelectedCharging(ct.id);
                     setCustomPrice(null);
@@ -446,10 +478,11 @@ export default function CuantoCuestaCargarContent() {
 
             {/* Custom price override */}
             <div className="mt-3 flex items-center gap-3">
-              <label className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              <label htmlFor={priceOverrideId} className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                 Precio real (€/kWh):
               </label>
               <input
+                id={priceOverrideId}
                 type="number"
                 min={0.01}
                 max={2}
@@ -460,6 +493,7 @@ export default function CuantoCuestaCargarContent() {
               />
               {customPrice !== null && (
                 <button
+                  type="button"
                   onClick={() => setCustomPrice(null)}
                   className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-400 underline"
                 >
@@ -467,7 +501,7 @@ export default function CuantoCuestaCargarContent() {
                 </button>
               )}
             </div>
-          </div>
+          </fieldset>
         </div>
 
         {/* ------------------------------------------------------------------ */}

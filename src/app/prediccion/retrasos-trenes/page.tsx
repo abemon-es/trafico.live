@@ -33,7 +33,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
   title:
-    "Puntualidad y retrasos de Renfe — Analisis en tiempo real | trafico.live",
+    "Puntualidad y retrasos de Renfe — Analisis en tiempo real",
   description:
     "Analisis en tiempo real de la puntualidad de Renfe. Retrasos por marca (AVE, Alvia, Cercanias), tendencias a 30 dias, mejor hora para viajar y alertas activas.",
   alternates: {

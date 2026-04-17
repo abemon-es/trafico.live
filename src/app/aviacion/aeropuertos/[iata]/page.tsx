@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import runwaysData from "../../../../../public/data/runways.json";
 import PaxChart from "./pax-chart";
+import { AirportEntityMap } from "./entity-map";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -214,15 +215,17 @@ function getAirportSlug(airport: { iata: string | null; icao: string }): string 
 // Static Params
 // ---------------------------------------------------------------------------
 
-export async function generateStaticParams() {
+export async function getSlugList(): Promise<string[]> {
   const airports = await prisma.airport.findMany({
     where: { isAena: true },
     select: { iata: true, icao: true },
   });
+  return airports.map(getAirportSlug);
+}
 
-  return airports.map((a) => ({
-    iata: getAirportSlug(a),
-  }));
+export async function generateStaticParams() {
+  const slugs = await getSlugList();
+  return slugs.map((iata) => ({ iata }));
 }
 
 // ---------------------------------------------------------------------------
@@ -350,7 +353,7 @@ export default async function AirportDetailPage({ params }: Props) {
           items={[
             { name: "Inicio", href: "/" },
             { name: "Aviacion", href: "/aviacion" },
-            { name: "Aeropuertos", href: "/aviacion" },
+            { name: "Aeropuertos", href: "/aviacion/aeropuertos" },
             { name: airport.name, href: `/aviacion/aeropuertos/${slug}` },
           ]}
         />
@@ -430,6 +433,18 @@ export default async function AirportDetailPage({ params }: Props) {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* 1b. Live map (aviation preset + airport entity)                   */}
+        {/* ---------------------------------------------------------------- */}
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="h-[320px] md:h-[420px] bg-gray-100 dark:bg-gray-800 relative">
+            <p className="sr-only">
+              Mapa en tiempo real de aeronaves cerca del aeropuerto {airport.name}
+            </p>
+            <AirportEntityMap airportId={slug} center={[lng, lat]} />
           </div>
         </section>
 

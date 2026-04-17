@@ -49,7 +49,7 @@ const ACCENT_COLOR = "#6366f1"; // indigo for trucks
 
 export const metadata: Metadata = {
   title:
-    "Seguridad vial del transporte pesado — Accidentes de camiones en Espana | trafico.live",
+    "Seguridad vial del transporte pesado — Accidentes de camiones en Espana",
   description:
     "Analisis de accidentes con camiones en Espana: tendencia anual, horas de reparto, provincias, efecto del viento y la niebla. Datos DGT 2019-2023.",
   alternates: { canonical: `${BASE_URL}/inteligencia/camiones` },
