@@ -19,9 +19,16 @@ const QuickActions = dynamic(
   { ssr: false }
 );
 
-const UnifiedMap = dynamic(
-  () => import("@/components/map/UnifiedMap").then((m) => m.UnifiedMap),
-  { ssr: false }
+const TraficoMap = dynamic(
+  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[550px] bg-tl-50 dark:bg-slate-900 animate-pulse rounded-xl flex items-center justify-center">
+        <MapIcon className="w-12 h-12 text-gray-400" />
+      </div>
+    ),
+  }
 );
 
 const BreakdownCharts = dynamic(
@@ -49,19 +56,6 @@ function CardsSkeleton() {
   );
 }
 
-function MapLoading() {
-  return (
-    <div className="w-full bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-        <div className="h-6 w-40 bg-gray-200 animate-pulse rounded" />
-      </div>
-      <div className="h-[550px] bg-gray-100 dark:bg-gray-900 animate-pulse flex items-center justify-center">
-        <MapIcon className="w-12 h-12 text-gray-400" />
-      </div>
-    </div>
-  );
-}
-
 function ChartSkeleton() {
   return <div className="h-64 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 animate-pulse" />;
 }
@@ -81,9 +75,12 @@ export function DashboardClient() {
         <QuickActions />
       </Suspense>
 
-      <Suspense fallback={<MapLoading />}>
-        <UnifiedMap defaultHeight="550px" />
-      </Suspense>
+      <TraficoMap
+        preset="home"
+        controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
+        initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
+        className="w-full h-[550px] rounded-xl overflow-hidden"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Suspense fallback={<ChartSkeleton />}>
