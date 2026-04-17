@@ -1,247 +1,227 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion, useReducedMotion } from "motion/react";
-import { X, Hand } from "lucide-react";
-import Link from "next/link";
+/**
+ * ChatPanel — the main chat drawer content.
+ * Renders messages list, input area, and streaming state.
+ * Animated with motion/react (spring, respects prefers-reduced-motion).
+ */
+
+import { useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { X, RotateCcw, AlertCircle } from "lucide-react";
+import { ChatMessage } from "./ChatMessage";
+import { ChatInput } from "./ChatInput";
+import { useChat } from "./useChat";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
 
 interface ChatPanelProps {
+  isOpen: boolean;
   onClose: () => void;
+  conversationId?: string;
 }
 
-const HEADER_ID = "chat-panel-header";
+// ─── Panel animations ─────────────────────────────────────────────────────────
 
-const QUICK_LINKS = [
-  { label: "Ver incidencias", href: "/incidencias" },
-  { label: "Gasolineras baratas", href: "/gasolineras" },
-  { label: "Trenes en vivo", href: "/trenes" },
-] as const;
+const panelVariants = {
+  hidden: { x: "100%", opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { type: "spring" as const, stiffness: 300, damping: 30 },
+  },
+  exit: {
+    x: "100%",
+    opacity: 0,
+    transition: { type: "spring" as const, stiffness: 400, damping: 35 },
+  },
+};
 
-export function ChatPanel({ onClose }: ChatPanelProps) {
-  const prefersReducedMotion = useReducedMotion();
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+const reducedPanelVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.15 } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
+};
 
-  // Focus close button on open for keyboard accessibility
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export function ChatPanel({ isOpen, onClose, conversationId }: ChatPanelProps) {
+  const shouldReduceMotion = useReducedMotion();
+  const { messages, send, isStreaming, error, clearError, reset } = useChat({
+    conversationId,
+  });
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new content arrives
   useEffect(() => {
-    closeButtonRef.current?.focus();
-  }, []);
+    const el = messagesEndRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: shouldReduceMotion ? "auto" : "smooth" });
+  }, [messages, shouldReduceMotion]);
 
-  // ESC key closes the panel
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  const panelVariants = prefersReducedMotion
-    ? {
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
-      }
-    : {
-        initial: { opacity: 0, y: 24 },
-        animate: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            type: "spring" as const,
-            stiffness: 260,
-            damping: 20,
-          },
-        },
-        exit: {
-          opacity: 0,
-          y: 16,
-          transition: { duration: 0.15, ease: "easeIn" },
-        },
-      };
-
-  return (
-    <motion.div
-      role="dialog"
-      aria-labelledby={HEADER_ID}
-      aria-modal="false"
-      variants={panelVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="fixed z-50 flex flex-col overflow-hidden rounded-2xl shadow-2xl"
-      style={{
-        bottom: "5.5rem",
-        right: "1.5rem",
-        width: "min(380px, calc(100vw - 3rem))",
-        maxHeight: "600px",
-        backgroundColor: "var(--background)",
-        border: "1px solid color-mix(in oklch, var(--color-tl-500) 20%, transparent)",
-      }}
-    >
-      {/* ─── Header ─── */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 shrink-0"
-        style={{
-          borderBottom: "1px solid color-mix(in oklch, currentColor 10%, transparent)",
-        }}
-      >
-        {/* Avatar */}
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-          aria-hidden="true"
-          style={{ backgroundColor: "var(--color-tl-500)" }}
-        >
-          <MessageCircleIcon />
-        </div>
-
-        {/* Title */}
-        <h2
-          id={HEADER_ID}
-          className="flex-1 text-sm font-semibold"
-          style={{ fontFamily: "'Exo 2', sans-serif" }}
-        >
-          Asistente trafico.live
-        </h2>
-
-        {/* Close button */}
-        <button
-          ref={closeButtonRef}
-          onClick={onClose}
-          aria-label="Cerrar asistente"
-          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2"
-          style={{
-            // @ts-expect-error CSS custom property
-            "--tw-ring-color": "var(--color-tl-500)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-              "color-mix(in oklch, currentColor 8%, transparent)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-              "transparent";
-          }}
-        >
-          <X className="w-4 h-4" aria-hidden="true" />
-        </button>
-      </div>
-
-      {/* ─── Body ─── */}
-      <div className="flex-1 overflow-auto px-4 py-4 space-y-4">
-        {/* Bot message bubble */}
-        <div className="flex gap-3">
-          {/* Bot avatar dot */}
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-            aria-hidden="true"
-            style={{ backgroundColor: "var(--color-tl-50, #f0f5ff)" }}
-          >
-            <Hand
-              className="w-3.5 h-3.5"
-              style={{ color: "var(--color-tl-600, #1b4bd5)" }}
-              aria-hidden="true"
-            />
-          </div>
-
-          <div
-            className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed"
-            style={{
-              backgroundColor: "color-mix(in oklch, var(--color-tl-500) 8%, transparent)",
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
-            Pronto podré ayudarte a consultar incidencias, precios de
-            combustible, trenes y vuelos en tiempo real. Mientras tanto,
-            explora los mapas en vivo o contacta con nosotros.
-          </div>
-        </div>
-
-        {/* Quick links row */}
-        <div className="flex flex-wrap gap-2 pl-10" role="list" aria-label="Accesos rápidos">
-          {QUICK_LINKS.map(({ label, href }) => (
-            <Link
-              key={href}
-              href={href}
-              role="listitem"
-              className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2"
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                backgroundColor: "color-mix(in oklch, var(--color-tl-500) 10%, transparent)",
-                color: "var(--color-tl-600, #1b4bd5)",
-                border: "1px solid color-mix(in oklch, var(--color-tl-500) 20%, transparent)",
-                // @ts-expect-error CSS custom property
-                "--tw-ring-color": "var(--color-tl-500)",
-              }}
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* ─── Footer ─── */}
-      <div
-        className="px-4 py-3 shrink-0 space-y-2"
-        style={{
-          borderTop: "1px solid color-mix(in oklch, currentColor 10%, transparent)",
-        }}
-      >
-        {/* Disabled textarea */}
-        <div className="relative">
-          <textarea
-            disabled
-            placeholder="El chat estará disponible en S3"
-            rows={2}
-            className="w-full resize-none rounded-xl px-3 py-2 text-sm outline-none cursor-not-allowed"
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              backgroundColor: "color-mix(in oklch, currentColor 5%, transparent)",
-              border: "1px solid color-mix(in oklch, currentColor 12%, transparent)",
-              color: "color-mix(in oklch, currentColor 40%, transparent)",
-            }}
-            aria-label="Campo de chat deshabilitado"
-          />
-        </div>
-
-        {/* "Próximamente" badge */}
-        <div className="flex justify-end">
-          <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              backgroundColor: "color-mix(in oklch, var(--color-tl-amber-500) 15%, transparent)",
-              color: "var(--color-tl-amber-500)",
-              border: "1px solid color-mix(in oklch, var(--color-tl-amber-500) 30%, transparent)",
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: "var(--color-tl-amber-500)" }}
-              aria-hidden="true"
-            />
-            Próximamente
-          </span>
-        </div>
-      </div>
-    </motion.div>
+  // Focus trap: close on Escape
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose]
   );
-}
 
-/** Inline mini icon for the header avatar to avoid importing MessageCircle twice */
-function MessageCircleIcon() {
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
+
+  const variants = shouldReduceMotion ? reducedPanelVariants : panelVariants;
+
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="white"
-      stroke="white"
-      strokeWidth="0"
-      aria-hidden="true"
-    >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Overlay */}
+          <motion.div
+            key="chat-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+            aria-hidden="true"
+            onClick={onClose}
+          />
+
+          {/* Panel */}
+          <motion.aside
+            key="chat-panel"
+            variants={variants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Asistente de trafico.live"
+            className="fixed bottom-0 right-0 z-50 flex flex-col bg-white dark:bg-gray-950 shadow-2xl border-l border-t border-tl-100 dark:border-tl-800/50 rounded-tl-2xl
+              w-full sm:w-[400px] sm:rounded-tl-2xl
+              h-[85dvh] sm:h-[600px] sm:bottom-4 sm:right-4"
+          >
+            {/* ── Header ── */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-tl-100 dark:border-tl-800/50 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                {/* Pulse indicator */}
+                <span className="relative flex w-2 h-2" aria-hidden="true">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-tl-400 opacity-75" />
+                  <span className="relative inline-flex w-2 h-2 rounded-full bg-tl-500" />
+                </span>
+                <span className="font-heading font-semibold text-sm text-gray-900 dark:text-gray-100">
+                  Asistente trafico.live
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1">
+                {/* Reset conversation */}
+                {messages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={reset}
+                    disabled={isStreaming}
+                    aria-label="Nueva conversación"
+                    title="Nueva conversación"
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Close button */}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Cerrar asistente"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Messages ── */}
+            <div
+              ref={listRef}
+              role="list"
+              aria-label="Conversación"
+              aria-live="polite"
+              aria-atomic="false"
+              className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth"
+            >
+              {messages.length === 0 ? (
+                /* Empty state */
+                <div className="flex flex-col items-center justify-center h-full text-center gap-3 px-4">
+                  <div className="w-12 h-12 rounded-2xl bg-tl-50 dark:bg-tl-900/40 border border-tl-100 dark:border-tl-800 flex items-center justify-center">
+                    <span className="text-2xl" role="img" aria-label="Asistente">🚦</span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-heading font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                      ¿En qué puedo ayudarte?
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      Consulta tráfico, trenes, vuelos, barcos,
+                      combustible y calidad del aire en España.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {messages.map((msg) => (
+                    <ChatMessage key={msg.id} message={msg} />
+                  ))}
+                </>
+              )}
+
+              <div ref={messagesEndRef} aria-hidden="true" />
+            </div>
+
+            {/* ── Error banner ── */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  className="mx-4 mb-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-start gap-2"
+                  role="alert"
+                >
+                  <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-red-700 dark:text-red-300 leading-relaxed">
+                      {error}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={clearError}
+                      className="text-[10px] underline text-red-600 dark:text-red-400 mt-0.5 hover:no-underline"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── Input ── */}
+            <div className="px-4 pb-4 pt-2 border-t border-tl-100 dark:border-tl-800/50 flex-shrink-0">
+              <ChatInput
+                onSend={send}
+                isStreaming={isStreaming}
+                isEmpty={messages.length === 0}
+              />
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
