@@ -51,7 +51,7 @@ export const REALTIME_FEEDS: RealtimeFeed[] = [
   {
     operatorSlug: "metro-bilbao",
     operatorName: "Metro Bilbao",
-    mdbId: "mdb-1053",
+    mdbId: "mdb-3052",
     url: "https://ctb-gtfs-rt.s3.eu-south-2.amazonaws.com/metro-bilbao-vehicle-positions.pb",
     enabled: true,
     cadenceMs: 30_000,
@@ -62,7 +62,7 @@ export const REALTIME_FEEDS: RealtimeFeed[] = [
   {
     operatorSlug: "bizkaibus",
     operatorName: "Bizkaibus",
-    mdbId: "mdb-1054",
+    mdbId: "mdb-1135",
     url: "https://baliabideak.bizkaia.eus/Bizkaibus/GTFSRealTime/FeedVehiculos.pb",
     enabled: true,
     cadenceMs: 30_000,
@@ -73,7 +73,7 @@ export const REALTIME_FEEDS: RealtimeFeed[] = [
   {
     operatorSlug: "bilbobus",
     operatorName: "Bilbobus",
-    mdbId: "mdb-1055",
+    mdbId: "mdb-2681",
     url: "https://www.bilbao.eus/opendata/datos/bilbobus-gtfs-rt",
     enabled: true,
     cadenceMs: 30_000,
@@ -84,7 +84,7 @@ export const REALTIME_FEEDS: RealtimeFeed[] = [
   {
     operatorSlug: "carris-metropolitana",
     operatorName: "Carris Metropolitana",
-    mdbId: "mdb-carris-metropolitana",
+    mdbId: "mdb-2027",
     url: "https://api.carrismetropolitana.pt/vehicles.pb",
     enabled: true,
     cadenceMs: 30_000,
