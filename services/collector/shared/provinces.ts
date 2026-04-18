@@ -63,7 +63,7 @@ const PROVINCE_ALIASES: Record<string, string> = {
   "lerida": "25", "lleida": "25",
   "orense": "32", "ourense": "32",
   "baleares": "07", "illes balears": "07", "islas baleares": "07",
-  "santa cruz de tenerife": "38", "tenerife": "38",
+  "santa cruz de tenerife": "38", "sta. cruz de tenerife": "38", "tenerife": "38",
   "las palmas": "35", "gran canaria": "35",
   "la rioja": "26", "rioja": "26",
   "navarra": "31", "nafarroa": "31",

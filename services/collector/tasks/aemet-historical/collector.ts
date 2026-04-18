@@ -14,6 +14,7 @@
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { normalizeProvince } from "../../shared/provinces.js";
 
 const TASK = "aemet-historical";
 const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
@@ -258,6 +259,7 @@ async function syncStations(prisma: PrismaClient, apiKey: string): Promise<Map<s
     }
 
     const altRaw = s.altitud ? parseAEMETInt(s.altitud) : null;
+    const provinceCode = s.provincia ? normalizeProvince(s.provincia) : null;
 
     try {
       const record = await prisma.climateStation.upsert({
@@ -266,6 +268,7 @@ async function syncStations(prisma: PrismaClient, apiKey: string): Promise<Map<s
           stationCode: s.indicativo,
           name: s.nombre,
           provinceName: s.provincia ?? null,
+          province: provinceCode,
           latitude: lat,
           longitude: lng,
           altitude: altRaw,
@@ -274,6 +277,7 @@ async function syncStations(prisma: PrismaClient, apiKey: string): Promise<Map<s
         update: {
           name: s.nombre,
           provinceName: s.provincia ?? null,
+          province: provinceCode,
           latitude: lat,
           longitude: lng,
           altitude: altRaw,
