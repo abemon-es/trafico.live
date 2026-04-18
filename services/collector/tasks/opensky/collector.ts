@@ -27,6 +27,7 @@ import { PrismaClient } from "@prisma/client";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "opensky";
 
@@ -307,4 +308,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   await cleanupOldPositions(prisma);
 
   log(TASK, "Done");
+  await heartbeat(prisma, TASK, stored > 0 ? "ok" : "partial", { stored });
 }

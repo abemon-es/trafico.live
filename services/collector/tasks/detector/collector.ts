@@ -18,6 +18,7 @@
 import { PrismaClient } from "@prisma/client";
 import { ensureArray, log, logError } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "detector";
 
@@ -539,4 +540,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
     TASK,
     `Processed ${detectorCount} detectors, ${readingCount} readings — done in ${elapsed}s`
   );
+  await heartbeat(prisma, TASK, "ok", { detectors: detectorCount, readings: readingCount, elapsed });
 }

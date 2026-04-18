@@ -19,6 +19,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { createHash } from "crypto";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { writeFile, mkdtemp, rm, stat } from "fs/promises";
 import { createReadStream } from "fs";
 import { createInterface } from "readline";
@@ -577,4 +578,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   await triggerPmtilesRegen(layersForTask("transit-gtfs"));
+  await heartbeat(prisma, TASK, failed === 0 ? "ok" : "partial", { processed, skipped, failed, routes: totalRoutes, stops: totalStops });
 }

@@ -14,6 +14,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { createReconnectingWS } from "../../shared/ws-client.js";
 import { log, logError } from "../../shared/utils.js";
 
@@ -392,6 +393,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
     TASK,
     `Final: ${messagesReceived} messages, ${positionsStored} positions, ${vesselsUpdated} vessels`
   );
+
+  await heartbeat(prisma, TASK, "ok", { messages: messagesReceived, positions: positionsStored, vessels: vesselsUpdated });
 
   // Suppress unused warning — wsClient.stop() is called via AbortSignal
   void wsClient;

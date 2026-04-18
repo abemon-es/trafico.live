@@ -78,11 +78,16 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
       // CDN edge caching — Cloudflare respects s-maxage.
+      // CDN-Cache-Control is read by Cloudflare independently of the Vary header.
+      // Next.js App Router injects Vary:rsc,next-router-* on every HTML response,
+      // which causes Cloudflare to return CF-Cache-Status:DYNAMIC and bypass caching.
+      // Adding CDN-Cache-Control instructs Cloudflare to cache regardless of Vary tokens.
       // Tier 1: static-ish pages (5min edge cache)
       {
         source: "/(radares|zbe|etiqueta-ambiental|sobre|aviso-legal|politica-privacidad|politica-cookies|api-docs|ciclistas|puntos-negros|calculadora|cuanto-cuesta-cargar|mejor-hora|media|operaciones|restricciones)/:path*",
         headers: [
           { key: "Cache-Control", value: "public, s-maxage=300, stale-while-revalidate=600" },
+          { key: "CDN-Cache-Control", value: "public, max-age=300, stale-while-revalidate=600" },
         ],
       },
       // Tier 2: all other pages (60s edge cache)
@@ -90,6 +95,7 @@ const nextConfig: NextConfig = {
         source: "/((?!api/|_next/|sitemap).*)",
         headers: [
           { key: "Cache-Control", value: "public, s-maxage=60, stale-while-revalidate=120" },
+          { key: "CDN-Cache-Control", value: "public, max-age=60, stale-while-revalidate=120" },
         ],
       },
     ];
@@ -301,6 +307,7 @@ export default withSentryConfig(nextConfig, {
   project: process.env.SENTRY_PROJECT,
   silent: true,
   widenClientFileUpload: true,
+  release: process.env.SENTRY_RELEASE,
   // Tunnel route proxies Sentry events through our domain — avoids ad blockers
   tunnelRoute: "/monitoring",
   // GlitchTip doesn't support Sentry source map upload API,

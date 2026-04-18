@@ -14,6 +14,7 @@ import { PrismaClient, ChargerType } from "@prisma/client";
 import { PROVINCES, normalizeProvince } from "../../shared/provinces.js";
 import { ensureArray } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const DGT_CHARGERS_URL =
   "https://infocar.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml";
@@ -446,9 +447,11 @@ export async function run(prisma: PrismaClient) {
     }
 
     console.log("[charger-collector] Collection completed successfully");
+    await heartbeat(prisma, "charger", "ok", { total: chargers.length, created, updated });
 
   } catch (error) {
     console.error("[charger-collector] Fatal error:", error);
+    await heartbeat(prisma, "charger", "error", { error: String(error) });
     throw error;
   }
 }

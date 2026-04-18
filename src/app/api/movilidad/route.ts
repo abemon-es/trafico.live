@@ -44,16 +44,38 @@ export async function GET(request: NextRequest) {
     }
     const groupBy = groupByRaw as GroupBy;
 
-    const now = new Date();
-    const defaultFrom = new Date(now);
-    defaultFrom.setDate(defaultFrom.getDate() - 30);
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
 
-    const from = searchParams.get("from")
-      ? new Date(searchParams.get("from")!)
-      : defaultFrom;
-    const to = searchParams.get("to")
-      ? new Date(searchParams.get("to")!)
-      : now;
+    let from: Date;
+    let to: Date;
+    let latestFallback = false;
+
+    if (fromParam || toParam) {
+      const now = new Date();
+      const defaultFrom = new Date(now);
+      defaultFrom.setDate(defaultFrom.getDate() - 30);
+      from = fromParam ? new Date(fromParam) : defaultFrom;
+      to = toParam ? new Date(toParam) : now;
+    } else {
+      // No date window requested → use latest 30d of available data.
+      // MobilityODFlow is a one-shot backfill; current data ends 2024-01-07.
+      const latest = await prisma.mobilityODFlow.findFirst({
+        orderBy: { date: "desc" },
+        select: { date: true },
+      });
+      if (latest) {
+        to = latest.date;
+        from = new Date(to);
+        from.setDate(from.getDate() - 30);
+        latestFallback = true;
+      } else {
+        const now = new Date();
+        from = new Date(now);
+        from.setDate(from.getDate() - 30);
+        to = now;
+      }
+    }
 
     const cacheKey = `movilidad:${origin || "all"}:${dest || "all"}:${from.toISOString().slice(0, 10)}:${to.toISOString().slice(0, 10)}:${groupBy}:${limit}`;
 
@@ -110,6 +132,7 @@ export async function GET(request: NextRequest) {
         from: from.toISOString().slice(0, 10),
         to: to.toISOString().slice(0, 10),
         groupBy,
+        latestFallback,
       },
     });
   } catch (error) {

@@ -2572,3 +2572,67 @@ model CollectorHeartbeat {
 
   @@map("collector_heartbeats")
 }
+
+// ============================================
+// FORECAST DATA (HS2 producer)
+// ============================================
+
+/// AEMET 7-day forecast per weather station, refreshed every 6h.
+/// Produced by services/collector/tasks/aemet-forecast/
+model WeatherForecast {
+  id            String   @id @default(cuid())
+  stationId     String   // AEMET idema (matches ClimateStation.indicativo)
+  municipioCode String? // INE municipality code when available
+  province      String? // INE province 2-digit code
+  forecastAt    DateTime @db.Timestamptz // When the forecast was issued (AEMET "elaborado")
+  validAt       DateTime @db.Timestamptz // When the forecast is valid for
+  horizonHours  Int // 0, 6, 12, 24, 48, 72, 96, 120, 144, 168
+
+  tempMin     Float? // °C
+  tempMax     Float? // °C
+  tempFeel    Float? // Feels-like °C
+  precipProb  Int? // 0-100%
+  precipMm    Float? // mm over horizon window
+  windSpeed   Float? // km/h
+  windDirDeg  Int? // 0-360
+  windGust    Float? // km/h
+  skyState    String? // AEMET sky code ("11", "12n" etc.)
+  skyLabel    String? // Human-readable ("despejado", "nuboso")
+  humidityPct Int? // 0-100%
+  uvIndex     Int? // 0-11+
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  @@unique([stationId, validAt])
+  @@index([validAt])
+  @@index([province, validAt])
+  @@index([forecastAt])
+  @@map("weather_forecasts")
+}
+
+/// CAMS 5-day air quality forecast per gridpoint, refreshed every 12h.
+/// Produced by services/collector/tasks/cams-aq/
+model AQForecast {
+  id           String   @id @default(cuid())
+  gridLat      Float // CAMS 0.1° grid centroid
+  gridLon      Float
+  province     String? // INE province code of dominant overlapping province
+  forecastAt   DateTime @db.Timestamptz // When the forecast was issued
+  validAt      DateTime @db.Timestamptz
+  horizonHours Int // 0, 6, 12, 24, 48, 72, 96, 120
+
+  no2         Float? // µg/m³ surface
+  pm10        Float? // µg/m³ surface
+  pm25        Float? // µg/m³ surface
+  o3          Float? // µg/m³ surface
+  so2         Float? // µg/m³ surface
+  icaExpected Int? // ICA 1-6 derived from worst-component rule
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  @@unique([gridLat, gridLon, validAt])
+  @@index([validAt])
+  @@index([province, validAt])
+  @@index([forecastAt])
+  @@map("aq_forecasts")
+}

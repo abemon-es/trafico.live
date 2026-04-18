@@ -7,6 +7,7 @@
 
 import { PrismaClient, WeatherAlertType as PrismaWeatherAlertType } from "@prisma/client";
 import { fetchAEMETAlerts, AEMETAlert, WeatherAlertType } from "./aemet-parser.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 // Map parser types to Prisma enum
 const TYPE_MAP: Record<WeatherAlertType, PrismaWeatherAlertType> = {
@@ -117,8 +118,10 @@ export async function run(prisma: PrismaClient) {
       console.log(`  ${stat.type} (${stat.isActive ? "active" : "inactive"}): ${stat._count}`);
     }
 
+    await heartbeat(prisma, "weather", "ok", { alerts: created });
   } catch (error) {
     console.error("[weather-collector] Fatal error:", error);
+    await heartbeat(prisma, "weather", "error", { error: String(error) });
     throw error;
   }
 

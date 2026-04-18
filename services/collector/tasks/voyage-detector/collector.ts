@@ -14,6 +14,7 @@
 
 import { PrismaClient, VoyageStatus } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "voyage-detector";
 
@@ -253,4 +254,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, `Done: ${portCallsCreated} port calls, ${voyagesCreated} voyages created`);
+  await heartbeat(prisma, TASK, "ok", { portCalls: portCallsCreated, voyages: voyagesCreated });
+
 }

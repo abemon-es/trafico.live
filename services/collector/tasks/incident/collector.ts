@@ -17,6 +17,7 @@
 
 import { PrismaClient, IncidentType, Severity, RoadType, Direction } from "@prisma/client";
 import { inferRoadType } from "../../shared/utils.js";
+import { heartbeat } from "../../shared/heartbeat.js";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
@@ -487,8 +488,10 @@ export async function run(prisma: PrismaClient) {
       console.log(`  ${stat.source} (${stat.isActive ? "active" : "inactive"}): ${stat._count}`);
     }
 
+    await heartbeat(prisma, "incident", "ok", { total: allIncidents.length, created, updated, skipped });
   } catch (error) {
     console.error("[collector] Fatal error:", error);
+    await heartbeat(prisma, "incident", "error", { error: String(error) });
     throw error;
   }
 

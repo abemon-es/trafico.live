@@ -39,6 +39,9 @@ const mitecoAgent = new https.Agent({ rejectUnauthorized: false });
 
 const TASK = "air-quality";
 
+// Tracks the last hour a fetch-failure log was emitted (avoids log spam on repeated failures)
+const failureLoggedAtHour: { primary?: number; backend?: number } = {};
+
 // ---------------------------------------------------------------------------
 // Candidate endpoints (tried in order)
 // ---------------------------------------------------------------------------
@@ -258,7 +261,7 @@ async function fetchWithTimeout(url: string, timeoutMs = 30000, init?: RequestIn
     const fetchOpts: RequestInit & { dispatcher?: unknown } = {
       signal: controller.signal,
       headers: {
-        "User-Agent": "trafico.live-collector",
+        "User-Agent": "Mozilla/5.0 trafico.live collector",
         "Accept": "text/csv, application/json, application/geo+json",
         ...(isMiteco ? { "Origin": "https://ica.miteco.es" } : {}),
         ...(init?.headers || {}),
@@ -559,40 +562,75 @@ async function fetchBackendStations(): Promise<StationData[]> {
 export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, "Starting MITECO air quality collector (v2 — ica.miteco.es)");
 
+  const currentHour = new Date().getUTCHours();
+
   // Strategy: try CSV first (stable, CC-BY 4.0), fallback to backend JSON
   let stations: StationData[] = [];
+  let primarySource = "csv";
 
-  // Attempt 1: MITECO open data CSV
+  // Attempt 1: MITECO open data CSV (30s timeout, UA required by MITECO)
   try {
-    log(TASK, `Fetching ${CSV_URL}`);
-    const res = await fetchWithTimeout(CSV_URL);
+    log(TASK, `Fetching primary CSV: ${CSV_URL}`);
+    const res = await fetchWithTimeout(CSV_URL, 30000);
+    const bytes = res.headers.get("content-length") ?? "unknown";
+    log(TASK, `CSV response: HTTP ${res.status}, content-length=${bytes}`);
+
     if (res.ok) {
       const csv = await res.text();
+      const bodyBytes = Buffer.byteLength(csv, "utf8");
+      log(TASK, `CSV body: ${bodyBytes} bytes`);
       stations = parseIcaCsv(csv);
       log(TASK, `CSV: parsed ${stations.length} stations`);
     } else {
-      log(TASK, `CSV returned HTTP ${res.status} — trying backend`);
+      // Log first failure per hour to avoid spam
+      if (failureLoggedAtHour.primary !== currentHour) {
+        failureLoggedAtHour.primary = currentHour;
+        log(TASK, `CSV returned HTTP ${res.status} (logged once/hour) — trying backend`);
+      } else {
+        log(TASK, `CSV returned HTTP ${res.status} — trying backend`);
+      }
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    log(TASK, `CSV fetch error: ${msg} — trying backend`);
+    if (failureLoggedAtHour.primary !== currentHour) {
+      failureLoggedAtHour.primary = currentHour;
+      log(TASK, `CSV fetch error (logged once/hour): ${msg} — trying backend`);
+    } else {
+      log(TASK, `CSV fetch error: ${msg} — trying backend`);
+    }
   }
 
   // Attempt 2: MITECO backend JSON API
   if (stations.length === 0) {
+    primarySource = "backend";
     try {
+      log(TASK, `Falling back to MITECO backend: ${BACKEND_URL}`);
       stations = await fetchBackendStations();
       log(TASK, `Backend: parsed ${stations.length} stations`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      log(TASK, `Backend error: ${msg}`);
+      if (failureLoggedAtHour.backend !== currentHour) {
+        failureLoggedAtHour.backend = currentHour;
+        log(TASK, `Backend error (logged once/hour): ${msg}`);
+      } else {
+        log(TASK, `Backend error: ${msg}`);
+      }
     }
   }
 
   if (stations.length === 0) {
-    log(TASK, "No data from any source. Exiting safely.");
+    log(TASK, "No data from any source — both CSV and backend failed. Emitting error heartbeat.");
+    await heartbeat(prisma, TASK, "error", {
+      source: "none",
+      error: "Both primary CSV and backend API returned 0 stations",
+      csvUrl: CSV_URL,
+      backendUrl: BACKEND_URL,
+      hour: currentHour,
+    });
     return;
   }
+
+  log(TASK, `Proceeding with ${stations.length} stations from source=${primarySource}`);
 
   // Upsert stations + insert readings
   let upserted = 0;
@@ -661,7 +699,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "Air quality collector complete");
-  await heartbeat(prisma, TASK, readings > 0 ? "ok" : (upserted > 0 ? "partial" : "error"), {
+  const status = readings >= 100 ? "ok" : readings > 0 ? "partial" : "error";
+  await heartbeat(prisma, TASK, status, {
+    source: primarySource,
     stations: upserted,
     readings,
     errors: errors.length,

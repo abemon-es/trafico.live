@@ -40,7 +40,7 @@ const VALID_TASKS = [
   // Railway
   "renfe-gtfs", "renfe-alerts", "renfe-ld-realtime",
   // Analytics & Historical
-  "cnmc-fuel", "aemet-historical", "mobility-od", "accident-microdata",
+  "cnmc-fuel", "aemet-historical", "aemet-forecast", "mobility-od", "accident-microdata",
   // Aggregation
   "daily-stats", "backfill-profiles",
   // One-shot / manual
@@ -62,10 +62,15 @@ const VALID_TASKS = [
   // Air quality
   "air-quality",
   "air-quality-ccaa",
+  "cams-aq",
+  // Railway fallback
+  "adif-fallback",
   // Failsafe
   "health-check",
   // Voyage analytics
   "voyage-detector",
+  // Weather radar
+  "eumetsat-radar",
 ];
 
 if (!TASK) {

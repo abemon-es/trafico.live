@@ -13,6 +13,7 @@
  */
 
 import { PrismaClient, ArticleCategory } from "@prisma/client";
+import { heartbeat } from "../../shared/heartbeat.js";
 
 function todaySlug(): string {
   return new Date().toISOString().split("T")[0];
@@ -439,4 +440,5 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   console.log(`[noticias] Created ${total} new articles`);
+  await heartbeat(prisma, "insights", "ok", { articles: total });
 }
