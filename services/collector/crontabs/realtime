@@ -36,5 +36,14 @@
 # MITECO air quality — 506 stations, ICA index (hourly)
 0 * * * * TASK=air-quality npx tsx index.ts 2>&1
 
+# EUMETSAT radar composite (15-min, RainViewer fallback if credentials missing) — T3.2
+*/15 * * * * TASK=eumetsat-radar npx tsx index.ts 2>&1
+
+# Alert matching engine (every 5 min) — ROAD/TRAIN/FLIGHT × Push/Email/Telegram — T4.8g
+*/5 * * * * TASK=alert-matcher npx tsx index.ts 2>&1
+
+# Social broadcast (every 5 min, dedup via Redis 24h) — T4.9d
+*/5 * * * * TASK=social-broadcast npx tsx index.ts 2>&1
+
 # Health check failsafe — checks all tables against SLAs, triggers recovery for stale data
 */30 * * * * TASK=health-check npx tsx index.ts 2>&1
