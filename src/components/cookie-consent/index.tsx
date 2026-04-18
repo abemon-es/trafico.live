@@ -77,10 +77,11 @@ export function CookieConsent() {
   return (
     <FocusTrap
       active={visible}
+      onEscape={handleRejectAll}
       role="dialog"
       ariaModal
       ariaLabel="Consentimiento de cookies"
-      initialFocus="first"
+      initialFocus="container"
       className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-5 animate-in slide-in-from-bottom duration-300"
     >
       <div className="mx-auto max-w-4xl rounded-xl border border-gray-200 bg-white p-5 shadow-2xl md:p-6 dark:border-gray-800 dark:bg-gray-900">
@@ -110,21 +111,21 @@ export function CookieConsent() {
               <button
                 type="button"
                 onClick={() => setShowSettings(true)}
-                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                className="rounded-lg bg-gray-100 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 min-h-[44px]"
               >
                 Configurar
               </button>
               <button
                 type="button"
                 onClick={handleRejectAll}
-                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                className="rounded-lg bg-gray-100 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 min-h-[44px]"
               >
                 Solo necesarias
               </button>
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="rounded-lg bg-tl-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-tl-700"
+                className="rounded-lg bg-tl-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-tl-700 min-h-[44px]"
               >
                 Aceptar todas
               </button>
@@ -211,21 +212,21 @@ export function CookieConsent() {
               <button
                 type="button"
                 onClick={() => setShowSettings(false)}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                className="rounded-lg px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white min-h-[44px]"
               >
                 Volver
               </button>
               <button
                 type="button"
                 onClick={handleRejectAll}
-                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                className="rounded-lg bg-gray-100 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 min-h-[44px]"
               >
                 Solo necesarias
               </button>
               <button
                 type="button"
                 onClick={handleSaveCustom}
-                className="rounded-lg bg-tl-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-tl-700"
+                className="rounded-lg bg-tl-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-tl-700 min-h-[44px]"
               >
                 Guardar selección
               </button>

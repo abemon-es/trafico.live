@@ -165,11 +165,11 @@ export function StationRanking({ stationId, stationType = "terrestrial", default
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <h3 className="font-semibold text-gray-900 dark:text-gray-100">Ranking de Precios</h3>
 
         {/* Fuel selector */}
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-900 rounded-lg p-1">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-900 rounded-lg p-1 overflow-x-auto shrink-0">
           {availableFuels.map((fuel) => (
             <button
               key={fuel.value}

@@ -36,7 +36,7 @@ export function Header() {
                 }
                 aria-expanded={navState.mobileMenuOpen}
                 aria-controls="mobile-nav"
-                className="md:hidden p-2 rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600 transition-colors dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                className="md:hidden p-3 rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600 transition-colors dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                 onClick={() =>
                   navState.setMobileMenuOpen(!navState.mobileMenuOpen)
                 }
