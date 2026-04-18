@@ -1,15 +1,13 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { auth } from "@/lib/auth-config";
 
 /**
  * Admin shell for /admin/affiliates.
  *
- * Access check: ADMIN_EMAILS env var (comma-separated).
+ * Access check: authenticated session + email in ADMIN_EMAILS env var.
  * TODO(T3.6): switch to session.user.role === 'ADMIN' once the role field
- * lands in the User model and B1's auth() is wired.
- *
- * For S0/S4 scaffold we read a custom header set by middleware/session.
- * In production this must come from a verified server-side session.
+ * lands in the User model.
  */
 
 function isAdmin(email: string | null | undefined): boolean {
@@ -20,22 +18,19 @@ function isAdmin(email: string | null | undefined): boolean {
   return list.includes(email.toLowerCase());
 }
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export default async function AdminAffiliatesLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  // In a real auth setup, read session here (e.g. getServerSession).
-  // For now, check ADMIN_EMAILS against a session placeholder.
-  // When B1's auth() is integrated, replace this block:
-  const adminEmail = process.env.ADMIN_SEED_EMAIL ?? null; // dev override
+  const session = await auth();
 
-  // In production this check will use real session email.
-  // For S4, this effectively always allows access when ADMIN_SEED_EMAIL is set,
-  // or blocks everyone otherwise — intentional, prevents accidental exposure.
-  if (!isAdmin(adminEmail)) {
-    redirect("/");
+  if (!session?.user?.id) {
+    redirect("/login?redirect=/admin/affiliates");
+  }
+
+  if (!isAdmin(session.user.email)) {
+    redirect("/login?redirect=/admin/affiliates");
   }
 
   return (

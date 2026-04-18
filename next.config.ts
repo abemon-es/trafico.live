@@ -118,6 +118,50 @@ const nextConfig: NextConfig = {
           source: "/sitemap/:id(\\d+).xml",
           destination: "/api/sitemap/:id",
         },
+        // -----------------------------------------------------------------------
+        // Spanish API aliases — backward-compatible proxies to English endpoints.
+        // URL remains Spanish; response is served from the English route handler.
+        // -----------------------------------------------------------------------
+        {
+          source: "/api/incidencias",
+          destination: "/api/incidents",
+        },
+        {
+          source: "/api/incidencias/:path*",
+          destination: "/api/incidents/:path*",
+        },
+        {
+          source: "/api/meteo",
+          destination: "/api/weather",
+        },
+        {
+          source: "/api/meteo/:path*",
+          destination: "/api/weather/:path*",
+        },
+        {
+          source: "/api/alertas-meteo",
+          destination: "/api/weather-alerts",
+        },
+        {
+          source: "/api/alertas-meteo/:path*",
+          destination: "/api/weather-alerts/:path*",
+        },
+        {
+          source: "/api/camaras",
+          destination: "/api/cameras",
+        },
+        {
+          source: "/api/camaras/:path*",
+          destination: "/api/cameras/:path*",
+        },
+        {
+          source: "/api/radares",
+          destination: "/api/radars",
+        },
+        {
+          source: "/api/radares/:path*",
+          destination: "/api/radars/:path*",
+        },
       ],
     };
   },
@@ -135,17 +179,6 @@ const nextConfig: NextConfig = {
       {
         source: "/combustible/:path*",
         destination: "/gasolineras/:path*",
-        permanent: true,
-      },
-      // 301: /alertas → /incidencias
-      {
-        source: "/alertas",
-        destination: "/incidencias",
-        permanent: true,
-      },
-      {
-        source: "/alertas/:path*",
-        destination: "/incidencias/:path*",
         permanent: true,
       },
       // 301: /provincias → /espana

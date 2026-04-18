@@ -20,7 +20,7 @@ export default async function FleetDashboardPage() {
   // ── Auth ──────────────────────────────────────────────────────────────────
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/flotas/onboarding");
+    redirect("/login?redirect=/flotas/dashboard");
   }
 
   // ── Fleet client lookup ───────────────────────────────────────────────────
@@ -47,7 +47,7 @@ export default async function FleetDashboardPage() {
     });
 
     if (!fleetClient) {
-      redirect("/flotas/onboarding");
+      redirect("/login?redirect=/flotas/dashboard");
     }
 
     // Fetch vehicles with their latest position

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { UserCircle } from "lucide-react";
 import { ComingSoon } from "@/components/ui/ComingSoon";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { generateWebPageSchema } from "@/components/seo/StructuredData";
+import { auth } from "@/lib/auth-config";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -22,7 +24,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AccountPage() {
+export default async function AccountPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login?redirect=/account");
+  }
+
   const schema = generateWebPageSchema({
     title: "Mi cuenta — trafico.live",
     description:
