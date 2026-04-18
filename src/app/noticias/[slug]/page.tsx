@@ -250,10 +250,13 @@ export default async function ArticlePage({ params }: Props) {
                   {article.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="flex items-center gap-1.5">
+                  <time
+                    dateTime={article.publishedAt.toISOString()}
+                    className="flex items-center gap-1.5"
+                  >
                     <Calendar className="w-4 h-4" />
                     {dateStr}
-                  </span>
+                  </time>
                   {article.readTime && (
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-4 h-4" />
@@ -277,6 +280,14 @@ export default async function ArticlePage({ params }: Props) {
                     </a>
                   )}
                 </div>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span>Por </span>
+                  <cite>
+                    <Link href="/sobre" className="not-italic hover:text-tl-600 dark:hover:text-tl-400 transition-colors">
+                      trafico.live
+                    </Link>
+                  </cite>
+                </p>
                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                   {article.summary}
                 </p>

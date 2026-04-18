@@ -2,6 +2,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Route, Car, Construction, MapPin, TrendingUp, Globe } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
@@ -125,8 +126,39 @@ export default async function CarreterasPage() {
       totalKm: Number(r.totalKm),
     }));
 
+  const faqSchema = generateFAQSchema({
+    questions: [
+      {
+        question: "¿Cuántas carreteras hay en España?",
+        answer:
+          "España cuenta con más de 160.000 km de red de carreteras del Estado (RCE), incluyendo autopistas de peaje (AP), autovías (A), carreteras nacionales (N) y vías regionales. Es la mayor red de autovías de Europa.",
+      },
+      {
+        question: "¿Cuál es la diferencia entre autopista y autovía?",
+        answer:
+          "Ambas son vías de alta capacidad con calzadas separadas. Las autopistas (AP) son de peaje y tienen estándares geométricos más estrictos, mientras que las autovías (A) son gratuitas. Ambas tienen velocidad máxima de 120 km/h para turismos.",
+      },
+      {
+        question: "¿Cómo consultar el estado del tráfico en una carretera concreta?",
+        answer:
+          "En trafico.live puedes buscar cualquier carretera por su identificador (por ejemplo, A-1, AP-7, N-340) y ver su estado en tiempo real: cámaras de vigilancia, radares de velocidad, incidencias activas de la DGT y estaciones de aforo. Los datos se actualizan automáticamente desde el feed DATEX II de la DGT.",
+      },
+      {
+        question: "¿Dónde puedo ver las cámaras de tráfico de las carreteras españolas?",
+        answer:
+          "En la ficha de cada carretera en trafico.live encontrarás el listado completo de cámaras de vigilancia activas, con su ubicación por punto kilométrico. También puedes ver el mapa interactivo con todas las cámaras y acceder a las imágenes en tiempo real.",
+      },
+      {
+        question: "¿Cuáles son las carreteras más largas de España?",
+        answer:
+          "Entre las carreteras más extensas destacan la N-630 (Autovía de la Plata), la A-66, la N-II (de Madrid a la frontera francesa) y la A-7 (Autopista del Mediterráneo). Muchas nacionales históricas superan los 500 km de longitud.",
+      },
+    ],
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <StructuredData data={faqSchema} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={[
           { name: "Inicio", href: "/" },
