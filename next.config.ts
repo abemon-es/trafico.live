@@ -188,13 +188,9 @@ const nextConfig: NextConfig = {
       // -----------------------------------------------------------------------
       // Geographic duplicates
       // -----------------------------------------------------------------------
-      // /trafico/:city → /ciudad/:city (resolved to /espana/... via middleware)
-      // Exclude real /trafico/* routes: mapa, opengraph-image, twitter-image, icon.
-      {
-        source: "/trafico/:city((?!mapa$|opengraph-image$|twitter-image$|icon$).+)",
-        destination: "/ciudad/:city",
-        permanent: true,
-      },
+      // NOTE: /trafico/:city redirect removed — the destination /ciudad/:city had
+      // no dynamic route, causing 15 city links from header+footer+home to 404.
+      // /trafico/[city]/page.tsx exists and handles the city view directly.
       // /explorar/territorios/:slug → /espana/:slug
       {
         source: "/explorar/territorios/:slug",

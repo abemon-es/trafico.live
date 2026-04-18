@@ -96,7 +96,7 @@ const COLUMN_4 = {
 const DESTACADO_LINKS = [
   { label: "Semana Santa 2026", href: "/semana-santa-2026" },
   { label: "Puente de Mayo 2026", href: "/puente-mayo-2026" },
-  { label: "Operaciones DGT", href: "/operaciones-dgt" },
+  { label: "Operaciones DGT", href: "/operaciones" },
   { label: "Informe diario", href: "/informe-diario" },
   { label: "Profesional", href: "/profesional" },
   { label: "Ciclistas", href: "/ciclistas" },

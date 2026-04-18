@@ -655,7 +655,7 @@ export default async function PortDetailPage({ params }: Props) {
               {/* Vessel list */}
               <div className="grid gap-2">
                 {vessels.slice(0, 30).map((pos) => {
-                  const cat = getShipCategory(pos.vessel.shipType);
+                  const cat = getShipCategory(pos.vessel?.shipType);
                   const statusLabel = getNavStatusLabel(pos.navStatus);
                   const statusBadge = getNavStatusBadge(pos.navStatus);
 
@@ -666,13 +666,13 @@ export default async function PortDetailPage({ params }: Props) {
                     >
                       {/* Flag + Name */}
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {pos.vessel.flag && (
+                        {pos.vessel?.flag && (
                           <span className="text-lg flex-shrink-0" title={pos.vessel.flag}>
                             {flagEmoji(pos.vessel.flag)}
                           </span>
                         )}
                         <span className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                          {pos.vessel.name || `MMSI ${pos.mmsi}`}
+                          {pos.vessel?.name || `MMSI ${pos.mmsi}`}
                         </span>
                         <span
                           className={`flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded ${getShipCategoryColor(cat)}`}
@@ -695,12 +695,12 @@ export default async function PortDetailPage({ params }: Props) {
                             {statusLabel}
                           </span>
                         )}
-                        {pos.vessel.length != null && pos.vessel.length > 0 && (
+                        {pos.vessel?.length != null && pos.vessel.length > 0 && (
                           <span className="font-data tabular-nums text-gray-500 dark:text-gray-500 text-xs">
                             {pos.vessel.length}m
                           </span>
                         )}
-                        {pos.vessel.destination && (
+                        {pos.vessel?.destination && (
                           <span className="text-xs text-gray-500 dark:text-gray-500 truncate max-w-[120px]" title={pos.vessel.destination}>
                             <Flag className="w-3 h-3 inline mr-0.5" />
                             {pos.vessel.destination}

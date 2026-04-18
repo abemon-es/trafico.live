@@ -15,8 +15,8 @@ const SEA_FEATURE_LINKS = [
   { label: "Puertos", href: "/maritimo/puertos" },
   { label: "Combustible marítimo", href: "/maritimo/combustible" },
   { label: "Meteorología costera", href: "/maritimo/meteorologia" },
-  { label: "Seguridad", href: "/maritimo/emergencias" },
-  { label: "SASEMAR", href: "/maritimo/emergencias" },
+  { label: "Seguridad", href: "/maritimo/seguridad" },
+  { label: "SASEMAR", href: "/maritimo/seguridad" },
 ];
 
 const ROAD_LAYERS = [

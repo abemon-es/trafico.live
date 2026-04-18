@@ -20,6 +20,7 @@ interface FuelPricesToday {
 
 interface FuelCard {
   key: string;
+  slug: string;
   label: string;
   staticPrice: number;
   staticDelta: number;
@@ -31,6 +32,7 @@ interface FuelCard {
 const FUEL_CARDS: FuelCard[] = [
   {
     key: "g95",
+    slug: "tipo/gasolina-95",
     label: "Gasolina 95",
     staticPrice: 1.389,
     staticDelta: -0.8,
@@ -39,6 +41,7 @@ const FUEL_CARDS: FuelCard[] = [
   },
   {
     key: "ga",
+    slug: "tipo/gasoleo-a",
     label: "Gasóleo A",
     staticPrice: 1.312,
     staticDelta: -1.2,
@@ -47,6 +50,7 @@ const FUEL_CARDS: FuelCard[] = [
   },
   {
     key: "g98",
+    slug: "tipo/gasolina-98",
     label: "Gasolina 98",
     staticPrice: 1.542,
     staticDelta: 0.3,
@@ -55,6 +59,7 @@ const FUEL_CARDS: FuelCard[] = [
   },
   {
     key: "glp",
+    slug: "tipo/glp",
     label: "GLP",
     staticPrice: 0.734,
     staticDelta: -0.5,
@@ -66,9 +71,9 @@ const FUEL_CARDS: FuelCard[] = [
 
 const BOTTOM_TAGS = [
   { label: "Baratas", href: "/gasolineras/baratas" },
-  { label: "24h", href: "/gasolineras/24-horas" },
+  { label: "24h", href: "/gasolineras-24-horas" },
   { label: "Marcas", href: "/gasolineras/marcas" },
-  { label: "Por provincia", href: "/gasolineras/provincias" },
+  { label: "Por provincia", href: "/gasolineras/precios" },
   { label: "Histórico", href: "/gasolineras/historico" },
   { label: "Marítimo", href: "/maritimo/combustible" },
   { label: "Portugal (3.000+)", href: "/portugal/combustible" },
@@ -138,7 +143,7 @@ export function FuelSection() {
             return (
               <Link
                 key={card.key}
-                href={`/gasolineras/${card.key}`}
+                href={`/gasolineras/${card.slug}`}
                 className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-4 text-center hover:border-tl-amber-400 dark:hover:border-tl-amber-600 transition-colors"
               >
                 <p className="text-[0.7rem] text-gray-500 dark:text-gray-400 font-medium mb-0.5">
