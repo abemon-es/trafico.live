@@ -134,9 +134,11 @@ const nextConfig: NextConfig = {
           source: "/api/meteo",
           destination: "/api/weather",
         },
+        // NOTE: /api/meteo/forecast is a REAL Spanish-native T3 endpoint, don't alias.
+        // Only proxy subpaths that don't exist natively in Spanish.
         {
-          source: "/api/meteo/:path*",
-          destination: "/api/weather/:path*",
+          source: "/api/meteo/impact/:path*",
+          destination: "/api/weather/impact/:path*",
         },
         {
           source: "/api/alertas-meteo",

@@ -30,6 +30,20 @@ interface RunwayData {
   he_longitude: number | null;
 }
 
+// Shape of each runway entry in public/data/runways.json (keyed by ICAO)
+interface RunwayJsonEntry {
+  leIdent?: string;
+  heIdent?: string;
+  leHeading?: number | null;
+  leLat?: number | null;
+  leLon?: number | null;
+  heLat?: number | null;
+  heLon?: number | null;
+  lengthFt?: number | null;
+  widthFt?: number | null;
+  surface?: string | null;
+}
+
 function formatPassengers(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
@@ -45,13 +59,39 @@ async function getProvince(communitySlug: string, provinceSlug: string) {
   return province;
 }
 
+/**
+ * runways.json is keyed by ICAO code: { "LEMD": [{lengthFt, widthFt, ...}, ...], ... }
+ * Returns a flat RunwayData[] array normalising field names.
+ */
 async function getRunways(): Promise<RunwayData[]> {
   try {
     const raw = await readFile(
       join(process.cwd(), "public/data/runways.json"),
       "utf-8"
     );
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw) as Record<string, RunwayJsonEntry[]>;
+    if (Array.isArray(parsed)) return parsed as unknown as RunwayData[];
+    // Object keyed by ICAO → flatten into RunwayData[]
+    const result: RunwayData[] = [];
+    for (const [icao, runways] of Object.entries(parsed)) {
+      for (const rwy of runways) {
+        result.push({
+          airport_icao: icao,
+          le_ident: rwy.leIdent ?? "",
+          he_ident: rwy.heIdent ?? "",
+          le_heading: rwy.leHeading ?? null,
+          le_latitude: rwy.leLat ?? null,
+          le_longitude: rwy.leLon ?? null,
+          he_latitude: rwy.heLat ?? null,
+          he_longitude: rwy.heLon ?? null,
+          // Convert feet to metres, round to integer
+          length_m: rwy.lengthFt ? Math.round(rwy.lengthFt * 0.3048) : null,
+          width_m: rwy.widthFt ? Math.round(rwy.widthFt * 0.3048) : null,
+          surface: rwy.surface ?? null,
+        });
+      }
+    }
+    return result;
   } catch {
     return [];
   }
