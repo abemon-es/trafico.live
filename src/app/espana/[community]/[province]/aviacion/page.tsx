@@ -100,7 +100,7 @@ export default async function ProvinceAviacionPage({ params }: Props) {
       },
     },
     orderBy: { name: "asc" },
-  });
+  }).catch(() => []);
 
   // If no airports, find nearest in adjacent province
   let nearestAirport: {
@@ -113,57 +113,61 @@ export default async function ProvinceAviacionPage({ params }: Props) {
   } | null = null;
 
   if (airports.length === 0) {
-    // Get province center coordinates (use first municipality or default to Madrid)
-    const provData = await prisma.province.findUnique({
-      where: { code: prov.code },
-      select: {
-        municipalities: {
-          orderBy: { population: "desc" },
-          take: 1,
-          select: { latitude: true, longitude: true },
+    try {
+      // Get province center coordinates (use first municipality or default to Madrid)
+      const provData = await prisma.province.findUnique({
+        where: { code: prov.code },
+        select: {
+          municipalities: {
+            orderBy: { population: "desc" },
+            take: 1,
+            select: { latitude: true, longitude: true },
+          },
         },
-      },
-    });
-    const center = provData?.municipalities[0];
-    if (center?.latitude && center?.longitude) {
-      const lat = Number(center.latitude);
-      const lng = Number(center.longitude);
-      const nearest = await prisma.$queryRawUnsafe<
-        {
-          name: string;
-          iata: string | null;
-          city: string | null;
-          province: string | null;
-          distance: number;
-        }[]
-      >(
-        `SELECT name, iata, city, province,
-          (6371 * acos(
-            cos(radians($1)) * cos(radians(latitude)) *
-            cos(radians(longitude) - radians($2)) +
-            sin(radians($1)) * sin(radians(latitude))
-          )) AS distance
-         FROM "Airport"
-         WHERE province != $3
-         ORDER BY distance ASC
-         LIMIT 1`,
-        lat,
-        lng,
-        prov.code
-      );
-      if (nearest[0]) {
-        const nearestProv = nearest[0].province
-          ? await prisma.province.findUnique({
-              where: { code: nearest[0].province },
-              select: { name: true },
-            })
-          : null;
-        nearestAirport = {
-          ...nearest[0],
-          provinceName: nearestProv?.name ?? null,
-          distance: Math.round(nearest[0].distance),
-        };
+      });
+      const center = provData?.municipalities[0];
+      if (center?.latitude && center?.longitude) {
+        const lat = Number(center.latitude);
+        const lng = Number(center.longitude);
+        const nearest = await prisma.$queryRawUnsafe<
+          {
+            name: string;
+            iata: string | null;
+            city: string | null;
+            province: string | null;
+            distance: number;
+          }[]
+        >(
+          `SELECT name, iata, city, province,
+            (6371 * acos(
+              cos(radians($1)) * cos(radians(latitude)) *
+              cos(radians(longitude) - radians($2)) +
+              sin(radians($1)) * sin(radians(latitude))
+            )) AS distance
+           FROM "Airport"
+           WHERE province != $3
+           ORDER BY distance ASC
+           LIMIT 1`,
+          lat,
+          lng,
+          prov.code
+        );
+        if (nearest[0]) {
+          const nearestProv = nearest[0].province
+            ? await prisma.province.findUnique({
+                where: { code: nearest[0].province },
+                select: { name: true },
+              }).catch(() => null)
+            : null;
+          nearestAirport = {
+            ...nearest[0],
+            provinceName: nearestProv?.name ?? null,
+            distance: Math.round(nearest[0].distance),
+          };
+        }
       }
+    } catch {
+      // If the nearest-airport lookup fails, continue without it
     }
   }
 

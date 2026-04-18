@@ -82,22 +82,31 @@ export default async function ProvinceMaritimePage({ params }: Props) {
   const ports = await prisma.spanishPort.findMany({
     where: { province: prov.code },
     orderBy: { name: "asc" },
-  });
+  }).catch(() => []);
 
   // If no ports, this is an inland province
   if (ports.length === 0) notFound();
 
-  // Get nearby vessels (within ~10km of any port in province)
+  // Get nearby vessels (within ~20km of any port in province)
   const portCoords = ports.map((p) => ({
     lat: Number(p.latitude),
     lng: Number(p.longitude),
   }));
 
-  // Use first port as center for vessel search
+  // Use centroid of all ports as center for vessel search
   const centerLat = portCoords.reduce((s, p) => s + p.lat, 0) / portCoords.length;
   const centerLng = portCoords.reduce((s, p) => s + p.lng, 0) / portCoords.length;
 
+  // Bounding box (±0.25° ≈ 20-28km) to avoid full table scan on VesselPosition
+  const latDelta = 0.25;
+  const lngDelta = 0.35;
+  const latMin = centerLat - latDelta;
+  const latMax = centerLat + latDelta;
+  const lngMin = centerLng - lngDelta;
+  const lngMax = centerLng + lngDelta;
+
   // Find recent vessel positions near province ports (within ~20km)
+  // Uses bounding box pre-filter to avoid full-table haversine scan on 127M rows
   const recentVessels = await prisma.$queryRawUnsafe<
     {
       mmsi: number;
@@ -118,16 +127,22 @@ export default async function ProvinceMaritimePage({ params }: Props) {
      FROM "Vessel" v
      JOIN "VesselPosition" vp ON vp.mmsi = v.mmsi
      WHERE vp."createdAt" > NOW() - INTERVAL '48 hours'
+       AND vp.latitude::float BETWEEN $3 AND $4
+       AND vp.longitude::float BETWEEN $5 AND $6
        AND (6371 * acos(
-         cos(radians($1)) * cos(radians(vp.latitude)) *
-         cos(radians(vp.longitude) - radians($2)) +
-         sin(radians($1)) * sin(radians(vp.latitude))
+         LEAST(1.0, cos(radians($1)) * cos(radians(vp.latitude::float)) *
+         cos(radians(vp.longitude::float) - radians($2)) +
+         sin(radians($1)) * sin(radians(vp.latitude::float)))
        )) < 20
      ORDER BY v.mmsi, vp."createdAt" DESC
      LIMIT 50`,
     centerLat,
-    centerLng
-  );
+    centerLng,
+    latMin,
+    latMax,
+    lngMin,
+    lngMax
+  ).catch(() => [] as { mmsi: number; name: string | null; shipType: number | null; flag: string | null; latitude: number; longitude: number; sog: number | null; heading: number | null; createdAt: Date }[]);
 
   // Ferry routes from province ports
   const portNames = ports.map((p) => p.name);
@@ -135,7 +150,7 @@ export default async function ProvinceMaritimePage({ params }: Props) {
     include: {
       stops: true,
     },
-  });
+  }).catch(() => []);
   // Filter ferry routes that have a stop matching a province port
   const provinceFerries = ferryRoutes.filter((route) =>
     route.stops.some((stop) =>
@@ -157,7 +172,7 @@ export default async function ProvinceMaritimePage({ params }: Props) {
         },
         take: 5,
         orderBy: { startedAt: "desc" },
-      })
+      }).catch(() => [])
     : [];
 
   // Group vessels by type
