@@ -28,7 +28,7 @@ import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 import { writeFileSync, mkdirSync } from "fs";
-import { dirname, resolve } from "path";
+import { dirname } from "path";
 
 const TASK = "mobilitydata-sync";
 
@@ -186,13 +186,14 @@ async function getAccessToken(refreshToken: string): Promise<string> {
   return data.access_token;
 }
 
-/** Write the filtered feed list to data/mobilitydata-feeds.json (project root). */
+/** Write the filtered feed list to /tmp/trafico-data/mobilitydata-feeds.json.
+ *
+ * Uses /tmp (world-writable) instead of /app/data because the container
+ * runs as a non-root user (uid=1001/collector) and /app is owned by root.
+ * This file is a diagnostic artifact; no other collector reads it.
+ */
 function writeFeedsFile(feeds: MobilityFeedRow[]): void {
-  // Resolve relative to project root (/app/) — 2 levels up from tasks/<name>/
-  const outPath = resolve(
-    dirname(new URL(import.meta.url).pathname),
-    "../../data/mobilitydata-feeds.json"
-  );
+  const outPath = "/tmp/trafico-data/mobilitydata-feeds.json";
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, JSON.stringify(feeds, null, 2), "utf-8");
   log(TASK, `Saved ${feeds.length} feeds to ${outPath}`);
