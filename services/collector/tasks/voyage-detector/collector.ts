@@ -76,12 +76,17 @@ async function resolvePort(
 export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, "Starting voyage detection...");
 
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  // Only process vessels that received a new position in the last 2h.
+  // The task runs hourly so a 2h window provides overlap without loading
+  // the full 24h set (~55k vessels → ~5-8k vessels per run).
+  // Full 24h re-scan is unnecessary because port-call detection is idempotent
+  // and we only need to catch vessels that moved during the current window.
+  const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000);
   const vessels = await prisma.$queryRaw<Array<{ mmsi: number }>>`
     SELECT DISTINCT mmsi FROM "VesselPosition" WHERE "createdAt" > ${cutoff}
   `;
 
-  log(TASK, `Processing ${vessels.length} vessels with recent activity`);
+  log(TASK, `Processing ${vessels.length} vessels with recent activity (last 2h)`);
 
   let voyagesCreated = 0;
   let portCallsCreated = 0;

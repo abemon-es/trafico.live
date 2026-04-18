@@ -7,7 +7,8 @@
 
 # Voyage detector — groups VesselPosition rows into PortCalls & Voyages (hourly)
 # Idempotent upsert; requires AIS positions to be flowing (ais-stream container)
-0 * * * * TASK=voyage-detector npx tsx index.ts 2>&1
+# Lockfile guard: skip if a previous run is still in progress (takes 2-4h for 55k vessels)
+0 * * * * flock -n /tmp/voyage-detector.lock -c 'TASK=voyage-detector npx tsx index.ts 2>&1' || echo "[voyage-detector] skipped — previous run still in progress"
 
 # SASEMAR maritime emergencies — historical ArcGIS upsert (every 15 min)
 # Source: opendata-sasemar.hub.arcgis.com (2019-2024 historical records)
