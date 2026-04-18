@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     // Filters
+    const id = searchParams.get("id");
     const province = searchParams.get("province");
     const community = searchParams.get("community");
     const municipality = searchParams.get("municipality");
@@ -98,6 +99,11 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: Record<string, unknown> = {};
+
+    // Single-station lookup by ID — short-circuits all other filters
+    if (id) {
+      where.id = id;
+    }
 
     // Default: only public stations (exclude restricted/wholesale depots)
     if (!includeRestricted) {

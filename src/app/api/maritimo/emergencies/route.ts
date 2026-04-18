@@ -102,7 +102,8 @@ export async function GET(request: NextRequest) {
           id: e.id,
           sourceId: e.sourceId,
           year: e.year,
-          occurredAt: e.occurredAt?.toISOString() ?? null,
+          // Fall back to Jan 1 of the year when exact date is unavailable
+          occurredAt: e.occurredAt?.toISOString() ?? new Date(`${e.year}-01-01T00:00:00Z`).toISOString(),
           reportedAt: e.reportedAt?.toISOString() ?? null,
           type: e.type,
           subtype: e.subtype ?? null,

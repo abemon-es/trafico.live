@@ -131,7 +131,13 @@ export async function GET(request: NextRequest) {
         }),
       ]);
 
-      return { data, total, limit, offset };
+      const normalized = data.map((r) => ({
+        ...r,
+        // Normalize '?' placeholder from raw DGT source to null
+        roadNumber: r.roadNumber === "?" ? null : r.roadNumber,
+      }));
+
+      return { data: normalized, total, limit, offset };
     });
 
     return NextResponse.json(result);

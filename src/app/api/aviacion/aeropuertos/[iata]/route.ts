@@ -16,9 +16,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
 import { getFromCache, setInCache } from "@/lib/redis";
+import runwaysData from "../../../../../../public/data/runways.json";
 
 const CACHE_KEY_PREFIX = "api:aviacion:aeropuerto";
 const CACHE_TTL = 300; // 5 minutes — matches page revalidate
+
+const runwaysByIcao = runwaysData as Record<string, unknown[]>;
 
 // Bounding-box approximation: ~30 km in degrees at mid-latitudes (Spain ~40N)
 const RADIUS_DEG_LAT = 30 / 111.32;
@@ -84,6 +87,10 @@ export async function GET(
       },
     });
 
+    const airportRunways = (runwaysByIcao[airport.icao] ?? []).filter(
+      (r) => !(r as Record<string, unknown>).closed
+    );
+
     const result = {
       success: true,
       data: {
@@ -98,6 +105,8 @@ export async function GET(
           longitude: lng,
           elevation: airport.elevation,
           isAena: airport.isAena,
+          runways: airportRunways,
+          runwayCount: airportRunways.length,
         },
         statistics: airport.statistics.map((s) => ({
           metric: s.metric,

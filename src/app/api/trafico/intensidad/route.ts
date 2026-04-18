@@ -64,7 +64,12 @@ export async function GET(request: NextRequest) {
 
     // Live data mode — push limit to DB, select only needed fields
     const fiveMinAgo = new Date(Date.now() - 10 * 60 * 1000);
-    const limit = format === "geojson" ? 6200 : 200;
+    const limitParam = searchParams.get("limit");
+    const limit = format === "geojson"
+      ? 6200
+      : limitParam
+        ? Math.min(Math.max(parseInt(limitParam, 10) || 200, 1), 6200)
+        : 200;
     const readings = await prisma.trafficIntensity.findMany({
       where: {
         source,
@@ -107,12 +112,25 @@ export async function GET(request: NextRequest) {
     const avgIntensity = total > 0 ? Math.round(readings.reduce((s, r) => s + r.intensity, 0) / total) : 0;
     const congested = readings.filter((r) => r.serviceLevel >= 2).length;
 
+    const sensors = readings.map((r) => ({
+      sensorId: r.sensorId,
+      description: r.description,
+      intensity: r.intensity,
+      occupancy: r.occupancy,
+      load: r.load,
+      serviceLevel: r.serviceLevel,
+      saturation: r.saturation,
+      latitude: Number(r.latitude),
+      longitude: Number(r.longitude),
+    }));
+
     return NextResponse.json({
       success: true,
       data: {
         source,
         recordedAt: readings[0]?.recordedAt || null,
-        sensors: total,
+        sensorCount: total,
+        sensors,
         avgIntensity,
         congested,
         byServiceLevel: {
@@ -121,17 +139,6 @@ export async function GET(request: NextRequest) {
           holdups: readings.filter((r) => r.serviceLevel === 2).length,
           congestion: readings.filter((r) => r.serviceLevel === 3).length,
         },
-        readings: readings.map((r) => ({
-          sensorId: r.sensorId,
-          description: r.description,
-          intensity: r.intensity,
-          occupancy: r.occupancy,
-          load: r.load,
-          serviceLevel: r.serviceLevel,
-          saturation: r.saturation,
-          latitude: Number(r.latitude),
-          longitude: Number(r.longitude),
-        })),
       },
     });
   } catch (error) {
