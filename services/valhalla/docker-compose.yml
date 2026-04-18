@@ -1,18 +1,15 @@
-# Valhalla routing engine for Spain + Portugal
-# Provides: route, isochrone, map-match, nearest, matrix APIs
+# Valhalla routing engine — isochrones + truck profile only
 #
-# Uses the same OSM PBF as the Planetiler tileset build.
+# General car/bike/foot routing is handled by OSRM (S0).
+# Valhalla is dedicated to:
+#   POST /isochrone  — drive-time polygons (car + truck)
+#   POST /route      — truck routing with dimension/weight restrictions
+#   GET  /status     — health check
+#
 # Graph build: ~20 min on first start, then serves requests.
 # RAM: ~4-6 GB for Spain+Portugal graph
 #
-# Port 8002 (internal) → proxied via tiles.trafico.live/route/
-#
-# API endpoints:
-#   POST /route        — turn-by-turn routing
-#   POST /isochrone    — drive-time polygons
-#   POST /trace_route  — map matching (GPS → road)
-#   POST /sources_to_targets — distance matrix
-#   GET  /status       — health check
+# Port 8002 bound to WireGuard VPN interface (10.100.0.2)
 
 services:
   valhalla:
@@ -20,27 +17,25 @@ services:
     container_name: trafico-valhalla
     restart: unless-stopped
     environment:
-      # Use pre-built tiles from shared build directory
       tile_url: "file:///data/osm/iberia.osm.pbf"
       use_tiles_ignore_pbf: "False"
       build_elevation: "False"
       build_admins: "True"
       build_time_zones: "True"
       build_transit: "False"
-      # Server config
-      server_threads: 4
+      server_threads: "4"
       serve_tiles: "True"
     volumes:
       - /opt/trafico/tiles/build:/data/osm:ro
       - valhalla-data:/custom_files
     ports:
-      - "127.0.0.1:8002:8002"
+      - "10.100.0.2:8002:8002"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8002/status"]
       interval: 30s
       timeout: 5s
       retries: 5
-      start_period: 1800s  # Graph build takes 20-30 min on first start
+      start_period: 1800s
     deploy:
       resources:
         limits:

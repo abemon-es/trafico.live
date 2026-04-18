@@ -1,76 +1,65 @@
 /**
  * OSRM routing client for trafico.live
  *
- * Provides route calculation via self-hosted OSRM engine.
- * API: /api/route (proxies to OSRM on the server)
+ * Thin browser-side wrapper over /api/route (which dispatches to the right
+ * OSRM profile container per src/types/routing.ts).
  */
+
+import type {
+  RoutingLocation,
+  RoutingProfile,
+  RoutingProfileLegacy,
+  RouteActionResponse,
+  RoutingRoute,
+  RoutingStep,
+} from "@/types/routing";
+import { PROFILE_ALIAS } from "@/types/routing";
+
+export type {
+  RoutingLocation,
+  RoutingProfile,
+  RoutingProfileLegacy,
+  RouteActionResponse,
+  RoutingRoute,
+  RoutingStep,
+} from "@/types/routing";
+
+// Keep old aliases exported so existing UI (mapa/routing-panel.tsx) keeps compiling.
+export type CostingModel = RoutingProfileLegacy;
+export type RouteResponse = RouteActionResponse;
+export type OSRMRoute = RoutingRoute;
+export type OSRMLeg = RoutingRoute["legs"][number];
+export type OSRMStep = RoutingStep;
+export type OSRMWaypoint = RouteActionResponse["waypoints"][number];
 
 const ROUTE_API = "/api/route";
 
-export interface RoutingLocation {
-  lat: number;
-  lon: number;
+interface RouteOptions {
+  alternatives?: boolean;
+  avoidTolls?: boolean;
+  avoidHighways?: boolean;
+  steps?: boolean;
 }
 
-export type CostingModel = "auto" | "driving" | "truck" | "bicycle" | "pedestrian";
-
-// ─── OSRM Response Types ────────────────────────────────────────────────────
-
-export interface RouteResponse {
-  code: string;
-  routes: OSRMRoute[];
-  waypoints: OSRMWaypoint[];
-}
-
-export interface OSRMRoute {
-  distance: number; // meters
-  duration: number; // seconds
-  geometry: GeoJSON.LineString;
-  legs: OSRMLeg[];
-}
-
-export interface OSRMLeg {
-  distance: number;
-  duration: number;
-  steps: OSRMStep[];
-  summary: string;
-}
-
-export interface OSRMStep {
-  distance: number;
-  duration: number;
-  geometry: GeoJSON.LineString;
-  name: string;
-  ref?: string;
-  mode: string;
-  maneuver: {
-    type: string;
-    modifier?: string;
-    location: [number, number];
-    bearing_before: number;
-    bearing_after: number;
-  };
-}
-
-export interface OSRMWaypoint {
-  name: string;
-  location: [number, number];
-  distance: number;
-}
-
-// ─── Route calculation ──────────────────────────────────────────────────────
-
-/**
- * Calculate a route between two or more points.
- */
 export async function calculateRoute(
   locations: RoutingLocation[],
-  _costing: CostingModel = "driving",
-): Promise<RouteResponse> {
+  costing: CostingModel = "car",
+  options: RouteOptions = {},
+): Promise<RouteActionResponse> {
+  const profile: RoutingProfile = PROFILE_ALIAS[costing] ?? "car";
+
   const res = await fetch(ROUTE_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "route", locations }),
+    body: JSON.stringify({
+      action: "route",
+      profile,
+      locations,
+      alternatives: options.alternatives,
+      avoidTolls: options.avoidTolls,
+      avoidHighways: options.avoidHighways,
+      steps: options.steps,
+    }),
   });
 
   if (!res.ok) {
@@ -78,31 +67,20 @@ export async function calculateRoute(
     throw new Error(err.error || `Route failed: ${res.status}`);
   }
 
-  const data: RouteResponse = await res.json();
-  if (data.code !== "Ok") {
-    throw new Error(`OSRM error: ${data.code}`);
-  }
+  const data: RouteActionResponse = await res.json();
+  if (data.code !== "Ok") throw new Error(`OSRM error: ${data.code}`);
   return data;
 }
 
-/**
- * Convert an OSRM route to a GeoJSON Feature for MapLibre.
- */
-export function routeToGeoJSON(route: RouteResponse): GeoJSON.Feature {
-  const geom = route.routes[0].geometry;
+export function routeToGeoJSON(route: RouteActionResponse): GeoJSON.Feature {
+  const first = route.routes[0];
   return {
     type: "Feature",
-    geometry: geom,
-    properties: {
-      distance: route.routes[0].distance,
-      duration: route.routes[0].duration,
-    },
+    geometry: first.geometry,
+    properties: { distance: first.distance, duration: first.duration },
   };
 }
 
-/**
- * Format duration (seconds) as human-readable Spanish string.
- */
 export function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.round((seconds % 3600) / 60);
@@ -110,18 +88,12 @@ export function formatDuration(seconds: number): string {
   return `${m} min`;
 }
 
-/**
- * Format distance (meters) as human-readable string.
- */
 export function formatDistance(meters: number): string {
   if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
   return `${Math.round(meters)} m`;
 }
 
-/**
- * Get maneuver instruction in Spanish.
- */
-export function getManeuverText(step: OSRMStep): string {
+export function getManeuverText(step: RoutingStep): string {
   const { type, modifier } = step.maneuver;
   const name = step.ref ? `${step.ref} (${step.name})` : step.name || "la carretera";
 

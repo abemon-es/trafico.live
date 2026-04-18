@@ -1,0 +1,17 @@
+{
+  "elevationBucket": null,
+  "transit": true,
+  "streets": true,
+  "storage": {
+    "osm": [
+      "/var/opentripplanner/iberia.osm.pbf"
+    ],
+    "gtfs": [
+      "/var/opentripplanner/gtfs"
+    ]
+  },
+  "osmCacheDataInMem": false,
+  "maxTransferDurationMinutes": 30,
+  "islandWithoutStopsMaxSize": 40,
+  "islandWithStopsMaxSize": 5
+}

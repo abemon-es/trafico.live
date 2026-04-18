@@ -1,0 +1,114 @@
+# OSRM routing engine — 3 profiles (car, bike, foot)
+#
+# One container per profile, each loading its own pre-compiled .osrm graph.
+# Graphs built by build-graph.sh from iberia.osm.pbf.
+#
+# Ports (bound to WireGuard VPN only — exposed inside mesh 10.100.0.0/24):
+#   car  :5000 → http://trafico-osrm-car:5000/route/v1/car/...
+#   bike :5001 → http://trafico-osrm-bike:5000/route/v1/bike/...
+#   foot :5002 → http://trafico-osrm-foot:5000/route/v1/foot/...
+#
+# Consumed by /api/route (profile-aware dispatcher, see src/types/routing.ts).
+#
+# RAM per container (Iberia graph, MLD algorithm):
+#   car  ~2.0 GB, bike ~1.2 GB, foot ~1.0 GB → ~4.2 GB total
+#
+# Start-up: ~30 s to load .osrm graph from disk.
+
+x-osrm-base: &osrm-base
+  image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+  restart: unless-stopped
+  command: ["osrm-routed", "--algorithm", "mld", "--max-table-size", "5000", "--max-trip-size", "500", "/data/graph.osrm"]
+  healthcheck:
+    # Plaza Mayor → Retiro tiny test route, returns 200 only when routing engine is ready.
+    test:
+      [
+        "CMD-SHELL",
+        "wget -q -O- 'http://127.0.0.1:5000/route/v1/driving/-3.7074,40.4153;-3.6844,40.4153?overview=false' | grep -q '\"Ok\"' || exit 1",
+      ]
+    interval: 30s
+    timeout: 5s
+    retries: 5
+    start_period: 60s
+  logging:
+    driver: loki
+    options:
+      loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
+      loki-batch-size: "400"
+      loki-retries: "2"
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  osrm-car:
+    <<: *osrm-base
+    container_name: trafico-osrm-car
+    ports:
+      - "10.100.0.2:5000:5000"
+    volumes:
+      - /opt/trafico/osrm/car:/data:ro
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
+        loki-batch-size: "400"
+        loki-retries: "2"
+        labels: "app=trafico-osrm,profile=car"
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 2G
+
+  osrm-bike:
+    <<: *osrm-base
+    container_name: trafico-osrm-bike
+    ports:
+      - "10.100.0.2:5001:5000"
+    volumes:
+      - /opt/trafico/osrm/bike:/data:ro
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
+        loki-batch-size: "400"
+        loki-retries: "2"
+        labels: "app=trafico-osrm,profile=bike"
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1200M
+
+  osrm-foot:
+    <<: *osrm-base
+    container_name: trafico-osrm-foot
+    ports:
+      - "10.100.0.2:5002:5000"
+    volumes:
+      - /opt/trafico/osrm/foot:/data:ro
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
+        loki-batch-size: "400"
+        loki-retries: "2"
+        labels: "app=trafico-osrm,profile=foot"
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+networks:
+  default:
+    name: trafico-routing
