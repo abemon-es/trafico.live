@@ -32,7 +32,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="p-2.5 rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600 transition-colors dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+      className="p-3 rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600 transition-colors dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
       aria-label={dark ? "Activar modo claro" : "Activar modo oscuro"}
       aria-pressed={dark}
     >
