@@ -32,6 +32,9 @@ docker run -d \
   --health-retries 3 \
   "$IMAGE"
 
+echo "Connecting to trafico-routing network (OSRM/OTP/Valhalla)..."
+docker network connect trafico-routing "$APP_NAME" 2>/dev/null || true
+
 echo "Waiting for health check..."
 sleep 15
 STATUS=$(docker inspect "$APP_NAME" --format "{{.State.Health.Status}}" 2>/dev/null || echo "unknown")
