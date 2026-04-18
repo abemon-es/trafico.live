@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { TierCard } from "@/components/api-landing/TierCard";
 import { CurlExample } from "@/components/api-landing/CurlExample";
-import { RequestAccessForm } from "@/components/api-landing/RequestAccessForm";
+import RequestAccessForm from "@/components/api-landing/RequestAccessForm";
 import { HeroReveal, SectionReveal } from "./Reveals";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";

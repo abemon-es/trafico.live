@@ -1,13 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import prisma from "@/lib/db";
-
-// Loaded with ssr:false to avoid hydration mismatch from marquee animation timer
-const TickerStrip = dynamic(
-  () => import("@/components/noticias/TickerStrip").then((m) => ({ default: m.TickerStrip })),
-  { ssr: false }
-);
+import { TickerStrip } from "@/components/noticias/TickerStrip";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import {

@@ -1,11 +1,14 @@
 /**
- * Partner root redirect — /ir/[partner]
+ * Affiliate redirect handler — /go/[partner]/[slug]
  *
- * Resolves the default (most popular) offer for the partner and redirects
- * using the same flow as /ir/[partner]/[slug].
+ * Flow:
+ *   1. Resolve AffiliateOffer (DB → static fallback)
+ *   2. Generate subId + read/set tl_session cookie
+ *   3. Fire-and-forget: record AffiliateClick row + GA4 MP event
+ *   4. 302 redirect to partner deep-link with subId appended
  *
- * Falls back to the pilot static default slug defined in PARTNER_DEFAULT_SLUG.
- * If neither is found, returns 404.
+ * No auth required (public redirector).
+ * Never blocks on slow ops — click recording and GA4 are fire-and-forget.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -14,56 +17,22 @@ import {
   resolveOffer,
   buildPartnerUrl,
   recordClick,
-  PARTNER_DEFAULT_SLUG,
 } from "@/lib/affiliate";
 import { sendEvent } from "@/lib/ga4-measurement-protocol";
 import { randomBytes } from "crypto";
 
+/** Cookie name used for anonymous session tracking. */
 const SESSION_COOKIE = "tl_session";
+/** 1 year TTL for session cookie. */
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 365;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ partner: string }> }
+  { params }: { params: Promise<{ partner: string; slug: string }> }
 ): Promise<NextResponse> {
-  const { partner } = await params;
+  const { partner, slug } = await params;
 
-  // Determine default slug for this partner
-  let defaultSlug: string | undefined;
-
-  // 1. Try DB: find most recently fetched active offer for partner
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const prisma = (await import("@/lib/db")).default;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const model = (prisma as any).affiliateOffer;
-    if (model) {
-      const topOffer = await model.findFirst({
-        where: { provider: partner },
-        orderBy: { fetchedAt: "desc" },
-        select: { affiliateTag: true },
-      });
-      if (topOffer?.affiliateTag) {
-        defaultSlug = topOffer.affiliateTag;
-      }
-    }
-  } catch {
-    // table not yet migrated — fall through
-  }
-
-  // 2. Static pilot fallback
-  if (!defaultSlug) {
-    defaultSlug = PARTNER_DEFAULT_SLUG[partner.toLowerCase()];
-  }
-
-  if (!defaultSlug) {
-    return NextResponse.json(
-      { error: "offer_not_found", partner },
-      { status: 404 }
-    );
-  }
-
-  const slug = defaultSlug;
+  // 1. Resolve offer
   const offer = await resolveOffer(partner, slug);
 
   if (!offer) {
@@ -73,31 +42,47 @@ export async function GET(
     );
   }
 
-  // Generate subId + session
+  // 2. Generate subId + resolve session
   const subId = generateSubId();
+
   const existingSession = request.cookies.get(SESSION_COOKIE)?.value;
   const sessionId = existingSession ?? randomBytes(16).toString("hex");
   const isNewSession = !existingSession;
 
-  const partnerUrl = buildPartnerUrl({ deepLink: offer.deepLink, subId, partner });
+  // Optional: user id from auth header / session — best-effort only
+  const userId: string | undefined = undefined; // B1 auth() not yet in scope for /ir
+
+  // 3. Build redirect URL
+  const partnerUrl = buildPartnerUrl({
+    deepLink: offer.deepLink,
+    subId,
+    partner,
+  });
+
+  // 3a. Referrer path for analytics
   const referrerPath = request.headers.get("referer") ?? undefined;
+
+  // 3b. GA4 client_id — use sessionId as stable client_id proxy
   const clientId = sessionId;
 
-  // Fire-and-forget tracking
+  // Fire-and-forget: DB click record (never blocks redirect)
   recordClick({
     offerId: offer.offerId,
     subId,
+    userId,
     sessionId,
     referrerPath,
     partner,
     slug,
   }).catch((err) =>
-    console.warn("[ir/partner] recordClick failed:", err instanceof Error ? err.message : err)
+    console.warn("[ir] recordClick failed:", err instanceof Error ? err.message : err)
   );
 
+  // Fire-and-forget: GA4 Measurement Protocol event (never blocks redirect)
   sendEvent({
     clientId,
     sessionId,
+    userId,
     event: {
       name: "affiliate_click",
       params: {
@@ -113,12 +98,16 @@ export async function GET(
       },
     },
   }).catch((err) =>
-    console.warn("[ir/partner] ga4 event failed:", err instanceof Error ? err.message : err)
+    console.warn("[ir] ga4 event failed:", err instanceof Error ? err.message : err)
   );
 
+  // 4. Build 302 response
   const response = NextResponse.redirect(partnerUrl, 302);
+
+  // Cache-Control: no-store — each redirect must be fresh (tracking depends on it)
   response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
 
+  // Set session cookie if new
   if (isNewSession) {
     const isProduction = process.env.NODE_ENV === "production";
     response.cookies.set(SESSION_COOKIE, sessionId, {

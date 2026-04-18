@@ -1,7 +1,7 @@
 /**
  * Affiliate offer lookup, subId generation, deep-link building, and click recording.
  *
- * T4.8 — Affiliate redirect infrastructure (/ir/[partner]/[slug])
+ * T4.8 — Affiliate redirect infrastructure (/go/[partner]/[slug])
  *
  * Partners and their subId query-param conventions:
  *   Awin           → clickref=

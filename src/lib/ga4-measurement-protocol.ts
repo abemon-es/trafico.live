@@ -2,7 +2,7 @@
  * GA4 Measurement Protocol — server-side event sender.
  *
  * Used when a server-side 302 redirect means the browser's gtag never fires
- * (e.g. /ir/[partner]/[slug] affiliate redirector).
+ * (e.g. /go/[partner]/[slug] affiliate redirector).
  *
  * Env vars required:
  *   GA4_MEASUREMENT_ID   — e.g. "G-XXXXXXXXXX"

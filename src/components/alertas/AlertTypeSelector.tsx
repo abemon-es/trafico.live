@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Road, Train, Plane } from "lucide-react";
+import { Route as Road, Train, Plane } from "lucide-react";
 
 export type AlertType = "ROAD" | "TRAIN" | "FLIGHT";
 

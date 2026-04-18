@@ -37,6 +37,8 @@ export default function Image() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div
             style={{
+              display: "flex",
+              flexDirection: "column",
               color: "#ffffff",
               fontSize: "60px",
               fontWeight: 800,
@@ -44,9 +46,8 @@ export default function Image() {
               marginBottom: "20px",
             }}
           >
-            Inteligencia de movilidad
-            <br />
-            para España
+            <span>Inteligencia de movilidad</span>
+            <span>para España</span>
           </div>
           <div style={{ color: "#94b6ff", fontSize: "20px", marginBottom: "32px" }}>
             Tráfico · Trenes · Aviación · Marítimo · Combustible · Aire
@@ -60,7 +61,7 @@ export default function Image() {
               { v: "121", l: "endpoints" },
               { v: "27K+", l: "páginas SSG" },
             ].map((s) => (
-              <div key={s.l} style={{ textAlign: "center" }}>
+              <div key={s.l} style={{ display: "flex", flexDirection: "column", textAlign: "center" }}>
                 <div style={{ color: "#6393ff", fontSize: "28px", fontWeight: 700 }}>
                   {s.v}
                 </div>

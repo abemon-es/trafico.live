@@ -133,7 +133,7 @@ export function trackCtaClick(ctaId: string, ctaText: string, source: string) {
 /**
  * User clicked an affiliate link. Revenue-attribution signal.
  * Emits `value` + `currency=EUR` when `priceEur` is known so GA4 can compute
- * monetary conversions. Fire from `/ir/[partner]/[slug]` before the 302.
+ * monetary conversions. Fire from `/go/[partner]/[slug]` before the 302.
  */
 export function trackAffiliateClick(params: {
   partner: string;
