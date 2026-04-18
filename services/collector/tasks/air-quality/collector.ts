@@ -31,11 +31,104 @@
 
 import { PrismaClient } from "@prisma/client";
 import https from "node:https";
+import { IncomingMessage } from "node:http";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
-// Reusable HTTPS agent that skips cert verification for MITECO (incomplete cert chain)
-const mitecoAgent = new https.Agent({ rejectUnauthorized: false });
+// ---------------------------------------------------------------------------
+// MITECO TLS workaround
+//
+// MITECO sites (ica.miteco.es, backend.ica.miteco.es) have an incomplete TLS
+// certificate chain. Node 22's native fetch() uses an internal undici Dispatcher
+// that does NOT accept a legacy https.Agent via the `agent` option — the option
+// is silently ignored, causing "unable to verify the first certificate" errors.
+//
+// Fix: use node:https directly for all MITECO requests (rejectUnauthorized: false
+// scoped to these hosts only, avoiding a global NODE_TLS_REJECT_UNAUTHORIZED=0).
+// ---------------------------------------------------------------------------
+
+/** Make an HTTPS GET request bypassing TLS verification, returns body as string */
+function httpsGetString(url: string, timeoutMs = 30000, extraHeaders?: Record<string, string>): Promise<{ status: number; body: string; contentType: string }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const timer = setTimeout(() => {
+      req.destroy(new Error(`Timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    const req = https.get(
+      {
+        hostname: parsed.hostname,
+        port: parsed.port || 443,
+        path: parsed.pathname + parsed.search,
+        rejectUnauthorized: false,
+        headers: {
+          "User-Agent": "Mozilla/5.0 trafico.live collector",
+          "Accept": "text/csv, application/json, application/geo+json",
+          "Origin": "https://ica.miteco.es",
+          ...(extraHeaders ?? {}),
+        },
+      },
+      (res: IncomingMessage) => {
+        clearTimeout(timer);
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("end", () => {
+          resolve({
+            status: res.statusCode ?? 0,
+            body: Buffer.concat(chunks).toString("utf8"),
+            contentType: String(res.headers["content-type"] ?? ""),
+          });
+        });
+        res.on("error", reject);
+      }
+    );
+    req.on("error", (err) => { clearTimeout(timer); reject(err); });
+  });
+}
+
+/** Make an HTTPS POST request bypassing TLS verification, returns body as string */
+function httpsPostString(url: string, body: string, contentType: string, timeoutMs = 30000): Promise<{ status: number; body: string; contentType: string }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const bodyBuf = Buffer.from(body, "utf8");
+    const timer = setTimeout(() => {
+      req.destroy(new Error(`Timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    const req = https.request(
+      {
+        hostname: parsed.hostname,
+        port: parsed.port || 443,
+        path: parsed.pathname + parsed.search,
+        method: "POST",
+        rejectUnauthorized: false,
+        headers: {
+          "User-Agent": "Mozilla/5.0 trafico.live collector",
+          "Accept": "application/json",
+          "Origin": "https://ica.miteco.es",
+          "Content-Type": contentType,
+          "Content-Length": bodyBuf.length,
+        },
+      },
+      (res: IncomingMessage) => {
+        clearTimeout(timer);
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("end", () => {
+          resolve({
+            status: res.statusCode ?? 0,
+            body: Buffer.concat(chunks).toString("utf8"),
+            contentType: String(res.headers["content-type"] ?? ""),
+          });
+        });
+        res.on("error", reject);
+      }
+    );
+    req.on("error", (err) => { clearTimeout(timer); reject(err); });
+    req.write(bodyBuf);
+    req.end();
+  });
+}
 
 const TASK = "air-quality";
 
@@ -253,23 +346,38 @@ interface StationData {
 // ---------------------------------------------------------------------------
 
 async function fetchWithTimeout(url: string, timeoutMs = 30000, init?: RequestInit): Promise<Response> {
+  // MITECO URLs must go through httpsGetString/httpsPostString (node:https) because
+  // Node 22's native fetch() silently ignores the legacy `agent` option — TLS bypass
+  // requires the undici Dispatcher API which isn't exposed in this Node build.
+  // Non-MITECO URLs use the standard fetch path.
+  const isMiteco = url.includes("miteco.es");
+  if (isMiteco) {
+    const isPost = init?.method?.toUpperCase() === "POST";
+    let result: { status: number; body: string; contentType: string };
+    if (isPost) {
+      result = await httpsPostString(url, String(init?.body ?? ""), "application/x-www-form-urlencoded", timeoutMs);
+    } else {
+      result = await httpsGetString(url, timeoutMs);
+    }
+    // Wrap in a minimal Response-compatible object
+    return new Response(result.body, {
+      status: result.status,
+      headers: { "content-type": result.contentType },
+    });
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  // MITECO sites have incomplete TLS cert chains — use custom agent (not global env var)
-  const isMiteco = url.includes("miteco.es");
   try {
-    const fetchOpts: RequestInit & { dispatcher?: unknown } = {
+    const fetchOpts: RequestInit = {
       signal: controller.signal,
       headers: {
         "User-Agent": "Mozilla/5.0 trafico.live collector",
         "Accept": "text/csv, application/json, application/geo+json",
-        ...(isMiteco ? { "Origin": "https://ica.miteco.es" } : {}),
         ...(init?.headers || {}),
       },
       ...(init ? { method: init.method, body: init.body } : {}),
     };
-    // Node 22 undici respects the agent option for TLS
-    if (isMiteco) (fetchOpts as Record<string, unknown>).agent = mitecoAgent;
     const res = await fetch(url, fetchOpts);
     return res;
   } finally {
