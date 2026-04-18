@@ -140,7 +140,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const station = await getStation(slug);
 
   if (!station) {
-    return { title: "Estacion no encontrada | trafico.live" };
+    return { title: "Estacion no encontrada" };
   }
 
   const serviceLabels = station.serviceTypes
@@ -149,7 +149,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const provinceText = station.provinceName ? ` en ${station.provinceName}` : "";
 
   return {
-    title: `Estacion de ${station.name} — Lineas, horarios y servicios | trafico.live`,
+    title: `Estacion de ${station.name} — Lineas, horarios y servicios`,
     description: `Estacion de ${station.name}${provinceText}. Servicios: ${serviceLabels}. Lineas, alertas activas y estaciones cercanas.`,
     keywords: [
       station.name,
@@ -432,13 +432,13 @@ export default async function EstacionDetallePage({ params }: Props) {
                 <h3 className="font-heading text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                   {brand}
                 </h3>
-                <div className="grid gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {brandRoutes.map((route) => {
                     const inner = (
-                      <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50/50 dark:hover:bg-tl-900/10 transition-colors group">
+                      <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50/50 dark:hover:bg-tl-900/10 transition-colors group overflow-hidden">
                         {/* Line badge */}
                         <span
-                          className="inline-flex items-center justify-center min-w-[3rem] px-2 py-1 rounded-lg text-xs font-bold font-mono"
+                          className="inline-flex items-center justify-center min-w-[3rem] px-2 py-1 rounded-lg text-xs font-bold font-mono flex-shrink-0"
                           style={{
                             backgroundColor: route.color ? `#${route.color}` : undefined,
                             color: route.color ? "#fff" : undefined,
@@ -449,12 +449,12 @@ export default async function EstacionDetallePage({ params }: Props) {
 
                         {/* Origin -> Dest */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-900 dark:text-gray-100">
-                            <span className="truncate font-body">
+                          <div className="flex items-center gap-1.5 text-sm text-gray-900 dark:text-gray-100 overflow-hidden">
+                            <span className="truncate font-body min-w-0">
                               {route.originName || "—"}
                             </span>
                             <ArrowRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                            <span className="truncate font-body">
+                            <span className="truncate font-body min-w-0">
                               {route.destName || "—"}
                             </span>
                           </div>

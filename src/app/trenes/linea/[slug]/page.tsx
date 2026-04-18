@@ -168,7 +168,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 
   if (!route) {
-    return { title: "Línea no encontrada | trafico.live" };
+    return { title: "Línea no encontrada" };
   }
 
   const brandLabel = resolveBrandLabel(route.brand);
@@ -177,8 +177,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const displayName = routeDisplayName(route.shortName, route.longName, origin, dest);
 
   const title = origin && dest
-    ? `${brandLabel} ${displayName}: ${origin} — ${dest} | trafico.live`
-    : `${brandLabel} ${displayName} | trafico.live`;
+    ? `${brandLabel} ${displayName}: ${origin} — ${dest}`
+    : `${brandLabel} ${displayName}`;
 
   const description = origin && dest
     ? `Línea ${brandLabel} ${displayName} de ${origin} a ${dest}: paradas, mapa del recorrido, alertas activas y horarios. Datos actualizados de Renfe.`
@@ -430,15 +430,15 @@ export default async function LineaDetailPage({ params }: Props) {
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-heading font-bold text-gray-900 dark:text-gray-100">
-            {displayName}
+            {route.originName && route.destName
+              ? `${route.originName} — ${route.destName}`
+              : displayName}
           </h1>
 
           {route.originName && route.destName && (
             <p className="flex items-center gap-2 text-lg text-gray-600 dark:text-gray-400">
               <MapPin className="w-5 h-5 flex-shrink-0" style={{ color: brandColor }} />
-              <span className="font-medium text-gray-900 dark:text-gray-100">{route.originName}</span>
-              <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <span className="font-medium text-gray-900 dark:text-gray-100">{route.destName}</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">{displayName}</span>
             </p>
           )}
         </section>

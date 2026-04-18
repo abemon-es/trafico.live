@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `Cercanías ${name} — estaciones y líneas | trafico.live`,
+    title: `Cercanías ${name} — estaciones y líneas`,
     description: `Todas las estaciones y líneas de Cercanías ${name}. Consulta alertas activas, paradas, conexiones y el estado de la red en tiempo real.`,
     keywords: [
       `Cercanías ${name}`,
