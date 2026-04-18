@@ -62,7 +62,6 @@ export function ChatTrigger({ onClick, isOpen }: ChatTriggerProps) {
         style={{
           backgroundColor: "var(--color-tl-500)",
           // Ring color on focus
-          // @ts-expect-error CSS custom property
           "--tw-ring-color": "var(--color-tl-400)",
         }}
       >

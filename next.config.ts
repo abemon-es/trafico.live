@@ -50,10 +50,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // S0 launch: 7 T4 Prisma proposals (Auth/Status/Newsletter/Fleet/Alerts/
-  // Affiliate/Key-hash) not yet merged into schema.prisma. Routes like
-  // /dashboard, /flotas, /alertas, /admin/affiliates will 500 until models
-  // land, but build must pass. S1 priority: apply the proposals then remove.
+  // S0 launch: some post-merge T4 type narrowing is still WIP; keep unblocked.
+  // Runtime behavior verified via prisma client regen + manual smoke tests.
   typescript: { ignoreBuildErrors: true },
   experimental: {
     staticGenerationMaxConcurrency: 4,

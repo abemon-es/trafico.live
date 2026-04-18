@@ -2067,13 +2067,22 @@ model ApiKey {
   expiresAt  DateTime? @db.Timestamptz
   createdAt  DateTime  @default(now()) @db.Timestamptz
 
+  // T4.1 key-hash (for middleware tier detection without plaintext in requests)
+  keyHash String? @unique
+
+  // T4.10 optional link to authenticated user
+  userId String?
+
   // Relations
-  usage ApiUsage[]
+  usage       ApiUsage[]
+  user        User?        @relation("UserApiKeys", fields: [userId], references: [id], onDelete: SetNull)
+  fleetClient FleetClient?
 
   @@index([email])
   @@index([tier])
   @@index([stripeCustomerId])
   @@index([isActive])
+  @@index([userId])
 }
 
 model ApiUsage {
@@ -2635,4 +2644,258 @@ model AQForecast {
   @@index([province, validAt])
   @@index([forecastAt])
   @@map("aq_forecasts")
+}
+// ---------------------------------------------------------------------------
+// Auth — NextAuth v5 / @auth/prisma-adapter standard models
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+
+  // Relation to API keys — a user may have multiple keys (optional link)
+  apiKeys       ApiKey[]  @relation("UserApiKeys")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model StatusIncident {
+  id          String    @id @default(cuid())
+  service     String    // "web" | "api" | "collectors" | "database" | "redis" | "typesense"
+  severity    String    // "minor" | "major" | "critical"
+  title       String
+  description String?
+  startedAt   DateTime  @db.Timestamptz
+  resolvedAt  DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+
+  @@index([service, startedAt])
+  @@index([resolvedAt])
+  @@map("status_incidents")
+}
+/// Suscriptores al newsletter semanal de trafico.live.
+/// Double opt-in: PENDING_CONFIRMATION → CONFIRMED (vía token).
+/// Baja: CONFIRMED → UNSUBSCRIBED (vía unsubscribeToken).
+model NewsletterSubscription {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  /// PENDING_CONFIRMATION | CONFIRMED | UNSUBSCRIBED | BOUNCED
+  status           String    @default("PENDING_CONFIRMATION")
+  confirmToken     String?   @unique
+  unsubscribeToken String    @unique
+  source           String?   // página de origen: "guia-multimodal", "home", etc.
+  leadMagnet       String?   // lead magnet slug: "guia-multimodal"
+  subscribedAt     DateTime  @default(now())
+  confirmedAt      DateTime?
+  unsubscribedAt   DateTime?
+
+  @@index([status])
+  @@index([subscribedAt])
+}
+model FleetClient {
+  id           String   @id @default(cuid())
+  name         String
+  contactEmail String
+  apiKeyId     String   @unique  // FK to ApiKey
+  plan         String   // "STARTER" | "PRO" | "ENTERPRISE"
+  createdAt    DateTime @default(now())
+
+  apiKey       ApiKey       @relation(fields: [apiKeyId], references: [id])
+  vehicles     FleetVehicle[]
+
+  @@index([apiKeyId])
+}
+
+model FleetVehicle {
+  id            String   @id @default(cuid())
+  fleetClientId String
+  externalId    String   // client's own vehicle ID
+  licensePlate  String?
+  label         String?
+  status        String   // "ACTIVE" | "INACTIVE"
+  createdAt     DateTime @default(now())
+
+  fleetClient  FleetClient    @relation(fields: [fleetClientId], references: [id])
+  positions    FleetPosition[]
+
+  @@unique([fleetClientId, externalId])
+  @@index([fleetClientId])
+}
+
+model FleetPosition {
+  id         String   @id @default(cuid())
+  vehicleId  String
+  lat        Float
+  lon        Float
+  speed      Float?
+  heading    Float?
+  recordedAt DateTime
+  createdAt  DateTime @default(now())
+
+  vehicle  FleetVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, recordedAt(sort: Desc)])
+  @@index([recordedAt(sort: Desc)])
+}
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum AlertType {
+  ROAD
+  TRAIN
+  FLIGHT
+}
+
+enum AlertChannel {
+  PUSH
+  EMAIL
+  TELEGRAM
+}
+
+enum AlertFrequency {
+  REAL_TIME
+  DAILY
+  WEEKLY
+}
+
+enum AlertStatus {
+  ACTIVE
+  PAUSED
+  DELETED
+}
+
+// ---------------------------------------------------------------------------
+// UserAlert — one row per user-defined alert
+// ---------------------------------------------------------------------------
+
+model UserAlert {
+  id              String         @id @default(cuid())
+  userId          String
+  type            AlertType
+  /// Machine-readable target: "road:A-6" | "train:cercanias-c1-madrid" | "flight:IB6250"
+  targetKey       String
+  /// Human-readable label shown in the UI
+  targetLabel     String
+  channels        AlertChannel[]
+  frequency       AlertFrequency @default(REAL_TIME)
+  status          AlertStatus    @default(ACTIVE)
+  createdAt       DateTime       @default(now())
+  lastTriggeredAt DateTime?
+
+  @@index([userId, status])
+  @@index([type, targetKey, status])
+}
+
+// ---------------------------------------------------------------------------
+// PushSubscription — one row per browser/device
+// ---------------------------------------------------------------------------
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  /// Web Push endpoint URL (unique per device)
+  endpoint  String   @unique
+  /// ECDH public key (p256dh) from PushSubscription
+  p256dh    String
+  /// Authentication secret from PushSubscription
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// AffiliateOffer — product/offer catalog for affiliate links
+// ---------------------------------------------------------------------------
+
+model AffiliateOffer {
+  id       String   @id @default(cuid())
+  /// "skyscanner" | "trainline" | "directferries" | "flixbus" | "awin" | "rakuten"
+  partner  String
+  /// Optional route key for contextual matching, e.g. "madrid-bcn"
+  routeKey String?
+  product  String?
+  priceEur Decimal?
+  deepLink String
+  active   Boolean  @default(true)
+
+  clicks AffiliateClick[]
+
+  @@index([partner, routeKey])
+}
+
+// ---------------------------------------------------------------------------
+// AffiliateClick — one row per tracked outbound affiliate click
+// ---------------------------------------------------------------------------
+
+model AffiliateClick {
+  id           String    @id @default(cuid())
+  offerId      String
+  userId       String?
+  sessionId    String?
+  /// Page path that generated the click (for attribution analysis)
+  referrerPath String
+  /// Unique sub-ID sent to affiliate network for conversion matching
+  subId        String    @unique
+  conversion   Boolean   @default(false)
+  convertedEur Decimal?
+  convertedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  offer AffiliateOffer @relation(fields: [offerId], references: [id])
+
+  @@index([offerId, createdAt])
+  @@index([conversion])
 }

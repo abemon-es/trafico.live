@@ -39,6 +39,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
   }
 
-  const result = await checkTierRateLimit(identifier, tier as ApiTierName);
-  return NextResponse.json(result);
+  const [minute, day] = await Promise.all([
+    checkTierRateLimit({ tier: tier as ApiTierName, identifier, bucket: "minute" }),
+    checkTierRateLimit({ tier: tier as ApiTierName, identifier, bucket: "day" }),
+  ]);
+  return NextResponse.json({ minute, day });
 }

@@ -16,7 +16,6 @@ import { applyRateLimit } from "@/lib/api-utils";
 // ─── Resolve API key → FleetClient id ────────────────────────────────────────
 async function resolveFleetClientId(apiKeyValue: string): Promise<string | null> {
   try {
-    // @ts-expect-error — FleetClient model added via PRISMA-PROPOSAL-T4-FLEET.md
     const fleet = await prisma.fleetClient.findFirst({
       where: { apiKey: { key: apiKeyValue, isActive: true } },
       select: { id: true },
@@ -47,7 +46,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // @ts-expect-error — FleetVehicle model added via migration
     const vehicles = await prisma.fleetVehicle.findMany({
       where: { fleetClientId }, // CRITICAL: isolation
       select: {
@@ -120,7 +118,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // @ts-expect-error — FleetVehicle model added via migration
     const vehicle = await prisma.fleetVehicle.create({
       data: {
         fleetClientId, // CRITICAL: always scoped to this fleet

@@ -17,7 +17,6 @@ import { applyRateLimit } from "@/lib/api-utils";
 // ─── Resolve API key → FleetClient id ────────────────────────────────────────
 async function resolveFleetClientId(apiKeyValue: string): Promise<string | null> {
   try {
-    // @ts-expect-error — FleetClient model added via PRISMA-PROPOSAL-T4-FLEET.md
     const fleet = await prisma.fleetClient.findFirst({
       where: { apiKey: { key: apiKeyValue, isActive: true } },
       select: { id: true },
@@ -31,7 +30,6 @@ async function resolveFleetClientId(apiKeyValue: string): Promise<string | null>
 // ─── Find vehicle + verify ownership ─────────────────────────────────────────
 async function findOwnedVehicle(vehicleId: string, fleetClientId: string) {
   try {
-    // @ts-expect-error — FleetVehicle model added via migration
     return await prisma.fleetVehicle.findFirst({
       where: {
         id: vehicleId,
@@ -118,7 +116,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    // @ts-expect-error — FleetVehicle model added via migration
     const updated = await prisma.fleetVehicle.update({
       where: { id },
       data: updateData,
@@ -150,7 +147,6 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
   try {
     // Soft delete — set status INACTIVE, preserve positions for audit trail
-    // @ts-expect-error — FleetVehicle model added via migration
     await prisma.fleetVehicle.update({
       where: { id },
       data: { status: "INACTIVE" },

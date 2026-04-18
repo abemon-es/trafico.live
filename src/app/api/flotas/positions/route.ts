@@ -77,7 +77,6 @@ async function resolveFleetClient(
   apiKeyValue: string
 ): Promise<{ id: string; vehicleIds: Set<string> } | null> {
   try {
-    // @ts-expect-error — FleetClient model added via PRISMA-PROPOSAL-T4-FLEET.md
     const fleet = await prisma.fleetClient.findFirst({
       where: { apiKey: { key: apiKeyValue, isActive: true } },
       select: {
@@ -211,7 +210,6 @@ export async function POST(request: NextRequest) {
   // Bulk insert (skip on demo mode)
   if (accepted.length > 0 && fleet.id !== "demo") {
     try {
-      // @ts-expect-error — FleetPosition model added via migration
       await prisma.fleetPosition.createMany({
         data: accepted.map((a) => ({
           vehicleId: a.vehicleId,
@@ -276,7 +274,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // @ts-expect-error — FleetPosition model added via migration
     const positions = await prisma.fleetPosition.findMany({
       where: {
         vehicle: { fleetClientId: fleet.id }, // CRITICAL: isolation by fleet

@@ -41,7 +41,6 @@ export default async function FleetDashboardPage() {
   }> = [];
 
   try {
-    // @ts-expect-error — FleetClient model added via PRISMA-PROPOSAL-T4-FLEET.md migration
     fleetClient = await prisma.fleetClient.findFirst({
       where: { apiKey: { userId: session.user.id } },
       select: { id: true, name: true, plan: true },
@@ -52,7 +51,6 @@ export default async function FleetDashboardPage() {
     }
 
     // Fetch vehicles with their latest position
-    // @ts-expect-error — FleetVehicle model added via migration
     const rawVehicles = await prisma.fleetVehicle.findMany({
       where: { fleetClientId: fleetClient.id, status: "ACTIVE" },
       include: {
