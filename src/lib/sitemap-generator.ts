@@ -1701,12 +1701,12 @@ async function airQualityStationSitemap(
     const stations = await prisma.airQualityStation.findMany({
       skip: shardIndex * SHARD_SIZE,
       take: SHARD_SIZE,
-      select: { id: true, updatedAt: true },
-      orderBy: { id: "asc" },
+      select: { stationId: true, updatedAt: true },
+      orderBy: { stationId: "asc" },
     });
     const today = startOfUtcDay();
     return stations.map((s) => ({
-      url: `${BASE_URL}/calidad-aire/estacion/${encodeURIComponent(s.id)}`,
+      url: `${BASE_URL}/calidad-aire/estacion/${encodeURIComponent(s.stationId)}`,
       lastModified: s.updatedAt ?? today,
       changeFrequency: "daily" as const,
       priority: 0.55,
@@ -1728,12 +1728,12 @@ async function climateStationSitemap(
     const stations = await prisma.climateStation.findMany({
       skip: shardIndex * SHARD_SIZE,
       take: SHARD_SIZE,
-      select: { id: true },
-      orderBy: { id: "asc" },
+      select: { stationCode: true },
+      orderBy: { stationCode: "asc" },
     });
     const today = startOfUtcDay();
     return stations.map((s) => ({
-      url: `${BASE_URL}/clima/estacion/${encodeURIComponent(s.id)}`,
+      url: `${BASE_URL}/clima/estacion/${encodeURIComponent(s.stationCode)}`,
       lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.55,
