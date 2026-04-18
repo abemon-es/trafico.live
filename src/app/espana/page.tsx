@@ -25,8 +25,8 @@ export const metadata: Metadata = {
 const COMMUNITIES = [
   { name: "Andalucía", slug: "andalucia" },
   { name: "Aragón", slug: "aragon" },
-  { name: "Asturias", slug: "asturias" },
-  { name: "Baleares", slug: "baleares" },
+  { name: "Asturias", slug: "principado-de-asturias" },
+  { name: "Islas Baleares", slug: "islas-baleares" },
   { name: "Canarias", slug: "canarias" },
   { name: "Cantabria", slug: "cantabria" },
   { name: "Castilla-La Mancha", slug: "castilla-la-mancha" },
@@ -37,9 +37,11 @@ const COMMUNITIES = [
   { name: "Extremadura", slug: "extremadura" },
   { name: "Galicia", slug: "galicia" },
   { name: "La Rioja", slug: "la-rioja" },
-  { name: "Murcia", slug: "murcia" },
+  { name: "Región de Murcia", slug: "region-de-murcia" },
   { name: "Navarra", slug: "navarra" },
   { name: "País Vasco", slug: "pais-vasco" },
+  { name: "Ceuta", slug: "ceuta" },
+  { name: "Melilla", slug: "melilla" },
 ];
 
 export default function EspanaPage() {

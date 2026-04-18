@@ -43,6 +43,11 @@ const TRAFFIC_CITIES: Record<
   alicante: { name: "Alicante", province: "Alicante", provinceCode: "03" },
   murcia: { name: "Murcia", province: "Murcia", provinceCode: "30" },
   granada: { name: "Granada", province: "Granada", provinceCode: "18" },
+  palma: { name: "Palma", province: "Baleares", provinceCode: "07" },
+  valladolid: { name: "Valladolid", province: "Valladolid", provinceCode: "47" },
+  cordoba: { name: "Córdoba", province: "Córdoba", provinceCode: "14" },
+  vigo: { name: "Vigo", province: "Pontevedra", provinceCode: "36" },
+  oviedo: { name: "Oviedo", province: "Asturias", provinceCode: "33" },
 };
 
 // City-specific FAQ content
@@ -106,6 +111,36 @@ const CITY_FAQ: Record<string, { q1: string; a1: string; q2: string; a2: string 
     a1: "El nudo de la Circunvalación (A-44 con la GR-30) y el acceso desde la autovía A-92 son los puntos más congestionados en Granada. La Avenida de la Constitución y los accesos a la Alhambra registran picos importantes durante el verano y en Semana Santa.",
     q2: "¿Cómo afecta el turismo al tráfico en Granada?",
     a2: "Granada recibe millones de visitantes anuales, especialmente para visitar la Alhambra. Los domingos y festivos los accesos al barrio del Albaicín y el aparcamiento de la Alhambra generan retenciones en Paseo del Violón y la Cuesta de Gomérez. Se recomienda el aparcamiento de la Alhambra en la A-395 o el uso del autobús urbano.",
+  },
+  palma: {
+    q1: "¿Cuáles son los puntos más congestionados en Palma?",
+    a1: "Los accesos más saturados en Palma de Mallorca son la autopista Ma-19 hacia el aeropuerto y el Arenal, la Ma-20 (ronda de cintura) y los accesos al centro histórico por el Paseo Marítimo. En verano el tráfico se multiplica especialmente en los accesos a las zonas turísticas del sur y levante de la isla.",
+    q2: "¿Cómo afecta el turismo al tráfico en Palma en verano?",
+    a2: "Entre junio y septiembre el tráfico en Mallorca alcanza su punto máximo. Los accesos al aeropuerto Son Sant Joan, la autopista hacia Calvià y los puertos de Alcúdia generan retenciones de varios kilómetros. Se recomienda usar el tren de Soller y los autobuses interurbanos como alternativa para los trayectos más frecuentes.",
+  },
+  valladolid: {
+    q1: "¿Cuáles son las vías con más tráfico en Valladolid?",
+    a1: "Los puntos más conflictivos en Valladolid son el nudo de la VA-30 con la A-11, el acceso desde la autovía A-62 por el norte y los accesos a los polígonos industriales de Argales y San Cristóbal. La Avenida de Salamanca y el Paseo de Zorrilla concentran las mayores retenciones urbanas en hora punta.",
+    q2: "¿Hay restricciones de tráfico en el centro de Valladolid?",
+    a2: "Valladolid cuenta con una zona de prioridad peatonal en el centro histórico que limita el acceso de vehículos privados en determinados horarios. Además, la ZBE en fase de implementación afectará a los vehículos sin etiqueta ambiental. Consulta nuestra sección de ZBE para los perímetros y horarios actualizados.",
+  },
+  cordoba: {
+    q1: "¿Cuáles son los accesos más saturados de Córdoba?",
+    a1: "Los puntos de mayor congestión en Córdoba son la A-4 (Madrid-Cádiz) a su entrada por el norte, el nudo con la A-45 hacia Málaga y los accesos al casco histórico por el Puente Romano. La Avenida de América y la Ronda de los Tejares concentran retenciones importantes durante las horas punta laborables.",
+    q2: "¿Cómo afecta el turismo al tráfico en Córdoba?",
+    a2: "Córdoba recibe gran afluencia turística especialmente en Semana Santa y durante el Festival de los Patios en mayo. Los accesos a la Mezquita-Catedral, el aparcamiento de la Ribera y el entorno del Alcázar generan retenciones importantes. En Semana Santa el centro queda restringido al tráfico privado durante los desfiles.",
+  },
+  vigo: {
+    q1: "¿Cuáles son los puntos con más tráfico en Vigo?",
+    a1: "Los tramos más congestionados en Vigo son el túnel de Beiramar, la autopista AP-9 en los accesos a la ciudad y la PO-10 en Gran Vía. El nudo de Puxeiros concentra tráfico pesado del puerto y la zona industrial. Los viernes tarde hacia Pontevedra y hacia las Rías Baixas registran retenciones notables.",
+    q2: "¿Cómo afecta el puerto de Vigo al tráfico?",
+    a2: "El puerto de Vigo genera un flujo constante de tráfico pesado por la PO-10 y los accesos a la zona franca. Las maniobras de los cruceros en verano y las épocas de mayor actividad pesquera incrementan la congestión en los accesos al puerto. Se recomienda evitar la zona portuaria en las horas de entrada y salida de los turnos industriales.",
+  },
+  oviedo: {
+    q1: "¿Cuáles son los accesos más saturados de Oviedo?",
+    a1: "Los puntos más conflictivos en Oviedo son la autovía AS-I en el acceso desde Gijón, el nudo de la Ronda Norte con la A-66 y los accesos al polígono industrial de Silvota. La Avenida de los Monumentos y la calle Fuertes Acevedo registran las mayores retenciones urbanas en horas punta.",
+    q2: "¿Qué alternativas hay al tráfico rodado en Oviedo?",
+    a2: "Oviedo dispone de una extensa red de autobuses urbanos gestionada por TUA. El tren de Cercanías conecta Oviedo con Gijón y Avilés con alta frecuencia, siendo la mejor alternativa al coche en el corredor central asturiano. El aparcamiento disuasorio de La Ería facilita el acceso al centro sin entrar con el vehículo.",
   },
 };
 
