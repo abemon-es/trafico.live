@@ -1,0 +1,22 @@
+{
+  "name": "trafico-live-google-action",
+  "version": "1.0.0",
+  "description": "Google Assistant Action Cloud Function handler for trafico.live",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist",
+    "deploy": "npm run build && gcloud functions deploy traficoLiveWebhook --runtime nodejs20 --trigger-http --allow-unauthenticated --region europe-west1 --set-env-vars TRAFICO_API_KEY=$TRAFICO_API_KEY,TRAFICO_API_BASE=https://trafico.live/api --source dist",
+    "dev": "npx @google-cloud/functions-framework --target=traficoLiveWebhook"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20.x"
+  }
+}

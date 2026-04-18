@@ -27,8 +27,8 @@ export const API_TIERS: Record<ApiTierName, TierConfig> = {
     ],
   },
   PRO: {
-    rateLimitPerMinute: 60,
-    rateLimitPerDay: 50_000,
+    rateLimitPerMinute: 100,
+    rateLimitPerDay: 100_000,
     features: [
       "active_incidents",
       "current_fuel_prices",
@@ -42,12 +42,12 @@ export const API_TIERS: Record<ApiTierName, TierConfig> = {
       "climate_data",
       "fleet_tracking",
     ],
-    priceMonthlyEur: 29,
+    priceMonthlyEur: 49,
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID,
   },
   ENTERPRISE: {
-    rateLimitPerMinute: 300,
-    rateLimitPerDay: 500_000,
+    rateLimitPerMinute: 1000,
+    rateLimitPerDay: Number.MAX_SAFE_INTEGER,
     features: [
       "all",
       "bulk_export",

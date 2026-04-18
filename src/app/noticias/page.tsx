@@ -1,18 +1,19 @@
-// Decision (2026-04-17, agent 2.7): /noticias KEPT.
-// Page is substantive — server-rendered filter tabs, featured article,
-// tag cloud, paginated list with NewsArticle JSON-LD. A top "latest
-// insights" ticker is rendered below the hero to surface the 5 most recent
-// publications (replaces the TickerStrip stub from 2.3 — swap inline
-// markup for <TickerStrip /> when that component ships).
 import { Metadata } from "next";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import prisma from "@/lib/db";
+
+// Loaded with ssr:false to avoid hydration mismatch from marquee animation timer
+const TickerStrip = dynamic(
+  () => import("@/components/noticias/TickerStrip").then((m) => ({ default: m.TickerStrip })),
+  { ssr: false }
+);
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import {
   Newspaper, TrendingUp, CloudLightning, AlertTriangle,
   Fuel, FileText, BookOpen, Megaphone, BarChart3, Scale,
-  Calendar, Clock, Tag, ChevronRight, ArrowRight, Radio,
+  Calendar, Clock, Tag, ChevronRight, ArrowRight,
 } from "lucide-react";
 import { ArticleCategory } from "@prisma/client";
 
@@ -151,7 +152,7 @@ export default async function NoticiasPage({
   // On default "todos" view, deprioritize daily reports to show diverse content
   const isDailyHeavy = activeFilter === "todos" && page === 1;
 
-  const [articles, total, featuredArticle, tags, latestTicker] = await Promise.all([
+  const [articles, total, featuredArticle, tags] = await Promise.all([
     isDailyHeavy
       ? // Mix: non-daily articles first, then fill with daily reports
         (async () => {
@@ -186,14 +187,6 @@ export default async function NoticiasPage({
       include: { _count: { select: { articles: true } } },
       orderBy: { articles: { _count: "desc" } },
       take: 15,
-    }),
-    // Latest 5 published articles for the ticker strip.
-    // Swap inline markup for <TickerStrip /> from 2.3 when that component ships.
-    prisma.article.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-      take: 5,
-      select: { slug: true, title: true, publishedAt: true, category: true },
     }),
   ]);
 
@@ -260,47 +253,18 @@ export default async function NoticiasPage({
           </p>
         </div>
 
-        {/* Live insights ticker — last 5 published articles.
-            TODO: replace with <TickerStrip /> from agent 2.3 when shipped. */}
-        {latestTicker.length > 0 && (
-          <div className="mb-8 rounded-xl border border-tl-200 dark:border-tl-800 bg-tl-50/60 dark:bg-tl-900/20 overflow-hidden">
-            <div className="flex items-stretch">
-              <div className="flex items-center gap-2 px-4 py-2 bg-tl-600 text-white text-xs font-semibold uppercase tracking-wider shrink-0">
-                <Radio className="w-4 h-4 animate-pulse" aria-hidden="true" />
-                En directo
-              </div>
-              <ul className="flex-1 flex overflow-x-auto divide-x divide-tl-200/60 dark:divide-tl-800/60 scrollbar-none">
-                {latestTicker.map((item) => {
-                  const cfg = CATEGORY_CONFIG[item.category] ?? CATEGORY_CONFIG.NEWS;
-                  return (
-                    <li key={item.slug} className="shrink-0">
-                      <Link
-                        href={`/noticias/${item.slug}`}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-900 transition-colors"
-                      >
-                        <span className={`inline-flex items-center ${cfg.color}`} aria-hidden="true">
-                          {cfg.icon}
-                        </span>
-                        <span className="font-medium truncate max-w-[20rem]">
-                          {item.title}
-                        </span>
-                        <time
-                          dateTime={item.publishedAt.toISOString()}
-                          className="text-xs text-gray-500 dark:text-gray-500 font-mono"
-                        >
-                          {item.publishedAt.toLocaleDateString("es-ES", {
-                            day: "2-digit",
-                            month: "2-digit",
-                          })}
-                        </time>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+        {/* Live ticker hero */}
+        <section className="mb-10" aria-label="Tráfico en vivo">
+          <div className="mb-3">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-0.5">
+              Hoy en las carreteras
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Tráfico en vivo actualizado cada 60 segundos
+            </p>
           </div>
-        )}
+          <TickerStrip />
+        </section>
 
         {/* Filter tabs */}
         <div className="flex flex-wrap gap-2 mb-8">

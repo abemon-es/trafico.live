@@ -1,0 +1,134 @@
+# Google Assistant Action configuration (Actions SDK v3)
+# Deploy via: gcloud alpha actions deploy action.yaml
+# Or via Google Actions Console: https://console.actions.google.com
+
+# Action metadata
+displayName: "Tráfico Live"
+locale: es
+category: TRANSPORTATION
+
+# Invocation
+defaultLocale: es
+localizedSettings:
+  displayName: "Tráfico Live"
+  pronunciation: "tráfico live"
+  shortDescription: "Consulta trenes, tráfico y combustible en España en tiempo real."
+  fullDescription: |
+    Tráfico Live te mantiene informado sobre el estado de las carreteras
+    españolas, horarios y retrasos de trenes Renfe, y precios de gasolina
+    y diésel en tu provincia o ciudad. Datos actualizados en tiempo real
+    de DGT, Renfe y MINETUR.
+  smallLogoImage: "https://trafico.live/icons/google-action-192.png"
+  largeBannerImage: "https://trafico.live/icons/google-action-1920x1080.png"
+  developerName: "Abemon"
+  developerEmail: "mj@abemon.es"
+  privacyPolicyUrl: "https://trafico.live/privacidad"
+  termsOfServiceUrl: "https://trafico.live/legal"
+  sampleInvocations:
+    - "hablar con tráfico live"
+    - "preguntarle a tráfico live cuándo llega el AVE a Madrid"
+    - "preguntarle a tráfico live cómo está la A-2"
+    - "preguntarle a tráfico live el precio de la gasolina en Barcelona"
+
+# Webhook
+webhook:
+  httpsEndpoint:
+    baseUrl: "https://europe-west1-YOUR_PROJECT_ID.cloudfunctions.net/traficoLiveWebhook"
+
+# Intents — Dialogflow CX handles NLU; webhook handles fulfillment
+intents:
+  - name: "GetTrainArrivalIntent"
+    trainingPhrases:
+      - "cuándo llega el tren a Madrid"
+      - "a qué hora llega mi AVE a Barcelona"
+      - "hora de llegada del tren 06213"
+      - "cuánto tarda el tren en llegar a Sevilla"
+      - "el tren número 02301 dónde está"
+      - "retraso del tren 1234"
+      - "cuándo llega el Alvia a Valencia"
+      - "hora del tren a Bilbao"
+      - "próximo tren a Zaragoza"
+      - "estado del tren 06213"
+      - "lleva retraso el tren a Granada"
+      - "tiempo de llegada a Málaga"
+      - "cuándo llega mi tren a Alicante"
+      - "a qué hora sale el tren para Córdoba"
+      - "horario del tren a Murcia"
+      - "tiempo estimado para llegar a Valladolid"
+      - "hay retraso en el tren 1234"
+      - "cuándo llega el cercanías a Getafe"
+      - "me dices el estado del tren a Burgos"
+      - "cuándo llega el AVE a Barcelona Sants"
+    parameters:
+      - name: "Station"
+        type: "sys.geo-city"
+        required: false
+      - name: "TrainNumber"
+        type: "sys.number"
+        required: false
+    webhookTag: "GetTrainArrivalIntent"
+
+  - name: "GetRoadTrafficIntent"
+    trainingPhrases:
+      - "cómo está la A-2"
+      - "estado del tráfico en la A-6"
+      - "hay retenciones en la M-30"
+      - "cómo está el tráfico en Madrid"
+      - "incidencias en la AP-7"
+      - "accidentes en la N-II"
+      - "está cortada la A-1"
+      - "cómo va la A-4"
+      - "tráfico en la carretera A-3"
+      - "cómo está la autopista AP-9"
+      - "hay obras en la A-8"
+      - "qué pasa en la A-2"
+      - "estado de la autovía A-5"
+      - "circulación en la M-40"
+      - "está fluido el tráfico en la N-VI"
+      - "problemas en la A-7"
+      - "cortes en la A-9"
+      - "me dices el estado de la A-23"
+      - "cómo circula la A-2 hoy"
+      - "hay alguna incidencia en la N-340"
+    parameters:
+      - name: "Road"
+        type: "sys.any"
+        required: false
+      - name: "Province"
+        type: "sys.geo-city"
+        required: false
+    webhookTag: "GetRoadTrafficIntent"
+
+  - name: "GetFuelPriceIntent"
+    trainingPhrases:
+      - "precio de la gasolina en Madrid"
+      - "cuánto cuesta el diésel en Barcelona"
+      - "precio del gasoil hoy en Valencia"
+      - "gasolinera más barata en Sevilla"
+      - "dónde está la gasolina más barata en Zaragoza"
+      - "precio de la gasolina en Málaga"
+      - "precio del gasoil en Bilbao"
+      - "cuánto vale el litro de gasolina en Murcia"
+      - "precio del combustible en Alicante"
+      - "qué precio tiene la gasolina en Granada"
+      - "precio de la gasolina noventa y cinco en Córdoba"
+      - "precio del diesel en Valladolid"
+      - "gasolinera barata en Toledo"
+      - "combustible más económico en Salamanca"
+      - "precio de la gasolina hoy en Badajoz"
+      - "cuánto cuesta llenar el depósito en Cádiz"
+      - "precio actual de la gasolina en Huelva"
+      - "cuánto está la gasolina en Pamplona"
+      - "precio de la gasolina en Donostia hoy"
+      - "dónde cargar barato en Logroño"
+    parameters:
+      - name: "FuelType"
+        type: "sys.any"
+        required: false
+      - name: "Province"
+        type: "sys.geo-city"
+        required: false
+      - name: "City"
+        type: "sys.geo-city"
+        required: false
+    webhookTag: "GetFuelPriceIntent"

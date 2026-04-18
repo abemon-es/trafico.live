@@ -1,70 +1,76 @@
 {
-  "locale": "en-GB",
   "common": {
+    "siteName": "trafico.live",
+    "tagline": "Live traffic, trains, flights and ships",
+    "search": "Search",
+    "login": "Sign in",
+    "signup": "Sign up",
+    "logout": "Sign out",
     "loading": "Loading…",
     "error": "Something went wrong",
     "retry": "Retry",
-    "search": "Search",
-    "searchPlaceholder": "Search city, road, petrol station…",
-    "close": "Close",
-    "back": "Back",
-    "next": "Next",
-    "previous": "Previous",
-    "more": "More",
-    "less": "Less",
-    "seeAll": "See all",
-    "seeMore": "See more",
-    "seeMap": "View on map",
-    "liveLabel": "Live",
-    "updatedEvery60": "Updated every 60 seconds",
-    "skipToContent": "Skip to content"
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close"
   },
   "nav": {
     "home": "Home",
-    "traffic": "Traffic",
-    "roads": "Roads",
-    "fuel": "Fuel",
-    "maritime": "Maritime",
-    "aviation": "Aviation",
-    "rail": "Rail",
-    "transit": "Public transit",
-    "airQuality": "Air quality",
-    "weather": "Weather",
-    "explore": "Explore",
-    "professional": "Professional",
-    "pressCenter": "Press",
-    "apiDocs": "REST API",
-    "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "trenes": "Trains",
+    "maritimo": "Maritime",
+    "aviacion": "Aviation",
+    "trafico": "Traffic",
+    "gasolineras": "Fuel",
+    "aire": "Air quality",
+    "estadisticas": "Stats",
+    "transporte": "Public transit",
+    "noticias": "News",
+    "api": "API"
   },
   "cta": {
+    "exploreMap": "Open map",
+    "createAlert": "Create alert",
+    "getApiKey": "Get API key",
     "subscribe": "Subscribe",
-    "tryFree": "Try free",
-    "getApi": "Get API key",
-    "contact": "Contact",
-    "learnMore": "Learn more",
-    "download": "Download",
-    "share": "Share"
+    "upgrade": "Upgrade plan",
+    "learnMore": "Learn more"
   },
   "messages": {
+    "welcome": "Welcome to trafico.live",
     "noResults": "No results",
-    "noData": "No data available",
-    "loadFailed": "Could not load the data",
-    "tryAgain": "Try again in a few seconds or check your connection.",
-    "offline": "Offline",
-    "stale": "Data may be out of date"
+    "comingSoon": "Coming soon",
+    "offline": "You are offline"
   },
   "footer": {
     "legal": "Legal notice",
     "privacy": "Privacy",
-    "cookies": "Cookie settings",
-    "developedBy": "Built by",
-    "copyright": "© {year} trafico.live"
+    "cookies": "Cookies",
+    "contact": "Contact",
+    "press": "Press",
+    "api": "API",
+    "status": "Status",
+    "sources": "Data sources"
   },
   "breadcrumbs": {
-    "aria": "Breadcrumb"
+    "home": "Home",
+    "back": "Back"
   },
   "faq": {
-    "heading": "Frequently asked questions"
+    "title": "Frequently asked questions",
+    "contact": "Can't find what you're looking for? Write to us."
+  },
+  "locale": {
+    "label": "Language",
+    "es": "Spanish",
+    "en": "English"
+  },
+  "status": {
+    "healthy": "Operational",
+    "degraded": "Degraded",
+    "down": "Down",
+    "allSystemsOperational": "All systems operational",
+    "partialOutage": "Partial outage",
+    "majorOutage": "Major outage"
   }
 }

@@ -1,0 +1,188 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "es-ES": {
+          "name": "Tráfico Live",
+          "summary": "Consulta en tiempo real el tráfico, trenes y precios de combustible en España.",
+          "description": "Tráfico Live te mantiene informado sobre el estado de las carreteras españolas, horarios y retrasos de trenes Renfe, y precios de gasolina y diésel en tu provincia o ciudad. Datos actualizados en tiempo real de DGT, Renfe y MINETUR.",
+          "examplePhrases": [
+            "Alexa, abre tráfico live",
+            "Alexa, pregunta a tráfico live cuándo llega el AVE a Madrid",
+            "Alexa, pregunta a tráfico live cómo está la A-2"
+          ],
+          "keywords": [
+            "tráfico",
+            "carreteras",
+            "trenes",
+            "Renfe",
+            "gasolina",
+            "combustible",
+            "DGT",
+            "incidencias",
+            "transporte"
+          ],
+          "smallIconUri": "https://trafico.live/icons/alexa-icon-108.png",
+          "largeIconUri": "https://trafico.live/icons/alexa-icon-512.png"
+        }
+      },
+      "isAvailableWorldwide": false,
+      "testingInstructions": "Di 'Alexa, abre tráfico live'. Luego pregunta: 'Cuándo llega el AVE a Barcelona', 'Cómo está la A-2' o 'Precio de la gasolina en Madrid'.",
+      "category": "NAVIGATION_AND_TRIP_PLANNER",
+      "distributionCountries": ["ES"]
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:eu-west-1:ACCOUNT_ID:function:trafico-live-alexa-skill"
+        },
+        "interfaces": [],
+        "locales": {
+          "es-ES": {
+            "interactionModel": {
+              "languageModel": {
+                "invocationName": "tráfico live",
+                "intents": [
+                  {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": ["cancelar", "para", "no importa"]
+                  },
+                  {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": ["ayuda", "qué puedes hacer", "qué sé puede hacer"]
+                  },
+                  {
+                    "name": "AMAZON.StopIntent",
+                    "samples": ["para", "adiós", "salir"]
+                  },
+                  {
+                    "name": "GetTrainArrivalIntent",
+                    "slots": [
+                      {
+                        "name": "Station",
+                        "type": "AMAZON.City"
+                      },
+                      {
+                        "name": "TrainNumber",
+                        "type": "AMAZON.NUMBER"
+                      }
+                    ],
+                    "samples": [
+                      "cuándo llega el tren a {Station}",
+                      "a qué hora llega mi AVE a {Station}",
+                      "hora de llegada del tren {TrainNumber}",
+                      "cuánto tarda el tren en llegar a {Station}",
+                      "el tren número {TrainNumber} dónde está",
+                      "retraso del tren {TrainNumber}",
+                      "a qué hora llega el AVE a {Station}",
+                      "cuándo llega el Alvia a {Station}",
+                      "hora del tren a {Station}",
+                      "próximo tren a {Station}",
+                      "estado del tren {TrainNumber}",
+                      "lleva retraso el tren a {Station}",
+                      "tiempo de llegada a {Station}",
+                      "cuándo llega mi tren a {Station}",
+                      "a qué hora sale el tren para {Station}",
+                      "horario del tren a {Station}",
+                      "tiempo estimado para llegar a {Station}"
+                    ]
+                  },
+                  {
+                    "name": "GetRoadTrafficIntent",
+                    "slots": [
+                      {
+                        "name": "Road",
+                        "type": "AMAZON.SearchQuery"
+                      },
+                      {
+                        "name": "Province",
+                        "type": "AMAZON.City"
+                      }
+                    ],
+                    "samples": [
+                      "cómo está la {Road}",
+                      "estado del tráfico en la {Road}",
+                      "hay retenciones en la {Road}",
+                      "cómo está el tráfico en {Province}",
+                      "incidencias en la {Road}",
+                      "accidentes en la {Road}",
+                      "está cortada la {Road}",
+                      "cómo va la {Road}",
+                      "tráfico en la carretera {Road}",
+                      "cómo está la autopista {Road}",
+                      "hay obras en la {Road}",
+                      "qué pasa en la {Road}",
+                      "estado de la autovía {Road}",
+                      "circulación en la {Road}",
+                      "está fluido el tráfico en la {Road}",
+                      "problemas en la {Road}",
+                      "cortes en la {Road}"
+                    ]
+                  },
+                  {
+                    "name": "GetFuelPriceIntent",
+                    "slots": [
+                      {
+                        "name": "FuelType",
+                        "type": "FuelTypeType"
+                      },
+                      {
+                        "name": "Province",
+                        "type": "AMAZON.City"
+                      },
+                      {
+                        "name": "City",
+                        "type": "AMAZON.City"
+                      }
+                    ],
+                    "samples": [
+                      "precio de la {FuelType} en {Province}",
+                      "cuánto cuesta la {FuelType} en {City}",
+                      "precio del {FuelType} hoy en {Province}",
+                      "gasolinera más barata en {Province}",
+                      "dónde está la gasolina más barata en {City}",
+                      "precio de la gasolina en {Province}",
+                      "precio del gasoil en {Province}",
+                      "cuánto vale el litro de {FuelType} en {City}",
+                      "precio del combustible en {Province}",
+                      "qué precio tiene la {FuelType} en {Province}",
+                      "precio de la gasolina noventa y cinco en {City}",
+                      "precio del diesel en {Province}",
+                      "gasolinera barata en {City}",
+                      "combustible más económico en {Province}",
+                      "precio de la gasolina hoy en {City}",
+                      "cuánto cuesta llenar el depósito en {Province}",
+                      "precio actual de la gasolina en {Province}"
+                    ]
+                  }
+                ],
+                "types": [
+                  {
+                    "name": "FuelTypeType",
+                    "values": [
+                      { "name": { "value": "gasolina", "synonyms": ["gasolina 95", "sin plomo", "SP95"] } },
+                      { "name": { "value": "gasolina 98", "synonyms": ["SP98", "super"] } },
+                      { "name": { "value": "diesel", "synonyms": ["gasoil", "gasóleo", "gasoleo", "diésel"] } },
+                      { "name": { "value": "glp", "synonyms": ["autogas", "gas licuado", "GLP"] } }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "manifestVersion": "1.0",
+    "permissions": [],
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "usesPersonalInfo": false,
+      "isChildDirected": false,
+      "isExportCompliant": true,
+      "containsAds": false,
+      "privacyPolicyUrl": "https://trafico.live/privacidad",
+      "termsOfUseUrl": "https://trafico.live/legal"
+    }
+  }
+}
