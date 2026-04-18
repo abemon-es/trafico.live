@@ -281,7 +281,7 @@ export function PortActivity({ slug }: Props) {
       </h2>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-800 mb-4 overflow-x-auto">
+      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-800 mb-4 overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
         {(Object.keys(TAB_LABELS) as Tab[]).map((tab) => {
           const Icon =
             tab === "arrivals" ? LogIn :
@@ -293,7 +293,7 @@ export function PortActivity({ slug }: Props) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
+              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
                 activeTab === tab
                   ? "border-tl-sea-500 text-tl-sea-700 dark:text-tl-sea-300"
                   : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"

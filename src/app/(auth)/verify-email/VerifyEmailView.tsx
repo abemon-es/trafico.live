@@ -1,11 +1,13 @@
 /**
  * VerifyEmailView — client component.
- * Static "check your inbox" screen with resend option.
+ * "Check your inbox" screen with resend option.
+ * Also shows an error state when ?error=invalid_or_expired is present
+ * (redirected here by the /verify-email route handler after a bad token).
  */
 
 "use client";
 
-import { MailCheck } from "lucide-react";
+import { MailCheck, MailX } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -13,6 +15,53 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   // NextAuth passes the email as ?email=... on the verifyRequest redirect
   const email = searchParams.get("email");
+  const error = searchParams.get("error");
+  const isInvalidToken = error === "invalid_or_expired";
+
+  // ---- Error state: token invalid or expired --------------------------------
+  if (isInvalidToken) {
+    return (
+      <div className="text-center space-y-5">
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
+          style={{ backgroundColor: "color-mix(in oklch, var(--tl-danger, #ef4444) 15%, transparent)" }}
+        >
+          <MailX
+            className="w-8 h-8"
+            style={{ color: "var(--tl-danger, #ef4444)" }}
+            aria-hidden="true"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <h1
+            className="text-2xl font-bold"
+            style={{ fontFamily: "var(--font-heading)", color: "var(--foreground)" }}
+          >
+            Enlace no válido
+          </h1>
+          <p
+            className="text-sm leading-relaxed"
+            style={{ color: "color-mix(in oklch, var(--foreground) 65%, transparent)" }}
+          >
+            El enlace de verificación ha caducado o ya fue usado.
+            Solicita uno nuevo para continuar.
+          </p>
+        </div>
+
+        <a
+          href="/login"
+          className="inline-block w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          style={{
+            backgroundColor: "var(--tl-primary)",
+            color: "#fff",
+          }}
+        >
+          Solicitar nuevo enlace
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="text-center space-y-5">
