@@ -35,7 +35,7 @@ fi
 build_one() {
   local profile="$1"
   local out_dir="$OUT_BASE/$profile"
-  local lua_path="/opt/$profile.lua"
+  local osrm_name=$profile; [ "$profile" = "bike" ] && osrm_name=bicycle; [ "$profile" = "foot" ] && osrm_name=foot; local lua_path="/opt/${osrm_name}.lua"
 
   if [[ -f "/opt/trafico/osrm/profiles/$profile.lua" ]]; then
     lua_path="/profiles/$profile.lua"

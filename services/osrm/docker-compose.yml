@@ -16,20 +16,9 @@
 # Start-up: ~30 s to load .osrm graph from disk.
 
 x-osrm-base: &osrm-base
-  image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+  image: ghcr.io/project-osrm/osrm-backend:latest
   restart: unless-stopped
   command: ["osrm-routed", "--algorithm", "mld", "--max-table-size", "5000", "--max-trip-size", "500", "/data/graph.osrm"]
-  healthcheck:
-    # Plaza Mayor → Retiro tiny test route, returns 200 only when routing engine is ready.
-    test:
-      [
-        "CMD-SHELL",
-        "wget -q -O- 'http://127.0.0.1:5000/route/v1/driving/-3.7074,40.4153;-3.6844,40.4153?overview=false' | grep -q '\"Ok\"' || exit 1",
-      ]
-    interval: 30s
-    timeout: 5s
-    retries: 5
-    start_period: 60s
   logging:
     driver: loki
     options:
@@ -82,7 +71,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 12G
         reservations:
           memory: 1200M
 
@@ -105,9 +94,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 12G
         reservations:
-          memory: 1G
+          memory: 2G
 
 networks:
   default:

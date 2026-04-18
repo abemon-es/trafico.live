@@ -72,11 +72,11 @@ cp -f "$PBF" "$TMP_DIR/iberia.osm.pbf"
 # OTP reads build-config.json from the same dir and writes graph.obj there.
 docker run --rm \
   -v "$TMP_DIR":/var/opentripplanner \
-  --memory="13g" \
+  --memory="32g" \
   --cpus="4" \
-  -e JAVA_TOOL_OPTIONS="-Xmx12G" \
+  -e JAVA_TOOL_OPTIONS="-Xmx28G" \
   "$OTP_IMAGE" \
-  --build --save /var/opentripplanner
+  --build --save
 
 # Drop the PBF copy so it isn't carried into the runtime volume.
 rm -f "$TMP_DIR/iberia.osm.pbf"
