@@ -103,6 +103,12 @@ const LABEL_ALIASES: Record<string, string> = {
   description:   "Descripción",
   km:            "KM",
   kilometer:     "KM",
+  kmStart:       "Km inicio",
+  kmEnd:         "Km fin",
+  imdLigeros:    "IMD ligeros",
+  imdPesados:    "IMD pesados",
+  percentPesados: "% pesados",
+  segmentLength: "Longitud (km)",
   serviceType:   "Servicio",
   originStation: "Origen",
   destStation:   "Destino",
@@ -137,6 +143,21 @@ function extractTitle(props: FeatureProps, layerId?: string): string | null {
   if (layerId === "aircraft") {
     const cs = typeof props.callsign === "string" ? props.callsign.trim() : "";
     if (cs) return cs;
+  }
+  if (layerId === "road-segments") {
+    const road = typeof props.roadNumber === "string" ? props.roadNumber : "";
+    const kmA = props.kmStart;
+    const kmB = props.kmEnd;
+    if (road && typeof kmA === "number" && typeof kmB === "number") {
+      return `${road} · km ${kmA.toFixed(1)}–${kmB.toFixed(1)}`;
+    }
+    if (road) return road;
+  }
+  if (layerId === "cameras") {
+    const road = typeof props.roadNumber === "string" ? props.roadNumber : "";
+    const name = typeof props.name === "string" ? props.name : "";
+    if (road && name && !name.includes(road)) return `${road} — ${name}`;
+    if (name) return name;
   }
   for (const key of TITLE_KEYS) {
     const v = props[key];
@@ -291,6 +312,10 @@ export function buildPopupHTML(
         && /^price/.test(key)) continue;
     if ((layerId === "incidents" || layerId === "accidents" || layerId === "emergencies")
         && key === "severity") continue;
+    // Road segment: hide roadNumber/kmStart/kmEnd — already in composite title.
+    if (layerId === "road-segments" && (key === "roadNumber" || key === "kmStart" || key === "kmEnd")) continue;
+    // Camera: hide roadNumber when composite "ROAD — name" title already uses it.
+    if (layerId === "cameras" && key === "roadNumber" && typeof props.name === "string" && !props.name.includes(String(props.roadNumber))) continue;
 
     const formatted = formatValue(key, value);
     if (formatted === null) continue;
