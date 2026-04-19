@@ -181,17 +181,16 @@ function extractTitle(props: FeatureProps, layerId?: string): string | null {
     // structured as "(TYPE) STREET - REFS" — the street part is the useful bit.
     const d = typeof props.description === "string" ? props.description.trim() : "";
     if (d) {
-      // Trim parenthetical prefix and take up to 40 chars of meaningful text
       const cleaned = d.replace(/^\([^)]*\)\s*/, "").split(/[(]/)[0].trim();
-      return cleaned.length > 40 ? cleaned.slice(0, 40).trim() + "…" : cleaned;
+      const clipped = cleaned.length > 40 ? cleaned.slice(0, 40).trim() + "…" : cleaned;
+      return smartTitleCase(clipped);
     }
   }
   if (layerId === "incidents") {
-    // Prefer description, falling back to the layer label via return null.
     const d = typeof props.description === "string" ? props.description.trim() : "";
     if (d) {
       const truncated = d.length > 48 ? d.slice(0, 48).trim() + "…" : d;
-      return truncated;
+      return smartTitleCase(truncated);
     }
   }
   for (const key of TITLE_KEYS) {
