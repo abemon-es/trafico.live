@@ -26,6 +26,15 @@ function silhouette(color: string, innerSvg: string): string {
   </svg>`;
 }
 
+/** Warning triangle — used for severity-tinted incident markers. */
+function triangle(color: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path d="M24 5 L44 41 L4 41 Z" fill="${color}" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="22" y="18" width="4" height="12" fill="#ffffff" rx="1"/>
+    <circle cx="24" cy="35" r="2.2" fill="#ffffff"/>
+  </svg>`;
+}
+
 const ICON_SVGS: Record<string, string> = {
   // ── Moving entities (rotate by heading) ─────────────────────────────────
   "icon-plane": silhouette(
@@ -154,6 +163,38 @@ const ICON_SVGS: Record<string, string> = {
        <g fill="#06b6d4" font-family="monospace" font-weight="700" font-size="8">
          <text x="15" y="25">40</text>
        </g>
+     </g>`,
+  ),
+
+  // ── Incidents (warning triangle, severity-tinted variants) ───────────────
+  "icon-incident-high": triangle("#dc2626"),
+  "icon-incident-medium": triangle("#f97316"),
+  "icon-incident-low": triangle("#eab308"),
+
+  // ── Emergency (SOS-style red dot with cross) ─────────────────────────────
+  "icon-emergency": chip(
+    "#dc2626",
+    `<g fill="#ffffff" stroke="none" font-family="system-ui,sans-serif" font-weight="800">
+       <text x="24" y="30" text-anchor="middle" font-size="16">SOS</text>
+     </g>`,
+  ),
+
+  // ── Roadworks (construction cone, orange) ────────────────────────────────
+  "icon-roadworks": chip(
+    "#f59e0b",
+    `<g fill="#ffffff" stroke="#ffffff" stroke-linejoin="round" stroke-width="1.5">
+       <path d="M24 12 L30 36 L18 36 Z"/>
+       <rect x="16" y="36" width="16" height="3" rx="0.5"/>
+       <rect x="21" y="20" width="6" height="2" fill="#f59e0b" stroke="none"/>
+       <rect x="20" y="26" width="8" height="2" fill="#f59e0b" stroke="none"/>
+     </g>`,
+  ),
+
+  // ── Accident (red burst) ─────────────────────────────────────────────────
+  "icon-accident": chip(
+    "#dc2626",
+    `<g fill="#ffffff" stroke="none">
+       <path d="M24 10 L26 20 L34 16 L30 24 L38 26 L30 28 L34 36 L26 32 L24 40 L22 32 L14 36 L18 28 L10 26 L18 24 L14 16 L22 20 Z"/>
      </g>`,
   ),
 };

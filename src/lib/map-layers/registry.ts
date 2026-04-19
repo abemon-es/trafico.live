@@ -201,18 +201,24 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     source: { type: "martin", ref: `${TILES_BASE}/dynamic/emergencies` },
     interactive: true,
     minZoom: 4,
-    animations: { pulse: { amplitude: 8, periodMs: 1400, haloColor: "#dc2626" } },
+    animations: {
+      pulse: {
+        subLayerId: "emergencies-symbol",
+        amplitude: 10,
+        periodMs: 1400,
+        haloColor: "#dc2626",
+      },
+    },
     style: {
-      id: "emergencies-circle",
-      type: "circle",
+      id: "emergencies-symbol",
+      type: "symbol",
       source: "emergencies",
       "source-layer": "emergencies",
-      paint: {
-        "circle-color": "#dc2626",
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 5, 10, 9, 14, 14],
-        "circle-stroke-width": 2,
-        "circle-stroke-color": "#ffffff",
-        "circle-opacity": 0.9,
+      layout: {
+        "icon-image": "icon-emergency",
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.28, 10, 0.48, 14, 0.7],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
       },
     },
     legend: [{ color: "#dc2626", label: "Emergencia" }],
@@ -381,29 +387,29 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     minZoom: 4,
     animations: {
       pulse: {
-        amplitude: 6,
+        subLayerId: "incidents-symbol",
+        amplitude: 8,
         periodMs: 1600,
         haloColor: "#dc2626",
         filter: ["==", ["get", "severity"], "HIGH"],
       },
     },
     style: {
-      id: "incidents-circle",
-      type: "circle",
+      id: "incidents-symbol",
+      type: "symbol",
       source: "incidents",
       "source-layer": "incidents",
-      paint: {
-        "circle-color": [
+      layout: {
+        "icon-image": [
           "match", ["get", "severity"],
-          "HIGH",   "#dc2626",
-          "MEDIUM", "#f97316",
-          "LOW",    "#eab308",
-          "#f97316",
+          "HIGH",   "icon-incident-high",
+          "MEDIUM", "icon-incident-medium",
+          "LOW",    "icon-incident-low",
+          "icon-incident-medium",
         ],
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4, 10, 7, 14, 12],
-        "circle-stroke-width": 2,
-        "circle-stroke-color": "#ffffff",
-        "circle-opacity": 0.9,
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.3, 10, 0.48, 14, 0.7],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
       },
     },
     legend: [
@@ -422,16 +428,15 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     interactive: true,
     minZoom: 5,
     style: {
-      id: "roadworks-circle",
-      type: "circle",
+      id: "roadworks-symbol",
+      type: "symbol",
       source: "roadworks",
       "source-layer": "roadworks",
-      paint: {
-        "circle-color": "#f59e0b",
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4, 10, 7, 14, 11],
-        "circle-stroke-width": 2,
-        "circle-stroke-color": "#ffffff",
-        "circle-opacity": 0.9,
+      layout: {
+        "icon-image": "icon-roadworks",
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.26, 10, 0.44, 14, 0.65],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
       },
     },
     legend: [{ color: "#f59e0b", label: "Obras" }],
@@ -721,21 +726,21 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     interactive: true,
     minZoom: 5,
     style: {
-      id: "accidents-circle",
-      type: "circle",
+      id: "accidents-symbol",
+      type: "symbol",
       source: "accidents",
       "source-layer": "accidents",
-      paint: {
-        "circle-color": [
+      layout: {
+        // Fatal → red burst; hospitalized/minor → severity-coloured triangle.
+        "icon-image": [
           "match", ["coalesce", ["get", "severity"], "minor"],
-          "fatal",        "#dc2626",
-          "hospitalized", "#f97316",
-          "#eab308",
+          "fatal",        "icon-accident",
+          "hospitalized", "icon-incident-medium",
+          "icon-incident-low",
         ],
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 2, 8, 4, 12, 7],
-        "circle-stroke-width": 1,
-        "circle-stroke-color": "#ffffff",
-        "circle-opacity": 0.75,
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.18, 8, 0.3, 12, 0.48],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
       },
     },
     legend: [

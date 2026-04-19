@@ -115,6 +115,9 @@ function TraficoMapInner({
   const animatorCleanups = useRef<Map<string, Array<() => void>>>(new Map());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const popupRef = useRef<any>(null);
+  // Live map-theme ref — read inside click handler so popup class reflects
+  // the CURRENT theme, not the one captured when the handler was registered.
+  const mapThemeRef = useRef<"light" | "dark">(resolvedTheme);
 
   // ── Map initialisation ────────────────────────────────────────────────────
 
@@ -168,15 +171,16 @@ function TraficoMapInner({
           if (popupRef.current) {
             try { popupRef.current.remove(); } catch { /* ignore */ }
           }
+          // Popup follows the MAP theme (not app theme) so a dark basemap
+          // always gets a dark popup even if the app is in light mode.
+          const popupTheme = mapThemeRef.current === "dark" ? "trafico-popup-dark" : "trafico-popup-light";
           popupRef.current = new maplibregl.Popup({
             closeButton: true,
             closeOnClick: true,
-            // MapLibre picks the best anchor (top/bottom/left/right) based on
-            // available viewport space, so the popup never clips off-screen.
             anchor: undefined,
             maxWidth: "240px",
             offset: 14,
-            className: "trafico-popup",
+            className: `trafico-popup ${popupTheme}`,
           })
             .setLngLat(e.lngLat)
             .setHTML(html)
@@ -214,6 +218,7 @@ function TraficoMapInner({
     if (!map || !mapReady) return;
     if (prevTheme.current === resolvedTheme) return;
     prevTheme.current = resolvedTheme;
+    mapThemeRef.current = resolvedTheme;
 
     // setStyle resets all added sources/layers — tear down all animators
     // and clear tracking sets so the layer-sync effect re-installs them.
