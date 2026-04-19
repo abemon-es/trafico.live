@@ -118,6 +118,7 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     source: { type: "pmtiles", ref: `pmtiles://${TILES_BASE}/tiles/ferry-routes.pmtiles` },
     interactive: true,
     minZoom: 4,
+    animations: { hover: true, flow: { speed: 28, dashPattern: [6, 3] } },
     style: {
       id: "ferry-routes-line",
       type: "line",
@@ -125,8 +126,14 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       "source-layer": "ferry_routes",
       paint: {
         "line-color": ["coalesce", ["get", "routeColor"], "#0891b2"],
-        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 3, 14, 5],
-        "line-opacity": 0.7,
+        "line-width": [
+          "*",
+          ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 3, 14, 5],
+          ["case", ["boolean", ["feature-state", "hover"], false], 2, 1],
+        ],
+        "line-opacity": [
+          "case", ["boolean", ["feature-state", "hover"], false], 1, 0.7,
+        ],
         "line-dasharray": [6, 3],
       },
     },
@@ -187,6 +194,8 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     label: "Vías marítimas",
     description: "Corredores principales de tráfico marítimo internacional",
     source: { type: "geojson", ref: "/geo/ocean/shipping-lanes.geojson" },
+    interactive: true,
+    animations: { hover: true, flow: { speed: 18, dashPattern: [5, 3] } },
     minZoom: 3,
     style: [
       {
@@ -224,6 +233,7 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     source: { type: "martin", ref: `${TILES_BASE}/dynamic/emergencies` },
     interactive: true,
     minZoom: 4,
+    animations: { pulse: { amplitude: 8, periodMs: 1400, haloColor: "#dc2626" } },
     style: {
       id: "emergencies-circle",
       type: "circle",
@@ -303,6 +313,14 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     source: { type: "martin", ref: `${TILES_BASE}/dynamic/fleet` },
     interactive: true,
     minZoom: 4,
+    animations: {
+      pulse: {
+        amplitude: 5,
+        periodMs: 1800,
+        haloColor: "#f97316",
+        filter: [">=", ["coalesce", ["get", "delay"], 0], 15],
+      },
+    },
     style: {
       id: "fleet-circle",
       type: "circle",
@@ -360,8 +378,9 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     label: "Líneas ferroviarias",
     description: "1.248 rutas Renfe con geometría (GTFS estático)",
     source: { type: "pmtiles", ref: `pmtiles://${TILES_BASE}/tiles/railway-routes.pmtiles` },
-    interactive: false,
+    interactive: true,
     minZoom: 5,
+    animations: { hover: true, flow: { speed: 40, dashPattern: [6, 4] } },
     style: {
       id: "railway-routes-line",
       type: "line",
@@ -369,8 +388,14 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       "source-layer": "railway_routes",
       paint: {
         "line-color": ["coalesce", ["get", "color"], "#7c3aed"],
-        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 2.5, 14, 4],
-        "line-opacity": 0.7,
+        "line-width": [
+          "*",
+          ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 2.5, 14, 4],
+          ["case", ["boolean", ["feature-state", "hover"], false], 2, 1],
+        ],
+        "line-opacity": [
+          "case", ["boolean", ["feature-state", "hover"], false], 1, 0.7,
+        ],
       },
     },
     legend: [{ color: "#7c3aed", label: "Línea ferroviaria" }],
@@ -386,6 +411,14 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     source: { type: "martin", ref: `${TILES_BASE}/dynamic/incidents` },
     interactive: true,
     minZoom: 4,
+    animations: {
+      pulse: {
+        amplitude: 6,
+        periodMs: 1600,
+        haloColor: "#dc2626",
+        filter: ["==", ["get", "severity"], "HIGH"],
+      },
+    },
     style: {
       id: "incidents-circle",
       type: "circle",
@@ -624,6 +657,7 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     source: { type: "pmtiles", ref: `pmtiles://${TILES_BASE}/tiles/road-segments.pmtiles` },
     interactive: true,
     minZoom: 5,
+    animations: { hover: true, flow: { speed: 35, dashPattern: [8, 4] } },
     style: {
       id: "road-segments-line",
       type: "line",
@@ -640,12 +674,18 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
           50000, "#dc2626",
         ],
         "line-width": [
-          "interpolate", ["linear"], ["zoom"],
-          5,  ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 0.5, 50000, 3],
-          10, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 1,   50000, 5],
-          14, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 2,   50000, 8],
+          "*",
+          [
+            "interpolate", ["linear"], ["zoom"],
+            5,  ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 0.5, 50000, 3],
+            10, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 1,   50000, 5],
+            14, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 2,   50000, 8],
+          ],
+          ["case", ["boolean", ["feature-state", "hover"], false], 1.8, 1],
         ],
-        "line-opacity": 0.8,
+        "line-opacity": [
+          "case", ["boolean", ["feature-state", "hover"], false], 1, 0.8,
+        ],
       },
     },
     legend: [
@@ -767,8 +807,9 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     label: "Líneas de transporte público",
     description: "Rutas de metro, bus y tram (GTFS)",
     source: { type: "pmtiles", ref: `pmtiles://${TILES_BASE}/tiles/transit-routes.pmtiles` },
-    interactive: false,
+    interactive: true,
     minZoom: 8,
+    animations: { hover: true, flow: { speed: 22, dashPattern: [5, 3] } },
     style: {
       id: "transit-routes-line",
       type: "line",
@@ -776,8 +817,14 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       "source-layer": "transit_routes",
       paint: {
         "line-color": ["coalesce", ["get", "routeColor"], "#3b82f6"],
-        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1, 12, 2.5, 15, 4],
-        "line-opacity": 0.7,
+        "line-width": [
+          "*",
+          ["interpolate", ["linear"], ["zoom"], 8, 1, 12, 2.5, 15, 4],
+          ["case", ["boolean", ["feature-state", "hover"], false], 2, 1],
+        ],
+        "line-opacity": [
+          "case", ["boolean", ["feature-state", "hover"], false], 1, 0.7,
+        ],
       },
     },
     legend: [{ color: "#3b82f6", label: "Línea" }],

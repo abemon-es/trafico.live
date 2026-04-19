@@ -23,6 +23,9 @@ import { forceSpanishLabels } from "@/lib/map-config";
 import { useMapLayers } from "@/lib/map-layers/hooks/useMapLayers";
 import { useMapTheme } from "@/lib/map-layers/hooks/useMapTheme";
 import { buildPopupHTML } from "@/lib/map-layers/popup";
+import { installHoverState } from "@/lib/map-layers/animators/hover-state";
+import { installFlow } from "@/lib/map-layers/animators/flow";
+import { installPulse } from "@/lib/map-layers/animators/pulse";
 import { TraficoMapControls } from "./TraficoMapControls";
 import { TraficoMapLegend } from "./TraficoMapLegend";
 import type { LayerDefinition, MapPreset, EntityType } from "@/lib/map-layers/types";
@@ -107,6 +110,8 @@ function TraficoMapInner({
   const interactiveSubLayerIds = useRef<Set<string>>(new Set());
   // Map sub-layer id → { layerId, label } so handlers can resolve metadata
   const subLayerMeta = useRef<Map<string, { layerId: string; label: string }>>(new Map());
+  // Per-layer animator cleanup functions — keyed by logical layer id
+  const animatorCleanups = useRef<Map<string, Array<() => void>>>(new Map());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const popupRef = useRef<any>(null);
 
@@ -198,7 +203,14 @@ function TraficoMapInner({
     if (prevTheme.current === resolvedTheme) return;
     prevTheme.current = resolvedTheme;
 
-    // setStyle resets all added sources/layers — clear our tracking sets.
+    // setStyle resets all added sources/layers — tear down all animators
+    // and clear tracking sets so the layer-sync effect re-installs them.
+    for (const cleanups of animatorCleanups.current.values()) {
+      for (const fn of cleanups) {
+        try { fn(); } catch { /* ignore */ }
+      }
+    }
+    animatorCleanups.current.clear();
     mountedLayers.current.clear();
     interactiveSubLayerIds.current.clear();
     subLayerMeta.current.clear();
@@ -225,6 +237,14 @@ function TraficoMapInner({
       if (!targetIds.has(id)) {
         const layer = availableLayers.find((l) => l.id === id);
         if (!layer) continue;
+        // Tear down animators BEFORE removing sub-layers — cleanups may touch them.
+        const cleanups = animatorCleanups.current.get(id);
+        if (cleanups) {
+          for (const fn of cleanups) {
+            try { fn(); } catch { /* ignore */ }
+          }
+          animatorCleanups.current.delete(id);
+        }
         const subLayers = styleToArray(layer.style);
         for (const sub of subLayers) {
           try { if (map.getLayer(sub.id)) map.removeLayer(sub.id); } catch { /* ignore */ }
@@ -249,10 +269,12 @@ function TraficoMapInner({
       try {
         const sid = sourceId(layer);
 
-        // Register source
+        // Register source. `promoteId: "id"` makes feature-state work on
+        // vector tiles whose features carry a stable `id` property (our
+        // convention for PMTiles + Martin tile generators).
         if (layer.source.type === "pmtiles" || layer.source.type === "martin") {
           if (!map.getSource(sid)) {
-            map.addSource(sid, { type: "vector", url: layer.source.ref });
+            map.addSource(sid, { type: "vector", url: layer.source.ref, promoteId: "id" });
           }
         }
         // GeoJSON sources live in the basemap style already — skip re-adding.
@@ -273,6 +295,59 @@ function TraficoMapInner({
             subLayerMeta.current.set(sub.id, { layerId: layer.id, label: layer.label });
           }
         }
+
+        // Install animators declared on this layer
+        const cleanups: Array<() => void> = [];
+        const anim = layer.animations;
+        if (anim?.hover) {
+          // Resolve source-layer from the first sub-layer that declares it
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const srcLayer = subLayers.find((s: any) => s["source-layer"])?.["source-layer"];
+          try {
+            cleanups.push(installHoverState({
+              map,
+              layerId: layer.id,
+              subLayerIds: subLayers.map((s) => s.id),
+              sourceId: sid,
+              sourceLayer: srcLayer,
+            }));
+          } catch (e) { console.warn(`[TraficoMap] hover-state install failed for ${layer.id}:`, e); }
+        }
+        if (anim?.flow) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const lineIds = subLayers.filter((s: any) => s.type === "line").map((s) => s.id);
+            if (lineIds.length > 0) {
+              cleanups.push(installFlow({
+                map,
+                layerId: layer.id,
+                subLayerIds: lineIds,
+                speed: anim.flow.speed,
+                dashPattern: anim.flow.dashPattern,
+              }));
+            }
+          } catch (e) { console.warn(`[TraficoMap] flow install failed for ${layer.id}:`, e); }
+        }
+        if (anim?.pulse) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const circleId = anim.pulse.subLayerId ?? subLayers.find((s: any) => s.type === "circle")?.id;
+            if (circleId) {
+              cleanups.push(installPulse({
+                map,
+                layerId: layer.id,
+                subLayerId: circleId,
+                baseRadius: anim.pulse.baseRadius,
+                amplitude: anim.pulse.amplitude,
+                periodMs: anim.pulse.periodMs,
+                filter: anim.pulse.filter,
+                haloColor: anim.pulse.haloColor,
+              }));
+            }
+          } catch (e) { console.warn(`[TraficoMap] pulse install failed for ${layer.id}:`, e); }
+        }
+        if (cleanups.length > 0) animatorCleanups.current.set(layer.id, cleanups);
+
         mounted.add(id);
       } catch (err) {
         console.warn(`[TraficoMap] Failed to add layer "${id}":`, err);
@@ -310,6 +385,12 @@ function TraficoMapInner({
 
   useEffect(() => {
     return () => {
+      for (const cleanups of animatorCleanups.current.values()) {
+        for (const fn of cleanups) {
+          try { fn(); } catch { /* ignore */ }
+        }
+      }
+      animatorCleanups.current.clear();
       if (popupRef.current) {
         try { popupRef.current.remove(); } catch { /* ignore */ }
         popupRef.current = null;

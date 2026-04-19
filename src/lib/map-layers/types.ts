@@ -77,6 +77,32 @@ export type LayerGroup =
   | "airquality"
   | "fuel";
 
+/**
+ * Optional per-layer animation hints. Consumed by TraficoMap to install
+ * animators from `src/lib/map-layers/animators/`.
+ */
+export interface LayerAnimations {
+  /** Enable hover feature-state (glow/thicken + pointer cursor). */
+  hover?: boolean;
+  /** Enable flow dasharray animation (line layers only). */
+  flow?: {
+    speed?: number;
+    dashPattern?: [number, number];
+  };
+  /** Enable severity pulse halo (circle layers only). */
+  pulse?: {
+    /** Optional sub-layer id override. Defaults to the first sub-layer's id. */
+    subLayerId?: string;
+    baseRadius?: number;
+    amplitude?: number;
+    periodMs?: number;
+    /** MapLibre filter expression selecting which features pulse. */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    filter?: any[];
+    haloColor?: string;
+  };
+}
+
 export interface LayerDefinition {
   /** Unique slug used as the user-facing layer id */
   id: string;
@@ -98,4 +124,5 @@ export interface LayerDefinition {
   minZoom?: number;
   maxZoom?: number;
   legend?: { color: string; label: string }[];
+  animations?: LayerAnimations;
 }
