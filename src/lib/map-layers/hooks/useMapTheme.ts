@@ -18,8 +18,13 @@ interface UseMapThemeResult {
  * - "auto" — follows prefers-color-scheme, toggleable by user
  */
 export function useMapTheme(theme: ThemeProp = "auto"): UseMapThemeResult {
+  // In auto mode the map theme tracks the APP theme class (`.dark` on
+  // documentElement set by ThemeProvider), falling back to
+  // prefers-color-scheme when the app hasn't set one explicitly.
   const getSystemTheme = (): "light" | "dark" => {
     if (typeof window === "undefined") return "light";
+    if (document.documentElement.classList.contains("dark")) return "dark";
+    if (document.documentElement.classList.contains("light")) return "light";
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   };
 
@@ -28,13 +33,23 @@ export function useMapTheme(theme: ThemeProp = "auto"): UseMapThemeResult {
 
   useEffect(() => {
     setSystemTheme(getSystemTheme());
+    // Observe the app-level theme class so the map follows the site-wide
+    // dark/light toggle, not just OS preference.
+    const observer = new MutationObserver(() => {
+      setSystemTheme(getSystemTheme());
+      setUserOverride(null);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => {
-      setSystemTheme(e.matches ? "dark" : "light");
+    const handler = () => {
+      setSystemTheme(getSystemTheme());
       setUserOverride(null);
     };
     mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    return () => {
+      observer.disconnect();
+      mq.removeEventListener("change", handler);
+    };
   }, []);
 
   const resolvedTheme: "light" | "dark" =
