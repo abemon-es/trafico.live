@@ -140,10 +140,27 @@ function extractTitle(props: FeatureProps, layerId?: string): string | null {
   }
   for (const key of TITLE_KEYS) {
     const v = props[key];
-    if (typeof v === "string" && v.trim()) return v.trim();
+    if (typeof v === "string" && v.trim()) return smartTitleCase(v.trim());
     if (typeof v === "number") return String(v);
   }
   return null;
+}
+
+/** Spanish minor words that stay lowercase in Title Case. */
+const MINOR_WORDS = new Set(["de", "del", "la", "las", "el", "los", "y", "en", "o", "a"]);
+
+/** Convert ALL-CAPS Spanish strings to Title Case with minor-word rule.
+ *  Leaves mixed-case strings alone. Used to beautify AEMET-style names. */
+function smartTitleCase(s: string): string {
+  if (!/^[A-ZÁÉÍÓÚÑÜ\s\-'.]{4,}$/.test(s)) return s;
+  return s
+    .toLowerCase()
+    .split(" ")
+    .map((word, i) => {
+      if (i > 0 && MINOR_WORDS.has(word)) return word;
+      return word.replace(/(^|[\s'-])([a-záéíóúñü])/g, (_, sep, c) => sep + c.toUpperCase());
+    })
+    .join(" ");
 }
 
 function formatValue(key: string, value: unknown): string | null {
@@ -153,7 +170,7 @@ function formatValue(key: string, value: unknown): string | null {
     return value.toLocaleString("es-ES", { maximumFractionDigits: 3 });
   }
   if (typeof value === "boolean") return value ? "Sí" : "No";
-  if (typeof value === "string") return escapeHtml(value);
+  if (typeof value === "string") return escapeHtml(smartTitleCase(value));
   return null;
 }
 
