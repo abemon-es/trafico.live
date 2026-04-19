@@ -103,6 +103,18 @@ const LABEL_ALIASES: Record<string, string> = {
   description:   "Descripción",
   km:            "KM",
   kilometer:     "KM",
+  serviceType:   "Servicio",
+  originStation: "Origen",
+  destStation:   "Destino",
+  rollingStock:  "Vehículo",
+  stopId:        "ID parada",
+  operatorId:    "Operador",
+  locationType:  "Tipo",
+  onGround:      "En tierra",
+  isActive:      "Activa",
+  is24h:         "24 h",
+  isOpen24h:     "24 h",
+  brand_name:    "Marca",
 };
 
 function escapeHtml(value: unknown): string {
