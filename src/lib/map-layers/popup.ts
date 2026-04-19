@@ -42,9 +42,11 @@ const LABEL_ALIASES: Record<string, string> = {
   cog:           "Rumbo",
   mmsi:          "MMSI",
   category:      "Categoría",
+  destination:   "Destino",
   imd:           "IMD (veh/día)",
   year:          "Año",
   road:          "Carretera",
+  roadNumber:    "Carretera",
   severity:      "Gravedad",
   delay:         "Retraso (min)",
   brand:         "Marca",
@@ -68,6 +70,16 @@ const LABEL_ALIASES: Record<string, string> = {
   tempMax:       "Tª máx",
   tempMin:       "Tª mín",
   precipitation: "Precipitación",
+  velocity:      "Velocidad (km/h)",
+  altitude:      "Altitud (m)",
+  heading:       "Rumbo",
+  callsign:      "Vuelo",
+  icao24:        "ICAO24",
+  origin:        "Origen",
+  iata:          "IATA",
+  icao:          "ICAO",
+  province:      "Provincia",
+  provinceName:  "Provincia",
 };
 
 function escapeHtml(value: unknown): string {
@@ -116,6 +128,52 @@ function detailUrl(layerId: string, props: FeatureProps): string | null {
   return route.pattern.replace("{id}", encodeURIComponent(String(raw)));
 }
 
+/** Camera live-feed thumbnail strip. DGT feeds are static JPGs refreshed ~5 min. */
+function thumbnailHTML(props: FeatureProps): string {
+  const url = typeof props.thumbnailUrl === "string" ? props.thumbnailUrl
+            : typeof props.feedUrl === "string" ? props.feedUrl : null;
+  if (!url) return "";
+  const safe = escapeHtml(url);
+  return `<div style="margin:6px 0;border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.08);">
+    <img src="${safe}" alt="Cámara en directo" loading="lazy" style="display:block;width:100%;max-height:130px;object-fit:cover;" onerror="this.style.display='none'"/>
+  </div>`;
+}
+
+/** Price grid for gas stations — MINETUR property names. */
+function priceGridHTML(props: FeatureProps): string {
+  const prices: Array<[string, string, unknown]> = [
+    ["Gasolina 95", "#1b4bd5", props.priceGasolina95E5],
+    ["Gasóleo A",   "#d48139", props.priceGasoleoA],
+    ["Gasolina 98", "#7c3aed", props.priceGasolina98E5],
+    ["GLP",         "#059669", props.priceGLP],
+  ];
+  const cells = prices
+    .filter(([, , v]) => typeof v === "number" && v > 0)
+    .map(([label, color, v]) => `
+      <div style="background:rgba(0,0,0,0.05);border-radius:4px;padding:4px 6px;text-align:center;min-width:0;">
+        <div style="font-size:9px;color:${color};font-weight:600;">${label}</div>
+        <div style="font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;">${(v as number).toFixed(3)}€</div>
+      </div>`);
+  if (!cells.length) return "";
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;">${cells.join("")}</div>`;
+}
+
+/** Severity chip (used for incidents / accidents / emergencies). */
+function severityChipHTML(severity: unknown): string {
+  if (!severity || typeof severity !== "string") return "";
+  const map: Record<string, { label: string; bg: string; fg: string }> = {
+    HIGH:          { label: "Alta",         bg: "#dc2626", fg: "#ffffff" },
+    MEDIUM:        { label: "Media",        bg: "#f97316", fg: "#ffffff" },
+    LOW:           { label: "Baja",         bg: "#eab308", fg: "#1f2937" },
+    fatal:         { label: "Mortal",       bg: "#dc2626", fg: "#ffffff" },
+    hospitalized:  { label: "Hospitalizado",bg: "#f97316", fg: "#ffffff" },
+    minor:         { label: "Leve",         bg: "#eab308", fg: "#1f2937" },
+  };
+  const s = map[severity];
+  if (!s) return "";
+  return `<span style="display:inline-block;background:${s.bg};color:${s.fg};font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;margin-left:4px;vertical-align:middle;">${s.label}</span>`;
+}
+
 /**
  * Build HTML content for a MapLibre popup given a feature's layer id
  * and its properties. Returns a self-contained HTML string.
@@ -127,10 +185,31 @@ export function buildPopupHTML(
 ): string {
   const title = extractTitle(props) ?? layerLabel;
 
+  // Type-specific visual blocks
+  const extraTop: string[] = [];
+  if (layerId === "cameras") {
+    extraTop.push(thumbnailHTML(props));
+  }
+  if (layerId === "gas-stations" || layerId === "maritime-fuel" || layerId === "portugal-gas") {
+    extraTop.push(priceGridHTML(props));
+  }
+
+  // Severity chip appended to title for incidents/emergencies/accidents
+  const sevChip = (layerId === "incidents" || layerId === "accidents" || layerId === "emergencies")
+    ? severityChipHTML(props.severity)
+    : "";
+
   const rows: string[] = [];
   for (const [key, value] of Object.entries(props)) {
     if (HIDDEN_KEYS.has(key)) continue;
     if (TITLE_KEYS.includes(key) && key === "name") continue;
+    // Skip properties already displayed via the type-specific blocks
+    if (layerId === "cameras" && (key === "thumbnailUrl" || key === "feedUrl")) continue;
+    if ((layerId === "gas-stations" || layerId === "maritime-fuel" || layerId === "portugal-gas")
+        && /^price/.test(key)) continue;
+    if ((layerId === "incidents" || layerId === "accidents" || layerId === "emergencies")
+        && key === "severity") continue;
+
     const formatted = formatValue(key, value);
     if (formatted === null) continue;
     rows.push(
@@ -139,18 +218,19 @@ export function buildPopupHTML(
         <span style="color:inherit;font-weight:500;text-align:right;word-break:break-all;">${formatted}</span>
       </div>`,
     );
-    if (rows.length >= 3) break; // keep popup tight — max 3 rows
+    if (rows.length >= 4) break; // keep popup tight — max 4 rows
   }
 
   const link = detailUrl(layerId, props);
   const linkHtml = link
-    ? `<a href="${link}" style="display:block;margin-top:6px;padding:4px 6px;text-align:center;font-size:10px;font-weight:500;background:#1b4bd5;color:#fff;border-radius:3px;text-decoration:none;">Ver detalle →</a>`
+    ? `<a href="${link}" style="display:block;margin-top:6px;padding:5px 8px;text-align:center;font-size:10px;font-weight:600;background:#1b4bd5;color:#fff;border-radius:4px;text-decoration:none;letter-spacing:0.02em;">Ver detalle →</a>`
     : "";
 
   return `
-    <div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.3;word-wrap:break-word;">
-      <div style="font-weight:600;color:inherit;font-size:11px;margin-bottom:3px;padding-right:14px;">${escapeHtml(title)}</div>
+    <div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.35;word-wrap:break-word;">
+      <div style="font-weight:600;color:inherit;font-size:12px;margin-bottom:2px;padding-right:14px;">${escapeHtml(title)}${sevChip}</div>
       <div style="color:#9ca3af;font-size:9px;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">${escapeHtml(layerLabel)}</div>
+      ${extraTop.join("")}
       ${rows.length > 0 ? `<div style="display:flex;flex-direction:column;gap:1px;">${rows.join("")}</div>` : ""}
       ${linkHtml}
     </div>
