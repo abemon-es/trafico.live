@@ -150,9 +150,14 @@ function extractTitle(props: FeatureProps, layerId?: string): string | null {
 const MINOR_WORDS = new Set(["de", "del", "la", "las", "el", "los", "y", "en", "o", "a"]);
 
 /** Convert ALL-CAPS Spanish strings to Title Case with minor-word rule.
- *  Leaves mixed-case strings alone. Used to beautify AEMET-style names. */
+ *  Detects "all caps" by ABSENCE of any lowercase letter rather than an
+ *  exhaustive allow-list, so corrupted-encoding names like
+ *  "TORREJ\uFFFDN DE ARDOZ" (mojibake from Latin-1 tiles) still get
+ *  beautified. Leaves mixed-case or short strings alone. */
 function smartTitleCase(s: string): string {
-  if (!/^[A-ZÁÉÍÓÚÑÜ\s\-'.]{4,}$/.test(s)) return s;
+  if (s.length < 4) return s;
+  if (/[a-záéíóúñü]/.test(s)) return s;          // already has lowercase
+  if (!/[A-ZÁÉÍÓÚÑÜ]/.test(s)) return s;          // no letters, nothing to do
   return s
     .toLowerCase()
     .split(" ")
