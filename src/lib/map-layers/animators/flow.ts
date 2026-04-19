@@ -84,6 +84,7 @@ export function installFlow(args: FlowInstallArgs): () => void {
   let rafId: number | null = null;
   let startTime: number | null = null;
   let frameCount = 0; // used only when throttle30fps is true
+  let lastDashKey = "";
 
   function tick(timestamp: number): void {
     if (startTime === null) startTime = timestamp;
@@ -98,25 +99,32 @@ export function installFlow(args: FlowInstallArgs): () => void {
     }
 
     const elapsedSec = (timestamp - startTime) / 1000;
-    // How far along the dash pattern the "head" has traveled (in units).
     const traveled = (elapsedSec * speed) % totalLen;
 
-    // Split into leading (head of dash) and trailing (tail of dash) segments.
-    // When `traveled` < dash:  leading=traveled, trailing=dash-traveled
-    // When `traveled` >= dash: we are inside the gap; leading wraps around
-    // to the next cycle.  We keep leading within [0, dash) by modding.
-    const leading = traveled % dash;
+    // CRITICAL: MapLibre caches every unique line-dasharray in LineAtlas,
+    // which overflows after ~200 distinct patterns and crashes rendering
+    // (setConstantDashPositions → null.y). We quantize `leading` to 0.5-unit
+    // steps so the full animation cycles through ≤ 2×dash unique patterns.
+    const QUANT = 0.5;
+    const leadingRaw = traveled % dash;
+    const leading = Math.round(leadingRaw / QUANT) * QUANT;
     const trailing = Math.max(0.001, dash - leading);
     const leadingClamped = Math.max(0.001, leading);
 
-    // Full pattern: [trailing, gap, leadingClamped, gap]
-    // This produces a continuous dash+gap cycle that appears to scroll forward.
     const newDash = [trailing, gap, leadingClamped, gap];
+
+    // Skip the DOM update if the pattern hasn't changed since the last tick.
+    // Dramatically reduces setPaintProperty calls on quantized frames.
+    const dashKey = `${trailing}-${leadingClamped}`;
+    if (dashKey === lastDashKey) {
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+    lastDashKey = dashKey;
 
     let activeLayers = 0;
 
     for (const subLayerId of subLayerIds) {
-      // Defensive: layer may have been removed externally — skip silently.
       if (map.getLayer(subLayerId) === undefined) continue;
       if (map.getLayer(subLayerId)?.type !== "line") continue;
 

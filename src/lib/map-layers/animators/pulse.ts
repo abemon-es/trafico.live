@@ -68,11 +68,17 @@ export function installPulse(args: PulseInstallArgs): () => void {
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   // Resolve baseRadius from arg or from the layer's current paint property.
+  // `getPaintProperty` throws if the target layer isn't a circle (e.g. when
+  // the caller points pulse at a symbol layer), so guard with try/catch and
+  // fall back to a sensible default.
   const baseRadius: number = (() => {
     if (args.baseRadius !== undefined) return args.baseRadius;
-    const current = map.getPaintProperty(subLayerId, "circle-radius");
-    // Accept a plain number; fall back to 6 when it's an expression.
-    return typeof current === "number" ? current : 6;
+    try {
+      const current = map.getPaintProperty(subLayerId, "circle-radius");
+      return typeof current === "number" ? current : 8;
+    } catch {
+      return 8;
+    }
   })();
 
   const haloLayerId = `${subLayerId}-pulse-halo`;
