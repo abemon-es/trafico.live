@@ -149,12 +149,28 @@ function TraficoMapInner({
         map.fitBounds(initialView.bounds, { padding: 40 });
       }
 
+      // Surface missing-image warnings so we see when a symbol layer
+      // references an icon that was never registered.
+      map.on("styleimagemissing", (e: { id: string }) => {
+        console.warn("[TraficoMap] styleimagemissing:", e.id);
+      });
+      // Surface any map-level errors that otherwise get swallowed.
+      map.on("error", (e: unknown) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        console.warn("[TraficoMap] map error:", (e as any)?.error?.message ?? e);
+      });
+
       map.on("load", async () => {
         if (cancelled) return;
         forceSpanishLabels(map);
         await installIconRegistry(map);
         if (cancelled) return;
         mapRef.current = map;
+        // Debug hook (dev only — harmless in prod, useful for browser console)
+        if (typeof window !== "undefined") {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).__tMap = map;
+        }
 
         // Global click handler — popup on interactive features.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
