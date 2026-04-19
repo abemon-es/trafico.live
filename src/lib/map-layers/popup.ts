@@ -58,6 +58,35 @@ const INCIDENT_TYPES: Record<string, string> = {
   UNKNOWN:          "Incidente",
 };
 
+/** DGT DATEX II cause/subcause types → Spanish labels. */
+const CAUSE_TYPES: Record<string, string> = {
+  vehicleObstruction:       "Obstáculo en vía",
+  vehicleObstructionType:   "Obstáculo en vía",
+  accident:                 "Accidente",
+  roadworks:                "Obras",
+  broken_down_vehicle:      "Vehículo averiado",
+  breakdown:                "Avería",
+  congestion:               "Congestión",
+  slowTraffic:              "Tráfico lento",
+  heavyTraffic:             "Tráfico denso",
+  stationaryTraffic:        "Tráfico detenido",
+  weatherCondition:         "Condición meteorológica",
+  poorVisibility:           "Visibilidad reducida",
+  wind:                     "Viento",
+  rain:                     "Lluvia",
+  snow:                     "Nieve",
+  fog:                      "Niebla",
+  ice:                      "Hielo",
+  closure:                  "Corte",
+  roadClosed:               "Vía cortada",
+  laneClosed:               "Carril cortado",
+  debris:                   "Escombros",
+  fallingIce:               "Desprendimiento",
+  animalsOnTheRoad:         "Animales en la vía",
+  event:                    "Evento",
+  hazardousDrivingCondition:"Conducción peligrosa",
+};
+
 const LABEL_ALIASES: Record<string, string> = {
   sog:           "Velocidad (nudos)",
   cog:           "Rumbo",
@@ -131,6 +160,9 @@ const LABEL_ALIASES: Record<string, string> = {
   serviceType:   "Servicio",
   originStation: "Origen",
   destStation:   "Destino",
+  causeType:     "Causa",
+  detailedCauseType: "Causa detallada",
+  subcauseType:  "Subcausa",
   rollingStock:  "Vehículo",
   stopId:        "ID parada",
   operatorId:    "Operador",
@@ -239,6 +271,8 @@ function formatValue(key: string, value: unknown): string | null {
   if (typeof value === "string") {
     // Domain-specific value translations
     if (key === "type" && INCIDENT_TYPES[value]) return INCIDENT_TYPES[value];
+    if ((key === "causeType" || key === "detailedCauseType" || key === "subcauseType")
+        && CAUSE_TYPES[value]) return CAUSE_TYPES[value];
     return escapeHtml(smartTitleCase(value));
   }
   return null;
@@ -401,6 +435,8 @@ export function buildPopupHTML(
         && (key === "intensity" || key === "occupancy" || key === "load" || key === "serviceLevel")) continue;
     // Description is used as the composite title for sensors/incidents — don't repeat it.
     if ((layerId === "sensors" || layerId === "city-sensors" || layerId === "incidents") && key === "description") continue;
+    // Incidents: type/source are in the title or layer label, not data rows.
+    if (layerId === "incidents" && (key === "type" || key === "source")) continue;
 
     const formatted = formatValue(key, value);
     if (formatted === null) continue;
