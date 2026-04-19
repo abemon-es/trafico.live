@@ -35,6 +35,8 @@ const HIDDEN_KEYS = new Set([
   "id", "slug", "geom", "geometry", "source", "layer",
   "lat", "lng", "lon", "longitude", "latitude",
   "createdAt", "updatedAt", "tileId", "x", "y", "z",
+  // Broad schedule + url fields that don't render as simple rows
+  "feedUrl", "thumbnailUrl", "streamUrl",
 ]);
 
 const LABEL_ALIASES: Record<string, string> = {
@@ -139,16 +141,25 @@ function thumbnailHTML(props: FeatureProps): string {
   </div>`;
 }
 
-/** Price grid for gas stations — MINETUR property names. */
+/** Price grid for gas stations. Accepts both newer (priceGasolina95,
+ *  priceDieselA) and legacy (priceGasolina95E5, priceGasoleoA) key names
+ *  since different tile generators / data sources use different schemas. */
 function priceGridHTML(props: FeatureProps): string {
-  const prices: Array<[string, string, unknown]> = [
-    ["Gasolina 95", "#1b4bd5", props.priceGasolina95E5],
-    ["Gasóleo A",   "#d48139", props.priceGasoleoA],
-    ["Gasolina 98", "#7c3aed", props.priceGasolina98E5],
-    ["GLP",         "#059669", props.priceGLP],
+  const pick = (...keys: string[]): number | null => {
+    for (const k of keys) {
+      const v = props[k];
+      if (typeof v === "number" && v > 0) return v;
+    }
+    return null;
+  };
+  const prices: Array<[string, string, number | null]> = [
+    ["Gasolina 95",  "#1b4bd5", pick("priceGasolina95", "priceGasolina95E5")],
+    ["Gasóleo A",    "#d48139", pick("priceDieselA",    "priceGasoleoA")],
+    ["Gasolina 98",  "#7c3aed", pick("priceGasolina98", "priceGasolina98E5", "priceDieselPremium")],
+    ["GLP",          "#059669", pick("priceGLP")],
   ];
   const cells = prices
-    .filter(([, , v]) => typeof v === "number" && v > 0)
+    .filter(([, , v]) => v !== null)
     .map(([label, color, v]) => `
       <div style="background:rgba(0,0,0,0.05);border-radius:4px;padding:4px 6px;text-align:center;min-width:0;">
         <div style="font-size:9px;color:${color};font-weight:600;">${label}</div>
@@ -199,10 +210,15 @@ export function buildPopupHTML(
     ? severityChipHTML(props.severity)
     : "";
 
+  // Suppress the numeric province code when a human-readable name is also
+  // present (avoids a duplicate "Provincia 28 / Provincia Madrid" row).
+  const hasProvinceName = typeof props.provinceName === "string" && props.provinceName.trim();
+
   const rows: string[] = [];
   for (const [key, value] of Object.entries(props)) {
     if (HIDDEN_KEYS.has(key)) continue;
     if (TITLE_KEYS.includes(key) && key === "name") continue;
+    if (hasProvinceName && key === "province") continue;
     // Skip properties already displayed via the type-specific blocks
     if (layerId === "cameras" && (key === "thumbnailUrl" || key === "feedUrl")) continue;
     if ((layerId === "gas-stations" || layerId === "maritime-fuel" || layerId === "portugal-gas")
