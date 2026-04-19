@@ -28,7 +28,7 @@ const DETAIL_ROUTES: Record<string, DetailRoute> = {
 };
 
 /** Keys that indicate the feature's human-readable title (first match wins). */
-const TITLE_KEYS = ["name", "title", "label", "stopName", "stationName", "operatorName", "shipName", "iata", "icao", "callsign"];
+const TITLE_KEYS = ["name", "title", "label", "stopName", "stationName", "operatorName", "shipName", "iata", "icao", "callsign", "trainNumber"];
 
 /** Keys to hide from the property table (internal or noisy). */
 const HIDDEN_KEYS = new Set([
@@ -126,7 +126,18 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
-function extractTitle(props: FeatureProps): string | null {
+function extractTitle(props: FeatureProps, layerId?: string): string | null {
+  // Layer-specific composite titles for entities where a single field
+  // isn't descriptive enough on its own.
+  if (layerId === "fleet") {
+    const brand = typeof props.brand === "string" ? props.brand : "";
+    const num = props.trainNumber;
+    if (brand && num) return `${brand} ${num}`;
+  }
+  if (layerId === "aircraft") {
+    const cs = typeof props.callsign === "string" ? props.callsign.trim() : "";
+    if (cs) return cs;
+  }
   for (const key of TITLE_KEYS) {
     const v = props[key];
     if (typeof v === "string" && v.trim()) return v.trim();
@@ -227,7 +238,7 @@ export function buildPopupHTML(
   layerLabel: string,
   props: FeatureProps,
 ): string {
-  const title = extractTitle(props) ?? layerLabel;
+  const title = extractTitle(props, layerId) ?? layerLabel;
 
   // Type-specific visual blocks
   const extraTop: string[] = [];
