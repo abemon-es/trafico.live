@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layers, ChevronDown, ChevronRight, Sun, Moon } from "lucide-react";
 import { GROUP_LABELS, GROUP_ORDER } from "@/lib/map-layers/groups";
 import type { LayerDefinition } from "@/lib/map-layers/types";
@@ -28,7 +28,14 @@ export function TraficoMapControls({
   onThemeToggle,
   showThemeToggle = true,
 }: TraficoMapControlsProps) {
+  // On mobile / narrow viewports default to collapsed so the map isn't
+  // covered by the panel on first load. Desktop users see it open.
   const [open, setOpen] = useState(true);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches) {
+      setOpen(false);
+    }
+  }, []);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   // Group layers by their group key, preserving GROUP_ORDER
