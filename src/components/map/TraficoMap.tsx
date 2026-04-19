@@ -22,6 +22,7 @@ import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
 import { forceSpanishLabels } from "@/lib/map-config";
 import { useMapLayers } from "@/lib/map-layers/hooks/useMapLayers";
 import { useMapTheme } from "@/lib/map-layers/hooks/useMapTheme";
+import { buildPopupHTML } from "@/lib/map-layers/popup";
 import { TraficoMapControls } from "./TraficoMapControls";
 import { TraficoMapLegend } from "./TraficoMapLegend";
 import type { LayerDefinition, MapPreset, EntityType } from "@/lib/map-layers/types";
@@ -102,6 +103,12 @@ function TraficoMapInner({
 
   // Track which logical layers are currently mounted on the map
   const mountedLayers = useRef<Set<string>>(new Set());
+  // Sub-layer ids currently active + interactive — used by click/hover handlers
+  const interactiveSubLayerIds = useRef<Set<string>>(new Set());
+  // Map sub-layer id → { layerId, label } so handlers can resolve metadata
+  const subLayerMeta = useRef<Map<string, { layerId: string; label: string }>>(new Map());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const popupRef = useRef<any>(null);
 
   // ── Map initialisation ────────────────────────────────────────────────────
 
@@ -137,6 +144,40 @@ function TraficoMapInner({
         if (cancelled) return;
         forceSpanishLabels(map);
         mapRef.current = map;
+
+        // Global click handler — popup on interactive features.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        map.on("click", (e: any) => {
+          const ids = Array.from(interactiveSubLayerIds.current).filter((id) => map.getLayer(id));
+          if (ids.length === 0) return;
+          const features = map.queryRenderedFeatures(e.point, { layers: ids });
+          if (!features.length) return;
+          const f = features[0];
+          const meta = subLayerMeta.current.get(f.layer.id);
+          if (!meta) return;
+          const html = buildPopupHTML(meta.layerId, meta.label, f.properties ?? {});
+          // Close previous popup
+          if (popupRef.current) {
+            try { popupRef.current.remove(); } catch { /* ignore */ }
+          }
+          popupRef.current = new maplibregl.Popup({ closeButton: true, maxWidth: "300px" })
+            .setLngLat(e.lngLat)
+            .setHTML(html)
+            .addTo(map);
+        });
+
+        // Pointer cursor on hover
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        map.on("mousemove", (e: any) => {
+          const ids = Array.from(interactiveSubLayerIds.current).filter((id) => map.getLayer(id));
+          if (ids.length === 0) {
+            map.getCanvas().style.cursor = "";
+            return;
+          }
+          const features = map.queryRenderedFeatures(e.point, { layers: ids });
+          map.getCanvas().style.cursor = features.length > 0 ? "pointer" : "";
+        });
+
         setMapReady(true);
       });
     })();
@@ -157,8 +198,10 @@ function TraficoMapInner({
     if (prevTheme.current === resolvedTheme) return;
     prevTheme.current = resolvedTheme;
 
-    // setStyle resets all added sources/layers — clear our tracking set.
+    // setStyle resets all added sources/layers — clear our tracking sets.
     mountedLayers.current.clear();
+    interactiveSubLayerIds.current.clear();
+    subLayerMeta.current.clear();
     map.setStyle(mapStyle);
 
     map.once("style.load", () => {
@@ -185,6 +228,8 @@ function TraficoMapInner({
         const subLayers = styleToArray(layer.style);
         for (const sub of subLayers) {
           try { if (map.getLayer(sub.id)) map.removeLayer(sub.id); } catch { /* ignore */ }
+          interactiveSubLayerIds.current.delete(sub.id);
+          subLayerMeta.current.delete(sub.id);
         }
         try {
           if (layer.source.type !== "geojson" && map.getSource(sourceId(layer))) {
@@ -223,6 +268,10 @@ function TraficoMapInner({
           if (layer.minZoom !== undefined) layerSpec.minzoom = layer.minZoom;
           if (layer.maxZoom !== undefined) layerSpec.maxzoom = layer.maxZoom;
           map.addLayer(layerSpec);
+          if (layer.interactive) {
+            interactiveSubLayerIds.current.add(sub.id);
+            subLayerMeta.current.set(sub.id, { layerId: layer.id, label: layer.label });
+          }
         }
         mounted.add(id);
       } catch (err) {
@@ -261,6 +310,10 @@ function TraficoMapInner({
 
   useEffect(() => {
     return () => {
+      if (popupRef.current) {
+        try { popupRef.current.remove(); } catch { /* ignore */ }
+        popupRef.current = null;
+      }
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
