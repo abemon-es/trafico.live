@@ -187,6 +187,19 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ─── Immersive map pages ────────────────────────────────────────────────
+   When the /mapa client toggles `body.map-immersive`, hide the Footer +
+   sticky ad so the viewport is a single full-screen map (and MapLibre
+   popups near the bottom edge don't render into footer space). */
+body.map-immersive footer,
+body.map-immersive [class*="StickyFooterAd"],
+body.map-immersive .sticky-footer-ad {
+  display: none !important;
+}
+body.map-immersive {
+  overflow: hidden;
+}
+
 /* ─── TraficoMap popup ────────────────────────────────────────────────────
    Glass overlay, theme-tied to the MAP (not the app) so a dark basemap
    always yields a dark popup. Fade-in + blur-out entry, scrolls tall data

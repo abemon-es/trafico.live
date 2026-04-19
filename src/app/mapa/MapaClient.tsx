@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import RoutingPanel from "./routing-panel";
 
 const TraficoMap = dynamic(
@@ -18,8 +19,17 @@ const TraficoMap = dynamic(
 
 /** Unified infrastructure dashboard — all transport layers via TraficoMap preset="all". */
 export function MapaInfraClient() {
-  // Root layout already provides <main id="main-content" tabIndex={-1}> —
-  // avoid nested-main by using a plain div for the map viewport.
+  // Toggle an immersive flag on <body> so root layout CSS can hide the
+  // Footer + StickyFooterAd while this page is active. Without this the
+  // page body is ~2000 px tall (header + map + footer) and MapLibre
+  // popups near the map's bottom edge render over the footer's space.
+  useEffect(() => {
+    document.body.classList.add("map-immersive");
+    return () => {
+      document.body.classList.remove("map-immersive");
+    };
+  }, []);
+
   return (
     <div style={{ height: "calc(100dvh - 64px)" }}>
       <TraficoMap
