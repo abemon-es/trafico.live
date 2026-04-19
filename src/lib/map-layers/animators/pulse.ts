@@ -101,52 +101,48 @@ export function installPulse(args: PulseInstallArgs): () => void {
   if (filter) {
     // Only add if not already present (guards against double-install).
     if (!map.getLayer(haloLayerId)) {
-      const baseLayer = map.getLayer(subLayerId) as
-        | (maplibregl.LayerSpecification & { source?: string; "source-layer"?: string })
-        | undefined;
+      // getLayer() returns a runtime StyleLayer (camelCase props), NOT the
+      // raw style spec. Pull the spec from map.getStyle().layers for a
+      // reliable read of `source` and `source-layer`.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const style = map.getStyle() as any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spec = Array.isArray(style?.layers)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ? (style.layers as any[]).find((l) => l?.id === subLayerId)
+        : undefined;
 
-      if (baseLayer) {
+      if (spec) {
         const resolvedHaloColor =
           haloColor ??
           (map.getPaintProperty(subLayerId, "circle-color") as string | undefined) ??
           "#dc2626"; // fallback to incident red
 
-        map.addLayer(
-          {
-            id: haloLayerId,
-            type: "circle",
-            source: (baseLayer as { source?: string }).source ?? "",
-            ...(baseLayer["source-layer"]
-              ? { "source-layer": baseLayer["source-layer"] }
-              : {}),
-            filter: filter as maplibregl.FilterSpecification,
-            paint: {
-              // Literal radius — see module-level trade-off comment.
-              "circle-radius": baseRadius,
-              "circle-color": "transparent",
-              "circle-stroke-width": 0,
-              "circle-opacity": 0,
-              "circle-pitch-alignment": "map",
-              // Render the halo ring via circle-stroke rather than fill so the
-              // base feature colour shows through the centre.
-              "circle-stroke-color": resolvedHaloColor,
-              "circle-stroke-opacity": 0.6,
-            },
+        const srcId = spec.source as string | undefined;
+        const srcLayer = spec["source-layer"] as string | undefined;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const addSpec: any = {
+          id: haloLayerId,
+          type: "circle",
+          source: srcId ?? "",
+          ...(srcLayer ? { "source-layer": srcLayer } : {}),
+          filter,
+          paint: {
+            // Literal radius — see module-level trade-off comment.
+            "circle-radius": baseRadius,
+            "circle-color": "transparent",
+            "circle-stroke-width": 2,
+            "circle-opacity": 0,
+            "circle-pitch-alignment": "map",
+            // Render the halo ring via circle-stroke so the base feature's
+            // fill colour shows through the centre.
+            "circle-stroke-color": resolvedHaloColor,
+            "circle-stroke-opacity": 0.6,
           },
-          // Place immediately above the base sub-layer in draw order.
-          // If subLayerId is the topmost layer, addLayer without beforeId
-          // would also work — but being explicit is safer.
-          undefined // inserted at top; caller controls exact placement via beforeId if needed
-        );
-
-        // Move the halo just above the base layer.
-        // addLayer's second arg is "beforeId" (inserted BEFORE that layer).
-        // We want it ABOVE, so we need the layer that comes after subLayerId.
-        // The simplest safe approach: remove and re-add above — but MapLibre
-        // provides map.moveLayer(id, beforeId) where undefined = top.
-        // We already added it at the top; that is fine for our use-case
-        // (halo should always be visible, not buried under others).
-
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        map.addLayer(addSpec as any);
         haloAdded = true;
       }
     } else {

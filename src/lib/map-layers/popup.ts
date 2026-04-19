@@ -134,28 +134,24 @@ export function buildPopupHTML(
     const formatted = formatValue(key, value);
     if (formatted === null) continue;
     rows.push(
-      `<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:11px;">
+      `<div style="display:flex;justify-content:space-between;gap:6px;font-size:10px;line-height:1.3;">
         <span style="color:#6b7280;">${escapeHtml(labelFor(key))}</span>
         <span style="color:#111827;font-weight:500;text-align:right;">${formatted}</span>
       </div>`,
     );
-    if (rows.length >= 8) break; // keep popup compact
+    if (rows.length >= 3) break; // keep popup tight — max 3 rows
   }
 
   const link = detailUrl(layerId, props);
   const linkHtml = link
-    ? `<a href="${link}" style="display:block;margin-top:8px;padding:6px 8px;text-align:center;font-size:11px;background:#1b4bd5;color:#fff;border-radius:4px;text-decoration:none;">Ver detalle</a>`
+    ? `<a href="${link}" style="display:block;margin-top:6px;padding:4px 6px;text-align:center;font-size:10px;font-weight:500;background:#1b4bd5;color:#fff;border-radius:3px;text-decoration:none;">Ver detalle →</a>`
     : "";
 
   return `
-    <div style="min-width:200px;max-width:280px;font-family:system-ui,-apple-system,sans-serif;">
-      <div style="font-weight:700;color:#111827;font-size:13px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;">
-        ${escapeHtml(title)}
-      </div>
-      <div style="color:#9ca3af;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">
-        ${escapeHtml(layerLabel)}
-      </div>
-      ${rows.length > 0 ? `<div>${rows.join("")}</div>` : ""}
+    <div style="min-width:160px;max-width:220px;font-family:system-ui,-apple-system,sans-serif;line-height:1.3;">
+      <div style="font-weight:600;color:#111827;font-size:11px;margin-bottom:3px;">${escapeHtml(title)}</div>
+      <div style="color:#9ca3af;font-size:9px;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">${escapeHtml(layerLabel)}</div>
+      ${rows.length > 0 ? `<div style="display:flex;flex-direction:column;gap:1px;">${rows.join("")}</div>` : ""}
       ${linkHtml}
     </div>
   `;

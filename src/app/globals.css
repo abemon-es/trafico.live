@@ -186,3 +186,33 @@ h1, h2, h3, h4, h5, h6 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Compact MapLibre popup ──────────────────────────────────────────────
+   Default maplibre popup padding (10/15/10/10) is way too roomy for a data
+   tooltip. Override to a tight chip-style container. */
+.maplibregl-popup-content {
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12) !important;
+}
+.maplibregl-popup-close-button {
+  font-size: 16px !important;
+  padding: 0 4px !important;
+  color: #9ca3af !important;
+  top: 2px !important;
+  right: 4px !important;
+}
+.maplibregl-popup-close-button:hover {
+  color: #111827 !important;
+  background: transparent !important;
+}
+/* Dark theme */
+:is(.dark) .maplibregl-popup-content {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+}
+:is(.dark) .maplibregl-popup-tip {
+  border-top-color: #0f172a !important;
+  border-bottom-color: #0f172a !important;
+}
