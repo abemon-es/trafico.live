@@ -26,6 +26,7 @@ import { buildPopupHTML } from "@/lib/map-layers/popup";
 import { installHoverState } from "@/lib/map-layers/animators/hover-state";
 import { installFlow } from "@/lib/map-layers/animators/flow";
 import { installPulse } from "@/lib/map-layers/animators/pulse";
+import { installIconRegistry } from "@/lib/map-layers/icons";
 import { TraficoMapControls } from "./TraficoMapControls";
 import { TraficoMapLegend } from "./TraficoMapLegend";
 import type { LayerDefinition, MapPreset, EntityType } from "@/lib/map-layers/types";
@@ -145,9 +146,11 @@ function TraficoMapInner({
         map.fitBounds(initialView.bounds, { padding: 40 });
       }
 
-      map.on("load", () => {
+      map.on("load", async () => {
         if (cancelled) return;
         forceSpanishLabels(map);
+        await installIconRegistry(map);
+        if (cancelled) return;
         mapRef.current = map;
 
         // Global click handler — popup on interactive features.
@@ -221,7 +224,9 @@ function TraficoMapInner({
     subLayerMeta.current.clear();
     map.setStyle(mapStyle);
 
-    map.once("style.load", () => {
+    map.once("style.load", async () => {
+      // setStyle drops images too — re-register the icon sprite.
+      await installIconRegistry(map);
       // Re-trigger layer sync by toggling mapReady
       setMapReady(false);
       setTimeout(() => setMapReady(true), 50);
