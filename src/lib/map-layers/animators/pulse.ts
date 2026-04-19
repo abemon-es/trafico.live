@@ -56,11 +56,26 @@ export function installPulse(args: PulseInstallArgs): () => void {
   const {
     map,
     subLayerId,
-    filter,
     haloColor,
     amplitude = 4,
     periodMs = 1600,
   } = args;
+
+  // Mutation mode (which animates circle-radius directly) only works on
+  // circle layers. If the caller points pulse at a symbol/line/fill layer
+  // without a filter, auto-synthesise a "match anything" filter so halo
+  // mode (which adds a sibling circle overlay) kicks in instead.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const styleSnapshot = map.getStyle() as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const targetSpec = Array.isArray(styleSnapshot?.layers)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? (styleSnapshot.layers as any[]).find((l) => l?.id === subLayerId)
+    : undefined;
+  const targetType = targetSpec?.type as string | undefined;
+  const filter =
+    args.filter ??
+    (targetType && targetType !== "circle" ? ["has", "id"] : undefined);
 
   // Respect prefers-reduced-motion: skip animation, apply static base radius.
   const prefersReduced =
@@ -187,7 +202,13 @@ export function installPulse(args: PulseInstallArgs): () => void {
     // ------------------------------------------------------------------
 
     // Save the current expression/value so we can restore on cleanup.
-    originalRadius = map.getPaintProperty(subLayerId, "circle-radius");
+    // Guard: throws on non-circle layers (defensive — by now we force halo
+    // mode for symbol/line/fill targets, but keep the safety net).
+    try {
+      originalRadius = map.getPaintProperty(subLayerId, "circle-radius");
+    } catch {
+      originalRadius = undefined;
+    }
 
     const tick = (now: number): void => {
       // Defensive: stop silently if the layer was removed.
