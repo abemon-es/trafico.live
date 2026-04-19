@@ -82,16 +82,38 @@ type Props = {
   params: Promise<{ city: string }>;
 };
 
+// Top location slugs (non-city, e.g. "navacerrada") — camera name-based search
+const LOCATION_SLUGS = [
+  "navacerrada","somosierra","guadarrama","cotos","pajares","altube",
+  "hondarribia","irun","valcarlos","somport","collado-villalba",
+];
+
 export async function generateStaticParams() {
-  return Object.keys(CITY_PROVINCES).map((city) => ({ city }));
+  return [
+    ...Object.keys(CITY_PROVINCES).map((city) => ({ city })),
+    ...LOCATION_SLUGS.map((slug) => ({ city: slug })),
+  ];
 }
+
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city } = await params;
   const cityData = CITY_PROVINCES[city];
 
+  // Location slug fallback (e.g. "navacerrada" — searched by camera name)
   if (!cityData) {
-    return { title: "Ciudad no encontrada" };
+    const locationName = city.replace(/-/g, " ");
+    const titleLocation = locationName.charAt(0).toUpperCase() + locationName.slice(1);
+    const count = await prisma.camera.count({
+      where: { name: { contains: locationName, mode: "insensitive" }, isActive: true },
+    });
+    if (count === 0) return { title: "Cámaras no encontradas" };
+    return {
+      title: `Cámaras ${titleLocation} | Tráfico DGT en vivo`,
+      description: `${count} cámara${count > 1 ? "s" : ""} de tráfico DGT en ${titleLocation}. Imagen actualizada periódicamente. Estado del tráfico ahora.`,
+      alternates: { canonical: `${BASE_URL}/camaras/${city}` },
+    };
   }
 
   const cameraCount = await prisma.camera.count({
@@ -118,8 +140,56 @@ export default async function CamarasCityPage({ params }: Props) {
   const { city } = await params;
   const cityData = CITY_PROVINCES[city];
 
+  // Location slug path (e.g. /camaras/navacerrada) — resolve by camera name
   if (!cityData) {
-    notFound();
+    const locationName = city.replace(/-/g, " ");
+    const locationCameras = await prisma.camera.findMany({
+      where: { name: { contains: locationName, mode: "insensitive" }, isActive: true },
+      orderBy: [{ roadNumber: "asc" }, { kmPoint: "asc" }],
+      take: 20,
+      select: { id: true, name: true, roadNumber: true, kmPoint: true, provinceName: true, thumbnailUrl: true },
+    });
+    if (locationCameras.length === 0) notFound();
+    const titleLocation = locationName.charAt(0).toUpperCase() + locationName.slice(1);
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Breadcrumbs items={[{ name: "Inicio", href: "/" }, { name: "Cámaras", href: "/camaras" }, { name: titleLocation, href: `/camaras/${city}` }]} />
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+            Cámaras {titleLocation}
+          </h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {locationCameras.map((cam) => (
+              <Link key={cam.id} href={`/camaras/camara/${cam.id}`} className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-tl-300 transition-colors">
+                {cam.thumbnailUrl ? (
+                  <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
+                    <Image src={cam.thumbnailUrl} alt={`Cámara ${cam.name}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" unoptimized />
+                    <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />EN VIVO
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <Camera className="w-8 h-8 text-gray-300 dark:text-gray-700" />
+                  </div>
+                )}
+                <div className="p-3">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{cam.name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{cam.roadNumber}{cam.kmPoint ? ` · km ${Number(cam.kmPoint).toFixed(0)}` : ""}{cam.provinceName ? ` · ${cam.provinceName}` : ""}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+          {locationCameras[0]?.roadNumber && (
+            <div className="mt-6">
+              <Link href={`/carreteras/${encodeURIComponent(locationCameras[0].roadNumber)}/hoy`} className="inline-flex items-center gap-2 px-4 py-2 bg-tl-600 hover:bg-tl-700 text-white text-sm font-semibold rounded-lg transition-colors">
+                Estado {locationCameras[0].roadNumber} hoy
+              </Link>
+            </div>
+          )}
+        </main>
+      </div>
+    );
   }
 
   // Fetch cameras for this province

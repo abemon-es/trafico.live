@@ -27,13 +27,25 @@ export const revalidate = 180;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Tráfico aéreo en España — Aeronaves en vivo y aeropuertos AENA",
+  title: "Vuelos en tiempo real sobre España y Portugal · Radar ADS-B",
   description:
-    "Aeronaves sobre el espacio aéreo español en tiempo real (OpenSky), 46 aeropuertos AENA, estadísticas de pasajeros Eurostat y rutas principales.",
+    "Radar de aviones en tiempo real sobre el espacio aéreo español y portugués. Posiciones ADS-B OpenSky, 46 aeropuertos AENA, estadísticas de pasajeros y vuelos en directo.",
+  keywords: [
+    "vuelos en tiempo real",
+    "radar aviones",
+    "radar aviones en tiempo real",
+    "voos em tempo real",
+    "aeronaves en vivo",
+    "tráfico aéreo España",
+    "ADS-B",
+    "OpenSky",
+    "aeropuertos AENA",
+  ],
   alternates: { canonical: `${BASE_URL}/aviacion` },
   openGraph: {
-    title: "Tráfico aéreo España — OpenSky y AENA",
-    description: "Aeronaves en vuelo, aeropuertos AENA y estadísticas de pasajeros.",
+    title: "Vuelos en tiempo real sobre España y Portugal · Radar ADS-B",
+    description:
+      "Radar de aviones en tiempo real. Posiciones ADS-B sobre el espacio aéreo español y portugués, aeropuertos AENA y vuelos en directo.",
     url: `${BASE_URL}/aviacion`,
     siteName: "trafico.live",
     locale: "es_ES",
@@ -126,18 +138,39 @@ export default async function AviacionHubPage() {
 
   const breadcrumbs = [{ name: "Aviación", href: "/aviacion" }];
 
-  const placeSchema = {
+  const mapSchema = {
     "@context": "https://schema.org",
-    "@type": "Place",
-    name: "Espacio aéreo y aeropuertos de España",
-    description: "Espacio aéreo controlado por ENAIRE y red AENA de aeropuertos.",
+    "@type": "Map",
+    name: "Radar de vuelos en tiempo real — España y Portugal",
+    description:
+      "Mapa interactivo con posiciones ADS-B de aeronaves sobre el espacio aéreo español y portugués, actualizado cada 15 minutos desde OpenSky Network.",
     url: `${BASE_URL}/aviacion`,
+    mapType: "SeismicMap",
+    image: `${BASE_URL}/opengraph-image.png`,
+  };
+
+  const dataFeedSchema = {
+    "@context": "https://schema.org",
+    "@type": "DataFeed",
+    name: "Posiciones ADS-B aeronaves sobre España",
+    description:
+      "Feed de posiciones ADS-B en tiempo real de aeronaves sobre el espacio aéreo español y portugués. Fuente: OpenSky Network (CC BY 4.0).",
+    url: `${BASE_URL}/api/aviacion`,
+    encodingFormat: "application/geo+json",
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    creator: {
+      "@type": "Organization",
+      name: "OpenSky Network",
+      url: "https://opensky-network.org",
+    },
+    publisher: { "@type": "Organization", name: "trafico.live", url: BASE_URL },
+    dateModified: new Date().toISOString(),
   };
 
   const collectionSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Aviación en España",
+    name: "Vuelos en tiempo real sobre España y Portugal",
     url: `${BASE_URL}/aviacion`,
     inLanguage: "es",
     publisher: { "@type": "Organization", name: "trafico.live", url: BASE_URL },
@@ -163,11 +196,12 @@ export default async function AviacionHubPage() {
           trafico.live · Aviación
         </span>
         <h1 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 dark:text-gray-50 leading-tight">
-          Tráfico aéreo en España
+          Radar de vuelos en tiempo real
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-          Aeronaves sobre el espacio aéreo español en tiempo real (OpenSky), catálogo AENA
-          y estadísticas de pasajeros. Datos ADS-B bajo licencia CC-BY 4.0.
+          Posiciones ADS-B de aeronaves sobre el espacio aéreo español y portugués en
+          tiempo real. Radar aviones vía OpenSky Network, 46 aeropuertos AENA y vuelos
+          en directo. Datos CC-BY 4.0.
         </p>
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink href="/aviacion/mapa" variant="primary" icon={<Navigation className="w-4 h-4" />}>
@@ -176,8 +210,11 @@ export default async function AviacionHubPage() {
           <ButtonLink href="/aviacion/aeropuertos" variant="secondary">
             Aeropuertos AENA
           </ButtonLink>
-          <ButtonLink href="/vuelos" variant="ghost">
-            Tracker de vuelos
+          <ButtonLink href="/aviacion/cancelados" variant="ghost">
+            Vuelos cancelados
+          </ButtonLink>
+          <ButtonLink href="/reclamacion-vuelo" variant="ghost">
+            Reclamar vuelo
           </ButtonLink>
         </div>
       </div>
@@ -258,7 +295,7 @@ export default async function AviacionHubPage() {
 
   return (
     <>
-      <StructuredData data={[placeSchema, collectionSchema]} />
+      <StructuredData data={[mapSchema, dataFeedSchema, collectionSchema]} />
       <VerticalHub
         breadcrumbs={<Breadcrumbs items={breadcrumbs} />}
         hero={hero}

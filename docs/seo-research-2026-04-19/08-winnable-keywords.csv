@@ -1,0 +1,522 @@
+country,keyword,search_volume,difficulty,cpc,competition_level,relevance,score
+pt,tempo para amanhã,3350000,65,0.27,LOW,10,670000.0
+es,el tiempo en madrid,2740000,52,0.64,LOW,10,662903.2
+es,madrid-puerta de atocha-almudena grandes,450000,0,0.4,LOW,9,607500.0
+es,estación de servicio cepsa,450000,0,0.31,LOW,9,607500.0
+es,el tiempo en Madrid,2740000,52,0.64,,10,441935.5
+es,tiempo madrid,1500000,42,0.25,LOW,10,432692.3
+es,el tiempo en barcelona,1000000,27,0.6,LOW,10,405405.4
+es,el tiempo,4090000,100,0.03,,10,371818.2
+es,estación de servicio repsol,1830000,68,0.33,LOW,9,316730.8
+es,tiempo Madrid,1500000,42,0.25,,10,288461.5
+es,estacion de autobuses del sur de madrid,201000,0,0.18,LOW,9,271350.0
+es,estacion sur de autobuses madrid,201000,0,0.18,LOW,9,271350.0
+es,el tiempo en Barcelona,1000000,27,0.6,,10,270270.3
+es,tiempo barcelona,673000,36,0.53,LOW,10,219456.5
+es,tiempo en madrid,823000,50,0.41,LOW,10,205750.0
+es,aemet madrid,823000,50,0.02,LOW,10,205750.0
+pt,lisboa tempo,368000,17,0.31,LOW,10,204444.4
+es,aemet,2240000,100,0.38,,10,203636.4
+pt,parque de estacionamento,135000,0,0.27,LOW,9,182250.0
+pt,tempo porto,301000,16,0.21,LOW,10,173653.8
+pt,tempo lisboa,368000,22,0.31,LOW,10,172500.0
+es,el tiempo en vigo,368000,24,0,LOW,10,162352.9
+pt,combustíveis próxima semana,135000,0,1.35,LOW,8,162000.0
+es,el tiempo madrid,673000,55,0.46,LOW,10,155307.7
+es,el tiempo en valencia,823000,71,0.29,LOW,10,152407.4
+es,plano metro madrid,246000,7,0.07,LOW,7,151941.2
+es,el tiempo en bilbao,673000,58,0.76,LOW,10,148455.9
+es,tiempo Barcelona,673000,36,0.53,,10,146304.3
+pt,meteorologia porto,450000,37,0.25,LOW,10,143617.0
+pt,meteorologia lisboa,368000,31,0.22,LOW,10,134634.1
+pt,meteorologia braga,246000,18,0,LOW,10,131785.7
+es,tiempo en malaga,301000,25,0,LOW,10,129000.0
+es,tiempo bilbao,550000,54,1.86,LOW,10,128906.2
+es,tiempo: bilbao,550000,54,1.86,LOW,10,128906.2
+es,aeropuerto palma de mallorca,201000,9,1.35,LOW,8,126947.4
+es,puerto venecia,165000,4,0.63,LOW,7,123750.0
+es,estación de autobuses plaza de armas,90500,0,0.11,LOW,9,122175.0
+pt,preço combustíveis próxima semana,110000,1,1.76,LOW,8,120000.0
+pt,tempo Porto,301000,16,0.21,,10,115769.2
+pt,tempo Lisboa,368000,22,0.31,,10,115000.0
+es,alaves real sociedad,90500,1,0,LOW,9,111068.2
+es,el tiempo en huelva,246000,25,0,LOW,10,105428.6
+pt,meteorologia guimarães,110000,6,0.05,LOW,10,103125.0
+es,mediamarkt canarias,165000,3,0.06,MEDIUM,8,101538.5
+es,estación de servicio petronor repsol,74000,0,0.5,LOW,9,99900.0
+pt,porto,823000,77,0.61,LOW,7,99327.6
+es,tiempo en valencia,301000,38,0,LOW,10,94062.5
+es,puerto banus,165000,9,0.45,LOW,7,91184.2
+es,aeropuerto adolfo suárez madrid-barajas,246000,23,0.4,LOW,8,89454.5
+es,tiempo a vigo,201000,24,0.58,LOW,10,88676.5
+es,alcampo gasolinera,110000,0,0.47,,8,88000.0
+pt,são bento porto,90500,1,0.14,LOW,7,86386.4
+es,tiempo A Coruña,301000,25,0.26,,10,86000.0
+es,tiempo Bilbao,550000,54,1.86,,10,85937.5
+es,aeropuerto Palma de Mallorca,201000,9,1.35,,8,84631.6
+es,tiempo valencia,450000,71,1.25,LOW,10,83333.3
+es,precio luz mañana,165000,14,2.98,LOW,8,82500.0
+es,estacion joaquin sorolla valencia,60500,0,0.24,LOW,9,81675.0
+es,estación Valencia Joaquín Sorolla,90500,0,0.2,,9,81450.0
+es,el tiempo: cádiz,135000,15,0,LOW,10,81000.0
+es,aeropuerto de bilbao,135000,10,1.22,LOW,8,81000.0
+es,el tiempo en Bilbao,550000,58,1.86,,10,80882.4
+es,tiempo en barcelona,246000,36,0.3,LOW,10,80217.4
+pt,meteorologia leiria,90500,7,0,LOW,10,79852.9
+es,tiempo Zaragoza,301000,28,0,,10,79210.5
+pt,jogo porto,74000,0,0.66,LOW,7,77700.0
+es,el tiempo en Zaragoza,301000,30,0,,10,75250.0
+es,estación de madrid-chamartín-clara campoamor,60500,1,0.21,LOW,9,74250.0
+pt,meteorologia portimão,49500,0,0,LOW,10,74250.0
+pt,meteorologia vila do conde,49500,0,0,LOW,10,74250.0
+es,binter canarias,110000,8,0.26,LOW,8,73333.3
+es,estacion de autobuses valencia,74000,4,0.17,LOW,9,71357.1
+es,aeropuerto de málaga-costa del sol,135000,13,0.4,LOW,8,70434.8
+es,el tiempo valencia,201000,33,0.02,LOW,10,70116.3
+es,el tiempo: bilbao,201000,33,0,LOW,10,70116.3
+es,tiempo: vigo,165000,26,0,LOW,10,68750.0
+es,tiempo Valladolid,246000,26,0,,10,68333.3
+es,madrid estacion sur,60500,2,0.18,LOW,9,68062.5
+es,linea 6 metro de madrid,90500,4,0,LOW,7,67875.0
+pt,metro do porto,90500,4,0.81,LOW,7,67875.0
+es,el tiempo barcelona,301000,57,0.69,LOW,10,67388.1
+pt,estacionamento oriente,49500,0,0.19,LOW,9,66825.0
+es,roque nublo gran canaria,74000,4,0.16,LOW,8,63428.6
+es,renfe cercanias,201000,33,0.6,LOW,9,63104.7
+es,aeropuerto de málaga costa del sol,135000,16,0.4,LOW,8,62307.7
+es,puerto rico,165000,18,0.32,LOW,7,61875.0
+es,tiempo Granada,201000,23,0,,10,60909.1
+pt,meteorologia santa maria da feira,40500,0,0.11,LOW,10,60750.0
+pt,combustíveis,165000,23,0.21,LOW,8,60000.0
+es,hora nicaragua,49500,0,0,LOW,8,59400.0
+es,nicaragua hora,49500,0,0,LOW,8,59400.0
+es,horario nicaragua,49500,0,0,LOW,8,59400.0
+es,nicaragua horario,49500,0,0,LOW,8,59400.0
+es,hora en nicaragua,49500,0,0,LOW,8,59400.0
+es,tiempo Sevilla,301000,42,1.45,,10,57884.6
+es,tiempo Córdoba,201000,25,0,,10,57428.6
+es,el tiempo en Málaga,201000,25,0,,10,57428.6
+es,el tiempo en Palma,201000,25,0.16,,10,57428.6
+es,tiempo madrid hoy,201000,43,0,LOW,10,56886.8
+es,mapa metro madrid,135000,15,0.07,LOW,7,56700.0
+es,linea de metro 6 madrid,90500,7,0,LOW,7,55897.1
+es,metro 6 madrid,90500,7,0,LOW,7,55897.1
+es,tiempo Valencia,450000,71,1.25,,10,55555.6
+es,el tiempo en Valencia,450000,71,1.25,,10,55555.6
+pt,meteorologia setubal,74000,10,0.12,LOW,10,55500.0
+es,avenida de madrid,40500,0,0.32,LOW,9,54675.0
+es,avenida de andalucía,40500,0,0.32,LOW,9,54675.0
+es,estación de autobuses de toledo,40500,0,0.13,LOW,9,54675.0
+es,estación de servicio madese repsol,40500,0,0.2,LOW,9,54675.0
+pt,tempo Braga,135000,15,0.61,,10,54000.0
+pt,meteorologia viana castelo,49500,4,0,LOW,10,53035.7
+es,puerto de sagunto,60500,2,0.82,LOW,7,52937.5
+pt,hospital cuf porto,60500,2,1.03,LOW,7,52937.5
+es,madrid metro linea 5,49500,0,0,LOW,7,51975.0
+es,hora peruana,90500,11,0,LOW,8,51714.3
+es,tiempo Málaga,201000,29,0,,10,51538.5
+pt,porto moniz,90500,9,0.72,LOW,7,50013.2
+es,estación de autobuses donostia,40500,1,0.15,LOW,9,49704.5
+pt,meteorologia em agualva-cacém,33100,0,0.45,LOW,10,49650.0
+pt,meteorologia viana do castelo,49500,5,0,LOW,10,49500.0
+pt,eleições autarquicas 2025,90500,12,0,LOW,8,49363.6
+es,tiempo Oviedo,201000,31,0,,10,49024.4
+es,horario en canarias,40500,0,0,LOW,8,48600.0
+es,tiempo Vigo,165000,24,0,,10,48529.4
+es,metro bilbao,201000,19,0.23,,7,48517.2
+es,tiempo Vitoria,135000,18,0,,10,48214.3
+es,el tiempo en Sevilla,301000,53,1.45,,10,47777.8
+es,metro bilbao horarios,49500,1,0.53,LOW,7,47250.0
+pt,porto covo,49500,1,1.11,LOW,7,47250.0
+es,el tiempo bilbao,201000,54,0,LOW,10,47109.4
+es,tiempo en bilbao,201000,54,1.08,LOW,10,47109.4
+es,tiempo Gijón,135000,19,0,,10,46551.7
+es,puerto de la cruz,201000,36,0.73,LOW,7,45880.4
+es,atocha madrid,60500,8,0.91,LOW,9,45375.0
+pt,tempo Coimbra,90500,10,0.05,,10,45250.0
+es,linea metro 6 madrid,90500,11,0,LOW,7,45250.0
+pt,eleições autárquicas 2025,90500,14,0,LOW,8,45250.0
+pt,eleicoes autarquicas 2025,90500,14,0,LOW,8,45250.0
+pt,meteorologia em agualva cacém,33100,1,0.29,LOW,10,45136.4
+pt,aeroporto francisco sá carneiro,165000,34,0.36,LOW,8,45000.0
+es,estación de chamartín madrid,33100,0,0.04,LOW,9,44685.0
+es,estación de autobuses de pamplona,33100,0,0.46,LOW,9,44685.0
+es,tiempo Alicante,165000,27,0.04,,10,44594.6
+pt,tempo Leiria,74000,7,0.31,,10,43529.4
+es,playa puerto banús,40500,0,0.22,LOW,7,42525.0
+pt,ribeira porto,40500,0,0.63,LOW,7,42525.0
+es,vuelos baratos,550000,95,0.45,HIGH,8,41904.8
+pt,previsão do tempo,165000,50,0.34,LOW,10,41250.0
+pt,meteorologia sintra,49500,8,0.22,LOW,10,41250.0
+es,puerto del carmen,74000,9,0.78,LOW,7,40894.7
+es,estación de carga de vehículos eléctricos,60500,10,0.25,LOW,9,40837.5
+pt,vila do conde tempo,27100,0,0,LOW,10,40650.0
+es,mapa política españa,60500,2,0.03,MEDIUM,8,40333.3
+es,el tiempo: vigo,90500,24,0,LOW,10,39926.5
+pt,preços dos combustíveis próxima semana,33100,0,0,LOW,8,39720.0
+pt,chegadas aeroporto lisboa,33100,0,0.55,LOW,8,39720.0
+pt,chegada aeroporto porto,33100,0,0.27,LOW,8,39720.0
+pt,chegadas aeroporto porto,33100,0,0.27,LOW,8,39720.0
+pt,chegadas aeroporto madeira,33100,0,8.17,LOW,8,39720.0
+es,horario republica dominicana,33100,0,0,LOW,8,39720.0
+es,tarifa luz mañana,33100,0,2.08,LOW,8,39720.0
+es,ikea gran canaria,49500,0,0.03,MEDIUM,8,39600.0
+pt,metro porto,90500,6,0.81,,7,39593.8
+pt,meteorologia vila real,49500,9,0.17,LOW,10,39078.9
+es,estación de autobuses de a coruña,40500,4,0.43,LOW,9,39053.6
+es,islas canarias,110000,24,0.13,LOW,8,38823.5
+pt,meteorologia em santo tirso,33100,3,0.2,LOW,10,38192.3
+pt,meteorologia matosinhos,60500,14,0,LOW,10,37812.5
+es,estación de madrid puerta de atocha,33100,2,0.26,LOW,9,37237.5
+es,aemet alicante,74000,20,0,LOW,10,37000.0
+es,precio de la luz mañana,74000,14,2.76,LOW,8,37000.0
+es,el tiempo en el puerto de santa maria,90500,27,0,LOW,10,36689.2
+es,estación Chamartín,40500,0,0.09,,9,36450.0
+es,metro madrid,301000,48,0.64,,7,36327.6
+es,aeropuerto madrid barajas t4 madrid,90500,20,0.36,LOW,8,36200.0
+pt,ceramicas na linha,33100,1,0.19,LOW,8,36109.1
+es,aemet madrid por horas,40500,7,0,LOW,10,35735.3
+es,calidad aire,201000,35,0.24,,8,35733.3
+pt,meteorologia cascais,33100,4,0.23,LOW,10,35464.3
+es,radar lluvia,165000,32,0.18,,9,35357.1
+es,tiempo: algeciras,49500,11,0,LOW,10,35357.1
+es,tiempo en algeciras,49500,11,0,LOW,10,35357.1
+es,plano de metro de madrid,90500,17,0.04,LOW,7,35194.4
+es,valencia madrid en ave,74000,9,0.77,MEDIUM,9,35052.6
+pt,porto arouca,33100,0,0.32,LOW,7,34755.0
+pt,porto da cruz,33100,0,0.38,LOW,7,34755.0
+pt,restaurantes porto,33100,0,0.29,LOW,7,34755.0
+es,metro madrid linea 6,90500,18,0,LOW,7,33937.5
+pt,aeroporto,90500,22,0.07,LOW,8,33937.5
+pt,meteorologia felgueiras,27100,2,0.37,LOW,10,33875.0
+pt,ponte de lima tempo,22200,0,0,LOW,10,33300.0
+pt,meteorologia torres vedras,33100,5,0,LOW,10,33100.0
+es,el corte ingles canarias,90500,23,0.04,LOW,8,32909.1
+es,clima madrid hoy,74000,24,1.58,LOW,10,32647.1
+es,canarias apagon,27100,0,0,LOW,8,32520.0
+pt,partidas aeroporto lisboa,27100,0,0.37,LOW,8,32520.0
+es,madrid cercanias horarios,74000,21,1.03,LOW,9,32225.8
+es,aemet en huelva,40500,9,0,LOW,10,31973.7
+es,renfe cercanias sevilla,33100,4,0.72,LOW,9,31917.9
+es,nota examen dgt,49500,11,2.29,LOW,9,31821.4
+es,tiempo huelva,74000,25,0,LOW,10,31714.3
+es,ave valencia madrid,74000,11,0.77,MEDIUM,9,31714.3
+es,línea 6 metro madrid,90500,20,0,LOW,7,31675.0
+es,linea 6 de metro madrid,90500,20,0,LOW,7,31675.0
+es,linea 7 de metro madrid,33100,1,0,LOW,7,31595.5
+pt,classificações de liga europa,60500,13,0,LOW,8,31565.2
+pt,tempo em povoa de varzim,33100,6,0.39,LOW,10,31031.2
+es,república dominicana hora,33100,3,0,LOW,8,30553.8
+es,republica dominicana hora,33100,3,0,LOW,8,30553.8
+es,hora en republica dominicana,33100,3,0,LOW,8,30553.8
+es,republica dominicana horario,33100,3,0,LOW,8,30553.8
+es,hora en la república dominicana,33100,3,0,LOW,8,30553.8
+es,aeropuerto,201000,69,0.22,LOW,8,30531.6
+es,resultados examen dgt,49500,12,0,LOW,9,30375.0
+es,hora canaria,40500,6,0,LOW,8,30375.0
+pt,meteorologia albufeira,22200,1,0,LOW,10,30272.7
+es,tiempo madrid 14 dias,74000,27,0,LOW,10,30000.0
+es,cercanías sevilla,33100,0,0.77,,9,29790.0
+es,cercanías Sevilla,33100,0,0.77,,9,29790.0
+es,linea 6 metro madrid,90500,22,0,LOW,7,29695.3
+pt,meteorologia oeiras,27100,4,0.14,LOW,10,29035.7
+pt,meteorologia quarteira,27100,4,0.24,LOW,10,29035.7
+pt,quarteira meteorologia,27100,4,0.24,LOW,10,29035.7
+pt,tempo cascais,27100,4,0.25,LOW,10,29035.7
+pt,parque da cidade do porto,33100,2,0.33,LOW,7,28962.5
+es,el tiempo en madrid 14 dias,135000,60,0.01,LOW,10,28928.6
+pt,tempo Viseu,60500,11,0,,10,28809.5
+es,metro madrid línea 6,90500,23,0,LOW,7,28795.5
+es,manzanares el real,74000,21,1.21,LOW,8,28645.2
+es,horario canarias,40500,7,0,LOW,8,28588.2
+pt,shopping cidade do porto,27100,0,0.16,LOW,7,28455.0
+es,cinesa puerto venecia,27100,0,0.02,LOW,7,28455.0
+pt,porto moreirense,27100,0,0.86,LOW,7,28455.0
+pt,abadia do porto,27100,0,0.36,LOW,7,28455.0
+pt,braga porto,27100,0,0.7,LOW,7,28455.0
+pt,porto vitoria sc,27100,0,0,LOW,7,28455.0
+pt,stcp horários,27100,0,0.6,LOW,7,28455.0
+pt,stcp horário,27100,0,0.6,LOW,7,28455.0
+es,cercanias valencia,60500,19,0.78,LOW,9,28163.8
+pt,meteorologia vale de cambra,22200,2,0,LOW,10,27750.0
+es,puerto real,49500,9,0.91,LOW,7,27355.3
+es,estación de autobuses sur,40500,10,0.14,LOW,9,27337.5
+pt,meteorologia famalicão,27100,5,0,LOW,10,27100.0
+es,dgt multas,110000,45,1.95,LOW,9,27000.0
+pt,sé do porto,33100,3,0.29,LOW,7,26734.6
+es,el tiempo barcelona hoy,60500,24,0,LOW,10,26691.2
+es,hora republica dominicana,33100,5,0,LOW,8,26480.0
+es,vuelos a tenerife,33100,0,0.48,HIGH,8,26480.0
+es,moto electrica,33100,0,0.31,HIGH,8,26480.0
+es,madrid clima hoy,74000,32,1.58,LOW,10,26428.6
+pt,meteorologia ponte de lima,33100,9,0,LOW,10,26131.6
+pt,meteorologia figueira da foz,33100,9,0.37,LOW,10,26131.6
+pt,tempo amanhã lisboa,33100,9,0.21,LOW,10,26131.6
+es,horario renfe cercanias,110000,47,1.16,LOW,9,26052.6
+es,linea metro 5 madrid,49500,10,0,LOW,7,25987.5
+pt,lusiadas porto,49500,10,0.04,LOW,7,25987.5
+es,horario metro bilbao,49500,10,0.53,LOW,7,25987.5
+pt,clima lisboa,60500,25,0,LOW,10,25928.6
+es,aeropuerto madrid barajas t4,90500,32,0.36,LOW,8,25857.1
+es,cercanias madrid,110000,48,0.88,LOW,9,25603.4
+pt,tempo em lisboa hoje,40500,14,0.15,LOW,10,25312.5
+pt,resultado porto,33100,4,0,LOW,7,24825.0
+pt,meteorologia ponta delgada,33100,10,0.19,LOW,10,24825.0
+es,tiempo en 14 dias madrid,74000,35,0,LOW,10,24666.7
+es,clima barcelona,110000,57,3.18,LOW,10,24626.9
+pt,instituto de meteorologia,110000,57,0,LOW,10,24626.9
+es,tiempo barcelona hoy,60500,27,0,LOW,10,24527.0
+pt,vila das aves,18100,0,0.27,LOW,9,24435.0
+es,aeropuerto de la coruña,40500,10,1.19,LOW,8,24300.0
+es,el tiempo ciudad real,90500,46,0,LOW,10,24241.1
+es,ibex 35 hoy tiempo real,74000,36,1.41,LOW,10,24130.4
+es,ibex 35 en tiempo real hoy,74000,36,1.41,LOW,10,24130.4
+pt,aeroporto lisboa,49500,15,1.83,LOW,8,23760.0
+es,metro de madrid linea 6,90500,30,0,LOW,7,23756.2
+es,ikea en canarias,74000,15,0.03,MEDIUM,8,23680.0
+es,línea 5 metro madrid,49500,12,0,LOW,7,23625.0
+es,madrid metro linea 1,40500,8,0,LOW,7,23625.0
+es,el tiempo en Murcia,110000,37,0,,10,23404.3
+pt,emprego porto,22200,0,0.11,LOW,7,23310.0
+pt,porto benfica hoje,22200,0,0.99,LOW,7,23310.0
+pt,garden porto,22200,0,0.51,LOW,7,23310.0
+es,horarios cercanias madrid,74000,33,1.03,LOW,9,23232.6
+es,metro sevilla,33100,0,0.75,,7,23170.0
+es,hora en canarias,40500,11,0,LOW,8,23142.9
+pt,meteorologia bragança,18100,2,0,LOW,10,22625.0
+pt,meteorologia marco de canaveses,18100,2,0,LOW,10,22625.0
+pt,ipma tempo,135000,50,0.18,,10,22500.0
+es,aeropuerto barcelona,90500,39,1.14,LOW,8,22163.3
+es,cita previa dgt,60500,27,1.72,LOW,9,22074.3
+es,vuelos a londres,33100,2,0.49,HIGH,8,22066.7
+es,el tiempo en las palmas de gran canaria,110000,65,0.31,LOW,10,22000.0
+es,el tiempo en ciudad real,90500,52,0,LOW,10,21895.2
+es,tiempo Palma,74000,24,0,,10,21764.7
+es,linea 9 metro madrid,33100,6,0,LOW,7,21721.9
+es,renfe cercanias bilbao,33100,11,0.4,LOW,9,21278.6
+pt,meteorologia torres novas,22200,6,0.74,LOW,10,20812.5
+pt,porto jogos,49500,15,0.75,LOW,7,20790.0
+pt,aeroporto porto,49500,19,2.68,LOW,8,20482.8
+es,renfe cercanias valencia,60500,30,0.79,LOW,9,20418.8
+pt,aeroporto lisboa chegadas,33100,3,0.55,,8,20369.2
+pt,porto braga,27100,4,0.73,LOW,7,20325.0
+es,puerto de navacerrada,40500,11,0.24,LOW,7,20250.0
+pt,tempo Aveiro,74000,27,0.21,,10,20000.0
+pt,aveiro portugal,22200,5,1.09,LOW,9,19980.0
+pt,porto vs rio ave,14800,0,0,LOW,9,19980.0
+es,tiempo: guadalajara,40500,21,0.69,LOW,10,19596.8
+es,museu d'art contemporani de barcelona,49500,28,0.4,LOW,10,19539.5
+es,valencia tiempo hoy,49500,28,0,LOW,10,19539.5
+es,el tiempo en madrid aemet,74000,47,0,LOW,10,19473.7
+es,aeropuerto t1-t2-t3,40500,15,0.17,LOW,8,19440.0
+pt,piscinas naturais do porto moniz,22200,2,0.31,LOW,7,19425.0
+pt,porto campanha,22200,2,1.35,LOW,7,19425.0
+es,rodalies,110000,41,0.77,,9,19411.8
+es,linea metro 1 madrid,40500,12,0,LOW,7,19329.5
+es,el tiempo: barcelona hoy,60500,37,0,LOW,10,19308.5
+es,puerto de barcelona,33100,8,0.47,LOW,7,19308.3
+es,el tiempo a 14 días en madrid,135000,96,0.01,LOW,10,19103.8
+es,velez malaga tiempo,33100,16,0,LOW,10,19096.2
+pt,escalações de futebol clube do porto x benfica,18100,0,0,LOW,7,19005.0
+pt,francesinha porto,18100,0,0.31,LOW,7,19005.0
+pt,galeria de paris porto,18100,0,0.09,LOW,7,19005.0
+pt,metro em lisboa mapa,27100,5,0.19,LOW,7,18970.0
+pt,benfica bilhetes,40500,16,0.47,LOW,8,18692.3
+es,puerto del rosario,60500,24,0.85,LOW,7,18683.8
+es,renfe cercanias asturias,33100,14,0,LOW,9,18618.8
+pt,caldas da rainha meteorologia,14800,2,0,LOW,10,18500.0
+pt,clima em porto,33100,17,0.37,LOW,10,18388.9
+pt,meteorologia em mirandela,18100,5,0,LOW,10,18100.0
+pt,porto-vitória sc,27100,6,0,LOW,7,17784.4
+pt,aeroporto de lisboa chegadas,14800,0,0.32,LOW,8,17760.0
+pt,chegadas ao aeroporto de lisboa,14800,0,0.32,LOW,8,17760.0
+pt,resultado eleições autárquicas 2025,14800,0,0,LOW,8,17760.0
+es,tiempo velez malaga,33100,18,0,LOW,10,17732.1
+es,tiempo en vélez málaga,33100,18,0,LOW,10,17732.1
+pt,ipma braga,49500,32,0,LOW,10,17678.6
+pt,liga portugal classificação,40500,18,0.9,LOW,8,17357.1
+es,tiempo en palma de mallorca,40500,25,0.44,LOW,10,17357.1
+pt,coliseu porto,18100,1,1.59,LOW,7,17277.3
+es,hora república dominicana,33100,13,0,LOW,8,17269.6
+es,linea 10 metro madrid,74000,35,0.09,LOW,7,17266.7
+pt,lisboa previsão do tempo,33100,19,0,LOW,10,17120.7
+pt,meteorologia alcobaça,14800,3,0.42,LOW,10,17076.9
+es,musicales en madrid,40500,9,0.4,HIGH,8,17052.6
+pt,meteorologia setúbal,18100,6,0,LOW,10,16968.8
+es,linea 5 de metro madrid,49500,21,0,LOW,7,16766.1
+es,metro linea 5 madrid,49500,21,0,LOW,7,16766.1
+pt,parque estacionamento,27100,12,0.3,LOW,9,16629.5
+es,metro linea 7 madrid,33100,11,0,LOW,7,16550.0
+pt,meteorologia castelo branco,33100,20,0.36,LOW,10,16550.0
+es,valencia hoy tiempo,49500,35,0,LOW,10,16500.0
+es,ikea canarias,74000,26,0.03,MEDIUM,8,16444.4
+es,tiempo en velez malaga,33100,21,0,LOW,10,16016.1
+es,tiempo Murcia,110000,59,0,,10,15942.0
+pt,meteorologia marinha grande,14800,4,0.05,LOW,10,15857.1
+pt,porto vitória sc,27100,8,0,LOW,7,15808.3
+pt,meia nau porto,27100,8,0.15,LOW,7,15808.3
+es,linea 7 metro madrid,33100,12,0,LOW,7,15797.7
+es,metro de madrid linea 5,49500,23,0,LOW,7,15750.0
+pt,a f porto,40500,17,0,LOW,7,15750.0
+pt,sapo desporto,40500,17,0,LOW,7,15750.0
+pt,tempo Faro,40500,16,0,,10,15576.9
+pt,jogadores de futebol clube do porto,22200,5,0,LOW,7,15540.0
+pt,moreirense porto,14800,0,0,LOW,7,15540.0
+pt,ultimo porto,14800,0,0.21,LOW,7,15540.0
+pt,a bolina porto,14800,0,0.29,LOW,7,15540.0
+pt,à bolina porto,14800,0,0.29,LOW,7,15540.0
+pt,aguas do porto,14800,0,2.41,LOW,7,15540.0
+pt,porto estrela vermelha,14800,0,0,LOW,7,15540.0
+pt,porto clima,33100,22,0.37,LOW,10,15515.6
+es,aemet madrid tiempo,33100,22,0,LOW,10,15515.6
+es,tiempo Badajoz,60500,29,0,,10,15512.8
+es,tiempo hoy valencia,49500,38,0,LOW,10,15468.8
+es,metro madrid línea 5,49500,24,0,LOW,7,15286.8
+es,palau de la musica valencia,33100,16,1.53,LOW,8,15276.9
+es,precio gasolina,60500,38,0.3,LOW,8,15125.0
+es,mapa de metro madrid,33100,13,0.05,LOW,7,15110.9
+es,metro barcelona,49500,13,0.36,,7,15065.2
+es,canarias,135000,100,0.46,LOW,8,14727.3
+es,metro linea 1 madrid,40500,19,0,LOW,7,14663.8
+es,metro madrid línea 1,40500,19,0,LOW,7,14663.8
+es,tiempo valencia hoy,49500,41,0,LOW,10,14558.8
+es,el tiempo en tenerife,27100,18,0.05,LOW,10,14517.9
+es,metro linea 3 madrid,33100,14,0,LOW,7,14481.3
+pt,aeroporto porto partidas,18100,0,0.87,,8,14480.0
+es,zara canarias,74000,31,0.36,MEDIUM,8,14439.0
+pt,tempo amanhã porto,18100,9,0.06,LOW,10,14289.5
+pt,meteorologia em esposende,18100,9,0,LOW,10,14289.5
+es,clima sevilla españa,49500,42,2.51,LOW,10,14278.8
+es,puerto colon,27100,10,0.52,LOW,7,14227.5
+es,puerto de valencia,27100,10,0.48,LOW,7,14227.5
+es,ayuntamiento de alicante,33100,18,0.14,LOW,8,14185.7
+es,renfe cercanias madrid,60500,48,0.84,LOW,9,14081.9
+es,metro línea 3 madrid,33100,15,0,LOW,7,13902.0
+pt,meteorologia são joão da madeira,14800,6,0,LOW,10,13875.0
+pt,meteorologia odivelas,14800,6,0.26,LOW,10,13875.0
+es,cercanías madrid,110000,62,0.88,,9,13750.0
+es,cercanías Madrid,110000,62,0.88,,9,13750.0
+es,previsión tiempo madrid,49500,44,0,LOW,10,13750.0
+es,playa de las canteras las palmas de gran canaria,27100,14,0.52,LOW,8,13550.0
+es,madrid tiempo aemet,33100,27,0,LOW,10,13418.9
+es,linea metro 3 madrid,33100,16,0,LOW,7,13367.3
+pt,sondagens autárquicas 2025,22200,10,0,LOW,8,13320.0
+es,línea 1 metro madrid,40500,22,0,LOW,7,13289.1
+es,cercanías valencia,60500,31,0.78,,9,13280.5
+es,cercanías Valencia,60500,31,0.78,,9,13280.5
+es,aeropuerto barajas,33100,20,1.09,LOW,8,13240.0
+es,barcelona tiempo,40500,36,1.35,LOW,10,13206.5
+pt,classificação liga portugal,40500,27,0.9,LOW,8,13135.1
+es,notas dgt,40500,32,1.87,LOW,9,13017.9
+es,puerto de Barcelona,33100,8,0.47,,7,12872.2
+pt,sondagem autárquicas 2025,22200,11,0,LOW,8,12685.7
+pt,resultados eleições autárquicas 2025,14800,4,0,LOW,8,12685.7
+pt,nacional porto,18100,5,0,LOW,7,12670.0
+pt,porto salvo,18100,5,0.49,LOW,7,12670.0
+es,tiempo madrid prevision,49500,49,0,LOW,10,12584.7
+es,linea 1 metro madrid,40500,24,0,LOW,7,12507.4
+es,meteocat barcelona,60500,63,0,LOW,10,12431.5
+es,meteo barcelona,60500,63,0,LOW,10,12431.5
+pt,olx porto,22200,9,1.78,LOW,7,12268.4
+pt,sao martinho do porto,22200,9,0.53,LOW,7,12268.4
+pt,voos baratos,110000,62,0.47,HIGH,8,12222.2
+es,aena,135000,79,1.83,,8,12134.8
+pt,meteo lisboa,33100,31,0,LOW,10,12109.8
+pt,sondagem autarquicas 2025,22200,12,0,LOW,8,12109.1
+es,metro madrid linea 5,49500,33,0,LOW,7,12087.2
+pt,aeroporto lisboa partidas,27100,8,0.37,,8,12044.4
+es,metro valencia,110000,54,0.4,,7,12031.2
+es,gran canaria,110000,100,0.85,LOW,8,12000.0
+es,línea 7 metro madrid,33100,19,0,LOW,7,11984.5
+pt,temperatura porto,27100,14,0.14,LOW,7,11856.2
+es,mercado continuo tiempo real gratis,33100,32,0.65,LOW,10,11821.4
+es,puerto de santa maria,40500,26,0.94,LOW,7,11812.5
+es,metro de madrid linea 1,40500,26,0,LOW,7,11812.5
+es,sevilla españa clima,49500,53,2.51,LOW,10,11785.7
+es,examen dgt,33100,28,0.55,LOW,9,11759.2
+es,metro de madrid linea 7,33100,20,0,LOW,7,11585.0
+es,aeropuerto madrid,40500,32,1.12,LOW,8,11571.4
+es,linea de metro 1,40500,28,0,LOW,7,11190.8
+pt,previsão tempo porto,22200,20,0,LOW,10,11100.0
+pt,autárquicas 2025,14800,6,0,LOW,8,11100.0
+es,linea 5 metro madrid,49500,37,0,LOW,7,11058.5
+pt,meteorologia funchal,27100,27,0.22,LOW,10,10986.5
+es,cámaras dgt,49500,31,1.73,,9,10865.9
+pt,jogo porto hoje,33100,22,0.6,LOW,7,10860.9
+pt,meteorologia vila nova de gaia,18100,15,0.2,LOW,10,10860.0
+es,meteo.cat barcelona,60500,75,0,LOW,10,10676.5
+es,linea 1 de metro madrid,40500,30,0,LOW,7,10631.2
+es,eltiempo.es madrid,49500,60,0.01,LOW,10,10607.1
+pt,alfandega do porto,22200,12,0.59,LOW,7,10595.5
+es,aemet tiempo: madrid,33100,37,0,LOW,10,10563.8
+es,línea 3 metro madrid,33100,23,0,LOW,7,10531.8
+pt,metro lisboa,135000,80,0.3,,7,10500.0
+es,metro madrid linea 1,40500,31,0,LOW,7,10372.0
+es,clima valencia,33100,38,0,LOW,10,10343.8
+pt,ipma previsão alargada 25 dias,27100,30,0.33,LOW,10,10162.5
+es,dgt estado carreteras,49500,57,1.58,LOW,9,9973.9
+es,gran canaria tiempo,27100,31,0,LOW,10,9914.6
+es,estación Atocha,40500,27,0.05,,9,9851.4
+pt,ipo porto,27100,19,0.21,LOW,7,9812.1
+pt,porto gil vicente,14800,6,0,LOW,7,9712.5
+es,carpeta ciudadana madrid,33100,31,0,LOW,8,9687.8
+es,barcelona prevision tiempo,33100,42,0,LOW,10,9548.1
+es,canal sur radio directo,40500,41,0.02,LOW,8,9529.4
+es,puerto de Valencia,27100,10,0.48,,7,9485.0
+es,metro madrid linea 3,33100,27,0,LOW,7,9393.2
+es,linea 3 metro madrid,33100,27,0,LOW,7,9393.2
+pt,porto famalicao,22200,15,0.49,LOW,7,9324.0
+pt,aeroporto do porto,33100,34,1.45,LOW,8,9027.3
+es,correo universidad politecnica de madrid,60500,71,0,LOW,8,8963.0
+es,puntos dgt,33100,41,1.72,LOW,9,8761.8
+pt,tempo para 10 dias,22200,29,0,LOW,10,8538.5
+pt,resultados eleitorais autárquicas 2025,14800,11,0,LOW,8,8457.1
+es,clima hoy barcelona,27100,39,0.33,LOW,10,8295.9
+pt,sao joao porto,14800,9,0.17,LOW,7,8178.9
+pt,mapa metro lisboa,27100,25,0.19,LOW,7,8130.0
+pt,tempo porto hoje,14800,18,0.2,LOW,10,7928.6
+pt,porto coliseu,18100,14,1.59,LOW,7,7918.7
+es,informe dgt,33100,47,2.48,LOW,9,7839.5
+es,cb canarias,40500,52,0.58,LOW,8,7838.7
+pt,linhas metro lisboa,27100,27,0.68,LOW,7,7690.5
+es,aemet tenerife,27100,43,0.17,LOW,10,7669.8
+pt,boavista porto,18100,15,0.57,LOW,7,7602.0
+es,metro madrid linea 7,33100,36,0,LOW,7,7555.4
+pt,horarios metro porto,14800,11,0.9,LOW,7,7400.0
+es,clima en sevilla españa,49500,92,2.51,LOW,10,7279.4
+pt,mau tempo em portugal,14800,21,0,LOW,10,7161.3
+es,tiempo y radar,40500,75,0.34,LOW,10,7147.1
+es,carpeta ciudadana comunidad de madrid,33100,48,0,LOW,8,6848.3
+es,previsión tiempo barcelona,33100,63,0,LOW,10,6801.4
+es,previsión tiempo: barcelona,33100,63,0,LOW,10,6801.4
+pt,tempo amanhã,33100,65,0.13,LOW,10,6620.0
+pt,fc porto bilhetes,18100,19,0.03,LOW,7,6553.4
+pt,previsão do tempo hoje,18100,32,0,LOW,10,6464.3
+es,casa prefabricada,33100,31,0.12,HIGH,8,6458.5
+pt,ipma leiria,14800,26,0,LOW,10,6166.7
+pt,hospital santa maria porto,18100,21,0.37,LOW,7,6130.6
+pt,jogo do porto,33100,47,0.48,LOW,7,6097.4
+es,tiempo Las Palmas,27100,36,0,,10,5891.3
+pt,portagens,18100,18,1.04,,9,5817.9
+es,el tiempo hoy,60500,96,0,,10,5707.5
+pt,ana aeroportos,22200,23,2.48,,8,5381.8
+pt,ipma setubal,14800,34,0,LOW,10,5045.5
+pt,lusiada porto,14800,22,1.05,LOW,7,4856.2
+es,precio gasolina hoy,27100,35,0.4,,8,4817.8
+es,noticias canarias,40500,91,0,LOW,8,4811.9
+es,dana,33100,47,2.2,,8,4645.6
+pt,faculdade de ciências da universidade do porto,14800,25,0.22,LOW,7,4440.0
+es,noticias en granada,33100,82,0,LOW,8,4317.4
+pt,tempo em lisboa ipma,18100,53,0,LOW,10,4309.5
+pt,horario metro porto,14800,27,0.9,LOW,7,4200.0
+pt,metro porto horario,14800,27,0.9,LOW,7,4200.0
+pt,lisboa tempo ipma,18100,55,0,LOW,10,4176.9
+es,radar de lluvia,33100,97,0.23,LOW,9,4176.2
+pt,ipma tempo lisboa,18100,57,0,LOW,10,4052.2
+pt,feup faculdade de engenharia da universidade do porto,18100,38,0.16,LOW,7,3959.4
+pt,fc porto hoje,22200,49,0.13,LOW,7,3950.8
+es,el tiempo en Las Palmas,27100,65,0,,10,3613.3
+pt,meteorologia 14 dias,14800,55,0.27,LOW,10,3415.4
+pt,porto portugal,27100,74,0.89,LOW,7,3387.5
+pt,universidade do porto,18100,52,0.96,LOW,7,3065.3
+pt,motel porto,18100,41,0.32,HIGH,7,2484.3

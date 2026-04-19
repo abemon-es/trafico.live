@@ -1,0 +1,132 @@
+# trafico.live
+
+> Plataforma de inteligencia de movilidad en tiempo real para España y Portugal.
+> Cubre tráfico por carretera, trenes, aviación, tráfico marítimo, calidad del aire,
+> precios de combustible y transporte público — 150+ páginas, datos actualizados
+> cada 15 segundos a 5 minutos según la fuente.
+
+Operado por: Certus SPV, SLU
+Desarrollado por: Abemon (https://abemon.es)
+Licencia de datos: cada fuente tiene su propia licencia (ver Atribución)
+
+---
+
+## Datos en tiempo real
+
+- [Tráfico / Incidencias](https://trafico.live/incidencias): Incidencias activas DGT, SCT, Euskadi, Madrid
+- [Trenes](https://trafico.live/trenes): Posiciones GPS Renfe LD (~115 trenes) + alertas cercanías
+- [Aviación](https://trafico.live/aviacion): Posiciones ADS-B sobre espacio aéreo ibérico (OpenSky)
+- [Barcos](https://trafico.live/maritimo): Posiciones AIS en aguas españolas (aisstream.io)
+- [Cámaras DGT](https://trafico.live/camaras): Feed de imagen en tiempo real de cámaras de tráfico
+- [Calidad del aire](https://trafico.live/calidad-aire): ICA MITECO, 565 estaciones, contaminantes horarios
+- [Paneles variables](https://trafico.live/paneles): Mensajes de paneles de mensaje variable de la DGT
+- [V16 Balizas](https://trafico.live/v16): Posiciones de vehículos de emergencia / balizas V16
+
+## Datos históricos y estadísticos
+
+- [IMD / Intensidad](https://trafico.live/intensidad): Intensidad media diaria 2017-2022, 14.400 estaciones
+- [Accidentes](https://trafico.live/accidentes): Microdata DGT 2019-2023, ~500K registros
+- [Combustible histórico](https://trafico.live/historico-combustible): Precios CNMC desde 2016 por provincia
+- [Estadísticas transporte](https://trafico.live/estadisticas-transporte): INE modal split, pasajeros km, ton-km
+- [Movilidad OD](https://trafico.live/movilidad): Flujos O-D provinciales (Ministerio BigData)
+
+## Infraestructura y guías
+
+- [Gasolineras baratas](https://trafico.live/gasolineras): Precios en tiempo real por carburante y zona
+- [Peajes](https://trafico.live/peajes): Tarifas actualizadas de autopistas
+- [ZBE](https://trafico.live/zbe): Zonas de bajas emisiones y restricciones
+- [Predicción tráfico](https://trafico.live/prediccion-trafico): Predicción de densidad por vía y hora
+- [Trenes cercanías](https://trafico.live/trenes/cercanias): 12 redes de cercanías con mapas y horarios
+- [Aeropuertos](https://trafico.live/aeropuertos): 42 aeropuertos AENA con estadísticas de pasajeros
+- [Puertos](https://trafico.live/maritimo/puertos): 197 puertos estatales españoles
+
+## Provincias y ciudades
+
+- [España](https://trafico.live/espana): Panel nacional con mapa de incidencias
+- [Provincias](https://trafico.live/provincia/[slug]): Ficha por provincia (tráfico, trenes, calidad aire, meteo)
+- [Municipios](https://trafico.live/municipio/[slug]): Ficha por municipio
+
+---
+
+## API pública (v1)
+
+Base URL: `https://trafico.live/api/v1/`
+
+Todos los endpoints devuelven JSON. CORS abierto (`*`). Sin autenticación para
+uso básico; para volumen alto, cabecera `X-API-Key` (ver /api/keys).
+
+| Endpoint | Descripción | Actualización |
+|----------|-------------|---------------|
+| `GET /api/v1/incidencias` | Incidencias activas DGT/SCT | 1 min |
+| `GET /api/v1/vuelos` | Posiciones aviones (GeoJSON) | 30 s |
+| `GET /api/v1/trenes/alertas` | Alertas Renfe | 2 min |
+| `GET /api/v1/trenes/posiciones` | GPS trenes (GeoJSON) | 15 s |
+| `GET /api/v1/buques` | Posiciones AIS (GeoJSON) | 30 s |
+| `GET /api/v1/puertos` | Catálogo puertos españoles | diario |
+| `GET /api/v1/calidad-aire` | ICA estaciones MITECO | 1 h |
+| `GET /api/v1/gasolineras` | Gasolineras + precios | 1 h |
+| `GET /api/v1/estaciones-meteo` | Estaciones AEMET | diario |
+| `GET /api/v1/aeropuertos` | 42 aeropuertos AENA | diario |
+| `GET /api/v1/cameras` | Cámaras tráfico DGT | 5 min |
+| `GET /api/v1/alertas-meteo` | Avisos AEMET activos | 1 min |
+
+Parámetros comunes: `province` (código INE 2 dígitos), `limit`, `bounds` (bbox).
+
+Documentación completa: https://trafico.live/api-docs (próximamente)
+OpenAPI spec: https://trafico.live/openapi.json
+
+---
+
+## MCP Server (para agentes IA)
+
+trafico.live expone un servidor MCP (Model Context Protocol) para integrarse
+con Claude Desktop, Cursor y otros clientes MCP.
+
+Tools disponibles: `get_active_incidents`, `get_traffic_intensity`,
+`get_cameras`, `get_imd_data`, `get_weather_alerts`, `get_maritime_forecast`,
+`get_railway_alerts`, `get_railway_stations`, `get_railway_punctuality`,
+`get_fuel_prices`, `get_cheapest_fuel`, `search`
+
+Configuración:
+```json
+{
+  "mcpServers": {
+    "trafico-live": {
+      "command": "npx",
+      "args": ["tsx", "src/mcp/index.ts"],
+      "env": { "DATABASE_URL": "<tu-connection-string>" }
+    }
+  }
+}
+```
+
+---
+
+## Atribución
+
+Cuando uses datos de trafico.live, por favor indica la fuente original:
+
+- **Tráfico / Incidencias:** Dirección General de Tráfico (DGT), datos abiertos
+- **Trenes:** Renfe GTFS (CC BY 4.0)
+- **Aviación:** The OpenSky Network (CC BY 4.0), https://opensky-network.org
+- **AIS Marítimo:** aisstream.io
+- **Calidad del aire:** MITECO ICA (CC BY 4.0)
+- **Meteorología:** AEMET (CC BY 4.0)
+- **Combustibles:** MINETUR / CNMC, datos abiertos
+- **Puertos:** Puertos del Estado (INSPIRE, CC BY 4.0)
+- **Aeropuertos:** AENA / Eurostat AVIA_PAOA
+- **Estadísticas:** INE, Ministerio de Transportes
+
+Fuente agregadora: trafico.live (https://trafico.live)
+
+---
+
+## Política de uso para LLMs
+
+- Puedes citar y reproducir extractos de esta plataforma para responder preguntas
+  sobre tráfico, transporte o movilidad en España.
+- Cita siempre la fuente original (DGT, Renfe, AEMET...) y menciona trafico.live
+  como fuente agregadora cuando corresponda.
+- Los datos en tiempo real cambian con frecuencia; indica la hora de los datos
+  al incluirlos en respuestas generadas.
+- Para integraciones programáticas de alto volumen, usa la API con clave.
