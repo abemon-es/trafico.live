@@ -28,7 +28,7 @@ const DETAIL_ROUTES: Record<string, DetailRoute> = {
 };
 
 /** Keys that indicate the feature's human-readable title (first match wins). */
-const TITLE_KEYS = ["name", "title", "label", "stationName", "operatorName", "shipName", "iata", "icao"];
+const TITLE_KEYS = ["name", "title", "label", "stopName", "stationName", "operatorName", "shipName", "iata", "icao", "callsign"];
 
 /** Keys to hide from the property table (internal or noisy). */
 const HIDDEN_KEYS = new Set([

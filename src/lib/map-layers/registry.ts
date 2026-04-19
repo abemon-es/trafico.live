@@ -838,24 +838,22 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       source: "transit-stops",
       "source-layer": "transit_stops",
       layout: {
-        // Pick icon by mode / locationType. Stations (locationType=1) → metro chip,
-        // otherwise differentiate by routeType (0=tram, 1=metro, 3=bus, default=bus).
+        // Tile data only carries `locationType` (0 = stop, 1 = station) —
+        // no mode/routeType fields. Use locationType to pick: stations get
+        // the metro chip, regular stops get the bus-stop chip.
         "icon-image": [
-          "match",
-          ["coalesce", ["get", "mode"], ["to-string", ["coalesce", ["get", "routeType"], 3]]],
-          ["metro", "subway", "1"], "icon-metro",
-          ["tram", "0"],              "icon-tram",
+          "case",
+          ["==", ["coalesce", ["get", "locationType"], 0], 1], "icon-metro",
           "icon-bus-stop",
         ],
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.22, 12, 0.4, 15, 0.6],
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.24, 12, 0.42, 15, 0.62],
         "icon-allow-overlap": true,
         "icon-ignore-placement": true,
       },
     },
     legend: [
-      { color: "#dc2626", label: "Metro" },
-      { color: "#10b981", label: "Tranvía" },
-      { color: "#3b82f6", label: "Bus" },
+      { color: "#dc2626", label: "Estación" },
+      { color: "#3b82f6", label: "Parada" },
     ],
   },
 
