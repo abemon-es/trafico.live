@@ -125,7 +125,13 @@ async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
 
   await sleep(RATE_LIMIT_SLEEP_MS);
 
-  // Step 2: fetch actual data from datos URL (no key needed — it's a pre-signed URL)
+  // Step 2: fetch actual data from datos URL (no key needed — it's a pre-signed URL).
+  // AEMET's datos endpoint serves Latin-1 / ISO-8859-15 encoded JSON but the
+  // Content-Type header declares only `application/json` with no charset, so
+  // the default fetch().json() parser decodes as UTF-8 and replaces every
+  // accented char with U+FFFD (e.g. TORREJÓN → TORREJ�N). Fix: read raw
+  // bytes, try UTF-8 first (in case AEMET ever fixes their header), fall
+  // back to Latin-1 when we detect the replacement character.
   const step2Res = await fetch(step1.datos, {
     headers: { Accept: "application/json" },
   });
@@ -135,8 +141,22 @@ async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
     return null;
   }
 
-  const data: T = await step2Res.json();
-  return data;
+  const buf = await step2Res.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  if (text.includes("\uFFFD")) {
+    // Re-decode as Latin-1 (a.k.a. windows-1252) which never produces U+FFFD
+    // and maps every single byte to a printable code-point. Works because
+    // AEMET's JSON only contains ASCII control chars + Latin-1 accented
+    // letters — no multi-byte sequences.
+    text = new TextDecoder("windows-1252").decode(bytes);
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch (err) {
+    logError(TASK, `Step-2 JSON parse failed: ${(err as Error).message}`);
+    return null;
+  }
 }
 
 function sleep(ms: number): Promise<void> {
