@@ -54,6 +54,8 @@ const INCIDENT_TYPES: Record<string, string> = {
   CLOSURE:          "Corte",
   EVENT:            "Evento",
   RESTRICTION:      "Restricción",
+  OTHER:            "Otro",
+  UNKNOWN:          "Incidente",
 };
 
 const LABEL_ALIASES: Record<string, string> = {
@@ -192,6 +194,10 @@ function extractTitle(props: FeatureProps, layerId?: string): string | null {
       const truncated = d.length > 48 ? d.slice(0, 48).trim() + "…" : d;
       return smartTitleCase(truncated);
     }
+    // Fallback: use incident type translated + road/province for context
+    const t = typeof props.type === "string" ? (INCIDENT_TYPES[props.type] ?? "Incidente") : "Incidente";
+    const where = typeof props.provinceName === "string" ? ` · ${smartTitleCase(props.provinceName)}` : "";
+    return `${t}${where}`;
   }
   for (const key of TITLE_KEYS) {
     const v = props[key];
