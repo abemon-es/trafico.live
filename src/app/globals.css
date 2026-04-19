@@ -190,14 +190,15 @@ h1, h2, h3, h4, h5, h6 {
 /* ─── Immersive map pages ────────────────────────────────────────────────
    When the /mapa client toggles `body.map-immersive`, hide the Footer +
    sticky ad so the viewport is a single full-screen map (and MapLibre
-   popups near the bottom edge don't render into footer space). */
+   popups near the bottom edge don't render into footer space).
+   NOTE: do NOT set `body { overflow: hidden }` — that somehow offsets the
+   MapLibre map container to y=-815 (observed in prod). Body stays scroll-
+   able; hiding the footer alone is enough to collapse body to viewport
+   height since the map+header fit exactly. */
 body.map-immersive footer,
 body.map-immersive [class*="StickyFooterAd"],
 body.map-immersive .sticky-footer-ad {
   display: none !important;
-}
-body.map-immersive {
-  overflow: hidden;
 }
 
 /* ─── TraficoMap popup ────────────────────────────────────────────────────
