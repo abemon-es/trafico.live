@@ -127,10 +127,10 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       paint: {
         "line-color": ["coalesce", ["get", "routeColor"], "#0891b2"],
         "line-width": [
-          "case",
-          ["boolean", ["feature-state", "hover"], false],
-          ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6, 14, 10],
-          ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 3, 14, 5],
+          "interpolate", ["linear"], ["zoom"],
+          5,  ["case", ["boolean", ["feature-state", "hover"], false], 3, 1.5],
+          10, ["case", ["boolean", ["feature-state", "hover"], false], 6, 3],
+          14, ["case", ["boolean", ["feature-state", "hover"], false], 10, 5],
         ],
         "line-opacity": [
           "case", ["boolean", ["feature-state", "hover"], false], 1, 0.7,
@@ -390,10 +390,10 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       paint: {
         "line-color": ["coalesce", ["get", "color"], "#7c3aed"],
         "line-width": [
-          "case",
-          ["boolean", ["feature-state", "hover"], false],
-          ["interpolate", ["linear"], ["zoom"], 5, 2, 10, 5, 14, 8],
-          ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 2.5, 14, 4],
+          "interpolate", ["linear"], ["zoom"],
+          5,  ["case", ["boolean", ["feature-state", "hover"], false], 2, 1],
+          10, ["case", ["boolean", ["feature-state", "hover"], false], 5, 2.5],
+          14, ["case", ["boolean", ["feature-state", "hover"], false], 8, 4],
         ],
         "line-opacity": [
           "case", ["boolean", ["feature-state", "hover"], false], 1, 0.7,
@@ -676,19 +676,21 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
           50000, "#dc2626",
         ],
         "line-width": [
-          "case",
-          ["boolean", ["feature-state", "hover"], false],
-          [
-            "interpolate", ["linear"], ["zoom"],
-            5,  ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 0.9, 50000, 5.4],
-            10, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 1.8, 50000, 9],
-            14, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 3.6, 50000, 14.4],
+          "interpolate", ["linear"], ["zoom"],
+          5, [
+            "case", ["boolean", ["feature-state", "hover"], false],
+            ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 0.9, 50000, 5.4],
+            ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 0.5, 50000, 3],
           ],
-          [
-            "interpolate", ["linear"], ["zoom"],
-            5,  ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 0.5, 50000, 3],
-            10, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 1,   50000, 5],
-            14, ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 2,   50000, 8],
+          10, [
+            "case", ["boolean", ["feature-state", "hover"], false],
+            ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 1.8, 50000, 9],
+            ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 1,   50000, 5],
+          ],
+          14, [
+            "case", ["boolean", ["feature-state", "hover"], false],
+            ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 3.6, 50000, 14.4],
+            ["interpolate", ["linear"], ["coalesce", ["get", "imd"], 0], 0, 2,   50000, 8],
           ],
         ],
         "line-opacity": [
@@ -826,10 +828,10 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       paint: {
         "line-color": ["coalesce", ["get", "routeColor"], "#3b82f6"],
         "line-width": [
-          "case",
-          ["boolean", ["feature-state", "hover"], false],
-          ["interpolate", ["linear"], ["zoom"], 8, 2, 12, 5, 15, 8],
-          ["interpolate", ["linear"], ["zoom"], 8, 1, 12, 2.5, 15, 4],
+          "interpolate", ["linear"], ["zoom"],
+          8,  ["case", ["boolean", ["feature-state", "hover"], false], 2, 1],
+          12, ["case", ["boolean", ["feature-state", "hover"], false], 5, 2.5],
+          15, ["case", ["boolean", ["feature-state", "hover"], false], 8, 4],
         ],
         "line-opacity": [
           "case", ["boolean", ["feature-state", "hover"], false], 1, 0.7,

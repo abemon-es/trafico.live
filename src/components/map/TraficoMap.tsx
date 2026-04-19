@@ -165,7 +165,12 @@ function TraficoMapInner({
           if (popupRef.current) {
             try { popupRef.current.remove(); } catch { /* ignore */ }
           }
-          popupRef.current = new maplibregl.Popup({ closeButton: true, maxWidth: "300px" })
+          popupRef.current = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            maxWidth: "240px",
+            offset: 8,
+          })
             .setLngLat(e.lngLat)
             .setHTML(html)
             .addTo(map);

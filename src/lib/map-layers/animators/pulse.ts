@@ -190,8 +190,10 @@ export function installPulse(args: PulseInstallArgs): () => void {
       }
 
       const phase = (now % periodMs) / periodMs;
-      const offset = amplitude * Math.sin(phase * TWO_PI);
-      const radius = baseRadius + offset;
+      // Use rectified sine so radius only grows from base → base+amplitude
+      // (never below base). MapLibre rejects negative circle-radius.
+      const t = (Math.sin(phase * TWO_PI) + 1) / 2;
+      const radius = Math.max(0.01, baseRadius + amplitude * t);
 
       map.setPaintProperty(subLayerId, "circle-radius", radius);
 
