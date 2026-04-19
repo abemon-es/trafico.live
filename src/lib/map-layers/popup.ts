@@ -135,8 +135,8 @@ export function buildPopupHTML(
     if (formatted === null) continue;
     rows.push(
       `<div style="display:flex;justify-content:space-between;gap:6px;font-size:10px;line-height:1.3;">
-        <span style="color:#6b7280;">${escapeHtml(labelFor(key))}</span>
-        <span style="color:#111827;font-weight:500;text-align:right;">${formatted}</span>
+        <span style="color:#6b7280;flex:0 0 auto;">${escapeHtml(labelFor(key))}</span>
+        <span style="color:inherit;font-weight:500;text-align:right;word-break:break-all;">${formatted}</span>
       </div>`,
     );
     if (rows.length >= 3) break; // keep popup tight — max 3 rows
@@ -148,8 +148,8 @@ export function buildPopupHTML(
     : "";
 
   return `
-    <div style="min-width:160px;max-width:220px;font-family:system-ui,-apple-system,sans-serif;line-height:1.3;">
-      <div style="font-weight:600;color:#111827;font-size:11px;margin-bottom:3px;">${escapeHtml(title)}</div>
+    <div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.3;word-wrap:break-word;">
+      <div style="font-weight:600;color:inherit;font-size:11px;margin-bottom:3px;padding-right:14px;">${escapeHtml(title)}</div>
       <div style="color:#9ca3af;font-size:9px;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">${escapeHtml(layerLabel)}</div>
       ${rows.length > 0 ? `<div style="display:flex;flex-direction:column;gap:1px;">${rows.join("")}</div>` : ""}
       ${linkHtml}

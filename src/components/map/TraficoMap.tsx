@@ -171,8 +171,12 @@ function TraficoMapInner({
           popupRef.current = new maplibregl.Popup({
             closeButton: true,
             closeOnClick: true,
+            // MapLibre picks the best anchor (top/bottom/left/right) based on
+            // available viewport space, so the popup never clips off-screen.
+            anchor: undefined,
             maxWidth: "240px",
-            offset: 8,
+            offset: 14,
+            className: "trafico-popup",
           })
             .setLngLat(e.lngLat)
             .setHTML(html)

@@ -187,32 +187,70 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* ─── Compact MapLibre popup ──────────────────────────────────────────────
-   Default maplibre popup padding (10/15/10/10) is way too roomy for a data
-   tooltip. Override to a tight chip-style container. */
-.maplibregl-popup-content {
-  padding: 8px 10px !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12) !important;
+/* ─── TraficoMap popup ────────────────────────────────────────────────────
+   Tight chip-style, responsive (caps on mobile), fade-in, scrolls if the
+   feature data exceeds ~40vh so it never overflows the viewport. */
+.maplibregl-popup.trafico-popup {
+  /* Hard cap: 240 px on desktop, leave 16 px margin on mobile */
+  max-width: min(240px, calc(100vw - 24px)) !important;
+  z-index: 30;
+  /* MapLibre positions popups with translate3d; we layer a fade + slight lift
+     on top via transform (MapLibre also uses transform — we use filter/opacity
+     so we don't fight for the transform slot). */
+  animation: trafico-popup-in 150ms ease-out both;
+  will-change: opacity, filter;
 }
-.maplibregl-popup-close-button {
-  font-size: 16px !important;
-  padding: 0 4px !important;
+
+@keyframes trafico-popup-in {
+  from { opacity: 0; filter: blur(2px); }
+  to   { opacity: 1; filter: blur(0); }
+}
+
+.maplibregl-popup.trafico-popup .maplibregl-popup-content {
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14), 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.maplibregl-popup.trafico-popup .maplibregl-popup-close-button {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  padding: 2px 6px !important;
   color: #9ca3af !important;
   top: 2px !important;
   right: 4px !important;
-}
-.maplibregl-popup-close-button:hover {
-  color: #111827 !important;
   background: transparent !important;
 }
+.maplibregl-popup.trafico-popup .maplibregl-popup-close-button:hover {
+  color: #111827 !important;
+}
+
 /* Dark theme */
-:is(.dark) .maplibregl-popup-content {
+:is(.dark) .maplibregl-popup.trafico-popup .maplibregl-popup-content {
   background: #0f172a !important;
   color: #e2e8f0 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
-:is(.dark) .maplibregl-popup-tip {
+:is(.dark) .maplibregl-popup.trafico-popup .maplibregl-popup-tip {
   border-top-color: #0f172a !important;
   border-bottom-color: #0f172a !important;
+  border-left-color: #0f172a !important;
+  border-right-color: #0f172a !important;
+}
+:is(.dark) .maplibregl-popup.trafico-popup .maplibregl-popup-close-button:hover {
+  color: #f9fafb !important;
+}
+
+/* Mobile — popup hugs more of the viewport and anchors bottom if forced */
+@media (max-width: 640px) {
+  .maplibregl-popup.trafico-popup {
+    max-width: calc(100vw - 16px) !important;
+  }
+  .maplibregl-popup.trafico-popup .maplibregl-popup-content {
+    font-size: 11px;
+    max-height: 35vh;
+  }
 }
