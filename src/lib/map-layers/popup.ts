@@ -176,6 +176,24 @@ function extractTitle(props: FeatureProps, layerId?: string): string | null {
     if (road && name && !name.includes(road)) return `${road} — ${name}`;
     if (name) return name;
   }
+  if (layerId === "sensors" || layerId === "city-sensors") {
+    // Use description truncated to first clause — long DGT descriptions are
+    // structured as "(TYPE) STREET - REFS" — the street part is the useful bit.
+    const d = typeof props.description === "string" ? props.description.trim() : "";
+    if (d) {
+      // Trim parenthetical prefix and take up to 40 chars of meaningful text
+      const cleaned = d.replace(/^\([^)]*\)\s*/, "").split(/[(]/)[0].trim();
+      return cleaned.length > 40 ? cleaned.slice(0, 40).trim() + "…" : cleaned;
+    }
+  }
+  if (layerId === "incidents") {
+    // Prefer description, falling back to the layer label via return null.
+    const d = typeof props.description === "string" ? props.description.trim() : "";
+    if (d) {
+      const truncated = d.length > 48 ? d.slice(0, 48).trim() + "…" : d;
+      return truncated;
+    }
+  }
   for (const key of TITLE_KEYS) {
     const v = props[key];
     if (typeof v === "string" && v.trim()) return smartTitleCase(v.trim());
@@ -376,6 +394,8 @@ export function buildPopupHTML(
     // Sensors / city-sensors: real-time metrics go in the dashboard, not rows.
     if ((layerId === "sensors" || layerId === "city-sensors")
         && (key === "intensity" || key === "occupancy" || key === "load" || key === "serviceLevel")) continue;
+    // Description is used as the composite title for sensors/incidents — don't repeat it.
+    if ((layerId === "sensors" || layerId === "city-sensors" || layerId === "incidents") && key === "description") continue;
 
     const formatted = formatValue(key, value);
     if (formatted === null) continue;
