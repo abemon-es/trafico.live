@@ -37,7 +37,24 @@ const HIDDEN_KEYS = new Set([
   "createdAt", "updatedAt", "tileId", "x", "y", "z",
   // Broad schedule + url fields that don't render as simple rows
   "feedUrl", "thumbnailUrl", "streamUrl",
+  // Prisma cuid identifiers — noise unless they're the feature's main id
+  "operatorId", "stopId", "sensorId", "stationId", "stationCode",
+  // Tile-level metadata from clustering
+  "clustered", "point_count", "sqrt_point_count", "point_count_abbreviated",
 ]);
+
+/** DGT DATEX II incident types → Spanish labels. */
+const INCIDENT_TYPES: Record<string, string> = {
+  CONGESTION:       "Congestión",
+  ROADWORKS:        "Obras",
+  ACCIDENT:         "Accidente",
+  WEATHER:          "Meteorología adversa",
+  OBSTRUCTION:      "Obstáculo",
+  HAZARD:           "Peligro",
+  CLOSURE:          "Corte",
+  EVENT:            "Evento",
+  RESTRICTION:      "Restricción",
+};
 
 const LABEL_ALIASES: Record<string, string> = {
   sog:           "Velocidad (nudos)",
@@ -196,7 +213,11 @@ function formatValue(key: string, value: unknown): string | null {
     return value.toLocaleString("es-ES", { maximumFractionDigits: 3 });
   }
   if (typeof value === "boolean") return value ? "Sí" : "No";
-  if (typeof value === "string") return escapeHtml(smartTitleCase(value));
+  if (typeof value === "string") {
+    // Domain-specific value translations
+    if (key === "type" && INCIDENT_TYPES[value]) return INCIDENT_TYPES[value];
+    return escapeHtml(smartTitleCase(value));
+  }
   return null;
 }
 
@@ -256,6 +277,39 @@ function priceGridHTML(props: FeatureProps): string {
   return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;">${cells.join("")}</div>`;
 }
 
+/** Real-time sensor dashboard for Madrid / city traffic sensors. */
+function sensorDashHTML(props: FeatureProps): string {
+  const serviceLevel = props.serviceLevel;
+  const intensity = props.intensity;
+  const occupancy = props.occupancy;
+  const load = props.load;
+  const svcLabels = ["Fluido", "Denso", "Congestionado", "Cortado"];
+  const svcColors = ["#059669", "#eab308", "#f97316", "#dc2626"];
+  const level = typeof serviceLevel === "number" ? serviceLevel : -1;
+  const lvlLabel = level >= 0 && level <= 3 ? svcLabels[level] : null;
+  const lvlColor = level >= 0 && level <= 3 ? svcColors[level] : "#64748b";
+
+  const chip = lvlLabel
+    ? `<div style="display:inline-block;background:${lvlColor};color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;margin-bottom:6px;">${lvlLabel}</div>`
+    : "";
+
+  const cells = [
+    ["Intensidad",   typeof intensity === "number" ? `${intensity} veh/h` : null],
+    ["Ocupación",    typeof occupancy === "number" ? `${occupancy}%` : null],
+    ["Carga",        typeof load === "number" ? `${load}%` : null],
+  ]
+    .filter(([, v]) => v !== null)
+    .map(([label, v]) => `
+      <div style="background:rgba(0,0,0,0.05);border-radius:4px;padding:4px 6px;text-align:center;min-width:0;">
+        <div style="font-size:9px;color:#64748b;font-weight:500;">${label}</div>
+        <div style="font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;">${v}</div>
+      </div>`)
+    .join("");
+
+  if (!chip && !cells) return "";
+  return `${chip}${cells ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px;">${cells}</div>` : ""}`;
+}
+
 /** Severity chip (used for incidents / accidents / emergencies). */
 function severityChipHTML(severity: unknown): string {
   if (!severity || typeof severity !== "string") return "";
@@ -291,6 +345,9 @@ export function buildPopupHTML(
   if (layerId === "gas-stations" || layerId === "maritime-fuel" || layerId === "portugal-gas") {
     extraTop.push(priceGridHTML(props));
   }
+  if (layerId === "sensors" || layerId === "city-sensors") {
+    extraTop.push(sensorDashHTML(props));
+  }
 
   // Severity chip appended to title for incidents/emergencies/accidents
   const sevChip = (layerId === "incidents" || layerId === "accidents" || layerId === "emergencies")
@@ -316,6 +373,9 @@ export function buildPopupHTML(
     if (layerId === "road-segments" && (key === "roadNumber" || key === "kmStart" || key === "kmEnd")) continue;
     // Camera: hide roadNumber when composite "ROAD — name" title already uses it.
     if (layerId === "cameras" && key === "roadNumber" && typeof props.name === "string" && !props.name.includes(String(props.roadNumber))) continue;
+    // Sensors / city-sensors: real-time metrics go in the dashboard, not rows.
+    if ((layerId === "sensors" || layerId === "city-sensors")
+        && (key === "intensity" || key === "occupancy" || key === "load" || key === "serviceLevel")) continue;
 
     const formatted = formatValue(key, value);
     if (formatted === null) continue;
