@@ -29,7 +29,11 @@ import { readFileSync, writeFileSync } from 'node:fs'; \
 const src = readFileSync('$f', 'utf8'); \
 const { code } = transformSync(src, { loader: 'ts', format: 'esm', target: 'es2022' }); \
 writeFileSync('$out', code);" || echo "skip $f"; \
-    done
+    done \
+ && rm -f /src/lib/*.ts
+# .ts files deleted so tsx doesn't prefer them over the compiled .js siblings
+# on .js import specifiers (its default "prefer source" behavior drops named
+# exports when the .ts goes through tsx's on-the-fly ESM loader).
 
 # Remove devDependencies after generate
 RUN npm prune --omit=dev
