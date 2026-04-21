@@ -15,6 +15,13 @@ COPY prisma/schema.prisma ./prisma/
 COPY prisma.config.ts ./
 RUN npx prisma generate --no-hints
 
+# Compile shared src/lib .ts → .js (see runtime stage note on Sentry/IITM)
+COPY src/lib/ /src/lib/
+RUN npx tsc \
+    --target ES2022 --module ESNext --moduleResolution bundler \
+    --skipLibCheck --noEmit false --emitDeclarationOnly false \
+    --declaration false /src/lib/*.ts || true
+
 # Remove devDependencies after generate
 RUN npm prune --omit=dev
 
@@ -42,12 +49,14 @@ COPY services/collector/ ./
 # In the monorepo, that path resolves from
 # services/collector/tasks/<task>/ four levels up to the repo root, so the
 # Next.js `src/lib/` sits next to `services/`. Inside the container, cwd is
-# /app (not the repo root), so the same four-up walk lands at absolute /src/lib/.
-# Placing the files at /src/lib keeps the imports working unchanged.
-# Without this, TASK=alert-matcher / social-broadcast / monthly-report die
-# with ERR_MODULE_NOT_FOUND and the Go cron wrapper reports
-# 'error running command: exit status 1' on every 5-min tick.
-COPY src/lib/ /src/lib/
+# /app, so the same four-up walk lands at absolute /src/lib/.
+#
+# Compiled .js files are produced in the builder stage (where devDeps incl.
+# typescript are available). Sentry's @sentry/node loads IITM which hooks
+# ESM resolution — when collector tasks `import { x } from "…/src/lib/foo.js"`
+# and only the .ts exists, IITM+tsx transpiles but drops all named exports
+# (only `default` survives). Real .js next to each .ts fixes this.
+COPY --from=builder /src/lib/ /src/lib/
 
 # Copy ALL crontabs, select at runtime via CRONTAB_TIER env
 COPY services/collector/crontabs/ ./crontabs/
