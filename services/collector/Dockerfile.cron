@@ -73,7 +73,7 @@ COPY services/collector/ ./
 #      We therefore place the compiled .js inside /app/src/lib/ and symlink
 #      /src/lib → /app/src/lib so the four-up import resolves unchanged.
 COPY --from=builder /src/lib/ /app/src/lib/
-RUN ln -s /app/src/lib /src/lib
+RUN mkdir -p /src && rm -rf /src/lib && ln -s /app/src/lib /src/lib
 
 # Copy ALL crontabs, select at runtime via CRONTAB_TIER env
 COPY services/collector/crontabs/ ./crontabs/
