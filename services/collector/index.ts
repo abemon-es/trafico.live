@@ -71,6 +71,9 @@ const VALID_TASKS = [
   "voyage-detector",
   // Weather radar
   "eumetsat-radar",
+  // Alert matching + social broadcast (realtime tier, every 5 min)
+  "alert-matcher",
+  "social-broadcast",
 ];
 
 if (!TASK) {
