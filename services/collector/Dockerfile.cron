@@ -59,17 +59,21 @@ COPY --from=builder /app/prisma.config.ts ./
 COPY services/collector/ ./
 
 # Shared libs imported by collector tasks via ../../../../src/lib/*.js.
-# In the monorepo, that path resolves from
-# services/collector/tasks/<task>/ four levels up to the repo root, so the
-# Next.js `src/lib/` sits next to `services/`. Inside the container, cwd is
-# /app, so the same four-up walk lands at absolute /src/lib/.
+# In the monorepo, that path resolves from services/collector/tasks/<task>/
+# four levels up to the repo root, so Next.js `src/lib/` sits next to
+# `services/`. Inside the container, cwd is /app, so the four-up walk lands
+# at absolute /src/lib/.
 #
-# Compiled .js files are produced in the builder stage (where devDeps incl.
-# typescript are available). Sentry's @sentry/node loads IITM which hooks
-# ESM resolution — when collector tasks `import { x } from "…/src/lib/foo.js"`
-# and only the .ts exists, IITM+tsx transpiles but drops all named exports
-# (only `default` survives). Real .js next to each .ts fixes this.
-COPY --from=builder /src/lib/ /src/lib/
+# Two tsx/ESM quirks converge here:
+#   1. tsx prefers .ts siblings of .js import specifiers, then its ESM
+#      transpile loader drops named exports — only `default` survives.
+#      Deleted the .ts files in the builder stage, leaving only .js.
+#   2. Even with only .js, tsx fails to resolve paths OUTSIDE its cwd root
+#      (confirmed: import from "./lib/…" works, from "/src/lib/…" doesn't).
+#      We therefore place the compiled .js inside /app/src/lib/ and symlink
+#      /src/lib → /app/src/lib so the four-up import resolves unchanged.
+COPY --from=builder /src/lib/ /app/src/lib/
+RUN ln -s /app/src/lib /src/lib
 
 # Copy ALL crontabs, select at runtime via CRONTAB_TIER env
 COPY services/collector/crontabs/ ./crontabs/
