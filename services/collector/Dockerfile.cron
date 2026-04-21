@@ -38,12 +38,16 @@ COPY --from=builder /app/prisma.config.ts ./
 
 COPY services/collector/ ./
 
-# Shared libs imported by collector tasks via ../../../../src/lib/*.js
-# (alert-matcher, social-broadcast, bluesky, x-api, telegram, db, etc.).
+# Shared libs imported by collector tasks via ../../../../src/lib/*.js.
+# In the monorepo, that path resolves from
+# services/collector/tasks/<task>/ four levels up to the repo root, so the
+# Next.js `src/lib/` sits next to `services/`. Inside the container, cwd is
+# /app (not the repo root), so the same four-up walk lands at absolute /src/lib/.
+# Placing the files at /src/lib keeps the imports working unchanged.
 # Without this, TASK=alert-matcher / social-broadcast / monthly-report die
 # with ERR_MODULE_NOT_FOUND and the Go cron wrapper reports
 # 'error running command: exit status 1' on every 5-min tick.
-COPY src/lib/ ./src/lib/
+COPY src/lib/ /src/lib/
 
 # Copy ALL crontabs, select at runtime via CRONTAB_TIER env
 COPY services/collector/crontabs/ ./crontabs/
