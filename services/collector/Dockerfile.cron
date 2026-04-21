@@ -15,12 +15,21 @@ COPY prisma/schema.prisma ./prisma/
 COPY prisma.config.ts ./
 RUN npx prisma generate --no-hints
 
-# Compile shared src/lib .ts → .js (see runtime stage note on Sentry/IITM)
+# Compile shared src/lib .ts → .js (see runtime stage note on Sentry/IITM).
+# Using esbuild (already present via tsx) instead of tsc: we only need type
+# stripping, and esbuild doesn't refuse to emit when unrelated files in the
+# same dir have missing Next.js deps.
 COPY src/lib/ /src/lib/
-RUN npx tsc \
-    --target ES2022 --module ESNext --moduleResolution bundler \
-    --skipLibCheck --noEmit false --emitDeclarationOnly false \
-    --declaration false /src/lib/*.ts || true
+RUN for f in /src/lib/*.ts; do \
+      [ -f "$f" ] || continue; \
+      out="${f%.ts}.js"; \
+      node --input-type=module -e "\
+import { transformSync } from 'esbuild'; \
+import { readFileSync, writeFileSync } from 'node:fs'; \
+const src = readFileSync('$f', 'utf8'); \
+const { code } = transformSync(src, { loader: 'ts', format: 'esm', target: 'es2022' }); \
+writeFileSync('$out', code);" || echo "skip $f"; \
+    done
 
 # Remove devDependencies after generate
 RUN npm prune --omit=dev
