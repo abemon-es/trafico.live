@@ -9,6 +9,7 @@
  */
 import * as Sentry from "@sentry/node";
 import { getPrisma, getPool } from "./shared/prisma.js";
+import { heartbeat } from "./shared/heartbeat.js";
 
 // Initialize Sentry for collector error tracking
 // GlitchTip uses UUID keys with hyphens; Sentry SDK requires \w+ — strip hyphens
@@ -211,12 +212,42 @@ async function main() {
   try {
     const prisma = getPrisma();
 
+    // Capture pre-run heartbeat timestamp so we can detect collectors that
+    // returned successfully without writing their own heartbeat (e.g. empty
+    // upstream feed → early return). Without this, a healthy job that
+    // produces no rows looks identical to a stuck job from the alert side.
+    const beforeHeartbeat = await prisma.collectorHeartbeat
+      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true } })
+      .then((r) => r?.lastRunAt ?? null)
+      .catch(() => null);
+
     // Run the primary collector
     const taskModule = await import(`./tasks/${TASK}/collector.js`);
     await taskModule.run(prisma);
 
     const collectorElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`[dispatcher] Task ${TASK} completed in ${collectorElapsed}s`);
+
+    // Fallback heartbeat: if the collector returned successfully but did
+    // NOT update its own heartbeat row (early return on empty feed, etc.),
+    // record a dispatcher-level "ok" heartbeat so the staleness alert
+    // doesn't fire on healthy-but-quiet runs. If the collector did write
+    // its own heartbeat (with possibly more specific status="error"/"partial"
+    // and richer meta), we leave it untouched.
+    const afterHeartbeat = await prisma.collectorHeartbeat
+      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true } })
+      .then((r) => r?.lastRunAt ?? null)
+      .catch(() => null);
+    const collectorWroteHeartbeat =
+      afterHeartbeat !== null &&
+      afterHeartbeat.getTime() !== (beforeHeartbeat?.getTime() ?? -1);
+    if (!collectorWroteHeartbeat) {
+      await heartbeat(prisma, TASK!, "ok", {
+        dispatcherFallback: true,
+        reason:
+          "collector completed without writing its own heartbeat (likely empty feed / early return)",
+      });
+    }
 
     // Run post-ingestion insight triggers (if any)
     const triggers = await getPostIngestionTriggers(TASK!);
