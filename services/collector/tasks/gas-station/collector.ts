@@ -10,11 +10,13 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { createHash } from "crypto";
 import { PROVINCES } from "../../shared/provinces.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
 const MINETUR_API_URL =
   "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/";
+const REDIS_HASH_KEY = "trafico:gas-station:body-hash";
 
 // Provincias con fiscalidad especial (excluir de "national" aggregation)
 const TAX_FREE_PROVINCES = ["35", "38", "51", "52"];
@@ -116,6 +118,14 @@ export async function run(prisma: PrismaClient) {
 
   console.log(`[gas-station] Starting at ${now.toISOString()}`);
 
+  // ── 0. Open Redis for dedup hash (best-effort, non-blocking) ──────────
+  let redis: import("ioredis").default | null = null;
+  try {
+    const { default: Redis } = await import("ioredis");
+    const url = process.env.REDIS_URL;
+    if (url) redis = new Redis(url);
+  } catch { /* Redis unavailable — skip dedup, proceed normally */ }
+
   // ── 1. Fetch from MINETUR API ──────────────────────────────────────────
 
   console.log(`[gas-station] Fetching from MINETUR API...`);
@@ -128,10 +138,28 @@ export async function run(prisma: PrismaClient) {
   });
 
   if (!response.ok) {
+    if (redis) await redis.quit().catch(() => {});
     throw new Error(`MINETUR API error: ${response.status} ${response.statusText}`);
   }
 
-  const data: APIResponse = await response.json();
+  // Hash the raw response body to detect unchanged payloads.
+  // MINETUR updates prices at most 3×/day; this skips re-processing on identical responses.
+  const rawBody = await response.text();
+  const bodyHash = createHash("md5").update(rawBody).digest("hex");
+
+  if (redis) {
+    const prevHash = await redis.get(REDIS_HASH_KEY).catch(() => null);
+    if (prevHash === bodyHash) {
+      console.log(`[gas-station] Response unchanged (hash ${bodyHash}) — skipping full re-process`);
+      await redis.quit().catch(() => {});
+      await heartbeat(prisma, "gas-station", "ok", { skipped: true, reason: "unchanged" });
+      return;
+    }
+    await redis.set(REDIS_HASH_KEY, bodyHash, "EX", 86400).catch(() => {}); // expire after 24h
+    await redis.quit().catch(() => {});
+  }
+
+  const data: APIResponse = JSON.parse(rawBody);
   const stations = data.ListaEESSPrecio;
   const priceUpdateTime = parseAPIDate(data.Fecha);
 

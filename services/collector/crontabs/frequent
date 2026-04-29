@@ -10,7 +10,8 @@
 # Lockfile guard: skip if a previous run is still in progress (takes 2-4h for 55k vessels)
 0 * * * * flock -n /tmp/voyage-detector.lock -c 'TASK=voyage-detector npx tsx index.ts 2>&1' || echo "[voyage-detector] skipped — previous run still in progress"
 
+# SASEMAR: historical archive (2019-2024), one-shot only — do NOT re-enable on cron
 # SASEMAR maritime emergencies — historical ArcGIS upsert (every 15 min)
 # Source: opendata-sasemar.hub.arcgis.com (2019-2024 historical records)
 # Idempotent: upserts by external ID; safe to run frequently
-*/15 * * * * TASK=sasemar npx tsx index.ts 2>&1
+#*/15 * * * * TASK=sasemar npx tsx index.ts 2>&1

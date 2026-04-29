@@ -201,16 +201,11 @@ async function cleanupOldPositions(prisma: PrismaClient): Promise<void> {
   }
 }
 
-export async function run(prisma: PrismaClient): Promise<void> {
-  const authHeader = buildAuthHeader();
-  const isAuthenticated = !!authHeader;
-
-  log(TASK, `Starting — mode: ${isAuthenticated ? "authenticated" : "anonymous"}`);
-
-  // Ensure airport catalog is seeded
-  await seedAirports(prisma);
-
-  // Fetch both bounding boxes
+/**
+ * Single poll: fetch both Spanish bboxes and store results.
+ * Returns the count of positions stored, or -1 if rate-limited.
+ */
+async function pollOnce(prisma: PrismaClient, authHeader: string | undefined): Promise<number> {
   const allStates = new Map<string, StateVector>();
   let rateLimited = false;
 
@@ -226,12 +221,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
 
     if (states === null) {
-      // Rate limited — abort this run
       rateLimited = true;
       break;
     }
 
-    // Deduplicate by icao24 (keep first occurrence — bboxes don't overlap)
     for (const state of states) {
       const icao24 = state[FIELD.ICAO24];
       if (icao24 && !allStates.has(icao24)) {
@@ -242,45 +235,36 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   if (rateLimited) {
     log(TASK, "Skipped due to rate limit");
-    return;
+    return -1;
   }
-
-  log(TASK, `Fetched ${allStates.size} unique aircraft positions`);
 
   if (allStates.size === 0) {
-    log(TASK, "No aircraft positions returned — nothing to store");
-    await cleanupOldPositions(prisma);
-    return;
+    log(TASK, "No aircraft positions returned");
+    return 0;
   }
 
-  // Filter out states with missing coordinates (on-ground with no position)
   const validStates = Array.from(allStates.values()).filter((s) => {
     const lat = s[FIELD.LATITUDE];
     const lng = s[FIELD.LONGITUDE];
     return lat !== null && lng !== null && lat !== 0 && lng !== 0;
   });
 
-  log(TASK, `Storing ${validStates.length} positions with valid coordinates`);
+  log(TASK, `Storing ${validStates.length} positions (${allStates.size} fetched)`);
 
-  // Batch insert aircraft positions
   const BATCH_SIZE = 500;
   let stored = 0;
 
   for (let i = 0; i < validStates.length; i += BATCH_SIZE) {
     const batch = validStates.slice(i, i + BATCH_SIZE);
-
     try {
       await prisma.aircraftPosition.createMany({
         data: batch.map((s) => {
           const baroAlt = s[FIELD.BARO_ALTITUDE];
           const geoAlt = s[FIELD.GEO_ALTITUDE];
-          // Prefer baro altitude, fall back to geo altitude; convert metres to metres (already metres)
           const altMetres = baroAlt ?? geoAlt;
-
           const velocity = s[FIELD.VELOCITY];
           const track = s[FIELD.TRUE_TRACK];
           const vRate = s[FIELD.VERTICAL_RATE];
-
           return {
             icao24: s[FIELD.ICAO24],
             callsign: s[FIELD.CALLSIGN]?.trim() || null,
@@ -294,7 +278,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
             originCountry: s[FIELD.ORIGIN_COUNTRY] || null,
           };
         }),
-        skipDuplicates: false, // Each run creates new snapshot rows
+        skipDuplicates: false,
       });
       stored += batch.length;
     } catch (err) {
@@ -302,11 +286,54 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  log(TASK, `Stored ${stored} aircraft positions`);
+  return stored;
+}
+
+export async function run(prisma: PrismaClient): Promise<void> {
+  const authHeader = buildAuthHeader();
+  const isAuthenticated = !!authHeader;
+
+  log(TASK, `Starting — mode: ${isAuthenticated ? "authenticated" : "anonymous"}`);
+
+  // Ensure airport catalog is seeded
+  await seedAirports(prisma);
+
+  // Authenticated mode: run multiple polls per cron invocation (OpenSky allows 10s minimum).
+  // Cron fires every 4 minutes; we run up to 7 polls (4 min / ~30s each) with a hard 200s deadline.
+  // Anonymous mode: single poll per cron invocation (conserves the 400 req/day limit).
+  // Inner loop runs multiple polls if authenticated to use the 10s minimum; single poll otherwise.
+  const DEADLINE_MS = 200_000; // 200s < 4min cron interval — no overlap
+  const POLL_INTERVAL_MS = isAuthenticated ? 30_000 : 0;
+  const MAX_PASSES = isAuthenticated ? 7 : 1;
+
+  const startTime = Date.now();
+  let totalStored = 0;
+
+  for (let pass = 1; pass <= MAX_PASSES; pass++) {
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= DEADLINE_MS) {
+      log(TASK, `Deadline (${DEADLINE_MS}ms) reached before pass ${pass} — stopping`);
+      break;
+    }
+
+    log(TASK, `Poll ${pass}/${MAX_PASSES}`);
+    const stored = await pollOnce(prisma, authHeader);
+    if (stored === -1) break; // rate-limited — abort loop
+    totalStored += stored;
+
+    if (pass < MAX_PASSES && POLL_INTERVAL_MS > 0) {
+      const sleepMs = POLL_INTERVAL_MS - (Date.now() - startTime - elapsed);
+      if (sleepMs > 0 && (Date.now() - startTime) + sleepMs < DEADLINE_MS) {
+        await new Promise<void>((resolve) => setTimeout(resolve, sleepMs));
+      }
+    }
+  }
+
+  log(TASK, `Stored ${totalStored} aircraft positions`);
 
   // Cleanup old positions (rolling 1h window)
   await cleanupOldPositions(prisma);
 
   log(TASK, "Done");
-  await heartbeat(prisma, TASK, stored > 0 ? "ok" : "partial", { stored });
+  await heartbeat(prisma, TASK, totalStored > 0 ? "ok" : "partial", { stored: totalStored, authenticated: isAuthenticated });
 }

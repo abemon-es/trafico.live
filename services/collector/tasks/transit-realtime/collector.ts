@@ -243,13 +243,10 @@ async function processFeed(prisma: PrismaClient, feed: RealtimeFeed): Promise<nu
 // ── Main entry point ───────────────────────────────────────────────────────────
 
 /**
- * Single-shot pass: polls all enabled feeds in parallel and writes positions.
- * Called by the unified collector dispatcher (TASK=transit-realtime).
- * Never throws — all errors are captured and logged per-feed.
+ * Single poll pass: polls all enabled feeds in parallel and writes positions.
+ * Called by runOnce() below; never throws — all errors are captured per-feed.
  */
-export async function run(prisma: PrismaClient): Promise<void> {
-  log(TASK, "Starting transit realtime vehicle positions collection");
-
+async function pollOnce(prisma: PrismaClient): Promise<{ written: number; failed: number }> {
   const enabledFeeds = REALTIME_FEEDS.filter((f) => f.enabled);
   const disabledFeeds = REALTIME_FEEDS.filter((f) => !f.enabled);
 
@@ -262,7 +259,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   if (enabledFeeds.length === 0) {
     log(TASK, "No enabled feeds — nothing to do");
-    return;
+    return { written: 0, failed: 0 };
   }
 
   log(TASK, `Polling ${enabledFeeds.length} feed(s) in parallel: ${enabledFeeds.map((f) => f.operatorSlug).join(", ")}`);
@@ -287,11 +284,53 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  log(TASK, `Done — total positions written this pass: ${totalWritten}`);
-  await heartbeat(prisma, TASK, feedsFailed === 0 ? "ok" : (totalWritten > 0 ? "partial" : "error"), {
+  return { written: totalWritten, failed: feedsFailed };
+}
+
+/**
+ * Entry point called by the unified dispatcher (TASK=transit-realtime).
+ *
+ * Cron fires once per minute (* * * * *). To approach 30s update granularity
+ * we run two poll passes per cron invocation with a 30s gap, exiting before
+ * the next minute fires. A hard deadline at 50s prevents overlapping with the
+ * next cron invocation.
+ */
+export async function run(prisma: PrismaClient): Promise<void> {
+  log(TASK, "Starting transit realtime vehicle positions collection (2-pass, 30s interval)");
+
+  const DEADLINE_MS = 50_000; // hard exit before next 60s cron window
+  const PASS_INTERVAL_MS = 30_000;
+  const startTime = Date.now();
+
+  let totalWritten = 0;
+  let totalFailed = 0;
+
+  for (let pass = 1; pass <= 2; pass++) {
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= DEADLINE_MS) {
+      log(TASK, `Deadline (${DEADLINE_MS}ms) reached before pass ${pass} — skipping`);
+      break;
+    }
+
+    log(TASK, `Pass ${pass}/2`);
+    const { written, failed } = await pollOnce(prisma);
+    totalWritten += written;
+    totalFailed += failed;
+    log(TASK, `Pass ${pass} done — ${written} positions written`);
+
+    // Only sleep between passes, not after the last one
+    if (pass < 2) {
+      const remaining = PASS_INTERVAL_MS - (Date.now() - startTime - elapsed);
+      if (remaining > 0 && (Date.now() - startTime) + remaining < DEADLINE_MS) {
+        await new Promise<void>((resolve) => setTimeout(resolve, remaining));
+      }
+    }
+  }
+
+  log(TASK, `Done — total positions written this invocation: ${totalWritten}`);
+  await heartbeat(prisma, TASK, totalFailed === 0 ? "ok" : (totalWritten > 0 ? "partial" : "error"), {
     written: totalWritten,
-    feeds: enabledFeeds.length,
-    feedsFailed,
+    feedsFailed: totalFailed,
   });
 
   // ── TODO: Retention ───────────────────────────────────────────────────────

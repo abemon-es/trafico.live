@@ -1,6 +1,12 @@
 # Weekly collectors — Sunday early morning
 # Staggered 30-min intervals. Heaviest: transit-gtfs (145 auto-discovered feeds, Xunta 141MB)
 
+# CNMC publishes weekly aggregates; daily was unnecessary churn (data unchanged 6/7 days)
+0 2 * * 0 TASK=cnmc-fuel npx tsx index.ts 2>&1
+
+# MobilityData GTFS catalog updates infrequently; collector docstring already says "runs weekly"
+30 2 * * 0 TASK=mobilitydata-sync NODE_OPTIONS=--max-old-space-size=512 npx tsx index.ts 2>&1
+
 0 3 * * 0 TASK=radar npx tsx index.ts 2>&1 && touch /tmp/last-run
 30 3 * * 0 TASK=speedlimit npx tsx index.ts 2>&1
 0 4 * * 0 TASK=risk-zones npx tsx index.ts 2>&1

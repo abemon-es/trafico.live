@@ -2,8 +2,11 @@
  * Typesense Sync Collector — 14 collections, parallel load + parallel write
  *
  * Modes:
- *   - Full sync (default): drop+recreate all collections (purges orphans)
+ *   - Incremental (default via cron): SYNC_MODE=incremental — delta upsert for changed records only
+ *   - Full re-index (manual/recovery): omit SYNC_MODE or set SYNC_MODE=full — drop+recreate all collections
  *   - Single collection: SYNC_COLLECTION=gas_stations (post-ingestion upsert)
+ *
+ * Cron runs with SYNC_MODE=incremental (daily at 05:00). Full re-index requires SYNC_MODE=full or no env var.
  *
  * Performance:
  *   - All DB loads run in parallel (Promise.allSettled)

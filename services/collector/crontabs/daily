@@ -4,11 +4,11 @@
 
 30 0 * * * TASK=daily-stats npx tsx index.ts 2>&1
 
-# CNMC provincial fuel price history (daily, before MINETUR morning fetch)
-0 2 * * * TASK=cnmc-fuel npx tsx index.ts 2>&1
+# CNMC provincial fuel price history — moved to weekly (CNMC publishes weekly aggregates)
+# See crontabs/weekly for the Sunday 02:00 entry.
 
-# MobilityData GTFS catalog sync + historical snapshots (downloads ~2MB CSV + optional ZIPs)
-30 2 * * * TASK=mobilitydata-sync NODE_OPTIONS=--max-old-space-size=512 npx tsx index.ts 2>&1
+# MobilityData GTFS catalog sync — moved to weekly (catalog updates infrequently)
+# See crontabs/weekly for the Sunday 02:30 entry.
 
 # INE transport statistics (light — JSON API calls, ~50MB)
 30 3 * * * TASK=ine-stats npx tsx index.ts 2>&1
@@ -18,7 +18,7 @@
 # AENA airport seeding + stats (placeholder — Excel parsing TBD)
 30 4 * * * TASK=aena-stats npx tsx index.ts 2>&1
 
-0 5 * * * TASK=typesense-sync npx tsx index.ts 2>&1
+0 5 * * * SYNC_MODE=incremental TASK=typesense-sync npx tsx index.ts 2>&1
 0 6 * * * TASK=charger NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1
 
 # AEMET daily climate update (after station data stabilizes for previous day)

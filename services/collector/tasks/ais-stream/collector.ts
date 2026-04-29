@@ -20,25 +20,12 @@ import { log, logError } from "../../shared/utils.js";
 
 const TASK = "ais-stream";
 
-// Bounding boxes for all Spanish waters [SW, NE] as [lat, lng]
-// Major shipping regions — global coverage via regional bounding boxes
-// aisstream.io free tier rejects single worldwide bbox, so we use regional ones
-const WORLD_BBOXES = [
-  // W Mediterranean + Iberia + NW Africa + Canarias
-  [[25, -20], [48, 15]],
-  // E Mediterranean + Black Sea + Suez + Persian Gulf
-  [[10, 15], [48, 65]],
-  // NW Europe + North Sea + Baltic + Scandinavia
-  [[48, -15], [72, 35]],
-  // E Coast Americas + Caribbean + Gulf of Mexico
-  [[5, -100], [50, -40]],
-  // East Asia + SE Asia + Indian Ocean
-  [[-10, 65], [45, 145]],
-  // W Coast Americas
-  [[-55, -130], [55, -100]],
-  // Oceania + W Pacific
-  [[-50, 110], [5, 180]],
-];
+// Trafico.live is a Spanish product; global subscription was 7× overzealous and stored vessels we don't surface.
+// Single bbox covering Spanish exclusive economic zone: Peninsula + Canary Islands + Balearic Islands.
+// Override via AIS_BBOX env var (JSON array, e.g. '[[25,-20],[48,15]]') for ad-hoc expansion.
+const SPANISH_WATERS_BBOX: number[][][] = process.env.AIS_BBOX
+  ? JSON.parse(process.env.AIS_BBOX) as number[][][]
+  : [[[25, -20], [48, 15]]];
 
 // MMSI Maritime Identification Digit (MID) → country flag mapping
 // First 3 digits of MMSI encode the country
@@ -330,7 +317,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
       url: "wss://stream.aisstream.io/v0/stream",
       subscriptionMessage: {
         APIKey: apiKey,
-        BoundingBoxes: WORLD_BBOXES,
+        BoundingBoxes: SPANISH_WATERS_BBOX,
         FilterMessageTypes: [
           "PositionReport",
           "ShipStaticData",
