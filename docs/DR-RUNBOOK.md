@@ -117,8 +117,8 @@ ssh primary DB_NAME=le_trafico DB_USER=trafico_admin /opt/trafico/bin/backup-ver
 
 ```bash
 scp bin/backup-restore-test.sh hetzner-dev:/opt/trafico/bin/backup-restore-test.sh
-ssh hetzner-dev chmod +x /opt/trafico/bin/backup-restore-test.sh
-ssh hetzner-dev 'crontab -l 2>/dev/null; echo "0 3 * * 1 /opt/trafico/bin/backup-restore-test.sh >> /var/log/trafico-restore-test.log 2>&1"' | ssh hetzner-dev crontab -
+ssh database-primary chmod +x /opt/trafico/bin/backup-restore-test.sh
+ssh database-primary 'crontab -l 2>/dev/null; echo "0 3 * * 1 /opt/trafico/bin/backup-restore-test.sh >> /var/log/trafico-restore-test.log 2>&1"' | ssh database-primary crontab -
 ```
 
 ---

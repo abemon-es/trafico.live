@@ -68,19 +68,19 @@ rsync -avP /tmp/spain-iberia.pmtiles hetzner-prod:/opt/trafico/tiles/tiles/spain
 ### Restart container
 
 ```bash
-ssh hetzner-prod "docker restart trafico-tiles"
+ssh compute "docker restart trafico-tiles"
 ```
 
 ### View logs
 
 ```bash
-ssh hetzner-prod "docker logs trafico-tiles --tail 20"
+ssh compute "docker logs trafico-tiles --tail 20"
 ```
 
 ### Check Traefik routing
 
 ```bash
-ssh hetzner-prod "docker logs coolify-proxy 2>&1 | grep tiles | tail -5"
+ssh compute "docker logs coolify-proxy 2>&1 | grep tiles | tail -5"
 ```
 
 ### Verify endpoints

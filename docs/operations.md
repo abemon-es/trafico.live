@@ -4,8 +4,8 @@
 
 | Server | SSH | Role |
 |--------|-----|------|
-| hetzner-prod | `ssh hetzner-prod` | Coolify host, app + collectors |
-| hetzner-dev | `ssh hetzner-dev` | PostgreSQL, PgBouncer, Redis |
+| hetzner-prod | `ssh compute` | Coolify host, app + collectors |
+| hetzner-dev | `ssh database-primary` | PostgreSQL, PgBouncer, Redis |
 
 ## Deployment
 
@@ -25,7 +25,7 @@ Manual deploy via Coolify UI: `https://server.abemon.es` → trafico-live → De
 When collector code changes, rebuild on the server:
 
 ```bash
-ssh hetzner-prod
+ssh compute
 cd /opt/trafico/repo && git pull
 docker build -f services/collector/Dockerfile -t trafico-collector:latest .
 ```
@@ -39,7 +39,7 @@ Note: collectors run from the Docker image, not from the repo. The image must be
 All collectors are in root crontab on hetzner-prod:
 
 ```bash
-ssh hetzner-prod "crontab -l | grep run-collector"
+ssh compute "crontab -l | grep run-collector"
 ```
 
 | Task | Schedule | Duration |
@@ -58,19 +58,19 @@ ssh hetzner-prod "crontab -l | grep run-collector"
 ### Run a Collector Manually
 
 ```bash
-ssh hetzner-prod "/opt/trafico/run-collector.sh incident"
+ssh compute "/opt/trafico/run-collector.sh incident"
 ```
 
 ### Check Collector Logs
 
 ```bash
-ssh hetzner-prod "tail -50 /opt/trafico/logs/incident.log"
+ssh compute "tail -50 /opt/trafico/logs/incident.log"
 ```
 
 ### Collector Env
 
 ```bash
-ssh hetzner-prod "cat /opt/trafico/collector.env"
+ssh compute "cat /opt/trafico/collector.env"
 # DATABASE_URL, REDIS_URL, AEMET_API_KEY, NODE_ENV, TZ
 ```
 
@@ -113,10 +113,10 @@ To rotate the password: `ALTER ROLE trafico_admin PASSWORD '...'` in psql, then 
 
 ```bash
 # Via PgBouncer (standard)
-ssh hetzner-prod "docker exec coolify-db psql -h 10.100.0.1 -p 6436 -U apps le_trafico"
+ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps le_trafico"
 
 # Direct PG (for migrations, schema changes)
-ssh hetzner-prod "docker exec coolify-db psql -h 10.100.0.1 -p 5435 -U apps le_trafico"
+ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 5435 -U apps le_trafico"
 ```
 
 ### Run Prisma Migrations
@@ -136,7 +136,7 @@ npm run db:studio
 ### Check Data Freshness
 
 ```bash
-ssh hetzner-prod "docker exec coolify-db psql -h 10.100.0.1 -p 6436 -U apps le_trafico -c \"
+ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps le_trafico -c \"
   SELECT 'incidents' as table_name, COUNT(*) as total, MAX(\\\"startedAt\\\") as latest FROM \\\"TrafficIncident\\\" WHERE \\\"isActive\\\" = true
   UNION ALL
   SELECT 'v16', COUNT(*), MAX(\\\"activatedAt\\\") FROM \\\"V16BeaconEvent\\\" WHERE \\\"isActive\\\" = true
@@ -152,13 +152,13 @@ ssh hetzner-prod "docker exec coolify-db psql -h 10.100.0.1 -p 6436 -U apps le_t
 ### Flush a Cache Key
 
 ```bash
-ssh hetzner-prod "docker exec coolify-redis redis-cli -h 10.100.0.1 -p 6385 -a PASSWORD DEL api:fuel-prices:today"
+ssh compute "docker exec coolify-redis redis-cli -h 10.100.0.3 -p 6385 -a PASSWORD DEL api:fuel-prices:today"
 ```
 
 ### List Cache Keys
 
 ```bash
-ssh hetzner-prod "docker exec coolify-redis redis-cli -h 10.100.0.1 -p 6385 -a PASSWORD KEYS 'api:*'"
+ssh compute "docker exec coolify-redis redis-cli -h 10.100.0.3 -p 6385 -a PASSWORD KEYS 'api:*'"
 ```
 
 ## Monitoring
@@ -172,13 +172,13 @@ curl -sf https://trafico.live/api/health
 ### Check Running Containers
 
 ```bash
-ssh hetzner-prod "docker ps --format '{{.Names}}\t{{.Status}}' | grep trafico"
+ssh compute "docker ps --format '{{.Names}}\t{{.Status}}' | grep trafico"
 ```
 
 ### Check Coolify Logs
 
 ```bash
-ssh hetzner-prod "docker logs atgqhoy0dfhohmdheh2rd1r5-manual-1774956936 --tail 100"
+ssh compute "docker logs atgqhoy0dfhohmdheh2rd1r5-manual-1774956936 --tail 100"
 # Container name changes on each deploy — check with docker ps first
 ```
 
@@ -186,14 +186,14 @@ ssh hetzner-prod "docker logs atgqhoy0dfhohmdheh2rd1r5-manual-1774956936 --tail 
 
 ### App is Down
 
-1. Check Coolify: `ssh hetzner-prod "docker ps | grep trafico"`
+1. Check Coolify: `ssh compute "docker ps | grep trafico"`
 2. Check app logs: `docker logs <container> --tail 200`
 3. Check health: `curl -sf https://trafico.live/api/health`
 4. Restart via Coolify UI if needed
 
 ### Collectors Not Running
 
-1. Check cron: `ssh hetzner-prod "crontab -l | grep trafico"`
+1. Check cron: `ssh compute "crontab -l | grep trafico"`
 2. Check logs: `tail -50 /opt/trafico/logs/<task>.log`
 3. Test manual run: `/opt/trafico/run-collector.sh <task>`
 4. Check Docker image exists: `docker images trafico-collector`
@@ -207,6 +207,6 @@ ssh hetzner-prod "docker logs atgqhoy0dfhohmdheh2rd1r5-manual-1774956936 --tail 
 
 ### Database Unreachable
 
-1. Check WireGuard: `ssh hetzner-prod "ping -c1 10.100.0.1"`
-2. Check PgBouncer: `ssh hetzner-dev "docker ps | grep pgbouncer"`
-3. Check PostgreSQL: `ssh hetzner-dev "docker ps | grep postgres"`
+1. Check WireGuard: `ssh compute "ping -c1 10.100.0.3"`
+2. Check PgBouncer: `ssh database-primary "docker ps | grep pgbouncer"`
+3. Check PostgreSQL: `ssh database-primary "docker ps | grep postgres"`
