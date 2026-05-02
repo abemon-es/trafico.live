@@ -31,7 +31,9 @@ services:
     ports:
       - "10.100.0.2:8002:8002"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8002/status"]
+      # 2026-05-02: was `wget --spider` but valhalla image has no wget.
+      # python3 is the only HTTP-capable tool in the image.
+      test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8002/status', timeout=3).status==200 else 1)"]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -42,15 +44,15 @@ services:
           memory: 8G
         reservations:
           memory: 4G
+    # 2026-05-02: switched off `driver: loki` — the Loki Docker plugin is
+    # disabled on compute (cascading dockerd backpressure). Vector tail-s
+    # the json-file logs at /var/lib/docker/containers/*/*.log instead.
     logging:
-      driver: loki
+      driver: json-file
       options:
-        loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "2"
-        labels: "app=trafico-valhalla"
-        max-size: "10m"
+        max-size: "20m"
         max-file: "3"
+        tag: "{{.Name}}"
 
 volumes:
   valhalla-data:
