@@ -38,8 +38,8 @@ services:
     container_name: collector-frequent
     environment:
       CRONTAB_TIER: frequent
-    mem_limit: 256m
-    cpus: 0.5
+    mem_limit: 1024m
+    cpus: 1.0
 
   collector-fuel:
     <<: *collector-base
