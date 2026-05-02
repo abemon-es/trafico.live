@@ -13,16 +13,14 @@ x-collector: &collector-base
   env_file: [.env.collectors]
   networks:
     - web
+  # Log to json-file — Vector (exp-vector) scrapes /var/lib/docker/containers/*
+  # and ships to Loki without holding dockerd hostage to Loki backpressure.
   logging:
-    driver: loki
+    driver: json-file
     options:
-      loki-url: "http://10.100.0.2:3100/loki/api/v1/push"
-      loki-batch-size: "400"
-      loki-retries: "2"
-      loki-max-backoff: "1s"
-      labels: "app=trafico-collector"
-      max-size: "10m"
+      max-size: "20m"
       max-file: "3"
+      tag: "{{.Name}}"
 
 # 2026-05-02: NODE_OPTIONS set at ~67% of mem_limit for every collector.
 # Same V8 over-mapping pattern that bit collector-ais (commit 5757fded):
