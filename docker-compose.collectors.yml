@@ -24,12 +24,18 @@ x-collector: &collector-base
       max-size: "10m"
       max-file: "3"
 
+# 2026-05-02: NODE_OPTIONS set at ~67% of mem_limit for every collector.
+# Same V8 over-mapping pattern that bit collector-ais (commit 5757fded):
+# Node's default max-old-space-size on a 251 GB host is ~125 GB virt, which
+# blows even our 3 GB cgroups. collector-realtime hit this at 11:55 UTC on
+# 2026-05-02 (4 OOM kills in 6 seconds).
 services:
   collector-realtime:
     <<: *collector-base
     container_name: collector-realtime
     environment:
       CRONTAB_TIER: realtime
+      NODE_OPTIONS: "--max-old-space-size=2048"
     mem_limit: 3072m
     cpus: 2.0
 
@@ -38,6 +44,7 @@ services:
     container_name: collector-frequent
     environment:
       CRONTAB_TIER: frequent
+      NODE_OPTIONS: "--max-old-space-size=700"
     mem_limit: 1024m
     cpus: 1.0
 
@@ -46,6 +53,7 @@ services:
     container_name: collector-fuel
     environment:
       CRONTAB_TIER: fuel
+      NODE_OPTIONS: "--max-old-space-size=350"
     mem_limit: 512m
     cpus: 0.5
 
@@ -54,6 +62,7 @@ services:
     container_name: collector-daily
     environment:
       CRONTAB_TIER: daily
+      NODE_OPTIONS: "--max-old-space-size=1024"
     mem_limit: 1536m
     cpus: 1.0
 
@@ -62,6 +71,7 @@ services:
     container_name: collector-weekly
     environment:
       CRONTAB_TIER: weekly
+      NODE_OPTIONS: "--max-old-space-size=1400"
     mem_limit: 2048m
     mem_reservation: 1g
     cpus: 1.0
