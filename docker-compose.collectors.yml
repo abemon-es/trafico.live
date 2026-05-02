@@ -73,6 +73,11 @@ services:
     environment:
       TASK: ais-stream
       COLLECTOR_DURATION: "0"
+      # Cap V8 heap to 400 MB so cgroup virt stays well under mem_limit.
+      # Without this, Node maps its default max-old-space (~half system RAM
+      # on large machines) as virtual memory, causing spurious OOM kills even
+      # when actual RSS is only ~210 MB.
+      NODE_OPTIONS: "--max-old-space-size=400"
     command: ["node", "--import", "tsx", "index.ts"]
     healthcheck:
       test: ["CMD", "sh", "-c", "kill -0 1"]
@@ -80,7 +85,7 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
-    mem_limit: 512m
+    mem_limit: 768m
     cpus: 0.5
 
 networks:
