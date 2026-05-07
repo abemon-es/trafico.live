@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Search, ArrowRight, ArrowLeft, X, Loader2, Clock } from "lucide-react";
+import { ChevronDown, Search, ArrowRight, ArrowLeft, X, Loader2, Clock, CalendarDays } from "lucide-react";
 import { useReducedMotion, motion, AnimatePresence } from "motion/react";
 import { megaMenuPanels, ACCENT_STYLES } from "./NavData";
 import { useNavState } from "./useNavState";
@@ -401,6 +401,21 @@ export function MobileMenu() {
                     onToggle={() => setExpandedPanel(expandedPanel === panel.id ? null : panel.id)}
                   />
                 ))}
+
+                {/* Calendario — direct link */}
+                <Link
+                  href="/calendario"
+                  onClick={closeAll}
+                  className="flex items-center gap-3 px-4 py-3.5 transition-colors text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900"
+                >
+                  <span className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-tl-100 dark:bg-tl-800/40 text-tl-600 dark:text-tl-300">
+                    <CalendarDays className="w-4 h-4" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <span className="text-sm font-semibold font-heading">Calendario</span>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">Reserva una reunión</p>
+                  </div>
+                </Link>
               </div>
             </div>
           )}
