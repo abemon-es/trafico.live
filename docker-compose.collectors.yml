@@ -34,7 +34,10 @@ services:
     environment:
       CRONTAB_TIER: realtime
       NODE_OPTIONS: "--max-old-space-size=2048"
-    mem_limit: 3072m
+    # 2026-05-07: bumped 3 GB → 5 GB after 12 OOM kills/hr — multiple
+    # concurrent supercronic-spawned Node tasks (ais-stream, transit-realtime,
+    # panel, intensity, ...) each up to ~2 GB heap totalled past the cgroup.
+    mem_limit: 5120m
     cpus: 2.0
 
   collector-frequent:
