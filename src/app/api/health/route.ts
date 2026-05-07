@@ -5,9 +5,11 @@ import { redis } from "@/lib/redis";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Per-task staleness thresholds in seconds
+// Per-task staleness thresholds in seconds.
+// Each value is the actual cron cadence + a small buffer; values aligned with
+// /app/crontabs/<tier>.crontab so a healthy cycle never reports stale=true.
 const STALE_THRESHOLDS: Record<string, number> = {
-  // realtime
+  // realtime (collector-realtime, every 2-5 min)
   "v16": 600,
   "incident": 600,
   "intensity": 900,
@@ -17,23 +19,30 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "panel": 900,
   "city-traffic": 900,
   "transit-realtime": 900,
-  // frequent
-  "sasemar": 1800,
-  "maritime-forecast": 7200,
-  // daily
-  "weather": 28800,
-  "camera": 28800,
-  "charger": 28800,
-  "gas-station": 36000,
-  // weekly
+  // frequent (collector-frequent)
+  // sasemar: disabled in crontab (historical archive only) — entry removed
+  //   to stop perpetual stale=true noise
+  "maritime-forecast": 25200,  // runs every 6h (was 7200=2h, false positive)
+  // daily (collector-daily, runs once per day at fixed hour)
+  "weather": 28800,            // hourly in collector-frequent
+  "camera": 96000,             // daily 04:00 (was 28800=8h, false positive)
+  "charger": 96000,            // daily 04:00 (was 28800=8h, false positive)
+  "gas-station": 36000,        // 3x daily 06/13/20
+  // weekly (collector-weekly, Sundays only — generous threshold avoids
+  // mid-week false positives)
   "radar": 604800,
   "speedlimit": 604800,
   "imd": 864000,
   "renfe-gtfs": 864000,
   "transit-gtfs": 864000,
+  // test-heartbeat-debug: dev-only task, removed from prod health metric
   // default for any unlisted task
   "_default": 86400,
 };
+
+// Tasks that should be hidden from the health response entirely.
+// Currently disabled by design — including them would always show stale=true.
+const HIDDEN_TASKS = new Set<string>(["sasemar", "test-heartbeat-debug"]);
 
 interface CollectorEntry {
   task: string;
@@ -84,7 +93,9 @@ async function checkHeartbeats(): Promise<{
       },
     });
 
-    const collectors: CollectorEntry[] = rows.map((row) => {
+    const collectors: CollectorEntry[] = rows
+      .filter((row) => !HIDDEN_TASKS.has(row.task))
+      .map((row) => {
       const threshold = STALE_THRESHOLDS[row.task] ?? STALE_THRESHOLDS["_default"];
       const ageSeconds = row.lastRunAt
         ? Math.floor((now - row.lastRunAt.getTime()) / 1000)
