@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import { useState } from "react";
 import { Calendar, Clock, Video } from "lucide-react";
 
@@ -31,10 +30,7 @@ export default function CalendarioPage() {
   const [activeSlug, setActiveSlug] = useState(EVENT_TYPES[1].slug);
 
   return (
-    <>
-      <Script src={`${CAL_BASE}/embed.js`} strategy="lazyOnload" />
-
-      <main className="min-h-screen bg-white dark:bg-gray-950">
+    <main className="min-h-screen bg-white dark:bg-gray-950">
         {/* Hero */}
         <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10 text-center">
           <div
@@ -110,7 +106,6 @@ export default function CalendarioPage() {
             />
           </div>
         </section>
-      </main>
-    </>
+    </main>
   );
 }
