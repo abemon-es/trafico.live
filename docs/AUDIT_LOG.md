@@ -5,6 +5,42 @@ Append new iterations at top. Older iterations stay for trend tracking.
 
 ---
 
+## Iteration 4 (wave 4) — 2026-05-23 (thin-pages liability cleared)
+
+**Theme:** the two largest sitemap shards that were 100-line stubs at scale are now proper entity-landing pages. PR #30 ends here at ~6.8K new lines.
+
+### What shipped
+
+| Change | Pages affected | Detail |
+|---|---|---|
+| `/radares/radar/[id]` rebuilt 114 → 450 lines | **83 K** | Per-type SEO body (FIXED/SECTION/MOBILE/TRAFFIC_LIGHT), `Place` JSON-LD with speed-limit additionalProperty, BreadcrumbList, Google + Apple Maps deep-links, 3-card stat row (speed circle / road+pk / coords), partner-radar cross-link for SECTION cameras, haversine-ranked nearby on same road, cross-links to `/accidentes/carretera/[road]` + `/camaras/carretera/[road]` + per-province radar list. Pre-gen 1000 most-recently-updated, ISR 24h. |
+| Visible "Páginas individuales" homepage section | 1 | 6-card showcase between `LiveCounterStrip` and `VerticalShowcase`. Per-entity accent colour, concrete example label per card, brand-coloured iconography. Pairs with the SR-only entity nav added one commit before. |
+| PREGEN_ROADS expansion 34 → 80 (DGT-driven) | +46 pre-rendered roads | Queried AccidentMicrodata for top 80 roads by record count; every entry has ≥276 accidents → no thin content. Coverage now includes Cataluña C-*, Madrid M-*, Barcelona B-*, Sevilla SE-30, Canarias TF/GC, Baleares Ma-*, País Vasco GI-636 — networks the original list missed entirely. Mirrored across `page.tsx`, hub, and `sitemap-generator`. |
+| `/transporte-publico/[operator]/parada/[stopId]` — "Líneas que paran aquí" section | ~50 K stops | Server-side query StopTime → Trip → Route distinct on routeId, ordered by routeType then shortName. Each line is a clickable badge linking to the per-route page (also from this PR). Capped at 200 stop_times so mega-stops don't time out. |
+
+### State at end of wave 4
+
+- **PR #30: 32 commits, ~7K new lines.**
+- Thin-page liability: **2 stubs (12K EV chargers + 83K radars) → both now rich entity landings.**
+- Discoverability flywheel: closed for trenes, transit (operator + route + stop), EV, gasolineras (local + national + cheaper), vessels (hub-side + recorrido), radares (per-radar → road → province + accidents on road).
+- Homepage discovery surface: SR-only nav for crawlers + visible 6-card showcase for humans.
+- Server-side data fetched, no client JS gates on the new surfaces.
+
+### Still pending (handover to iter 5)
+
+- Vessel map-marker → ficha: TraficoMap component-level popup wiring (deferred — invasive).
+- OpenSky data: cron fix in git but running collector container is still on the old image. Needs SSH rebuild of `collector-realtime` on compute.
+- VesselPosition `VACUUM FULL` window (table still 64GB on disk after row purge; statistics current, slots reusable; full reclaim needs a scheduled window).
+- GSC + GA4 API ingestion (Tier C #12 — waiting on user-side OAuth scopes or `claude-agent` SA grant on `sc-domain:trafico.live` + GA4 viewer).
+- `/api/billing/portal` proper NextAuth-session reimpl (current is 501 stub since wave-1).
+- PostGIS migration for `TrafficFlow.geometry` + `ZBEZone.polygon` + `RoadworksZone.geometry` + `TransitRoute.geometry` + `FerryRoute.geometry` (all currently `Json`).
+
+### One-line state summary
+
+> Wave 4 closes the thin-pages chapter: 95K entity URLs (12K EV + 83K radars) reshipped from stubs to proper landings; PREGEN_ROADS 2.4× SEO; homepage entity showcase; transit stops now expose serving lines. **Next iter: merge PR queue, address infra fast-follows, or pick up Tier C analytics ingestion once user creds land.**
+
+---
+
 ## Iteration 4 (wave 3) — 2026-05-23 (discoverability loop closure)
 
 **Theme:** every entity surface from wave 2 is reachable in 2 clicks from the hub it belongs to, AND declared in the sitemap, AND seeded into the homepage crawler nav.
