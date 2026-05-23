@@ -213,7 +213,14 @@ export default function TrainesContent() {
               <div className={`px-3 py-1.5 rounded-full text-sm font-bold ${Number(selectedTrain.delay) <= 0 ? "bg-green-100 text-green-700" : Number(selectedTrain.delay) <= 5 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>
                 {Number(selectedTrain.delay) <= 0 ? "✓ Puntual" : `+${selectedTrain.delay} min`}
               </div>
-              <button onClick={() => setSelectedTrain(null)} className="text-gray-400 hover:text-gray-600 p-1">✕</button>
+              <Link
+                href={`/trenes/tren/${encodeURIComponent(String(selectedTrain.trainId))}`}
+                className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-tl-600 text-white hover:bg-tl-700 transition-colors"
+              >
+                Ver página completa
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+              <button onClick={() => setSelectedTrain(null)} className="text-gray-400 hover:text-gray-600 p-1" aria-label="Cerrar panel">✕</button>
             </div>
           </div>
 
