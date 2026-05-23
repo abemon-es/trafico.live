@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { RailwayServiceType } from "@prisma/client";
 import { StationEntityMap } from "./entity-map";
+import { LiveTrainsAtStation } from "./LiveTrainsAtStation";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -357,6 +358,18 @@ export default async function EstacionDetallePage({ params }: Props) {
           <StationEntityMap stationId={station.id} center={[stationLng, stationLat]} />
         </div>
       </section>
+
+      {/* --- Live trains at this station (Renfe LD) --- */}
+      <LiveTrainsAtStation
+        stationCode={station.code}
+        resolveStationName={(c) => {
+          // Two known: this station + nearby. The component falls back to
+          // the raw code when a name is unknown, which is acceptable for
+          // intermediate stops mid-journey.
+          if (c === station.code) return station.name;
+          return undefined;
+        }}
+      />
 
       {/* --- Active Alerts --- */}
       {alerts.length > 0 && (
