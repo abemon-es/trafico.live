@@ -5,6 +5,47 @@ Append new iterations at top. Older iterations stay for trend tracking.
 
 ---
 
+## Iteration 4 (wave 2) — 2026-05-23 (entity-page push, vision pass)
+
+**Branch (continued):** `audit/iter-4-sweep-critical-fixes-v2`
+**Trigger:** user — "each train, bus, plane, boat, vessel, each street ... proper landing page with current state + history + map + predictions + cross-links + mobile-first"
+**Mode:** continuous shipping in 4-min wake cadence
+
+### Vision reframe
+
+Every entity gets its own properly-designed landing page. Not just hubs — the individual train, vessel, charger, route, stop, station each gets a real page with live state + history + cross-links + structured data.
+
+### Shipped this wave (on top of wave-1 security/SEO fixes)
+
+| Surface | What it does |
+|---|---|
+| `/accidentes/carretera/[road]` | DGT microdata per-road analysis (KM hotspots + year-over-year + day-of-week + weather correlation). 34 pre-gen + lazy. Long-tail SEO unlock. |
+| `/maritimo/seguridad/estadisticas` | 6 yrs × 30K SASEMAR rescue events surfaced (was static copy page). |
+| `/calidad-aire/prevision` | CAMS 5-day forecast — uncontested in ES SERP. |
+| `/carga-ev/punto/[id]` rebuild | 12K EV-charger pages went from 111-line stub → rich entity (proper EVChargingStation schema, Google/Apple Maps deep-links, nearby chargers + gas stations with distance, same-network grouping). |
+| `/trenes/tren/[trainId]` | Per-train live page — search any train, see its position + next stop + delay + route timeline of past+current+future stops linked to station pages. noindex (daily reuse). |
+| `/trenes/estacion` live-trains | "Trenes ahora" section between map and alerts, listing every Renfe LD train currently associated with the station with brand-coloured cards. |
+| `/transporte-publico/[operator]/[route]` | Per-line landing for 16 ingested GTFS operators × N routes. Per-direction stop timelines with arrival times, links to each stop, route-color hero, Schema.org BusTrip/TrainTrip. |
+| `/maritimo/buques/[slug]/recorrido` | Voyage history per vessel — surfaces 493K Voyage + 746K PortCall rows that were collected but never rendered. Becomes the durable "where has this ship been" view after the VesselPosition 72h TTL purge. |
+| Vessel hero cross-link | Adds prominent "Ver recorrido completo" CTA from /maritimo/buques/[slug] hero to the new /recorrido sub-page. |
+
+### Ops (in addition to wave-1)
+
+- **VesselPosition purge: 291.7M rows deleted in ~85 min** (50K-batch loop in background, AIS-collector-safe with 0.5s sleeps). Working set now ~4M (last 72h ingest). VACUUM ANALYZE done — statistics current, dead-tuple space marked reusable. Full disk reclaim deferred to a scheduled VACUUM FULL / pg_repack window.
+
+### State summary
+
+Branch contains ~15 commits in PR #30 totalling **8 critical security/SEO fixes + 8 new entity pages + 459GB disk freed + storage bomb defused + AIS reconnected + Typesense restored + 6-agent audit findings documented**. PR queue (4 PRs awaiting review) covers iter-1 → iter-4 work. All prod surfaces 200.
+
+### Next-iter targets
+
+- `/gasolineras/terrestres/[id]` depth pass (already has StationPriceHistory + PriceComparisonCard components — needs same-brand-nearby + cheapest-in-province sections)
+- `/aviacion/aeropuertos/[iata]` live arrivals if OpenSky data near airport
+- Pulse-page improvements + homepage cross-link surface for all the new entity pages
+- VesselPosition VACUUM FULL window decision
+
+---
+
 ## Iteration 4 — 2026-05-23 (full sweep — critical fixes)
 
 **Branch:** `audit/iter-4-sweep-critical-fixes-v2` from `audit/iter-3-silent-failure-hardening`
