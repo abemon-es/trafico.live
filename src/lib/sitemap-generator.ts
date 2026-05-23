@@ -1018,6 +1018,15 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "hourly" as const,
       priority: 0.85,
     },
+    // 5-day CAMS forecast (iter-4 dark-data unlock — AQForecast collector
+    // populates this every 12h; no competitor in ES publishes a 5-day AQ
+    // pronóstico at provincial granularity).
+    {
+      url: `${BASE_URL}/calidad-aire/prevision`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    },
     {
       url: `${BASE_URL}/estadisticas-transporte`,
       lastModified: today,
