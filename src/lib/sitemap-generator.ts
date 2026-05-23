@@ -1290,11 +1290,22 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     // 2019-2023). Mirrors the pre-generated set in
     // src/app/accidentes/carretera/[road]/page.tsx. Long-tail SEO surface
     // for queries like "accidentes A-7", "accidentes mortales N-340".
+    // 80 roads — every entry has >=276 accident records in the DB.
     ...[
-      "AP-7","AP-68","AP-1","AP-2","AP-4","AP-6","AP-9","AP-66",
+      "AP-1","AP-2","AP-4","AP-6","AP-7","AP-8","AP-9","AP-68",
       "A-1","A-2","A-3","A-4","A-5","A-6","A-7","A-8",
-      "A-23","A-31","A-42","A-44","A-49","A-52","A-62","A-66","A-92",
-      "N-I","N-II","N-III","N-IV","N-V","N-VI","N-340","N-401","N-630",
+      "A-23","A-30","A-31","A-42","A-44","A-49","A-52","A-55",
+      "A-62","A-66","A-67","A-70","A-92",
+      "N-I","N-II","N-III","N-IV","N-V","N-VI","N-1","N-2",
+      "N-120","N-232","N-240","N-260","N-330","N-332","N-340","N-340a",
+      "N-401","N-420","N-432","N-550","N-630","N-634","N-637",
+      "C-12","C-14","C-15","C-16","C-17","C-25","C-31","C-32",
+      "C-35","C-55","C-58","C-59","C-63","C-66",
+      "B-10","B-20","B-23","B-30",
+      "M-40","M-45","M-50","M-506","M-607",
+      "SE-30","T-11","V-30","V-31","CV-35","AC-552",
+      "TF-1","TF-5","GC-1","GC-3",
+      "Ma-13","Ma-19","Ma-20","GI-636",
     ].map((road) => ({
       url: `${BASE_URL}/accidentes/carretera/${encodeURIComponent(road)}`,
       lastModified: today,

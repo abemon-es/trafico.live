@@ -35,11 +35,38 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // the SSG surface beyond what makes sense for ~500K records.
 // ---------------------------------------------------------------------------
 
+// Top 80 roads by accident count in DGT microdata 2019-2023 — every entry
+// has ≥276 records so the per-road page renders rich content for SEO.
+// State + regional + insular networks all represented.
 const PREGEN_ROADS = [
-  "AP-7", "AP-68", "AP-1", "AP-2", "AP-4", "AP-6", "AP-9", "AP-66",
+  // State autopistas
+  "AP-1", "AP-2", "AP-4", "AP-6", "AP-7", "AP-8", "AP-9", "AP-68",
+  // State autovías
   "A-1", "A-2", "A-3", "A-4", "A-5", "A-6", "A-7", "A-8",
-  "A-23", "A-31", "A-42", "A-44", "A-49", "A-52", "A-62", "A-66", "A-92",
-  "N-I", "N-II", "N-III", "N-IV", "N-V", "N-VI", "N-340", "N-401", "N-630",
+  "A-23", "A-30", "A-31", "A-42", "A-44", "A-49", "A-52", "A-55",
+  "A-62", "A-66", "A-67", "A-70", "A-92",
+  // State nacionales (top by accident count)
+  "N-I", "N-II", "N-III", "N-IV", "N-V", "N-VI",
+  "N-1", "N-2",
+  "N-120", "N-232", "N-240", "N-260", "N-330", "N-332", "N-340", "N-340a",
+  "N-401", "N-420", "N-432", "N-550", "N-630", "N-634", "N-637",
+  // Cataluña (C-*)
+  "C-12", "C-14", "C-15", "C-16", "C-17", "C-25", "C-31", "C-32",
+  "C-35", "C-55", "C-58", "C-59", "C-63", "C-66",
+  // Barcelona ring + access (B-*)
+  "B-10", "B-20", "B-23", "B-30",
+  // Madrid ring + radials (M-*)
+  "M-40", "M-45", "M-50", "M-506", "M-607",
+  // Sevilla ring
+  "SE-30",
+  // Tarragona, Girona, Valencia, Galicia, Asturias
+  "T-11", "V-30", "V-31", "CV-35", "AC-552",
+  // Canarias (TF-*, GC-*)
+  "TF-1", "TF-5", "GC-1", "GC-3",
+  // Baleares (Ma-*)
+  "Ma-13", "Ma-19", "Ma-20",
+  // País Vasco
+  "GI-636",
 ];
 
 export const dynamic = "force-static";
