@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { Map as MapIcon } from "lucide-react";
+import { EntitySamples } from "@/components/home/EntitySamples";
 
 export interface HomeStats {
   incidentCount: number;
@@ -147,6 +148,8 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
       <Suspense fallback={<StripSkeleton />}>
         <LiveCounterStrip initialStats={initialStats} />
       </Suspense>
+
+      <EntitySamples />
 
       <Suspense fallback={<CardGridSkeleton />}>
         <VerticalShowcase />
