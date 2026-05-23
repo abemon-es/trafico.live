@@ -111,7 +111,7 @@ function ServiceBadge({ type }: { type: string }) {
 function StationCard({ station }: { station: Station }) {
   return (
     <a
-      href={`/trenes/estaciones/${station.slug}`}
+      href={`/trenes/estacion/${station.slug}`}
       className="block bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-tl-300 dark:hover:border-tl-700 hover:shadow-sm transition-all"
     >
       <div className="flex items-start justify-between gap-2">
@@ -457,7 +457,7 @@ export default function EstacionesTrenContent() {
                     >
                       <td className="py-2.5 px-3">
                         <a
-                          href={`/trenes/estaciones/${station.slug}`}
+                          href={`/trenes/estacion/${station.slug}`}
                           className="font-medium text-gray-900 dark:text-gray-100 hover:text-[var(--tl-primary)] transition-colors"
                         >
                           {station.name}
