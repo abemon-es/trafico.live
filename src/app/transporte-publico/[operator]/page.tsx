@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -541,10 +542,16 @@ export default async function OperatorDetailPage({ params }: Props) {
                         ? "#111827"
                         : "#ffffff";
 
+                    // Per-route landing page — uses slugified operator name
+                    // for canonical-friendly URLs (matches the page's own
+                    // canonical metadata convention).
+                    const routeHref = `/transporte-publico/${slugify(operator.name)}/${encodeURIComponent(route.routeId)}`;
+
                     return (
-                      <div
+                      <Link
                         key={route.id}
-                        className="flex items-center gap-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2.5 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                        href={routeHref}
+                        className="flex items-center gap-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2.5 hover:border-tl-400 dark:hover:border-tl-600 hover:bg-tl-50/40 dark:hover:bg-tl-900/10 transition-colors"
                       >
                         {/* Route badge */}
                         <span
@@ -557,10 +564,10 @@ export default async function OperatorDetailPage({ params }: Props) {
                           {route.shortName || "—"}
                         </span>
                         {/* Route name */}
-                        <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                        <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
                           {route.longName || route.shortName || "Sin nombre"}
                         </span>
-                      </div>
+                      </Link>
                     );
                   })}
                 </div>
