@@ -467,13 +467,9 @@ export default async function VesselIndexPage() {
                   const fichaHref = slug.includes("-")
                     ? `/maritimo/buques/${slug}`
                     : null;
-                  const RowEl = fichaHref ? Link : "div";
-                  return (
-                    <RowEl
-                      key={vessel.id}
-                      {...(fichaHref ? { href: fichaHref } : {})}
-                      className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
-                    >
+                  const rowClass = "flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors";
+                  const rowBody = (
+                    <>
                       {/* Type icon */}
                       <div
                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -525,7 +521,16 @@ export default async function VesselIndexPage() {
                           minute: "2-digit",
                         })}
                       </div>
-                    </RowEl>
+                    </>
+                  );
+                  return fichaHref ? (
+                    <Link key={vessel.id} href={fichaHref} className={rowClass}>
+                      {rowBody}
+                    </Link>
+                  ) : (
+                    <div key={vessel.id} className={rowClass}>
+                      {rowBody}
+                    </div>
                   );
                 })}
               </div>
