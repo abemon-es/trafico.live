@@ -3,9 +3,14 @@
 # Peak concurrency: ~11 tasks at :00/:10/:20/:30/:40/:50 marks
 # Budget: ~80MB per Node process × 11 concurrent = ~880MB peak → 1536m limit
 
-# DGT + regional traffic feeds (every 2 min)
+# DGT + regional traffic feeds (every 2 min for the multi-source `incident` task,
+# which polls 9 regional + DGT NAP DATEX II endpoints; tighter than DGT's own
+# 5-min publish cadence so regional feeds drive resolution).
 */2 * * * * TASK=incident npx tsx index.ts 2>&1 && touch /tmp/last-run
-*/2 * * * * TASK=v16 npx tsx index.ts 2>&1
+# v16 — DGT NAP V16 beacon feed. Source publishes every 5 min, so polling
+# at */5 (not */2) cuts our DGT NAP load in half — `incident` already hits
+# the same DGT URL every 2 min, so the every-2-min v16 was pure waste.
+*/5 * * * * TASK=v16 npx tsx index.ts 2>&1
 
 # DGT infrastructure (every 5 min)
 */5 * * * * TASK=panel npx tsx index.ts 2>&1

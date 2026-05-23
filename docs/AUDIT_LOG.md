@@ -5,6 +5,59 @@ Append new iterations at top. Older iterations stay for trend tracking.
 
 ---
 
+## Iteration 2 — 2026-05-23 (P0 rescue + stability shipping)
+
+**Branch:** `audit/iter-2-stability` from `audit/iter-1-fixes`
+**Trigger:** user request — full-site SOLVE-AND-SHIP after the P0 prod outage surfaced mid-iter-1
+**Mode:** SSH ops (creds from `~/Desarrollos/server`) + code PR
+
+### P0 incidents resolved
+
+| Surface | Was | Now | Root cause |
+|---|---|---|---|
+| `https://trafico.live/` and every route | **500** | **200** | Cron job `trafico-live-isr-cleanup` v1 ran `find /app/.next/server/app -delete` on a too-broad glob, removing `*.js` build artifacts (page.js, route.js) inside the running container at 11:11Z → 4-min outage. Container kept restarting against broken filesystem. **Fix already patched by sysadmin at 11:17Z (cron v2 only touches .html/.body/.meta/.rsc).** Container needed an image rebuild to recover — ran `cd /opt/trafico && ./deploy.sh`, healthy in 6.5 min (build 395s + start 30s). |
+| `https://tiles.trafico.live/spain.pmtiles` | **502** | **200** | `tiles-tiles-1` + `tiles-martin-1` containers had been stopped (only `tiles-nginx-exporter` was running). Restarted via `cd /opt/trafico/services/tiles && docker compose up -d`. |
+| `https://tiles.trafico.live/dynamic/*` | **502** | **200** | `services/tiles/nginx.conf:3-5` had `upstream martin { server 10.100.0.3:3088; }` — wrong host (database-primary) and wrong port (nothing bound to 3088 anywhere). Patched to `server martin:3000;` via docker DNS. Verified `/dynamic/catalog` returns full Martin TileJSON. |
+| `ais-stream` collector data freshness | 15.4 d stale | live | Container was Up 11 days but WebSocket had silently disconnected; stats counter frozen for 15.4 d. `docker restart collector-ais` reconnected to `wss://stream.aisstream.io/v0/stream` and "first message confirmed healthy." Need follow-up: WebSocket auto-reconnect logic to prevent silent stall. |
+| Typesense at `10.100.0.3:6442` | **ECONNREFUSED** | **200** | The `trafico-typesense` container did not exist on database-primary (only the volume was orphaned). The compose at `/opt/trafico-compose.yml` had the spec; `docker compose up -d trafico-typesense` brought it up; ran `TASK=typesense-sync` from `collector-daily` and rebuilt 22 collections in 88s (gas_stations 12,362; ev_chargers 12,115; cameras 1,920; radars 737; voyages 10,000; port_calls 10,000; cities 3,459; etc). **Open question:** what removed the container? Worth investigating before iter 3. |
+| Cmd+K search | empty results sitewide | working | Verified `/api/search?q=madrid` returns 200 with real results when Referer/Origin sent. Same-origin auth correctly silent-rejects external queries (separate UX gap flagged in iter 1). |
+
+### P1 code shipped on `audit/iter-2-stability`
+
+**Storage time bomb defused** — `services/collector/tasks/cleanup-realtime/collector.ts`:
+- Previously cleaned ONLY `TransitVehiclePosition` (48h)
+- Now also cleans:
+  - `VesselPosition` **72h** — was ~10M rows/day, completely unbounded. At 6mo this table would hit 1.8B rows and the `[mmsi, createdAt desc]` index would degrade. Voyage detector only reads last 2h; long-term truth lives in Voyage + PortCall.
+  - `CityTrafficReading` **7d** — ~1.7M rows/day, no prior cleanup
+  - `TrafficIntensity` **48h** — Madrid sensor live data, ~880K rows/day. CLAUDE.md documents 48h rolling window, code never enforced it.
+  - `TrafficReading` **48h** — DGT national detector readings, no prior cleanup
+  - `RailwayDelaySnapshot` **90d** — small table (262K/year) but no purge; 90d keeps rolling-quarter brand punctuality stats.
+- Per-table failures are caught + continue; aggregate failures surface via heartbeat.
+
+**Cadence waste eliminated:**
+- `services/collector/crontabs/realtime` — `v16` was polling DGT NAP every 2 min despite the collector's own docstring saying 5 min. `incident` task already polls the same DGT NAP URL every 2 min, so the `v16` extra-poll was pure waste. Now `*/5` — halves our DGT NAP load.
+- `services/collector/crontabs/daily` — `ine-stats` moved daily → Sunday weekly (INE publishes quarterly). `aena-stats` moved daily → 1st-of-month (Eurostat AVIA_PAOA is annual with ~12-month lag).
+
+**Map stack fix:**
+- `services/tiles/nginx.conf` — Martin upstream patched (see P0 row above). Applied to prod hot-fix at 11:33Z; this commit syncs the source.
+
+### Deferred (iter 3+)
+
+- **AIS WebSocket auto-recovery** — restart unblocked it once but a silent reconnect logic is needed so a 15-day blackout never repeats. `services/collector/tasks/ais-stream/collector.ts` + shared `ws-client.ts`.
+- **Why did `trafico-typesense` container disappear?** Audit `/var/log/docker.log` + sysadmin actions on database-primary. May need to add a `docker compose up -d` heartbeat to the deploy system.
+- **`andorra` camera cadence gating** — fetched every 5min despite being a static catalog. Code change inside the andorra collector to gate cameras to daily.
+- **`accident-microdata` annual schedule** — 2024 DGT XLSX release will not auto-import.
+- **`ourairports-runways` weekly schedule** — `public/data/runways.json` decays.
+- **`air-quality-ccaa` scheduling** — never wired into a crontab.
+- **22 collectors missing explicit STALE_THRESHOLDS** — `/api/health` reports false-green for up to 24h after silent failures (the AIS pattern that bit us this week).
+- **`/api/search` degraded signal** — return 503 with `degraded:true` when Typesense unreachable instead of silently empty.
+
+### One-line state summary
+
+> Prod fully restored to 200 (web + maps + dynamic tiles + search). Storage bomb defused before next nightly run. Cadence waste halved on DGT NAP. **Next: ship dark-data hubs (/accidentes 500K records, /maritimo/seguridad SASEMAR 30K rescues, /calidad-aire CAMS 5-day forecast) + GSC/GA4 API ingestion once user grants scopes.**
+
+---
+
 ## Iteration 1 — 2026-05-23
 
 **Branch:** `audit/iter-1-fixes` from `fix/csp-cal-embed`
