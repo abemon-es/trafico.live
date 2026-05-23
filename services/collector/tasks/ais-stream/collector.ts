@@ -327,6 +327,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
       },
       onMessage: handleMessage,
       task: TASK,
+      // aisstream.io BETA WS can stay "open" while silently producing zero
+      // traffic — exactly what bit us 2026-05-07 → 2026-05-23 (15d blackout).
+      // Force terminate + reconnect if we see >5 min of silence on a busy
+      // global feed (real cadence is thousands of messages per minute).
+      staleMessageTimeoutMs: 5 * 60 * 1000,
     },
     ac.signal
   );

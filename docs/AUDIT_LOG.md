@@ -5,6 +5,45 @@ Append new iterations at top. Older iterations stay for trend tracking.
 
 ---
 
+## Iteration 3 — 2026-05-23 (silent-failure hardening)
+
+**Branch:** `audit/iter-3-silent-failure-hardening` from `audit/iter-2-stability`
+**Theme:** make the kind of silent-failure that hid the 15d AIS blackout impossible.
+
+### Shipped
+
+- **AIS WebSocket staleness watchdog** (`services/collector/shared/ws-client.ts` + `tasks/ais-stream/collector.ts`):
+  - The existing reconnecting WS only triggered on `close` / `error` events. aisstream.io BETA WS can stay nominally "open" while producing zero traffic — exactly the pattern that froze the stats counter for 15 days.
+  - New optional `staleMessageTimeoutMs` option (defaults to disabled; backwards-compat). AIS collector sets it to **5 min**.
+  - When no message arrives for the threshold, `ws.terminate()` is forced, which triggers the existing reconnect cycle. After max consecutive failures the circuit breaker still kicks in (so this can't loop forever).
+
+- **`/api/health` STALE_THRESHOLDS completed** (`src/app/api/health/route.ts`):
+  - Was: 15 tasks with thresholds; everything else fell back to **24h** → silent failures hidden for a day.
+  - Now: 39 tasks with explicit thresholds, each = max(2 × source cadence, 5 min buffer). Default tightened from 24h → 4h so new collectors surface in hours not days. Includes `ais-stream` at 10 min (matches the watchdog + reconnect window).
+
+- **`/api/search` degraded signal** (`src/app/api/search/route.ts`):
+  - Was: 200 + empty results when Typesense unreachable → indistinguishable from "no matches."
+  - Now: response gains `degraded: true` and the HTTP status flips to **503** when:
+    - `typesenseClient` is unset, or
+    - the multi-search throws a connectivity error (ECONNREFUSED / ETIMEDOUT / ENOTFOUND / EAI_AGAIN / "fetch failed" / "Typesense unreachable" / socket hang up).
+  - Non-connectivity errors still 200-with-empty (single bad query shouldn't 503 the site).
+  - Degraded responses get `Cache-Control: no-store` so a transient outage doesn't lock in a 60s Redis cache after Typesense recovers.
+
+### Investigated, not yet shipped
+
+- **Why `trafico-typesense` vanished from database-primary** — `journalctl --since '14 days ago'` had no entries for the container. Either docker logs were rotated or the container was removed >14d ago via a sysadmin script. The container is now back with `restart=unless-stopped` + `mem_limit=2GB` + healthcheck (verified via `docker inspect`), so an OOM-kill or natural crash will auto-recover. Still worth adding a `docker compose up -d` watchdog cron and a deploy-system rule that flags missing critical containers. Deferred to iter 4 — needs the `abemon-es/serve` repo touch.
+
+### Deferred
+
+- `andorra` camera gating, `accident-microdata` schedule, `ourairports-runways` schedule, `air-quality-ccaa` schedule — same as iter 2 deferred list.
+- Cmd+K UI update to render the new `degraded: true` flag from `/api/search`.
+
+### One-line state summary
+
+> Three silent-failure paths closed: AIS won't stall again, /api/health surfaces failures in hours not days, /api/search is now a 503 when Typesense is gone. **Next: ship `/accidentes` hub (Tier B #1, biggest dark-data unlock) + harden typesense compose via the serve repo.**
+
+---
+
 ## Iteration 2 — 2026-05-23 (P0 rescue + stability shipping)
 
 **Branch:** `audit/iter-2-stability` from `audit/iter-1-fixes`

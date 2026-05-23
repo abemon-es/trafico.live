@@ -6,38 +6,68 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 // Per-task staleness thresholds in seconds.
-// Each value is the actual cron cadence + a small buffer; values aligned with
-// /app/crontabs/<tier>.crontab so a healthy cycle never reports stale=true.
+// Rule: threshold = max(2 × source cadence, 5 min buffer).
+// Aligned with services/collector/crontabs/<tier> so a healthy cycle never
+// reports stale=true, but a single missed run does — the 24h _default was
+// hiding silent failures for a full day (this is the pattern that hid the
+// 15-day AIS blackout in May 2026).
 const STALE_THRESHOLDS: Record<string, number> = {
-  // realtime (collector-realtime, every 2-5 min)
-  "v16": 600,
-  "incident": 600,
-  "intensity": 900,
-  "renfe-alerts": 600,
-  "renfe-positions": 600,
-  "renfe-ld-realtime": 600,
-  "panel": 900,
-  "city-traffic": 900,
-  "transit-realtime": 900,
+  // realtime — collector-realtime (every 1-5 min cron lines)
+  "incident": 600,             // */2 → 10 min
+  "v16": 900,                  // */5 → 15 min (post-iter-2 cadence)
+  "panel": 900,                // */5
+  "detector": 900,             // */5
+  "intensity": 900,            // */5 (Madrid sensors)
+  "city-traffic": 900,         // */5 (Barcelona/Valencia/Zaragoza)
+  "andorra": 900,              // */5
+  "renfe-alerts": 600,         // */2
+  "renfe-ld-realtime": 600,    // */2
+  "renfe-positions": 600,      // */2
+  "transit-realtime": 300,     // every 1 min cron with 2 internal passes
+  "opensky": 900,              // */4
+  "air-quality": 4500,         // hourly @ :00
+  "eumetsat-radar": 1800,      // */15
+  "alert-matcher": 900,        // */5
+  "social-broadcast": 1800,    // */5 but tolerant
+  "health-check": 1800,        // */30
+  // continuous (collector-ais — always-on WebSocket)
+  "ais-stream": 600,           // watchdog kicks at 5min idle (post-iter-3),
+                               // so 10min covers reconnect cycle
   // frequent (collector-frequent)
-  // sasemar: disabled in crontab (historical archive only) — entry removed
-  //   to stop perpetual stale=true noise
-  "maritime-forecast": 25200,  // runs every 6h (was 7200=2h, false positive)
-  // daily (collector-daily, runs once per day at fixed hour)
-  "weather": 28800,            // hourly in collector-frequent
-  "camera": 96000,             // daily 04:00 (was 28800=8h, false positive)
-  "charger": 96000,            // daily 04:00 (was 28800=8h, false positive)
-  "gas-station": 36000,        // 3x daily 06/13/20
-  // weekly (collector-weekly, Sundays only — generous threshold avoids
-  // mid-week false positives)
-  "radar": 604800,
-  "speedlimit": 604800,
-  "imd": 864000,
-  "renfe-gtfs": 864000,
-  "transit-gtfs": 864000,
-  // test-heartbeat-debug: dev-only task, removed from prod health metric
-  // default for any unlisted task
-  "_default": 86400,
+  "weather": 4500,             // hourly @ :00 (AEMET)
+  "maritime-forecast": 25200,  // every 6h (4×/day)
+  "voyage-detector": 7200,     // hourly with internal flock
+  // fuel (collector-fuel)
+  "gas-station": 36000,        // 3×/day at 06/13/20 — 10h buffer
+  "maritime-fuel": 36000,      // 3×/day at 07/14/21
+  "portugal-fuel": 36000,      // 3×/day at 08/15/22
+  // daily (collector-daily)
+  "daily-stats": 90000,        // 00:30 daily
+  "ine-stats": 691200,         // weekly Sunday 03:30 (post-iter-2)
+  "camera": 96000,             // 04:00 daily
+  "aena-stats": 2764800,       // monthly 1st 04:30 (post-iter-2) → 32d
+  "typesense-sync": 90000,     // 05:00 daily
+  "charger": 96000,            // 06:00 daily
+  "aemet-historical": 90000,   // 08:00 daily
+  "aemet-forecast": 25200,     // every 6h (00/06/12/18 staggered → 4×/day)
+  "cams-aq": 50400,            // every 12h (06:30/18:30)
+  "insights": 90000,           // 22:30 daily
+  "cleanup-realtime": 90000,   // 23:00 daily
+  // weekly (collector-weekly — Sundays)
+  "cnmc-fuel": 691200,         // Sunday 02:00 → 8d
+  "mobilitydata-sync": 691200, // Sunday 02:30
+  "radar": 691200,             // Sunday 03:00
+  "speedlimit": 691200,        // Sunday 03:30
+  "risk-zones": 691200,        // Sunday 04:00
+  "zbe": 691200,               // Sunday 04:30
+  "renfe-gtfs": 691200,        // Sunday 05:00
+  "ferry-gtfs": 691200,        // Sunday 05:30
+  "transit-gtfs": 691200,      // Sunday 06:00
+  "dgt-extras": 691200,        // Sunday 06:30 (probes empty endpoints — heartbeats anyway)
+  "imd": 691200,               // Sunday 07:00
+  // default for any unlisted task — purposefully tight so new collectors
+  // surface in /api/health within hours, not days
+  "_default": 14400,
 };
 
 // Tasks that should be hidden from the health response entirely.

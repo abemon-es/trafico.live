@@ -45,12 +45,27 @@ interface SearchAPIResponse {
   results: SearchResult[];
   query: string;
   total: number;
+  /** True when Typesense was unreachable — UI should surface a "search
+   *  unavailable" message rather than implying zero matches.
+   *  When true, the HTTP status is also 503. */
+  degraded?: boolean;
   filters?: {
     applied: ParsedSearchQuery["detectedFilters"];
     labels: string[];
     needsLocationResolution?: boolean;
     locationHint?: string;
   };
+}
+
+/** Heuristic: is this error a "Typesense is down" signal vs a query bug? */
+function isTypesenseUnreachable(err: unknown): boolean {
+  if (!err) return false;
+  const msg = err instanceof Error ? err.message : String(err);
+  return (
+    /ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket hang up|fetch failed|Typesense unreachable/i.test(
+      msg
+    )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -498,9 +513,18 @@ export async function GET(request: NextRequest) {
     },
   };
 
+  // Surface Typesense outages as 503 so monitoring catches them, while
+  // keeping a valid JSON body the UI can read to render a banner. Don't
+  // cache the degraded path — Redis would lock in the outage for 60s after
+  // Typesense recovers.
+  const isDegraded = response.degraded === true;
+
   return NextResponse.json<SearchAPIResponse>(response, {
+    status: isDegraded ? 503 : 200,
     headers: {
-      "Cache-Control": "public, max-age=60, s-maxage=60",
+      "Cache-Control": isDegraded
+        ? "no-store"
+        : "public, max-age=60, s-maxage=60",
     },
   });
 }
@@ -517,7 +541,7 @@ async function performSearch(
   radius = 20
 ): Promise<SearchAPIResponse> {
   if (!typesenseClient) {
-    return { results: [], query, total: 0 };
+    return { results: [], query, total: 0, degraded: true };
   }
 
   try {
@@ -722,7 +746,11 @@ async function performSearch(
     };
   } catch (error) {
     reportApiError(error, "search", { query, filters });
-    // Fail gracefully — return empty results
-    return { results: [], query, total: 0 };
+    // Surface Typesense connectivity failures as degraded so the UI can
+    // show "search unavailable" instead of implying zero results.
+    // Other errors (query bugs, mis-configured collections) keep the
+    // silent-empty behavior so a single bad query doesn't blast a 503.
+    const degraded = isTypesenseUnreachable(error);
+    return { results: [], query, total: 0, ...(degraded && { degraded: true }) };
   }
 }

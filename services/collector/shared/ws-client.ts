@@ -27,6 +27,18 @@ export interface WSClientOptions {
   circuitBreakerCooldown?: number;
   /** Minimum connection duration in ms to count as "healthy" (default 5000) */
   minHealthyDuration?: number;
+  /**
+   * Staleness watchdog: if no message has been received for this many ms
+   * while the WS is "open", force a terminate so the reconnect cycle kicks
+   * in. The aisstream.io WS can stay open indefinitely with zero traffic
+   * (no close, no error frame); we hit exactly this pattern on 2026-05-07
+   * → 2026-05-23: the AIS stats counter froze for 15 days with the WS
+   * still nominally "open" and the collector container still "healthy".
+   *
+   * Default: 0 (watchdog disabled — keeps backwards-compat). Pass a real
+   * value (recommended: 300_000 = 5 min) to enable.
+   */
+  staleMessageTimeoutMs?: number;
 }
 
 export function createReconnectingWS(
@@ -43,6 +55,7 @@ export function createReconnectingWS(
     maxConsecutiveFailures = 10,
     circuitBreakerCooldown = 300_000,
     minHealthyDuration = 5000,
+    staleMessageTimeoutMs = 0,
   } = options;
 
   let ws: WebSocket | null = null;
@@ -52,6 +65,8 @@ export function createReconnectingWS(
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let connectTime = 0;
   let receivedMessage = false;
+  let lastMessageAt = 0;
+  let stalenessTimer: ReturnType<typeof setInterval> | null = null;
 
   function connect() {
     if (stopped || signal?.aborted) return;
@@ -69,6 +84,8 @@ export function createReconnectingWS(
       log(task, `Connected to ${url}`);
       connectTime = Date.now();
       receivedMessage = false;
+      lastMessageAt = Date.now();
+      armStalenessWatchdog();
       // Do NOT reset consecutiveFailures here — only reset when we
       // actually receive a message, proving the connection is healthy.
       // Must send subscription within 3 seconds
@@ -78,6 +95,7 @@ export function createReconnectingWS(
     ws.on("message", (raw: WebSocket.RawData) => {
       try {
         const data = JSON.parse(raw.toString());
+        lastMessageAt = Date.now();
         // First successful message: connection is truly healthy
         if (!receivedMessage) {
           receivedMessage = true;
@@ -94,6 +112,7 @@ export function createReconnectingWS(
     ws.on("close", (code: number, reason: Buffer) => {
       const duration = Date.now() - connectTime;
       log(task, `Connection closed: ${code} ${reason.toString()} (was open ${(duration / 1000).toFixed(1)}s)`);
+      disarmStalenessWatchdog();
       if (!stopped) {
         // If connection was open for less than minHealthyDuration and we
         // never received a message, count it as a failure
@@ -110,6 +129,34 @@ export function createReconnectingWS(
       consecutiveFailures++;
       ws?.terminate();
     });
+  }
+
+  function armStalenessWatchdog() {
+    if (staleMessageTimeoutMs <= 0) return;
+    // Probe every 30s (or 1/10th of the threshold, whichever is smaller).
+    const probe = Math.min(30_000, Math.floor(staleMessageTimeoutMs / 10));
+    stalenessTimer = setInterval(() => {
+      const idle = Date.now() - lastMessageAt;
+      if (idle > staleMessageTimeoutMs) {
+        log(
+          task,
+          `Staleness watchdog: ${Math.floor(idle / 1000)}s since last message ` +
+            `(threshold ${Math.floor(staleMessageTimeoutMs / 1000)}s) — forcing terminate`
+        );
+        // ws.terminate triggers the "close" handler which triggers reconnect.
+        // We also bump consecutiveFailures so we eventually hit the circuit
+        // breaker if the upstream is permanently silent.
+        consecutiveFailures++;
+        ws?.terminate();
+      }
+    }, probe);
+  }
+
+  function disarmStalenessWatchdog() {
+    if (stalenessTimer) {
+      clearInterval(stalenessTimer);
+      stalenessTimer = null;
+    }
   }
 
   function scheduleReconnect() {
@@ -132,6 +179,7 @@ export function createReconnectingWS(
   function stop() {
     stopped = true;
     if (reconnectTimer) clearTimeout(reconnectTimer);
+    disarmStalenessWatchdog();
     if (ws) {
       ws.removeAllListeners();
       ws.terminate();
