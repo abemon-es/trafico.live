@@ -127,9 +127,9 @@ async function getData(id: string) {
           where: { province: charger.province },
           take: 20,
           select: {
-            id: true, name: true, brand: true, locality: true,
+            id: true, name: true, locality: true,
             latitude: true, longitude: true,
-            priceGasoleoA: true, priceGasolina95: true,
+            priceGasoleoA: true, priceGasolina95E5: true,
           },
         })
       : Promise.resolve([]),
@@ -260,7 +260,7 @@ export default async function ChargerDetailPage({ params }: Props) {
   const gmapsViewUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
   // ----- JSON-LD -----
-  const evSchema: Record<string, unknown> = {
+  const evSchema = {
     "@context": "https://schema.org",
     "@type": "EVChargingStation",
     name: charger.name,
@@ -632,13 +632,18 @@ export default async function ChargerDetailPage({ params }: Props) {
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                          {s.brand ?? s.name}
+                          {s.name}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                           {s.locality}
                           {s.priceGasoleoA && (
                             <span className="font-mono ml-2">
                               Diésel {Number(s.priceGasoleoA).toFixed(3)} €
+                            </span>
+                          )}
+                          {!s.priceGasoleoA && s.priceGasolina95E5 && (
+                            <span className="font-mono ml-2">
+                              G95 {Number(s.priceGasolina95E5).toFixed(3)} €
                             </span>
                           )}
                         </p>
