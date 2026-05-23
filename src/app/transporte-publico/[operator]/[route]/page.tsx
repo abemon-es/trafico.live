@@ -22,7 +22,7 @@ import { slugify } from "@/lib/geo/slugify";
 import {
   Bus,
   TrainFront,
-  Tram,
+  TramFront,
   Ship,
   ArrowRight,
   MapPin,
@@ -38,14 +38,14 @@ export const dynamicParams = true;
 
 // GTFS route_type → spanish label + icon component name + Schema.org type
 const ROUTE_TYPE: Record<number, { label: string; icon: typeof Bus; schema: string }> = {
-  0: { label: "Tranvía",       icon: Tram,       schema: "TouristTrip" },
+  0: { label: "Tranvía",       icon: TramFront,       schema: "TouristTrip" },
   1: { label: "Metro",         icon: TrainFront, schema: "TouristTrip" },
   2: { label: "Tren",          icon: TrainFront, schema: "TrainTrip" },
   3: { label: "Autobús",       icon: Bus,        schema: "BusTrip" },
   4: { label: "Ferry",         icon: Ship,       schema: "TouristTrip" },
-  5: { label: "Tranvía",       icon: Tram,       schema: "TouristTrip" },
-  6: { label: "Teleférico",    icon: Tram,       schema: "TouristTrip" },
-  7: { label: "Funicular",     icon: Tram,       schema: "TouristTrip" },
+  5: { label: "Tranvía",       icon: TramFront,       schema: "TouristTrip" },
+  6: { label: "Teleférico",    icon: TramFront,       schema: "TouristTrip" },
+  7: { label: "Funicular",     icon: TramFront,       schema: "TouristTrip" },
   11: { label: "Trolebús",     icon: Bus,        schema: "BusTrip" },
   12: { label: "Monorraíl",    icon: TrainFront, schema: "TrainTrip" },
 };
