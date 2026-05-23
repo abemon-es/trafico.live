@@ -5,6 +5,84 @@ Append new iterations at top. Older iterations stay for trend tracking.
 
 ---
 
+## Iteration 4 — 2026-05-23 (full sweep — critical fixes)
+
+**Branch:** `audit/iter-4-sweep-critical-fixes-v2` from `audit/iter-3-silent-failure-hardening`
+**Trigger:** user — "full sweep + audit end-to-end, start pushing nonstop"
+**Mode:** 6-agent parallel deep-audit fan-out (UX/DB/security/SEO/perf/errors) + bulk fix shipping
+
+### Critical findings from the sweep
+
+**Security (block-merge):**
+1. `/api/billing/portal` lets any caller submit any email and receive a live Stripe portal URL for that customer. Zero auth.
+2. `isSameOrigin` returns `true` when no `Origin` header → every "same-origin" guarded API is unauthenticated from `curl`/scripted clients.
+3. `x-admin-email` (sourced from `NEXT_PUBLIC_ADMIN_EMAIL` — public env var visible in browser bundle) was used as admin auth on `/api/admin/affiliates/stats`.
+4. `x-internal: 1` was the only gate on `/api/internal/*`. Header value literal + public.
+5. `API_KEYS` / `ADMIN_SECRET` compared with `.includes()` / `!==` — timing oracle.
+6. `/api/admin/seed-accidents` accepted any `API_KEYS` value to `deleteMany` historical accident data.
+
+**SEO show-stoppers:**
+7. `metadataBase` missing in root layout → every dynamic OG image rendered as `http://localhost:3000/...` in prod.
+8. Vessel sitemap had no recency filter → ~82K stale URLs in one shard (over 50K limit; most 404).
+9. `<StructuredData>` used `next/script` → serialized as `__next_s.push(...)` JS, not a real `<script type="application/ld+json">` tag.
+10. `/calendario` is `"use client"` so no metadata export — inherited homepage title + canonical → duplicate-content signal.
+11. Prisma schema mismatch in `/aviacion/cancelados` — queries `validFrom`/`validTo` which don't exist (real fields `startedAt`/`endedAt`).
+
+**Operational (recorded; fixes in separate PRs):**
+12. `VesselPosition`: 295.6M rows, 64GB, never purged. PR #28 prevents future bloat; one-time SQL purge still needed.
+13. WAL archive on compute:/opt = 484GB and climbing — no `pgbackrest expire`.
+14. `pg_stat_statements` documented as preloaded but NOT in `shared_preload_libraries` → zero query visibility.
+15. Single PG node, no replica, no HA.
+16. `Typesense` outage 03:30→09:29 today (~6h) — silent.
+17. `collector-frequent` OOM every 6h on the dot — manually patched at 12:04Z.
+18. `/api/trenes/posiciones` returns 500 (Renfe LD API regression). Flagship train map dead.
+19. `/api/aviacion` returns empty (OpenSky collector not populating).
+20. Many `force-dynamic` pages that could be `revalidate=N`.
+21. Zero `loading.tsx` anywhere.
+22. `MapLibre` 993KB chunk loaded on every page (incl. non-map).
+23. API routes uncompressed (`/api/maritimo` 161KB, `/api/calidad-aire` 155KB).
+24. CSP has `'unsafe-eval'` + `'unsafe-inline'` globally.
+25. `cal.trafico.live` sends `X-Frame-Options: DENY` → `/calendario` iframes blocked (separate-repo fix).
+
+### Shipped in this iter
+
+| Severity | Fix | File |
+|---|---|---|
+| CRITICAL | `/api/billing/portal` → 501 stub until session auth | `src/app/api/billing/portal/route.ts` |
+| CRITICAL | `isSameOrigin` returns `false` on missing Origin; new `safeCompare` using `crypto.timingSafeEqual` + SHA-256 | `src/lib/auth.ts` |
+| HIGH | `/api/admin/affiliates/stats` uses NextAuth `auth()` session; client stops sending `x-admin-email` | `…/affiliates/stats/route.ts`, `src/app/admin/affiliates/page.tsx` |
+| HIGH | `/api/internal/*` requires `INTERNAL_API_SECRET` env (constant-time) — no literal-value gate | `internal/enforce-tier`, `internal/keys/lookup` |
+| HIGH | `/api/admin/seed-accidents` gated on `ADMIN_SECRET` via `safeCompare` (was public `API_KEYS`) | `admin/seed-accidents/route.ts` |
+| HIGH | `/api/billing/refund` admin-secret check uses `safeCompare` | `billing/refund/route.ts` |
+| CRITICAL-SEO | `metadataBase` set in root layout → OG images resolve to prod domain | `src/app/layout.tsx` |
+| CRITICAL-SEO | Vessel sitemap gains 7d `updatedAt` filter → ~82K stale URLs removed | `src/lib/sitemap-generator.ts` |
+| HIGH-SEO | `<StructuredData>` emits real `<script type="application/ld+json">` (was `next/script` JS-push) | `src/components/seo/StructuredData.tsx` |
+| HIGH-SEO | `/calendario` gets server-side `layout.tsx` with title + canonical + OG | `src/app/calendario/layout.tsx` (new) |
+| HIGH | `/aviacion/cancelados` Prisma fields renamed `validFrom→startedAt`, `validTo→endedAt` with nullable handling | `src/app/aviacion/cancelados/page.tsx` |
+
+### Required env (must be set before deploy)
+
+- `INTERNAL_API_SECRET` — shared secret for Edge middleware → Node API loopback. `openssl rand -hex 32`. Routes return 403/404 until set (safer than old "any caller wins").
+- `ADMIN_SECRET` — already required by `/api/billing/refund`; now also gates `/api/admin/seed-accidents`.
+
+No implicit allow on misconfig.
+
+### Queued for iter 5+
+
+- One-time `DELETE FROM VesselPosition WHERE createdAt < NOW() - INTERVAL '72 hours'` (recovers ~60GB)
+- WAL archive retention cron, `pg_stat_statements` enable, PG read replica
+- Trafico-typesense compose hardening on `abemon-es/serve`
+- `/api/trenes/posiciones` debug, `collector-frequent` mem leak
+- `loading.tsx` + `revalidate` for 100+ pages, MapLibre lazy-load, API gzip
+- CSP nonce migration, `/api/billing/portal` reimpl with NextAuth
+- Tier B dark-data hubs (`/accidentes`, `/maritimo/seguridad`, `/calidad-aire` forecast, per-operator transit)
+
+### One-line state summary
+
+> Iter-4 ships 12 file edits + 1 new file closing top critical security holes + SEO showstoppers. PR queue now #27/#28/#29/#30 (iter-1/2/3/4). **Next: ops fixes (VesselPosition purge, WAL cleanup, pg_stat_statements) + Tier B dark-data builds.**
+
+---
+
 ## Iteration 3 — 2026-05-23 (silent-failure hardening)
 
 **Branch:** `audit/iter-3-silent-failure-hardening` from `audit/iter-2-stability`

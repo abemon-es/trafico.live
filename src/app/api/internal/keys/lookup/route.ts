@@ -36,6 +36,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { safeCompare } from "@/lib/auth";
 import type { ApiTierName } from "@/lib/api-tiers";
 
 export const dynamic = "force-dynamic";
@@ -89,9 +90,17 @@ function setCached(hash: string, entry: Omit<CacheEntry, "ts">) {
 // ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
-  // S0: Guard — require x-internal header
-  const internalHeader = request.headers.get("x-internal");
-  if (internalHeader !== "1") {
+  // SECURITY: previous gate was a literal `x-internal: 1` header that
+  // any external caller could set. Now requires `INTERNAL_API_SECRET`
+  // shared with the Edge middleware. Reject if env unset (no implicit
+  // allow on misconfig).
+  const expected = process.env.INTERNAL_API_SECRET;
+  if (!expected) {
+    console.error("[internal/keys/lookup] INTERNAL_API_SECRET not set");
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const provided = request.headers.get("x-internal-secret");
+  if (!provided || !safeCompare(provided, expected)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

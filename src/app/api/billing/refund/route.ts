@@ -18,6 +18,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createRefund } from "@/lib/stripe";
+import { safeCompare } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const headerSecret = request.headers.get("x-admin-secret");
-  if (!headerSecret || headerSecret !== adminSecret) {
+  // Constant-time compare — `!==` on strings short-circuits on the first
+  // mismatched byte and leaks the correct prefix via timing.
+  if (!headerSecret || !safeCompare(headerSecret, adminSecret)) {
     return NextResponse.json({ error: "Acceso no autorizado" }, { status: 403 });
   }
 

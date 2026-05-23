@@ -80,8 +80,11 @@ async function getActiveWeatherAlerts() {
     // @ts-ignore — WeatherAlert may not be in all schema versions
     return await (prisma as any).weatherAlert?.findMany({
       where: {
-        validFrom: { lte: now },
-        validTo: { gte: now },
+        startedAt: { lte: now },
+        // endedAt is nullable in current schema — match alerts that have
+        // not ended (NULL) or end in the future. Was `endedAt: { gte: now }`
+        // which referenced a non-existent column and threw silently.
+        OR: [{ endedAt: null }, { endedAt: { gte: now } }],
         severity: { in: ["extreme", "severe", "moderate"] },
       },
       select: {
@@ -90,8 +93,8 @@ async function getActiveWeatherAlerts() {
         severity: true,
         area: true,
         description: true,
-        validFrom: true,
-        validTo: true,
+        startedAt: true,
+        endedAt: true,
       },
       orderBy: { severity: "asc" },
       take: 10,
@@ -242,8 +245,8 @@ export default async function CanceladosPage() {
                 severity: string;
                 area?: string;
                 description?: string;
-                validFrom: Date;
-                validTo: Date;
+                startedAt: Date;
+                endedAt: Date | null;
               }) => (
                 <div
                   key={alert.id}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash, timingSafeEqual } from "crypto";
 
 const ALLOWED_HOSTS = [
   "trafico.live",
@@ -11,16 +12,28 @@ const ALLOWED_HOSTS = [
 const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap"];
 
 /**
- * Check if request is same-origin (browser on same domain)
+ * Check if a request is genuinely same-origin.
+ *
+ * IMPORTANT — security history:
+ * The previous implementation returned `true` whenever the `Origin` header
+ * was missing, on the (wrong) assumption that "no Origin = browser same-origin
+ * request". That assumption is false: browsers omit `Origin` on plain
+ * navigations and same-origin GETs, but so do `curl`, `wget`, `python
+ * requests`, and every scripted client on the planet. The net effect was
+ * that every API endpoint guarded by the same-origin check was de facto
+ * unauthenticated from the network.
+ *
+ * New rule: a missing `Origin` header is treated as NOT same-origin. The
+ * trade-off is that some legacy server-rendered fetches inside this app
+ * may break if they rely on the implicit same-origin bypass — those need
+ * to either set an explicit `x-api-key` header or be moved behind the
+ * `x-internal-*` allowlist.
  */
 function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin");
+  if (!origin) return false;
+
   const host = request.headers.get("host") || "";
-
-  // No origin header = same-origin request from browser
-  if (!origin) return true;
-
-  // Check if origin matches host
   try {
     const originHost = new URL(origin).host;
     return originHost === host || ALLOWED_HOSTS.includes(originHost);
@@ -30,14 +43,31 @@ function isSameOrigin(request: NextRequest): boolean {
 }
 
 /**
- * Validate API key from header
+ * Constant-time string comparison via SHA-256 hashing so the buffers are
+ * always equal length regardless of input. Use for any secret comparison
+ * (API keys, admin secrets, internal-API tokens) to avoid leaking the
+ * correct value via timing oracle attacks.
+ */
+export function safeCompare(a: string, b: string): boolean {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
+
+/**
+ * Validate API key from header. Constant-time compare against each allowed
+ * key (small N — typically <10 entries in API_KEYS).
  */
 function hasValidApiKey(request: NextRequest): boolean {
   const apiKey = request.headers.get("x-api-key");
   if (!apiKey) return false;
 
-  const validKeys = process.env.API_KEYS?.split(",").map((k) => k.trim()) || [];
-  return validKeys.includes(apiKey);
+  const validKeys =
+    process.env.API_KEYS?.split(",")
+      .map((k) => k.trim())
+      .filter(Boolean) ?? [];
+  return validKeys.some((k) => safeCompare(k, apiKey));
 }
 
 /**

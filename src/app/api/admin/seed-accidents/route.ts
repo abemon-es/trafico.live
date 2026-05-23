@@ -1,6 +1,7 @@
 import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { safeCompare } from "@/lib/auth";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -18,22 +19,30 @@ interface HistoricalAccidentData {
 }
 
 /**
- * POST /api/admin/seed-accidents  (requires `x-api-key` header)
+ * POST /api/admin/seed-accidents  (requires `x-admin-secret` header)
  *
  * Seeds the HistoricalAccidents table from data/historical-accidents.json.
  * Safe to call multiple times — it upserts by (year, province).
  *
  * Usage:
  *   curl -X POST "https://trafico.live/api/admin/seed-accidents" \
- *     -H "x-api-key: YOUR_KEY"
+ *     -H "x-admin-secret: $ADMIN_SECRET"
  *
- * NOTE: the previous `?key=` query-param fallback was removed — secrets in
- * URLs leak via access logs (Cloudflare, Docker, Loki).
+ * SECURITY: previously this route accepted any value from the public
+ * `API_KEYS` allowlist as authorization. That meant any holder of a
+ * paid (or self-issued free) API key could call `deleteMany` and wipe
+ * the entire HistoricalAccidents table. Now gated on the same
+ * `ADMIN_SECRET` env var used by `/api/billing/refund`, with a
+ * constant-time compare (see `safeCompare`).
  */
 export async function POST(request: NextRequest) {
-  const apiKey = request.headers.get("x-api-key");
-  const validKeys = process.env.API_KEYS?.split(",").map((k) => k.trim()) || [];
-  if (!apiKey || !validKeys.includes(apiKey)) {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (!adminSecret) {
+    console.error("[admin/seed-accidents] ADMIN_SECRET env var is not set");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const headerSecret = request.headers.get("x-admin-secret");
+  if (!headerSecret || !safeCompare(headerSecret, adminSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

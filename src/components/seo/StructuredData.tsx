@@ -1,5 +1,3 @@
-import Script from "next/script";
-
 interface BaseStructuredData {
   "@context": string;
   "@type": string;
@@ -21,15 +19,25 @@ function fnv1aHash(input: string): string {
   return (hash >>> 0).toString(36);
 }
 
+/**
+ * Renders a real <script type="application/ld+json"> tag in the SSR HTML
+ * so Googlebot reads the structured data without needing JS execution.
+ *
+ * Previous implementation used `next/script` with
+ * `strategy="beforeInteractive"`, which Next.js serializes into the
+ * runtime as `(self.__next_s = self.__next_s || []).push([0, {...}])`
+ * — that's a JS push, NOT a parseable `<script type="application/ld+json">`
+ * tag. Tools that don't execute JS (some Google crawlers, structured-data
+ * validators, social previews) saw zero structured data on the page.
+ */
 export function StructuredData({ data }: StructuredDataProps) {
   const payload = JSON.stringify(data);
   const id = `sd-${fnv1aHash(payload)}`;
   return (
-    <Script
+    <script
       id={id}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: payload }}
-      strategy="beforeInteractive"
     />
   );
 }

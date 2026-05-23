@@ -1445,6 +1445,16 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // receive a generic {mmsi}-only URL that 307-redirects, which wastes
   // crawl budget. Also enforces the 9-digit MMSI range to filter AIS
   // base stations and anomalous broadcasts.
+  //
+  // 7-day recency filter (added iter-4): the unfiltered query returned
+  // ~82,318 vessel URLs (well above the 50k-URL sitemap limit and most
+  // returning 404 on the detail page since AIS data is ephemeral). At
+  // ~2-5k active vessels per week this trims the shard back under-limit
+  // and lets Googlebot spend crawl budget on URLs that actually resolve.
+  const VESSEL_RECENCY_DAYS = 7;
+  const vesselSeenSince = new Date(
+    Date.now() - VESSEL_RECENCY_DAYS * 24 * 60 * 60 * 1000
+  );
   let vesselPages: SitemapEntry[] = [];
   try {
     const namedVessels = await prisma.vessel.findMany({
@@ -1452,6 +1462,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       where: {
         mmsi: { gte: 100_000_000, lte: 999_999_999 },
         name: { not: null },
+        updatedAt: { gte: vesselSeenSince },
       },
       orderBy: { mmsi: "asc" },
     });
