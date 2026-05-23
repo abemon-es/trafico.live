@@ -499,6 +499,18 @@ export default async function VesselPage({ params }: PageProps) {
             {vessel.imo && <span className="font-mono">IMO: {vessel.imo}</span>}
             {vessel.callsign && <span className="font-mono">Indicativo: {vessel.callsign}</span>}
           </div>
+
+          {/* Cross-link to voyage history sub-page (Voyage + PortCall data) */}
+          <div className="mt-5">
+            <Link
+              href={`/maritimo/buques/${canonicalSlug}/recorrido`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white text-sm font-semibold transition-colors"
+            >
+              <Navigation className="w-4 h-4" />
+              Ver recorrido completo
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </section>
 
