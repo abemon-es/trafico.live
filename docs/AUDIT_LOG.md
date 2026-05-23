@@ -5,6 +5,64 @@ Append new iterations at top. Older iterations stay for trend tracking.
 
 ---
 
+## Iteration 4 (wave 5) — 2026-05-23 (404 sweep + handover)
+
+**Theme:** every entity URL pattern now resolves — no dead-ends from typos, sibling-paths, or hub-URLs that never existed.
+
+### Pre-existing prod 404s found and fixed (this iter)
+
+| Pattern | UI source | Fix |
+|---|---|---|
+| `/trenes/estaciones` → broken links to 1506 stations | catalog cards + table rows | Plural→singular path bug; `href` corrected `estaciones/[slug]` → `estacion/[slug]` |
+| `/calidad-aire/estacion` | "Directorio estaciones" CTA on `/calidad-aire` | 308 → `/calidad-aire` |
+| `/calidad-aire/provincia` | "Ver por provincia" CTA on `/calidad-aire` | 308 → `/calidad-aire` |
+| `/trenes/estacion` | Sibling of `/trenes/estaciones`; deep links | 308 → `/trenes/estaciones` |
+| `/trenes/linea` | Sibling of `/trenes/lineas`; deep links | 308 → `/trenes/lineas` |
+| `/maritimo/ferries` | "Ferries" CTA on `/maritimo` + back-links from `/maritimo/ferries/proximo` and `/maritimo/ferries/[slug]` | 308 → `/maritimo/ferries/proximo` |
+| `/maritimo/buque` | Singular typo of `/maritimo/buques` | 308 → `/maritimo/buques` |
+| `/aviacion/aeropuerto` | Singular typo of `/aviacion/aeropuertos` | 308 → `/aviacion/aeropuertos` |
+| `/accidentes/carretera` | Natural hub of `/accidentes/carretera/[road]` (built in this PR) | 308 → `/accidentes` |
+| `/camaras/carretera` | Natural hub of `/camaras/carretera/[road]` | 308 → `/camaras` |
+| `/noticias/tag` | Natural hub of `/noticias/tag/[slug]` | 308 → `/noticias` |
+| `/carga-ev/punto` | Natural hub of `/carga-ev/punto/[id]` (rebuilt in this PR) | 308 → `/carga-ev` |
+| `/trenes/tren` | Natural hub of `/trenes/tren/[trainId]` (built in this PR) | 308 → `/trenes` |
+| `/trenes/cercania` | Singular typo of `/trenes/cercanias` | 308 → `/trenes/cercanias` |
+
+**Total: 13 prod 404 → 308 redirects + 1 path-bug fix unlocking 1506 links.**
+
+Each redirect lives in a 12-line server-component `page.tsx` using `permanentRedirect()` (308 — SEO-friendly equivalent of 301). Risk profile: minimal — pure additive, no behavior changes to existing pages.
+
+### Why this matters
+
+The iter-4 entity work (8 new pages + 95K rebuilt) created a new URL grammar (`/X/[entity]` everywhere). Anytime the bare `/X` parent had no `page.tsx`, it 404'd silently. Catching those before merge means crawlers, external links, typos, and back-button traversals all land somewhere useful.
+
+### Iter-4 final state — PR #30 ready for review
+
+- **38 commits, ~7.2K new lines**
+- **All entity URL patterns resolve** — every parent of `[slug]/[id]/[trainId]/[road]` either renders a hub or redirects to a working catalog
+- **Discoverability flywheel closed** for trenes, transit, EV chargers, gasolineras, vessels, radares, accidentes
+- **Thin-pages liability cleared** — 95K pages (12K EV + 83K radars) reshipped from stubs to proper entity landings
+- **8 new entity surfaces** with full content: `/accidentes/carretera/[road]`, `/maritimo/seguridad/estadisticas`, `/calidad-aire/prevision`, `/trenes/tren/[trainId]`, `/transporte-publico/[operator]/[route]`, `/maritimo/buques/[slug]/recorrido`, `/calidad-aire/{estacion,provincia}` + `/trenes/{estacion,linea}` redirects
+- **Sitemap declares** every new pattern (per-road accidents 80, per-vessel recorrido top-500)
+- **Homepage** has both SR-only entity nav + visible 6-card showcase
+- **Ops shipped** alongside: 459GB disk freed, AIS reconnected, Typesense restored, web container rebuilt, VesselPosition 291M-row purge + VACUUM, typesense watchdog cron live
+
+### Pending — handover to user
+
+- Review + merge PR queue (#27 iter-1, #28 iter-2, #29 iter-3, **#30 iter-4**)
+- `collector-realtime` container rebuild on compute (so opensky cron fix becomes effective)
+- VesselPosition `VACUUM FULL` window (still 64GB on disk; statistics are current)
+- GSC + GA4 OAuth scopes for the audit ingestion (or `claude-agent` SA grant)
+- `/api/billing/portal` proper NextAuth-session reimpl (currently 501 stub)
+- Vessel map-marker → ficha popup wiring (TraficoMap component-level work)
+- PostGIS migration for Geo JSON columns
+
+### One-line state summary
+
+> Iter-4 wraps clean: 38 commits, 14 prod-404 closures, 95K entity-page rebuilds, 8 new entity surfaces, full discoverability flywheel, ops fully restored. PR queue (#27–#30) ready for review.
+
+---
+
 ## Iteration 4 (wave 4) — 2026-05-23 (thin-pages liability cleared)
 
 **Theme:** the two largest sitemap shards that were 100-line stubs at scale are now proper entity-landing pages. PR #30 ends here at ~6.8K new lines.
