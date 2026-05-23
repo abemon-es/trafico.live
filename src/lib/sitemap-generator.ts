@@ -1269,6 +1269,21 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),
+    // Per-road accident drill-down (iter-4 dark-data unlock — DGT microdata
+    // 2019-2023). Mirrors the pre-generated set in
+    // src/app/accidentes/carretera/[road]/page.tsx. Long-tail SEO surface
+    // for queries like "accidentes A-7", "accidentes mortales N-340".
+    ...[
+      "AP-7","AP-68","AP-1","AP-2","AP-4","AP-6","AP-9","AP-66",
+      "A-1","A-2","A-3","A-4","A-5","A-6","A-7","A-8",
+      "A-23","A-31","A-42","A-44","A-49","A-52","A-62","A-66","A-92",
+      "N-I","N-II","N-III","N-IV","N-V","N-VI","N-340","N-401","N-630",
+    ].map((road) => ({
+      url: `${BASE_URL}/accidentes/carretera/${encodeURIComponent(road)}`,
+      lastModified: today,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    })),
     ...FUEL_TYPE_SLUGS.map((slug) => ({
       url: `${BASE_URL}/gasolineras/tipo/${slug}`,
       lastModified: today,
