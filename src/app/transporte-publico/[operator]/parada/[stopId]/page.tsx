@@ -71,7 +71,38 @@ async function getStopWithOperator(operatorSlug: string, stopId: string) {
 
   if (!stop) return null;
 
-  return { operator, stop };
+  // Routes that serve this stop. StopTime → Trip → Route. Distinct on
+  // routeId because a stop is hit by many trips of the same route every
+  // day. Cap at the 30 most-used trips to keep the query bounded for
+  // mega-stops (Atocha, Sants).
+  const stopTimes = await prisma.transitStopTime.findMany({
+    where: { operatorId: operator.id, stopId },
+    select: { tripId: true },
+    take: 200,
+  });
+  const tripIds = Array.from(new Set(stopTimes.map((s) => s.tripId)));
+  const trips = tripIds.length
+    ? await prisma.transitTrip.findMany({
+        where: { operatorId: operator.id, tripId: { in: tripIds } },
+        select: { routeId: true },
+      })
+    : [];
+  const routeIds = Array.from(new Set(trips.map((t) => t.routeId)));
+  const routes = routeIds.length
+    ? await prisma.transitRoute.findMany({
+        where: { operatorId: operator.id, routeId: { in: routeIds } },
+        select: {
+          routeId: true,
+          shortName: true,
+          longName: true,
+          routeType: true,
+          routeColor: true,
+        },
+        orderBy: [{ routeType: "asc" }, { shortName: "asc" }],
+      })
+    : [];
+
+  return { operator, stop, routes };
 }
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
@@ -115,7 +146,7 @@ export default async function TransitStopDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { operator, stop } = result;
+  const { operator, stop, routes } = result;
 
   const modeColor = MODE_COLORS[operator.mode] ?? "#6b7280";
   const modeLabel = MODE_LABELS[operator.mode] ?? operator.mode;
@@ -225,6 +256,41 @@ export default async function TransitStopDetailPage({ params }: Props) {
           )}
         </div>
       </section>
+
+      {/* ── Lines serving this stop ─────────────────────────────────────── */}
+      {routes.length > 0 && (
+        <section aria-label="Líneas que paran aquí">
+          <h2 className="text-base font-heading font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Navigation className="w-4 h-4 text-[var(--tl-primary)]" />
+            Líneas que paran aquí
+            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+              {routes.length}
+            </span>
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {routes.map((r) => {
+              const badgeColor = r.routeColor ? `#${r.routeColor}` : modeColor;
+              return (
+                <a
+                  key={r.routeId}
+                  href={`/transporte-publico/${slugify(operator.name)}/${encodeURIComponent(r.routeId)}`}
+                  className="flex items-center gap-2.5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2.5 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50/40 dark:hover:bg-tl-900/10 transition-colors"
+                >
+                  <span
+                    className="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-lg text-xs font-bold shrink-0 text-white"
+                    style={{ backgroundColor: badgeColor }}
+                  >
+                    {r.shortName || "—"}
+                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
+                    {r.longName || r.shortName || "Sin nombre"}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* ── Map + live arrivals (client bundle) ───────────────────────────── */}
       <ArrivalsLive
