@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { vesselSlug } from "@/lib/vessel-utils";
 
 export const revalidate = 300;
 
@@ -194,7 +195,7 @@ function flagEmoji(code: string): string {
 // ---------------------------------------------------------------------------
 
 async function getVesselStats() {
-  const [totalVessels, typeCounts, flagCounts, recentVessels] = await Promise.all([
+  const [totalVessels, typeCounts, flagCounts, recentVessels, recentVoyageMmsi] = await Promise.all([
     prisma.vessel.count(),
 
     // Type counts per category
@@ -224,7 +225,40 @@ async function getVesselStats() {
       orderBy: { updatedAt: "desc" },
       take: 20,
     }),
+
+    // Vessels with the most recent voyage activity — used to surface the
+    // /recorrido sub-pages built earlier in this PR. distinct on mmsi via
+    // groupBy then re-look up Vessel rows by mmsi.
+    prisma.voyage.groupBy({
+      by: ["mmsi"],
+      _max: { departedAt: true },
+      orderBy: { _max: { departedAt: "desc" } },
+      take: 12,
+    }),
   ]);
+
+  // Resolve mmsi → vessel for the voyage-list section
+  const voyageVesselMmsi = recentVoyageMmsi.map((v) => v.mmsi);
+  const vesselsWithVoyages = voyageVesselMmsi.length
+    ? await prisma.vessel.findMany({
+        where: { mmsi: { in: voyageVesselMmsi }, name: { not: null } },
+        select: { mmsi: true, name: true, flag: true, shipType: true },
+      })
+    : [];
+  const vesselByMmsi = new Map(vesselsWithVoyages.map((v) => [v.mmsi, v]));
+  const recentVoyageVessels = recentVoyageMmsi
+    .map((v) => {
+      const vessel = vesselByMmsi.get(v.mmsi);
+      if (!vessel) return null;
+      return {
+        mmsi: v.mmsi,
+        name: vessel.name!,
+        flag: vessel.flag,
+        shipType: vessel.shipType,
+        departedAt: v._max.departedAt,
+      };
+    })
+    .filter((v): v is NonNullable<typeof v> => v !== null);
 
   // Count for "otro" category
   const otherCount = await prisma.vessel.count({
@@ -255,6 +289,7 @@ async function getVesselStats() {
       updatedAt: Date;
       positions: { sog: number | null; createdAt: Date }[];
     }>,
+    recentVoyageVessels,
   };
 }
 
@@ -263,7 +298,7 @@ async function getVesselStats() {
 // ---------------------------------------------------------------------------
 
 export default async function VesselIndexPage() {
-  const { totalVessels, typeCountMap, flagCounts, recentVessels } =
+  const { totalVessels, typeCountMap, flagCounts, recentVessels, recentVoyageVessels } =
     await getVesselStats();
 
   const webPageSchema = {
@@ -428,9 +463,15 @@ export default async function VesselIndexPage() {
                     ? CATEGORIES.find((c) => c.types.includes(vessel.shipType!))
                     : null;
 
+                  const slug = vesselSlug(vessel.mmsi, vessel.name);
+                  const fichaHref = slug.includes("-")
+                    ? `/maritimo/buques/${slug}`
+                    : null;
+                  const RowEl = fichaHref ? Link : "div";
                   return (
-                    <div
+                    <RowEl
                       key={vessel.id}
+                      {...(fichaHref ? { href: fichaHref } : {})}
                       className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
                     >
                       {/* Type icon */}
@@ -484,10 +525,59 @@ export default async function VesselIndexPage() {
                           minute: "2-digit",
                         })}
                       </div>
-                    </div>
+                    </RowEl>
                   );
                 })}
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* Con historial de viajes — links to /recorrido sub-pages */}
+        {recentVoyageVessels.length > 0 && (
+          <section aria-label="Con historial de viajes recientes">
+            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+              <AnchorIcon className="w-6 h-6 text-tl-sea-500" />
+              Con historial de viajes recientes
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Buques con viajes detectados por la pipeline AIS. Cada uno tiene una página de
+              recorrido con escalas portuarias, distancia, duración y estado del viaje en curso.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {recentVoyageVessels.map((v) => {
+                const slug = vesselSlug(v.mmsi, v.name);
+                if (!slug.includes("-")) return null;
+                return (
+                  <Link
+                    key={v.mmsi}
+                    href={`/maritimo/buques/${slug}/recorrido`}
+                    className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-tl-sea-300 dark:hover:border-tl-sea-700 hover:bg-tl-sea-50/40 dark:hover:bg-tl-sea-900/10 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Ship className="w-4 h-4 text-tl-sea-500 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                          {v.name}
+                          {v.flag && <span className="ml-1 text-xs">{flagEmoji(v.flag)}</span>}
+                        </p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+                          MMSI {v.mmsi}
+                          {v.departedAt && (
+                            <span className="ml-1.5">
+                              · zarpó {new Date(v.departedAt).toLocaleDateString("es-ES", {
+                                day: "2-digit",
+                                month: "short",
+                              })}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-tl-sea-500 flex-shrink-0" />
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}
