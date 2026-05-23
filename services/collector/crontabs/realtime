@@ -34,10 +34,20 @@
 # Skips individual feeds if API keys missing; no-op when all skip
 * * * * * TASK=transit-realtime npx tsx index.ts 2>&1
 
-# OpenSky aircraft positions — anonymous limit 400 req/day (~1 per 3.6 min), authenticated 100 req/min
-# Inner loop runs multiple polls if authenticated (uses the 10s minimum); single poll otherwise.
-# */4 is safe for anonymous mode (360 req/day < 400 limit); authenticated mode polls internally every 30s.
-*/4 * * * * TASK=opensky npx tsx index.ts 2>&1
+# OpenSky aircraft positions — anonymous limit 400 req/day.
+#
+# IMPORTANT — request budget math: each scheduler tick calls pollOnce which
+# iterates SPAIN_BBOXES (Peninsula + Canarias = 2 fetches). So:
+#   */4 cron → 360 ticks/day × 2 = 720 calls/day  ← BUSTED prior cadence
+#   */10 cron → 144 ticks/day × 2 = 288 calls/day ← fits under the 400 quota
+# When */4 was active the collector exhausted the anonymous quota by
+# ~mid-morning and 429-loop'd for the rest of the day — AircraftPosition
+# stayed empty even though the dispatcher logged "ok".
+#
+# Authenticated mode (OPENSKY_USERNAME/OPENSKY_PASSWORD set) gets 100 req/min,
+# so when credentials land the cadence can move back to */4 or tighter and
+# the inner loop will do 7 sub-polls per tick.
+*/10 * * * * TASK=opensky npx tsx index.ts 2>&1
 
 # MITECO air quality — 506 stations, ICA index (hourly)
 0 * * * * TASK=air-quality npx tsx index.ts 2>&1
