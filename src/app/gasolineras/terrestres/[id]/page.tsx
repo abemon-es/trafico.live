@@ -122,6 +122,32 @@ export default async function StationDetailPage({ params }: Props) {
     },
   });
 
+  // Same-brand stations nearby. Brand inferred from the first word of the
+  // rótulo (REPSOL TORREJON → REPSOL); good enough for most operators that
+  // prefix their stations with the brand. Scoped to the same province with
+  // a permissive `startsWith` so all chain variations match. Sorted by
+  // diesel price asc so the cheapest of the same brand is at the top.
+  const stationBrand = station.name.split(/\s+/)[0]?.toUpperCase() ?? "";
+  const sameBrandNearby = stationBrand
+    ? await prisma.gasStation.findMany({
+        where: {
+          id: { not: station.id },
+          province: station.province ?? undefined,
+          name: { startsWith: stationBrand, mode: "insensitive" },
+        },
+        orderBy: { priceGasoleoA: "asc" },
+        take: 6,
+        select: {
+          id: true,
+          name: true,
+          locality: true,
+          priceGasoleoA: true,
+          priceGasolina95E5: true,
+          is24h: true,
+        },
+      })
+    : [];
+
   const formatPrice = (price: unknown) => {
     if (price == null) return "N/D";
     const num = typeof price === "object" && "toNumber" in price
@@ -508,6 +534,67 @@ export default async function StationDetailPage({ params }: Props) {
       <div className="mb-6">
         <StationPriceHistory stationId={station.id} />
       </div>
+
+      {/* Misma marca cerca — only renders when we found other branches */}
+      {sameBrandNearby.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <MapPin className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Otras estaciones {stationBrand} en {station.provinceName ?? "la provincia"}
+            </h2>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            {sameBrandNearby.length} estaciones más de la misma marca · ordenadas por precio de gasóleo
+          </p>
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            {sameBrandNearby.map((alt, index) => {
+              const altDiesel = alt.priceGasoleoA ? Number(alt.priceGasoleoA) : null;
+              const currentDiesel = station.priceGasoleoA ? Number(station.priceGasoleoA) : null;
+              const diff = altDiesel && currentDiesel ? altDiesel - currentDiesel : null;
+              return (
+                <Link
+                  key={alt.id}
+                  href={`/gasolineras/terrestres/${alt.id}`}
+                  className="flex items-center justify-between py-3 hover:bg-gray-50 dark:hover:bg-gray-800/40 -mx-2 px-2 rounded transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-6 h-6 bg-tl-50 dark:bg-tl-900/30 text-tl-700 dark:text-tl-400 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{alt.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {alt.locality}
+                        {alt.is24h && " · 24h"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    {altDiesel && (
+                      <p className="font-mono text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        {altDiesel.toFixed(3)} €
+                      </p>
+                    )}
+                    {diff !== null && diff !== 0 && (
+                      <p
+                        className={`text-[11px] font-mono ${
+                          diff < 0
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-red-600 dark:text-red-400"
+                        }`}
+                      >
+                        {diff > 0 ? "+" : ""}
+                        {diff.toFixed(3)} €
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 5 alternativas más baratas */}
       {cheaperAlternatives.length > 0 && (
