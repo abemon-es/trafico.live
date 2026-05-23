@@ -10,17 +10,25 @@ interface StructuredDataProps {
   data: BaseStructuredData | BaseStructuredData[];
 }
 
-let structuredDataCounter = 0;
+// Content-derived stable ID — survives concurrent SSR renders without
+// colliding across modules. FNV-1a 32-bit, base36 for short URLs.
+function fnv1aHash(input: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36);
+}
 
 export function StructuredData({ data }: StructuredDataProps) {
-  const id = `structured-data-${structuredDataCounter++}`;
+  const payload = JSON.stringify(data);
+  const id = `sd-${fnv1aHash(payload)}`;
   return (
     <Script
       id={id}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(data),
-      }}
+      dangerouslySetInnerHTML={{ __html: payload }}
       strategy="beforeInteractive"
     />
   );

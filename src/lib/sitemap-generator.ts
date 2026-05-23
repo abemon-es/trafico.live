@@ -57,6 +57,110 @@ export interface SitemapEntry {
 }
 
 /**
+ * DB-backed shard discovery — emits only shards that will contain URLs.
+ * Falls back to fixed upper bounds when DB is unreachable so we never
+ * serve an empty sitemap index.
+ *
+ * Used by /api/sitemap-index. Empty shards waste Googlebot crawl budget
+ * and trigger "sitemap has no URLs" warnings in GSC.
+ */
+export async function getActiveShardIds(): Promise<{ id: number }[]> {
+  const staticShards = [{ id: 0 }, { id: INSIGHTS_OFFSET }];
+
+  type Cat = {
+    offset: number;
+    fallback: number;
+    count: () => Promise<number>;
+  };
+
+  const categories: Cat[] = [
+    {
+      offset: GAS_STATION_OFFSET,
+      fallback: FALLBACK_STATION_SHARDS,
+      count: () => prisma.gasStation.count(),
+    },
+    {
+      offset: MUNICIPALITY_OFFSET,
+      fallback: FALLBACK_MUNICIPALITY_SHARDS,
+      count: () => prisma.municipality.count(),
+    },
+    {
+      offset: POSTAL_CODE_OFFSET,
+      fallback: FALLBACK_POSTAL_CODE_SHARDS,
+      count: async () => {
+        const rows = await prisma.gasStation.findMany({
+          select: { postalCode: true },
+          distinct: ["postalCode"],
+          where: { postalCode: { not: null } },
+        });
+        return rows.length;
+      },
+    },
+    {
+      offset: MARITIME_OFFSET,
+      fallback: FALLBACK_MARITIME_SHARDS,
+      count: () => prisma.maritimeStation.count(),
+    },
+    {
+      offset: RADAR_OFFSET,
+      fallback: FALLBACK_RADAR_SHARDS,
+      count: () => prisma.radar.count({ where: { isActive: true } }),
+    },
+    {
+      offset: CAMERA_OFFSET,
+      fallback: FALLBACK_CAMERA_SHARDS,
+      count: () => prisma.camera.count({ where: { isActive: true } }),
+    },
+    {
+      offset: CHARGER_OFFSET,
+      fallback: FALLBACK_CHARGER_SHARDS,
+      count: () => prisma.eVCharger.count({ where: { isPublic: true } }),
+    },
+    {
+      offset: RAILWAY_STATION_OFFSET,
+      fallback: FALLBACK_RAILWAY_STATION_SHARDS,
+      count: () => prisma.railwayStation.count({ where: { slug: { not: null } } }),
+    },
+    {
+      offset: RAILWAY_LINE_OFFSET,
+      fallback: FALLBACK_RAILWAY_LINE_SHARDS,
+      count: () => prisma.railwayRoute.count({ where: { slug: { not: null } } }),
+    },
+    {
+      offset: AIR_QUALITY_OFFSET,
+      fallback: FALLBACK_AIR_QUALITY_SHARDS,
+      count: () => prisma.airQualityStation.count(),
+    },
+    {
+      offset: CLIMATE_STATION_OFFSET,
+      fallback: FALLBACK_CLIMATE_STATION_SHARDS,
+      count: () => prisma.climateStation.count(),
+    },
+  ];
+
+  const counts = await Promise.all(
+    categories.map(async (c) => {
+      try {
+        const n = await c.count();
+        // Always emit at least 1 shard per category that historically had data,
+        // so a transient empty DB doesn't shrink the published sitemap surface.
+        const shards = Math.max(1, Math.ceil(n / SHARD_SIZE));
+        return { offset: c.offset, shards };
+      } catch (err) {
+        reportApiError(err, `sitemap shard count offset=${c.offset}`);
+        return { offset: c.offset, shards: c.fallback };
+      }
+    })
+  );
+
+  const dynamicShards = counts.flatMap(({ offset, shards }) =>
+    Array.from({ length: shards }, (_, i) => ({ id: offset + i }))
+  );
+
+  return [...staticShards, ...dynamicShards].sort((a, b) => a.id - b.id);
+}
+
+/**
  * Returns the list of shard IDs to be included in the sitemap index.
  * Does NOT depend on DB — uses fixed upper bounds so shard routes
  * are always registered, even during builds without a database.
@@ -938,6 +1042,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       url: `${BASE_URL}/sobre`,
       lastModified: today,
       changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/calendario`,
+      lastModified: today,
+      changeFrequency: "weekly",
       priority: 0.5,
     },
     {

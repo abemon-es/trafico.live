@@ -14,6 +14,41 @@ const LEGACY_DOMAINS = [
 // In-memory slug resolution cache (lives for the lifetime of the edge worker)
 const slugCache = new Map<string, string | null>();
 
+// AI / LLM / search-engine crawler fingerprints. Match against the User-Agent
+// string and log to stdout so Loki ingests one structured line per AI crawl.
+// Order matters: earlier patterns win (label precedence). Patterns are
+// lowercased ASCII substring matches — case-insensitive comparison done
+// against the lowercased UA below.
+const AI_BOT_FINGERPRINTS: Array<{ name: string; needle: string }> = [
+  { name: "GPTBot", needle: "gptbot" },
+  { name: "ChatGPT-User", needle: "chatgpt-user" },
+  { name: "OAI-SearchBot", needle: "oai-searchbot" },
+  { name: "ClaudeBot", needle: "claudebot" },
+  { name: "Claude-Web", needle: "claude-web" },
+  { name: "Anthropic-AI", needle: "anthropic-ai" },
+  { name: "PerplexityBot", needle: "perplexitybot" },
+  { name: "Perplexity-User", needle: "perplexity-user" },
+  { name: "Google-Extended", needle: "google-extended" },
+  { name: "GoogleOther", needle: "googleother" },
+  { name: "Applebot-Extended", needle: "applebot-extended" },
+  { name: "Applebot", needle: "applebot" },
+  { name: "Bytespider", needle: "bytespider" },
+  { name: "CCBot", needle: "ccbot" },
+  { name: "DuckAssistBot", needle: "duckassistbot" },
+  { name: "MistralAI-User", needle: "mistralai-user" },
+  { name: "cohere-ai", needle: "cohere-ai" },
+  { name: "Diffbot", needle: "diffbot" },
+];
+
+function detectAiBot(userAgent: string): string | null {
+  if (!userAgent) return null;
+  const ua = userAgent.toLowerCase();
+  for (const { name, needle } of AI_BOT_FINGERPRINTS) {
+    if (ua.includes(needle)) return name;
+  }
+  return null;
+}
+
 /**
  * Resolve a municipality or city slug to its full /espana/... path.
  * Uses the internal API to avoid direct Prisma imports in middleware (edge runtime).
@@ -50,6 +85,36 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host")?.replace(/:\d+$/, "") || "";
   const pathname = request.nextUrl.pathname;
   const search = request.nextUrl.search;
+
+  // AI/LLM crawler observability — emit one structured line per visit so we
+  // can see what bots are reading on the site (Loki dashboards). Skip static
+  // asset paths to keep the signal-to-noise high.
+  const userAgent = request.headers.get("user-agent") ?? "";
+  const isAssetPath =
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/static/") ||
+    pathname === "/favicon.ico" ||
+    /\.(png|jpe?g|webp|gif|svg|css|js|ico|map|woff2?|ttf)$/i.test(pathname);
+  if (!isAssetPath) {
+    const botName = detectAiBot(userAgent);
+    if (botName) {
+      const country =
+        request.headers.get("cf-ipcountry") ||
+        request.headers.get("x-vercel-ip-country") ||
+        "?";
+      console.log(
+        JSON.stringify({
+          evt: "ai_bot_visit",
+          bot: botName,
+          path: pathname,
+          host: hostname,
+          country,
+          referer: request.headers.get("referer") ?? null,
+          ua: userAgent.slice(0, 200),
+        })
+      );
+    }
+  }
 
   // Redirect legacy domains → trafico.live
   const isLegacy = LEGACY_DOMAINS.some(
