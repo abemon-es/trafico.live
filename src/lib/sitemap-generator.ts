@@ -1516,12 +1516,49 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     reportApiError(err, "sitemap vessel pages");
   }
 
+  // /maritimo/buques/[slug]/recorrido — voyage-history sub-pages added
+  // in iter-4. Only emit for vessels with at least one Voyage row so
+  // Google doesn't crawl empty histories. The sub-page's own ISR is
+  // 1h matching the voyage-detector cadence.
+  let vesselRecorridoPages: SitemapEntry[] = [];
+  try {
+    const vesselsWithVoyages = await prisma.voyage.findMany({
+      distinct: ["mmsi"],
+      select: { mmsi: true },
+      take: 500,
+    });
+    if (vesselsWithVoyages.length > 0) {
+      const namedRows = await prisma.vessel.findMany({
+        where: {
+          mmsi: { in: vesselsWithVoyages.map((v) => v.mmsi) },
+          name: { not: null },
+        },
+        select: { mmsi: true, name: true, updatedAt: true },
+      });
+      vesselRecorridoPages = namedRows.flatMap((v) => {
+        const slug = vesselSlug(v.mmsi, v.name);
+        if (!slug.includes("-")) return [];
+        return [
+          {
+            url: `${BASE_URL}/maritimo/buques/${slug}/recorrido`,
+            lastModified: v.updatedAt ?? today,
+            changeFrequency: "weekly" as const,
+            priority: 0.45,
+          },
+        ];
+      });
+    }
+  } catch (err) {
+    reportApiError(err, "sitemap vessel recorrido pages");
+  }
+
   return [
     ...staticPages,
     ...cityPages,
     ...roadPages,
     ...cameraRoadPages,
     ...provincePages,
+    ...vesselRecorridoPages,
     ...communityPages,
     ...maritimePortPages,
     ...transitOperatorPages,
