@@ -145,7 +145,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> },
 ): Promise<Metadata> {
   const { slug } = await params;
-  const mmsi = parseVesselSlug(slug);
+  const { mmsi } = parseVesselSlug(slug);
   if (!mmsi) return { title: "Buque no encontrado" };
   const vessel = await getVessel(mmsi);
   if (!vessel) return { title: "Buque no encontrado" };
@@ -176,7 +176,7 @@ export default async function VesselRecorridoPage(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const mmsi = parseVesselSlug(slug);
+  const { mmsi } = parseVesselSlug(slug);
   if (!mmsi) notFound();
 
   const vessel = await getVessel(mmsi);
