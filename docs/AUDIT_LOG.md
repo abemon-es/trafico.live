@@ -5,6 +5,45 @@ Append new iterations at top. Older iterations stay for trend tracking.
 
 ---
 
+## Iteration 4 (wave 3) — 2026-05-23 (discoverability loop closure)
+
+**Theme:** every entity surface from wave 2 is reachable in 2 clicks from the hub it belongs to, AND declared in the sitemap, AND seeded into the homepage crawler nav.
+
+### What shipped
+
+| Change | File |
+|---|---|
+| Hero-map "Train Detail Panel" → "Ver página completa" CTA → `/trenes/tren/[trainId]` | `src/app/trenes/content.tsx` |
+| Operator-page route cards → wrapped in `Link` to `/transporte-publico/[operator]/[route]` (were inert `<div>`) | `src/app/transporte-publico/[operator]/page.tsx` |
+| Sitemap-generator emits `/maritimo/buques/[slug]/recorrido` URLs (top 500 vessels with Voyage activity, name-eligible slug) | `src/lib/sitemap-generator.ts` |
+| `/maritimo/buques` hub — "Actualizados recientemente" rows wrapped in `Link` to ficha (were inert) | `src/app/maritimo/buques/page.tsx` |
+| `/maritimo/buques` hub — new "Con historial de viajes recientes" section listing top 12 vessels by latest Voyage.departedAt, each linking directly to `/recorrido` | `src/app/maritimo/buques/page.tsx` |
+| Homepage SR-only `<nav aria-label="Páginas individuales">` with anchor links to every entity-URL pattern (per-train, per-vessel + recorrido, per-charger, per-station, per-operator, per-road accidents, prevision, SASEMAR estadísticas) | `src/app/page.tsx` |
+| `/gasolineras/terrestres` — "Más barata de [BRAND] en España" cross-province section (national leap) | `src/app/gasolineras/terrestres/[id]/page.tsx` |
+
+### Discoverability flywheel state at end of wave 3
+
+| Vertical | Status |
+|---|---|
+| Trenes | ✅ full loop: `/trenes` → marker → "Ver página completa" → `/trenes/tren/[id]` → station chip → `/trenes/estacion/[slug]` → "Trenes ahora" → next train |
+| Transit | ✅ full loop: `/transporte-publico` → operator → route card → `/transporte-publico/[operator]/[route]` → stop → operator |
+| EV chargers | ✅ `/carga-ev` → punto → nearby chargers + nearby gas + city |
+| Vessels | ✅ server-side: `/maritimo/buques` hub (linked rows + "Con historial") → ficha → "/recorrido" CTA → recorrido sub-page. Vessel-map-marker → ficha still requires TraficoMap component-level work (deferred — needs popup wiring inside the shared `TraficoMap` rather than per-page) |
+| Aviation | ✅ page wiring is correct (nearbyAircraft already on /aviacion/aeropuertos/[iata]); waiting for AircraftPosition data to flow after the OpenSky cron-rate fix takes effect at next UTC daily reset |
+| Gasolineras | ✅ same-brand local + national + cheaper-province + price-history chart + station-ranking + price-comparison |
+
+### Operational notes
+
+- **OpenSky** cron `*/4 → */10` (commit earlier in this iter) — daily quota was being busted at 720/400. Effective at next UTC midnight; until then 429s continue from the carried-over count.
+- **Trafico-typesense** watchdog cron continues running every 10 min on database-primary; container has been healthy since the iter-1 rescue.
+- **VesselPosition** working-set ~4M rows (post-purge); cleanup-realtime (iter 2) keeps it bounded going forward. VACUUM FULL deferred — table still 64GB on disk, statistics current, dead-tuple slots reusable.
+
+### One-line state summary
+
+> 27 commits in PR #30; security + SEO + storage + 8 new entity pages + complete discoverability loops + homepage crawler nav + recorrido sitemap. **Next: visual entity-cards section on homepage, OpenSky data verification after UTC reset, /gasolineras/terrestres price-history mini-chart polish.**
+
+---
+
 ## Iteration 4 (wave 2) — 2026-05-23 (entity-page push, vision pass)
 
 **Branch (continued):** `audit/iter-4-sweep-critical-fixes-v2`
