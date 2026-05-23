@@ -299,6 +299,31 @@ export default async function HomePage() {
             <Link key={href} href={href}>{label}</Link>
           ))}
         </nav>
+        {/* Per-entity discovery surface — every train, vessel, charger,
+         *  fuel station, transit route and accident-road has its own
+         *  landing page. These links anchor the entity URL pattern for
+         *  crawlers and seed internal link equity into the deep pages
+         *  shipped in this PR. */}
+        <nav aria-label="Páginas individuales">
+          <h2>Páginas por entidad</h2>
+          <p>
+            Cada tren en circulación, cada buque AIS, cada cargador EV, cada gasolinera y cada
+            línea de transporte público tiene su propia página de aterrizaje con datos en vivo,
+            historial y mapa.
+          </p>
+          <ul>
+            <li><Link href="/trenes">Mapa de trenes en vivo</Link> → cada tren tiene página individual (ej. <Link href="/trenes/tren/03241">tren 03241</Link>) con posición, próxima parada y recorrido</li>
+            <li><Link href="/trenes/estaciones">Estaciones de tren</Link> con próximas llegadas en vivo</li>
+            <li><Link href="/maritimo/buques">Directorio AIS de buques</Link> + ficha por MMSI + recorrido histórico</li>
+            <li><Link href="/aviacion/aeropuertos">Aeropuertos AENA</Link> con aviones cercanos en vivo</li>
+            <li><Link href="/gasolineras">Gasolineras</Link> con precios + cargadores cerca + misma marca</li>
+            <li><Link href="/carga-ev">Cargadores EV</Link> 12.000+ puntos con potencia, conectores y gasolineras cerca</li>
+            <li><Link href="/transporte-publico">Transporte público</Link> 15 operadores con páginas por ruta y por parada</li>
+            <li><Link href="/accidentes">Siniestralidad DGT</Link> con análisis por carretera (ej. <Link href="/accidentes/carretera/AP-7">AP-7</Link>, <Link href="/accidentes/carretera/A-7">A-7</Link>, <Link href="/accidentes/carretera/N-340">N-340</Link>)</li>
+            <li><Link href="/calidad-aire">Calidad del aire</Link> en vivo + <Link href="/calidad-aire/prevision">previsión CAMS 5 días</Link></li>
+            <li><Link href="/maritimo/seguridad/estadisticas">Estadísticas SASEMAR</Link> de rescates marítimos</li>
+          </ul>
+        </nav>
         <StructuredData
           data={[faqSchema, breadcrumbSchema, serviceSchema, speakableSchema, multimodalItemList, provincesItemList, ccaaItemList, ...datasets]}
         />
