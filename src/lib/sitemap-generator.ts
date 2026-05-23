@@ -1106,6 +1106,14 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    // SASEMAR rescue statistics (iter-4 dark-data unlock — 30K events
+    // 2019-2024 that were previously only reachable via the API).
+    {
+      url: `${BASE_URL}/maritimo/seguridad/estadisticas`,
+      lastModified: today,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    },
     {
       url: `${BASE_URL}/maritimo/mapa`,
       lastModified: today,
