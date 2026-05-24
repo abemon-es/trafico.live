@@ -34,6 +34,15 @@
 # Skips individual feeds if API keys missing; no-op when all skip
 * * * * * TASK=transit-realtime npx tsx index.ts 2>&1
 
+# GTFS-RT por operador: EMT Madrid, TMB Barcelona, EMT Valencia (cada minuto)
+# 2 pases de 30s por invocación → granularidad efectiva de ~30s
+# EMT Madrid: requiere EMT_MADRID_CLIENT_ID + EMT_MADRID_PASS_KEY (omite si faltan)
+# TMB Barcelona: requiere TMB_APP_ID + TMB_APP_KEY (omite si faltan)
+# EMT Valencia: sin autenticación (datos abiertos Ayuntamiento de Valencia)
+* * * * * TASK=transit-rt-madrid npx tsx index.ts 2>&1
+* * * * * TASK=transit-rt-tmb npx tsx index.ts 2>&1
+* * * * * TASK=transit-rt-valencia npx tsx index.ts 2>&1
+
 # OpenSky aircraft positions — anonymous limit 400 req/day.
 #
 # IMPORTANT — request budget math: each scheduler tick calls pollOnce which

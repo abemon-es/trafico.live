@@ -5,11 +5,6 @@
  * from volatile, high-ingest tables so the DB doesn't grow unbounded.
  *
  * Targets (and why each retention window was picked):
- *   - VesselPosition       72h   AIS positions, ~10M rows/day. Voyage
- *                                detector reads only the last 2h window;
- *                                long-term durable data lives in Voyage +
- *                                PortCall. Without this, the table grows
- *                                ~300M rows/month and indexes degrade fast.
  *   - CityTrafficReading   7d    Madrid/Barcelona/Valencia/Zaragoza sensor
  *                                samples, ~1.7M rows/day. We render last-N
  *                                samples on city pages; older history feeds
@@ -19,13 +14,16 @@
  *                                ~720 rows/day, the table is small but we
  *                                keep 3 months so brand punctuality stats
  *                                stay rolling-quarterly.
- *   - TrafficIntensity     48h   Madrid sensor live-intensity, ~880K
- *                                rows/day. Matches the 48h documented
- *                                rolling window in CLAUDE.md (which was
- *                                not enforced anywhere — this fixes that).
- *   - TrafficReading       48h   DGT national-detector readings. Same
- *                                rationale as TrafficIntensity.
+ *   - TrafficReading       48h   DGT national-detector readings.
  *   - TransitVehiclePosition 48h Original target. Unchanged.
+ *
+ * REMOVED from this collector (migration 20260524210000_timescaledb_hypertables):
+ *   - VesselPosition    → TimescaleDB retention policy: 1 year
+ *   - AircraftPosition  → TimescaleDB retention policy: 1 year
+ *   - TrafficIntensity  → TimescaleDB retention policy: 90 days
+ *   - AirQualityReading → TimescaleDB retention policy: 1 year
+ *   These are now TimescaleDB hypertables. Retention is managed automatically
+ *   by TimescaleDB's background job scheduler — no manual deletes needed.
  *
  * Each delete is a single statement using the per-table timestamp index
  * (verified in schema.prisma). On Postgres + BRIN/B-tree, large deletes
@@ -49,6 +47,11 @@ interface CleanupSpec {
 }
 
 export async function run(prisma: PrismaClient): Promise<void> {
+  // NOTE: VesselPosition, AircraftPosition, TrafficIntensity, and
+  // AirQualityReading are NOT listed here. They are now TimescaleDB
+  // hypertables with automated retention policies applied in migration
+  // 20260524210000_timescaledb_hypertables. Manual deletes would conflict
+  // with TimescaleDB's chunk-drop mechanism and are therefore removed.
   const specs: CleanupSpec[] = [
     {
       label: "TransitVehiclePosition",
@@ -59,27 +62,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
         }),
     },
     {
-      label: "VesselPosition",
-      retentionHours: 72,
-      run: (cutoff) =>
-        prisma.vesselPosition.deleteMany({
-          where: { createdAt: { lt: cutoff } },
-        }),
-    },
-    {
       label: "CityTrafficReading",
       retentionHours: 7 * 24,
       run: (cutoff) =>
         prisma.cityTrafficReading.deleteMany({
           where: { createdAt: { lt: cutoff } },
-        }),
-    },
-    {
-      label: "TrafficIntensity",
-      retentionHours: 48,
-      run: (cutoff) =>
-        prisma.trafficIntensity.deleteMany({
-          where: { recordedAt: { lt: cutoff } },
         }),
     },
     {

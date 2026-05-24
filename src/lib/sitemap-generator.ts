@@ -1653,6 +1653,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // Google doesn't crawl empty histories. The sub-page's own ISR is
   // 1h matching the voyage-detector cadence.
   let vesselRecorridoPages: SitemapEntry[] = [];
+  let vesselHistorialPages: SitemapEntry[] = [];
   try {
     const vesselsWithVoyages = await prisma.voyage.findMany({
       distinct: ["mmsi"],
@@ -1667,6 +1668,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
         },
         select: { mmsi: true, name: true, updatedAt: true },
       });
+
       vesselRecorridoPages = namedRows.flatMap((v) => {
         const slug = vesselSlug(v.mmsi, v.name);
         if (!slug.includes("-")) return [];
@@ -1678,6 +1680,24 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
             priority: 0.45,
           },
         ];
+      });
+
+      // /maritimo/buques/[slug]/historial/[year] — yearly archive pages (iter-9).
+      // One entry per vessel × year for the last 5 calendar years.
+      // Only emitted if the vessel has at least one Voyage row (otherwise the
+      // historial page would 404 on render). Priority 0.4 (archival content).
+      const currentYear = new Date().getFullYear();
+      const archiveYears = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+      vesselHistorialPages = namedRows.flatMap((v) => {
+        const slug = vesselSlug(v.mmsi, v.name);
+        if (!slug.includes("-")) return [];
+        return archiveYears.map((year) => ({
+          url: `${BASE_URL}/maritimo/buques/${slug}/historial/${year}`,
+          lastModified: v.updatedAt ?? today,
+          changeFrequency: "yearly" as const,
+          priority: 0.4,
+        }));
       });
     }
   } catch (err) {
@@ -1691,6 +1711,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     ...cameraRoadPages,
     ...provincePages,
     ...vesselRecorridoPages,
+    ...vesselHistorialPages,
     ...communityPages,
     ...maritimePortPages,
     ...transitOperatorPages,
@@ -2068,6 +2089,9 @@ async function climateStationSitemap(
 
 // ---------------------------------------------------------------------------
 // Aircraft sitemap shards — /aviacion/avion/[icao24]
+// Also emits per-flight-date URLs (/aviacion/avion/[icao24]/vuelo/[date])
+// for the top 50 most-active aircraft in the last 30 days (noindex on those
+// sub-pages, but still linkable/crawlable for Googlebot discovery).
 // ---------------------------------------------------------------------------
 
 async function aircraftSitemap(shardIndex: number): Promise<SitemapEntry[]> {
@@ -2082,12 +2106,50 @@ async function aircraftSitemap(shardIndex: number): Promise<SitemapEntry[]> {
       orderBy: { icao24: "asc" },
     });
     const today = startOfUtcDay();
-    return rows.map((r) => ({
+
+    // Base aircraft pages
+    const aircraftEntries: SitemapEntry[] = rows.map((r) => ({
       url: `${BASE_URL}/aviacion/avion/${r.icao24.toLowerCase()}`,
       lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.45,
     }));
+
+    // Flight-detail entries for top 50 aircraft (only on shard 0 to avoid duplication)
+    const flightEntries: SitemapEntry[] = [];
+    if (shardIndex === 0) {
+      try {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const top50 = rows.slice(0, 50);
+        for (const r of top50) {
+          const positions = await prisma.aircraftPosition.findMany({
+            where: {
+              icao24: { equals: r.icao24, mode: "insensitive" },
+              createdAt: { gte: thirtyDaysAgo },
+            },
+            select: { createdAt: true },
+            orderBy: { createdAt: "desc" },
+            take: 500,
+          });
+          // Extract unique dates (YYYY-MM-DD UTC)
+          const dates = new Set(
+            positions.map((p) => p.createdAt.toISOString().slice(0, 10))
+          );
+          for (const date of dates) {
+            flightEntries.push({
+              url: `${BASE_URL}/aviacion/avion/${r.icao24.toLowerCase()}/vuelo/${date}`,
+              lastModified: today,
+              changeFrequency: "yearly" as const,
+              priority: 0.2,
+            });
+          }
+        }
+      } catch (err) {
+        reportApiError(err, "sitemap aircraft flight-dates");
+      }
+    }
+
+    return [...aircraftEntries, ...flightEntries];
   } catch (err) {
     reportApiError(err, "sitemap aircraft");
     return [];

@@ -1,0 +1,20 @@
+{
+  "routes": [
+    { "path": "/", "label": "Inicio" },
+    { "path": "/mapa", "label": "Mapa en vivo" },
+    { "path": "/trenes", "label": "Trenes" },
+    { "path": "/maritimo", "label": "Marítimo" },
+    { "path": "/aviacion", "label": "Aviación" },
+    { "path": "/atascos", "label": "Atascos" },
+    { "path": "/accidentes", "label": "Accidentes" },
+    { "path": "/calidad-aire", "label": "Calidad del aire" },
+    { "path": "/carga-ev", "label": "Carga EV" },
+    { "path": "/sobre", "label": "Sobre trafico.live" }
+  ],
+  "thresholds": {
+    "performance": 80,
+    "accessibility": 80,
+    "seo": 80,
+    "best-practices": 75
+  }
+}

@@ -52,6 +52,8 @@ const VALID_TASKS = [
   "ais-stream", "ferry-gtfs",
   // Transit
   "transit-gtfs", "renfe-positions", "transit-realtime", "cleanup-realtime",
+  // Transit GTFS-RT por operador (EMT Madrid, TMB Barcelona, EMT Valencia)
+  "transit-rt-madrid", "transit-rt-tmb", "transit-rt-valencia",
   // City traffic
   "city-traffic", "dgt-extras",
   // Historical
