@@ -1,34 +1,83 @@
 /**
- * /aviacion/avion/[icao24] — página de aeronave en tiempo real.
+ * /aviacion/avion/[icao24] — página definitiva de aeronave individual.
  *
- * Muestra la posición actual, estadísticas de vuelo y trayectoria de
- * las últimas 24 horas de una aeronave identificada por su código
- * ICAO24 (hexadecimal de 6 dígitos).
+ * Muestra historial completo de posiciones, vuelos computados, aeropuertos
+ * visitados, patrones de horario, histograma de altitudes, velocidades por
+ * fase y rutas frecuentes con puntuación de predecibilidad.
  *
- * Fuente: OpenSky Network, recolector cada 15 minutos.
- * Noindex: los datos cambian continuamente; la URL es compartible
- * pero no indexable (igual que /trenes/tren/[trainId]).
+ * Datos: AircraftPosition (TimescaleDB, hasta 30d de historia), Airport (AENA).
+ * Fuente: OpenSky Network · Revalidación ISR: 60 s.
  */
 
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import {
   Plane,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-  Gauge,
-  Navigation,
+  AlertTriangle,
   MapPin,
   Clock,
-  Globe,
-  Radio,
-  ExternalLink,
-  AlertTriangle,
+  BarChart2,
+  TrendingUp,
+  Calendar,
+  Route,
+  Gauge,
 } from "lucide-react";
+
+import {
+  groupIntoFlights,
+  enrichFlightsWithAirports,
+  aggregateAirportVisits,
+  computeFrequentRoutes,
+  computeFlightPatternHeatmap,
+  computeAltitudeHistogram,
+  computeSpeedByPhase,
+  computeAircraftSummary,
+  type RawPosition,
+  type AirportLookup,
+} from "@/lib/aviacion/flight-grouping";
+import { lookupIcaoCountry } from "@/lib/aviacion/icao-lookup";
+
+// Client components loaded dynamically (charts need browser)
+const AircraftHero = dynamic(
+  () => import("@/components/aviacion/AircraftHero").then((m) => m.AircraftHero),
+  { ssr: false }
+);
+const FlightTable = dynamic(
+  () => import("@/components/aviacion/FlightTable").then((m) => m.FlightTable),
+  { ssr: false }
+);
+const AirportVisits = dynamic(
+  () => import("@/components/aviacion/AirportVisits").then((m) => m.AirportVisits),
+  { ssr: false }
+);
+const FlightPatternHeatmap = dynamic(
+  () =>
+    import("@/components/aviacion/FlightPatternHeatmap").then(
+      (m) => m.FlightPatternHeatmap
+    ),
+  { ssr: false }
+);
+const AltitudeHistogram = dynamic(
+  () =>
+    import("@/components/aviacion/AltitudeHistogram").then(
+      (m) => m.AltitudeHistogram
+    ),
+  { ssr: false }
+);
+const SpeedPhaseChart = dynamic(
+  () =>
+    import("@/components/aviacion/SpeedPhaseChart").then((m) => m.SpeedPhaseChart),
+  { ssr: false }
+);
+const FrequentRoutes = dynamic(
+  () =>
+    import("@/components/aviacion/FrequentRoutes").then((m) => m.FrequentRoutes),
+  { ssr: false }
+);
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -36,26 +85,7 @@ export const revalidate = 60;
 export const dynamicParams = true;
 
 // ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-type Position = {
-  id: string;
-  icao24: string;
-  callsign: string | null;
-  latitude: number;
-  longitude: number;
-  altitude: number | null;
-  velocity: number | null;
-  heading: number | null;
-  verticalRate: number | null;
-  onGround: boolean;
-  originCountry: string | null;
-  createdAt: Date;
-};
-
-// ---------------------------------------------------------------------------
-// Static params — top 200 most-recently-seen ICAO24 in last 7 days
+// generateStaticParams — top 200 aeronaves más activas
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
@@ -76,39 +106,52 @@ export async function generateStaticParams() {
 // Data fetching
 // ---------------------------------------------------------------------------
 
-async function getData(icao24: string): Promise<{
-  positions: Position[];
-  latest: Position | null;
-  icao24: string;
+async function getAircraftData(icao24: string): Promise<{
+  positions: RawPosition[];
+  latest: RawPosition | null;
+  airports: AirportLookup[];
 }> {
   const cleanId = icao24.trim().toLowerCase();
-  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   try {
-    const rows = await prisma.aircraftPosition.findMany({
-      where: {
-        icao24: { equals: cleanId, mode: "insensitive" },
-        createdAt: { gte: since24h },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      select: {
-        id: true,
-        icao24: true,
-        callsign: true,
-        latitude: true,
-        longitude: true,
-        altitude: true,
-        velocity: true,
-        heading: true,
-        verticalRate: true,
-        onGround: true,
-        originCountry: true,
-        createdAt: true,
-      },
-    });
+    const [posRows, airportRows] = await Promise.all([
+      prisma.aircraftPosition.findMany({
+        where: {
+          icao24: { equals: cleanId, mode: "insensitive" },
+          createdAt: { gte: since30d },
+        },
+        orderBy: { createdAt: "desc" },
+        // 30 days × 96 pings/day (every 15min) = ~2880; take generous cap
+        take: 5000,
+        select: {
+          id: true,
+          icao24: true,
+          callsign: true,
+          latitude: true,
+          longitude: true,
+          altitude: true,
+          velocity: true,
+          heading: true,
+          verticalRate: true,
+          onGround: true,
+          originCountry: true,
+          createdAt: true,
+        },
+      }),
+      prisma.airport.findMany({
+        select: {
+          icao: true,
+          iata: true,
+          name: true,
+          city: true,
+          latitude: true,
+          longitude: true,
+        },
+      }),
+    ]);
 
-    const positions: Position[] = rows.map((r) => ({
+    const positions: RawPosition[] = posRows.map((r) => ({
       id: r.id,
       icao24: r.icao24,
       callsign: r.callsign,
@@ -123,55 +166,23 @@ async function getData(icao24: string): Promise<{
       createdAt: r.createdAt,
     }));
 
-    return { positions, latest: positions[0] ?? null, icao24: cleanId };
+    const airports: AirportLookup[] = airportRows.map((a) => ({
+      icao: a.icao,
+      iata: a.iata,
+      name: a.name,
+      city: a.city,
+      latitude: Number(a.latitude),
+      longitude: Number(a.longitude),
+    }));
+
+    return {
+      positions,
+      latest: positions[0] ?? null, // most recent first
+      airports,
+    };
   } catch {
-    return { positions: [], latest: null, icao24: cleanId };
+    return { positions: [], latest: null, airports: [] };
   }
-}
-
-// ---------------------------------------------------------------------------
-// Utilities
-// ---------------------------------------------------------------------------
-
-function velocityKmh(ms: number | null): string {
-  if (ms === null) return "—";
-  return Math.round(ms * 3.6).toLocaleString("es-ES");
-}
-
-function altitudeM(feet: number | null): string {
-  if (feet === null) return "—";
-  return Math.round(feet * 0.3048).toLocaleString("es-ES");
-}
-
-function heading360(deg: number | null): string {
-  if (deg === null) return "—";
-  return `${Math.round(deg)}°`;
-}
-
-function verticalRateMs(mps: number | null): string {
-  if (mps === null) return "—";
-  const sign = mps > 0 ? "+" : "";
-  return `${sign}${mps.toFixed(1)} m/s`;
-}
-
-function formatTime(d: Date): string {
-  return d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-}
-
-function formatDatetime(d: Date): string {
-  return d.toLocaleString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function headingDirection(deg: number | null): string {
-  if (deg === null) return "";
-  const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
-  return dirs[Math.round(deg / 45) % 8];
 }
 
 // ---------------------------------------------------------------------------
@@ -185,12 +196,45 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { icao24 } = await params;
   const id = icao24.trim().toUpperCase();
+  const countryInfo = lookupIcaoCountry(icao24);
+  const countryStr = countryInfo ? ` · ${countryInfo.country}` : "";
+
   return {
-    title: `Aeronave ${id} en tiempo real — Altitud, velocidad y trayectoria`,
-    description: `Posición en tiempo real de la aeronave con código ICAO24 ${id}. Altitud, velocidad, rumbo y trayectoria de las últimas 24 horas sobre España.`,
+    title: `Aeronave ${id}${countryStr} — Historial de vuelos, rutas y estadísticas`,
+    description: `Historial completo de la aeronave ${id}. Vuelos, aeropuertos visitados, patrones de horario, altitudes y rutas frecuentes. Datos ADS-B de OpenSky Network.`,
     alternates: { canonical: `${BASE_URL}/aviacion/avion/${icao24.toLowerCase()}` },
-    robots: { index: false, follow: true },
+    robots: { index: true, follow: true },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Section wrapper
+// ---------------------------------------------------------------------------
+
+function Section({
+  title,
+  icon,
+  children,
+  id,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  id?: string;
+}) {
+  return (
+    <section
+      id={id}
+      aria-label={title}
+      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
+    >
+      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        {icon}
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -203,19 +247,38 @@ export default async function AircraftEntityPage({
   params: Promise<{ icao24: string }>;
 }) {
   const { icao24 } = await params;
-  const { positions, latest, icao24: cleanId } = await getData(icao24);
-
+  const cleanId = icao24.trim().toLowerCase();
   const displayId = cleanId.toUpperCase();
-  const callsign = latest?.callsign?.trim() || null;
-  const isAirborne = latest ? !latest.onGround : null;
 
-  // JSON-LD
+  const { positions, latest, airports } = await getAircraftData(cleanId);
+
+  // Compute derived data
+  const rawFlights = groupIntoFlights(positions, []);
+  const enrichedFlights = enrichFlightsWithAirports(rawFlights, airports);
+  const recentFlights = enrichedFlights.slice(0, 30);
+
+  const airportVisits = aggregateAirportVisits(enrichedFlights);
+  const frequentRoutes = computeFrequentRoutes(enrichedFlights);
+  const heatmapCells = computeFlightPatternHeatmap(enrichedFlights);
+  const altBins = computeAltitudeHistogram(positions);
+  const speedPhases = computeSpeedByPhase(positions);
+  const summary = computeAircraftSummary(enrichedFlights, positions);
+
+  const countryInfo = lookupIcaoCountry(cleanId);
+  const callsign = latest?.callsign?.trim() ?? null;
+
+  // 24h trail for hero map
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const trail = positions.filter((p) => p.createdAt >= since24h);
+
+  // JSON-LD — Vehicle + ItemList of recent flights
   const vehicleSchema = {
     "@context": "https://schema.org",
     "@type": "Vehicle",
     vehicleIdentificationNumber: displayId,
     name: callsign ? `${callsign} (${displayId})` : `Aeronave ${displayId}`,
-    description: `Aeronave con código ICAO24 ${displayId}. ${latest?.originCountry ? `País de registro: ${latest.originCountry}.` : ""}`,
+    description: `Aeronave ${displayId}${countryInfo ? ` registrada en ${countryInfo.country}` : ""}. Datos ADS-B de OpenSky Network.`,
+    ...(countryInfo ? { manufacturer: countryInfo.country } : {}),
     ...(latest
       ? {
           location: {
@@ -225,21 +288,37 @@ export default async function AircraftEntityPage({
           },
         }
       : {}),
+    url: `${BASE_URL}/aviacion/avion/${cleanId}`,
   };
 
-  // Google Maps deep-link
-  const mapsUrl = latest
-    ? `https://www.google.com/maps/search/?api=1&query=${latest.latitude},${latest.longitude}`
-    : null;
-
-  // Trajectory: last 20 positions (positions are already desc by createdAt)
-  const trajectory = positions.slice(0, 20);
-  const oldest = positions[positions.length - 1];
+  const flightListSchema =
+    recentFlights.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: `Vuelos recientes de ${displayId}`,
+          numberOfItems: recentFlights.length,
+          itemListElement: recentFlights.slice(0, 10).map((f, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            item: {
+              "@type": "Trip",
+              name: `Vuelo ${displayId} ${f.date}`,
+              identifier: `${cleanId}-${f.date}`,
+              departureTime: f.departureAt.toISOString(),
+              arrivalTime: f.arrivalAt.toISOString(),
+              url: `${BASE_URL}/aviacion/avion/${cleanId}/vuelo/${f.date}`,
+            },
+          })),
+        }
+      : null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <StructuredData data={vehicleSchema} />
+      {flightListSchema && <StructuredData data={flightListSchema} />}
 
+      {/* Breadcrumbs */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <Breadcrumbs
           items={[
@@ -250,7 +329,7 @@ export default async function AircraftEntityPage({
         />
       </div>
 
-      {/* Hero */}
+      {/* Hero band */}
       <section
         className="relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, #0f172a 0%, #0c4a6e 100%)" }}
@@ -258,18 +337,12 @@ export default async function AircraftEntityPage({
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-wrap items-center gap-3 mb-3">
             <Plane className="w-7 h-7 text-white/90" />
-            <span className="font-heading text-white/80 text-xs font-semibold uppercase tracking-widest">
+            <span className="font-heading text-white/70 text-xs font-semibold uppercase tracking-widest">
               OpenSky · ICAO24
             </span>
-            {isAirborne === true && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-tl-600/30 text-tl-200 border border-tl-500/40">
-                <Plane className="w-3 h-3" />
-                En vuelo
-              </span>
-            )}
-            {isAirborne === false && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/70 border border-white/20">
-                En tierra
+            {countryInfo && (
+              <span className="text-white/60 text-xs">
+                {countryInfo.flag} {countryInfo.country}
               </span>
             )}
           </div>
@@ -277,20 +350,13 @@ export default async function AircraftEntityPage({
             Aeronave {displayId}
           </h1>
           {callsign && (
-            <p className="mt-1 text-white/80 text-lg font-medium flex items-center gap-2">
-              <Radio className="w-4 h-4" />
-              {callsign}
-            </p>
+            <p className="mt-1 text-white/70 text-sm font-mono">{callsign}</p>
           )}
-          {latest?.originCountry && (
-            <p className="mt-1 text-white/60 text-sm flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5" />
-              {latest.originCountry}
-            </p>
-          )}
-          {!latest && (
-            <p className="mt-2 text-white/70 text-sm">
-              Sin posiciones registradas en las últimas 24 horas.
+          {summary.totalFlights > 0 && (
+            <p className="mt-2 text-white/60 text-sm">
+              {summary.totalFlights} vuelos registrados ·{" "}
+              {summary.totalDistanceKm.toLocaleString("es-ES")} km volados ·{" "}
+              {summary.daysTracked} días con datos
             </p>
           )}
         </div>
@@ -298,17 +364,17 @@ export default async function AircraftEntityPage({
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-        {/* No data state */}
+        {/* No data */}
         {!latest && (
           <section className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 p-6 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Sin datos recientes para {displayId}
+                Sin datos para {displayId}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Esta aeronave no ha sido detectada sobre España en las últimas 24 horas. Puede que
-                vuele en otra región o que el código ICAO24 no esté activo.
+                Esta aeronave no ha sido detectada sobre España en los últimos 30 días.
+                El código ICAO24 puede no estar activo o volar fuera de cobertura ADS-B.
               </p>
               <Link
                 href="/aviacion"
@@ -321,232 +387,161 @@ export default async function AircraftEntityPage({
           </section>
         )}
 
-        {/* Stats cards */}
+        {/* Hero (current position + stats strip) */}
         {latest && (
-          <section
-            aria-label="Estadísticas de vuelo"
-            className="grid grid-cols-2 sm:grid-cols-4 gap-3"
-          >
-            {/* Altitude */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                {latest.verticalRate !== null && latest.verticalRate > 0.5 ? (
-                  <ArrowUp className="w-3.5 h-3.5 text-green-500" />
-                ) : latest.verticalRate !== null && latest.verticalRate < -0.5 ? (
-                  <ArrowDown className="w-3.5 h-3.5 text-red-500" />
-                ) : (
-                  <Minus className="w-3.5 h-3.5 text-gray-400" />
-                )}
-                Altitud
-              </p>
-              <p className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100">
-                {altitudeM(latest.altitude)}
-              </p>
-              {latest.altitude !== null && (
-                <p className="text-[10px] text-gray-400 mt-0.5">metros</p>
-              )}
-            </div>
-
-            {/* Velocity */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                <Gauge className="w-3.5 h-3.5" />
-                Velocidad
-              </p>
-              <p className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100">
-                {velocityKmh(latest.velocity)}
-              </p>
-              {latest.velocity !== null && (
-                <p className="text-[10px] text-gray-400 mt-0.5">km/h</p>
-              )}
-            </div>
-
-            {/* Heading */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                <Navigation className="w-3.5 h-3.5" />
-                Rumbo
-              </p>
-              <p className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100">
-                {heading360(latest.heading)}
-              </p>
-              {latest.heading !== null && (
-                <p className="text-[10px] text-gray-400 mt-0.5">
-                  {headingDirection(latest.heading)}
-                </p>
-              )}
-            </div>
-
-            {/* Vertical rate */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                <ArrowUp className="w-3.5 h-3.5" />
-                Tasa vertical
-              </p>
-              <p className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100">
-                {latest.verticalRate !== null
-                  ? `${latest.verticalRate > 0 ? "+" : ""}${latest.verticalRate.toFixed(1)}`
-                  : "—"}
-              </p>
-              {latest.verticalRate !== null && (
-                <p className="text-[10px] text-gray-400 mt-0.5">m/s</p>
-              )}
-            </div>
-          </section>
+          <AircraftHero
+            icao24={cleanId}
+            displayId={displayId}
+            latest={latest}
+            trail={trail}
+            summary={summary}
+            countryInfo={countryInfo}
+          />
         )}
 
-        {/* Position summary */}
-        {latest && (
-          <section
-            aria-label="Posición actual"
-            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
+        {/* Vuelos recientes */}
+        {recentFlights.length > 0 && (
+          <Section
+            id="vuelos-recientes"
+            title={`Vuelos recientes (${recentFlights.length})`}
+            icon={<Plane className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
           >
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-tl-600 dark:text-tl-400" />
-                Última posición registrada
-              </h2>
-              {mapsUrl && (
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-tl-600 dark:text-tl-400 hover:underline"
-                >
-                  Ver en Google Maps
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-            </div>
-            <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+            <FlightTable flights={recentFlights} icao24={cleanId} />
+          </Section>
+        )}
+
+        {/* Aeropuertos visitados */}
+        {airportVisits.length > 0 && (
+          <Section
+            id="aeropuertos-visitados"
+            title="Aeropuertos visitados"
+            icon={<MapPin className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
+          >
+            <AirportVisits visits={airportVisits} />
+          </Section>
+        )}
+
+        {/* Two-column: Heatmap + Altitude histogram */}
+        {(enrichedFlights.length > 0 || altBins.length > 0) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {enrichedFlights.length > 0 && (
+              <Section
+                id="patrones-vuelo"
+                title="Patrones de vuelo"
+                icon={<Calendar className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
+              >
+                <FlightPatternHeatmap cells={heatmapCells} />
+              </Section>
+            )}
+            {altBins.length > 0 && (
+              <Section
+                id="histograma-altitud"
+                title="Histograma de altitud"
+                icon={<BarChart2 className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
+              >
+                <AltitudeHistogram bins={altBins} />
+              </Section>
+            )}
+          </div>
+        )}
+
+        {/* Two-column: Speed phases + Frequent routes */}
+        {(speedPhases.length > 0 || frequentRoutes.length > 0) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {speedPhases.length > 0 && (
+              <Section
+                id="velocidad-por-fase"
+                title="Velocidad por fase"
+                icon={<Gauge className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
+              >
+                <SpeedPhaseChart phases={speedPhases} />
+              </Section>
+            )}
+            {frequentRoutes.length > 0 && (
+              <Section
+                id="rutas-frecuentes"
+                title="Rutas frecuentes"
+                icon={<Route className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
+              >
+                <div className="space-y-3">
+                  {frequentRoutes.map((r, i) => (
+                    <div
+                      key={`${r.departure.icao}-${r.arrival.icao}`}
+                      className="flex items-center gap-3 text-sm"
+                    >
+                      <span className="font-mono text-xs text-gray-400 w-4">{i + 1}.</span>
+                      <span className="font-mono font-bold text-gray-900 dark:text-gray-100">
+                        {r.departure.iata ?? r.departure.icao}
+                      </span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-mono font-bold text-gray-900 dark:text-gray-100">
+                        {r.arrival.iata ?? r.arrival.icao}
+                      </span>
+                      <span className="ml-auto font-mono text-xs text-tl-600 dark:text-tl-400">
+                        {r.count}×
+                      </span>
+                      <span className="text-xs text-gray-400 hidden sm:block">
+                        Pred. {r.predictabilityScore}/100
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+          </div>
+        )}
+
+        {/* Rutas frecuentes detalladas */}
+        {frequentRoutes.length > 0 && (
+          <Section
+            id="rutas-detalle"
+            title="Análisis de rutas y predecibilidad"
+            icon={<TrendingUp className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
+          >
+            <FrequentRoutes routes={frequentRoutes} />
+          </Section>
+        )}
+
+        {/* Tiempo de actividad / últimos datos */}
+        {positions.length > 0 && (
+          <Section
+            id="actividad"
+            title="Registro de actividad"
+            icon={<Clock className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
+          >
+            <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               <div>
-                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Latitud</dt>
-                <dd className="font-mono text-gray-900 dark:text-gray-100">
-                  {latest.latitude.toFixed(5)}
+                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Posiciones totales</dt>
+                <dd className="font-mono font-bold text-gray-900 dark:text-gray-100">
+                  {positions.length.toLocaleString("es-ES")}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Longitud</dt>
-                <dd className="font-mono text-gray-900 dark:text-gray-100">
-                  {latest.longitude.toFixed(5)}
+                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Vuelos computados</dt>
+                <dd className="font-mono font-bold text-gray-900 dark:text-gray-100">
+                  {enrichedFlights.length}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                  <Clock className="w-3 h-3 inline mr-1" />
-                  Última señal
-                </dt>
-                <dd className="font-mono text-gray-900 dark:text-gray-100">
-                  {formatDatetime(latest.createdAt)}
+                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Aeropuertos detectados</dt>
+                <dd className="font-mono font-bold text-gray-900 dark:text-gray-100">
+                  {airportVisits.length}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Días con datos</dt>
+                <dd className="font-mono font-bold text-gray-900 dark:text-gray-100">
+                  {summary.daysTracked}
                 </dd>
               </div>
             </dl>
-
-            {/* 24h summary */}
-            {positions.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-4">
-                <span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100 font-mono">
-                    {positions.length}
-                  </span>{" "}
-                  posiciones en 24h
-                </span>
-                {oldest && (
-                  <span>
-                    Desde{" "}
-                    <span className="font-mono">
-                      {formatTime(oldest.createdAt)}
-                    </span>
-                  </span>
-                )}
-                <span>
-                  Hasta{" "}
-                  <span className="font-mono">{formatTime(latest.createdAt)}</span>
-                </span>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Trajectory table */}
-        {trajectory.length > 0 && (
-          <section
-            aria-label="Trayectoria"
-            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
-          >
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <Navigation className="w-4 h-4 text-tl-600 dark:text-tl-400" />
-              Últimas {trajectory.length} posiciones registradas
-            </h2>
-            <div className="overflow-x-auto -mx-1">
-              <table className="w-full text-sm min-w-[560px]">
-                <thead>
-                  <tr className="border-b border-gray-100 dark:border-gray-800">
-                    <th className="text-left pb-2 text-xs text-gray-500 dark:text-gray-400 font-normal pr-4">
-                      Hora
-                    </th>
-                    <th className="text-right pb-2 text-xs text-gray-500 dark:text-gray-400 font-normal pr-4">
-                      Lat
-                    </th>
-                    <th className="text-right pb-2 text-xs text-gray-500 dark:text-gray-400 font-normal pr-4">
-                      Lon
-                    </th>
-                    <th className="text-right pb-2 text-xs text-gray-500 dark:text-gray-400 font-normal pr-4">
-                      Alt (m)
-                    </th>
-                    <th className="text-right pb-2 text-xs text-gray-500 dark:text-gray-400 font-normal pr-4">
-                      Vel (km/h)
-                    </th>
-                    <th className="text-left pb-2 text-xs text-gray-500 dark:text-gray-400 font-normal">
-                      Estado
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
-                  {trajectory.map((p) => (
-                    <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-950/50">
-                      <td className="py-1.5 pr-4 font-mono text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                        {formatTime(p.createdAt)}
-                      </td>
-                      <td className="py-1.5 pr-4 font-mono text-xs text-right text-gray-700 dark:text-gray-300">
-                        {p.latitude.toFixed(4)}
-                      </td>
-                      <td className="py-1.5 pr-4 font-mono text-xs text-right text-gray-700 dark:text-gray-300">
-                        {p.longitude.toFixed(4)}
-                      </td>
-                      <td className="py-1.5 pr-4 font-mono text-xs text-right text-gray-700 dark:text-gray-300">
-                        {altitudeM(p.altitude)}
-                      </td>
-                      <td className="py-1.5 pr-4 font-mono text-xs text-right text-gray-700 dark:text-gray-300">
-                        {velocityKmh(p.velocity)}
-                      </td>
-                      <td className="py-1.5">
-                        <span
-                          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                            p.onGround
-                              ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                              : "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-400"
-                          }`}
-                        >
-                          {p.onGround ? "Tierra" : "Vuelo"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-4">
-              Posiciones descentes cronológicamente. Período cubierto: últimas 24 horas.
-              Fuente: OpenSky Network.
-            </p>
-          </section>
+          </Section>
         )}
 
         {/* Cross-links */}
         <section
-          aria-label="Más recursos de aviación"
-          className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
+          aria-label="Más sobre aviación"
+          className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5"
         >
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
             Más sobre aviación en España
@@ -573,8 +568,8 @@ export default async function AircraftEntityPage({
         <footer className="flex flex-wrap items-center gap-2 text-xs text-gray-400 dark:text-gray-500 pt-2">
           <Plane className="w-4 h-4 flex-shrink-0" />
           <span>
-            Datos: OpenSky Network. Actualizado cada 15 minutos. Cobertura: espacio aéreo español
-            y áreas adyacentes.
+            Datos: OpenSky Network. Recolector cada 15 minutos. Historial: hasta 30 días.
+            Vuelos computados por agrupación de posiciones (umbral de silencio: 30 min).
           </span>
         </footer>
       </main>
