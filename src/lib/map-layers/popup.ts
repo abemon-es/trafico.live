@@ -191,7 +191,6 @@ const LABEL_ALIASES: Record<string, string> = {
   onGround:      "En tierra",
   isActive:      "Activa",
   is24h:         "24 h",
-  isOpen24h:     "24 h",
   brand_name:    "Marca",
 };
 
