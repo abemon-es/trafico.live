@@ -10,10 +10,8 @@ import {
   FileText,
   Activity,
 } from "lucide-react";
-import dynamic from "next/dynamic";
 import type { TimeseriesRow } from "./BotChart";
-
-const BotChart = dynamic(() => import("./BotChart"), { ssr: false });
+import BotChart from "./BotChart";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
