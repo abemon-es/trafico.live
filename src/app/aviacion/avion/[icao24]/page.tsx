@@ -10,7 +10,6 @@
  */
 
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -41,43 +40,13 @@ import {
 } from "@/lib/aviacion/flight-grouping";
 import { lookupIcaoCountry } from "@/lib/aviacion/icao-lookup";
 
-// Client components loaded dynamically (charts need browser)
-const AircraftHero = dynamic(
-  () => import("@/components/aviacion/AircraftHero").then((m) => m.AircraftHero),
-  { ssr: false }
-);
-const FlightTable = dynamic(
-  () => import("@/components/aviacion/FlightTable").then((m) => m.FlightTable),
-  { ssr: false }
-);
-const AirportVisits = dynamic(
-  () => import("@/components/aviacion/AirportVisits").then((m) => m.AirportVisits),
-  { ssr: false }
-);
-const FlightPatternHeatmap = dynamic(
-  () =>
-    import("@/components/aviacion/FlightPatternHeatmap").then(
-      (m) => m.FlightPatternHeatmap
-    ),
-  { ssr: false }
-);
-const AltitudeHistogram = dynamic(
-  () =>
-    import("@/components/aviacion/AltitudeHistogram").then(
-      (m) => m.AltitudeHistogram
-    ),
-  { ssr: false }
-);
-const SpeedPhaseChart = dynamic(
-  () =>
-    import("@/components/aviacion/SpeedPhaseChart").then((m) => m.SpeedPhaseChart),
-  { ssr: false }
-);
-const FrequentRoutes = dynamic(
-  () =>
-    import("@/components/aviacion/FrequentRoutes").then((m) => m.FrequentRoutes),
-  { ssr: false }
-);
+import { AircraftHero } from "@/components/aviacion/AircraftHero";
+import { FlightTable } from "@/components/aviacion/FlightTable";
+import { AirportVisits } from "@/components/aviacion/AirportVisits";
+import { FlightPatternHeatmap } from "@/components/aviacion/FlightPatternHeatmap";
+import { AltitudeHistogram } from "@/components/aviacion/AltitudeHistogram";
+import { SpeedPhaseChart } from "@/components/aviacion/SpeedPhaseChart";
+import { FrequentRoutes } from "@/components/aviacion/FrequentRoutes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

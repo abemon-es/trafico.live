@@ -21,7 +21,6 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import dynamicImport from "next/dynamic";
 import { prisma } from "@/lib/db";
 import redis from "@/lib/redis";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -52,36 +51,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 export const revalidate = 30;
 export const dynamic = "force-dynamic";
 
-// ---------------------------------------------------------------------------
-// Lazy-loaded client components
-// ---------------------------------------------------------------------------
-
-const TrainRouteMap = dynamicImport(() => import("@/components/trenes/TrainRouteMap"), {
-  ssr: false,
-  loading: () => (
-    <div
-      className="w-full rounded-xl bg-tl-50 dark:bg-gray-800 animate-pulse"
-      style={{ height: 360 }}
-      aria-hidden="true"
-    />
-  ),
-});
-
-const StopsTimeline = dynamicImport(() => import("@/components/trenes/StopsTimeline"), {
-  ssr: false,
-  loading: () => (
-    <div className="space-y-2">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="h-8 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-      ))}
-    </div>
-  ),
-});
-
-const PunctualityStats = dynamicImport(
-  () => import("@/components/trenes/PunctualityStats"),
-  { ssr: false }
-);
+import TrainRouteMap from "@/components/trenes/TrainRouteMap";
+import StopsTimeline from "@/components/trenes/StopsTimeline";
+import PunctualityStats from "@/components/trenes/PunctualityStats";
 
 // ---------------------------------------------------------------------------
 // Renfe data structures
