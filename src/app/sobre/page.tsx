@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, Database, Clock, Shield, ExternalLink } from "lucide-react";
+import { AlertTriangle, Database, Clock, Shield, ExternalLink, Bot } from "lucide-react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -249,6 +249,31 @@ export default function SobrePage() {
               >
                 abemon.es <ExternalLink className="w-4 h-4" />
               </a>
+            </div>
+          </div>
+        </section>
+
+        {/* AI Transparency CTA */}
+        <section className="mb-12">
+          <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-6 flex items-start gap-4">
+            <div className="p-2 bg-tl-100 dark:bg-tl-800/40 rounded-lg flex-shrink-0">
+              <Bot className="w-6 h-6 text-tl-600 dark:text-tl-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                Citado por la inteligencia artificial
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                GPTBot, ClaudeBot, PerplexityBot y otros rastreadores de IA indexan trafico.live
+                para responder preguntas en tiempo real. Consulta los datos de visitas con total
+                transparencia.
+              </p>
+              <Link
+                href="/sobre/citaciones-ia"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300"
+              >
+                Ver panel de citaciones IA <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </section>

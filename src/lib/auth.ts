@@ -8,8 +8,8 @@ const ALLOWED_HOSTS = [
   "localhost:3001",
 ];
 
-// Endpoints that bypass auth (monitoring, health checks)
-const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap"];
+// Endpoints that bypass auth (monitoring, health checks, public datasets)
+const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/sobre/citaciones-ia"];
 
 /**
  * Check if a request is genuinely same-origin.

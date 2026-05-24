@@ -2788,6 +2788,29 @@ model FleetPosition {
   @@index([vehicleId, recordedAt(sort: Desc)])
   @@index([recordedAt(sort: Desc)])
 }
+// ============================================
+// AI BOT OBSERVABILITY
+// ============================================
+
+/// Logs each visit from a known AI/LLM crawler (GPTBot, ClaudeBot, etc.)
+/// Written from /api/internal/bot-visit (Node runtime, not middleware edge).
+/// No PII: IP is stored as first-two-octet prefix only.
+model BotVisit {
+  id         String   @id @default(cuid())
+  bot        String   // "GPTBot" | "ClaudeBot" | "PerplexityBot" | …
+  path       String   // request path
+  statusCode Int      // 200, 301, 404, etc.
+  ip         String?  // first 2 octets only ("1.2") — no PII
+  country    String?  // 2-letter ISO from cf-ipcountry / x-vercel-ip-country
+  userAgent  String   @db.Text
+  visitedAt  DateTime @default(now()) @db.Timestamptz
+
+  @@index([bot, visitedAt])
+  @@index([visitedAt])
+  @@index([path, visitedAt])
+  @@map("bot_visits")
+}
+
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
