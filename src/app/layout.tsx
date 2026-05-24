@@ -11,6 +11,7 @@ import { SkipLink } from "@/components/ui/SkipLink";
 import { WebVitals } from "@/components/analytics/WebVitals";
 import { StructuredData, generateOrganizationSchema, generateWebSiteSchema, generateSiteNavigationSchema } from "@/components/seo/StructuredData";
 import { SWRProvider } from "@/components/providers/SWRProvider";
+import { PwaInstallPrompt } from "@/components/layout/PwaInstallPrompt";
 import "./globals.css";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -218,6 +219,7 @@ export default function RootLayout({
         </SWRProvider>
         <WebVitals />
         <CookieConsent />
+        <PwaInstallPrompt />
         <Script id="sw-register" strategy="afterInteractive">
           {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}`}
         </Script>

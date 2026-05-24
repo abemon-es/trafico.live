@@ -1,18 +1,70 @@
 {
-  "name": "trafico.live — Tráfico España",
-  "short_name": "trafico.live",
-  "description": "Tráfico en tiempo real, combustible, radares y cámaras en España",
+  "name": "trafico.live · Tráfico España en tiempo real",
+  "short_name": "trafico",
+  "description": "Tráfico en tiempo real en España: incidencias DGT, trenes Renfe, vuelos, barcos AIS, calidad del aire, combustible y cargadores EV. Datos oficiales actualizados cada minuto.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#0a0a0a",
   "theme_color": "#1b4bd5",
   "orientation": "any",
-  "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
-  ],
-  "categories": ["navigation", "transportation", "utilities"],
   "lang": "es",
-  "dir": "ltr"
+  "dir": "ltr",
+  "scope": "/",
+  "categories": ["travel", "navigation", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mapa en vivo",
+      "short_name": "Mapa",
+      "description": "Ver el mapa de tráfico en tiempo real",
+      "url": "/mapa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Atascos",
+      "short_name": "Atascos",
+      "description": "Consultar atascos y retenciones activas",
+      "url": "/atascos",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Cámaras DGT",
+      "short_name": "Cámaras",
+      "description": "Ver cámaras de tráfico de la DGT",
+      "url": "/camaras",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Renfe ahora",
+      "short_name": "Trenes",
+      "description": "Trenes en tiempo real y alertas Renfe",
+      "url": "/trenes",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
 }
