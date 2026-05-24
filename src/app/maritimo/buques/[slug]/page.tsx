@@ -15,24 +15,54 @@ import {
   ArrowRight,
   ExternalLink,
   AlertTriangle,
+  BarChart3,
+  Calendar,
+  Route,
+  TrendingUp,
+  Target,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { VesselVoyageHistory } from "@/components/maritimo/VesselVoyageHistory";
 import { VesselOverview } from "@/components/maritimo/VesselOverview";
 import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
+import { VesselStats } from "@/components/maritimo/VesselStats";
+import { VoyageTable } from "@/components/maritimo/VoyageTable";
+import { PortCallList } from "@/components/maritimo/PortCallList";
+import { SpeedHistogram } from "@/components/maritimo/SpeedHistogram";
+import { TimeHeatmap } from "@/components/maritimo/TimeHeatmap";
 import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
 import { NAV_STATUS, shipTypeLabel, cleanDestination, cleanEta } from "@/lib/ais-labels";
+import { getVesselHistoricalStats } from "@/lib/maritimo/punctuality";
 
-// ~10K vessels in the catalog — prerender nothing and regenerate on demand.
-// Live AIS positions still come from the /api/maritimo endpoint every 20s,
-// so page-level ISR only needs to cover vessel metadata drift (destination,
-// ETA, flag changes). 1h is a safe bucket for that.
-export const revalidate = 3600;
+// ISR: 5 min — vessel AIS data refreshes continuously; 5 min gives a fresh
+// enough snapshot for SEO while keeping DB load low.
+export const revalidate = 300;
 export const dynamicParams = true;
 
+// Pre-generate top 500 active vessels (>5 positions in last 30d)
 export async function generateStaticParams() {
-  return [];
+  try {
+    const since30d = new Date(Date.now() - 30 * 24 * 3600_000);
+    const active = await prisma.vesselPosition.findMany({
+      where: { createdAt: { gte: since30d } },
+      distinct: ["mmsi"],
+      select: { mmsi: true },
+      take: 500,
+    });
+    if (active.length === 0) return [];
+    const mmsis = active.map((p) => p.mmsi);
+    const vessels = await prisma.vessel.findMany({
+      where: { mmsi: { in: mmsis }, name: { not: null } },
+      select: { mmsi: true, name: true },
+    });
+    return vessels
+      .map((v) => vesselSlug(v.mmsi, v.name))
+      .filter((s) => s.includes("-"))
+      .map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -210,6 +240,26 @@ const getPositionCount = cache(async (mmsi: number) => {
   });
 });
 
+// Recent 50 voyages for the sortable voyage table
+const getRecentVoyages50 = cache(async (mmsi: number) => {
+  return prisma.voyage.findMany({
+    where: { mmsi },
+    orderBy: { departedAt: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      departurePort: true,
+      arrivalPort: true,
+      departedAt: true,
+      arrivedAt: true,
+      durationH: true,
+      distanceNm: true,
+      avgSpeedKn: true,
+      status: true,
+    },
+  });
+});
+
 const getNearestPort = cache(async (lat: number, lng: number) => {
   const latDelta = 200 / KM_PER_DEG_LAT;
   const lngDelta = 200 / (KM_PER_DEG_LAT * Math.cos((lat * Math.PI) / 180));
@@ -307,8 +357,11 @@ export default async function VesselPage({ params }: PageProps) {
     redirect(`/maritimo/buques/${canonicalSlug}`);
   }
 
-  const latestPos = await getLatestPosition(mmsi);
-  const positionCount = await getPositionCount(mmsi);
+  const [latestPos, positionCount, recentVoyages50] = await Promise.all([
+    getLatestPosition(mmsi),
+    getPositionCount(mmsi),
+    getRecentVoyages50(mmsi),
+  ]);
 
   // Quality gate: no name AND no positions in last 30 days
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3600_000);
@@ -326,7 +379,11 @@ export default async function VesselPage({ params }: PageProps) {
       ? await getNearestPort(latestLat, latestLng)
       : null;
 
+  // Historical stats for all new sections (parallel with the above)
+  const historicalStats = await getVesselHistoricalStats(mmsi);
+
   const displayName = vessel.name || `Buque MMSI ${mmsi}`;
+  const currentYear = new Date().getFullYear();
 
   // Signal age thresholds
   const signalAgeMs = latestPos ? Date.now() - latestPos.createdAt.getTime() : Infinity;
@@ -419,9 +476,57 @@ export default async function VesselPage({ params }: PageProps) {
         }
       : null;
 
-  const structuredData = watercraftLocationSchema
-    ? [vehicleSchema, watercraftLocationSchema]
-    : vehicleSchema;
+  // Dataset schema for punctuality/predictability stats
+  const datasetSchema = historicalStats.totalVoyages > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        name: `Estadisticas historicas AIS — ${displayName}`,
+        description:
+          `Datos de seguimiento AIS para ${displayName} (MMSI ${mmsi}): ` +
+          `${historicalStats.totalVoyages} viajes, ${historicalStats.totalPortCalls} escalas, ` +
+          `${historicalStats.daysTracked} dias de cobertura.` +
+          (historicalStats.predictabilityScore != null
+            ? ` Puntuacion de predecibilidad: ${historicalStats.predictabilityScore}/100.`
+            : ""),
+        url: `${BASE_URL}/maritimo/buques/${canonicalSlug}`,
+        keywords: ["AIS", "seguimiento maritimo", "buques espana", displayName, `MMSI ${mmsi}`],
+        measurementTechnique: "AIS (Automatic Identification System) via aisstream.io",
+        variableMeasured: [
+          { "@type": "PropertyValue", name: "Numero de viajes", value: historicalStats.totalVoyages },
+          { "@type": "PropertyValue", name: "Numero de escalas", value: historicalStats.totalPortCalls },
+          { "@type": "PropertyValue", name: "Dias de seguimiento", value: historicalStats.daysTracked },
+          ...(historicalStats.predictabilityScore != null
+            ? [{ "@type": "PropertyValue", name: "Puntuacion predecibilidad", value: historicalStats.predictabilityScore }]
+            : []),
+        ],
+      }
+    : null;
+
+  // ItemList schema for recent voyages (top 5)
+  const voyageItemListSchema = recentVoyages50.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: `Viajes recientes de ${displayName}`,
+        numberOfItems: Math.min(recentVoyages50.length, 5),
+        itemListElement: recentVoyages50.slice(0, 5).map((v, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: `${v.departurePort ?? "Origen"} → ${v.arrivalPort ?? "Destino"}`,
+          ...(v.departedAt && { description: `Salida: ${new Date(v.departedAt).toISOString()}` }),
+        })),
+      }
+    : null;
+
+  type JsonLd = Record<string, unknown> & { "@context": string; "@type": string };
+  const structuredDataItems: JsonLd[] = [vehicleSchema as JsonLd];
+  if (watercraftLocationSchema) structuredDataItems.push(watercraftLocationSchema as JsonLd);
+  if (datasetSchema) structuredDataItems.push(datasetSchema as JsonLd);
+  if (voyageItemListSchema) structuredDataItems.push(voyageItemListSchema as JsonLd);
+
+  const structuredData: JsonLd | JsonLd[] =
+    structuredDataItems.length === 1 ? structuredDataItems[0] : structuredDataItems;
 
   return (
     <>
@@ -791,6 +896,146 @@ export default async function VesselPage({ params }: PageProps) {
                 No se han registrado posiciones en las ultimas 48 horas.
               </p>
             )}
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Historical stats: port calls + voyages + predictability          */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Estadisticas historicas">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-tl-sea-500" />
+            Estadisticas historicas
+          </h2>
+          <VesselStats stats={historicalStats} />
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Recorridos recientes — sortable voyage table                     */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Recorridos recientes">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <Route className="w-5 h-5 text-tl-sea-500" />
+            Recorridos recientes
+            <span className="ml-2 text-sm font-normal text-gray-400">ultimos 50 viajes</span>
+          </h2>
+          <VoyageTable
+            voyages={recentVoyages50.map((v) => ({
+              ...v,
+              departedAt: v.departedAt ? v.departedAt.toISOString() : null,
+              arrivedAt: v.arrivedAt ? v.arrivedAt.toISOString() : null,
+              distanceNm: v.distanceNm ?? null,
+            }))}
+          />
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Puertos visitados — top 20 all-time                              */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Puertos visitados">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <Anchor className="w-5 h-5 text-tl-sea-500" />
+            Puertos visitados
+            <span className="ml-2 text-sm font-normal text-gray-400">historico — top 20</span>
+          </h2>
+          <PortCallList ports={historicalStats.topPorts} />
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Velocidad y movimiento — speed histogram + weekly distance       */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Velocidad y movimiento">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-tl-sea-500" />
+            Velocidad y movimiento
+          </h2>
+          <SpeedHistogram buckets={historicalStats.speedBuckets} />
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Patrones temporales — heatmap                                    */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Patrones temporales">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-tl-sea-500" />
+            Patrones temporales
+            <span className="ml-2 text-sm font-normal text-gray-400">ultimos 90 dias</span>
+          </h2>
+          <TimeHeatmap heatmap={historicalStats.temporalHeatmap} />
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Rutas frecuentes — top 10 origin→destination pairs               */}
+        {/* ---------------------------------------------------------------- */}
+        {historicalStats.topRoutes.length > 0 && (
+          <section aria-label="Rutas frecuentes">
+            <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <Target className="w-5 h-5 text-tl-sea-500" />
+              Rutas frecuentes
+            </h2>
+            <div className="rounded-2xl border border-tl-sea-100 dark:border-tl-sea-900/40 bg-white dark:bg-gray-900 overflow-hidden">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                {historicalStats.topRoutes.map((route, idx) => (
+                  <li key={`${route.origin}-${route.destination}`} className="flex items-center gap-4 px-5 py-4 hover:bg-tl-sea-50/30 dark:hover:bg-tl-sea-900/10 transition-colors">
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-tl-sea-100 dark:bg-tl-sea-900/50 text-tl-sea-700 dark:text-tl-sea-300">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 font-semibold text-sm text-gray-900 dark:text-gray-100">
+                        <span className="truncate">{route.origin}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{route.destination}</span>
+                      </div>
+                      <div className="flex items-center gap-4 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                        {route.avgDurationH != null && (
+                          <span className="font-mono">
+                            Duracion media:{" "}
+                            {route.avgDurationH < 24
+                              ? `${route.avgDurationH.toFixed(1).replace(".", ",")} h`
+                              : `${Math.floor(route.avgDurationH / 24)} d ${Math.round(route.avgDurationH % 24)} h`}
+                          </span>
+                        )}
+                        {route.cv != null && (
+                          <span className="font-mono">
+                            CV: {(route.cv * 100).toFixed(0)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <div className="font-mono text-xl font-bold text-tl-sea-600 dark:text-tl-sea-400 [font-family:var(--font-jetbrains-mono)]">
+                        {route.count}x
+                      </div>
+                      <div className="text-xs text-gray-400">viajes</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Historial por ano — yearly archive links                         */}
+        {/* ---------------------------------------------------------------- */}
+        <section aria-label="Historial por ano">
+          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-tl-sea-500" />
+            Historial por ano
+          </h2>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {Array.from({ length: 5 }, (_, i) => currentYear - i).map((year) => (
+              <Link
+                key={year}
+                href={`/maritimo/buques/${canonicalSlug}/historial/${year}`}
+                className="flex flex-col items-center gap-1 p-4 rounded-xl border border-tl-sea-100 dark:border-tl-sea-900/40 bg-white dark:bg-gray-900 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-sm transition-all text-center"
+              >
+                <span className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300 [font-family:var(--font-jetbrains-mono)]">
+                  {year}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Ver archivo</span>
+              </Link>
+            ))}
           </div>
         </section>
 
