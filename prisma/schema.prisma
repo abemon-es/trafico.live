@@ -865,11 +865,7 @@ model SpeedLimit {
 // ============================================
 
 model TrafficIntensity {
-  /// TimescaleDB hypertable — partition key: recordedAt (1-day chunks).
-  /// PK is composite (id, recordedAt) to satisfy TimescaleDB's requirement
-  /// that the partitioning column be part of every unique constraint.
-  /// See migration 20260524210000_timescaledb_hypertables.
-  id           String   @default(cuid())
+  id           String   @id @default(cuid())
   sensorId     Int // Madrid PM sensor ID (idelem)
   description  String? // Location description
   intensity    Int // Vehicles/hour
@@ -883,7 +879,6 @@ model TrafficIntensity {
   recordedAt   DateTime @default(now()) @db.Timestamptz
   error        Boolean  @default(false)
 
-  @@id([id, recordedAt])
   @@unique([sensorId, source, recordedAt])
   @@index([source, recordedAt])
   @@index([serviceLevel])
@@ -2135,11 +2130,7 @@ model Vessel {
 }
 
 model VesselPosition {
-  /// TimescaleDB hypertable — partition key: createdAt (1-day chunks).
-  /// PK is composite (id, createdAt) to satisfy TimescaleDB's requirement
-  /// that the partitioning column be part of every unique constraint.
-  /// See migration 20260524210000_timescaledb_hypertables.
-  id        String   @default(cuid())
+  id        String   @id @default(cuid())
   mmsi      Int
   latitude  Decimal  @db.Decimal(9, 6)
   longitude Decimal  @db.Decimal(9, 6)
@@ -2151,7 +2142,6 @@ model VesselPosition {
 
   vessel Vessel @relation(fields: [mmsi], references: [mmsi], onDelete: Cascade)
 
-  @@id([id, createdAt])
   @@index([mmsi, createdAt(sort: Desc)])
   @@index([createdAt])
 }
@@ -2550,11 +2540,7 @@ model AirportStatistic {
 }
 
 model AircraftPosition {
-  /// TimescaleDB hypertable — partition key: createdAt (1-day chunks).
-  /// PK is composite (id, createdAt) to satisfy TimescaleDB's requirement
-  /// that the partitioning column be part of every unique constraint.
-  /// See migration 20260524210000_timescaledb_hypertables.
-  id            String   @default(cuid())
+  id            String   @id @default(cuid())
   icao24        String
   callsign      String?
   latitude      Decimal  @db.Decimal(9, 6)
@@ -2567,7 +2553,6 @@ model AircraftPosition {
   originCountry String?
   createdAt     DateTime @default(now()) @db.Timestamptz
 
-  @@id([id, createdAt])
   @@index([icao24, createdAt(sort: Desc)])
   @@index([createdAt])
 }
@@ -2595,11 +2580,7 @@ model AirQualityStation {
 }
 
 model AirQualityReading {
-  /// TimescaleDB hypertable — partition key: createdAt (1-day chunks).
-  /// PK is composite (id, createdAt) to satisfy TimescaleDB's requirement
-  /// that the partitioning column be part of every unique constraint.
-  /// See migration 20260524210000_timescaledb_hypertables.
-  id        String   @default(cuid())
+  id        String   @id @default(cuid())
   stationId String
   no2       Float? // µg/m³
   pm10      Float? // µg/m³
@@ -2613,7 +2594,6 @@ model AirQualityReading {
 
   station AirQualityStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
 
-  @@id([id, createdAt])
   @@index([stationId, createdAt(sort: Desc)])
   @@index([createdAt])
   @@index([ica])
