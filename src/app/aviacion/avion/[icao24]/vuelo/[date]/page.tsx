@@ -9,7 +9,6 @@
  */
 
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -166,25 +165,8 @@ export async function generateMetadata({
   };
 }
 
-// ---------------------------------------------------------------------------
-// Inline chart components (lightweight, no Recharts for SSR safety)
-// ---------------------------------------------------------------------------
-
-const AltitudeProfileChart = dynamic(
-  () =>
-    import("@/components/aviacion/AltitudeProfileChart").then(
-      (m) => m.AltitudeProfileChart
-    ),
-  { ssr: false }
-);
-
-const SpeedProfileChart = dynamic(
-  () =>
-    import("@/components/aviacion/SpeedProfileChart").then(
-      (m) => m.SpeedProfileChart
-    ),
-  { ssr: false }
-);
+import { AltitudeProfileChart } from "@/components/aviacion/AltitudeProfileChart";
+import { SpeedProfileChart } from "@/components/aviacion/SpeedProfileChart";
 
 // ---------------------------------------------------------------------------
 // Utilities

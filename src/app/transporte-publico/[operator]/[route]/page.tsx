@@ -13,7 +13,6 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -55,38 +54,9 @@ const ROUTE_TYPE: Record<number, { label: string; icon: typeof Bus; schema: stri
 
 type Props = { params: Promise<{ operator: string; route: string }> };
 
-// ---------------------------------------------------------------------------
-// Lazy-loaded client components
-// ---------------------------------------------------------------------------
-
-const RouteVehicleMap = dynamic(
-  () => import("@/components/transit/RouteVehicleMap"),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className="w-full rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse"
-        style={{ height: 320 }}
-        aria-hidden="true"
-      />
-    ),
-  }
-);
-
-const StopsTimeline = dynamic(() => import("@/components/trenes/StopsTimeline"), {
-  ssr: false,
-  loading: () => (
-    <div className="space-y-2">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="h-8 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-      ))}
-    </div>
-  ),
-});
-
-const NextBusCard = dynamic(() => import("@/components/transit/NextBusCard"), {
-  ssr: false,
-});
+import RouteVehicleMap from "@/components/transit/RouteVehicleMap";
+import StopsTimeline from "@/components/trenes/StopsTimeline";
+import NextBusCard from "@/components/transit/NextBusCard";
 
 // ---------------------------------------------------------------------------
 // Data loading
