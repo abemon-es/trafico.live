@@ -9,7 +9,7 @@ const ALLOWED_HOSTS = [
 ];
 
 // Endpoints that bypass auth (monitoring, health checks, public datasets)
-const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/sobre/citaciones-ia"];
+const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/sobre/citaciones-ia", "/api/newsletter/subscribe"];
 
 /**
  * Check if a request is genuinely same-origin.
