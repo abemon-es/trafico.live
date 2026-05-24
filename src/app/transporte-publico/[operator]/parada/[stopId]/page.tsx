@@ -4,13 +4,13 @@ import dynamicImport from "next/dynamic";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { slugify } from "@/lib/geo/slugify";
-import { MapPin, ExternalLink, Info, Navigation } from "lucide-react";
+import { MapPin, ExternalLink, Info, Navigation, Clock, ArrowRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-// ── Mode config (replicated from sibling files — not importing to avoid touching them) ──
+// ── Mode config ───────────────────────────────────────────────────────────────
 
 const MODE_COLORS: Record<string, string> = {
   metro: "var(--color-mode-metro)",
@@ -30,11 +30,22 @@ const MODE_LABELS: Record<string, string> = {
   ferry: "Ferry",
 };
 
+// GTFS route_type → label
+const ROUTE_TYPE_LABEL: Record<number, string> = {
+  0:  "Tranvía",
+  1:  "Metro",
+  2:  "Tren",
+  3:  "Autobús",
+  4:  "Ferry",
+  5:  "Tranvía",
+  6:  "Teleférico",
+  7:  "Funicular",
+  11: "Trolebús",
+  12: "Monorraíl",
+};
+
 // ── Client components ─────────────────────────────────────────────────────────
 
-// ArrivalsLive owns both the SWR-polling table and the mini-map.
-// The component already has "use client" so we don't need ssr:false — and
-// Next.js 16 App Router rejects ssr:false in server components at build time.
 const ArrivalsLive = dynamicImport(() => import("./arrivals-live"));
 
 // ── Params ────────────────────────────────────────────────────────────────────
@@ -46,7 +57,7 @@ type Props = {
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
 async function getStopWithOperator(operatorSlug: string, stopId: string) {
-  // Resolve operator (mdbId or slugified name — mirrors [operator]/page.tsx logic)
+  // Resolve operator (mdbId or slugified name)
   let operator = await prisma.transitOperator.findUnique({
     where: { mdbId: operatorSlug },
   });
@@ -71,20 +82,17 @@ async function getStopWithOperator(operatorSlug: string, stopId: string) {
 
   if (!stop) return null;
 
-  // Routes that serve this stop. StopTime → Trip → Route. Distinct on
-  // routeId because a stop is hit by many trips of the same route every
-  // day. Cap at the 30 most-used trips to keep the query bounded for
-  // mega-stops (Atocha, Sants).
+  // Routes serving this stop + next scheduled arrivals per route
   const stopTimes = await prisma.transitStopTime.findMany({
     where: { operatorId: operator.id, stopId },
-    select: { tripId: true },
-    take: 200,
+    select: { tripId: true, arrivalTime: true, stopSequence: true },
+    take: 500,
   });
   const tripIds = Array.from(new Set(stopTimes.map((s) => s.tripId)));
   const trips = tripIds.length
     ? await prisma.transitTrip.findMany({
         where: { operatorId: operator.id, tripId: { in: tripIds } },
-        select: { routeId: true },
+        select: { tripId: true, routeId: true, headsign: true, directionId: true },
       })
     : [];
   const routeIds = Array.from(new Set(trips.map((t) => t.routeId)));
@@ -102,7 +110,48 @@ async function getStopWithOperator(operatorSlug: string, stopId: string) {
       })
     : [];
 
-  return { operator, stop, routes };
+  // Build next-arrival per route from GTFS schedule (relative to current time)
+  // Only feasible without real-time — show schedule
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  // Map tripId → routeId + headsign
+  const tripToRoute = new Map(trips.map((t) => [t.tripId, t]));
+
+  // For each stop_time entry on this stop, find the next scheduled arrival per route
+  type NextArrival = {
+    routeId: string;
+    headsign: string | null;
+    arrivalTime: string;
+    minutesAway: number;
+  };
+  const nextByRoute = new Map<string, NextArrival>();
+
+  for (const st of stopTimes) {
+    const trip = tripToRoute.get(st.tripId);
+    if (!trip) continue;
+    const parts = st.arrivalTime.split(":");
+    if (parts.length < 2) continue;
+    const arrMin = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    const minsAway = arrMin - nowMin;
+    if (minsAway < -5 || minsAway > 120) continue; // filter old + too far
+
+    const existing = nextByRoute.get(trip.routeId);
+    if (!existing || minsAway < existing.minutesAway) {
+      nextByRoute.set(trip.routeId, {
+        routeId: trip.routeId,
+        headsign: trip.headsign,
+        arrivalTime: st.arrivalTime,
+        minutesAway: minsAway,
+      });
+    }
+  }
+
+  const nextArrivals = Array.from(nextByRoute.values()).sort(
+    (a, b) => a.minutesAway - b.minutesAway
+  );
+
+  return { operator, stop, routes, nextArrivals };
 }
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
@@ -116,8 +165,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { operator, stop } = result;
-  const title = `Parada ${stop.stopName} — ${operator.name}`;
-  const description = `Próximas llegadas y ubicación de la parada ${stop.stopName} de ${operator.name}. Horarios GTFS en tiempo real.`;
+  const title = `Parada ${stop.stopName} — ${operator.name} · Próximos buses`;
+  const description = `Próximas llegadas y ubicación de la parada ${stop.stopName} de ${operator.name}. ETAs por línea, horarios GTFS y mapa interactivo.`;
 
   return {
     title,
@@ -146,7 +195,7 @@ export default async function TransitStopDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { operator, stop, routes } = result;
+  const { operator, stop, routes, nextArrivals } = result;
 
   const modeColor = MODE_COLORS[operator.mode] ?? "#6b7280";
   const modeLabel = MODE_LABELS[operator.mode] ?? operator.mode;
@@ -175,6 +224,12 @@ export default async function TransitStopDetailPage({ params }: Props) {
     },
   };
 
+  // Route color lookup
+  const routeColorMap = new Map(
+    routes.map((r) => [r.routeId, r.routeColor ? `#${r.routeColor}` : modeColor])
+  );
+  const routeShortNameMap = new Map(routes.map((r) => [r.routeId, r.shortName]));
+
   return (
     <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
       <script
@@ -195,7 +250,6 @@ export default async function TransitStopDetailPage({ params }: Props) {
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section>
         <div className="flex items-start gap-4">
-          {/* Stop icon */}
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
             style={{ backgroundColor: `${modeColor}18` }}
@@ -204,7 +258,6 @@ export default async function TransitStopDetailPage({ params }: Props) {
           </div>
 
           <div className="min-w-0 flex-1">
-            {/* Mode badge */}
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <h1 className="text-2xl sm:text-3xl font-heading font-bold text-gray-900 dark:text-gray-100 leading-tight">
                 {stop.stopName}
@@ -217,7 +270,6 @@ export default async function TransitStopDetailPage({ params }: Props) {
               </span>
             </div>
 
-            {/* Operator */}
             <p className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
               <Navigation className="w-3.5 h-3.5 shrink-0" />
               {operator.name}
@@ -228,13 +280,11 @@ export default async function TransitStopDetailPage({ params }: Props) {
 
         {/* Stop metadata row */}
         <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
-          {/* Stop ID */}
           <span className="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-1.5 font-mono text-gray-700 dark:text-gray-300 text-xs">
             <span className="text-gray-400">ID</span>
             {stop.stopId}
           </span>
 
-          {/* Coordinates */}
           {lat !== 0 && lon !== 0 && (
             <span className="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-1.5 font-mono text-gray-700 dark:text-gray-300 text-xs">
               <MapPin className="w-3 h-3 text-gray-400" />
@@ -242,7 +292,6 @@ export default async function TransitStopDetailPage({ params }: Props) {
             </span>
           )}
 
-          {/* Google Maps link */}
           {lat !== 0 && lon !== 0 && (
             <a
               href={googleMapsHref}
@@ -257,7 +306,79 @@ export default async function TransitStopDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* ── Lines serving this stop ─────────────────────────────────────── */}
+      {/* ── Next arrivals per route (schedule-based) ───────────────────────── */}
+      {nextArrivals.length > 0 && (
+        <section aria-label="Próximas llegadas por línea">
+          <h2 className="text-base font-heading font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-[var(--tl-primary)]" />
+            Próximas llegadas
+            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+              Horario programado
+            </span>
+          </h2>
+          <ul className="space-y-2">
+            {nextArrivals.slice(0, 8).map((a) => {
+              const color = routeColorMap.get(a.routeId) ?? modeColor;
+              const shortName = routeShortNameMap.get(a.routeId);
+              const minsAway = a.minutesAway;
+              const isImminent = minsAway <= 2;
+              return (
+                <li
+                  key={`${a.routeId}-${a.arrivalTime}`}
+                  className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3"
+                >
+                  {/* Line badge */}
+                  <span
+                    className="inline-flex items-center justify-center min-w-[2.5rem] px-2 py-1 rounded-lg text-xs font-bold shrink-0 text-white font-mono"
+                    style={{ backgroundColor: color }}
+                  >
+                    {shortName || "—"}
+                  </span>
+
+                  {/* Destination + time */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                      {a.headsign || ROUTE_TYPE_LABEL[3]}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+                      <Clock className="w-2.5 h-2.5 shrink-0" />
+                      {a.arrivalTime.slice(0, 5)}
+                    </p>
+                  </div>
+
+                  {/* Countdown */}
+                  <div className="shrink-0 text-right">
+                    <span
+                      className={`font-mono font-bold text-xl tabular-nums ${
+                        isImminent
+                          ? "text-green-600 dark:text-green-400 motion-safe:animate-pulse"
+                          : "text-gray-900 dark:text-gray-100"
+                      }`}
+                    >
+                      {minsAway <= 0 ? "Ahora" : `${minsAway}′`}
+                    </span>
+                  </div>
+
+                  {/* Link to route */}
+                  <a
+                    href={`/transporte-publico/${slugify(operator.name)}/${encodeURIComponent(a.routeId)}`}
+                    className="shrink-0 text-gray-400 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
+                    aria-label={`Ver línea ${shortName ?? a.routeId}`}
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-2 flex items-center gap-1">
+            <Info className="w-3 h-3 shrink-0" />
+            Horario estático GTFS. Sin ajuste de retrasos en tiempo real.
+          </p>
+        </section>
+      )}
+
+      {/* ── Lines serving this stop ─────────────────────────────────────────── */}
       {routes.length > 0 && (
         <section aria-label="Líneas que paran aquí">
           <h2 className="text-base font-heading font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
@@ -270,6 +391,7 @@ export default async function TransitStopDetailPage({ params }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {routes.map((r) => {
               const badgeColor = r.routeColor ? `#${r.routeColor}` : modeColor;
+              const typeLabel = ROUTE_TYPE_LABEL[r.routeType] ?? "Línea";
               return (
                 <a
                   key={r.routeId}
@@ -282,9 +404,12 @@ export default async function TransitStopDetailPage({ params }: Props) {
                   >
                     {r.shortName || "—"}
                   </span>
-                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
-                    {r.longName || r.shortName || "Sin nombre"}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                      {r.longName || r.shortName || "Sin nombre"}
+                    </p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500">{typeLabel}</p>
+                  </div>
                 </a>
               );
             })}

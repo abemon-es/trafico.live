@@ -7,21 +7,28 @@
  * API on each render (cached 30s via the existing redis client) and
  * cross-links every stop to its station landing page.
  *
- * This is the page the vision describes — "search any train, see its
- * landing with next stop, current position, and route timeline of past
- * and present stations".
+ * Enrichments (iter-9):
+ * - Full route polyline map (TrainRouteMap)
+ * - Stops timeline with state (StopsTimeline)
+ * - "Tiempo a la próxima parada" countdown card
+ * - "Tiempo al destino final" countdown card
+ * - Punctuality stats from RailwayDelaySnapshot (PunctualityStats)
+ * - "Velocidad media" from position deltas
+ * - "Historial este mes" — last 30 days delay stats from RailwayDailyStats
  *
- * The train identifier is reused daily, so the page is not indexable.
- * Robots `noindex` keeps Google away while the URL stays shareable
- * (e.g. from the /trenes hero map or external chat).
+ * noindex — train IDs are reused daily (not indexable).
  */
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import dynamicImport from "next/dynamic";
 import { prisma } from "@/lib/db";
 import redis from "@/lib/redis";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import {
+  getTrainBrandPunctuality,
+  getFleetPunctuality,
+} from "@/lib/transit/punctuality";
 import {
   TrainFront,
   Navigation,
@@ -29,11 +36,15 @@ import {
   MapPin,
   AlertTriangle,
   CheckCircle2,
-  Circle,
   ArrowRight,
   Accessibility,
   ExternalLink,
+  Gauge,
+  CalendarDays,
+  TrendingUp,
 } from "lucide-react";
+import type { PunctualityStatsData } from "@/components/trenes/PunctualityStats";
+import type { TimelineStop } from "@/components/trenes/StopsTimeline";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -42,7 +53,38 @@ export const revalidate = 30;
 export const dynamic = "force-dynamic";
 
 // ---------------------------------------------------------------------------
-// Renfe data structures (mirrors /api/trenes/posiciones)
+// Lazy-loaded client components
+// ---------------------------------------------------------------------------
+
+const TrainRouteMap = dynamicImport(() => import("@/components/trenes/TrainRouteMap"), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="w-full rounded-xl bg-tl-50 dark:bg-gray-800 animate-pulse"
+      style={{ height: 360 }}
+      aria-hidden="true"
+    />
+  ),
+});
+
+const StopsTimeline = dynamicImport(() => import("@/components/trenes/StopsTimeline"), {
+  ssr: false,
+  loading: () => (
+    <div className="space-y-2">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="h-8 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+      ))}
+    </div>
+  ),
+});
+
+const PunctualityStats = dynamicImport(
+  () => import("@/components/trenes/PunctualityStats"),
+  { ssr: false }
+);
+
+// ---------------------------------------------------------------------------
+// Renfe data structures
 // ---------------------------------------------------------------------------
 
 const FLOTA_URL = "https://tiempo-real.largorecorrido.renfe.com/renfe-visor/flotaLD.json";
@@ -74,26 +116,26 @@ interface TrainRoute {
 }
 
 const PRODUCT_TYPES: Record<number, { name: string; brand: string; color: string }> = {
-  1: { name: "AVE", brand: "AVE", color: "#9b1c2e" },
-  2: { name: "AVE", brand: "AVE", color: "#9b1c2e" },
-  3: { name: "Avant", brand: "Avant", color: "#1e40af" },
-  4: { name: "Alvia", brand: "Alvia", color: "#7c3aed" },
-  5: { name: "Alvia", brand: "Alvia", color: "#7c3aed" },
-  6: { name: "Altaria", brand: "Altaria", color: "#7c3aed" },
-  7: { name: "Euromed", brand: "Euromed", color: "#0891b2" },
-  8: { name: "Trenhotel", brand: "Trenhotel", color: "#475569" },
-  10: { name: "Talgo", brand: "Talgo", color: "#475569" },
-  11: { name: "Alvia", brand: "Alvia", color: "#7c3aed" },
-  12: { name: "AV City", brand: "AV City", color: "#9b1c2e" },
-  13: { name: "Intercity", brand: "Intercity", color: "#0891b2" },
-  16: { name: "Media Distancia", brand: "MD", color: "#0891b2" },
-  17: { name: "Regional", brand: "Regional", color: "#0891b2" },
-  18: { name: "Regional Exprés", brand: "RE", color: "#0891b2" },
-  19: { name: "Intercity", brand: "Intercity", color: "#0891b2" },
+  1:  { name: "AVE",           brand: "AVE",         color: "#9b1c2e" },
+  2:  { name: "AVE",           brand: "AVE",         color: "#9b1c2e" },
+  3:  { name: "Avant",         brand: "Avant",       color: "#1e40af" },
+  4:  { name: "Alvia",         brand: "Alvia",       color: "#7c3aed" },
+  5:  { name: "Alvia",         brand: "Alvia",       color: "#7c3aed" },
+  6:  { name: "Altaria",       brand: "Altaria",     color: "#7c3aed" },
+  7:  { name: "Euromed",       brand: "Euromed",     color: "#0891b2" },
+  8:  { name: "Trenhotel",     brand: "Trenhotel",   color: "#475569" },
+  10: { name: "Talgo",         brand: "Talgo",       color: "#475569" },
+  11: { name: "Alvia",         brand: "Alvia",       color: "#7c3aed" },
+  12: { name: "AV City",       brand: "AV City",     color: "#9b1c2e" },
+  13: { name: "Intercity",     brand: "Intercity",   color: "#0891b2" },
+  16: { name: "Media Distancia", brand: "MD",        color: "#0891b2" },
+  17: { name: "Regional",      brand: "Regional",    color: "#0891b2" },
+  18: { name: "Regional Exprés", brand: "RE",        color: "#0891b2" },
+  19: { name: "Intercity",     brand: "Intercity",   color: "#0891b2" },
 };
 
 // ---------------------------------------------------------------------------
-// Data fetching — mirrors /api/trenes/posiciones with graceful degradation
+// Data fetching
 // ---------------------------------------------------------------------------
 
 async function fetchCached<T>(url: string, cacheKey: string, label: string): Promise<T | null> {
@@ -125,12 +167,33 @@ async function fetchCached<T>(url: string, cacheKey: string, label: string): Pro
   }
 }
 
+// Haversine distance in km
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 async function loadTrain(trainId: string) {
   const cleanId = trainId.trim().toUpperCase();
 
   const [flota, rutasRaw] = await Promise.all([
-    fetchCached<{ fechaActualizacion: string; trenes: RenfeTrain[] }>(FLOTA_URL, CACHE_KEY_FLOTA, "flota"),
-    fetchCached<{ trenes?: TrainRoute[] } | TrainRoute[]>(RUTAS_URL, CACHE_KEY_RUTAS, "rutas"),
+    fetchCached<{ fechaActualizacion: string; trenes: RenfeTrain[] }>(
+      FLOTA_URL,
+      CACHE_KEY_FLOTA,
+      "flota"
+    ),
+    fetchCached<{ trenes?: TrainRoute[] } | TrainRoute[]>(
+      RUTAS_URL,
+      CACHE_KEY_RUTAS,
+      "rutas"
+    ),
   ]);
 
   const train = flota?.trenes?.find((t) => t.codComercial?.toUpperCase() === cleanId) ?? null;
@@ -139,24 +202,51 @@ async function loadTrain(trainId: string) {
     : (rutasRaw as { trenes?: TrainRoute[] } | null)?.trenes ?? [];
   const route = rawRoutes.find((r) => r.idTren?.toUpperCase() === cleanId) ?? null;
 
-  // Resolve station codes → DB station rows so we can render names + link
+  // Resolve station codes → DB rows
   const stationCodes = new Set<string>();
   if (train) {
-    if (train.codOrigen) stationCodes.add(train.codOrigen);
-    if (train.codDestino) stationCodes.add(train.codDestino);
-    if (train.codEstAnt) stationCodes.add(train.codEstAnt);
-    if (train.codEstSig) stationCodes.add(train.codEstSig);
+    for (const code of [train.codOrigen, train.codDestino, train.codEstAnt, train.codEstSig]) {
+      if (code) stationCodes.add(code);
+    }
   }
   if (route?.estaciones) {
     for (const s of route.estaciones) stationCodes.add(s.p);
   }
+
   let stationsMap = new Map<string, { code: string; name: string; slug: string | null }>();
   if (stationCodes.size > 0) {
     const rows = await prisma.railwayStation.findMany({
       where: { code: { in: Array.from(stationCodes) } },
       select: { code: true, name: true, slug: true },
     });
-    stationsMap = new Map(rows.filter((r) => r.code).map((r) => [r.code!, { code: r.code!, name: r.name, slug: r.slug }]));
+    stationsMap = new Map(
+      rows.filter((r) => r.code).map((r) => [r.code!, { code: r.code!, name: r.name, slug: r.slug }])
+    );
+  }
+
+  // Estimate average speed from sequence + timestamps (current run)
+  let estimatedSpeedKmh: number | null = null;
+  if (train && route?.secuencia && route.secuencia.length > 1) {
+    const seq = route.secuencia;
+    let totalKm = 0;
+    for (let i = 1; i < seq.length; i++) {
+      totalKm += haversineKm(seq[i - 1].lat, seq[i - 1].lon, seq[i].lat, seq[i].lon);
+    }
+    // Estimate travel time from first to last scheduled stop
+    if (route.estaciones.length >= 2) {
+      const firstTime = route.estaciones[0].h;
+      const lastTime = route.estaciones[route.estaciones.length - 1].h;
+      if (firstTime && lastTime) {
+        const toMin = (t: string) => {
+          const [h, m] = t.split(":").map(Number);
+          return h * 60 + (m || 0);
+        };
+        const diffMin = toMin(lastTime) - toMin(firstTime);
+        if (diffMin > 0) {
+          estimatedSpeedKmh = Math.round((totalKm / diffMin) * 60);
+        }
+      }
+    }
   }
 
   return {
@@ -166,28 +256,66 @@ async function loadTrain(trainId: string) {
     stationsMap,
     fechaActualizacion: flota?.fechaActualizacion ?? null,
     isLiveAvailable: flota !== null,
+    estimatedSpeedKmh,
   };
 }
 
-function stationLink(code: string, map: Map<string, { code: string; name: string; slug: string | null }>) {
+function stationLink(
+  code: string,
+  map: Map<string, { code: string; name: string; slug: string | null }>
+) {
   const s = map.get(code);
   if (!s) return { name: code, href: null as string | null };
   if (s.slug) return { name: s.name, href: `/trenes/estacion/${s.slug}` };
   return { name: s.name, href: null };
 }
 
+// ETA from scheduled time string (HH:MM) adjusted by delay minutes
+function computeEtaMinutes(scheduledHHMM: string, delayMin: number): number | null {
+  if (!scheduledHHMM) return null;
+  const [hStr, mStr] = scheduledHHMM.split(":");
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  const now = new Date();
+  const targetMin = h * 60 + m + delayMin;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  return targetMin - nowMin;
+}
+
 // ---------------------------------------------------------------------------
-// Metadata — noindex (data churns daily, train ID is reused)
+// Monthly history from RailwayDailyStats
+// ---------------------------------------------------------------------------
+
+async function loadMonthlyHistory() {
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
+  const rows = await prisma.railwayDailyStats.findMany({
+    where: { date: { gte: since } },
+    orderBy: { date: "asc" },
+    select: {
+      date: true,
+      avgDelay: true,
+      maxDelay: true,
+      punctualityRate: true,
+      totalAlerts: true,
+    },
+  });
+  return rows;
+}
+
+// ---------------------------------------------------------------------------
+// Metadata — noindex
 // ---------------------------------------------------------------------------
 
 export async function generateMetadata(
-  { params }: { params: Promise<{ trainId: string }> },
+  { params }: { params: Promise<{ trainId: string }> }
 ): Promise<Metadata> {
   const { trainId } = await params;
   const cleanId = trainId.trim().toUpperCase();
   return {
-    title: `Tren ${cleanId} en vivo — Posición, próxima parada y retraso`,
-    description: `Posición en tiempo real del tren Renfe ${cleanId}: parada anterior y próxima, hora estimada, retraso actual y trayecto completo con horarios.`,
+    title: `Tren ${cleanId} en vivo — Posición, recorrido y puntualidad`,
+    description: `Posición en tiempo real del tren Renfe ${cleanId}: recorrido en mapa, paradas con ETAs, retraso actual y estadísticas de puntualidad de los últimos 30 días.`,
     alternates: { canonical: `${BASE_URL}/trenes/tren/${encodeURIComponent(cleanId)}` },
     robots: { index: false, follow: true },
   };
@@ -198,66 +326,64 @@ export async function generateMetadata(
 // ---------------------------------------------------------------------------
 
 export default async function TrainEntityPage(
-  { params }: { params: Promise<{ trainId: string }> },
+  { params }: { params: Promise<{ trainId: string }> }
 ) {
   const { trainId } = await params;
-  const { cleanId, train, route, stationsMap, fechaActualizacion, isLiveAvailable } =
-    await loadTrain(trainId);
+  const {
+    cleanId,
+    train,
+    route,
+    stationsMap,
+    fechaActualizacion,
+    isLiveAvailable,
+    estimatedSpeedKmh,
+  } = await loadTrain(trainId);
 
-  // We intentionally don't 404 missing trains — the user may have shared a
-  // train that just finished its journey or that runs only certain days.
-  // Render an informative empty state instead.
-
-  const product = train ? PRODUCT_TYPES[train.codProduct] ?? { name: `Tipo ${train.codProduct}`, brand: "Renfe", color: "#475569" } : null;
+  const product = train
+    ? PRODUCT_TYPES[train.codProduct] ?? { name: `Tipo ${train.codProduct}`, brand: "Renfe", color: "#475569" }
+    : null;
   const delay = train ? parseInt(train.ultRetraso, 10) || 0 : 0;
   const delayTier =
     delay <= 0 ? "on-time" : delay <= 5 ? "slight" : delay <= 15 ? "moderate" : "severe";
 
-  // Build the timeline of stops: for each station in the route, mark it as
-  // PAST / CURRENT / FUTURE relative to the live `codEstAnt` and `codEstSig`.
-  type StopRow = {
-    code: string;
-    name: string;
-    href: string | null;
-    scheduled: string;
-    state: "past" | "current" | "future";
-  };
-  const timeline: StopRow[] = [];
+  // Build timeline of stops
+  const timeline: TimelineStop[] = [];
   if (route?.estaciones && train) {
-    let passedCurrent = false;
     let reachedNext = false;
-    for (const s of route.estaciones) {
+    for (let i = 0; i < route.estaciones.length; i++) {
+      const s = route.estaciones[i];
       const link = stationLink(s.p, stationsMap);
-      let state: StopRow["state"];
+      let state: TimelineStop["state"];
       if (reachedNext) {
         state = "future";
       } else if (s.p === train.codEstSig) {
         state = "current";
         reachedNext = true;
-        passedCurrent = true;
-      } else if (passedCurrent) {
-        state = "future";
       } else {
         state = "past";
       }
       timeline.push({
-        code: s.p,
+        id: `${s.p}-${i}`,
         name: link.name,
         href: link.href,
-        scheduled: s.h ?? "",
+        scheduledTime: s.h ?? null,
         state,
+        isFirst: i === 0,
+        isLast: i === route.estaciones.length - 1,
       });
     }
   } else if (route?.estaciones) {
-    // No live train but we have a route — render full schedule as "future"
-    for (const s of route.estaciones) {
+    for (let i = 0; i < route.estaciones.length; i++) {
+      const s = route.estaciones[i];
       const link = stationLink(s.p, stationsMap);
       timeline.push({
-        code: s.p,
+        id: `${s.p}-${i}`,
         name: link.name,
         href: link.href,
-        scheduled: s.h ?? "",
+        scheduledTime: s.h ?? null,
         state: "future",
+        isFirst: i === 0,
+        isLast: i === route.estaciones.length - 1,
       });
     }
   }
@@ -267,10 +393,37 @@ export default async function TrainEntityPage(
   const prev = train ? stationLink(train.codEstAnt, stationsMap) : null;
   const next = train ? stationLink(train.codEstSig, stationsMap) : null;
 
-  // External Google Maps deep-link to the live position (driver-style "where is it now")
+  // ETA for next stop and final destination
+  const nextStopEta = train?.horaLlegadaSigEst
+    ? computeEtaMinutes(train.horaLlegadaSigEst, 0)
+    : null;
+
+  const destStop = route?.estaciones[route.estaciones.length - 1];
+  const finalEta = destStop?.h ? computeEtaMinutes(destStop.h, delay) : null;
+
   const mapsViewUrl = train
     ? `https://www.google.com/maps/search/?api=1&query=${train.latitud},${train.longitud}`
     : null;
+
+  // Punctuality stats — prefer brand-specific if product is known
+  let punctualityStats: PunctualityStatsData | null = null;
+  if (product) {
+    punctualityStats = await getTrainBrandPunctuality(product.brand, 30);
+  }
+  if (!punctualityStats) {
+    punctualityStats = await getFleetPunctuality(30);
+  }
+
+  // Monthly history (last 30 days)
+  const monthlyHistory = await loadMonthlyHistory();
+
+  // Recharts data — daily avg delay for chart
+  const chartData = monthlyHistory.map((d) => ({
+    label: new Date(d.date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" }),
+    value: Number(d.avgDelay),
+  }));
+
+  const productColor = product?.color ?? "#1e40af";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -290,10 +443,7 @@ export default async function TrainEntityPage(
       <section
         className="relative overflow-hidden"
         style={{
-          background:
-            train && product
-              ? `linear-gradient(135deg, #0f172a 0%, ${product.color}dd 100%)`
-              : "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)",
+          background: `linear-gradient(135deg, #0f172a 0%, ${productColor}dd 100%)`,
         }}
       >
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -360,12 +510,20 @@ export default async function TrainEntityPage(
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {prev && next && (
-                      <>Entre <span className="font-medium text-gray-700 dark:text-gray-300">{prev.name}</span> y{" "}
-                      <span className="font-medium text-gray-700 dark:text-gray-300">{next.name}</span></>
+                      <>
+                        Entre{" "}
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{prev.name}</span>{" "}
+                        y{" "}
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{next.name}</span>
+                      </>
                     )}
                     {fechaActualizacion && (
                       <span className="ml-2 font-mono">
-                        · Datos: {new Date(fechaActualizacion).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                        · Datos:{" "}
+                        {new Date(fechaActualizacion).toLocaleTimeString("es-ES", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     )}
                   </p>
@@ -377,7 +535,13 @@ export default async function TrainEntityPage(
                     Próxima parada
                   </p>
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {next.href ? <Link href={next.href} className="hover:underline">{next.name}</Link> : next.name}
+                    {next.href ? (
+                      <Link href={next.href} className="hover:underline">
+                        {next.name}
+                      </Link>
+                    ) : (
+                      next.name
+                    )}
                   </p>
                   <p className="text-xs font-mono text-gray-600 dark:text-gray-400">
                     <Clock className="w-3 h-3 inline mr-1" />
@@ -398,7 +562,7 @@ export default async function TrainEntityPage(
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
               {isLiveAvailable
-                ? "El código " + cleanId + " no aparece en la lista actual de Renfe. Puede haber finalizado su recorrido o circular en días específicos."
+                ? `El código ${cleanId} no aparece en la lista actual de Renfe. Puede haber finalizado su recorrido o circular en días específicos.`
                 : "El visor de Renfe no respondió a tiempo. Vuelve a cargar en unos segundos."}
             </p>
             <Link
@@ -411,7 +575,107 @@ export default async function TrainEntityPage(
           </section>
         )}
 
-        {/* Live position card */}
+        {/* ETA countdown cards */}
+        {train && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Tiempo a la próxima parada */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                Tiempo a la próxima parada
+              </p>
+              {next ? (
+                <>
+                  <p className="font-heading font-bold text-2xl text-gray-900 dark:text-gray-100">
+                    {next.href ? (
+                      <Link href={next.href} className="hover:underline">
+                        {next.name}
+                      </Link>
+                    ) : (
+                      next.name
+                    )}
+                  </p>
+                  <p className="mt-1 font-mono text-3xl font-bold text-tl-600 dark:text-tl-400">
+                    {nextStopEta !== null
+                      ? nextStopEta <= 0
+                        ? "Llegando"
+                        : `${nextStopEta} min`
+                      : train.horaLlegadaSigEst || "—"}
+                  </p>
+                  {delay > 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      +{delay} min de retraso incluido
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Sin datos</p>
+              )}
+            </div>
+
+            {/* Tiempo al destino final */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5" />
+                Tiempo al destino final
+              </p>
+              {destination ? (
+                <>
+                  <p className="font-heading font-bold text-2xl text-gray-900 dark:text-gray-100">
+                    {destination.href ? (
+                      <Link href={destination.href} className="hover:underline">
+                        {destination.name}
+                      </Link>
+                    ) : (
+                      destination.name
+                    )}
+                  </p>
+                  <p className="mt-1 font-mono text-3xl font-bold text-tl-600 dark:text-tl-400">
+                    {finalEta !== null
+                      ? finalEta <= 0
+                        ? "Ha llegado"
+                        : `${finalEta} min`
+                      : destStop?.h || "—"}
+                  </p>
+                  {delay > 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      Llegada estimada: {destStop?.h}
+                      {delay > 0 ? ` (+${delay} min)` : ""}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Sin datos</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Route map */}
+        {train && route?.secuencia && route.secuencia.length > 0 && (
+          <section
+            aria-label="Mapa del recorrido"
+            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
+          >
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <Navigation className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+              Recorrido en mapa
+            </h2>
+            <TrainRouteMap
+              sequence={route.secuencia}
+              stops={timeline.map((t) => ({
+                code: t.id.split("-")[0],
+                name: t.name,
+                state: t.state as "past" | "current" | "future",
+              }))}
+              trainLat={train.latitud}
+              trainLon={train.longitud}
+              productColor={productColor}
+            />
+          </section>
+        )}
+
+        {/* Position details + speed */}
         {train && (
           <section
             aria-label="Posición en vivo"
@@ -455,79 +719,155 @@ export default async function TrainEntityPage(
                   <dd className="font-medium text-gray-900 dark:text-gray-100">{product.name}</dd>
                 </div>
               )}
+              {estimatedSpeedKmh !== null && (
+                <div>
+                  <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 flex items-center gap-1">
+                    <Gauge className="w-3 h-3" />
+                    Velocidad media
+                  </dt>
+                  <dd className="font-mono font-semibold text-gray-900 dark:text-gray-100">
+                    {estimatedSpeedKmh} km/h
+                  </dd>
+                </div>
+              )}
             </dl>
           </section>
         )}
 
-        {/* Route timeline */}
+        {/* Stops timeline */}
         {timeline.length > 0 && (
           <section
-            aria-label="Trayecto"
+            aria-label="Trayecto completo"
             className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
           >
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <Navigation className="w-4 h-4 text-tl-600 dark:text-tl-400" />
               Trayecto completo
+              <span className="text-xs font-mono bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full px-2 py-0.5">
+                {timeline.length} paradas
+              </span>
             </h2>
-            <ol className="space-y-0.5">
-              {timeline.map((stop, idx) => {
-                const isLast = idx === timeline.length - 1;
-                const dotColor =
-                  stop.state === "past"
-                    ? "bg-gray-300 dark:bg-gray-700"
-                    : stop.state === "current"
-                    ? "bg-amber-500 ring-4 ring-amber-200 dark:ring-amber-900/40"
-                    : "bg-tl-500 dark:bg-tl-400";
-                const textTone =
-                  stop.state === "past"
-                    ? "text-gray-400 dark:text-gray-500 line-through"
-                    : stop.state === "current"
-                    ? "text-amber-700 dark:text-amber-400 font-semibold"
-                    : "text-gray-900 dark:text-gray-100";
-                return (
-                  <li key={`${stop.code}-${idx}`} className="flex items-start gap-3 relative pb-3">
-                    <div className="flex flex-col items-center flex-shrink-0 pt-1">
-                      {stop.state === "current" ? (
-                        <span className={`w-3 h-3 rounded-full ${dotColor}`} aria-hidden="true" />
-                      ) : (
-                        <Circle className={`w-3 h-3 ${dotColor} rounded-full`} aria-hidden="true" />
-                      )}
-                      {!isLast && (
-                        <span
-                          className="w-px flex-1 mt-1"
-                          style={{ minHeight: "20px", background: stop.state === "past" ? "var(--color-tl-200, #e5e7eb)" : "var(--color-tl-300, #cbd5e1)" }}
-                          aria-hidden="true"
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 flex items-center justify-between gap-3 min-w-0 -mt-0.5">
-                      <div className="min-w-0">
-                        {stop.href ? (
-                          <Link href={stop.href} className={`text-sm hover:underline ${textTone} truncate block`}>
-                            {stop.name}
-                          </Link>
-                        ) : (
-                          <span className={`text-sm ${textTone} truncate block`}>{stop.name}</span>
-                        )}
-                        {stop.state === "current" && (
-                          <span className="text-[10px] uppercase tracking-wide text-amber-600 dark:text-amber-400 font-semibold">
-                            Próxima
-                          </span>
-                        )}
-                      </div>
-                      {stop.scheduled && (
-                        <span className="font-mono text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
-                          {stop.scheduled}
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
+            <StopsTimeline
+              stops={timeline}
+              maxVisible={train ? undefined : 20}
+            />
             <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-4">
-              Horarios programados según la planificación de Renfe. El retraso actual se aplica al
-              cómputo aproximado de las paradas restantes.
+              Horarios programados según la planificación de Renfe. El retraso actual se aplica
+              al cómputo aproximado de las paradas restantes.
+            </p>
+          </section>
+        )}
+
+        {/* Punctuality stats */}
+        {punctualityStats && (
+          <section
+            aria-label="Estadísticas de puntualidad"
+            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
+          >
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+              Puntualidad
+              {product && (
+                <span className="text-xs font-mono bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full px-2 py-0.5">
+                  {product.brand} · últimos 30 días
+                </span>
+              )}
+            </h2>
+            <PunctualityStats
+              stats={punctualityStats}
+              mode="train"
+              chartData={chartData.length > 0 ? chartData : undefined}
+            />
+          </section>
+        )}
+
+        {/* Monthly history table */}
+        {monthlyHistory.length > 0 && (
+          <section
+            aria-label="Historial este mes"
+            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
+          >
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+              Historial este mes
+            </h2>
+            <div className="overflow-x-auto -mx-1">
+              <table className="w-full text-sm text-left min-w-[520px]">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                    <th className="pb-2 pr-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Fecha
+                    </th>
+                    <th className="pb-2 pr-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+                      Retraso medio
+                    </th>
+                    <th className="pb-2 pr-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+                      Retraso máx.
+                    </th>
+                    <th className="pb-2 pr-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+                      Puntualidad
+                    </th>
+                    <th className="pb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+                      Alertas
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                  {monthlyHistory.slice(-14).reverse().map((row) => {
+                    const avgD = Number(row.avgDelay);
+                    const pct = Number(row.punctualityRate);
+                    return (
+                      <tr
+                        key={row.date.toISOString()}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                      >
+                        <td className="py-2 pr-4 font-mono text-gray-700 dark:text-gray-300">
+                          {new Date(row.date).toLocaleDateString("es-ES", {
+                            weekday: "short",
+                            day: "2-digit",
+                            month: "2-digit",
+                          })}
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-right">
+                          <span
+                            className={
+                              avgD <= 2
+                                ? "text-green-600 dark:text-green-400"
+                                : avgD <= 8
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-red-600 dark:text-red-400"
+                            }
+                          >
+                            {avgD.toFixed(1)} min
+                          </span>
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-right text-gray-600 dark:text-gray-400">
+                          {row.maxDelay} min
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-right">
+                          <span
+                            className={
+                              pct >= 80
+                                ? "text-green-600 dark:text-green-400"
+                                : pct >= 60
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-red-600 dark:text-red-400"
+                            }
+                          >
+                            {pct.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="py-2 font-mono text-right text-gray-600 dark:text-gray-400">
+                          {row.totalAlerts}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-3">
+              Datos agregados de todos los trenes Renfe en circulación. Actualización diaria.
             </p>
           </section>
         )}
@@ -569,7 +909,8 @@ export default async function TrainEntityPage(
         <footer className="flex flex-wrap items-center gap-2 text-xs text-gray-400 dark:text-gray-500 pt-2">
           <TrainFront className="w-4 h-4 flex-shrink-0" />
           <span>
-            Datos: visor de Renfe en tiempo real (Largo Recorrido). Actualizado cada 30 segundos.
+            Datos: visor de Renfe en tiempo real (Largo Recorrido) + estadísticas fleet Renfe.
+            Actualizado cada 30 segundos. Fuente: Renfe, DGT.
           </span>
         </footer>
       </main>
