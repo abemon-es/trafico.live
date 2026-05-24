@@ -282,26 +282,24 @@ export default function SobrePage() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Contacto</h2>
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Para consultas, sugerencias o reportar errores sobre esta plataforma:
+            <p className="text-gray-600 dark:text-gray-400 mb-5">
+              Para consultas, soporte API, colaboraciones, prensa, legal o protección de datos,
+              utiliza nuestro formulario de contacto. Respondemos en menos de 24 horas hábiles.
             </p>
-            <div className="space-y-2 text-gray-700 dark:text-gray-300">
-              <p>
-                <span className="font-medium">Email:</span>{" "}
-                <a href="mailto:hola@trafico.live" className="text-tl-600 dark:text-tl-400 hover:underline">
-                  hola@trafico.live
-                </a>
-              </p>
-              <p>
-                <span className="font-medium">Web:</span>{" "}
-                <a
-                  href="https://trafico.live"
-                  className="text-tl-600 dark:text-tl-400 hover:underline"
-                >
-                  trafico.live
-                </a>
-              </p>
-            </div>
+            <Link
+              href="/sobre/contacto"
+              className="inline-flex items-center gap-2 rounded-lg bg-tl-600 hover:bg-tl-700 text-white font-semibold px-5 py-2.5 text-sm transition-colors"
+            >
+              Ir al formulario de contacto
+              <ExternalLink className="w-4 h-4" />
+            </Link>
+            <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+              También puedes escribir directamente a{" "}
+              <a href="mailto:hola@trafico.live" className="text-tl-600 dark:text-tl-400 hover:underline font-mono">
+                hola@trafico.live
+              </a>{" "}
+              o consultar los <Link href="/sobre/contacto" className="text-tl-600 dark:text-tl-400 hover:underline">buzones específicos</Link> por categoría.
+            </p>
           </div>
         </section>
       </main>

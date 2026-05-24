@@ -1105,10 +1105,10 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/calendario`,
+      url: `${BASE_URL}/sobre/contacto`,
       lastModified: today,
-      changeFrequency: "weekly",
-      priority: 0.5,
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     {
       url: `${BASE_URL}/aviso-legal`,
