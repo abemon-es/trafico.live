@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Search, ArrowRight, ArrowLeft, X, Loader2, Clock } from "lucide-react";
+import { ChevronDown, Search, ArrowRight, ArrowLeft, X, Loader2, Clock, User, Code2, Mail, Info } from "lucide-react";
 import { useReducedMotion, motion, AnimatePresence } from "motion/react";
 import { megaMenuPanels, ACCENT_STYLES } from "./NavData";
 import { useNavState } from "./useNavState";
@@ -401,7 +401,44 @@ export function MobileMenu() {
                     onToggle={() => setExpandedPanel(expandedPanel === panel.id ? null : panel.id)}
                   />
                 ))}
+              </div>
 
+              {/* Drawer footer quick links */}
+              <div className="border-t border-gray-100 dark:border-gray-800/50 p-3">
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Link
+                    href="/sobre"
+                    onClick={closeAll}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+                  >
+                    <Info className="w-4 h-4 text-gray-400 shrink-0" />
+                    Sobre
+                  </Link>
+                  <Link
+                    href="/api-docs"
+                    onClick={closeAll}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+                  >
+                    <Code2 className="w-4 h-4 text-gray-400 shrink-0" />
+                    API
+                  </Link>
+                  <Link
+                    href="/sobre"
+                    onClick={closeAll}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+                  >
+                    <Mail className="w-4 h-4 text-gray-400 shrink-0" />
+                    Contacto
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    onClick={closeAll}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+                  >
+                    <User className="w-4 h-4 text-gray-400 shrink-0" />
+                    Mi cuenta
+                  </Link>
+                </div>
               </div>
             </div>
           )}

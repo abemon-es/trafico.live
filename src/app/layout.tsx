@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Header } from "@/components/layout/Header";
 import { ContextStrip } from "@/components/layout/ContextStrip";
 import { Footer } from "@/components/layout/Footer";
+import { MapaFAB } from "@/components/layout/FAB";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 import { SkipLink } from "@/components/ui/SkipLink";
@@ -213,6 +214,7 @@ export default function RootLayout({
           </main>
           <StickyFooterAd />
           <Footer />
+          <MapaFAB />
         </SWRProvider>
         <WebVitals />
         <CookieConsent />
