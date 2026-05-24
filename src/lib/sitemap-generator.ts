@@ -1327,6 +1327,37 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily",
       priority: 0.8,
     },
+    // DGT bureaucracy content cluster (iter-8) — 400K+/mo Spain search volume
+    {
+      url: `${BASE_URL}/dgt`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/dgt/itv`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/dgt/multas`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/dgt/carnet-puntos`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/dgt/permisos`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
   ];
 
   // City-based pages

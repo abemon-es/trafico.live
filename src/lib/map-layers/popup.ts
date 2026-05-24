@@ -8,6 +8,23 @@
 
 type FeatureProps = Record<string, unknown>;
 
+// ---------------------------------------------------------------------------
+// Vessel slug (mirrors src/lib/vessel-utils.ts — kept inline so this module
+// has no server-side import dependency and works in any bundle context).
+// ---------------------------------------------------------------------------
+function buildVesselSlug(mmsi: number | string, name: string | null | undefined): string {
+  const m = String(mmsi);
+  if (!name || !name.trim()) return m;
+  const nameSlug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return nameSlug ? `${m}-${nameSlug}` : m;
+}
+
 interface DetailRoute {
   /** Property key to use as the URL slug/id */
   idKey: string;
@@ -41,6 +58,8 @@ const HIDDEN_KEYS = new Set([
   "operatorId", "stopId", "sensorId", "stationId", "stationCode",
   // Tile-level metadata from clustering
   "clustered", "point_count", "sqrt_point_count", "point_count_abbreviated",
+  // Vessel: name is the popup title, mmsi shown in subtitle — not in rows
+  "vesselName",
 ]);
 
 /** DGT DATEX II incident types → Spanish labels. */
@@ -89,8 +108,10 @@ const CAUSE_TYPES: Record<string, string> = {
 
 const LABEL_ALIASES: Record<string, string> = {
   sog:           "Velocidad (nudos)",
-  cog:           "Rumbo",
+  cog:           "Rumbo (°)",
   mmsi:          "MMSI",
+  shipType:      "Tipo de buque",
+  navStatus:     "Estado de navegación",
   category:      "Categoría",
   destination:   "Destino",
   imd:           "IMD (veh/día)",
@@ -170,7 +191,6 @@ const LABEL_ALIASES: Record<string, string> = {
   onGround:      "En tierra",
   isActive:      "Activa",
   is24h:         "24 h",
-  isOpen24h:     "24 h",
   brand_name:    "Marca",
 };
 
@@ -186,6 +206,13 @@ function escapeHtml(value: unknown): string {
 function extractTitle(props: FeatureProps, layerId?: string): string | null {
   // Layer-specific composite titles for entities where a single field
   // isn't descriptive enough on its own.
+  if (layerId === "vessels") {
+    const name = typeof props.vesselName === "string" ? props.vesselName.trim() : "";
+    if (name) return smartTitleCase(name);
+    const mmsi = props.mmsi;
+    if (mmsi !== null && mmsi !== undefined) return `Sin nombre · MMSI ${mmsi}`;
+    return "Buque desconocido";
+  }
   if (layerId === "fleet") {
     const brand = typeof props.brand === "string" ? props.brand : "";
     const num = props.trainNumber;
@@ -383,6 +410,16 @@ function severityChipHTML(severity: unknown): string {
   return `<span style="display:inline-block;background:${s.bg};color:${s.fg};font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;margin-left:4px;vertical-align:middle;">${s.label}</span>`;
 }
 
+/** CTA pair for vessel popups — links to ficha + recorrido pages. */
+function vesselLinksHTML(mmsi: number | string, vesselName: string | null | undefined): string {
+  const slug = buildVesselSlug(mmsi, vesselName);
+  const base = `/maritimo/buques/${encodeURIComponent(slug)}`;
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;">
+    <a href="${base}" style="display:block;padding:5px 6px;text-align:center;font-size:10px;font-weight:600;background:#0891b2;color:#fff;border-radius:4px;text-decoration:none;letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ver ficha →</a>
+    <a href="${base}/recorrido" style="display:block;padding:5px 6px;text-align:center;font-size:10px;font-weight:600;background:rgba(8,145,178,0.12);color:#0891b2;border:1px solid rgba(8,145,178,0.35);border-radius:4px;text-decoration:none;letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Historial →</a>
+  </div>`;
+}
+
 /**
  * Build HTML content for a MapLibre popup given a feature's layer id
  * and its properties. Returns a self-contained HTML string.
@@ -437,6 +474,8 @@ export function buildPopupHTML(
     if ((layerId === "sensors" || layerId === "city-sensors" || layerId === "incidents") && key === "description") continue;
     // Incidents: type/source are in the title or layer label, not data rows.
     if (layerId === "incidents" && (key === "type" || key === "source")) continue;
+    // Vessels: mmsi appears in the subtitle when the name is missing — skip row.
+    if (layerId === "vessels" && key === "mmsi") continue;
 
     const formatted = formatValue(key, value);
     if (formatted === null) continue;
@@ -447,6 +486,27 @@ export function buildPopupHTML(
       </div>`,
     );
     if (rows.length >= 4) break; // keep popup tight — max 4 rows
+  }
+
+  // Vessel layer: custom subtitle + dual CTAs
+  if (layerId === "vessels") {
+    const mmsi = props.mmsi;
+    const vesselName = typeof props.vesselName === "string" ? props.vesselName : null;
+    // Build subtitle: MMSI · flag · type chips
+    const subtitleParts: string[] = [];
+    if (mmsi !== null && mmsi !== undefined) subtitleParts.push(`MMSI ${mmsi}`);
+    if (typeof props.flag === "string" && props.flag.trim()) subtitleParts.push(escapeHtml(props.flag.trim().toUpperCase()));
+    if (typeof props.shipType === "string" && props.shipType.trim()) subtitleParts.push(escapeHtml(smartTitleCase(props.shipType.trim())));
+    const subtitle = subtitleParts.join(" · ") || layerLabel;
+
+    return `
+      <div style="font-family:system-ui,-apple-system,sans-serif;line-height:1.35;word-wrap:break-word;min-width:180px;">
+        <h3 style="font-weight:700;color:inherit;font-size:13px;margin:0 0 2px 0;padding-right:14px;">${escapeHtml(title)}</h3>
+        <p style="color:#9ca3af;font-size:9px;margin:0 0 5px 0;text-transform:uppercase;letter-spacing:0.05em;">${subtitle}</p>
+        ${rows.length > 0 ? `<div style="display:flex;flex-direction:column;gap:1px;margin-bottom:2px;">${rows.join("")}</div>` : ""}
+        ${vesselLinksHTML(mmsi as number | string, vesselName)}
+      </div>
+    `;
   }
 
   const link = detailUrl(layerId, props);
