@@ -261,8 +261,8 @@ expect_status_one_of "200,404" "/trenes/estacion/madrid-puerta-de-atocha"
 # -----------------------------------------------------------------------------
 
 section "4. Removed routes + redirects"
-expect_status 404 "/calendario"
-expect_status 404 "/calendario/xyz"
+expect_redirect "/calendario" "/sobre/contacto"
+expect_redirect "/calendario/booking" "/sobre/contacto"
 expect_redirect "/provincias" "/espana"
 expect_redirect "/combustible/madrid" "/gasolineras"
 # Note: /trenes/tren, /carga-ev/punto, /maritimo/buque are stub-redirect pages
