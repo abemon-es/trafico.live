@@ -25,7 +25,7 @@ export const revalidate = 300;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Buques - Directorio de embarcaciones AIS | trafico.live",
+  title: "Buques - Directorio de embarcaciones AIS",
   description:
     "Directorio de buques detectados por AIS en aguas espanolas. Busca por tipo (carga, petrolero, pesca, pasajeros) o por bandera. Datos en tiempo real.",
   alternates: { canonical: `${BASE_URL}/maritimo/buques` },

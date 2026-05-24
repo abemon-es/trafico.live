@@ -10,7 +10,7 @@ const LAST_UPDATED = "2026-04-17";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Política de Cookies | trafico.live",
+  title: "Política de Cookies",
   description:
     "Política de cookies de trafico.live: qué cookies utilizamos (necesarias, analíticas, funcionales, afiliados), base legal, cómo gestionarlas y cómo bloquearlas en su navegador.",
   alternates: { canonical: `${BASE_URL}/cookies` },

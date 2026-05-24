@@ -13,7 +13,8 @@ const SHARD_SIZE = 5000;
 // 200-299 = postal codes, 300 = insights, 400-499 = maritime,
 // 500-599 = radars, 600-699 = cameras, 700-799 = EV chargers,
 // 800-899 = railway stations, 900-999 = railway lines,
-// 1000-1099 = air quality stations, 1100-1199 = climate stations.
+// 1000-1099 = air quality stations, 1100-1199 = climate stations,
+// 1200-1299 = aircraft (ICAO24), 1300-1399 = Spanish ports.
 const GAS_STATION_OFFSET = 1;
 const MUNICIPALITY_OFFSET = 100;
 const POSTAL_CODE_OFFSET = 200;
@@ -26,6 +27,8 @@ const RAILWAY_STATION_OFFSET = 800;
 const RAILWAY_LINE_OFFSET = 900;
 const AIR_QUALITY_OFFSET = 1000;
 const CLIMATE_STATION_OFFSET = 1100;
+const AIRCRAFT_OFFSET = 1200;
+const SPANISH_PORT_OFFSET = 1300;
 
 // Fixed upper bounds — generous overestimates, empty shards return [] gracefully.
 const FALLBACK_STATION_SHARDS = 3;
@@ -41,6 +44,8 @@ const FALLBACK_RAILWAY_STATION_SHARDS = 1; // ~1 506 stations
 const FALLBACK_RAILWAY_LINE_SHARDS = 1;    // ~1 251 routes
 const FALLBACK_AIR_QUALITY_SHARDS = 1;     // ~565 stations
 const FALLBACK_CLIMATE_STATION_SHARDS = 1; // ~900 stations
+const FALLBACK_AIRCRAFT_SHARDS = 1;     // active ICAO24s in last 7d
+const FALLBACK_SPANISH_PORT_SHARDS = 1; // 197 Spanish ports
 
 export interface SitemapEntry {
   url: string;
@@ -136,6 +141,22 @@ export async function getActiveShardIds(): Promise<{ id: number }[]> {
       fallback: FALLBACK_CLIMATE_STATION_SHARDS,
       count: () => prisma.climateStation.count(),
     },
+    {
+      offset: AIRCRAFT_OFFSET,
+      fallback: FALLBACK_AIRCRAFT_SHARDS,
+      count: async () => {
+        const rows = await prisma.aircraftPosition.findMany({
+          select: { icao24: true },
+          distinct: ["icao24"],
+        });
+        return rows.length;
+      },
+    },
+    {
+      offset: SPANISH_PORT_OFFSET,
+      fallback: FALLBACK_SPANISH_PORT_SHARDS,
+      count: () => prisma.spanishPort.count(),
+    },
   ];
 
   const counts = await Promise.all(
@@ -202,6 +223,12 @@ export function getSitemapShardIds(): { id: number }[] {
     ...Array.from({ length: FALLBACK_CLIMATE_STATION_SHARDS }, (_, i) => ({
       id: CLIMATE_STATION_OFFSET + i,
     })),
+    ...Array.from({ length: FALLBACK_AIRCRAFT_SHARDS }, (_, i) => ({
+      id: AIRCRAFT_OFFSET + i,
+    })),
+    ...Array.from({ length: FALLBACK_SPANISH_PORT_SHARDS }, (_, i) => ({
+      id: SPANISH_PORT_OFFSET + i,
+    })),
   ];
 }
 
@@ -224,6 +251,12 @@ export async function generateSitemapForShard(
   }
   if (id === INSIGHTS_OFFSET) {
     return insightsSitemap();
+  }
+  if (id >= SPANISH_PORT_OFFSET) {
+    return spanishPortSitemap(id - SPANISH_PORT_OFFSET);
+  }
+  if (id >= AIRCRAFT_OFFSET) {
+    return aircraftSitemap(id - AIRCRAFT_OFFSET);
   }
   if (id >= CLIMATE_STATION_OFFSET) {
     return climateStationSitemap(id - CLIMATE_STATION_OFFSET);
@@ -1052,6 +1085,24 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       lastModified: today,
       changeFrequency: "monthly",
       priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/sobre/citaciones-ia`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/sobre/posicionamiento`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/sobre/api`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.8,
     },
     {
       url: `${BASE_URL}/calendario`,
@@ -1941,6 +1992,58 @@ async function climateStationSitemap(
     }));
   } catch (err) {
     reportApiError(err, "sitemap climate stations");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Aircraft sitemap shards — /aviacion/avion/[icao24]
+// ---------------------------------------------------------------------------
+
+async function aircraftSitemap(shardIndex: number): Promise<SitemapEntry[]> {
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const rows = await prisma.aircraftPosition.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { icao24: true },
+      distinct: ["icao24"],
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      orderBy: { icao24: "asc" },
+    });
+    const today = startOfUtcDay();
+    return rows.map((r) => ({
+      url: `${BASE_URL}/aviacion/avion/${r.icao24.toLowerCase()}`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.45,
+    }));
+  } catch (err) {
+    reportApiError(err, "sitemap aircraft");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Spanish port sitemap shards — /maritimo/puerto/[slug]
+// ---------------------------------------------------------------------------
+
+async function spanishPortSitemap(shardIndex: number): Promise<SitemapEntry[]> {
+  try {
+    const ports = await prisma.spanishPort.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { slug: true, updatedAt: true },
+      orderBy: { slug: "asc" },
+    });
+    return ports.map((p) => ({
+      url: `${BASE_URL}/maritimo/puerto/${p.slug}`,
+      lastModified: p.updatedAt ?? startOfUtcDay(),
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    }));
+  } catch (err) {
+    reportApiError(err, "sitemap spanish ports");
     return [];
   }
 }

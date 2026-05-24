@@ -112,7 +112,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const result = await getStopWithOperator(operatorSlug, stopId);
 
   if (!result) {
-    return { title: "Parada no encontrada | trafico.live" };
+    return { title: "Parada no encontrada" };
   }
 
   const { operator, stop } = result;
@@ -120,7 +120,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = `Próximas llegadas y ubicación de la parada ${stop.stopName} de ${operator.name}. Horarios GTFS en tiempo real.`;
 
   return {
-    title: `${title} | trafico.live`,
+    title,
     description,
     alternates: {
       canonical: `${BASE_URL}/transporte-publico/${slugify(operator.name)}/parada/${stopId}`,

@@ -178,7 +178,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const flagCode = flag.toUpperCase();
   const countryName = FLAG_NAMES[flagCode] || flagCode;
 
-  const title = `Buques con bandera de ${countryName} - Rastreo AIS | trafico.live`;
+  const title = `Buques con bandera de ${countryName} - Rastreo AIS`;
+  const titleOg = `${title} | trafico.live`;
   const description = `Listado de buques registrados bajo bandera de ${countryName} (${flagCode}) en aguas espanolas. Posicion AIS, tipo de buque, eslora y destino.`;
 
   return {
@@ -186,7 +187,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: { canonical: `${BASE_URL}/maritimo/buques/bandera/${flag}` },
     openGraph: {
-      title,
+      title: titleOg,
       description,
       url: `${BASE_URL}/maritimo/buques/bandera/${flag}`,
       siteName: "trafico.live",

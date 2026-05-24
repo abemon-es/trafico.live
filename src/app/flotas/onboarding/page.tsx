@@ -8,7 +8,7 @@ import { CodeSample, INGEST_SAMPLE } from "@/components/flotas/CodeSample";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Configuración inicial — Flotas SaaS | trafico.live",
+  title: "Configuración inicial — Flotas SaaS",
   description:
     "Configura tu integración GPS en menos de 30 minutos. Guía paso a paso para conectar tu flota a trafico.live.",
   alternates: { canonical: `${BASE_URL}/flotas/onboarding` },

@@ -6,7 +6,7 @@ import LineasContent from "./content";
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Líneas y marcas de tren en España | trafico.live",
+  title: "Líneas y marcas de tren en España",
   description:
     "Catálogo completo de líneas ferroviarias en España: AVE, Alvia, Avant, Cercanías, Rodalies, Media Distancia y más. Consulta origen, destino y paradas de cada línea de Renfe.",
   path: "/trenes/lineas",

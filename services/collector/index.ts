@@ -75,6 +75,8 @@ const VALID_TASKS = [
   // Alert matching + social broadcast (realtime tier, every 5 min)
   "alert-matcher",
   "social-broadcast",
+  // SEO transparency dashboard (daily GSC + GA4 snapshot)
+  "gsc-ga4-snapshot",
 ];
 
 if (!TASK) {

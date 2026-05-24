@@ -117,7 +117,7 @@ export async function generateMetadata({
     where: { stationCode: decodeURIComponent(id) },
   });
   if (!station) {
-    return { title: "Estacion no encontrada | trafico.live" };
+    return { title: "Estacion no encontrada" };
   }
 
   const provinceName = station.provinceName ?? (station.province ? PROVINCE_NAMES[station.province] : null);
@@ -126,7 +126,7 @@ export async function generateMetadata({
   const description = `Datos climaticos diarios de la estacion AEMET ${station.name} en ${locationStr}. Temperatura minima y maxima, precipitacion, viento y horas de sol. Registros historicos desde 2000.`;
 
   return {
-    title: `${title} | trafico.live`,
+    title,
     description,
     alternates: {
       canonical: `${BASE_URL}/clima/estacion/${station.stationCode}`,

@@ -7,7 +7,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata = buildPageMetadata({
-  title: "Divulgación sobre enlaces afiliados | trafico.live",
+  title: "Divulgación sobre enlaces afiliados",
   description:
     "Política de transparencia sobre enlaces afiliados en trafico.live. Información FTC y cumplimiento normativo europeo (GDPR, PSD2, IVA) para viajes, trenes, barcos, vuelos y autobuses.",
   path: "/divulgacion-afiliados",

@@ -202,7 +202,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const cat = CATEGORIES[slug];
   if (!cat) return {};
 
-  const title = `${cat.label} en aguas espanolas - Rastreo AIS | trafico.live`;
+  const title = `${cat.label} en aguas espanolas - Rastreo AIS`;
+  const titleOg = `${title} | trafico.live`;
   const description = `${cat.description} Listado actualizado de ${cat.label.toLowerCase()} con posicion AIS, bandera, eslora y destino.`;
 
   return {
@@ -210,7 +211,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: { canonical: `${BASE_URL}/maritimo/buques/tipo/${slug}` },
     openGraph: {
-      title,
+      title: titleOg,
       description,
       url: `${BASE_URL}/maritimo/buques/tipo/${slug}`,
       siteName: "trafico.live",

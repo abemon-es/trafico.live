@@ -255,7 +255,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const operator = await getOperator(slug);
 
   if (!operator) {
-    return { title: "Operador no encontrado | trafico.live" };
+    return { title: "Operador no encontrado" };
   }
 
   const title = operator.city
@@ -270,7 +270,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const hasContent = operator.routeCount > 0;
 
   return {
-    title: `${title} | trafico.live`,
+    title,
     description,
     keywords: [
       operator.name,

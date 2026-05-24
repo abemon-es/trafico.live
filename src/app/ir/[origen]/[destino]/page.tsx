@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pair = getODPairBySlugs(origen, destino);
 
   if (!pair) {
-    return { title: "Ruta no encontrada | trafico.live" };
+    return { title: "Ruta no encontrada" };
   }
 
   const { originName, destName, straightKm } = pair;
-  const title = `Cómo ir de ${originName} a ${destName} — Coche, tren, bus, avión | trafico.live`;
+  const title = `Cómo ir de ${originName} a ${destName} — Coche, tren, bus, avión`;
   const description =
     `Distancia en línea recta: ${straightKm} km. Compara tiempos, precios y emisiones ` +
     `de CO2 para viajar de ${originName} a ${destName} en coche, tren, bus o avión.`;

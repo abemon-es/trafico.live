@@ -7,7 +7,7 @@ export const revalidate = 3600; // ISR: regenerate every 1 hour (network list is
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Cercanías de España — 12 redes | trafico.live",
+  title: "Cercanías de España — 12 redes",
   description:
     "Mapa y directorio de las 12 redes de Cercanías de España: Madrid, Barcelona, Valencia, Sevilla, Málaga, Bilbao, Asturias, Santander, Cádiz, Murcia/Alicante, Zaragoza y San Sebastián. Estaciones, líneas y alertas en tiempo real.",
   keywords: [

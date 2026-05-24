@@ -8,7 +8,7 @@ import { Bell, ArrowRight, AlertTriangle, Info, Wind } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Alertas — Panel de control | trafico.live",
+  title: "Alertas — Panel de control",
   robots: { index: false, follow: true },
 };
 

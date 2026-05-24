@@ -2788,6 +2788,29 @@ model FleetPosition {
   @@index([vehicleId, recordedAt(sort: Desc)])
   @@index([recordedAt(sort: Desc)])
 }
+// ============================================
+// AI BOT OBSERVABILITY
+// ============================================
+
+/// Logs each visit from a known AI/LLM crawler (GPTBot, ClaudeBot, etc.)
+/// Written from /api/internal/bot-visit (Node runtime, not middleware edge).
+/// No PII: IP is stored as first-two-octet prefix only.
+model BotVisit {
+  id         String   @id @default(cuid())
+  bot        String   // "GPTBot" | "ClaudeBot" | "PerplexityBot" | …
+  path       String   // request path
+  statusCode Int      // 200, 301, 404, etc.
+  ip         String?  // first 2 octets only ("1.2") — no PII
+  country    String?  // 2-letter ISO from cf-ipcountry / x-vercel-ip-country
+  userAgent  String   @db.Text
+  visitedAt  DateTime @default(now()) @db.Timestamptz
+
+  @@index([bot, visitedAt])
+  @@index([visitedAt])
+  @@index([path, visitedAt])
+  @@map("bot_visits")
+}
+
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
@@ -2854,6 +2877,44 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// ============================================
+// SEO SNAPSHOT (Google Search Console + GA4)
+// ============================================
+
+model SeoSnapshot {
+  id            String   @id @default(cuid())
+  capturedAt    DateTime @default(now()) @db.Timestamptz
+
+  // GSC aggregates (last 30d window at capture time)
+  gscClicks30d       Int
+  gscImpressions30d  Int
+  gscCtr30d          Float
+  gscAvgPosition30d  Float
+
+  // Daily timeseries (30 days, JSON array of {date, clicks, impressions, position})
+  gscDailySeries     Json
+
+  // Top 20 pages (JSON array of {page, clicks, impressions, position, ctr})
+  gscTopPages        Json
+
+  // Top 20 queries (JSON array of {query, clicks, impressions, position, ctr})
+  gscTopQueries      Json
+
+  // GA4 aggregates
+  ga4Sessions30d     Int
+  ga4Users30d        Int
+  ga4Pageviews30d    Int
+  ga4Events30d       Int
+
+  // GA4 dimensional breakdowns (JSON: {byCountry, byDevice, bySource, byPage})
+  ga4Breakdowns      Json
+
+  // GA4 daily timeseries (30 days, JSON array of {date, sessions, users, pageviews})
+  ga4DailySeries     Json
+
+  @@index([capturedAt])
 }
 
 // ---------------------------------------------------------------------------

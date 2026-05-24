@@ -22,7 +22,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // ---------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  title: "Próximo ferry — Próximas salidas hoy | trafico.live",
+  title: "Próximo ferry — Próximas salidas hoy",
   description:
     "¿Cuándo sale el próximo ferry? Consulta las próximas salidas de ferry en España y Portugal, ordenadas por hora. Rutas Algeciras–Ceuta, Barcelona–Mallorca, Valencia–Ibiza y más.",
   keywords: [

@@ -62,7 +62,7 @@ async function getActivityByAirport() {
 // ---------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  title: "Voos cancelados hoje em Portugal · Verificar cancelamentos | trafico.live",
+  title: "Voos cancelados hoje em Portugal · Verificar cancelamentos",
   description:
     "Verifique voos cancelados hoje nos aeroportos portugueses — Lisboa, Porto, Madeira e Faro. Como reclamar indemnização por voo cancelado ao abrigo do Regulamento CE 261/2004.",
   keywords: [

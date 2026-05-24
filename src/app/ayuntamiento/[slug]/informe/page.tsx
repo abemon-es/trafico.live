@@ -35,7 +35,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `Informes de movilidad — ${name} | trafico.live`,
+    title: `Informes de movilidad — ${name}`,
     description: `Informes mensuales automáticos de tráfico, incidencias y calidad del aire para ${name}. Datos DGT, AEMET y MITECO.`,
     alternates: { canonical: `${BASE_URL}/ayuntamiento/${slug}/informe` },
     openGraph: {

@@ -17,7 +17,7 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Reclamaciones Renfe — Guía + calculadora de indemnización | trafico.live",
+  title: "Reclamaciones Renfe — Guía + calculadora de indemnización",
   description:
     "Cómo reclamar a Renfe por retraso: derecho a indemnización del 25–50 % (Reglamento UE 1371/2007). Calculadora gratuita, plazos, formulario oficial y servicios de reclamación automatizada.",
   keywords: [

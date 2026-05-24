@@ -33,6 +33,8 @@
     "@sentry/nextjs": "^10.47.0",
     "date-fns": "^4.1.0",
     "fast-xml-parser": "^5.3.3",
+    "google-auth-library": "^10.6.2",
+    "googleapis": "^172.0.0",
     "ioredis": "^5.9.2",
     "lucide-react": "^0.562.0",
     "maplibre-gl": "^5.16.0",

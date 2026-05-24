@@ -18,7 +18,7 @@ export const revalidate = 3600;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Aeropuertos de España — Catálogo AENA completo | trafico.live",
+  title: "Aeropuertos de España — Catálogo AENA completo",
   description:
     "Listado completo de los aeropuertos AENA en España. Pasajeros anuales, IATA/ICAO, provincia y enlaces a cada aeropuerto con estadísticas en tiempo real.",
   alternates: { canonical: `${BASE_URL}/aviacion/aeropuertos` },

@@ -8,7 +8,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Estadísticas de Transporte en España — Series históricas | trafico.live",
+  title: "Estadísticas de Transporte en España — Series históricas",
   description:
     "Datos estadísticos de transporte de viajeros en España por modo: metro, autobús, ferrocarril, avión, marítimo y flujos de movilidad interprovincial. Fuentes: INE, CNMC, AENA, Ministerio de Transportes.",
   alternates: { canonical: `${BASE_URL}/estadisticas-transporte` },

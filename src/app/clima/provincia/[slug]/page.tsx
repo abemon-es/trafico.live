@@ -108,13 +108,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const prov = findProvinceBySlug(slug);
-  if (!prov) return { title: "Provincia no encontrada | trafico.live" };
+  if (!prov) return { title: "Provincia no encontrada" };
 
   const title = `Clima en ${prov.name} — Temperatura y Precipitacion por estacion`;
   const description = `Estaciones climaticas AEMET en ${prov.name}. Temperatura, precipitacion, viento y horas de sol. Datos diarios actualizados desde 2000.`;
 
   return {
-    title: `${title} | trafico.live`,
+    title,
     description,
     alternates: {
       canonical: `${BASE_URL}/clima/provincia/${slug}`,

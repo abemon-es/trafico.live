@@ -36,6 +36,9 @@
 
 30 22 * * * TASK=insights npx tsx index.ts 2>&1
 
+# GSC + GA4 transparency snapshot — feeds /sobre/posicionamiento dashboard
+0 6 * * * TASK=gsc-ga4-snapshot npx tsx index.ts 2>&1
+
 # Nightly cleanup — rolling-window realtime tables (TransitVehiclePosition 48h)
 0 23 * * * TASK=cleanup-realtime npx tsx index.ts 2>&1
 

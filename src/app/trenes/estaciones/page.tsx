@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import EstacionesTrenContent from "./content";
 
 export const metadata: Metadata = {
-  title: "Estaciones de tren en España — catálogo completo | trafico.live",
+  title: "Estaciones de tren en España — catálogo completo",
   description:
     "Directorio completo de estaciones de tren en España: Cercanías, AVE, Larga Distancia, Media Distancia y trenes regionales. Busca por nombre, red o provincia.",
   openGraph: {

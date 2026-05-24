@@ -4,7 +4,7 @@ import { MapaClient } from "./MapaClient";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Mapa Aéreo — Vuelos en Tiempo Real y Aeropuertos España | trafico.live",
+  title: "Mapa Aéreo — Vuelos en Tiempo Real y Aeropuertos España",
   description:
     "Mapa interactivo de tráfico aéreo en España. Sigue vuelos en tiempo real (OpenSky ADS-B), ubicación de aeropuertos AENA y pistas.",
   alternates: {
@@ -13,5 +13,12 @@ export const metadata: Metadata = {
 };
 
 export default function AviacionMapaPage() {
-  return <MapaClient />;
+  return (
+    <>
+      <h1 className="sr-only">
+        Mapa aéreo en directo — Vuelos en tiempo real y aeropuertos sobre España
+      </h1>
+      <MapaClient />
+    </>
+  );
 }

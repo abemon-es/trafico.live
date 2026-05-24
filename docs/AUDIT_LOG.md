@@ -455,3 +455,87 @@ Files modified on `audit/iter-1-fixes`:
 ### One-line state summary
 
 > Production responding 200 on all routes; **search dead 14d, AIS dead 15d (infra ops blocked on SSH)**; iter 1 ships sitemap-index + robots + GA4 funnel + AI bot logging fixes; **next: verify deploy + dig into dashboard pricing bug + automate GSC/GA4 ingestion**.
+
+---
+
+## Wave 6 — iter-5 Entity-Page Expansion (2026-05-24)
+
+### Objective
+
+Complete the "per-entity data pages" expansion started in iter-4. Directive: "each train, bus, plane, boat, vessel, each street, each traffic light — all information properly translated into actionable data." 4 entity surfaces shipped.
+
+### Surfaces shipped
+
+| Surface | Route | Source data | Lines | Status |
+|---|---|---|---|---|
+| Per-aeronave | `/aviacion/avion/[icao24]` | `AircraftPosition` (OpenSky) | 583 | NEW |
+| Per-puerto | `/maritimo/puerto/[slug]` | `SpanishPort` + `PortCall` + `FerryStop` | 513 | NEW |
+| Per-cámara | `/camaras/camara/[id]` | `Camera` + `TrafficIncident` | 594 | EXPANDED (was 139-line stub) |
+| Per-estación calidad-aire | `/calidad-aire/estacion/[id]` | `AirQualityStation` + `AirQualityReading` | 694 | ALREADY COMPLETE (verified) |
+
+### Data exposed per surface
+
+**`/aviacion/avion/[icao24]`**
+- ICAO24 hex code, callsign, origin country
+- Flight status: airborne vs on-ground
+- Stats: altitude (m converted from feet), velocity (km/h from m/s), heading (° + direction), vertical rate (m/s)
+- Last 24h position count + first/last timestamps
+- Trajectory table: last 20 positions with time, lat, lon, alt, vel, ground/air state
+- Vehicle JSON-LD, noindex (live data), ISR 60s
+- Sitemap: offset 1200, daily, priority 0.45
+
+**`/maritimo/puerto/[slug]`**
+- Port type (comercial/pesquero/deportivo/mixto), coastal zone, province
+- Stats: arrivals/departures in last 7d, ferry routes, AIS stations
+- Recent port calls table: MMSI, arrival/departure timestamps, duration
+- Ferry routes connecting to the port (via FerryStop stopName matching)
+- Place JSON-LD with GeoCoordinates + address
+- generateStaticParams: all 197 SpanishPort rows (fully static), ISR 3600s
+- Sitemap: offset 1300, daily, priority 0.60
+
+**`/camaras/camara/[id]`**
+- Hero with road+km, active/inactive badge, DGT attribution
+- Full-size DGT thumbnail (aspect-video) with overlay; graceful empty state when no stream
+- Location info: road number, km point, province, coordinates, Google Maps deep-link
+- Nearby incidents: TrafficIncident within 2km bounding box (severity, road, date)
+- Nearby cameras: haversine-ranked top 8 within 5km (same road priority)
+- Cross-links: same-road cameras, province, cameras hub, incidents hub
+- VideoObject + Place dual JSON-LD
+- generateStaticParams: top 500 cameras by lastUpdated, dynamicParams for rest
+
+**`/calidad-aire/estacion/[id]`**
+- Already full implementation: ICA level 1-6 color-coded, pollutant breakdown
+- IcaTrendChart (Recharts) showing 7d ICA trend
+- Nearby stations within 25km, province context
+- Place + Dataset JSON-LD
+- Sitemap at offset 1000 (pre-existing, unchanged)
+
+### Sitemap impact
+
+| Shard offset | Route pattern | Estimated URLs |
+|---|---|---|
+| 1200 | `/aviacion/avion/[icao24]` | Active ICAO24s in last 7d (varies, ~500-2000) |
+| 1300 | `/maritimo/puerto/[slug]` | 197 Spanish ports |
+| 1000 | `/calidad-aire/estacion/[id]` | 565 MITECO stations (pre-existing) |
+| 600 | `/camaras/camara/[id]` | 14K+ DGT cameras (pre-existing) |
+
+### Branch
+
+`feat/iter-5-max-push` — commits:
+1. `feat(aviacion)` — /aviacion/avion/[icao24]
+2. `feat(maritimo)` — /maritimo/puerto/[slug]
+3. `feat(camaras)` — /camaras/camara/[id] expansion
+4. `feat(calidad-aire)` — sitemap offsets 1200+1300
+5. `fix(build)` — pre-existing ssr:false errors in sobre/* pages
+
+### Build verification
+
+All 4 entity routes appear in `.next/server/app/` after `npm run build`:
+- `/aviacion/avion/[icao24]` → `●` SSG (generateStaticParams)
+- `/maritimo/puerto/[slug]` → `●` SSG (all 197 ports)
+- `/camaras/camara/[id]` → `●` SSG (top 500)
+- `/calidad-aire/estacion/[id]` → `●` SSG (all 565 stations)
+
+Build warnings (pre-existing, not from iter-5):
+- `@sentry/nextjs` config deprecation (Turbopack only, not production-impacting)
+- Large string serialization in webpack cache (performance note, not error)

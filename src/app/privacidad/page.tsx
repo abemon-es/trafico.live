@@ -9,7 +9,7 @@ const LAST_UPDATED = "2026-04-17";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Política de Privacidad | trafico.live",
+  title: "Política de Privacidad",
   description:
     "Política de privacidad de trafico.live (RGPD + LOPDGDD): responsable del tratamiento, finalidades, bases legales, destinatarios, transferencias internacionales, conservación de datos y derechos del usuario.",
   alternates: { canonical: `${BASE_URL}/privacidad` },

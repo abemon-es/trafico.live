@@ -28,7 +28,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // ---------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  title: "Seguridad Marítima — Emergencias y Consejos | trafico.live",
+  title: "Seguridad Marítima — Emergencias y Consejos",
   description:
     "Información sobre seguridad marítima en España: SASEMAR, canales de emergencia VHF Canal 16, teléfono 900 202 202 y consejos de navegación segura.",
   alternates: {
