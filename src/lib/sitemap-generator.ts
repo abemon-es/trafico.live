@@ -943,6 +943,45 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    // Operativos DGT family (/operativos hub + 6 seasonal slugs)
+    {
+      url: `${BASE_URL}/operativos`,
+      lastModified: today,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    ...[
+      "semana-santa",
+      "puente-mayo",
+      "verano",
+      "todos-los-santos",
+      "puente-diciembre",
+      "navidad",
+    ].map((slug) => ({
+      url: `${BASE_URL}/operativos/${slug}`,
+      lastModified: today,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    })),
+    // Rondas urbanas family (/rondas hub + 5 ring road slugs)
+    {
+      url: `${BASE_URL}/rondas`,
+      lastModified: now,
+      changeFrequency: "hourly" as const,
+      priority: 0.85,
+    },
+    ...[
+      "m-30",
+      "m-40",
+      "ronda-dalt",
+      "ronda-litoral",
+      "bypass-valencia",
+    ].map((slug) => ({
+      url: `${BASE_URL}/rondas/${slug}`,
+      lastModified: now,
+      changeFrequency: "hourly" as const,
+      priority: 0.8,
+    })),
     {
       url: `${BASE_URL}/restricciones`,
       lastModified: today,

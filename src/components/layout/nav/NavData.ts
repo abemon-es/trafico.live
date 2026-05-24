@@ -13,33 +13,17 @@ import {
   Zap,
   Calculator,
   Tag,
-  Building2,
-  MapPinned,
-  Users,
-  BookOpen,
   BarChart3,
-  FileText,
-  Newspaper,
-  Bike,
   Clock,
   Ban,
-  Truck,
-  Timer,
-  Radio,
-  TrendingUp,
-  Code2,
+  Train,
+  Bus,
   Anchor,
   Wind,
   ShieldAlert,
   Ship,
-  Globe,
-  Mountain,
-  CircleDollarSign,
-  GitCompareArrows,
-  Train,
   Plane,
-  Bus,
-  CloudRain,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -138,49 +122,68 @@ export const footerCities = [
   { name: "Oviedo", slug: "oviedo" },
 ];
 
-// ─── Mega Menu Panels ────────────────────────────────────────
+// ─── Mega Menu Panels (5 panels) ─────────────────────────────
 export const megaMenuPanels: MegaMenuPanel[] = [
+  // ── Panel 1: Tráfico ahora ──────────────────────────────────
   {
     id: "trafico",
-    label: "Tráfico",
+    label: "Tráfico ahora",
     hub: {
       icon: Activity,
       title: "Tráfico en España",
       subtitle: "Estado en tiempo real de la red vial",
-      href: "/trafico",
+      href: "/",
       accent: "tl",
     },
     cityStrip: topCities,
     categories: [
       {
-        title: "En directo",
+        title: "En vivo",
         items: [
           { name: "Mapa en vivo", href: "/mapa", icon: Map, description: "Tráfico en tiempo real" },
           { name: "Atascos", href: "/atascos", icon: AlertTriangle, description: "Retenciones actuales" },
-          { name: "Alertas meteo", href: "/alertas-meteo", icon: Cloud, description: "Avisos de AEMET" },
+          { name: "Incidencias", href: "/incidencias", icon: AlertTriangle, description: "Incidentes en curso" },
+          { name: "Alertas AEMET", href: "/alertas-meteo", icon: Cloud, description: "Avisos meteorológicos" },
+          { name: "Cortes y obras", href: "/cortes-trafico", icon: Ban, description: "Vías cortadas" },
           { name: "Paneles PMV", href: "/paneles", icon: MonitorSmartphone, description: "Mensajes en carretera" },
         ],
       },
       {
-        title: "Incidencias",
+        title: "Cámaras DGT",
         items: [
-          { name: "Todas las incidencias", href: "/incidencias", icon: AlertTriangle, description: "Incidentes en curso" },
-          { name: "Cortes de tráfico", href: "/cortes-trafico", icon: Ban, description: "Vías cortadas" },
-          { name: "Restricciones", href: "/restricciones", icon: Ban, description: "Limitaciones activas" },
-          { name: "Mejor hora para viajar", href: "/mejor-hora", icon: Timer, description: "Horas valle y punta" },
-        ],
-      },
-      {
-        title: "Cámaras",
-        items: [
-          { name: "Cámaras DGT", href: "/camaras", icon: Camera, description: "Imágenes en directo" },
+          { name: "Todas las cámaras", href: "/camaras", icon: Camera, description: "Imágenes en directo" },
           { name: "Madrid", href: "/camaras/madrid", icon: Camera },
           { name: "Barcelona", href: "/camaras/barcelona", icon: Camera },
           { name: "Valencia", href: "/camaras/valencia", icon: Camera },
+          { name: "Sevilla", href: "/camaras/sevilla", icon: Camera },
+          { name: "Por carretera", href: "/camaras", icon: Camera },
+        ],
+      },
+      {
+        title: "Por provincia",
+        items: [
+          { name: "Estado por provincia", href: "/espana", icon: MapPin, description: "52 provincias" },
+          { name: "Madrid", href: "/provincias/28", icon: MapPin },
+          { name: "Barcelona", href: "/provincias/08", icon: MapPin },
+          { name: "Valencia", href: "/provincias/46", icon: MapPin },
+          { name: "Sevilla", href: "/provincias/41", icon: MapPin },
+          { name: "Ver todas", href: "/espana", icon: MapPin },
+        ],
+      },
+      {
+        title: "Operativos DGT",
+        items: [
+          { name: "Semana Santa", href: "/operativos/semana-santa", icon: Users, description: "Operación especial DGT" },
+          { name: "Puente de Mayo", href: "/operativos/puente-mayo", icon: Users, description: "Operación especial DGT" },
+          { name: "Verano", href: "/operativos/verano", icon: Users, description: "Operación especial DGT" },
+          { name: "Navidad", href: "/operativos/navidad", icon: Users, description: "Operación especial DGT" },
+          { name: "Ver todos", href: "/operaciones", icon: Users },
         ],
       },
     ],
   },
+
+  // ── Panel 2: Carreteras ──────────────────────────────────────
   {
     id: "carreteras",
     label: "Carreteras",
@@ -202,231 +205,167 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         ],
       },
       {
-        title: "Infraestructura",
+        title: "Más buscadas",
+        items: [
+          { name: "AP-7", href: "/carreteras/ap-7", icon: Route },
+          { name: "AP-4", href: "/carreteras/ap-4", icon: Route },
+          { name: "AP-9", href: "/carreteras/ap-9", icon: Route },
+          { name: "A-1", href: "/carreteras/a-1", icon: Route },
+          { name: "A-2", href: "/carreteras/a-2", icon: Route },
+          { name: "A-3", href: "/carreteras/a-3", icon: Route },
+          { name: "A-7", href: "/carreteras/a-7", icon: Route },
+          { name: "A-8", href: "/carreteras/a-8", icon: Route },
+          { name: "A-92", href: "/carreteras/a-92", icon: Route },
+        ],
+      },
+      {
+        title: "Rondas urbanas",
+        items: [
+          { name: "M-30 Madrid", href: "/rondas/m-30", icon: Route },
+          { name: "M-40 Madrid", href: "/rondas/m-40", icon: Route },
+          { name: "Ronda Dalt Barcelona", href: "/rondas/ronda-dalt", icon: Route },
+          { name: "Ronda Litoral Barcelona", href: "/rondas/ronda-litoral", icon: Route },
+          { name: "Bypass Valencia", href: "/rondas/bypass-valencia", icon: Route },
+        ],
+      },
+      {
+        title: "Más",
         items: [
           { name: "Radares", href: "/radares", icon: Radar, description: "Ubicaciones y tipos" },
           { name: "Puntos negros", href: "/puntos-negros", icon: Skull, description: "Tramos peligrosos" },
-          { name: "Zonas ZBE", href: "/zbe", icon: Ban, description: "Zonas de bajas emisiones" },
-        ],
-      },
-      {
-        title: "Peajes",
-        items: [
-          { name: "Todos los peajes", href: "/peajes", icon: CircleDollarSign, description: "17 autopistas de pago" },
-          { name: "Radiales Madrid", href: "/peajes/radiales-madrid", icon: Route, description: "R-2, R-3, R-4, R-5" },
-          { name: "Gratis en 2026", href: "/peajes/gratis-2026", icon: GitCompareArrows, description: "AP-68 sin peaje pronto" },
-          { name: "Comparativa", href: "/peajes/comparativa", icon: BarChart3, description: "Peaje vs alternativa gratis" },
-        ],
-      },
-      {
-        title: "Datos",
-        items: [
-          { name: "Intensidad (IMD)", href: "/intensidad", icon: TrendingUp, description: "Tráfico por carretera" },
-          { name: "Estaciones de aforo", href: "/estaciones-aforo", icon: Radio, description: "14.400+ puntos de medición" },
-          { name: "Estadísticas", href: "/estadisticas", icon: BarChart3, description: "Cifras del tráfico" },
-          { name: "Histórico", href: "/historico", icon: Clock, description: "Datos acumulados" },
-          { name: "Operaciones DGT", href: "/operaciones", icon: Users, description: "Campañas especiales" },
+          { name: "ZBE", href: "/zbe", icon: Ban, description: "Zonas de bajas emisiones" },
+          { name: "Peajes", href: "/peajes", icon: Route, description: "17 autopistas de pago" },
+          { name: "Intensidad IMD", href: "/intensidad", icon: BarChart3, description: "Tráfico por carretera" },
         ],
       },
     ],
   },
+
+  // ── Panel 3: Trenes ──────────────────────────────────────────
+  {
+    id: "trenes",
+    label: "Trenes",
+    hub: {
+      icon: Train,
+      title: "Red ferroviaria",
+      subtitle: "Renfe en tiempo real",
+      href: "/trenes",
+      accent: "tl",
+    },
+    categories: [
+      {
+        title: "En vivo",
+        items: [
+          { name: "Mapa Renfe en directo", href: "/trenes", icon: Train, description: "Posiciones GPS en tiempo real" },
+          { name: "Incidencias Renfe", href: "/trenes/incidencias", icon: AlertTriangle, description: "Alertas de servicio" },
+          { name: "Flota", href: "/trenes", icon: Train, description: "Flota activa LD" },
+          { name: "Puntualidad", href: "/trenes/live", icon: BarChart3, description: "Estadísticas en directo" },
+        ],
+      },
+      {
+        title: "Cercanías",
+        items: [
+          { name: "Todas las redes", href: "/trenes/cercanias", icon: Train, description: "12 redes Cercanías" },
+          { name: "Madrid", href: "/trenes/cercanias/madrid", icon: Train },
+          { name: "Barcelona", href: "/trenes/cercanias/barcelona", icon: Train },
+          { name: "Valencia", href: "/trenes/cercanias/valencia", icon: Train },
+          { name: "Bilbao", href: "/trenes/cercanias/bilbao", icon: Train },
+          { name: "Sevilla", href: "/trenes/cercanias/sevilla", icon: Train },
+        ],
+      },
+      {
+        title: "Líneas + estaciones",
+        items: [
+          { name: "Catálogo de líneas", href: "/trenes/lineas", icon: Route, description: "1.248 rutas" },
+          { name: "Estaciones", href: "/trenes/estaciones", icon: MapPin, description: "2.154 estaciones" },
+          { name: "AVE", href: "/trenes/lineas", icon: Train },
+          { name: "Avlo", href: "/trenes/lineas", icon: Train },
+          { name: "LD", href: "/trenes/lineas", icon: Train },
+        ],
+      },
+    ],
+  },
+
+  // ── Panel 4: Otros transportes ───────────────────────────────
+  {
+    id: "transportes",
+    label: "Otros transportes",
+    hub: {
+      icon: Bus,
+      title: "Transporte multimodal",
+      subtitle: "Marítimo, aéreo y público",
+      href: "/transporte-publico",
+      accent: "tl-sea",
+    },
+    categories: [
+      {
+        title: "Marítimo",
+        items: [
+          { name: "Mapa AIS de buques", href: "/barcos/mapa", icon: Ship, description: "Tráfico marítimo en vivo" },
+          { name: "Puertos", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
+          { name: "Ferries", href: "/maritimo/ferries", icon: Ship, description: "Rutas y horarios" },
+          { name: "Seguridad SASEMAR", href: "/maritimo/seguridad/estadisticas", icon: ShieldAlert, description: "Emergencias marítimas" },
+          { name: "Meteorología marina", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas y previsiones" },
+        ],
+      },
+      {
+        title: "Aviación",
+        items: [
+          { name: "Aviones en vivo", href: "/aviacion", icon: Plane, description: "Posiciones ADS-B" },
+          { name: "Aeropuertos AENA", href: "/aviacion/aeropuertos", icon: Plane, description: "42 aeropuertos" },
+          { name: "Vuelos cancelados", href: "/aviacion/cancelados", icon: Plane, description: "Estado de cancelaciones" },
+        ],
+      },
+      {
+        title: "Transporte público",
+        items: [
+          { name: "Operadores", href: "/transporte-publico", icon: Bus, description: "15+ operadores GTFS" },
+          { name: "Metro Madrid", href: "/transporte-publico/metro-madrid", icon: Train },
+          { name: "TMB Barcelona", href: "/transporte-publico/tmb", icon: Bus },
+          { name: "Buses urbanos", href: "/transporte-publico", icon: Bus },
+        ],
+      },
+    ],
+  },
+
+  // ── Panel 5: Combustible & EV ────────────────────────────────
   {
     id: "combustible",
-    label: "Combustible",
+    label: "Combustible & EV",
     hub: {
       icon: Fuel,
-      title: "Combustible",
+      title: "Combustible & EV",
       subtitle: "Precios actualizados hoy",
       href: "/gasolineras",
       accent: "tl-amber",
     },
     categories: [
       {
-        title: "Precios",
+        title: "Precios hoy",
         items: [
-          { name: "Precio gasolina hoy", href: "/precio-gasolina-hoy", icon: Fuel, description: "Media nacional actualizada" },
-          { name: "Precio diésel hoy", href: "/precio-diesel-hoy", icon: Fuel, description: "Media nacional actualizada" },
+          { name: "Gasolina 95", href: "/precio-gasolina-hoy", icon: Fuel, description: "Media nacional actualizada" },
+          { name: "Diésel", href: "/precio-diesel-hoy", icon: Fuel, description: "Media nacional actualizada" },
+          { name: "GLP", href: "/gasolineras", icon: Fuel, description: "Gas licuado del petróleo" },
           { name: "Por provincia", href: "/gasolineras/precios", icon: MapPin, description: "Comparar 52 provincias" },
-          { name: "Calculadora", href: "/calculadora", icon: Calculator, description: "Coste de tu viaje" },
+          { name: "Histórico CNMC", href: "/gasolineras/historico", icon: BarChart3, description: "Precios desde 2016" },
         ],
       },
       {
-        title: "Gasolineras",
+        title: "Encontrar",
         items: [
-          { name: "Cerca de mí", href: "/gasolineras/cerca", icon: MapPin, description: "Las más próximas" },
-          { name: "Las más baratas", href: "/gasolineras/baratas", icon: Fuel, description: "Mejores precios" },
           { name: "24 horas", href: "/gasolineras-24-horas", icon: Clock, description: "Abiertas siempre" },
-          { name: "Por marcas", href: "/gasolineras/marcas", icon: Tag, description: "Repsol, Cepsa, BP..." },
-          { name: "Por tipo", href: "/gasolineras/tipo/gasolina-95", icon: Fuel, description: "Gasolina, diésel, GLP..." },
+          { name: "Baratas", href: "/gasolineras/baratas", icon: Fuel, description: "Mejores precios" },
+          { name: "Cerca de mí", href: "/gasolineras", icon: MapPin, description: "Las más próximas" },
+          { name: "Por marca", href: "/gasolineras", icon: Tag, description: "Repsol, Cepsa, BP..." },
         ],
       },
       {
-        title: "Eléctricos",
+        title: "EV + herramientas",
         items: [
           { name: "Cargadores EV", href: "/carga-ev", icon: Zap, description: "Puntos de carga" },
+          { name: "Calculadora ruta", href: "/calculadora", icon: Calculator, description: "Combustible y peajes" },
           { name: "Electrolineras", href: "/electrolineras", icon: Zap, description: "Puntos de carga rápida" },
-          { name: "Cuánto cuesta cargar", href: "/cuanto-cuesta-cargar", icon: Calculator, description: "Calcula el coste" },
-          { name: "Etiqueta ambiental", href: "/etiqueta-ambiental", icon: Tag, description: "Consulta tu distintivo" },
-        ],
-      },
-      {
-        title: "Portugal",
-        items: [
-          { name: "Combustible Portugal", href: "/portugal/combustible", icon: Globe, description: "3.000+ estaciones DGEG" },
-        ],
-      },
-      {
-        title: "Marítimo",
-        items: [
-          { name: "Combustible marítimo", href: "/maritimo/combustible", icon: Ship, description: "Precios en puertos" },
-          { name: "Mapa marítimo", href: "/maritimo/mapa", icon: Map, description: "Estaciones costeras" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "maritimo",
-    label: "Marítimo",
-    hub: {
-      icon: Anchor,
-      title: "Marítimo",
-      subtitle: "Puertos, meteorología y seguridad",
-      href: "/maritimo",
-      accent: "tl-sea",
-    },
-    categories: [
-      {
-        title: "Puertos y navegación",
-        items: [
-          { name: "Puertos de España", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
-          { name: "Mapa marítimo", href: "/maritimo/mapa", icon: Map, description: "Estaciones en el litoral" },
-          { name: "Combustible marítimo", href: "/maritimo/combustible", icon: Fuel, description: "Precios en puertos" },
-        ],
-      },
-      {
-        title: "Buques y tráfico",
-        items: [
-          { name: "Directorio de buques", href: "/maritimo/buques", icon: Ship, description: "30.000+ buques rastreados" },
-          { name: "Por tipo de buque", href: "/maritimo/buques/tipo/carga", icon: Ship, description: "Carga, petrolero, pesca..." },
-          { name: "Zonas marítimas", href: "/maritimo/zonas", icon: Map, description: "11 zonas costeras" },
-          { name: "Ferries", href: "/maritimo/ferries", icon: Ship, description: "Rutas y horarios" },
-        ],
-      },
-      {
-        title: "Meteorología y seguridad",
-        items: [
-          { name: "Meteorología costera", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas y previsiones AEMET" },
-          { name: "Alertas costeras", href: "/alertas-meteo", icon: Cloud, description: "Avisos meteorológicos" },
-          { name: "Seguridad marítima", href: "/maritimo/seguridad", icon: ShieldAlert, description: "SASEMAR, emergencias" },
-          { name: "Noticias marítimas", href: "/maritimo/noticias", icon: Newspaper, description: "Informes y novedades" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "explorar",
-    label: "Explorar",
-    hub: {
-      icon: MapPinned,
-      title: "Explorar la Península",
-      subtitle: "España, Portugal y Andorra",
-      href: "/explorar",
-      accent: "tl",
-    },
-    categories: [
-      {
-        title: "España",
-        items: [
-          { name: "Comunidades autónomas", href: "/comunidad-autonoma", icon: Building2, description: "19 comunidades" },
-          { name: "Provincias", href: "/espana", icon: MapPinned, description: "52 provincias" },
-          { name: "Ciudades", href: "/ciudad", icon: MapPin, description: "Principales urbes" },
-          { name: "Municipios", href: "/municipio", icon: MapPin, description: "8.000+ municipios" },
-        ],
-      },
-      {
-        title: "Portugal y Andorra",
-        items: [
-          { name: "Portugal", href: "/portugal", icon: Globe, description: "Combustible y alertas" },
-          { name: "Combustible Portugal", href: "/portugal/combustible", icon: Fuel, description: "3.000+ estaciones" },
-          { name: "Andorra", href: "/andorra", icon: Mountain, description: "Tráfico en directo" },
-        ],
-      },
-      {
-        title: "Ciudades populares",
-        items: [
-          { name: "Madrid", href: "/ciudad/madrid", icon: MapPin },
-          { name: "Barcelona", href: "/ciudad/barcelona", icon: MapPin },
-          { name: "Valencia", href: "/ciudad/valencia", icon: MapPin },
-          { name: "Sevilla", href: "/ciudad/sevilla", icon: MapPin },
-        ],
-      },
-      {
-        title: "Transporte multimodal",
-        items: [
-          { name: "Trenes y estaciones", href: "/trenes", icon: Train, description: "Red ferroviaria" },
-          { name: "Aeropuertos", href: "/aviacion", icon: Plane, description: "46 aeropuertos AENA" },
-          { name: "Transporte público", href: "/transporte-publico", icon: Bus, description: "Metro, bus, tranvía" },
-          { name: "Corredores", href: "/corredores", icon: Route, description: "Coche vs tren vs avión" },
-        ],
-      },
-      {
-        title: "Inteligencia",
-        items: [
-          { name: "Pulso provincial", href: "/pulso", icon: Activity, description: "Estado en tiempo real" },
-          { name: "Lluvia y accidentes", href: "/inteligencia/lluvia-y-accidentes", icon: CloudRain, description: "Correlación meteorológica" },
-          { name: "Hora punta", href: "/inteligencia/hora-punta-y-accidentes", icon: Clock, description: "Cuándo es más peligroso" },
-          { name: "Precio combustible", href: "/prediccion/precio-combustible", icon: TrendingUp, description: "Predicción y tendencias" },
-          { name: "Retrasos trenes", href: "/prediccion/retrasos-trenes", icon: Train, description: "Puntualidad Renfe" },
-          { name: "Guías", href: "/guias", icon: BookOpen, description: "8 guías completas" },
-        ],
-      },
-      {
-        title: "Contenido",
-        items: [
-          { name: "Noticias", href: "/noticias", icon: BookOpen, description: "Informes, guías y alertas" },
-          { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
-          { name: "Ciclistas", href: "/ciclistas", icon: Bike, description: "Info para ciclistas" },
-          { name: "Puente de Mayo 2026", href: "/puente-mayo-2026", icon: Users, description: "Operación especial DGT" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "profesional",
-    label: "Profesional",
-    hub: {
-      icon: Truck,
-      title: "Profesional",
-      subtitle: "Herramientas para flotas y transporte",
-      href: "/profesional",
-      accent: "tl",
-    },
-    categories: [
-      {
-        title: "Flotas y transporte",
-        items: [
-          { name: "Diésel más barato", href: "/profesional/diesel", icon: Fuel, description: "Mejores precios para tu flota" },
-          { name: "Áreas de descanso", href: "/profesional/areas", icon: MapPin, description: "Parking seguro 24h" },
-          { name: "Restricciones activas", href: "/profesional/restricciones", icon: Ban, description: "ZBE, peso y altura" },
-          { name: "Calculadora de ruta", href: "/calculadora", icon: Calculator, description: "Combustible y peajes" },
-          { name: "Noticias profesionales", href: "/profesional/noticias", icon: Newspaper, description: "Alertas para flotas" },
-        ],
-      },
-      {
-        title: "Herramientas",
-        items: [
-          { name: "Mejor hora para viajar", href: "/mejor-hora", icon: Clock, description: "Evita horas punta" },
-          { name: "Operaciones DGT", href: "/operaciones", icon: Users, description: "Campañas especiales" },
-          { name: "Etiqueta ambiental", href: "/etiqueta-ambiental", icon: Tag, description: "Consulta tu distintivo" },
-          { name: "Informe diario", href: "/informe-diario", icon: FileText, description: "Resumen del día" },
-        ],
-      },
-      {
-        title: "API y datos",
-        items: [
-          { name: "API REST", href: "/api-docs", icon: Code2, description: "Datos en tiempo real" },
-          { name: "Estadísticas", href: "/estadisticas", icon: BarChart3, description: "Cifras del tráfico" },
-          { name: "Histórico", href: "/historico", icon: Clock, description: "Datos acumulados" },
+          { name: "Coste de cargar", href: "/cuanto-cuesta-cargar", icon: Calculator, description: "Calcula el coste EV" },
         ],
       },
     ],
@@ -444,10 +383,10 @@ export type FooterColumn = {
 
 export const footerColumns: FooterColumn[] = [
   {
-    title: "Tráfico",
+    title: "Tráfico ahora",
     icon: Activity,
     accent: "tl",
-    hub: "/trafico",
+    hub: "/",
     links: [
       { name: "Mapa en vivo", href: "/mapa" },
       { name: "Incidencias", href: "/incidencias" },
@@ -455,7 +394,7 @@ export const footerColumns: FooterColumn[] = [
       { name: "Atascos", href: "/atascos" },
       { name: "Cortes de tráfico", href: "/cortes-trafico" },
       { name: "Alertas meteo", href: "/alertas-meteo" },
-      { name: "Mejor hora", href: "/mejor-hora" },
+      { name: "Operativos DGT", href: "/operaciones" },
       { name: "Paneles PMV", href: "/paneles" },
     ],
   },
@@ -472,13 +411,27 @@ export const footerColumns: FooterColumn[] = [
       { name: "Peajes", href: "/peajes" },
       { name: "Puntos negros", href: "/puntos-negros" },
       { name: "Zonas ZBE", href: "/zbe" },
-      { name: "Intensidad (IMD)", href: "/intensidad" },
-      { name: "Estaciones de aforo", href: "/estaciones-aforo" },
-      { name: "Estadísticas", href: "/estadisticas" },
+      { name: "Intensidad IMD", href: "/intensidad" },
     ],
   },
   {
-    title: "Combustible",
+    title: "Trenes",
+    icon: Train,
+    accent: "tl",
+    hub: "/trenes",
+    links: [
+      { name: "Renfe en directo", href: "/trenes" },
+      { name: "Incidencias Renfe", href: "/trenes/incidencias" },
+      { name: "Cercanías", href: "/trenes/cercanias" },
+      { name: "Cercanías Madrid", href: "/trenes/cercanias/madrid" },
+      { name: "Cercanías Barcelona", href: "/trenes/cercanias/barcelona" },
+      { name: "Líneas", href: "/trenes/lineas" },
+      { name: "Estaciones", href: "/trenes/estaciones" },
+      { name: "Puntualidad", href: "/trenes/live" },
+    ],
+  },
+  {
+    title: "Combustible & EV",
     icon: Fuel,
     accent: "tl-amber",
     hub: "/gasolineras",
@@ -490,59 +443,23 @@ export const footerColumns: FooterColumn[] = [
       { name: "24 horas", href: "/gasolineras-24-horas" },
       { name: "Cargadores EV", href: "/carga-ev" },
       { name: "Calculadora ruta", href: "/calculadora" },
-      { name: "Peajes", href: "/peajes" },
-      { name: "Portugal combustible", href: "/portugal/combustible" },
+      { name: "Histórico CNMC", href: "/gasolineras/historico" },
     ],
   },
   {
-    title: "Marítimo",
-    icon: Anchor,
+    title: "Otros transportes",
+    icon: Bus,
     accent: "tl-sea",
-    hub: "/maritimo",
+    hub: "/transporte-publico",
     links: [
-      { name: "Combustible marítimo", href: "/maritimo/combustible" },
+      { name: "Buques AIS", href: "/barcos/mapa" },
       { name: "Puertos", href: "/maritimo/puertos" },
-      { name: "Mapa marítimo", href: "/maritimo/mapa" },
-      { name: "Meteorología", href: "/maritimo/meteorologia" },
-      { name: "Seguridad", href: "/maritimo/seguridad" },
-      { name: "Buques", href: "/maritimo/buques" },
-      { name: "Zonas marítimas", href: "/maritimo/zonas" },
-      { name: "Noticias", href: "/maritimo/noticias" },
-    ],
-  },
-  {
-    title: "Explorar",
-    icon: MapPinned,
-    accent: "tl",
-    hub: "/explorar",
-    links: [
-      { name: "Comunidades", href: "/comunidad-autonoma" },
-      { name: "Provincias", href: "/espana" },
-      { name: "Ciudades", href: "/ciudad" },
-      { name: "Trenes", href: "/trenes" },
-      { name: "Aeropuertos", href: "/aviacion" },
+      { name: "Ferries", href: "/maritimo/ferries" },
+      { name: "Aviones en vivo", href: "/aviacion" },
+      { name: "Aeropuertos AENA", href: "/aviacion/aeropuertos" },
       { name: "Transporte público", href: "/transporte-publico" },
-      { name: "Corredores", href: "/corredores" },
-      { name: "Pulso", href: "/pulso" },
-      { name: "Guías", href: "/guias" },
       { name: "Calidad del aire", href: "/calidad-aire" },
-      { name: "Clima", href: "/clima" },
-    ],
-  },
-  {
-    title: "Profesional",
-    icon: Truck,
-    accent: "tl",
-    hub: "/profesional",
-    links: [
-      { name: "Diésel flotas", href: "/profesional/diesel" },
-      { name: "Áreas descanso", href: "/profesional/areas" },
-      { name: "Restricciones", href: "/profesional/restricciones" },
-      { name: "API REST", href: "/api-docs" },
-      { name: "Sobre nosotros", href: "/sobre" },
-      { name: "Prensa", href: "/media" },
-      { name: "Aviso legal", href: "/aviso-legal" },
-      { name: "Privacidad", href: "/politica-privacidad" },
+      { name: "Estadísticas", href: "/estadisticas-transporte" },
     ],
   },
 ];

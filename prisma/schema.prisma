@@ -2960,3 +2960,29 @@ model AffiliateClick {
   @@index([offerId, createdAt])
   @@index([conversion])
 }
+
+// ---------------------------------------------------------------------------
+// NewsletterSubscriber — email collection for the trafico.live newsletter.
+// No double opt-in yet — collects email + GDPR consent proof only.
+// ip stored as first-2-octet prefix (privacy); full IP never persisted.
+// ---------------------------------------------------------------------------
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  /// Origin page/CTA: "footer-cta", "/sobre", etc.
+  source         String?
+  /// First two octets of subscriber IP (e.g. "81.47") for GDPR proof-of-consent
+  ip             String?
+  userAgent      String?   @db.Text
+  /// ISO 3166-1 alpha-2 from CF-IPCountry header
+  country        String?
+  /// "active" | "unsubscribed" | "bounced"
+  status         String    @default("active")
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+
+  @@index([subscribedAt])
+  @@index([status, subscribedAt])
+  @@map("newsletter_subscribers")
+}
