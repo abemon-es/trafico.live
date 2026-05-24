@@ -165,12 +165,7 @@ export function DesktopNav() {
         `}
       >
         <Search className="w-4 h-4" />
-        <kbd
-          aria-hidden="true"
-          className="hidden lg:inline-flex items-center gap-0.5 rounded border border-ink-200 bg-ink-50 px-1.5 py-0.5 text-[10px] font-medium text-ink-500 leading-none dark:border-white/10 dark:bg-white/5 dark:text-gray-400"
-        >
-          &#8984;K
-        </kbd>
+        <span className="hidden lg:inline text-[13px]">Buscar</span>
       </button>
 
       {/* Persistent mega menu shell */}
