@@ -3,7 +3,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ChevronDown, Search, CalendarDays } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { megaMenuPanels } from "./NavData";
 import { useNavState } from "./useNavState";
 import { MegaMenuShell } from "./MegaMenuPanel";
@@ -147,22 +147,6 @@ export function DesktopNav() {
           </div>
         );
       })}
-
-      {/* Calendario — direct link */}
-      <Link
-        href="/calendario"
-        className={`
-          flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600
-          ${
-            isActiveRoute(pathname, "/calendario")
-              ? "bg-ink-100 text-ink-900 dark:bg-white/10 dark:text-white"
-              : "text-ink-700 hover:bg-ink-50 hover:text-ink-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
-          }
-        `}
-      >
-        <CalendarDays className="w-4 h-4" aria-hidden="true" />
-        Calendario
-      </Link>
 
       {/* Separator + Search trigger */}
       <div className="w-px h-5 bg-ink-200 mx-1 dark:bg-white/10" aria-hidden="true" />
