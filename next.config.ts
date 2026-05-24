@@ -171,6 +171,21 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // -----------------------------------------------------------------------
+      // /calendario removed in iter-6 — replaced by /sobre/contacto form.
+      // Old page may still be ISR-cached at CDN; redirect ensures users with
+      // bookmarks always land on the new contact surface.
+      // -----------------------------------------------------------------------
+      {
+        source: "/calendario",
+        destination: "/sobre/contacto",
+        permanent: true,
+      },
+      {
+        source: "/calendario/:path*",
+        destination: "/sobre/contacto",
+        permanent: true,
+      },
+      // -----------------------------------------------------------------------
       // Legacy rewrite-turned-redirects (duplicate content)
       // -----------------------------------------------------------------------
       // 301: /combustible → /gasolineras
