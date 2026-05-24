@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonical = `https://trafico.live/ir/${origen}/${destino}`;
   const pair = getODPairBySlugs(origen, destino);
   const title = pair
-    ? `Ruta de ${pair.originName} a ${pair.destName} | trafico.live`
-    : "Ruta | trafico.live";
+    ? `Ruta de ${pair.originName} a ${pair.destName}`
+    : "Ruta";
 
   return {
     title,

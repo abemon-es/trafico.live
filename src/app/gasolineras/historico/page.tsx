@@ -6,7 +6,7 @@ import { HistoricoContent } from "./content";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Histórico de Precios de Combustible en España — CNMC | trafico.live",
+  title: "Histórico de Precios de Combustible en España — CNMC",
   description:
     "Consulta la evolución histórica de los precios de gasolina y gasóleo en España desde 2016. Datos oficiales de la CNMC por provincia y tipo de combustible.",
   alternates: {

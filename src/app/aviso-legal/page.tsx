@@ -10,7 +10,7 @@ const LAST_UPDATED = "2026-04-17";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Aviso Legal | trafico.live",
+  title: "Aviso Legal",
   description:
     "Aviso legal de trafico.live: identificación del titular Certus SPV SLU, condiciones de uso, propiedad intelectual, enlaces afiliados, API premium, responsabilidad y jurisdicción.",
   alternates: { canonical: `${BASE_URL}/aviso-legal` },

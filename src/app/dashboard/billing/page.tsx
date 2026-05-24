@@ -12,7 +12,7 @@ import { API_TIERS } from "@/lib/api-tiers";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Facturación — Panel de control | trafico.live",
+  title: "Facturación — Panel de control",
   robots: { index: false, follow: true },
 };
 

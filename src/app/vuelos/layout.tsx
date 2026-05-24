@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Vuelos en Directo — Tracker de Aeronaves sobre España | trafico.live",
+  title: "Vuelos en Directo — Tracker de Aeronaves sobre España",
   description:
     "Rastrea vuelos en tiempo real sobre España: posiciones ADS-B (OpenSky), aerolíneas, altitud y tipos de aeronave. Basado en datos abiertos.",
   alternates: {

@@ -19,7 +19,7 @@ export const revalidate = 60;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Incidencias Renfe hoy — Retrasos y alertas en tiempo real | trafico.live",
+  title: "Incidencias Renfe hoy — Retrasos y alertas en tiempo real",
   description:
     "Incidencias y retrasos Renfe en tiempo real: AVE, Cercanías, Alvia, Rodalies. Alertas GTFS-RT actualizadas cada 60 segundos. Consulta el estado de tu línea.",
   keywords: [

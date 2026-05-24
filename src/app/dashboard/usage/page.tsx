@@ -6,7 +6,7 @@ import { UsageChart } from "@/components/dashboard/UsageChart";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Uso de la API — Panel de control | trafico.live",
+  title: "Uso de la API — Panel de control",
   robots: { index: false, follow: true },
 };
 

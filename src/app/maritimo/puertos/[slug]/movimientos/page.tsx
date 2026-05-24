@@ -167,7 +167,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const port = await getSpanishPort(slug);
   if (!port) return { title: "Puerto no encontrado" };
 
-  const title = `Barcos en el puerto de ${port.name} ahora — Movimientos AIS | trafico.live`;
+  const title = `Barcos en el puerto de ${port.name} ahora — Movimientos AIS`;
+  const titleOg = `${title} | trafico.live`;
   const description = `¿Qué barcos hay en el puerto de ${port.name} ahora mismo? Entradas y salidas en las últimas 24h, tráfico AIS en tiempo real, estadísticas de buques por tipo y bandera.`;
 
   return {
@@ -177,7 +178,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: `${BASE_URL}/maritimo/puertos/${slug}/movimientos`,
     },
     openGraph: {
-      title,
+      title: titleOg,
       description,
       url: `${BASE_URL}/maritimo/puertos/${slug}/movimientos`,
       type: "website",

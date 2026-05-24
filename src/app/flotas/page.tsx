@@ -26,7 +26,7 @@ export const revalidate = 3600;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Flotas SaaS — Gestión de flotas con tráfico en tiempo real | trafico.live",
+  title: "Flotas SaaS — Gestión de flotas con tráfico en tiempo real",
   description:
     "Plataforma SaaS para gestión de flotas en España. GPS en tiempo real sobre mapa con tráfico DGT, peajes y precios de combustible. Desde 9 €/vehículo/mes.",
   alternates: {

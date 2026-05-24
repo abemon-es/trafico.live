@@ -9,7 +9,7 @@ import type { ApiKeyRow } from "@/components/dashboard/KeysTable";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Claves API — Panel de control | trafico.live",
+  title: "Claves API — Panel de control",
   robots: { index: false, follow: true },
 };
 

@@ -73,7 +73,7 @@ async function getHubData() {
 // ---------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  title: "Voos em tempo real sobre Portugal · Radar ADS-B | trafico.live",
+  title: "Voos em tempo real sobre Portugal · Radar ADS-B",
   description:
     "Radar de aviões em tempo real sobre o espaço aéreo português. Posições ADS-B OpenSky, chegadas e partidas Lisboa, Porto e Madeira ao vivo.",
   keywords: [

@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { roadId } = await params;
   const road = roadId.toUpperCase();
   return {
-    title: `Intensidad de tráfico ${road} — Análisis IMD | trafico.live`,
+    title: `Intensidad de tráfico ${road} — Análisis IMD`,
     description: `Análisis de la Intensidad Media Diaria (IMD) en la ${road}: vehículos/día, porcentaje de pesados y evolución anual. Datos del Ministerio de Transportes.`,
     alternates: { canonical: `${BASE_URL}/analisis/carreteras/${roadId}` },
     openGraph: {

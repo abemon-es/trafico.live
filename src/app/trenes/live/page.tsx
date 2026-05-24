@@ -6,7 +6,7 @@ import { LiveMap } from "./LiveMap";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Trenes en Directo — GPS en Tiempo Real (próximamente) | trafico.live",
+  title: "Trenes en Directo — GPS en Tiempo Real (próximamente)",
   description:
     "Mapa en tiempo real de la red ferroviaria Renfe: AVE, Alvia, Euromed, MD y Cercanías. Funcionalidad completa llegará en S2.",
   alternates: {

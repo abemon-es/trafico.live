@@ -146,13 +146,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const prov = findProvinceBySlug(slug);
-  if (!prov) return { title: "Provincia no encontrada | trafico.live" };
+  if (!prov) return { title: "Provincia no encontrada" };
 
   const title = `Calidad del aire en ${prov.name} \u2014 ICA por estacion en tiempo real`;
   const description = `Indice de Calidad del Aire (ICA) en ${prov.name}. Ranking de estaciones, NO\u2082, PM10, PM2.5 y O\u2083. Datos MITECO actualizados cada hora.`;
 
   return {
-    title: `${title} | trafico.live`,
+    title,
     description,
     alternates: {
       canonical: `${BASE_URL}/calidad-aire/provincia/${slug}`,

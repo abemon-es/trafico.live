@@ -17,7 +17,7 @@ export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Aeroportos de Portugal — Chegadas e Partidas ao vivo | trafico.live",
+  title: "Aeroportos de Portugal — Chegadas e Partidas ao vivo",
   description:
     "Catálogo completo de aeroportos portugueses: Lisboa, Porto, Faro, Madeira e Açores. Chegadas e partidas ao vivo, código IATA/ICAO e informações operacionais.",
   keywords: [

@@ -5,7 +5,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { ODInput } from "@/components/multimodal/ODInput";
 
 export const metadata: Metadata = {
-  title: "Cómo ir a cualquier parte de España — Rutas multimodal | trafico.live",
+  title: "Cómo ir a cualquier parte de España — Rutas multimodal",
   description:
     "Planifica tu viaje entre ciudades españolas: coche, tren, bus y avión. Compara tiempos, precios y emisiones de CO2 en un solo lugar.",
   openGraph: {

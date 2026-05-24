@@ -3,7 +3,7 @@ import { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Marítimo — Combustible, Meteorología y Puertos | trafico.live",
+  title: "Marítimo — Combustible, Meteorología y Puertos",
   description:
     "Portal marítimo de trafico.live: precios de combustible en estaciones náuticas, meteorología costera, directorio de puertos españoles y seguridad marítima. Datos actualizados del MITERD y AEMET.",
   alternates: {
