@@ -1093,6 +1093,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.6,
     },
     {
+      url: `${BASE_URL}/sobre/posicionamiento`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.6,
+    },
+    {
       url: `${BASE_URL}/sobre/api`,
       lastModified: today,
       changeFrequency: "monthly",

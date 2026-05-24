@@ -2879,6 +2879,44 @@ model PushSubscription {
   @@index([userId])
 }
 
+// ============================================
+// SEO SNAPSHOT (Google Search Console + GA4)
+// ============================================
+
+model SeoSnapshot {
+  id            String   @id @default(cuid())
+  capturedAt    DateTime @default(now()) @db.Timestamptz
+
+  // GSC aggregates (last 30d window at capture time)
+  gscClicks30d       Int
+  gscImpressions30d  Int
+  gscCtr30d          Float
+  gscAvgPosition30d  Float
+
+  // Daily timeseries (30 days, JSON array of {date, clicks, impressions, position})
+  gscDailySeries     Json
+
+  // Top 20 pages (JSON array of {page, clicks, impressions, position, ctr})
+  gscTopPages        Json
+
+  // Top 20 queries (JSON array of {query, clicks, impressions, position, ctr})
+  gscTopQueries      Json
+
+  // GA4 aggregates
+  ga4Sessions30d     Int
+  ga4Users30d        Int
+  ga4Pageviews30d    Int
+  ga4Events30d       Int
+
+  // GA4 dimensional breakdowns (JSON: {byCountry, byDevice, bySource, byPage})
+  ga4Breakdowns      Json
+
+  // GA4 daily timeseries (30 days, JSON array of {date, sessions, users, pageviews})
+  ga4DailySeries     Json
+
+  @@index([capturedAt])
+}
+
 // ---------------------------------------------------------------------------
 // AffiliateOffer — product/offer catalog for affiliate links
 // ---------------------------------------------------------------------------
