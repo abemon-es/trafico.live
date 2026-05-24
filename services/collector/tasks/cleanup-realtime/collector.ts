@@ -1,34 +1,13 @@
 /**
  * Cleanup collector — prunes realtime rolling-window tables.
  *
- * Runs nightly. Deletes rows older than the per-table retention threshold
- * from volatile, high-ingest tables so the DB doesn't grow unbounded.
+ * Runs nightly. Deletes rows older than the per-table retention threshold.
+ * Failures are non-fatal per table.
  *
- * Targets (and why each retention window was picked):
- *   - CityTrafficReading   7d    Madrid/Barcelona/Valencia/Zaragoza sensor
- *                                samples, ~1.7M rows/day. We render last-N
- *                                samples on city pages; older history feeds
- *                                aggregate stats which we should compute
- *                                separately if needed.
- *   - RailwayDelaySnapshot 90d   Fleet-wide delay snapshots every 2min.
- *                                ~720 rows/day, the table is small but we
- *                                keep 3 months so brand punctuality stats
- *                                stay rolling-quarterly.
- *   - TrafficReading       48h   DGT national-detector readings.
- *   - TransitVehiclePosition 48h Original target. Unchanged.
- *
- * REMOVED from this collector (migration 20260524210000_timescaledb_hypertables):
- *   - VesselPosition    → TimescaleDB retention policy: 1 year
- *   - AircraftPosition  → TimescaleDB retention policy: 1 year
- *   - TrafficIntensity  → TimescaleDB retention policy: 90 days
- *   - AirQualityReading → TimescaleDB retention policy: 1 year
- *   These are now TimescaleDB hypertables. Retention is managed automatically
- *   by TimescaleDB's background job scheduler — no manual deletes needed.
- *
- * Each delete is a single statement using the per-table timestamp index
- * (verified in schema.prisma). On Postgres + BRIN/B-tree, large deletes
- * here run in seconds, not minutes. Failures are non-fatal per table so
- * a single regressed model doesn't block the others.
+ * TimescaleDB was planned for the 4 position tables (migration
+ * 20260524210000_timescaledb_hypertables) but trafico-postgres uses
+ * postgis/postgis:16-3.5 which doesn't bundle TimescaleDB. Until the
+ * image is switched, plain TTL deletes are the retention mechanism.
  */
 
 import type { PrismaClient } from "@prisma/client";
@@ -47,11 +26,6 @@ interface CleanupSpec {
 }
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  // NOTE: VesselPosition, AircraftPosition, TrafficIntensity, and
-  // AirQualityReading are NOT listed here. They are now TimescaleDB
-  // hypertables with automated retention policies applied in migration
-  // 20260524210000_timescaledb_hypertables. Manual deletes would conflict
-  // with TimescaleDB's chunk-drop mechanism and are therefore removed.
   const specs: CleanupSpec[] = [
     {
       label: "TransitVehiclePosition",
@@ -83,6 +57,38 @@ export async function run(prisma: PrismaClient): Promise<void> {
       run: (cutoff) =>
         prisma.railwayDelaySnapshot.deleteMany({
           where: { recordedAt: { lt: cutoff } },
+        }),
+    },
+    {
+      label: "VesselPosition",
+      retentionHours: 7 * 24,
+      run: (cutoff) =>
+        prisma.vesselPosition.deleteMany({
+          where: { createdAt: { lt: cutoff } },
+        }),
+    },
+    {
+      label: "AircraftPosition",
+      retentionHours: 7 * 24,
+      run: (cutoff) =>
+        prisma.aircraftPosition.deleteMany({
+          where: { createdAt: { lt: cutoff } },
+        }),
+    },
+    {
+      label: "TrafficIntensity",
+      retentionHours: 48,
+      run: (cutoff) =>
+        prisma.trafficIntensity.deleteMany({
+          where: { recordedAt: { lt: cutoff } },
+        }),
+    },
+    {
+      label: "AirQualityReading",
+      retentionHours: 30 * 24,
+      run: (cutoff) =>
+        prisma.airQualityReading.deleteMany({
+          where: { createdAt: { lt: cutoff } },
         }),
     },
   ];
