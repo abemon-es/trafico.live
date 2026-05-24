@@ -139,6 +139,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `${BASE_URL}/camaras/${city}`,
     },
+    // Sin cámaras activas: no indexar la página para evitar contenido vacío
+    ...(cameraCount === 0 ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
