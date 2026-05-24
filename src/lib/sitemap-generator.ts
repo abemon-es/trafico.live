@@ -1093,6 +1093,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.6,
     },
     {
+      url: `${BASE_URL}/sobre/api`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${BASE_URL}/calendario`,
       lastModified: today,
       changeFrequency: "weekly",
@@ -1980,6 +1986,58 @@ async function climateStationSitemap(
     }));
   } catch (err) {
     reportApiError(err, "sitemap climate stations");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Aircraft sitemap shards — /aviacion/avion/[icao24]
+// ---------------------------------------------------------------------------
+
+async function aircraftSitemap(shardIndex: number): Promise<SitemapEntry[]> {
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const rows = await prisma.aircraftPosition.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { icao24: true },
+      distinct: ["icao24"],
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      orderBy: { icao24: "asc" },
+    });
+    const today = startOfUtcDay();
+    return rows.map((r) => ({
+      url: `${BASE_URL}/aviacion/avion/${r.icao24.toLowerCase()}`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.45,
+    }));
+  } catch (err) {
+    reportApiError(err, "sitemap aircraft");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Spanish port sitemap shards — /maritimo/puerto/[slug]
+// ---------------------------------------------------------------------------
+
+async function spanishPortSitemap(shardIndex: number): Promise<SitemapEntry[]> {
+  try {
+    const ports = await prisma.spanishPort.findMany({
+      skip: shardIndex * SHARD_SIZE,
+      take: SHARD_SIZE,
+      select: { slug: true, updatedAt: true },
+      orderBy: { slug: "asc" },
+    });
+    return ports.map((p) => ({
+      url: `${BASE_URL}/maritimo/puerto/${p.slug}`,
+      lastModified: p.updatedAt ?? startOfUtcDay(),
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    }));
+  } catch (err) {
+    reportApiError(err, "sitemap spanish ports");
     return [];
   }
 }
