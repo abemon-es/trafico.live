@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { constructWebhookEvent, getStripe, getSubscriptionTier } from "@/lib/stripe";
 import { API_TIERS } from "@/lib/api-tiers";
+import { sendEvent as sendGa4Event } from "@/lib/ga4-measurement-protocol";
 import prisma from "@/lib/db";
 import { randomBytes } from "crypto";
 import type Stripe from "stripe";
@@ -161,6 +162,39 @@ async function handleCheckoutCompleted(
     });
     console.log(`[webhook] Created ${tier} key for ${email}`, { eventId });
   }
+
+  // GA4 server-side purchase event. Stitches to the originating GA4 session
+  // via ga_client_id captured at checkout creation. Without it we still fire
+  // the event so revenue lands in GA4, but it lands as a fresh attribution-less
+  // session — better than nothing for total revenue numbers.
+  const gaClientId =
+    session.metadata?.ga_client_id || `srv.${customerId}`;
+  const amountEur = (session.amount_total ?? 0) / 100;
+  sendGa4Event({
+    clientId: gaClientId,
+    userId: customerId,
+    event: {
+      name: "purchase",
+      params: {
+        currency: (session.currency ?? "eur").toUpperCase(),
+        value: amountEur,
+        transaction_id: session.id,
+        tier,
+        // GA4 enhanced-ecommerce items — single line per checkout (one tier).
+        items: JSON.stringify([
+          {
+            item_id: `tier_${tier.toLowerCase()}`,
+            item_name: `trafico.live API ${tier}`,
+            item_category: "api_subscription",
+            price: amountEur,
+            quantity: 1,
+          },
+        ]),
+      },
+    },
+  }).catch(() => {
+    // Logged inside sendGa4Event — never throw out of the webhook handler.
+  });
 }
 
 /**

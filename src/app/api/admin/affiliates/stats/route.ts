@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
+import { auth } from "@/lib/auth-config";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +48,14 @@ export async function GET(request: NextRequest) {
   const blocked = authenticateRequest(request);
   if (blocked) return blocked;
 
-  // Admin check: for now via ADMIN_EMAILS env var.
-  // TODO(T3.6): switch to session.user.role === 'ADMIN' once role field lands in User model.
-  const adminEmail = request.headers.get("x-admin-email");
-  if (!isAdminEmail(adminEmail)) {
+  // Admin check via NextAuth session — previous version trusted an
+  // `x-admin-email` request header sourced from `NEXT_PUBLIC_ADMIN_EMAIL`
+  // (a public env var visible in the browser bundle), which any visitor
+  // could read off the client and replay. The session here is set
+  // server-side via the Prisma adapter; the cookie cannot be forged.
+  // TODO(T3.6): switch to session.user.role === "ADMIN" when role lands.
+  const session = await auth();
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
     return NextResponse.json({ error: "Acceso restringido" }, { status: 403 });
   }
 

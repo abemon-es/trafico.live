@@ -57,6 +57,110 @@ export interface SitemapEntry {
 }
 
 /**
+ * DB-backed shard discovery — emits only shards that will contain URLs.
+ * Falls back to fixed upper bounds when DB is unreachable so we never
+ * serve an empty sitemap index.
+ *
+ * Used by /api/sitemap-index. Empty shards waste Googlebot crawl budget
+ * and trigger "sitemap has no URLs" warnings in GSC.
+ */
+export async function getActiveShardIds(): Promise<{ id: number }[]> {
+  const staticShards = [{ id: 0 }, { id: INSIGHTS_OFFSET }];
+
+  type Cat = {
+    offset: number;
+    fallback: number;
+    count: () => Promise<number>;
+  };
+
+  const categories: Cat[] = [
+    {
+      offset: GAS_STATION_OFFSET,
+      fallback: FALLBACK_STATION_SHARDS,
+      count: () => prisma.gasStation.count(),
+    },
+    {
+      offset: MUNICIPALITY_OFFSET,
+      fallback: FALLBACK_MUNICIPALITY_SHARDS,
+      count: () => prisma.municipality.count(),
+    },
+    {
+      offset: POSTAL_CODE_OFFSET,
+      fallback: FALLBACK_POSTAL_CODE_SHARDS,
+      count: async () => {
+        const rows = await prisma.gasStation.findMany({
+          select: { postalCode: true },
+          distinct: ["postalCode"],
+          where: { postalCode: { not: null } },
+        });
+        return rows.length;
+      },
+    },
+    {
+      offset: MARITIME_OFFSET,
+      fallback: FALLBACK_MARITIME_SHARDS,
+      count: () => prisma.maritimeStation.count(),
+    },
+    {
+      offset: RADAR_OFFSET,
+      fallback: FALLBACK_RADAR_SHARDS,
+      count: () => prisma.radar.count({ where: { isActive: true } }),
+    },
+    {
+      offset: CAMERA_OFFSET,
+      fallback: FALLBACK_CAMERA_SHARDS,
+      count: () => prisma.camera.count({ where: { isActive: true } }),
+    },
+    {
+      offset: CHARGER_OFFSET,
+      fallback: FALLBACK_CHARGER_SHARDS,
+      count: () => prisma.eVCharger.count({ where: { isPublic: true } }),
+    },
+    {
+      offset: RAILWAY_STATION_OFFSET,
+      fallback: FALLBACK_RAILWAY_STATION_SHARDS,
+      count: () => prisma.railwayStation.count({ where: { slug: { not: null } } }),
+    },
+    {
+      offset: RAILWAY_LINE_OFFSET,
+      fallback: FALLBACK_RAILWAY_LINE_SHARDS,
+      count: () => prisma.railwayRoute.count({ where: { slug: { not: null } } }),
+    },
+    {
+      offset: AIR_QUALITY_OFFSET,
+      fallback: FALLBACK_AIR_QUALITY_SHARDS,
+      count: () => prisma.airQualityStation.count(),
+    },
+    {
+      offset: CLIMATE_STATION_OFFSET,
+      fallback: FALLBACK_CLIMATE_STATION_SHARDS,
+      count: () => prisma.climateStation.count(),
+    },
+  ];
+
+  const counts = await Promise.all(
+    categories.map(async (c) => {
+      try {
+        const n = await c.count();
+        // Always emit at least 1 shard per category that historically had data,
+        // so a transient empty DB doesn't shrink the published sitemap surface.
+        const shards = Math.max(1, Math.ceil(n / SHARD_SIZE));
+        return { offset: c.offset, shards };
+      } catch (err) {
+        reportApiError(err, `sitemap shard count offset=${c.offset}`);
+        return { offset: c.offset, shards: c.fallback };
+      }
+    })
+  );
+
+  const dynamicShards = counts.flatMap(({ offset, shards }) =>
+    Array.from({ length: shards }, (_, i) => ({ id: offset + i }))
+  );
+
+  return [...staticShards, ...dynamicShards].sort((a, b) => a.id - b.id);
+}
+
+/**
  * Returns the list of shard IDs to be included in the sitemap index.
  * Does NOT depend on DB — uses fixed upper bounds so shard routes
  * are always registered, even during builds without a database.
@@ -914,6 +1018,15 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "hourly" as const,
       priority: 0.85,
     },
+    // 5-day CAMS forecast (iter-4 dark-data unlock — AQForecast collector
+    // populates this every 12h; no competitor in ES publishes a 5-day AQ
+    // pronóstico at provincial granularity).
+    {
+      url: `${BASE_URL}/calidad-aire/prevision`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    },
     {
       url: `${BASE_URL}/estadisticas-transporte`,
       lastModified: today,
@@ -938,6 +1051,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       url: `${BASE_URL}/sobre`,
       lastModified: today,
       changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/calendario`,
+      lastModified: today,
+      changeFrequency: "weekly",
       priority: 0.5,
     },
     {
@@ -995,6 +1114,14 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       lastModified: today,
       changeFrequency: "weekly",
       priority: 0.7,
+    },
+    // SASEMAR rescue statistics (iter-4 dark-data unlock — 30K events
+    // 2019-2024 that were previously only reachable via the API).
+    {
+      url: `${BASE_URL}/maritimo/seguridad/estadisticas`,
+      lastModified: today,
+      changeFrequency: "weekly",
+      priority: 0.75,
     },
     {
       url: `${BASE_URL}/maritimo/mapa`,
@@ -1158,6 +1285,32 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       lastModified: today,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+    })),
+    // Per-road accident drill-down (iter-4 dark-data unlock — DGT microdata
+    // 2019-2023). Mirrors the pre-generated set in
+    // src/app/accidentes/carretera/[road]/page.tsx. Long-tail SEO surface
+    // for queries like "accidentes A-7", "accidentes mortales N-340".
+    // 80 roads — every entry has >=276 accident records in the DB.
+    ...[
+      "AP-1","AP-2","AP-4","AP-6","AP-7","AP-8","AP-9","AP-68",
+      "A-1","A-2","A-3","A-4","A-5","A-6","A-7","A-8",
+      "A-23","A-30","A-31","A-42","A-44","A-49","A-52","A-55",
+      "A-62","A-66","A-67","A-70","A-92",
+      "N-I","N-II","N-III","N-IV","N-V","N-VI","N-1","N-2",
+      "N-120","N-232","N-240","N-260","N-330","N-332","N-340","N-340a",
+      "N-401","N-420","N-432","N-550","N-630","N-634","N-637",
+      "C-12","C-14","C-15","C-16","C-17","C-25","C-31","C-32",
+      "C-35","C-55","C-58","C-59","C-63","C-66",
+      "B-10","B-20","B-23","B-30",
+      "M-40","M-45","M-50","M-506","M-607",
+      "SE-30","T-11","V-30","V-31","CV-35","AC-552",
+      "TF-1","TF-5","GC-1","GC-3",
+      "Ma-13","Ma-19","Ma-20","GI-636",
+    ].map((road) => ({
+      url: `${BASE_URL}/accidentes/carretera/${encodeURIComponent(road)}`,
+      lastModified: today,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
     })),
     ...FUEL_TYPE_SLUGS.map((slug) => ({
       url: `${BASE_URL}/gasolineras/tipo/${slug}`,
@@ -1335,6 +1488,16 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // receive a generic {mmsi}-only URL that 307-redirects, which wastes
   // crawl budget. Also enforces the 9-digit MMSI range to filter AIS
   // base stations and anomalous broadcasts.
+  //
+  // 7-day recency filter (added iter-4): the unfiltered query returned
+  // ~82,318 vessel URLs (well above the 50k-URL sitemap limit and most
+  // returning 404 on the detail page since AIS data is ephemeral). At
+  // ~2-5k active vessels per week this trims the shard back under-limit
+  // and lets Googlebot spend crawl budget on URLs that actually resolve.
+  const VESSEL_RECENCY_DAYS = 7;
+  const vesselSeenSince = new Date(
+    Date.now() - VESSEL_RECENCY_DAYS * 24 * 60 * 60 * 1000
+  );
   let vesselPages: SitemapEntry[] = [];
   try {
     const namedVessels = await prisma.vessel.findMany({
@@ -1342,6 +1505,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       where: {
         mmsi: { gte: 100_000_000, lte: 999_999_999 },
         name: { not: null },
+        updatedAt: { gte: vesselSeenSince },
       },
       orderBy: { mmsi: "asc" },
     });
@@ -1363,12 +1527,49 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     reportApiError(err, "sitemap vessel pages");
   }
 
+  // /maritimo/buques/[slug]/recorrido — voyage-history sub-pages added
+  // in iter-4. Only emit for vessels with at least one Voyage row so
+  // Google doesn't crawl empty histories. The sub-page's own ISR is
+  // 1h matching the voyage-detector cadence.
+  let vesselRecorridoPages: SitemapEntry[] = [];
+  try {
+    const vesselsWithVoyages = await prisma.voyage.findMany({
+      distinct: ["mmsi"],
+      select: { mmsi: true },
+      take: 500,
+    });
+    if (vesselsWithVoyages.length > 0) {
+      const namedRows = await prisma.vessel.findMany({
+        where: {
+          mmsi: { in: vesselsWithVoyages.map((v) => v.mmsi) },
+          name: { not: null },
+        },
+        select: { mmsi: true, name: true, updatedAt: true },
+      });
+      vesselRecorridoPages = namedRows.flatMap((v) => {
+        const slug = vesselSlug(v.mmsi, v.name);
+        if (!slug.includes("-")) return [];
+        return [
+          {
+            url: `${BASE_URL}/maritimo/buques/${slug}/recorrido`,
+            lastModified: v.updatedAt ?? today,
+            changeFrequency: "weekly" as const,
+            priority: 0.45,
+          },
+        ];
+      });
+    }
+  } catch (err) {
+    reportApiError(err, "sitemap vessel recorrido pages");
+  }
+
   return [
     ...staticPages,
     ...cityPages,
     ...roadPages,
     ...cameraRoadPages,
     ...provincePages,
+    ...vesselRecorridoPages,
     ...communityPages,
     ...maritimePortPages,
     ...transitOperatorPages,

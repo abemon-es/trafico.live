@@ -37,12 +37,10 @@ export default function AdminAffiliatesPage() {
     setError(null);
     try {
       const res = await fetch(`/api/admin/affiliates/stats?period=${p}`, {
+        // Server now reads identity from the NextAuth session cookie —
+        // no client-supplied admin header (the previous `x-admin-email`
+        // pulled from NEXT_PUBLIC_ADMIN_EMAIL was forgeable by any visitor).
         credentials: "same-origin",
-        headers: {
-          // In production this comes from a verified session cookie.
-          // For S4 scaffold the layout handles access control.
-          "x-admin-email": process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "",
-        },
       });
       if (!res.ok) {
         if (res.status === 403) {

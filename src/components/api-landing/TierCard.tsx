@@ -2,6 +2,7 @@
 
 import { CheckCircle } from "lucide-react";
 import { motion } from "motion/react";
+import { trackPricingClick } from "@/lib/analytics";
 
 export interface TierCardProps {
   name: string;
@@ -15,6 +16,8 @@ export interface TierCardProps {
   ctaLabel: string;
   ctaHref: string;
   index?: number;
+  /** Where on the page this tier card is rendered — passed to GA4 as `source`. */
+  trackingSource?: string;
 }
 
 export function TierCard({
@@ -29,7 +32,15 @@ export function TierCard({
   ctaLabel,
   ctaHref,
   index = 0,
+  trackingSource = "api-landing-pricing",
 }: TierCardProps) {
+  const handleCtaClick = () => {
+    // FREE tier has no upgrade intent — only track paid tiers.
+    if (name === "PRO" || name === "ENTERPRISE") {
+      trackPricingClick(name, trackingSource);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -98,6 +109,8 @@ export function TierCard({
       {/* CTA */}
       <a
         href={ctaHref}
+        onClick={handleCtaClick}
+        data-cta-id={`tier-${name.toLowerCase()}`}
         className={`block text-center text-sm font-semibold px-5 py-3 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-tl-600 ${
           highlight
             ? "bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white focus-visible:ring-white"

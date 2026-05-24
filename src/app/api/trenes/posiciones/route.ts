@@ -52,19 +52,43 @@ interface TrainRoute {
   secuencia: Array<{ lat: number; lon: number; c?: string }>;
 }
 
-async function fetchCached<T>(url: string, cacheKey: string): Promise<T | null> {
+async function fetchCached<T>(
+  url: string,
+  cacheKey: string,
+  label: string,
+): Promise<T | null> {
   if (redis) {
-    const cached = await redis.get(cacheKey);
-    if (cached) return JSON.parse(cached);
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+    } catch (e) {
+      // Redis read failure shouldn't block the upstream fetch.
+      console.warn(`[trenes/posiciones] Redis read failed for ${label}:`, (e as Error).message);
+    }
   }
-  const res = await fetch(`${url}?v=${Date.now()}`, {
-    headers: { "User-Agent": "trafico.live/1.0" },
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  if (redis) await redis.set(cacheKey, JSON.stringify(data), "EX", CACHE_TTL);
-  return data;
+  try {
+    const res = await fetch(`${url}?v=${Date.now()}`, {
+      headers: { "User-Agent": "trafico.live/1.0" },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) {
+      console.warn(`[trenes/posiciones] ${label} upstream returned ${res.status}`);
+      return null;
+    }
+    const data = await res.json();
+    if (redis) {
+      redis.set(cacheKey, JSON.stringify(data), "EX", CACHE_TTL).catch((e) =>
+        console.warn(`[trenes/posiciones] Redis write failed for ${label}:`, (e as Error).message),
+      );
+    }
+    return data;
+  } catch (e) {
+    // Renfe's unofficial real-time API frequently times out or returns
+    // truncated JSON ("Unexpected end of JSON input"). Don't let either
+    // failure mode 500 the entire endpoint — the caller handles `null`.
+    console.warn(`[trenes/posiciones] ${label} fetch failed:`, (e as Error).message);
+    return null;
+  }
 }
 
 /**
@@ -78,9 +102,25 @@ export async function GET(request: NextRequest) {
 
   try {
     const [flotaData, rutasRaw] = await Promise.all([
-      fetchCached<{ fechaActualizacion: string; trenes: RenfeTrain[] }>(FLOTA_URL, CACHE_KEY_FLOTA),
-      fetchCached<{ trenes?: TrainRoute[] } | TrainRoute[]>(RUTAS_URL, CACHE_KEY_RUTAS),
+      fetchCached<{ fechaActualizacion: string; trenes: RenfeTrain[] }>(FLOTA_URL, CACHE_KEY_FLOTA, "flota"),
+      fetchCached<{ trenes?: TrainRoute[] } | TrainRoute[]>(RUTAS_URL, CACHE_KEY_RUTAS, "rutas"),
     ]);
+
+    // If we can't get train positions at all, return an empty FeatureCollection
+    // (200 + degraded:true) instead of 500ing. The hero train map then renders
+    // its base layer with no overlays, which is far better UX than a broken page.
+    // `routes` are decorative — missing them is fine.
+    if (!flotaData) {
+      return NextResponse.json(
+        {
+          trains: { type: "FeatureCollection", features: [] },
+          routes: { type: "FeatureCollection", features: [] },
+          metadata: { count: 0, routeCount: 0, updatedAt: null, degraded: true,
+                      stats: { avgDelay: 0, onTime: 0, delayed: 0, maxDelay: 0 } },
+        },
+        { status: 200, headers: { "Cache-Control": "no-store" } },
+      );
+    }
 
     const routeMap = new Map<string, TrainRoute>();
     const rawRoutes = Array.isArray(rutasRaw) ? rutasRaw : (rutasRaw as { trenes?: TrainRoute[] })?.trenes || [];

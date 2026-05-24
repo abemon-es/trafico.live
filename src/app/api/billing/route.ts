@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createCheckoutSession, createPortalSession } from "@/lib/stripe";
 import { API_TIERS, type ApiTierName } from "@/lib/api-tiers";
 import { applyRateLimit } from "@/lib/api-utils";
+import { sendEvent as sendGa4Event } from "@/lib/ga4-measurement-protocol";
 import prisma from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -10,14 +11,23 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * POST /api/billing — Create Stripe checkout session
- * Body: { email, tier: "PRO" | "ENTERPRISE" }
+ * Body: { email, tier: "PRO" | "ENTERPRISE", gaClientId?: string }
+ *
+ * gaClientId — pass the browser GA4 client_id (from the `_ga` cookie,
+ * format `GA1.X.<client_id>` — strip prefix and use only the trailing
+ * part) so the corresponding `purchase` event fired from the webhook
+ * stitches to the same GA4 user/session.
  */
 export async function POST(request: NextRequest) {
   const rateLimited = await applyRateLimit(request);
   if (rateLimited) return rateLimited;
 
   try {
-    const { email, tier } = (await request.json()) as { email?: string; tier?: string };
+    const { email, tier, gaClientId } = (await request.json()) as {
+      email?: string;
+      tier?: string;
+      gaClientId?: string;
+    };
 
     if (!email || !EMAIL_RE.test(email) || !tier) {
       return NextResponse.json({ error: "Missing or invalid email/tier" }, { status: 400 });
@@ -34,12 +44,32 @@ export async function POST(request: NextRequest) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-    const url = await createCheckoutSession(
+    const { url, sessionId } = await createCheckoutSession(
       email,
       config.stripePriceId,
       `${baseUrl}/api-docs?checkout=success`,
       `${baseUrl}/api-docs?checkout=cancelled`,
+      { tier: validTier, gaClientId },
     );
+
+    // Fire begin_checkout server-side. Skipped silently if GA4 MP env not set
+    // or no client_id was passed (we don't synthesize one here — without a
+    // real browser client_id this would create orphan GA4 sessions).
+    if (gaClientId) {
+      sendGa4Event({
+        clientId: gaClientId,
+        event: {
+          name: "begin_checkout",
+          params: {
+            currency: "EUR",
+            tier: validTier,
+            checkout_session_id: sessionId,
+          },
+        },
+      }).catch(() => {
+        // Logged inside sendGa4Event — never block the checkout response.
+      });
+    }
 
     return NextResponse.json({ url });
   } catch (error) {

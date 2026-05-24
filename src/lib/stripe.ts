@@ -11,12 +11,21 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
+export interface CheckoutMetadata {
+  /** Tier name — embedded so the webhook can resolve revenue + tier without a Stripe API call. */
+  tier?: "PRO" | "ENTERPRISE";
+  /** GA4 client_id captured from the browser `_ga` cookie. Used by the webhook
+   *  to fire a server-side `purchase` event attributable to the originating session. */
+  gaClientId?: string;
+}
+
 export async function createCheckoutSession(
   email: string,
   priceId: string,
   successUrl: string,
   cancelUrl: string,
-): Promise<string> {
+  extra: CheckoutMetadata = {},
+): Promise<{ url: string; sessionId: string }> {
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -24,10 +33,14 @@ export async function createCheckoutSession(
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
-    metadata: { source: "trafico-live-api" },
+    metadata: {
+      source: "trafico-live-api",
+      ...(extra.tier && { tier: extra.tier }),
+      ...(extra.gaClientId && { ga_client_id: extra.gaClientId }),
+    },
   });
   if (!session.url) throw new Error(`Stripe checkout session ${session.id} has no URL`);
-  return session.url;
+  return { url: session.url, sessionId: session.id };
 }
 
 export async function createPortalSession(

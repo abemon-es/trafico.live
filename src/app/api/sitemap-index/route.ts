@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
-import { getSitemapShardIds } from "@/lib/sitemap-generator";
+import { getActiveShardIds, getSitemapShardIds } from "@/lib/sitemap-generator";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export async function GET() {
-  const shards = getSitemapShardIds();
+  // Prefer DB-backed shard discovery (excludes empty shards). Fall back to
+  // the static upper-bound list if anything in the count pipeline throws,
+  // so the index is never served empty.
+  let shards: { id: number }[];
+  try {
+    shards = await getActiveShardIds();
+  } catch {
+    shards = getSitemapShardIds();
+  }
   const now = new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

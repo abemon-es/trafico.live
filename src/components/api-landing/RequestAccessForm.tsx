@@ -8,7 +8,10 @@
 
 import { useState, useId } from "react";
 import { Loader2, CheckCircle2, AlertCircle, Send } from "lucide-react";
-import { trackFilter } from "@/lib/analytics";
+import {
+  trackCtaClick as trackCtaClickEvent,
+  trackNewsletterSignup as trackNewsletterSignupEvent,
+} from "@/lib/analytics";
 
 // ------------------------------------------------------------------ types ---
 
@@ -21,16 +24,6 @@ interface FormState {
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
-
-// ----------------------------------------------------------------- helpers ---
-
-function trackCtaClick(action: string, component: string, page: string) {
-  trackFilter("cta_click", `${action}::${component}::${page}`);
-}
-
-function trackNewsletterSignup(email: string) {
-  trackFilter("newsletter_signup", email);
-}
 
 // ---------------------------------------------------------------- component ---
 
@@ -69,7 +62,7 @@ export default function RequestAccessForm() {
     if (!validate()) return;
 
     setStatus("submitting");
-    trackCtaClick("request-access", "RequestAccessForm", "api-landing");
+    trackCtaClickEvent("request-access", "Solicitar acceso", "api-landing");
 
     try {
       const res = await fetch("/api/contact", {
@@ -96,7 +89,7 @@ export default function RequestAccessForm() {
 
       // Newsletter opt-in (parallel, non-blocking)
       if (form.newsletter) {
-        trackNewsletterSignup(form.email.trim().toLowerCase());
+        trackNewsletterSignupEvent("api-landing-form");
         fetch("/api/digest/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

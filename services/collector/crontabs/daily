@@ -10,13 +10,17 @@
 # MobilityData GTFS catalog sync — moved to weekly (catalog updates infrequently)
 # See crontabs/weekly for the Sunday 02:30 entry.
 
-# INE transport statistics (light — JSON API calls, ~50MB)
-30 3 * * * TASK=ine-stats npx tsx index.ts 2>&1
+# INE transport statistics — INE publishes quarterly (modal split, annual
+# series). Daily polling re-fetched the same data ~28 of 30 days. Now Sunday
+# 03:30 weekly; still well inside INE's quarterly cadence with headroom.
+30 3 * * 0 TASK=ine-stats npx tsx index.ts 2>&1
 
 0 4 * * * TASK=camera npx tsx index.ts 2>&1 && touch /tmp/last-run
 
-# AENA airport seeding + stats (placeholder — Excel parsing TBD)
-30 4 * * * TASK=aena-stats npx tsx index.ts 2>&1
+# AENA airport passenger stats — Eurostat AVIA_PAOA publishes annually with
+# a ~12-month lag. Daily polling was pure noise. Now monthly on the 1st at
+# 04:30 (overkill for annual data but a useful low-bound liveness signal).
+30 4 1 * * TASK=aena-stats npx tsx index.ts 2>&1
 
 0 5 * * * SYNC_MODE=incremental TASK=typesense-sync npx tsx index.ts 2>&1
 0 6 * * * TASK=charger NODE_OPTIONS=--max-old-space-size=768 npx tsx index.ts 2>&1

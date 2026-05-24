@@ -1,6 +1,7 @@
 "use client";
 
 import { fetcher } from "@/lib/fetcher";
+import Link from "next/link";
 import { useState, useMemo, useCallback } from "react";
 import useSWR from "swr";
 import {
@@ -314,12 +315,21 @@ function BrandCard({
 function RouteRow({ route }: { route: RailwayRoute }) {
   const color = routeDisplayColor(route);
   const name = routeDisplayName(route);
+  // Per-route landing page lives at /trenes/linea/[slug]. The API
+  // returns the canonical slug (per-Renfe brand + route mnemonic);
+  // fall back to routeId when slug is null so the link still resolves.
+  const lineaHref = route.slug
+    ? `/trenes/linea/${encodeURIComponent(route.slug)}`
+    : `/trenes/linea/${encodeURIComponent(route.routeId)}`;
 
   return (
     <tr className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
       {/* Marca */}
       <td className="px-4 py-3 whitespace-nowrap">
-        <div className="flex items-center gap-2 flex-wrap">
+        <Link
+          href={lineaHref}
+          className="flex items-center gap-2 flex-wrap hover:opacity-80 transition-opacity"
+        >
           <span
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold"
             style={{ backgroundColor: color, color: "#fff" }}
@@ -327,22 +337,24 @@ function RouteRow({ route }: { route: RailwayRoute }) {
             {name}
           </span>
           <ServiceTypeBadge serviceType={route.serviceType} />
-        </div>
+        </Link>
       </td>
 
       {/* Origen → Destino */}
       <td className="px-4 py-3">
-        {route.originName || route.destName ? (
-          <span className="flex items-center gap-1.5 text-sm text-gray-800 dark:text-gray-200 min-w-0">
-            <span className="font-medium truncate max-w-[140px]">{route.originName ?? "—"}</span>
-            <ArrowRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-            <span className="font-medium truncate max-w-[140px]">{route.destName ?? "—"}</span>
-          </span>
-        ) : (
-          <span className="text-sm text-gray-500 dark:text-gray-400 italic truncate max-w-xs block">
-            {route.longName ?? "—"}
-          </span>
-        )}
+        <Link href={lineaHref} className="hover:underline">
+          {route.originName || route.destName ? (
+            <span className="flex items-center gap-1.5 text-sm text-gray-800 dark:text-gray-200 min-w-0">
+              <span className="font-medium truncate max-w-[140px]">{route.originName ?? "—"}</span>
+              <ArrowRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <span className="font-medium truncate max-w-[140px]">{route.destName ?? "—"}</span>
+            </span>
+          ) : (
+            <span className="text-sm text-gray-500 dark:text-gray-400 italic truncate max-w-xs block">
+              {route.longName ?? "—"}
+            </span>
+          )}
+        </Link>
       </td>
 
       {/* Red */}

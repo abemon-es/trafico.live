@@ -35,6 +35,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  // Critical: without metadataBase, every relative-URL OG image (every
+  // `app/**/opengraph-image.tsx` route file) is resolved against
+  // http://localhost:3000 at build time. Every social share card on
+  // every page that uses dynamic OG images was broken in production.
+  // One-line fix; sitewide impact.
+  metadataBase: new URL(BASE_URL),
   title: {
     default: "trafico.live — Tráfico España en Tiempo Real",
     template: "%s | trafico.live",

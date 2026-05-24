@@ -7,6 +7,7 @@
  */
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
   AlertTriangle,
@@ -16,9 +17,33 @@ import {
   Calendar,
   BarChart3,
   TrendingDown,
+  Route,
+  ChevronRight,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+
+// Mirrors src/app/accidentes/carretera/[road]/page.tsx PREGEN_ROADS — keep
+// in sync. Ordering here drives the "explore by road" section below.
+// Expanded to top 80 roads — see /accidentes/carretera/[road]/page.tsx
+// for the canonical list and rationale (≥276 records each in DGT
+// microdata 2019-2023). Keep in sync with that file + sitemap-generator.
+const PREGEN_ROADS = [
+  "AP-1","AP-2","AP-4","AP-6","AP-7","AP-8","AP-9","AP-68",
+  "A-1","A-2","A-3","A-4","A-5","A-6","A-7","A-8",
+  "A-23","A-30","A-31","A-42","A-44","A-49","A-52","A-55",
+  "A-62","A-66","A-67","A-70","A-92",
+  "N-I","N-II","N-III","N-IV","N-V","N-VI","N-1","N-2",
+  "N-120","N-232","N-240","N-260","N-330","N-332","N-340","N-340a",
+  "N-401","N-420","N-432","N-550","N-630","N-634","N-637",
+  "C-12","C-14","C-15","C-16","C-17","C-25","C-31","C-32",
+  "C-35","C-55","C-58","C-59","C-63","C-66",
+  "B-10","B-20","B-23","B-30",
+  "M-40","M-45","M-50","M-506","M-607",
+  "SE-30","T-11","V-30","V-31","CV-35","AC-552",
+  "TF-1","TF-5","GC-1","GC-3",
+  "Ma-13","Ma-19","Ma-20","GI-636",
+];
 
 export const dynamic = "force-dynamic";
 
@@ -781,6 +806,38 @@ export default async function AccidentesPage() {
                 </div>
               </section>
             )}
+
+            {/* ------------------------------------------------------------ */}
+            {/* Explore by road — links to /accidentes/carretera/[road]       */}
+            {/* ------------------------------------------------------------ */}
+            <section aria-label="Explorar por carretera">
+              <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                <Route className="w-6 h-6 text-[var(--tl-primary)] dark:text-[var(--tl-info)]" />
+                Explorar por carretera
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Estadísticas y puntos kilométricos con mayor siniestralidad en las principales
+                vías de la red estatal.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {PREGEN_ROADS.map((road) => (
+                  <Link
+                    key={road}
+                    href={`/accidentes/carretera/${encodeURIComponent(road)}`}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group"
+                  >
+                    <span className="font-mono text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      {road}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[var(--tl-danger)] flex-shrink-0" />
+                  </Link>
+                ))}
+              </div>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-3">
+                {PREGEN_ROADS.length} carreteras pre-analizadas · cualquier eje no listado
+                muestra estadísticas si tiene registros DGT
+              </p>
+            </section>
 
             {/* ------------------------------------------------------------ */}
             {/* Day of week distribution — CSS bar chart                      */}

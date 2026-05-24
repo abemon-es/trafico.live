@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { checkTierRateLimit } from "@/lib/tier-rate-limit";
+import { safeCompare } from "@/lib/auth";
 import type { ApiTierName } from "@/lib/api-tiers";
 
 export const runtime = "nodejs";
@@ -17,9 +18,17 @@ export const runtime = "nodejs";
 const VALID_TIERS = new Set<ApiTierName>(["FREE", "PRO", "ENTERPRISE"]);
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  // Validate x-internal header — reject all public callers.
-  const internal = request.headers.get("x-internal");
-  if (internal !== "1") {
+  // SECURITY: the previous gate was a literal `x-internal: 1` header check
+  // — a value any external caller could trivially set. Now requires the
+  // `INTERNAL_API_SECRET` env var (shared between Edge middleware and this
+  // Node route handler). Reject if env is unset (no implicit allow).
+  const expected = process.env.INTERNAL_API_SECRET;
+  if (!expected) {
+    console.error("[internal/enforce-tier] INTERNAL_API_SECRET not set");
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const provided = request.headers.get("x-internal-secret");
+  if (!provided || !safeCompare(provided, expected)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

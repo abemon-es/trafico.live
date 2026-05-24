@@ -1,5 +1,3 @@
-import Script from "next/script";
-
 interface BaseStructuredData {
   "@context": string;
   "@type": string;
@@ -10,18 +8,36 @@ interface StructuredDataProps {
   data: BaseStructuredData | BaseStructuredData[];
 }
 
-let structuredDataCounter = 0;
+// Content-derived stable ID — survives concurrent SSR renders without
+// colliding across modules. FNV-1a 32-bit, base36 for short URLs.
+function fnv1aHash(input: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36);
+}
 
+/**
+ * Renders a real <script type="application/ld+json"> tag in the SSR HTML
+ * so Googlebot reads the structured data without needing JS execution.
+ *
+ * Previous implementation used `next/script` with
+ * `strategy="beforeInteractive"`, which Next.js serializes into the
+ * runtime as `(self.__next_s = self.__next_s || []).push([0, {...}])`
+ * — that's a JS push, NOT a parseable `<script type="application/ld+json">`
+ * tag. Tools that don't execute JS (some Google crawlers, structured-data
+ * validators, social previews) saw zero structured data on the page.
+ */
 export function StructuredData({ data }: StructuredDataProps) {
-  const id = `structured-data-${structuredDataCounter++}`;
+  const payload = JSON.stringify(data);
+  const id = `sd-${fnv1aHash(payload)}`;
   return (
-    <Script
+    <script
       id={id}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(data),
-      }}
-      strategy="beforeInteractive"
+      dangerouslySetInnerHTML={{ __html: payload }}
     />
   );
 }
