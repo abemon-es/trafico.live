@@ -532,6 +532,9 @@ model ZBEZone {
   // Geographic boundary (GeoJSON)
   polygon  Json
   centroid Json? // { lat, lng }
+  /// PostGIS geometry(Geometry, 4326) — raw-only via $queryRaw, not used by Prisma ORM.
+  /// Backfilled from polygon column (ST_Multi upcasted). See migration 20260524190000.
+  geom     Unsupported("geometry")?
 
   // Restrictions by vehicle label
   restrictions Json // { "A": "denied", "B": "restricted", "C": "allowed", ... }
@@ -1064,6 +1067,9 @@ model TrafficFlow {
   segmentLength  Decimal?  @db.Decimal(7, 2) // Segment length in km
   sourceId       Int? // Original ArcGIS OBJECTID
   geometry       Json? // GeoJSON LineString from ArcGIS polyline (UTM→WGS84)
+  /// PostGIS geometry(LineString, 4326) — raw-only via $queryRaw, not used by Prisma ORM.
+  /// Backfilled from geometry column. See migration 20260524190000.
+  geom           Unsupported("geometry")?
 
   // Relation to counting station (optional, not all segments have a station)
   stationId String?
@@ -2197,6 +2203,9 @@ model FerryRoute {
   routeType  Int?
   routeColor String?
   geometry   Json?
+  /// PostGIS geometry(LineString, 4326) — raw-only via $queryRaw, not used by Prisma ORM.
+  /// Backfilled from geometry column. See migration 20260524190000.
+  geom       Unsupported("geometry")?
   updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz
 
   stops FerryStop[]
@@ -2272,6 +2281,9 @@ model TransitRoute {
   routeType  Int
   routeColor String?
   geometry   Json?
+  /// PostGIS geometry(LineString, 4326) — raw-only via $queryRaw, not used by Prisma ORM.
+  /// Backfilled from geometry column. See migration 20260524190000.
+  geom       Unsupported("geometry")?
   updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz
 
   operator TransitOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
@@ -2425,6 +2437,11 @@ model RoadworksZone {
   isActive    Boolean    @default(true)
   province    String?
   updatedAt   DateTime   @default(now()) @updatedAt @db.Timestamptz
+  /// PostGIS geometry(Point, 4326) — raw-only via $queryRaw, not used by Prisma ORM.
+  /// Built from latitude/longitude columns. When DGT NAP exposes polyline geometry,
+  /// this column will be updated to a LineString type via a follow-up migration.
+  /// See migration 20260524190000.
+  geom        Unsupported("geometry")?
 
   @@index([isActive])
   @@index([province])
