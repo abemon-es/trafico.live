@@ -31,7 +31,7 @@ export const dynamic = "force-dynamic";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Estaciones Climáticas AEMET en España — Datos de Temperatura y Lluvia | trafico.live",
+  title: "Estaciones Climáticas AEMET en España — Datos de Temperatura y Lluvia",
   description:
     "Red de estaciones climáticas de AEMET en España. Datos diarios de temperatura mínima y máxima, precipitaciones, viento y horas de sol. Cobertura nacional desde 2019.",
   alternates: {

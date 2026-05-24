@@ -120,8 +120,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     where: { province: cityData.code, isActive: true },
   });
 
-  const title = `${cameraCount} Cámaras de Tráfico en ${cityData.name} — En Tiempo Real`;
-  const description = `${cameraCount} cámaras de tráfico DGT en ${cityData.name}. Imágenes en directo de autopistas, autovías y carreteras principales. Actualización continua.`;
+  const title =
+    cameraCount > 0
+      ? `Cámaras de Tráfico en ${cityData.name} — ${cameraCount} cámaras DGT en vivo`
+      : `Cámaras de Tráfico en ${cityData.name} — DGT en vivo`;
+  const description =
+    cameraCount > 0
+      ? `${cameraCount} cámaras de tráfico DGT en ${cityData.name}. Imágenes en directo de autopistas, autovías y carreteras principales. Actualización continua.`
+      : `Cámaras de tráfico DGT en ${cityData.name}. Consulta el estado de las carreteras en tiempo real.`;
 
   return {
     title,

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Barcos en Directo — Tracker AIS de Buques en España | trafico.live",
+  title: "Barcos en Directo — Tracker AIS de Buques en España",
   description:
     "Rastrea buques en tiempo real en costas españolas: mercantes, petroleros, pasajeros, pesqueros. Datos AIS en directo de aisstream.io.",
   alternates: {
