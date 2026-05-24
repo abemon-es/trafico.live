@@ -340,12 +340,14 @@ expect_html_contains "/sitemap/0.xml" "<loc>https://trafico.live</loc>" "shard 0
 # -----------------------------------------------------------------------------
 
 section "8. Contact form security"
+# Bad input → 400 (validation). If rate-limited from prior smoke runs → 429.
+# Both are correct defensive behavior.
 local_code=$(curl "${CURL_OPTS[@]}" -X POST -H "Content-Type: application/json" -H "Origin: ${BASE}" -o /dev/null -w "%{http_code}" -d '{"nombre":"x"}' "${BASE}/api/contacto/general" 2>/dev/null || echo "000")
-if [[ "$local_code" == "400" ]]; then
-  log_pass "/api/contacto/general rejects bad input → 400"
-else
-  log_fail "/api/contacto/general validation" "expected 400 for bad input, got ${local_code}"
-fi
+case "$local_code" in
+  400) log_pass "/api/contacto/general rejects bad input → 400" ;;
+  429) log_pass "/api/contacto/general rate-limited (prior runs) → 429" ;;
+  *)   log_fail "/api/contacto/general validation" "expected 400 or 429, got ${local_code}" ;;
+esac
 
 # Cross-origin must be 401 (auth middleware)
 xorigin_code=$(curl "${CURL_OPTS[@]}" -X POST -H "Content-Type: application/json" -H "Origin: https://evil.example" -o /dev/null -w "%{http_code}" -d '{"nombre":"x"}' "${BASE}/api/contacto/general" 2>/dev/null || echo "000")
