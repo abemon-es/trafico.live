@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Exo_2, DM_Sans, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Header } from "@/components/layout/Header";
+import { ContextStrip } from "@/components/layout/ContextStrip";
 import { Footer } from "@/components/layout/Footer";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { CookieConsent } from "@/components/legal/CookieConsent";
@@ -206,6 +207,7 @@ export default function RootLayout({
         <StructuredData data={[organizationSchema, webSiteSchema, siteNavSchema]} />
         <SWRProvider>
           <Header />
+          <ContextStrip />
           <main id="main-content" tabIndex={-1}>
             {children}
           </main>
