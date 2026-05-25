@@ -30,13 +30,18 @@ const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/sobre/ci
  * `x-internal-*` allowlist.
  */
 function isSameOrigin(request: NextRequest): boolean {
+  // Origin header is the strongest signal — present on cross-origin requests
+  // and on all non-GET requests. Browsers (Chrome/Edge) omit it on same-origin
+  // GET fetches, so we fall back to Referer when Origin is absent.
   const origin = request.headers.get("origin");
-  if (!origin) return false;
+  const referer = request.headers.get("referer");
+  const candidate = origin || referer;
+  if (!candidate) return false;
 
   const host = request.headers.get("host") || "";
   try {
-    const originHost = new URL(origin).host;
-    return originHost === host || ALLOWED_HOSTS.includes(originHost);
+    const candidateHost = new URL(candidate).host;
+    return candidateHost === host || ALLOWED_HOSTS.includes(candidateHost);
   } catch {
     return false;
   }
