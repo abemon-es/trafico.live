@@ -44,6 +44,7 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
   const [routeVisible, setRouteVisible] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pickingTarget, setPickingTarget] = useState<PickTarget>(null);
+  const [pendingAutoRoute, setPendingAutoRoute] = useState(false);
 
   const pickPoint = useCallback(
     (which: "origin" | "destination") => {
@@ -256,11 +257,10 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
       if (!orig) return;
       setOrigin(orig);
       setOpen(true);
-      // Defer route calc one tick so the state setters above commit
-      setTimeout(() => {
-        const evt = new CustomEvent("trafico:autoroute");
-        window.dispatchEvent(evt);
-      }, 50);
+      // Tell the effect below to fire handleRoute once state has committed.
+      // (Previously used setTimeout + window event — fragile on slow devices
+      // and made the call site read stale closure values.)
+      setPendingAutoRoute(true);
     };
 
     const orig = parsePoint(fromRaw);
@@ -269,7 +269,15 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
     } else if (fromMe && typeof navigator !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => startWith({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-        () => setError("No se pudo obtener tu ubicación"),
+        (e) => {
+          if (e.code === e.PERMISSION_DENIED) {
+            setError("Permiso de ubicación denegado — introduce el origen manualmente.");
+          } else if (e.code === e.TIMEOUT) {
+            setError("No se pudo obtener tu ubicación a tiempo. Inténtalo de nuevo o introdúcelo manualmente.");
+          } else {
+            setError("No se pudo obtener tu ubicación. Introdúcela manualmente.");
+          }
+        },
         { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
       );
     } else {
@@ -287,14 +295,15 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
     }
   }, [map, searchParams]);
 
-  // Listen for the deferred autoroute event to trigger calculation
+  // When the URL-params effect requests an autoroute, fire it as soon as
+  // origin + destination + map are all ready. Using a flag instead of a
+  // setTimeout/window-event combo means we don't race React's state commit.
   useEffect(() => {
-    const fire = () => {
-      if (origin && destination && map && !loading) handleRoute();
-    };
-    window.addEventListener("trafico:autoroute", fire);
-    return () => window.removeEventListener("trafico:autoroute", fire);
-  }, [origin, destination, map, loading, handleRoute]);
+    if (!pendingAutoRoute) return;
+    if (!origin || !destination || !map || loading) return;
+    setPendingAutoRoute(false);
+    handleRoute();
+  }, [pendingAutoRoute, origin, destination, map, loading, handleRoute]);
 
   // Isochrones not available with OSRM — would need Valhalla or custom implementation
 
@@ -516,34 +525,50 @@ function PointPicker({
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [loadingGeo, setLoadingGeo] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [displayLabel, setDisplayLabel] = useState<string | null>(null);
+  const [activeIdx, setActiveIdx] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = `geocoder-${label.replace(/\s+/g, "-").toLowerCase()}-list`;
 
-  // Debounced geocode lookup
+  // Debounced geocode lookup with abort + explicit error surfacing
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const q = query.trim();
     if (q.length < 2) {
       setSuggestions([]);
       setOpen(false);
+      setGeoError(null);
+      setActiveIdx(-1);
       return;
     }
+    const controller = new AbortController();
     debounceRef.current = setTimeout(async () => {
       setLoadingGeo(true);
+      setGeoError(null);
       try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
-        const data = await res.json();
+        const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: { results?: GeocodeSuggestion[] } = await res.json();
+        if (controller.signal.aborted) return;
         setSuggestions(data.results ?? []);
+        setActiveIdx(-1);
         setOpen(true);
-      } catch {
+      } catch (e) {
+        if (controller.signal.aborted || (e as { name?: string })?.name === "AbortError") return;
+        console.warn("[PointPicker] geocode failed:", e);
         setSuggestions([]);
+        setGeoError("No se pudo buscar — inténtalo de nuevo");
+        setOpen(true);
       } finally {
-        setLoadingGeo(false);
+        if (!controller.signal.aborted) setLoadingGeo(false);
       }
     }, 350);
     return () => {
+      controller.abort();
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [query]);
@@ -586,6 +611,7 @@ function PointPicker({
           style={{ color: value ? "#7da4f0" : "#475569" }}
         />
         <input
+          ref={inputRef}
           type="text"
           value={query || (value ? (displayLabel ?? `${value.lat.toFixed(5)}, ${value.lon.toFixed(5)}`) : "")}
           onChange={(e) => {
@@ -594,6 +620,22 @@ function PointPicker({
             if (value && displayLabel) setDisplayLabel(null);
           }}
           onFocus={() => { if (suggestions.length > 0) setOpen(true); }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              if (!open && suggestions.length > 0) setOpen(true);
+              setActiveIdx((i) => Math.min(suggestions.length - 1, i + 1));
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setActiveIdx((i) => Math.max(-1, i - 1));
+            } else if (e.key === "Enter" && open && activeIdx >= 0 && suggestions[activeIdx]) {
+              e.preventDefault();
+              handleSelect(suggestions[activeIdx]);
+            } else if (e.key === "Escape") {
+              setOpen(false);
+              setActiveIdx(-1);
+            }
+          }}
           placeholder={value ? "" : "Escribe ciudad, calle o dirección…"}
           className="flex-1 min-w-0 bg-transparent border rounded px-2 py-1 text-xs focus:outline-none"
           style={{
@@ -604,6 +646,12 @@ function PointPicker({
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
+          aria-activedescendant={activeIdx >= 0 ? `${listboxId}-${activeIdx}` : undefined}
+          aria-label={label}
         />
         {value && (
           <button
@@ -628,9 +676,11 @@ function PointPicker({
         </button>
       </div>
 
-      {/* Suggestions dropdown */}
-      {open && (suggestions.length > 0 || loadingGeo) && (
+      {/* Suggestions dropdown (combobox listbox) */}
+      {open && (suggestions.length > 0 || loadingGeo || geoError) && (
         <div
+          id={listboxId}
+          role="listbox"
           className="absolute left-0 right-0 mt-1 rounded-lg shadow-xl overflow-hidden z-10"
           style={{
             background: "rgba(15,23,42,0.98)",
@@ -641,24 +691,44 @@ function PointPicker({
           }}
         >
           {loadingGeo && (
-            <div className="px-2 py-1.5 text-[11px]" style={{ color: "#64748b" }}>
+            <div className="px-2 py-1.5 text-[11px]" role="status" aria-live="polite" style={{ color: "#64748b" }}>
               Buscando…
             </div>
           )}
-          {!loadingGeo &&
-            suggestions.map((s, i) => (
-              <button
-                key={`${s.lat}-${s.lon}-${i}`}
-                onClick={() => handleSelect(s)}
-                className="w-full text-left px-2 py-1.5 hover:bg-white/10 transition-colors"
-                style={{ color: "#e2e8f0" }}
-              >
-                <div className="text-xs font-medium truncate">{s.name}</div>
-                <div className="text-[10px] truncate" style={{ color: "#64748b" }}>
-                  {s.fullName}
-                </div>
-              </button>
-            ))}
+          {!loadingGeo && geoError && (
+            <div
+              className="px-2 py-1.5 text-[11px]"
+              role="status"
+              aria-live="polite"
+              style={{ color: "#fca5a5", background: "rgba(220,38,38,0.08)" }}
+            >
+              {geoError}
+            </div>
+          )}
+          {!loadingGeo && !geoError &&
+            suggestions.map((s, i) => {
+              const isActive = i === activeIdx;
+              return (
+                <button
+                  key={`${s.lat}-${s.lon}-${i}`}
+                  id={`${listboxId}-${i}`}
+                  role="option"
+                  aria-selected={isActive}
+                  onClick={() => handleSelect(s)}
+                  onMouseEnter={() => setActiveIdx(i)}
+                  className="w-full text-left px-2 py-1.5 transition-colors"
+                  style={{
+                    color: "#e2e8f0",
+                    background: isActive ? "rgba(27,75,213,0.25)" : "transparent",
+                  }}
+                >
+                  <div className="text-xs font-medium truncate">{s.name}</div>
+                  <div className="text-[10px] truncate" style={{ color: "#64748b" }}>
+                    {s.fullName}
+                  </div>
+                </button>
+              );
+            })}
         </div>
       )}
     </div>

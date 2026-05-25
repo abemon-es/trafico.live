@@ -228,7 +228,7 @@ export default async function CalidadAireHubPage() {
                 <p className="mt-1 text-2xl font-data font-semibold text-gray-900 dark:text-gray-100">
                   {count}
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">{pct.toFixed(0)}%</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-300">{pct.toFixed(0)}%</p>
               </div>
             );
           })}
@@ -249,7 +249,7 @@ export default async function CalidadAireHubPage() {
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                     {s.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  <p className="text-xs text-gray-500 dark:text-gray-300 truncate">
                     {[s.city, s.province].filter(Boolean).join(" · ")}
                   </p>
                 </div>
@@ -257,7 +257,7 @@ export default async function CalidadAireHubPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-300">
             Sin datos suficientes en la última hora.
           </p>
         ),
@@ -283,7 +283,7 @@ export default async function CalidadAireHubPage() {
               <p className="font-data text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {p.name}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{p.desc}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">{p.desc}</p>
             </div>
           ))}
         </div>
@@ -313,7 +313,7 @@ export default async function CalidadAireHubPage() {
             { title: "Transporte público", description: "Alternativa al coche privado", href: "/transporte-publico", icon: MapPin },
           ]}
         />
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-6">
+        <p className="text-xs text-gray-500 dark:text-gray-300 mt-6">
           Fuentes: MITECO (ica.miteco.es — CC-BY 4.0), Comunidad de Madrid, Generalitat de
           Catalunya, Gobierno Vasco, Junta de Andalucía.
         </p>

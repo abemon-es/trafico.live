@@ -221,7 +221,7 @@ export default function CargaEVContent() {
               Cargadores de Vehículos Eléctricos
             </h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-300">
             Encuentra puntos de carga para tu vehículo eléctrico en toda España
           </p>
         </div>
@@ -236,13 +236,13 @@ export default function CargaEVContent() {
             <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:text-green-400">
               Cerca de mí
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Usar ubicación</p>
+            <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Usar ubicación</p>
           </Link>
 
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
             <Gauge className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
             <h3 className="font-medium text-gray-900 dark:text-gray-100">Carga rápida</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-data">
+            <p className="text-xs text-gray-500 dark:text-gray-300 mt-1 font-data">
               {stats?.byBand.find((b) => b.id === "fast")?.count ?? 0} puntos 50–150 kW
             </p>
           </div>
@@ -250,13 +250,13 @@ export default function CargaEVContent() {
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
             <Building2 className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
             <h3 className="font-medium text-gray-900 dark:text-gray-100">Operadores</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-data">{stats?.operators || 0} redes</p>
+            <p className="text-xs text-gray-500 dark:text-gray-300 mt-1 font-data">{stats?.operators || 0} redes</p>
           </div>
 
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
             <Zap className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
             <h3 className="font-medium text-gray-900 dark:text-gray-100">Total puntos</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-data">{stats?.total || 0} disponibles</p>
+            <p className="text-xs text-gray-500 dark:text-gray-300 mt-1 font-data">{stats?.total || 0} disponibles</p>
           </div>
         </div>
 
@@ -275,7 +275,7 @@ export default function CargaEVContent() {
               >
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">{band.count}</p>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{band.label}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{band.sublabel}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-300 mt-0.5">{band.sublabel}</p>
               </button>
             ))}
           </div>
@@ -352,7 +352,7 @@ export default function CargaEVContent() {
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 ml-auto"
+                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 ml-auto"
               >
                 <X className="w-3.5 h-3.5" />
                 Limpiar filtros
@@ -363,7 +363,7 @@ export default function CargaEVContent() {
           {/* Row 2: Connector type multi-select */}
           {availableConnectors.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-300 mb-2 uppercase tracking-wide">
                 Tipo de conector
               </p>
               <div className="flex flex-wrap gap-2">
@@ -376,7 +376,7 @@ export default function CargaEVContent() {
                       className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${
                         active
                           ? "bg-green-600 text-white border-green-600"
-                          : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:border-green-400 hover:text-green-700 dark:text-green-400"
+                          : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-green-400 hover:text-green-700 dark:text-green-400"
                       }`}
                     >
                       {CONNECTOR_LABELS[type] ?? type}
@@ -390,7 +390,7 @@ export default function CargaEVContent() {
 
         {/* Results count */}
         {!isLoading && filteredChargers && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
             <span className="font-data">{filteredChargers.length}</span> puntos de carga
             {hasActiveFilters && " (filtrados)"}
           </p>
@@ -399,7 +399,7 @@ export default function CargaEVContent() {
         {/* Loading */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-3 text-gray-500 dark:text-gray-300">
               <Loader2 className="w-6 h-6 animate-spin" />
               <span>Cargando puntos de carga...</span>
             </div>
@@ -437,9 +437,9 @@ export default function CargaEVContent() {
 
                 <div className="space-y-1 text-sm">
                   {charger.address && (
-                    <p className="text-gray-600 dark:text-gray-400 truncate">{charger.address}</p>
+                    <p className="text-gray-600 dark:text-gray-300 truncate">{charger.address}</p>
                   )}
-                  <p className="text-gray-500 dark:text-gray-400">
+                  <p className="text-gray-500 dark:text-gray-300">
                     {charger.city}
                     {charger.provinceName && `, ${charger.provinceName}`}
                   </p>
@@ -485,7 +485,7 @@ export default function CargaEVContent() {
         {/* Show more link */}
         {!isLoading && filteredChargers && filteredChargers.length > 50 && (
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-300">
               Mostrando <span className="font-data">50</span> de <span className="font-data">{filteredChargers.length}</span> resultados.{" "}
               <Link
                 href="/explorar/infraestructura?tab=cargadores"
@@ -507,7 +507,7 @@ export default function CargaEVContent() {
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               No se encontraron cargadores
             </h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-500 dark:text-gray-300">
               Prueba a cambiar los filtros de búsqueda
             </p>
           </div>

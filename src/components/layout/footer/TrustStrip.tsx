@@ -21,19 +21,19 @@ export function TrustStrip() {
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
           <div className="flex items-center gap-1.5 shrink-0 mr-1">
             <ShieldCheck
-              className="w-3.5 h-3.5 text-tl-400 shrink-0"
+              className="w-3.5 h-3.5 text-tl-300 shrink-0"
               aria-hidden="true"
             />
-            <span className="text-xs font-semibold text-white/50 font-heading uppercase tracking-wide">
+            <span className="text-xs font-semibold text-white/85 font-heading uppercase tracking-wide">
               Datos oficiales de:
             </span>
           </div>
           {DATA_SOURCES.map((src, idx) => (
             <span key={src} className="inline-flex items-center">
-              <span className="text-xs text-white/60 font-data">{src}</span>
+              <span className="text-xs text-white/90 font-data">{src}</span>
               {idx < DATA_SOURCES.length - 1 && (
                 <span
-                  className="text-white/25 mx-1.5 select-none"
+                  className="text-white/45 mx-1.5 select-none"
                   aria-hidden="true"
                 >
                   ·

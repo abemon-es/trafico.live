@@ -79,7 +79,7 @@ export function NewsletterCTA() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="flex-1 px-4 py-2.5 rounded-lg text-sm bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/60 focus:border-white/40 transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-lg text-sm bg-white/15 border border-white/35 text-white placeholder:text-white/75 focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/60 transition-colors"
                   disabled={status === "loading"}
                   autoComplete="email"
                 />

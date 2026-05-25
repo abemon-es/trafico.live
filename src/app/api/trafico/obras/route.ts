@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { Prisma } from "@prisma/client";
+import { parseBbox } from "@/lib/bbox";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
     const activeParam = searchParams.get("active") ?? "true";
     const format = (searchParams.get("format") || "json").toLowerCase();
     const limit = Math.min(parseInt(searchParams.get("limit") || "200", 10), 1000);
+    const bbox = parseBbox(searchParams.get("bbox"));
 
     // Redis cache (10 min — roadworks change slowly)
     const cacheKey = `api:obras:${province || "all"}:${road || "all"}:${activeParam}:${format}:${limit}`;
@@ -59,6 +61,11 @@ export async function GET(request: NextRequest) {
         contains: road.toUpperCase(),
         mode: "insensitive",
       };
+    }
+
+    if (bbox) {
+      where.latitude = { gte: bbox.minLat, lte: bbox.maxLat };
+      where.longitude = { gte: bbox.minLng, lte: bbox.maxLng };
     }
 
     const zones = await prisma.roadworksZone.findMany({

@@ -99,8 +99,8 @@ export function FooterGrid() {
             const Icon = col.icon;
             return (
               <div key={col.title}>
-                <h3 className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.1em] text-white/90 mb-4 font-heading">
-                  <Icon className="w-3.5 h-3.5 text-tl-400 shrink-0" aria-hidden="true" />
+                <h3 className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.1em] text-white mb-4 font-heading">
+                  <Icon className="w-3.5 h-3.5 text-tl-300 shrink-0" aria-hidden="true" />
                   {col.title}
                 </h3>
                 <ul className="space-y-0.5">
@@ -108,7 +108,7 @@ export function FooterGrid() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-sm text-white/50 hover:text-white block py-1 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
+                        className="text-sm text-white/80 hover:text-white block py-1.5 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
                       >
                         {link.name}
                       </Link>

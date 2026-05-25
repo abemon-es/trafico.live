@@ -61,11 +61,23 @@ export async function GET(request: NextRequest) {
     const road = searchParams.get("road");
     const yearParam = searchParams.get("year");
     const minAccidentsParam = searchParams.get("minAccidents");
+    const bboxParam = searchParams.get("bbox");
+    const limitParam = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = Math.max(1, Math.min(200, isNaN(limitParam) ? 50 : limitParam));
 
     const minAccidents = Math.max(1, parseInt(minAccidentsParam || "5", 10));
 
+    // bbox=minLng,minLat,maxLng,maxLat (route-overlay corridor scoping)
+    let bboxBounds: { minLng: number; minLat: number; maxLng: number; maxLat: number } | null = null;
+    if (bboxParam) {
+      const parts = bboxParam.split(",").map(Number);
+      if (parts.length === 4 && parts.every(Number.isFinite)) {
+        bboxBounds = { minLng: parts[0], minLat: parts[1], maxLng: parts[2], maxLat: parts[3] };
+      }
+    }
+
     // Build cache key
-    const cacheKey = `accidents:hotspots:${JSON.stringify({ province, road, yearParam, minAccidents })}`;
+    const cacheKey = `accidents:hotspots:${JSON.stringify({ province, road, yearParam, minAccidents, bboxBounds, limit })}`;
 
     const result = await getOrCompute(cacheKey, 3600, async () => {
       // Build dynamic WHERE clause fragments for raw SQL
@@ -89,6 +101,11 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      if (bboxBounds) {
+        conditions.push(Prisma.sql`"latitude"  BETWEEN ${bboxBounds.minLat} AND ${bboxBounds.maxLat}`);
+        conditions.push(Prisma.sql`"longitude" BETWEEN ${bboxBounds.minLng} AND ${bboxBounds.maxLng}`);
+      }
+
       const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
 
       const rows = await prisma.$queryRaw<HotspotRow[]>`
@@ -99,6 +116,8 @@ export async function GET(request: NextRequest) {
           SUM("fatalities")::int                  AS total_fatalities,
           MODE() WITHIN GROUP (ORDER BY "province")      AS province,
           MODE() WITHIN GROUP (ORDER BY "provinceName")  AS province_name,
+          AVG("latitude")                         AS avg_latitude,
+          AVG("longitude")                        AS avg_longitude,
           ARRAY_AGG(DISTINCT "year" ORDER BY "year")::text AS years,
           SUM(CASE WHEN "severity" = 'fatal'         THEN 1 ELSE 0 END)::int AS severity_fatal,
           SUM(CASE WHEN "severity" = 'hospitalized'  THEN 1 ELSE 0 END)::int AS severity_hosp,
@@ -108,7 +127,7 @@ export async function GET(request: NextRequest) {
         GROUP BY "roadNumber", ROUND("km"::numeric, 0)
         HAVING COUNT(*) >= ${minAccidents}
         ORDER BY total_accidents DESC
-        LIMIT 50
+        LIMIT ${limit}
       `;
 
       const hotspots = rows.map((row) => ({
@@ -118,6 +137,10 @@ export async function GET(request: NextRequest) {
         fatalities: typeof row.total_fatalities === "bigint" ? Number(row.total_fatalities) : (row.total_fatalities ?? 0),
         province: row.province ?? null,
         provinceName: row.province_name ?? null,
+        latitude: (row as unknown as { avg_latitude?: number | string | null }).avg_latitude != null
+          ? Number((row as unknown as { avg_latitude: number | string }).avg_latitude) : null,
+        longitude: (row as unknown as { avg_longitude?: number | string | null }).avg_longitude != null
+          ? Number((row as unknown as { avg_longitude: number | string }).avg_longitude) : null,
         years: row.years
           ? String(row.years).replace(/[{}]/g, "").split(",").map(Number).filter(Boolean)
           : [],
@@ -131,7 +154,9 @@ export async function GET(request: NextRequest) {
       return { hotspots, total: hotspots.length };
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
+    });
   } catch (err) {
     reportApiError(err, "GET /api/accidentes/hotspots", request);
     return NextResponse.json(

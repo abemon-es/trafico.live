@@ -141,20 +141,20 @@ function GeoRow({
   buildHref: (slug: string) => string;
 }) {
   return (
-    <div className="flex flex-wrap items-baseline gap-x-0.5 gap-y-1">
-      <span className="text-xs font-semibold text-white/40 mr-2 shrink-0 font-heading uppercase tracking-wide">
+    <div className="flex flex-wrap items-baseline gap-x-0.5 gap-y-1.5">
+      <span className="text-xs font-semibold text-tl-300 mr-2 shrink-0 font-heading uppercase tracking-wide">
         {label} →
       </span>
       {items.map((item, idx) => (
         <span key={item.slug} className="inline-flex items-center">
           <Link
             href={buildHref(item.slug)}
-            className="text-xs text-white/40 hover:text-tl-300 transition-colors duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
+            className="text-xs text-white/75 hover:text-white py-0.5 transition-colors duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
           >
             {item.name}
           </Link>
           {idx < items.length - 1 && (
-            <span className="text-white/20 mx-1 select-none" aria-hidden="true">
+            <span className="text-white/40 mx-1 select-none" aria-hidden="true">
               ·
             </span>
           )}

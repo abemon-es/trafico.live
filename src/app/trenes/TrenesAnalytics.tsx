@@ -51,7 +51,7 @@ export function TrenesAnalytics() {
           <p className="mt-2 text-3xl font-data font-semibold text-gray-900 dark:text-gray-50">
             {trainCount.toLocaleString("es-ES")}
           </p>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
             <Train className="inline w-3 h-3 mr-0.5" />
             cada 15 s
           </p>
@@ -71,7 +71,7 @@ export function TrenesAnalytics() {
           >
             {punct.toFixed(1)}%
           </p>
-          <p className="mt-1 text-[11px] text-gray-400">trenes con ≤5 min</p>
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">trenes con ≤ 5 min</p>
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 text-center">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -81,7 +81,7 @@ export function TrenesAnalytics() {
             {avgDelay.toFixed(1)}
             <span className="ml-1 text-sm font-normal">min</span>
           </p>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
             <Clock className="inline w-3 h-3 mr-0.5" />
             media 24 h
           </p>
@@ -95,7 +95,7 @@ export function TrenesAnalytics() {
           >
             {alertsCount}
           </p>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
             <AlertTriangle className="inline w-3 h-3 mr-0.5" />
             GTFS-RT
           </p>

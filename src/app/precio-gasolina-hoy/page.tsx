@@ -215,7 +215,7 @@ function TrendArrow({
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
+    <span className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-300 text-sm">
       <Minus className="w-4 h-4" />
       {short ? "=" : "Sin cambios vs ayer"}
     </span>
@@ -323,7 +323,7 @@ export default async function PrecioGasolinaHoyPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
             Precio de la Gasolina Hoy en España
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-lg capitalize">{todayLabel}</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg capitalize">{todayLabel}</p>
         </div>
 
         {/* Hero price cards */}
@@ -362,23 +362,23 @@ export default async function PrecioGasolinaHoyPage() {
               <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-1 font-data">
                 {formatPrice(nationalToday.avgGasolina98)}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 text-xs mb-4">precio medio · Península</div>
+              <div className="text-gray-500 dark:text-gray-300 text-xs mb-4">precio medio · Península</div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Mínimo</span>
+                  <span className="text-gray-500 dark:text-gray-300">Mínimo</span>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">
                     {formatPrice(nationalToday.minGasolina98)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Máximo</span>
+                  <span className="text-gray-500 dark:text-gray-300">Máximo</span>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 font-data">
                     {formatPrice(nationalToday.maxGasolina98)}
                   </span>
                 </div>
                 {avg98 !== null && avg95 !== null && (
                   <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <span className="text-gray-500 dark:text-gray-400">Diferencia vs 95</span>
+                    <span className="text-gray-500 dark:text-gray-300">Diferencia vs 95</span>
                     <span className="font-semibold text-purple-600 dark:text-purple-400 font-data">
                       +{(avg98 - avg95).toFixed(3)}€
                     </span>
@@ -397,7 +397,7 @@ export default async function PrecioGasolinaHoyPage() {
         {/* Yesterday comparison strip */}
         {nationalYesterday && nationalToday && (
           <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-4 mb-8 flex flex-wrap gap-6 items-center">
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
               <Clock className="w-4 h-4" />
               <span className="font-medium">Gasolina 95 vs ayer:</span>
             </div>
@@ -438,7 +438,7 @@ export default async function PrecioGasolinaHoyPage() {
                 <span className="w-3 h-3 rounded-full bg-tl-600" />
                 10 Gasolineras Más Baratas — Gasolina 95
               </h2>
-              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 px-3 py-1 rounded-full hidden sm:block">
+              <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 px-3 py-1 rounded-full hidden sm:block">
                 Península · excluye fiscalidad especial
               </span>
             </div>
@@ -467,7 +467,7 @@ export default async function PrecioGasolinaHoyPage() {
                       <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:text-tl-300 transition-colors">
                         {station.name}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-300 flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
                         {station.locality}, {station.provinceName}
                       </div>
@@ -509,7 +509,7 @@ export default async function PrecioGasolinaHoyPage() {
               const rows = section === "cheapest" ? top10Cheapest : top10Expensive;
               return (
                 <div key={section} className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                  <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wide mb-3">
                     {section === "cheapest"
                       ? "10 provincias más baratas"
                       : "10 provincias más caras"}
@@ -518,11 +518,11 @@ export default async function PrecioGasolinaHoyPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-200 dark:border-gray-800">
-                          <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Provincia</th>
-                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Media hoy</th>
-                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Mínimo</th>
-                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Máximo</th>
-                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden md:table-cell">Estaciones</th>
+                          <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-300">Provincia</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300">Media hoy</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Mínimo</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Máximo</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300 hidden md:table-cell">Estaciones</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -550,9 +550,9 @@ export default async function PrecioGasolinaHoyPage() {
                                   {formatPrice(p.avgGasolina95)}
                                 </span>
                               </td>
-                              <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.minGasolina95)}</td>
-                              <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.maxGasolina95)}</td>
-                              <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-400 hidden md:table-cell font-data">{p.stationCount.toLocaleString("es-ES")}</td>
+                              <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-300 hidden sm:table-cell font-data">{formatPrice(p.minGasolina95)}</td>
+                              <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-300 hidden sm:table-cell font-data">{formatPrice(p.maxGasolina95)}</td>
+                              <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-300 hidden md:table-cell font-data">{p.stationCount.toLocaleString("es-ES")}</td>
                             </tr>
                           );
                         })}
@@ -574,11 +574,11 @@ export default async function PrecioGasolinaHoyPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-800">
-                        <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Provincia</th>
-                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Media hoy</th>
-                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Mínimo</th>
-                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Máximo</th>
-                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400 hidden md:table-cell">Estaciones</th>
+                        <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-300">Provincia</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300">Media hoy</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Mínimo</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Máximo</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-300 hidden md:table-cell">Estaciones</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -606,9 +606,9 @@ export default async function PrecioGasolinaHoyPage() {
                                 {formatPrice(p.avgGasolina95)}
                               </span>
                             </td>
-                            <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.minGasolina95)}</td>
-                            <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell font-data">{formatPrice(p.maxGasolina95)}</td>
-                            <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-400 hidden md:table-cell font-data">{p.stationCount.toLocaleString("es-ES")}</td>
+                            <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-300 hidden sm:table-cell font-data">{formatPrice(p.minGasolina95)}</td>
+                            <td className="py-3 px-2 text-right text-gray-600 dark:text-gray-300 hidden sm:table-cell font-data">{formatPrice(p.maxGasolina95)}</td>
+                            <td className="py-3 px-2 text-right text-gray-500 dark:text-gray-300 hidden md:table-cell font-data">{p.stationCount.toLocaleString("es-ES")}</td>
                           </tr>
                         );
                       })}
@@ -621,7 +621,7 @@ export default async function PrecioGasolinaHoyPage() {
             {/* Tax-free provinces */}
             {taxFreeProvinces.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                <p className="text-xs text-gray-500 dark:text-gray-300 mb-3">
                   Territorios con fiscalidad especial (precios menores por menor carga impositiva):
                 </p>
                 <div className="flex flex-wrap gap-3">
@@ -663,7 +663,7 @@ export default async function PrecioGasolinaHoyPage() {
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Cuánto cuesta la gasolina hoy en España?
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 {avg95
                   ? `El precio medio de la gasolina 95 en España hoy es de ${avg95.toFixed(3)}€ por litro (Península y Baleares, datos MITERD). El precio varía según la gasolinera y la provincia.`
                   : "El precio medio de la gasolina 95 en España varía diariamente. Consulta la cifra actualizada en la parte superior de esta página, obtenida de los datos oficiales del MITERD."}
@@ -673,7 +673,7 @@ export default async function PrecioGasolinaHoyPage() {
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Dónde está la gasolina más barata hoy?
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 Las gasolineras más económicas suelen ser las de marcas blancas y las situadas en
                 zonas de alta competencia. En esta página mostramos en tiempo real las 10
                 gasolineras más baratas de la Península. Canarias tiene precios más bajos por su
@@ -684,7 +684,7 @@ export default async function PrecioGasolinaHoyPage() {
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Con qué frecuencia se actualizan los precios?
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 Los precios se actualizan varias veces al día desde la API oficial del Ministerio
                 para la Transición Ecológica y el Reto Demográfico (MITERD). Cada gasolinera está
                 obligada a comunicar sus precios cuando los modifica.
@@ -694,7 +694,7 @@ export default async function PrecioGasolinaHoyPage() {
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Cuál es la diferencia entre gasolina 95 y gasolina 98?
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 La gasolina 95 (índice de octano 95) es la más común y económica. La gasolina 98
                 tiene mayor índice de octano, lo que mejora el rendimiento y la protección del
                 motor en vehículos de alta cilindrada. El precio de la 98 suele ser entre 0,10€ y

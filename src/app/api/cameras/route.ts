@@ -9,6 +9,7 @@ import {
   PROVINCE_TO_COMMUNITY,
 } from "@/lib/geo/province-mapping";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { parseBbox, bboxToPrismaWhere } from "@/lib/bbox";
 
 const CACHE_KEY_PREFIX = "api:cameras";
 const CACHE_TTL = 300; // 5 min — aligned with ISR revalidate to prevent stale Redis overriding ISR
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
     const filterCommunity = searchParams.get("community");
     const limit = Math.min(parseInt(searchParams.get("limit") || "100", 10), 5000);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const bbox = parseBbox(searchParams.get("bbox"));
 
     // Build a deterministic cache key from query params
     const paramStr = new URLSearchParams(
@@ -72,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     try {
       // Build where clause for database query
-      const whereClause: Record<string, unknown> = { isActive: true };
+      const whereClause: Record<string, unknown> = { isActive: true, ...bboxToPrismaWhere(bbox) };
 
       if (filterProvince) {
         // Filter by province name (case-insensitive)

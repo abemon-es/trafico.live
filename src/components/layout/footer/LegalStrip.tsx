@@ -23,21 +23,21 @@ export function LegalStrip() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Row 1: Brand tagline */}
         <div className="mb-3">
-          <p className="text-sm font-heading font-semibold text-white/80">
-            <span className="text-tl-400 mr-1" aria-hidden="true">⬡</span>
+          <p className="text-sm font-heading font-semibold text-white">
+            <span className="text-tl-300 mr-1" aria-hidden="true">⬡</span>
             trafico.live
-            <span className="text-white/30 mx-2" aria-hidden="true">·</span>
-            <span className="font-normal text-white/50">
+            <span className="text-white/40 mx-2" aria-hidden="true">·</span>
+            <span className="font-normal text-white/80">
               Inteligencia vial en tiempo real para España
             </span>
           </p>
-          <p className="text-xs text-white/30 mt-1">
+          <p className="text-xs text-white/70 mt-1">
             Operado por Certus SPV · Desarrollado por{" "}
             <a
               href="https://abemon.es"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/50 hover:text-tl-300 transition-colors"
+              className="text-white underline decoration-white/30 hover:decoration-tl-300 hover:text-tl-200 transition-colors"
             >
               Abemon
             </a>{" "}
@@ -54,21 +54,21 @@ export function LegalStrip() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-white/35 hover:text-tl-300 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
+                  className="text-xs text-white/75 hover:text-tl-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
                 >
                   {link.name}
                 </a>
               ) : (
                 <Link
                   href={link.href}
-                  className="text-xs text-white/35 hover:text-tl-300 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
+                  className="text-xs text-white/75 hover:text-tl-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
                 >
                   {link.name}
                 </Link>
               )}
               {idx < LEGAL_LINKS.length - 1 && (
                 <span
-                  className="text-white/15 mx-2 select-none"
+                  className="text-white/40 mx-2 select-none"
                   aria-hidden="true"
                 >
                   ·
@@ -79,9 +79,9 @@ export function LegalStrip() {
         </div>
 
         {/* Row 3: Copyright + build */}
-        <p className="text-xs text-white/25 font-data">
+        <p className="text-xs text-white/65 font-data">
           &copy; {currentYear} trafico.live
-          <span className="mx-2 text-white/15" aria-hidden="true">·</span>
+          <span className="mx-2 text-white/40" aria-hidden="true">·</span>
           <span className="font-mono">build {GIT_SHA}</span>
         </p>
       </div>
