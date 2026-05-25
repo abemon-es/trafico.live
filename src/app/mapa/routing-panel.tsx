@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   Navigation,
   Clock,
@@ -274,10 +274,12 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
               label="Origen"
               value={origin}
               picking={pickingTarget === "origin" || (false)}
-              onPick={() =>
-                pickPoint("origin")
-              }
+              onPick={() => pickPoint("origin")}
               onClear={() => setOrigin(null)}
+              onSelectAddress={(p) => {
+                setOrigin({ lat: p.lat, lon: p.lon });
+                if (map) map.flyTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 11), duration: 600 });
+              }}
             />
 
             {/* Destination picker (route mode only) */}
@@ -288,6 +290,10 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
                 picking={pickingTarget === "destination"}
                 onPick={() => pickPoint("destination")}
                 onClear={() => setDestination(null)}
+                onSelectAddress={(p) => {
+                  setDestination({ lat: p.lat, lon: p.lon });
+                  if (map) map.flyTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 11), duration: 600 });
+                }}
               />
             )}
 
@@ -376,41 +382,125 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
+interface GeocodeSuggestion {
+  name: string;
+  fullName: string;
+  lat: number;
+  lon: number;
+  type: string | null;
+}
+
 function PointPicker({
   label,
   value,
   picking,
   onPick,
   onClear,
+  onSelectAddress,
 }: {
   label: string;
   value: { lat: number; lon: number } | null;
   picking: boolean;
   onPick: () => void;
   onClear: () => void;
+  onSelectAddress: (point: { lat: number; lon: number; label?: string }) => void;
 }) {
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
+  const [loadingGeo, setLoadingGeo] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [displayLabel, setDisplayLabel] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Debounced geocode lookup
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const q = query.trim();
+    if (q.length < 2) {
+      setSuggestions([]);
+      setOpen(false);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      setLoadingGeo(true);
+      try {
+        const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setSuggestions(data.results ?? []);
+        setOpen(true);
+      } catch {
+        setSuggestions([]);
+      } finally {
+        setLoadingGeo(false);
+      }
+    }, 350);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query]);
+
+  // Click outside closes the dropdown
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  // Clear local label/query when parent clears value
+  useEffect(() => {
+    if (!value) {
+      setDisplayLabel(null);
+      setQuery("");
+    }
+  }, [value]);
+
+  const handleSelect = (s: GeocodeSuggestion) => {
+    setDisplayLabel(s.name);
+    setQuery("");
+    setSuggestions([]);
+    setOpen(false);
+    onSelectAddress({ lat: s.lat, lon: s.lon, label: s.name });
+  };
+
   return (
-    <div className="flex items-center gap-2">
-      <MapPin
-        className="w-3.5 h-3.5 shrink-0"
-        style={{ color: value ? "#7da4f0" : "#475569" }}
-      />
-      <div className="flex-1 min-w-0">
-        <div style={{ fontSize: 10, color: "#64748b", lineHeight: 1.2 }}>
-          {label}
-        </div>
-        <div
-          className="text-xs truncate"
-          style={{ color: value ? "#e2e8f0" : "#475569", fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          {value ? coordLabel(value) : "Sin seleccionar"}
-        </div>
+    <div ref={containerRef} className="relative">
+      <div style={{ fontSize: 10, color: "#64748b", lineHeight: 1.2, marginBottom: 3 }}>
+        {label}
       </div>
-      <div className="flex gap-1 shrink-0">
+      <div className="flex items-center gap-1.5">
+        <MapPin
+          className="w-3.5 h-3.5 shrink-0"
+          style={{ color: value ? "#7da4f0" : "#475569" }}
+        />
+        <input
+          type="text"
+          value={query || (value ? (displayLabel ?? coordLabel(value)) : "")}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            // typing fresh clears any previously-picked value labelling
+            if (value && displayLabel) setDisplayLabel(null);
+          }}
+          onFocus={() => { if (suggestions.length > 0) setOpen(true); }}
+          placeholder={value ? "" : "Escribe ciudad, calle o dirección…"}
+          className="flex-1 min-w-0 bg-transparent border rounded px-2 py-1 text-xs focus:outline-none"
+          style={{
+            borderColor: "rgba(255,255,255,0.12)",
+            color: "#e2e8f0",
+            fontFamily: value && !displayLabel ? "'JetBrains Mono', monospace" : "inherit",
+          }}
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+        />
         {value && (
           <button
-            onClick={onClear}
-            className="p-1 rounded hover:bg-white/10 transition-colors"
+            onClick={() => { onClear(); setQuery(""); setDisplayLabel(null); }}
+            className="p-1 rounded hover:bg-white/10 transition-colors shrink-0"
             style={{ color: "#64748b" }}
             title="Quitar punto"
           >
@@ -419,7 +509,7 @@ function PointPicker({
         )}
         <button
           onClick={onPick}
-          className="p-1 rounded transition-colors"
+          className="p-1 rounded transition-colors shrink-0"
           style={{
             color: picking ? "#94b6ff" : "#64748b",
             background: picking ? "rgba(27,75,213,0.25)" : "transparent",
@@ -429,6 +519,40 @@ function PointPicker({
           <MapPin className="w-3.5 h-3.5" />
         </button>
       </div>
+
+      {/* Suggestions dropdown */}
+      {open && (suggestions.length > 0 || loadingGeo) && (
+        <div
+          className="absolute left-0 right-0 mt-1 rounded-lg shadow-xl overflow-hidden z-10"
+          style={{
+            background: "rgba(15,23,42,0.98)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            backdropFilter: "blur(10px)",
+            maxHeight: 200,
+            overflowY: "auto",
+          }}
+        >
+          {loadingGeo && (
+            <div className="px-2 py-1.5 text-[11px]" style={{ color: "#64748b" }}>
+              Buscando…
+            </div>
+          )}
+          {!loadingGeo &&
+            suggestions.map((s, i) => (
+              <button
+                key={`${s.lat}-${s.lon}-${i}`}
+                onClick={() => handleSelect(s)}
+                className="w-full text-left px-2 py-1.5 hover:bg-white/10 transition-colors"
+                style={{ color: "#e2e8f0" }}
+              >
+                <div className="text-xs font-medium truncate">{s.name}</div>
+                <div className="text-[10px] truncate" style={{ color: "#64748b" }}>
+                  {s.fullName}
+                </div>
+              </button>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
