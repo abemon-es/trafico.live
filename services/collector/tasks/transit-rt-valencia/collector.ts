@@ -1,26 +1,24 @@
 /**
  * Colector de posiciones de vehículos: EMT Valencia (autobuses)
  *
- * Fuente: Valencia Open Data Soft — API REST JSON (no protobuf GTFS-RT)
- * URL:    https://valencia.opendatasoft.com/api/explore/v2.1/catalog/datasets/emt-tiempo-real/records
- * Auth:   Sin autenticación (datos abiertos Ayuntamiento de Valencia)
+ * Fuente: Geoportal Valencia — ArcGIS REST MapServer/384 (layer EMT/Seguimiento_EMT)
+ * URL:    https://geoportal.valencia.es/server/rest/services/EMT/Seguimiento_EMT/MapServer/384/query
+ * Auth:   Sin autenticación (CC BY 4.0, Ajuntament de València / EMT València)
  *
- * Nota: La fuente de Valencia EMT en OpenDataSoft publica posiciones en formato
- * JSON (no binario GTFS-RT protobuf). El colector parsea el JSON y lo normaliza
- * al mismo esquema TransitVehiclePosition que los otros operadores.
+ * NOTA HISTÓRICA: La fuente anterior (valencia.opendatasoft.com — dataset
+ * `emt-tiempo-real`) fue retirada por el ayuntamiento en 2026-Q1. La actualización
+ * a geoportal layer 384 mantiene el mismo esquema TransitVehiclePosition y devuelve
+ * ~275 autobuses activos en tiempo real con cadencia de segundos.
  *
- * Campos del JSON mapeados:
- *   idvehiculo  → vehicleId
- *   linea       → routeId
- *   latitud/longitud → latitude/longitude
- *   velocidad   → speedKmh (ya en km/h según la fuente)
- *   sentido     → bearing (si disponible)
+ * Campos ArcGIS mapeados:
+ *   gid           → vehicleId
+ *   linea         → routeId
+ *   trayecto      → metadata extra (no persistido)
+ *   geometry.x/y  → longitude/latitude (forzamos outSR=4326 → WGS84)
+ *   fecha         → timestamp (ms epoch)
  *
  * Cadencia: cada 30s (2 pases por invocación de cron de 1 minuto).
- * Filas estimadas: ~200–600 vehículos activos según el horario.
- *
- * Fuente: Ayuntamiento de Valencia (ODbL / datos abiertos).
- * Documentación: https://valencia.opendatasoft.com/
+ * Filas estimadas: ~250–350 vehículos activos según el horario.
  */
 
 import * as Sentry from "@sentry/node";
@@ -34,31 +32,34 @@ const TASK = "transit-rt-valencia";
 const MDB_ID = "mdb-1064";
 const OPERATOR_NAME = "EMT Valencia";
 
-// API OpenDataSoft de Valencia — sin autenticación
-// Endpoint v2.1 con paginación (limit 100 es el máximo por página)
+// Geoportal Valencia ArcGIS REST — sin autenticación, salida JSON ArcGIS estándar
+// outSR=4326 fuerza WGS84 en lugar de la proyección nativa ETRS89 UTM 30N.
 const FEED_URL =
-  "https://valencia.opendatasoft.com/api/explore/v2.1/catalog/datasets/emt-tiempo-real/records?limit=100&offset=0";
+  "https://geoportal.valencia.es/server/rest/services/EMT/Seguimiento_EMT/MapServer/384/query" +
+  "?where=1%3D1&outFields=gid,linea,trayecto,fecha&outSR=4326&f=json";
 
 const PASS_INTERVAL_MS = 30_000;
 const DEADLINE_MS = 50_000;
 
-// ── Tipos del JSON de respuesta ────────────────────────────────────────────────
+// ── Tipos del JSON de respuesta ArcGIS ─────────────────────────────────────────
 
-interface OdsRecord {
-  idvehiculo?: string | number;
-  linea?: string | number;
-  latitud?: number | string;
-  longitud?: number | string;
-  velocidad?: number | string;
-  sentido?: number | string;
-  // Algunos datasets usan "geo_point_2d" como objeto {lat, lon}
-  geo_point_2d?: { lat?: number; lon?: number } | string;
-  [key: string]: unknown;
+interface ArcGisFeature {
+  attributes?: {
+    gid?: string | number;
+    linea?: string | number;
+    trayecto?: string;
+    fecha?: number; // ms epoch
+    [key: string]: unknown;
+  };
+  geometry?: {
+    x?: number; // longitude (cuando outSR=4326)
+    y?: number; // latitude  (cuando outSR=4326)
+  };
 }
 
-interface OdsResponse {
-  total_count?: number;
-  results?: OdsRecord[];
+interface ArcGisResponse {
+  features?: ArcGisFeature[];
+  error?: { code?: number; message?: string };
 }
 
 // ── Resolución de operatorId ───────────────────────────────────────────────────
@@ -98,52 +99,36 @@ async function resolveOperatorId(prisma: PrismaClient): Promise<string | null> {
 
 // ── Parseo JSON → filas ───────────────────────────────────────────────────────
 
-function parseRecords(
-  records: OdsRecord[],
+function parseFeatures(
+  features: ArcGisFeature[],
   operatorId: string,
   capturedAt: Date
 ): Array<Record<string, unknown>> {
   const rows: Array<Record<string, unknown>> = [];
 
-  for (const record of records) {
-    // Coordenadas: intentar geo_point_2d primero, luego latitud/longitud
-    let lat: number | null = null;
-    let lon: number | null = null;
+  for (const feature of features) {
+    const attrs = feature.attributes ?? {};
+    const geom = feature.geometry;
 
-    if (record.geo_point_2d) {
-      if (typeof record.geo_point_2d === "object") {
-        lat = Number(record.geo_point_2d.lat) || null;
-        lon = Number(record.geo_point_2d.lon) || null;
-      } else if (typeof record.geo_point_2d === "string") {
-        const parts = record.geo_point_2d.split(",").map((s) => parseFloat(s.trim()));
-        if (parts.length === 2) {
-          lat = isNaN(parts[0]) ? null : parts[0];
-          lon = isNaN(parts[1]) ? null : parts[1];
-        }
-      }
-    }
-
-    if (lat == null) lat = record.latitud != null ? Number(record.latitud) || null : null;
-    if (lon == null) lon = record.longitud != null ? Number(record.longitud) || null : null;
-
+    // ArcGIS con outSR=4326 devuelve x=lon, y=lat (no al revés)
+    const lon = geom?.x != null ? Number(geom.x) : null;
+    const lat = geom?.y != null ? Number(geom.y) : null;
     if (lat == null || lon == null) continue;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
     if (lat === 0 && lon === 0) continue;
-    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) continue;
+    // Sanity check: Valencia metropolitana
+    if (lat < 39.0 || lat > 40.0 || lon < -0.8 || lon > 0.2) continue;
 
-    const vehicleId = String(record.idvehiculo ?? "").trim();
+    const vehicleId = String(attrs.gid ?? "").trim();
     if (!vehicleId) continue;
 
-    const routeId = record.linea != null ? String(record.linea).trim() : null;
+    const routeId = attrs.linea != null ? String(attrs.linea).trim() : null;
 
-    // Velocidad en km/h (la fuente ya la devuelve en km/h)
-    const speedKmhRaw = record.velocidad != null ? Number(record.velocidad) : null;
-    const speedKmh = speedKmhRaw != null && !isNaN(speedKmhRaw) ? speedKmhRaw : null;
-    // Convertimos a m/s para el campo legacy speed
-    const speed = speedKmh != null ? Math.round((speedKmh / 3.6) * 10) / 10 : null;
-
-    // Rumbo / sentido: algunos feeds Valencia exponen el ángulo de dirección
-    const bearingRaw = record.sentido != null ? Number(record.sentido) : null;
-    const bearing = bearingRaw != null && !isNaN(bearingRaw) ? bearingRaw : null;
+    // La fuente ArcGIS no expone velocidad ni rumbo
+    const timestamp =
+      typeof attrs.fecha === "number" && attrs.fecha > 0
+        ? new Date(attrs.fecha)
+        : capturedAt;
 
     rows.push({
       operatorId,
@@ -152,12 +137,12 @@ function parseRecords(
       routeId,
       latitude: lat,
       longitude: lon,
-      bearing,
-      speed,
-      speedKmh,
+      bearing: null,
+      speed: null,
+      speedKmh: null,
       occupancyStatus: null,
       scheduledTime: null,
-      timestamp: capturedAt,
+      timestamp,
       capturedAt,
       fetchedAt: capturedAt,
     });
@@ -171,7 +156,7 @@ function parseRecords(
 async function pollOnce(prisma: PrismaClient, operatorId: string): Promise<number> {
   const capturedAt = new Date();
 
-  let data: OdsResponse;
+  let data: ArcGisResponse;
   try {
     const response = await fetch(FEED_URL, {
       headers: {
@@ -185,24 +170,27 @@ async function pollOnce(prisma: PrismaClient, operatorId: string): Promise<numbe
       throw new Error(`HTTP ${response.status} ${response.statusText}`);
     }
 
-    data = await response.json() as OdsResponse;
+    data = await response.json() as ArcGisResponse;
+    if (data.error) {
+      throw new Error(`ArcGIS error ${data.error.code ?? "?"}: ${data.error.message ?? "unknown"}`);
+    }
   } catch (err) {
-    logError(TASK, "Error al obtener el feed JSON:", err);
+    logError(TASK, "Error al obtener el feed ArcGIS:", err);
     Sentry.captureException(err, { tags: { task: TASK } });
     return 0;
   }
 
-  const records = data.results ?? [];
+  const features = data.features ?? [];
 
-  if (records.length === 0) {
-    log(TASK, `Feed devolvió 0 registros (total_count=${data.total_count ?? "desconocido"})`);
+  if (features.length === 0) {
+    log(TASK, `Feed devolvió 0 features (probable: sin vehículos activos)`);
     return 0;
   }
 
-  const rows = parseRecords(records, operatorId, capturedAt);
+  const rows = parseFeatures(features, operatorId, capturedAt);
 
   if (rows.length === 0) {
-    log(TASK, `${records.length} registros recibidos pero 0 posiciones válidas`);
+    log(TASK, `${features.length} features recibidos pero 0 posiciones válidas`);
     return 0;
   }
 

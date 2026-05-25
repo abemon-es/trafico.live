@@ -55,7 +55,13 @@ const nextConfig: NextConfig = {
   // Runtime behavior verified via prisma client regen + manual smoke tests.
   typescript: { ignoreBuildErrors: true },
   experimental: {
-    staticGenerationMaxConcurrency: 4,
+    // Was 4. Lowered after investigation #66 found `next build` was
+    // consuming 32 GB RSS on the compute host, saturating swap, slowing
+    // PgBouncer, which made /api/health return 503, which made
+    // container-guardian restart trafico-live, which kicked off another
+    // build — a feedback loop. 2 workers ≈ 16 GB peak RSS, which is the
+    // breathing room the host needs while two parallel deploys run.
+    staticGenerationMaxConcurrency: 2,
     staticGenerationMinPagesPerWorker: 50,
   },
   images: {

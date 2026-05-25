@@ -304,96 +304,6 @@ async function fetchBarcelonaSections(): Promise<SensorReading[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Valencia — OpenDataSoft JSON
-// ---------------------------------------------------------------------------
-
-const VLC_URL =
-  "https://valencia.opendatasoft.com/api/explore/v2.1/catalog/datasets/estat-transit-temps-real-estado-trafico-tiempo-real/records";
-
-/** Valencia traffic estado → serviceLevel (0-3) */
-function vlcEstadoToLevel(estado: string | number | null): number {
-  if (estado === null || estado === undefined) return 0;
-  const s = String(estado).toLowerCase().trim();
-  // Numeric codes from their API
-  if (s === "1" || s === "muy fluido" || s === "molt fluid") return 0;
-  if (s === "2" || s === "fluido" || s === "fluid") return 0;
-  if (s === "3" || s === "denso" || s === "dens") return 1;
-  if (s === "4" || s === "muy denso" || s === "molt dens") return 2;
-  if (s === "5" || s === "congestionado" || s === "congestió") return 3;
-  if (s === "6" || s === "cortado" || s === "tallat") return 3;
-  // Unknown/0
-  return 0;
-}
-
-async function fetchValencia(): Promise<SensorReading[]> {
-  log(TASK, "Fetching Valencia traffic data...");
-  const readings: SensorReading[] = [];
-  let offset = 0;
-  const pageSize = 100;
-  const MAX_PAGES = 50; // safety cap
-  let page = 0;
-
-  while (page++ < MAX_PAGES) {
-    const url = `${VLC_URL}?limit=${pageSize}&offset=${offset}`;
-    const resp = await fetch(url, {
-      headers: { "User-Agent": "trafico.live-collector/1.0" },
-      signal: AbortSignal.timeout(20000),
-    });
-
-    if (!resp.ok) {
-      throw new Error(`Valencia API error: ${resp.status}`);
-    }
-
-    const json = await resp.json() as {
-      results?: Array<{
-        idtramo?: string | number;
-        denominacion?: string;
-        estado?: string | number;
-        geo_point_2d?: { lat?: number; lon?: number };
-      }>;
-      total_count?: number;
-    };
-
-    const results = json.results || [];
-    if (results.length === 0) break;
-
-    for (const rec of results) {
-      if (!rec.idtramo) continue;
-
-      const lat = rec.geo_point_2d?.lat;
-      const lon = rec.geo_point_2d?.lon;
-
-      if (!lat || !lon) continue;
-
-      // Validate coordinates for Valencia area
-      if (lat < 39.3 || lat > 39.7 || lon < -0.5 || lon > 0.0) continue;
-
-      readings.push({
-        sensorId: `VLC-${rec.idtramo}`,
-        city: "VALENCIA",
-        streetName: rec.denominacion || null,
-        latitude: lat,
-        longitude: lon,
-        direction: null,
-        intensity: null,
-        occupancy: null,
-        speed: null,
-        serviceLevel: vlcEstadoToLevel(rec.estado ?? null),
-        prediction: null,
-      });
-    }
-
-    // Check if there are more pages
-    const total = json.total_count ?? 0;
-    offset += results.length;
-    if (offset >= total || results.length < pageSize) break;
-  }
-
-  log(TASK, `Valencia: ${readings.length} segments parsed`);
-  return readings;
-}
-
-// ---------------------------------------------------------------------------
 // Valencia — ArcGIS REST traffic state
 // ---------------------------------------------------------------------------
 
@@ -681,7 +591,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const cities = [
     { name: "Barcelona (trams)",    fetch: fetchBarcelona },
     { name: "Barcelona (sections)", fetch: fetchBarcelonaSections },
-    { name: "Valencia (ODS)",       fetch: fetchValencia },
+    // Valencia ODS subdomain (valencia.opendatasoft.com) was deprecated and is now offline.
+    // Valencia road-state coverage continues via fetchValenciaArcGIS (geoportal layer 192).
     { name: "Valencia (ArcGIS)",    fetch: fetchValenciaArcGIS },
     { name: "Zaragoza",             fetch: fetchZaragoza },
   ];
