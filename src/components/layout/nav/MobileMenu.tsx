@@ -9,6 +9,7 @@ import { megaMenuPanels, ACCENT_STYLES } from "./NavData";
 import { useNavState } from "./useNavState";
 import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSearch";
 import { SearchIcon } from "@/components/search/SearchIcon";
+import { RouteIntentRow } from "@/components/search/RouteIntentRow";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
 
 function isActiveRoute(pathname: string, href: string) {
@@ -111,6 +112,13 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
             {filterLabels.map((label) => (
               <span key={label} className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800">{label}</span>
             ))}
+          </div>
+        )}
+
+        {/* Route intent ('X a Y' / 'cómo llegar a X') */}
+        {hasQuery && (
+          <div className="px-4 pt-3">
+            <RouteIntentRow query={debouncedQuery} onNavigate={() => { saveRecent(debouncedQuery); closeAll(); }} />
           </div>
         )}
 
