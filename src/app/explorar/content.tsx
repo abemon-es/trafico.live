@@ -47,7 +47,7 @@ export function ExplorarContent() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar carreteras, ciudades, gasolineras..."
-              className="w-full pl-12 pr-4 py-4 rounded-xl text-base sm:text-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 transition-colors"
+              className="w-full pl-12 pr-4 py-4 rounded-xl text-base sm:text-lg bg-white/10 backdrop-blur-sm border border-white/30 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/60 transition-colors"
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}

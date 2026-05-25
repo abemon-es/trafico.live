@@ -160,7 +160,7 @@ export default function TrainesContent() {
         {/* Map now rendered as the TraficoMap hero above */}
 
         {/* Legend */}
-        <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-gray-500 dark:text-gray-400">
+        <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
           <span className="font-semibold text-gray-600 dark:text-gray-300">Trenes:</span>
           {[
             ["#059669", "Puntual"],
@@ -261,8 +261,8 @@ export default function TrainesContent() {
                     <div key={i} className="flex items-center gap-1 shrink-0">
                       <div className="flex flex-col items-center">
                         <span className={`w-3 h-3 rounded-full border-2 ${i === 0 || i === trainStops.length - 1 ? "bg-gray-900 dark:bg-white border-gray-900 dark:border-white" : "bg-white dark:bg-gray-800 border-gray-400"}`} />
-                        <span className="text-[10px] font-mono text-gray-600 dark:text-gray-400 mt-0.5">{stop.h}</span>
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500">{stop.p}</span>
+                        <span className="text-[11px] font-mono text-gray-700 dark:text-gray-200 mt-0.5">{stop.h}</span>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-300">{stop.p}</span>
                       </div>
                       {i < trainStops.length - 1 && (
                         <div className="w-8 h-0.5 bg-gray-300 dark:bg-gray-600 shrink-0" />
@@ -359,14 +359,14 @@ export default function TrainesContent() {
               <p className={`text-3xl font-heading font-bold font-mono ${Number(current.punctualityRate) >= 80 ? "text-[var(--tl-success)]" : Number(current.punctualityRate) >= 60 ? "text-yellow-600" : "text-[var(--tl-danger)]"}`}>
                 {Number(current.punctualityRate).toFixed(1)}%
               </p>
-              <p className="text-[10px] text-gray-400 mt-0.5">trenes con &le;5 min retraso</p>
+              <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">trenes con ≤ 5 min retraso</p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Retraso medio</p>
               <p className="text-3xl font-heading font-bold font-mono text-gray-900 dark:text-gray-100">
                 {Number(current.avgDelay).toFixed(1)}<span className="text-sm font-normal ml-0.5">min</span>
               </p>
-              <p className="text-[10px] text-gray-400 mt-0.5">mediana {current.p50Delay || 0} min, p90 {current.p90Delay || 0} min</p>
+              <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">mediana {current.p50Delay || 0} min, p90 {current.p90Delay || 0} min</p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Retraso max</p>
@@ -410,7 +410,7 @@ export default function TrainesContent() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{b.brand}</p>
-                      <p className="text-[10px] text-gray-500">
+                      <p className="text-[11px] text-gray-600 dark:text-gray-300">
                         <span className={`font-mono font-semibold ${b.punctuality >= 80 ? "text-green-600" : b.punctuality >= 60 ? "text-yellow-600" : "text-red-600"}`}>
                           {b.punctuality}%
                         </span>
@@ -458,7 +458,7 @@ export default function TrainesContent() {
       </div>
 
       {/* Attribution */}
-      <p className="flex items-center gap-1.5 text-[11px] text-gray-400 pb-4">
+      <p className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 pb-4">
         <Info className="w-3 h-3" />
         Origen de los datos: Renfe Operadora (CC-BY 4.0). Posiciones cada 15s. Analytics cada 2 min.
       </p>

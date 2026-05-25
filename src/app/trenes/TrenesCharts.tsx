@@ -80,7 +80,7 @@ export default function TrenesCharts({ timeline, dailyTrend }: TrenesChartsProps
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-center gap-6 mt-2 text-[10px] text-gray-500">
+          <div className="flex justify-center gap-6 mt-2 text-xs text-gray-600 dark:text-gray-300">
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded bg-[#059669]" />Puntualidad (%)</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded bg-[#dc2626]" />Retraso medio (min)</span>
           </div>
@@ -134,7 +134,7 @@ export default function TrenesCharts({ timeline, dailyTrend }: TrenesChartsProps
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-center gap-6 mt-2 text-[10px] text-gray-500">
+          <div className="flex justify-center gap-6 mt-2 text-xs text-gray-600 dark:text-gray-300">
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded bg-[#059669]" />Puntualidad (%)</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded bg-[#dc2626]" />Retraso medio (min)</span>
             <span className="flex items-center gap-1"><span className="w-6 h-0 border-t border-dashed border-[#ea580c]" />Max retraso</span>

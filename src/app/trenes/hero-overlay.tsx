@@ -69,41 +69,41 @@ export default function HeroOverlay({
           <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg px-4 py-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-center">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Puntualidad</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-300 font-medium">Puntualidad</p>
                 <p className={`text-xl font-heading font-bold font-mono ${punctuality >= 80 ? "text-[var(--tl-success)]" : punctuality >= 60 ? "text-yellow-600" : "text-[var(--tl-danger)]"}`}>
                   {punctuality > 0 ? `${punctuality.toFixed(1)}%` : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Retraso medio</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-300 font-medium">Retraso medio</p>
                 <p className="text-xl font-heading font-bold font-mono text-gray-900 dark:text-gray-100">
                   {avgDelay > 0 ? `${avgDelay.toFixed(1)}m` : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">En circulación</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-300 font-medium">En circulación</p>
                 <p className="text-xl font-heading font-bold font-mono text-[var(--tl-success)]">{trainCount}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Alertas</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-300 font-medium">Alertas</p>
                 <p className={`text-xl font-heading font-bold font-mono ${alerts.length > 0 ? "text-[var(--tl-danger)]" : "text-gray-400"}`}>
                   {alerts.length}
                 </p>
               </div>
               <div className="hidden lg:block">
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Max retraso</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-300 font-medium">Max retraso</p>
                 <p className="text-xl font-heading font-bold font-mono text-gray-900 dark:text-gray-100">
                   {maxDelay ? `${maxDelay}m` : "—"}
                 </p>
               </div>
               <div className="hidden lg:block">
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Mediana</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-600 dark:text-gray-300 font-medium">Mediana</p>
                 <p className="text-xl font-heading font-bold font-mono text-gray-900 dark:text-gray-100">
                   {p50Delay != null ? `${p50Delay}m` : "—"}
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 text-[10px] text-gray-400">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 text-[11px] text-gray-600 dark:text-gray-300">
               {[["#059669","Puntual"],["#ca8a04","<5m"],["#ea580c","5-15m"],["#dc2626",">15m"]].map(([c,l]) => (
                 <span key={l} className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c }} />{l}
