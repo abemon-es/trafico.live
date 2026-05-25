@@ -54,6 +54,10 @@ export interface TraficoMapProps {
   syncUrl?: boolean;
   className?: string;
   children?: React.ReactNode;
+  /** Invoked once the MapLibre instance is fully loaded — used by overlays
+   *  (e.g. RoutingPanel) that need a map ref to register click handlers. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onMapReady?: (map: any) => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -82,6 +86,7 @@ function TraficoMapInner({
   syncUrl = false,
   className = "",
   children,
+  onMapReady,
 }: TraficoMapProps) {
   const {
     layerPanel = true,
@@ -166,6 +171,8 @@ function TraficoMapInner({
         await installIconRegistry(map);
         if (cancelled) return;
         mapRef.current = map;
+        // Notify overlays that need the map ref (e.g. RoutingPanel)
+        try { onMapReady?.(map); } catch (e) { console.warn("[TraficoMap] onMapReady threw:", e); }
         // Debug hook (dev only — harmless in prod, useful for browser console)
         if (typeof window !== "undefined") {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
