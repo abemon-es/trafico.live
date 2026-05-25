@@ -9,6 +9,7 @@ import type { MegaMenuPanel as PanelData } from "./NavData";
 import { ACCENT_STYLES, megaMenuPanels } from "./NavData";
 import { HUB_WIDGETS } from "./MegaMenuWidgets";
 import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSearch";
+import { RouteIntentRow } from "@/components/search/RouteIntentRow";
 import { SearchIcon } from "@/components/search/SearchIcon";
 
 function isActiveRoute(pathname: string, href: string) {
@@ -328,6 +329,11 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Route intent ('X a Y' / 'cómo llegar a X') */}
+      {hasQuery && (
+        <RouteIntentRow query={debouncedQuery} onNavigate={() => { saveRecent(debouncedQuery); onNavigate?.(); }} />
       )}
 
       {/* Grouped results */}
