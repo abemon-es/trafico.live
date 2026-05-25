@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import RoutingPanel from "./routing-panel";
 
 const TraficoMap = dynamic(
@@ -19,6 +19,9 @@ const TraficoMap = dynamic(
 
 /** Unified infrastructure dashboard — all transport layers via TraficoMap preset="all". */
 export function MapaInfraClient() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [mapInstance, setMapInstance] = useState<any>(null);
+
   // Toggle an immersive flag on <body> so root layout CSS can hide the
   // Footer + StickyFooterAd while this page is active. Without this the
   // page body is ~2000 px tall (header + map + footer) and MapLibre
@@ -38,9 +41,9 @@ export function MapaInfraClient() {
         syncUrl
         initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
         className="w-full h-full"
+        onMapReady={setMapInstance}
       >
-        {/* Routing panel preserved as overlay child; map ref not available via TraficoMap API */}
-        <RoutingPanel map={null} />
+        <RoutingPanel map={mapInstance} />
       </TraficoMap>
     </div>
   );
