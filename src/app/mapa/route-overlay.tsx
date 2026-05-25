@@ -164,7 +164,10 @@ export function RouteOverlay({
         borderBottom: "none",
         backdropFilter: "blur(12px)",
         color: "#e2e8f0",
-        maxHeight: "75vh",
+        // 75dvh (dynamic viewport height) so the overlay shrinks correctly
+        // when the iOS Safari keyboard opens — vh stays at the no-keyboard
+        // size and the bottom of the panel would otherwise be unreachable.
+        maxHeight: "75dvh",
       }}
     >
       {/* Sticky header — eta + dist + toggle + close */}

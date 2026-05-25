@@ -51,14 +51,20 @@ export function detectRouteIntent(q: string): Intent | null {
   return null;
 }
 
-async function geocodeOne(q: string): Promise<GeocodeResult | null> {
+type GeocodeOutcome =
+  | { ok: true; result: GeocodeResult }
+  | { ok: false; reason: "not_found" | "error" };
+
+async function geocodeOne(q: string): Promise<GeocodeOutcome> {
   try {
     const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
-    if (!res.ok) return null;
+    if (!res.ok) return { ok: false, reason: "error" };
     const data: { results?: GeocodeResult[] } = await res.json();
-    return data.results?.[0] ?? null;
+    const first = data.results?.[0];
+    if (!first) return { ok: false, reason: "not_found" };
+    return { ok: true, result: first };
   } catch {
-    return null;
+    return { ok: false, reason: "error" };
   }
 }
 
@@ -67,15 +73,18 @@ export function RouteIntentRow({ query, onNavigate }: Props) {
   const [from, setFrom] = useState<GeocodeResult | null>(null);
   const [to, setTo] = useState<GeocodeResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!intent) {
       setFrom(null);
       setTo(null);
+      setError(null);
       return;
     }
     let cancelled = false;
     setLoading(true);
+    setError(null);
     setFrom(null);
     setTo(null);
 
@@ -83,12 +92,16 @@ export function RouteIntentRow({ query, onNavigate }: Props) {
       if (intent.kind === "oneway") {
         const [a, b] = await Promise.all([geocodeOne(intent.from), geocodeOne(intent.to)]);
         if (cancelled) return;
-        setFrom(a);
-        setTo(b);
+        setFrom(a.ok ? a.result : null);
+        setTo(b.ok ? b.result : null);
+        if (!a.ok && !b.ok) setError("No se han encontrado los lugares");
+        else if (!a.ok) setError(`No se ha encontrado «${intent.from}»`);
+        else if (!b.ok) setError(`No se ha encontrado «${intent.to}»`);
       } else {
         const b = await geocodeOne(intent.to);
         if (cancelled) return;
-        setTo(b);
+        setTo(b.ok ? b.result : null);
+        if (!b.ok) setError(`No se ha encontrado «${intent.to}»`);
       }
       setLoading(false);
     }, 400);
@@ -121,22 +134,26 @@ export function RouteIntentRow({ query, onNavigate }: Props) {
     <>
       <div
         className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: "rgba(27,75,213,0.18)" }}
+        style={{ background: error ? "rgba(220,38,38,0.15)" : "rgba(27,75,213,0.18)" }}
       >
-        <Navigation className="w-4 h-4" style={{ color: "#7da4f0" }} />
+        <Navigation className="w-4 h-4" style={{ color: error ? "#fca5a5" : "#7da4f0" }} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-tl-500">
             Ruta
           </span>
-          {loading && <Loader2 className="w-3 h-3 animate-spin text-tl-400" />}
+          {loading && <Loader2 className="w-3 h-3 animate-spin text-tl-400" aria-label="Calculando ruta" />}
         </div>
         <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
           {label}
         </div>
-        {to && (
-          <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
+        {error ? (
+          <div className="text-[11px] text-red-600 dark:text-red-400 truncate">
+            {error}
+          </div>
+        ) : to && (
+          <div className="text-[11px] text-gray-600 dark:text-gray-300 truncate flex items-center gap-1">
             <MapPin className="w-3 h-3 shrink-0" />
             {to.fullName}
           </div>
