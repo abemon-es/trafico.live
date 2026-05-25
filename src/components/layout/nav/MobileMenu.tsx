@@ -210,55 +210,49 @@ function AccordionSection({
 
   return (
     <div className={isExpanded ? "bg-gray-50/50 dark:bg-gray-900/30" : ""}>
-      <div className="flex items-center">
-        {/* Hub icon + label */}
-        <Link
-          href={panel.hub.href}
-          className="flex-1 flex items-center gap-3 px-4 py-3.5 transition-colors"
+      {/* Single tap target: whole row toggles. Hub link moves inside expanded
+          content as an explicit "Ver todo" CTA so users don't lose access. */}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+        aria-controls={`mobile-section-${panel.id}`}
+        aria-label={isExpanded ? `Cerrar ${panel.label}` : `Abrir ${panel.label}`}
+        className="w-full flex items-center gap-3 px-4 py-3.5 transition-colors active:bg-gray-100 dark:active:bg-gray-800/50 text-left"
+      >
+        <span
+          className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${styles.iconBg} ${styles.iconText}`}
         >
+          <HubIcon className="w-4 h-4" />
+        </span>
+        <div className="flex-1 min-w-0">
           <span
-            className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${styles.iconBg} ${styles.iconText}`}
+            className={`text-sm font-semibold font-heading block ${
+              isPanelActive
+                ? "text-tl-600 dark:text-tl-300"
+                : "text-gray-800 dark:text-gray-200"
+            }`}
           >
-            <HubIcon className="w-4 h-4" />
+            {panel.label}
           </span>
-          <div>
-            <span
-              className={`text-sm font-semibold font-heading ${
-                isPanelActive
-                  ? "text-tl-600 dark:text-tl-300"
-                  : "text-gray-800 dark:text-gray-200"
-              }`}
-            >
-              {panel.label}
-            </span>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">
-              {panel.hub.subtitle}
-            </p>
-          </div>
-        </Link>
-
-        {/* Toggle */}
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={isExpanded}
-          aria-label={isExpanded ? `Cerrar ${panel.label}` : `Abrir ${panel.label}`}
-          className={`p-3.5 transition-colors ${
+          <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-tight truncate">
+            {panel.hub.subtitle}
+          </p>
+        </div>
+        <ChevronDown
+          aria-hidden="true"
+          className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
             isExpanded
-              ? "text-tl-500 dark:text-tl-400"
-              : "text-gray-400 dark:text-gray-500"
+              ? "rotate-180 text-tl-500 dark:text-tl-400"
+              : "text-gray-500 dark:text-gray-400"
           }`}
-        >
-          <ChevronDown
-            aria-hidden="true"
-            className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-          />
-        </button>
-      </div>
+        />
+      </button>
 
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
+            id={`mobile-section-${panel.id}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -273,6 +267,16 @@ function AccordionSection({
             className="overflow-hidden"
           >
             <div className="pb-3 px-2">
+              {/* Explicit hub link — was previously the whole row, which made
+                  the row split between "navigate" and "toggle" and felt broken. */}
+              <Link
+                href={panel.hub.href}
+                prefetch={false}
+                className={`flex items-center justify-between gap-2 mx-2 mb-2 px-3 py-2.5 rounded-xl text-sm font-medium ${styles.iconBg} ${styles.iconText} active:opacity-80 transition-opacity`}
+              >
+                <span>Ver todo en {panel.label}</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+              </Link>
               {panel.categories.map((category, catIdx) => {
                 const prevCount = panel.categories
                   .slice(0, catIdx)
@@ -372,84 +376,95 @@ export function MobileMenu() {
           aria-modal="true"
           aria-label="Menú principal"
           initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
+          animate={{ height: "calc(100vh - 4rem)", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={reduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 400, damping: 32 }}
-          className="md:hidden border-t border-ink-200 overflow-hidden bg-white dark:bg-gray-950 dark:border-gray-800"
-          style={searchActive ? { height: "calc(100vh - 4rem)" } : undefined}
+          className="md:hidden border-t border-ink-200 overflow-hidden bg-white dark:bg-gray-950 dark:border-gray-800 relative"
         >
           {/* Top accent bar */}
           <div className="h-0.5" style={{ background: "linear-gradient(to right, var(--color-tl-600), var(--color-tl-400), var(--color-tl-amber-400))" }} />
 
-          {searchActive ? (
-            /* Full-viewport search */
-            <MobileFullSearch onBack={() => setSearchActive(false)} />
-          ) : (
-            /* Normal menu */
-            <div className="max-h-[85vh] overflow-y-auto">
-              {/* Search trigger */}
-              <div className="p-3">
-                <button
-                  type="button"
-                  onClick={() => setSearchActive(true)}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-400 dark:text-gray-500 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
+          {/* Menu (always rendered — search slides in over it for smooth continuity) */}
+          <div className="h-full overflow-y-auto pb-4">
+            {/* Search trigger */}
+            <div className="p-3">
+              <button
+                type="button"
+                onClick={() => setSearchActive(true)}
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
+              >
+                <Search className="w-4 h-4" />
+                Buscar ciudad, carretera, gasolinera...
+              </button>
+            </div>
+
+            {/* Accordion sections */}
+            <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
+              {megaMenuPanels.map((panel) => (
+                <AccordionSection
+                  key={panel.id}
+                  panel={panel}
+                  isExpanded={expandedPanel === panel.id}
+                  onToggle={() => setExpandedPanel(expandedPanel === panel.id ? null : panel.id)}
+                />
+              ))}
+            </div>
+
+            {/* Drawer footer quick links */}
+            <div className="border-t border-gray-100 dark:border-gray-800/50 p-3">
+              <div className="grid grid-cols-2 gap-1.5">
+                <Link
+                  href="/sobre"
+                  onClick={closeAll}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
                 >
-                  <Search className="w-4 h-4" />
-                  Buscar ciudad, carretera, gasolinera...
-                </button>
-              </div>
-
-              {/* Accordion sections */}
-              <div className="divide-y divide-gray-100 dark:divide-gray-800/50">
-                {megaMenuPanels.map((panel) => (
-                  <AccordionSection
-                    key={panel.id}
-                    panel={panel}
-                    isExpanded={expandedPanel === panel.id}
-                    onToggle={() => setExpandedPanel(expandedPanel === panel.id ? null : panel.id)}
-                  />
-                ))}
-              </div>
-
-              {/* Drawer footer quick links */}
-              <div className="border-t border-gray-100 dark:border-gray-800/50 p-3">
-                <div className="grid grid-cols-2 gap-1.5">
-                  <Link
-                    href="/sobre"
-                    onClick={closeAll}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
-                  >
-                    <Info className="w-4 h-4 text-gray-400 shrink-0" />
-                    Sobre
-                  </Link>
-                  <Link
-                    href="/api-docs"
-                    onClick={closeAll}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
-                  >
-                    <Code2 className="w-4 h-4 text-gray-400 shrink-0" />
-                    API
-                  </Link>
-                  <Link
-                    href="/sobre"
-                    onClick={closeAll}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
-                  >
-                    <Mail className="w-4 h-4 text-gray-400 shrink-0" />
-                    Contacto
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    onClick={closeAll}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
-                  >
-                    <User className="w-4 h-4 text-gray-400 shrink-0" />
-                    Mi cuenta
-                  </Link>
-                </div>
+                  <Info className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                  Sobre
+                </Link>
+                <Link
+                  href="/api-docs"
+                  onClick={closeAll}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
+                >
+                  <Code2 className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                  API
+                </Link>
+                <Link
+                  href="/sobre"
+                  onClick={closeAll}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
+                >
+                  <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                  Contacto
+                </Link>
+                <Link
+                  href="/dashboard"
+                  onClick={closeAll}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
+                >
+                  <User className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                  Mi cuenta
+                </Link>
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Search overlay slides in over the menu (preserves mental model:
+              menu still there, just covered by search panel). Back arrow slides
+              it back out. */}
+          <AnimatePresence>
+            {searchActive && (
+              <motion.div
+                initial={reduceMotion ? { opacity: 0 } : { x: "100%" }}
+                animate={reduceMotion ? { opacity: 1 } : { x: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { x: "100%" }}
+                transition={reduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 400, damping: 36 }}
+                className="absolute inset-x-0 top-0.5 bottom-0 bg-white dark:bg-gray-950 z-20"
+              >
+                <MobileFullSearch onBack={() => setSearchActive(false)} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
