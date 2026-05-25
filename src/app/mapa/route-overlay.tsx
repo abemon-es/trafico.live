@@ -61,6 +61,7 @@ import {
 import { formatDistance, formatDuration, getManeuverText } from "@/lib/routing";
 import type { RouteResponse, OSRMRoute, OSRMStep } from "@/lib/routing";
 import { matchTollsFromRoute, totalToll } from "@/lib/tolls";
+import { CORRIDOR_DISTANCES_KM } from "./section-config";
 
 interface Props {
   result: RouteResponse;
@@ -134,6 +135,26 @@ export function RouteOverlay({
   const route = result.routes[selectedRouteIdx] ?? result.routes[0];
   const bbox = useMemo(() => computeBBox(route), [route]);
 
+  // Stable identity keys: passed as the only deps to section data hooks so
+  // they refetch only when the corridor actually moves. The object refs
+  // change every render (parent does result.routes[idx]); these strings
+  // change only when the underlying values do.
+  //
+  // bboxKey is rounded to 3dp (~110m) so two alternatives that overlap
+  // closely don't trigger spurious refetches.
+  // routeKey uses length + first + last coords as a cheap polyline hash.
+  const bboxKey = useMemo(
+    () =>
+      `${bbox.minLng.toFixed(3)},${bbox.minLat.toFixed(3)},${bbox.maxLng.toFixed(3)},${bbox.maxLat.toFixed(3)}`,
+    [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat],
+  );
+  const routeKey = useMemo(() => {
+    const coords = route.geometry.coordinates as [number, number][];
+    const a = coords[0] ?? [0, 0];
+    const b = coords[coords.length - 1] ?? [0, 0];
+    return `${coords.length}:${a[0].toFixed(3)},${a[1].toFixed(3)}>${b[0].toFixed(3)},${b[1].toFixed(3)}`;
+  }, [route]);
+
   return (
     <div
       className="absolute inset-x-0 bottom-0 md:inset-y-0 md:right-0 md:left-auto md:top-16 md:w-[400px] z-20 flex flex-col rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none shadow-2xl"
@@ -158,10 +179,20 @@ export function RouteOverlay({
             {formatDuration(route.duration)} · {formatDistance(route.distance)}
           </div>
         </div>
-        <button onClick={onToggleVisible} className="p-1.5 rounded hover:bg-white/10" style={{ color: visible ? "#94b6ff" : "#64748b" }} title={visible ? "Ocultar ruta en mapa" : "Mostrar ruta en mapa"}>
+        <button
+          onClick={onToggleVisible}
+          aria-label={visible ? "Ocultar ruta en mapa" : "Mostrar ruta en mapa"}
+          className="p-2.5 rounded hover:bg-white/10 min-h-[36px] min-w-[36px] flex items-center justify-center"
+          style={{ color: visible ? "#94b6ff" : "#64748b" }}
+        >
           {visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </button>
-        <button onClick={onClose} className="p-1.5 rounded hover:bg-white/10" style={{ color: "#64748b" }} title="Cerrar">
+        <button
+          onClick={onClose}
+          aria-label="Cerrar panel de ruta"
+          className="p-2.5 rounded hover:bg-white/10 min-h-[36px] min-w-[36px] flex items-center justify-center"
+          style={{ color: "#64748b" }}
+        >
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -175,7 +206,9 @@ export function RouteOverlay({
               <button
                 key={i}
                 onClick={() => onSelectAlternative(i)}
-                className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors"
+                aria-pressed={isSel}
+                aria-label={`Alternativa ${i + 1}: ${formatDuration(r.duration)}, ${formatDistance(r.distance)}`}
+                className="shrink-0 px-3 py-2 rounded-full text-[11px] font-semibold transition-colors min-h-[36px]"
                 style={{
                   background: isSel ? "rgba(27,75,213,0.32)" : "rgba(255,255,255,0.06)",
                   color: isSel ? "#94b6ff" : "#cbd5e1",
@@ -194,20 +227,20 @@ export function RouteOverlay({
       {/* Scrollable body — all sections stacked */}
       <div className="flex-1 overflow-y-auto overscroll-contain divide-y divide-white/5">
         <PeajesSection route={route} />
-        <ZBESection bbox={bbox} route={route} />
-        <TraficoTipicoSection bbox={bbox} route={route} />
-        <CombustibleSection bbox={bbox} route={route} />
-        <CargadoresEVSection bbox={bbox} route={route} />
-        <AreasServicioSection bbox={bbox} route={route} />
-        <TrabajosSection bbox={bbox} route={route} />
-        <RadaresSection bbox={bbox} route={route} />
-        <CamarasSection bbox={bbox} route={route} />
-        <PanelesSection bbox={bbox} route={route} />
-        <IncidenciasSection bbox={bbox} route={route} />
-        <PuntosNegrosSection bbox={bbox} route={route} />
-        <TrenesAltSection route={route} />
-        <MeteoSection bbox={bbox} />
-        <CalidadAireSection bbox={bbox} />
+        <ZBESection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <TraficoTipicoSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <CombustibleSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <CargadoresEVSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <AreasServicioSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <TrabajosSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <RadaresSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <CamarasSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <PanelesSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <IncidenciasSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <PuntosNegrosSection bbox={bbox} route={route} bboxKey={bboxKey} routeKey={routeKey} />
+        <TrenesAltSection route={route} routeKey={routeKey} />
+        <MeteoSection bboxKey={bboxKey} />
+        <CalidadAireSection bbox={bbox} bboxKey={bboxKey} />
         <IndicacionesSection route={route} />
       </div>
     </div>
@@ -403,7 +436,7 @@ function PeajesSection({ route }: { route: OSRMRoute }) {
 }
 
 interface ZbeItem { id: string; name?: string; city?: string; province?: string; geom?: unknown; latitude?: number; longitude?: number; }
-function ZBESection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function ZBESection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<ZbeItem>({
     url: `/api/zbe?limit=500`,
     pick: (d) => {
@@ -414,9 +447,9 @@ function ZBESection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
     filter: (z) => {
       if (typeof z.latitude !== "number" || typeof z.longitude !== "number") return false;
       if (!inBbox(z.latitude, z.longitude, bbox)) return false;
-      return distanceToRouteKm(z.latitude, z.longitude, route) <= 3;
+      return distanceToRouteKm(z.latitude, z.longitude, route) <= CORRIDOR_DISTANCES_KM.zbe;
     },
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Ban} title="ZBE cruzadas" count={items?.length} loading={loading} error={error} accent="#ef4444"
@@ -429,7 +462,7 @@ function ZBESection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
 }
 
 // Tráfico típico ahora — best-effort summary
-function TraficoTipicoSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function TraficoTipicoSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const hourNow = new Date().getHours();
   const dayNow = new Date().getDay() === 0 ? 7 : new Date().getDay(); // 1-7 Mon-Sun
   // Spec: HourlyTrafficProfile averages by sensor/dow/hour. Here we just
@@ -475,7 +508,8 @@ function TraficoTipicoSection({ bbox, route }: { bbox: BBox; route: OSRMRoute })
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bboxKey, routeKey]);
 
   const color =
     stats?.tier === "Fluido" ? "#86efac" :
@@ -506,13 +540,13 @@ function TraficoTipicoSection({ bbox, route }: { bbox: BBox; route: OSRMRoute })
 }
 
 interface GasItem { id: string | number; name: string; address?: string | null; city?: string | null; priceGasolina95?: number | null; priceDiesel?: number | null; latitude: number; longitude: number; }
-function CombustibleSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function CombustibleSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<GasItem>({
     url: `/api/gas-stations?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&sort=priceGasolina95&order=asc&limit=200`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => (d.stations ?? d.results ?? d.data ?? []) as GasItem[],
-    filter: (g) => typeof g.latitude === "number" && distanceToRouteKm(g.latitude, g.longitude, route) <= 2,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+    filter: (g) => typeof g.latitude === "number" && distanceToRouteKm(g.latitude, g.longitude, route) <= CORRIDOR_DISTANCES_KM.gasStation,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Fuel} title="Gasolineras más baratas ≤ 2 km" count={items?.length} loading={loading} error={error} accent="#86efac"
@@ -525,13 +559,13 @@ function CombustibleSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
 }
 
 interface ChargerItem { id: string | number; name?: string; operator?: string | null; city?: string | null; powerKw?: number | null; connectorTypes?: string[]; latitude: number; longitude: number; }
-function CargadoresEVSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function CargadoresEVSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<ChargerItem>({
     url: `/api/chargers?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=300`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => (d.chargers ?? d.results ?? d.data ?? []) as ChargerItem[],
-    filter: (c) => typeof c.latitude === "number" && distanceToRouteKm(c.latitude, c.longitude, route) <= 5,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+    filter: (c) => typeof c.latitude === "number" && distanceToRouteKm(c.latitude, c.longitude, route) <= CORRIDOR_DISTANCES_KM.evCharger,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Zap} title="Cargadores eléctricos ≤ 5 km" count={items?.length} loading={loading} error={error} accent="#a78bfa"
@@ -551,13 +585,13 @@ function CargadoresEVSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) 
 }
 
 interface ServiceStation extends GasItem { hasShop?: boolean; hasCafeteria?: boolean; hasRestaurant?: boolean; }
-function AreasServicioSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function AreasServicioSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<ServiceStation>({
     url: `/api/gas-stations?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&hasRestaurant=true&limit=100`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => (d.stations ?? d.results ?? d.data ?? []) as ServiceStation[],
-    filter: (g) => typeof g.latitude === "number" && distanceToRouteKm(g.latitude, g.longitude, route) <= 2,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+    filter: (g) => typeof g.latitude === "number" && distanceToRouteKm(g.latitude, g.longitude, route) <= CORRIDOR_DISTANCES_KM.serviceArea,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Coffee} title="Áreas de servicio" count={items?.length} loading={loading} error={error} accent="#fbbf24" defaultOpen={false}
@@ -570,15 +604,15 @@ function AreasServicioSection({ bbox, route }: { bbox: BBox; route: OSRMRoute })
 }
 
 interface WorkItem { id: string | number; description?: string | null; road?: string | null; km?: number | null; severity?: string | null; province?: string | null; latitude?: number | null; longitude?: number | null; }
-function TrabajosSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function TrabajosSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<WorkItem>({
-    url: `/api/roadworks?limit=500`,
+    url: `/api/trafico/obras?active=true&bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.roadworks ?? d.zones ?? d.data ?? []) as WorkItem[],
+    pick: (d: any) => (d.zones ?? d.roadworks ?? d.data ?? []) as WorkItem[],
     filter: (w) => typeof w.latitude === "number" && typeof w.longitude === "number"
       && inBbox(w.latitude, w.longitude, bbox)
-      && distanceToRouteKm(w.latitude, w.longitude, route) <= 1.5,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+      && distanceToRouteKm(w.latitude, w.longitude, route) <= CORRIDOR_DISTANCES_KM.roadwork,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Construction} title="Trabajos y cortes" count={items?.length} loading={loading} error={error} accent="#fb923c"
@@ -593,13 +627,13 @@ function TrabajosSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
 }
 
 interface RadarItem { id: string | number; type?: string | null; road?: string | null; km?: number | null; province?: string | null; speedLimit?: number | null; latitude: number; longitude: number; }
-function RadaresSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function RadaresSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<RadarItem>({
-    url: `/api/radars?limit=5000`,
+    url: `/api/radars?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=300`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => ((d.radars ?? d.data ?? d) as RadarItem[]).filter((r) => typeof r.latitude === "number"),
-    filter: (r) => inBbox(r.latitude, r.longitude, bbox) && distanceToRouteKm(r.latitude, r.longitude, route) <= 0.5,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+    filter: (r) => inBbox(r.latitude, r.longitude, bbox) && distanceToRouteKm(r.latitude, r.longitude, route) <= CORRIDOR_DISTANCES_KM.radar,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Gauge} title="Radares ≤ 500 m" count={items?.length} loading={loading} error={error} accent="#ef4444"
@@ -614,13 +648,13 @@ function RadaresSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
 }
 
 interface CameraItem { id: string | number; name?: string | null; road?: string | null; km?: number | null; province?: string | null; latitude: number; longitude: number; streamUrl?: string | null; }
-function CamarasSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function CamarasSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<CameraItem>({
-    url: `/api/cameras?limit=3000`,
+    url: `/api/cameras?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=300`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => ((d.cameras ?? d.data ?? d) as CameraItem[]).filter((c) => typeof c.latitude === "number"),
-    filter: (c) => inBbox(c.latitude, c.longitude, bbox) && distanceToRouteKm(c.latitude, c.longitude, route) <= 1,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+    filter: (c) => inBbox(c.latitude, c.longitude, bbox) && distanceToRouteKm(c.latitude, c.longitude, route) <= CORRIDOR_DISTANCES_KM.camera,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Video} title="Cámaras DGT ≤ 1 km" count={items?.length} loading={loading} error={error} accent="#7da4f0" defaultOpen={false}
@@ -635,13 +669,13 @@ function CamarasSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
 }
 
 interface PanelItem { id: string | number; message?: string | null; road?: string | null; km?: number | null; province?: string | null; latitude: number; longitude: number; }
-function PanelesSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function PanelesSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<PanelItem>({
-    url: `/api/panels?limit=1500`,
+    url: `/api/panels?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => ((d.panels ?? d.data ?? d) as PanelItem[]).filter((p) => typeof p.latitude === "number" && p.message),
-    filter: (p) => inBbox(p.latitude, p.longitude, bbox) && distanceToRouteKm(p.latitude, p.longitude, route) <= 1,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+    filter: (p) => inBbox(p.latitude, p.longitude, bbox) && distanceToRouteKm(p.latitude, p.longitude, route) <= CORRIDOR_DISTANCES_KM.panel,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={MessageSquare} title="Paneles DGT activos" count={items?.length} loading={loading} error={error} accent="#fbbf24"
@@ -656,14 +690,14 @@ function PanelesSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
 }
 
 interface IncidentItem { id: string | number; description?: string | null; type?: string | null; severity?: string | null; road?: string | null; km?: number | null; province?: string | null; latitude?: number | null; longitude?: number | null; }
-function IncidenciasSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function IncidenciasSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<IncidentItem>({
-    url: `/api/incidents?status=active&limit=1000`,
+    url: `/api/incidents?status=active&bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => ((d.incidents ?? d.data ?? []) as IncidentItem[]).filter((i) => typeof i.latitude === "number"),
     filter: (i) => inBbox(i.latitude as number, i.longitude as number, bbox)
-      && distanceToRouteKm(i.latitude as number, i.longitude as number, route) <= 1,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+      && distanceToRouteKm(i.latitude as number, i.longitude as number, route) <= CORRIDOR_DISTANCES_KM.incident,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={AlertTriangle} title="Incidencias activas ≤ 1 km" count={items?.length} loading={loading} error={error} accent="#fb923c"
@@ -679,14 +713,14 @@ function IncidenciasSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
 }
 
 interface HotspotItem { id: string | number; road?: string | null; km?: number | null; province?: string | null; accidentCount?: number; latitude?: number; longitude?: number; }
-function PuntosNegrosSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) {
+function PuntosNegrosSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<HotspotItem>({
-    url: `/api/accidentes/hotspots?limit=2000`,
+    url: `/api/accidentes/hotspots?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => ((d.hotspots ?? d.data ?? d.results ?? []) as HotspotItem[]).filter((h) => typeof h.latitude === "number"),
     filter: (h) => inBbox(h.latitude as number, h.longitude as number, bbox)
-      && distanceToRouteKm(h.latitude as number, h.longitude as number, route) <= 1,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat, route],
+      && distanceToRouteKm(h.latitude as number, h.longitude as number, route) <= CORRIDOR_DISTANCES_KM.hotspot,
+    deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Skull} title="Puntos negros (accidentes históricos)" count={items?.length} loading={loading} error={error} accent="#dc2626" defaultOpen={false}
@@ -702,7 +736,7 @@ function PuntosNegrosSection({ bbox, route }: { bbox: BBox; route: OSRMRoute }) 
 }
 
 interface TrainRouteItem { id: string | number; shortName?: string; longName?: string; brand?: string; origin?: string; destination?: string; durationMin?: number | null; }
-function TrenesAltSection({ route }: { route: OSRMRoute }) {
+function TrenesAltSection({ route, routeKey }: { route: OSRMRoute; routeKey: string }) {
   // Use origin + destination of OSRM polyline (first + last coord) to guess city pair
   const coords = route.geometry.coordinates as [number, number][];
   const origin = coords[0];
@@ -712,7 +746,7 @@ function TrenesAltSection({ route }: { route: OSRMRoute }) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => (d.routes ?? d.results ?? d.data ?? []) as TrainRouteItem[],
     filter: () => true,
-    deps: [origin[0], origin[1], dest[0], dest[1]],
+    deps: [routeKey],
   });
   return (
     <Section icon={Train} title="Trenes alternativos" count={items?.length} loading={loading} error={error} accent="#22c55e" defaultOpen={false}
@@ -728,13 +762,13 @@ function TrenesAltSection({ route }: { route: OSRMRoute }) {
 }
 
 interface WeatherAlertItem { id: string | number; title?: string | null; level?: string | null; province?: string | null; area?: string | null; startsAt?: string; endsAt?: string; }
-function MeteoSection({ bbox }: { bbox: BBox }) {
+function MeteoSection({ bboxKey }: { bboxKey: string }) {
   const { items, loading, error } = useCorridorData<WeatherAlertItem>({
     url: `/api/weather-alerts?active=true&limit=500`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => (d.alerts ?? d.data ?? []) as WeatherAlertItem[],
     filter: () => true, // alerts are province-level; we keep all active and show
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat],
+    deps: [bboxKey],
   });
   return (
     <Section icon={Cloud} title="Alertas meteo AEMET" count={items?.length} loading={loading} error={error} accent="#fbbf24" defaultOpen={false}
@@ -749,13 +783,13 @@ function MeteoSection({ bbox }: { bbox: BBox }) {
 }
 
 interface AirReading { id: string | number; stationName?: string; city?: string; province?: string; ica?: number | null; icaLabel?: string | null; latitude?: number; longitude?: number; }
-function CalidadAireSection({ bbox }: { bbox: BBox }) {
+function CalidadAireSection({ bbox, bboxKey }: { bbox: BBox; bboxKey: string }) {
   const { items, loading, error } = useCorridorData<AirReading>({
     url: `/api/calidad-aire?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=50`,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pick: (d: any) => (d.stations ?? d.readings ?? d.data ?? []) as AirReading[],
     filter: () => true,
-    deps: [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat],
+    deps: [bboxKey],
   });
   return (
     <Section icon={Wind} title="Calidad del aire" count={items?.length} loading={loading} error={error} accent="#7da4f0" defaultOpen={false}

@@ -140,6 +140,8 @@ export async function GET(request: NextRequest) {
           congestion: readings.filter((r) => r.serviceLevel === 3).length,
         },
       },
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
     });
   } catch (error) {
     reportApiError(error, "Traffic intensity API error");

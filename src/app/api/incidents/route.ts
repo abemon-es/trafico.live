@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { IncidentType, TrafficIncident } from "@prisma/client";
 import { applyRateLimit, addSecurityHeaders } from "@/lib/api-utils";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { parseBbox } from "@/lib/bbox";
 
 const CACHE_KEY_PREFIX = "api:incidents";
 const CACHE_TTL = 60; // 1 minute
@@ -114,6 +115,9 @@ export async function GET(request: NextRequest) {
       .filter((v) => VALID_SOURCES.includes(v.toUpperCase()))
       .map((v) => v.toUpperCase());
 
+    // Bbox filter (optional, for route-overlay corridor scoping)
+    const bbox = parseBbox(searchParams.get("bbox"));
+
     // Query all active incidents from database (DGT + SCT + EUSKADI + MADRID)
     const whereClause: Record<string, unknown> = { isActive: true };
 
@@ -122,9 +126,15 @@ export async function GET(request: NextRequest) {
       whereClause.source = { in: sourceFilter };
     }
 
+    if (bbox) {
+      whereClause.latitude = { gte: bbox.minLat, lte: bbox.maxLat };
+      whereClause.longitude = { gte: bbox.minLng, lte: bbox.maxLng };
+    }
+
     const dbIncidents = await prisma.trafficIncident.findMany({
       where: whereClause,
       orderBy: { startedAt: "desc" },
+      take: bbox ? Math.min(limit * 3, 1000) : undefined,
     });
 
     // Transform to API format with effect/cause mapping

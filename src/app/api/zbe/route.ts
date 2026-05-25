@@ -149,6 +149,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<ZBERespons
           cities: allCities.map((c) => c.cityName).sort(),
         },
       },
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
     });
   } catch (error) {
     reportApiError(error, "ZBE API error");

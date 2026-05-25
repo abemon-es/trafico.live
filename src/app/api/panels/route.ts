@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { applyRateLimit } from "@/lib/api-utils";
+import { parseBbox, bboxToPrismaWhere } from "@/lib/bbox";
 
 const CACHE_KEY_PREFIX = "api:panels";
 const CACHE_TTL = 300; // 5 minutes — panels update every ~5 min
@@ -44,6 +45,8 @@ export async function GET(request: NextRequest) {
     const filterProvince = searchParams.get("province");
     const filterRoad = searchParams.get("road");
     const filterHasMessage = searchParams.get("hasMessage");
+    const bbox = parseBbox(searchParams.get("bbox"));
+    const limit = Math.min(5000, Math.max(1, Number(searchParams.get("limit")) || 5000));
 
     // Build a deterministic cache key from query params
     const paramStr = new URLSearchParams(
@@ -57,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause
-    const whereClause: Record<string, unknown> = { isActive: true };
+    const whereClause: Record<string, unknown> = { isActive: true, ...bboxToPrismaWhere(bbox) };
 
     if (filterProvince) {
       whereClause.provinceName = filterProvince;
@@ -74,7 +77,7 @@ export async function GET(request: NextRequest) {
     const dbPanels = await prisma.variablePanel.findMany({
       where: whereClause,
       orderBy: [{ hasMessage: "desc" }, { roadNumber: "asc" }],
-      take: 5000,
+      take: limit,
       select: {
         id: true,
         panelId: true,

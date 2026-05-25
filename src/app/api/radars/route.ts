@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { applyRateLimit } from "@/lib/api-utils";
+import { parseBbox, bboxToPrismaWhere } from "@/lib/bbox";
 
 const CACHE_KEY_PREFIX = "api:radars";
 const CACHE_TTL = 3600; // 1 hour — radars are semi-static
@@ -44,6 +45,8 @@ export async function GET(request: NextRequest) {
     const filterProvince = searchParams.get("province");
     const filterRoad = searchParams.get("road");
     const filterType = searchParams.get("type");
+    const bbox = parseBbox(searchParams.get("bbox"));
+    const limit = Math.min(5000, Math.max(1, Number(searchParams.get("limit")) || 5000));
 
     // Build a deterministic cache key from query params
     const paramStr = new URLSearchParams(
@@ -55,7 +58,7 @@ export async function GET(request: NextRequest) {
     if (cached) return NextResponse.json(cached);
 
     // Build where clause
-    const whereClause: Record<string, unknown> = { isActive: true };
+    const whereClause: Record<string, unknown> = { isActive: true, ...bboxToPrismaWhere(bbox) };
 
     if (filterProvince) {
       whereClause.provinceName = filterProvince;
@@ -79,7 +82,7 @@ export async function GET(request: NextRequest) {
     const dbRadars = await prisma.radar.findMany({
       where: whereClause,
       orderBy: [{ roadNumber: "asc" }, { kmPoint: "asc" }],
-      take: 5000,
+      take: limit,
     });
 
     const radars: RadarResponseItem[] = dbRadars.map((radar) => ({
