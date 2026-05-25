@@ -4,23 +4,17 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Navigation,
-  Clock,
   MapPin,
   Car,
   Truck,
   Bike,
   Footprints,
   X,
-  Route,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import {
   calculateRoute,
   routeToGeoJSON,
-  formatDuration,
-  formatDistance,
-  getManeuverText,
 } from "@/lib/routing";
 import type { CostingModel, RouteResponse } from "@/lib/routing";
 import type maplibregl from "maplibre-gl";
@@ -30,25 +24,7 @@ interface RoutingPanelProps {
   map: maplibregl.Map | null;
 }
 
-type PanelMode = "route";
 type PickTarget = "origin" | "destination" | null;
-
-function formatTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}min`;
-  return `${m} min`;
-}
-
-function formatDist(km: number): string {
-  if (km < 1) return `${Math.round(km * 1000)} m`;
-  return `${km.toFixed(1)} km`;
-}
-
-function coordLabel(c: { lat: number; lon: number } | null): string {
-  if (!c) return "";
-  return `${c.lat.toFixed(5)}, ${c.lon.toFixed(5)}`;
-}
 
 const VEHICLE_OPTIONS: { key: CostingModel; label: string; Icon: React.ElementType }[] = [
   { key: "auto", label: "Coche", Icon: Car },
@@ -57,15 +33,8 @@ const VEHICLE_OPTIONS: { key: CostingModel; label: string; Icon: React.ElementTy
   { key: "pedestrian", label: "A pie", Icon: Footprints },
 ];
 
-const ISO_CONTOUR_COLORS: Record<number, string> = {
-  15: "#22c55e",
-  30: "#eab308",
-  60: "#ef4444",
-};
-
 export default function RoutingPanel({ map }: RoutingPanelProps) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<PanelMode>("route");
   const [origin, setOrigin] = useState<{ lat: number; lon: number } | null>(null);
   const [destination, setDestination] = useState<{ lat: number; lon: number } | null>(null);
   const [costing, setCosting] = useState<CostingModel>("auto");
@@ -103,65 +72,74 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
 
   const clearRoute = useCallback(() => {
     if (!map) return;
-    try {
-      // Remove main + alternative route layers
-      for (const id of ["route-line-layer", "route-alt-layer"]) {
-        if (map.getLayer(id)) map.removeLayer(id);
-      }
-      for (const id of ["route-line", "route-alt"]) {
-        if (map.getSource(id)) map.removeSource(id);
-      }
-    } catch {
-      // Layers may not exist — ignore
+    // Per-id try/catch so a single failure (e.g. layer added by a style swap
+    // between getLayer and removeLayer) doesn't abort cleanup of the rest —
+    // otherwise a subsequent paintRoutes hits "Source already exists".
+    for (const id of ["route-line-layer", "route-alt-layer"]) {
+      try { if (map.getLayer(id)) map.removeLayer(id); }
+      catch (e) { console.warn(`[routing-panel] removeLayer(${id}) failed:`, e); }
+    }
+    for (const id of ["route-line", "route-alt"]) {
+      try { if (map.getSource(id)) map.removeSource(id); }
+      catch (e) { console.warn(`[routing-panel] removeSource(${id}) failed:`, e); }
     }
   }, [map]);
 
-  // Re-paint the selected + alternative routes whenever selection changes
+  // Re-paint the selected + alternative routes whenever selection changes.
+  // Returns true on success, false on map-paint failure so callers can surface
+  // an error to the user instead of showing the overlay over a blank map.
   const paintRoutes = useCallback(
-    (result: RouteResponse, selectedIdx: number) => {
-      if (!map) return;
+    (result: RouteResponse, selectedIdx: number): boolean => {
+      if (!map) return false;
       clearRoute();
 
       const selected = result.routes[selectedIdx];
       const others = result.routes.filter((_, i) => i !== selectedIdx);
 
-      // Paint alternatives first (under) in muted color
-      if (others.length > 0) {
-        const altFeatures: GeoJSON.Feature[] = others.map((r) => ({
-          type: "Feature",
-          geometry: r.geometry,
-          properties: { distance: r.distance, duration: r.duration },
-        }));
-        map.addSource("route-alt", {
+      try {
+        // Paint alternatives first (under) in muted color
+        if (others.length > 0) {
+          const altFeatures: GeoJSON.Feature[] = others.map((r) => ({
+            type: "Feature",
+            geometry: r.geometry,
+            properties: { distance: r.distance, duration: r.duration },
+          }));
+          map.addSource("route-alt", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: altFeatures } as GeoJSON.GeoJSON,
+          });
+          map.addLayer({
+            id: "route-alt-layer",
+            type: "line",
+            source: "route-alt",
+            paint: {
+              "line-color": "#94a3b8",
+              "line-width": 4,
+              "line-opacity": 0.55,
+              "line-dasharray": [2, 2],
+            },
+            layout: { "line-cap": "round", "line-join": "round" },
+          });
+        }
+
+        // Paint selected route on top
+        map.addSource("route-line", {
           type: "geojson",
-          data: { type: "FeatureCollection", features: altFeatures } as GeoJSON.GeoJSON,
+          data: routeToGeoJSON({ ...result, routes: [selected] }) as GeoJSON.GeoJSON,
         });
         map.addLayer({
-          id: "route-alt-layer",
+          id: "route-line-layer",
           type: "line",
-          source: "route-alt",
-          paint: {
-            "line-color": "#94a3b8",
-            "line-width": 4,
-            "line-opacity": 0.55,
-            "line-dasharray": [2, 2],
-          },
+          source: "route-line",
+          paint: { "line-color": "#1b4bd5", "line-width": 5, "line-opacity": 0.9 },
           layout: { "line-cap": "round", "line-join": "round" },
         });
+        return true;
+      } catch (e) {
+        console.error("[routing-panel] paintRoutes failed:", e);
+        clearRoute(); // best-effort cleanup of partial state
+        return false;
       }
-
-      // Paint selected route on top
-      map.addSource("route-line", {
-        type: "geojson",
-        data: routeToGeoJSON({ ...result, routes: [selected] }) as GeoJSON.GeoJSON,
-      });
-      map.addLayer({
-        id: "route-line-layer",
-        type: "line",
-        source: "route-line",
-        paint: { "line-color": "#1b4bd5", "line-width": 5, "line-opacity": 0.9 },
-        layout: { "line-cap": "round", "line-join": "round" },
-      });
     },
     [map, clearRoute],
   );
@@ -203,8 +181,12 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
         alternatives: true,
         steps: true,
       });
+      const painted = paintRoutes(result, 0);
+      if (!painted) {
+        setError("Ruta calculada, pero no se pudo dibujar en el mapa. Recarga la página y vuelve a intentarlo.");
+        return;
+      }
       setRouteResult(result);
-      paintRoutes(result, 0);
 
       // Fit map to selected route geometry bounds
       const coords = result.routes[0].geometry.coordinates as [number, number][];
@@ -356,42 +338,14 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
             style={{ borderColor: "rgba(255,255,255,0.08)" }}
           >
             <Navigation className="w-4 h-4 shrink-0" style={{ color: "#7da4f0" }} />
-            <span className="font-semibold text-sm flex-1">Rutas e Isócronas</span>
+            <span className="font-semibold text-sm flex-1">Rutas</span>
             <button
               onClick={() => setOpen(false)}
-              className="opacity-50 hover:opacity-100 transition-opacity p-0.5 rounded"
+              aria-label="Cerrar panel de rutas"
+              className="opacity-50 hover:opacity-100 transition-opacity p-2 -m-1 rounded min-h-[36px] min-w-[36px] flex items-center justify-center"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
-          </div>
-
-          {/* Mode tabs */}
-          <div
-            className="flex border-b"
-            style={{ borderColor: "rgba(255,255,255,0.08)" }}
-          >
-            {(["route", "isochrone"] as PanelMode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); handleReset(); }}
-                className="flex-1 py-1.5 text-xs font-medium transition-colors"
-                style={{
-                  color: mode === m ? "#e2e8f0" : "#64748b",
-                  background: mode === m ? "rgba(27,75,213,0.25)" : "transparent",
-                  borderBottom: mode === m ? "2px solid #1b4bd5" : "2px solid transparent",
-                }}
-              >
-                {m === "route" ? (
-                  <span className="flex items-center justify-center gap-1">
-                    <Route className="w-3.5 h-3.5" /> Ruta
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-1">
-                    <Clock className="w-3.5 h-3.5" /> Isócrona
-                  </span>
-                )}
-              </button>
-            ))}
           </div>
 
           <div className="p-3 flex flex-col gap-2.5">
@@ -434,50 +388,31 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
               }}
             />
 
-            {/* Destination picker (route mode only) */}
-            {mode === "route" && (
-              <PointPicker
-                label="Destino"
-                value={destination}
-                picking={pickingTarget === "destination"}
-                onPick={() => pickPoint("destination")}
-                onClear={() => setDestination(null)}
-                onSelectAddress={(p) => {
-                  setDestination({ lat: p.lat, lon: p.lon });
-                  if (map) map.flyTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 11), duration: 600 });
-                }}
-              />
-            )}
+            {/* Destination picker */}
+            <PointPicker
+              label="Destino"
+              value={destination}
+              picking={pickingTarget === "destination"}
+              onPick={() => pickPoint("destination")}
+              onClear={() => setDestination(null)}
+              onSelectAddress={(p) => {
+                setDestination({ lat: p.lat, lon: p.lon });
+                if (map) map.flyTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 11), duration: 600 });
+              }}
+            />
 
             {/* Action button */}
             <button
               onClick={handleRoute}
-              disabled={
-                loading ||
-                !origin ||
-                (mode === "route" && !destination)
-              }
-              className="w-full py-2 rounded-lg text-sm font-semibold transition-all"
+              disabled={loading || !origin || !destination}
+              className="w-full py-2 rounded-lg text-sm font-semibold transition-all min-h-[40px]"
               style={{
-                background:
-                  !loading && origin && (destination)
-                    ? "#1b4bd5"
-                    : "rgba(27,75,213,0.25)",
-                color:
-                  !loading && origin && (destination)
-                    ? "#fff"
-                    : "#475569",
-                cursor:
-                  loading || !origin || (mode === "route" && !destination)
-                    ? "not-allowed"
-                    : "pointer",
+                background: !loading && origin && destination ? "#1b4bd5" : "rgba(27,75,213,0.25)",
+                color: !loading && origin && destination ? "#fff" : "#475569",
+                cursor: loading || !origin || !destination ? "not-allowed" : "pointer",
               }}
             >
-              {loading
-                ? "Calculando..."
-                : mode === "route"
-                ? "Calcular ruta"
-                : "Ver isócrona"}
+              {loading ? "Calculando..." : "Calcular ruta"}
             </button>
 
             {/* Reset button (when there's a result or points set) */}
@@ -508,13 +443,15 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
       )}
 
       {/* Full route results overlay — rendered when a route exists */}
-      {routeResult && mode === "route" && (
+      {routeResult && (
         <RouteOverlay
           result={routeResult}
           selectedRouteIdx={selectedRouteIdx}
           onSelectAlternative={(i) => {
             setSelectedRouteIdx(i);
-            paintRoutes(routeResult, i);
+            if (!paintRoutes(routeResult, i)) {
+              setError("No se pudo dibujar la alternativa en el mapa.");
+            }
           }}
           visible={routeVisible}
           onToggleVisible={() => {
@@ -650,7 +587,7 @@ function PointPicker({
         />
         <input
           type="text"
-          value={query || (value ? (displayLabel ?? coordLabel(value)) : "")}
+          value={query || (value ? (displayLabel ?? `${value.lat.toFixed(5)}, ${value.lon.toFixed(5)}`) : "")}
           onChange={(e) => {
             setQuery(e.target.value);
             // typing fresh clears any previously-picked value labelling
@@ -728,101 +665,3 @@ function PointPicker({
   );
 }
 
-function RouteResultCard({ result }: { result: RouteResponse }) {
-  const [expanded, setExpanded] = useState(false);
-  const route = result.routes[0];
-  const steps = route.legs.flatMap((l) => l.steps);
-
-  return (
-    <div
-      className="rounded-lg overflow-hidden"
-      style={{ border: "1px solid rgba(27,75,213,0.3)" }}
-    >
-      {/* Summary row */}
-      <div
-        className="flex items-center gap-3 px-3 py-2"
-        style={{ background: "rgba(27,75,213,0.15)" }}
-      >
-        <div className="flex-1">
-          <span
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 15,
-              fontWeight: 700,
-              color: "#94b6ff",
-            }}
-          >
-            {formatDuration(route.duration)}
-          </span>
-          <span className="ml-2 text-xs" style={{ color: "#64748b" }}>
-            {formatDistance(route.distance)}
-          </span>
-        </div>
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="p-1 rounded hover:bg-white/10 transition-colors"
-          style={{ color: "#64748b" }}
-        >
-          {expanded ? (
-            <ChevronUp className="w-3.5 h-3.5" />
-          ) : (
-            <ChevronDown className="w-3.5 h-3.5" />
-          )}
-        </button>
-      </div>
-
-      {/* Turn-by-turn */}
-      {expanded && (
-        <div
-          className="overflow-y-auto"
-          style={{ maxHeight: 220, background: "rgba(15,23,42,0.5)" }}
-        >
-          {steps.map((step, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-2 px-3 py-1.5 border-b last:border-b-0"
-              style={{ borderColor: "rgba(255,255,255,0.05)" }}
-            >
-              <span
-                className="shrink-0 text-xs rounded-full w-4 h-4 flex items-center justify-center mt-0.5"
-                style={{ background: "rgba(27,75,213,0.3)", color: "#7da4f0", fontSize: 9 }}
-              >
-                {i + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs leading-snug" style={{ color: "#cbd5e1" }}>
-                  {getManeuverText(step)}
-                </div>
-                {step.distance > 0 && (
-                  <div style={{ fontSize: 10, color: "#475569" }}>
-                    {formatDistance(step.distance)}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function IsochroneLegend() {
-  return (
-    <div className="flex gap-1.5">
-      {([15, 30, 60] as const).map((min) => (
-        <div
-          key={min}
-          className="flex-1 flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-        >
-          <span
-            className="w-2.5 h-2.5 rounded-full shrink-0"
-            style={{ background: ISO_CONTOUR_COLORS[min] }}
-          />
-          <span style={{ fontSize: 10, color: "#94a3b8" }}>{min} min</span>
-        </div>
-      ))}
-    </div>
-  );
-}
