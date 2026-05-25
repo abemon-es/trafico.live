@@ -23,6 +23,7 @@ import {
 } from "@/lib/routing";
 import type { CostingModel, RouteResponse } from "@/lib/routing";
 import type maplibregl from "maplibre-gl";
+import { RouteOverlay } from "./route-overlay";
 
 interface RoutingPanelProps {
   map: maplibregl.Map | null;
@@ -69,6 +70,8 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
   const [costing, setCosting] = useState<CostingModel>("auto");
   const [loading, setLoading] = useState(false);
   const [routeResult, setRouteResult] = useState<RouteResponse | null>(null);
+  const [selectedRouteIdx, setSelectedRouteIdx] = useState(0);
+  const [routeVisible, setRouteVisible] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pickingTarget, setPickingTarget] = useState<PickTarget>(null);
 
@@ -100,12 +103,82 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
   const clearRoute = useCallback(() => {
     if (!map) return;
     try {
-      if (map.getLayer("route-line-layer")) map.removeLayer("route-line-layer");
-      if (map.getSource("route-line")) map.removeSource("route-line");
-          } catch {
+      // Remove main + alternative route layers
+      for (const id of ["route-line-layer", "route-alt-layer"]) {
+        if (map.getLayer(id)) map.removeLayer(id);
+      }
+      for (const id of ["route-line", "route-alt"]) {
+        if (map.getSource(id)) map.removeSource(id);
+      }
+    } catch {
       // Layers may not exist — ignore
     }
   }, [map]);
+
+  // Re-paint the selected + alternative routes whenever selection changes
+  const paintRoutes = useCallback(
+    (result: RouteResponse, selectedIdx: number) => {
+      if (!map) return;
+      clearRoute();
+
+      const selected = result.routes[selectedIdx];
+      const others = result.routes.filter((_, i) => i !== selectedIdx);
+
+      // Paint alternatives first (under) in muted color
+      if (others.length > 0) {
+        const altFeatures: GeoJSON.Feature[] = others.map((r) => ({
+          type: "Feature",
+          geometry: r.geometry,
+          properties: { distance: r.distance, duration: r.duration },
+        }));
+        map.addSource("route-alt", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: altFeatures } as GeoJSON.GeoJSON,
+        });
+        map.addLayer({
+          id: "route-alt-layer",
+          type: "line",
+          source: "route-alt",
+          paint: {
+            "line-color": "#94a3b8",
+            "line-width": 4,
+            "line-opacity": 0.55,
+            "line-dasharray": [2, 2],
+          },
+          layout: { "line-cap": "round", "line-join": "round" },
+        });
+      }
+
+      // Paint selected route on top
+      map.addSource("route-line", {
+        type: "geojson",
+        data: routeToGeoJSON({ ...result, routes: [selected] }) as GeoJSON.GeoJSON,
+      });
+      map.addLayer({
+        id: "route-line-layer",
+        type: "line",
+        source: "route-line",
+        paint: { "line-color": "#1b4bd5", "line-width": 5, "line-opacity": 0.9 },
+        layout: { "line-cap": "round", "line-join": "round" },
+      });
+    },
+    [map, clearRoute],
+  );
+
+  // Show/hide both layers
+  const setRouteLayerVisibility = useCallback(
+    (visible: boolean) => {
+      if (!map) return;
+      const vis = visible ? "visible" : "none";
+      try {
+        if (map.getLayer("route-line-layer")) map.setLayoutProperty("route-line-layer", "visibility", vis);
+        if (map.getLayer("route-alt-layer")) map.setLayoutProperty("route-alt-layer", "visibility", vis);
+      } catch {
+        // ignore
+      }
+    },
+    [map],
+  );
 
   const handleReset = useCallback(() => {
     setOrigin(null);
@@ -120,31 +193,19 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
     setLoading(true);
     setError(null);
     setRouteResult(null);
+    setSelectedRouteIdx(0);
+    setRouteVisible(true);
     clearRoute();
 
     try {
-      const result = await calculateRoute([origin, destination], costing);
+      const result = await calculateRoute([origin, destination], costing, {
+        alternatives: true,
+        steps: true,
+      });
       setRouteResult(result);
+      paintRoutes(result, 0);
 
-      const geojson = routeToGeoJSON(result);
-
-      map.addSource("route-line", {
-        type: "geojson",
-        data: geojson as GeoJSON.GeoJSON,
-      });
-      map.addLayer({
-        id: "route-line-layer",
-        type: "line",
-        source: "route-line",
-        paint: {
-          "line-color": "#1b4bd5",
-          "line-width": 5,
-          "line-opacity": 0.85,
-        },
-        layout: { "line-cap": "round", "line-join": "round" },
-      });
-
-      // Fit map to route geometry bounds
+      // Fit map to selected route geometry bounds
       const coords = result.routes[0].geometry.coordinates as [number, number][];
       const lngs = coords.map((c) => c[0]);
       const lats = coords.map((c) => c[1]);
@@ -155,12 +216,15 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
         ],
         { padding: 80 },
       );
+
+      // Collapse the small input panel — the route overlay takes over
+      setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error calculando ruta");
     } finally {
       setLoading(false);
     }
-  }, [origin, destination, costing, map, clearRoute]);
+  }, [origin, destination, costing, map, clearRoute, paintRoutes]);
 
   // Isochrones not available with OSRM — would need Valhalla or custom implementation
 
@@ -349,13 +413,32 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
               </div>
             )}
 
-            {/* Route result */}
-            {routeResult && mode === "route" && (
-              <RouteResultCard result={routeResult} />
-            )}
+            {/* Route result moved to <RouteOverlay /> rendered at root below. */}
 
           </div>
         </div>
+      )}
+
+      {/* Full route results overlay — rendered when a route exists */}
+      {routeResult && mode === "route" && (
+        <RouteOverlay
+          result={routeResult}
+          selectedRouteIdx={selectedRouteIdx}
+          onSelectAlternative={(i) => {
+            setSelectedRouteIdx(i);
+            paintRoutes(routeResult, i);
+          }}
+          visible={routeVisible}
+          onToggleVisible={() => {
+            const next = !routeVisible;
+            setRouteVisible(next);
+            setRouteLayerVisibility(next);
+          }}
+          onClose={() => {
+            setRouteResult(null);
+            clearRoute();
+          }}
+        />
       )}
 
       {/* Cursor hint overlay */}
