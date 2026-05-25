@@ -62,6 +62,34 @@ import { formatDistance, formatDuration, getManeuverText } from "@/lib/routing";
 import type { RouteResponse, OSRMRoute, OSRMStep } from "@/lib/routing";
 import { matchTollsFromRoute, totalToll } from "@/lib/tolls";
 import { CORRIDOR_DISTANCES_KM } from "./section-config";
+import type {
+  ZbeItem,
+  ZbeResponse,
+  GasStationItem,
+  GasStationsResponse,
+  ChargerItem,
+  ChargersResponse,
+  RoadworksItem,
+  RoadworksResponse,
+  RadarItem,
+  RadarsResponse,
+  CameraItem,
+  CamerasResponse,
+  PanelItem,
+  PanelsResponse,
+  IncidentItem,
+  IncidentsResponse,
+  HotspotItem,
+  HotspotsResponse,
+  TrainRouteItem,
+  TrainRoutesResponse,
+  WeatherAlertItem,
+  WeatherAlertsResponse,
+  AirReading,
+  AirQualityResponse,
+  IntensityReading,
+  IntensityResponse,
+} from "@/types/api/overlay-sections";
 
 interface Props {
   result: RouteResponse;
@@ -438,15 +466,10 @@ function PeajesSection({ route }: { route: OSRMRoute }) {
   );
 }
 
-interface ZbeItem { id: string; name?: string; city?: string; province?: string; geom?: unknown; latitude?: number; longitude?: number; }
 function ZBESection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<ZbeItem>({
     url: `/api/zbe?limit=500`,
-    pick: (d) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = d as any;
-      return (data.zones ?? data.data ?? data.results ?? []) as ZbeItem[];
-    },
+    pick: (d) => (d as ZbeResponse).data?.zones ?? [],
     filter: (z) => {
       if (typeof z.latitude !== "number" || typeof z.longitude !== "number") return false;
       if (!inBbox(z.latitude, z.longitude, bbox)) return false;
@@ -485,11 +508,10 @@ function TraficoTipicoSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; 
       })
       .then((data) => {
         if (controller.signal.aborted) return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const readings = (data.intensity ?? data.readings ?? data.data ?? []) as any[];
+        const readings: IntensityReading[] = (data as IntensityResponse).data?.sensors ?? [];
         const filtered = readings.filter((r) =>
           typeof r.latitude === "number" && inBbox(r.latitude, r.longitude, bbox) &&
-          distanceToRouteKm(r.latitude, r.longitude, route) <= 2,
+          distanceToRouteKm(r.latitude, r.longitude, route) <= CORRIDOR_DISTANCES_KM.traffic,
         );
         if (filtered.length === 0) {
           setStats({ avg: null, samples: 0, tier: "Sin sensores" });
@@ -542,12 +564,13 @@ function TraficoTipicoSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; 
   );
 }
 
-interface GasItem { id: string | number; name: string; address?: string | null; city?: string | null; priceGasolina95?: number | null; priceDiesel?: number | null; latitude: number; longitude: number; }
 function CombustibleSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
-  const { items, loading, error } = useCorridorData<GasItem>({
+  const { items, loading, error } = useCorridorData<GasStationItem>({
     url: `/api/gas-stations?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&sort=priceGasolina95&order=asc&limit=200`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.stations ?? d.results ?? d.data ?? []) as GasItem[],
+    pick: (d) => {
+      const r = d as GasStationsResponse;
+      return r.stations ?? r.data ?? [];
+    },
     filter: (g) => typeof g.latitude === "number" && distanceToRouteKm(g.latitude, g.longitude, route) <= CORRIDOR_DISTANCES_KM.gasStation,
     deps: [bboxKey, routeKey],
   });
@@ -561,12 +584,10 @@ function CombustibleSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; ro
   );
 }
 
-interface ChargerItem { id: string | number; name?: string; operator?: string | null; city?: string | null; powerKw?: number | null; connectorTypes?: string[]; latitude: number; longitude: number; }
 function CargadoresEVSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<ChargerItem>({
     url: `/api/chargers?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=300`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.chargers ?? d.results ?? d.data ?? []) as ChargerItem[],
+    pick: (d) => (d as ChargersResponse).chargers ?? [],
     filter: (c) => typeof c.latitude === "number" && distanceToRouteKm(c.latitude, c.longitude, route) <= CORRIDOR_DISTANCES_KM.evCharger,
     deps: [bboxKey, routeKey],
   });
@@ -587,12 +608,13 @@ function CargadoresEVSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; r
   );
 }
 
-interface ServiceStation extends GasItem { hasShop?: boolean; hasCafeteria?: boolean; hasRestaurant?: boolean; }
 function AreasServicioSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
-  const { items, loading, error } = useCorridorData<ServiceStation>({
+  const { items, loading, error } = useCorridorData<GasStationItem>({
     url: `/api/gas-stations?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&hasRestaurant=true&limit=100`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.stations ?? d.results ?? d.data ?? []) as ServiceStation[],
+    pick: (d) => {
+      const r = d as GasStationsResponse;
+      return r.stations ?? r.data ?? [];
+    },
     filter: (g) => typeof g.latitude === "number" && distanceToRouteKm(g.latitude, g.longitude, route) <= CORRIDOR_DISTANCES_KM.serviceArea,
     deps: [bboxKey, routeKey],
   });
@@ -606,12 +628,10 @@ function AreasServicioSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; 
   );
 }
 
-interface WorkItem { id: string | number; description?: string | null; road?: string | null; km?: number | null; severity?: string | null; province?: string | null; latitude?: number | null; longitude?: number | null; }
 function TrabajosSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
-  const { items, loading, error } = useCorridorData<WorkItem>({
+  const { items, loading, error } = useCorridorData<RoadworksItem>({
     url: `/api/trafico/obras?active=true&bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.zones ?? d.roadworks ?? d.data ?? []) as WorkItem[],
+    pick: (d) => (d as RoadworksResponse).data?.zones ?? [],
     filter: (w) => typeof w.latitude === "number" && typeof w.longitude === "number"
       && inBbox(w.latitude, w.longitude, bbox)
       && distanceToRouteKm(w.latitude, w.longitude, route) <= CORRIDOR_DISTANCES_KM.roadwork,
@@ -629,54 +649,70 @@ function TrabajosSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route
   );
 }
 
-interface RadarItem { id: string | number; type?: string | null; road?: string | null; km?: number | null; province?: string | null; speedLimit?: number | null; latitude: number; longitude: number; }
 function RadaresSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<RadarItem>({
     url: `/api/radars?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=300`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => ((d.radars ?? d.data ?? d) as RadarItem[]).filter((r) => typeof r.latitude === "number"),
-    filter: (r) => inBbox(r.latitude, r.longitude, bbox) && distanceToRouteKm(r.latitude, r.longitude, route) <= CORRIDOR_DISTANCES_KM.radar,
+    pick: (d) => ((d as RadarsResponse).radars ?? []).filter(
+      (r) => typeof r.lat === "number" || typeof r.latitude === "number",
+    ),
+    filter: (r) => {
+      // /api/radars returns `lat`/`lng`, not `latitude`/`longitude`
+      const lat = r.lat ?? r.latitude;
+      const lon = r.lng ?? r.longitude;
+      if (typeof lat !== "number" || typeof lon !== "number") return false;
+      return inBbox(lat, lon, bbox) && distanceToRouteKm(lat, lon, route) <= CORRIDOR_DISTANCES_KM.radar;
+    },
     deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Gauge} title="Radares ≤ 500 m" count={items?.length} loading={loading} error={error} accent="#ef4444"
       empty={!loading && items?.length === 0 ? "Sin radares en el corredor" : undefined}>
-      {items?.slice(0, 15).map((r) => (
-        <Row key={r.id} icon={ChevronRight} iconColor="#ef4444"
-          title={`${r.road ?? "?"} ${r.km != null ? "km " + r.km : ""}`.trim()}
-          subtitle={`${r.type ?? "Radar"} · ${r.province ?? ""} ${r.speedLimit ? "· " + r.speedLimit + " km/h" : ""}`} />
-      ))}
+      {items?.slice(0, 15).map((r) => {
+        const km = r.kmPoint ?? r.km;
+        return (
+          <Row key={r.id} icon={ChevronRight} iconColor="#ef4444"
+            title={`${r.road ?? "?"} ${km != null ? "km " + km : ""}`.trim()}
+            subtitle={`${r.type ?? "Radar"} · ${r.province ?? ""} ${r.speedLimit ? "· " + r.speedLimit + " km/h" : ""}`} />
+        );
+      })}
     </Section>
   );
 }
 
-interface CameraItem { id: string | number; name?: string | null; road?: string | null; km?: number | null; province?: string | null; latitude: number; longitude: number; streamUrl?: string | null; }
 function CamarasSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<CameraItem>({
     url: `/api/cameras?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=300`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => ((d.cameras ?? d.data ?? d) as CameraItem[]).filter((c) => typeof c.latitude === "number"),
-    filter: (c) => inBbox(c.latitude, c.longitude, bbox) && distanceToRouteKm(c.latitude, c.longitude, route) <= CORRIDOR_DISTANCES_KM.camera,
+    pick: (d) => (d as CamerasResponse).cameras ?? [],
+    filter: (c) => {
+      // /api/cameras returns `lat`/`lng`, not `latitude`/`longitude`
+      const lat = c.lat ?? c.latitude;
+      const lon = c.lng ?? c.longitude;
+      if (typeof lat !== "number" || typeof lon !== "number") return false;
+      return inBbox(lat, lon, bbox) && distanceToRouteKm(lat, lon, route) <= CORRIDOR_DISTANCES_KM.camera;
+    },
     deps: [bboxKey, routeKey],
   });
   return (
     <Section icon={Video} title="Cámaras DGT ≤ 1 km" count={items?.length} loading={loading} error={error} accent="#7da4f0" defaultOpen={false}
       empty={!loading && items?.length === 0 ? "Sin cámaras en el corredor" : undefined}>
-      {items?.slice(0, 12).map((c) => (
-        <Row key={c.id} icon={Video} iconColor="#7da4f0"
-          title={c.name ?? `${c.road ?? "?"} ${c.km != null ? "km " + c.km : ""}`.trim()}
-          subtitle={[c.road, c.province].filter(Boolean).join(" · ")} />
-      ))}
+      {items?.slice(0, 12).map((c) => {
+        const km = c.kmPoint ?? c.km;
+        return (
+          <Row key={c.id} icon={Video} iconColor="#7da4f0"
+            title={c.name ?? `${c.road ?? "?"} ${km != null ? "km " + km : ""}`.trim()}
+            subtitle={[c.road, c.province].filter(Boolean).join(" · ")} />
+        );
+      })}
     </Section>
   );
 }
 
-interface PanelItem { id: string | number; message?: string | null; road?: string | null; km?: number | null; province?: string | null; latitude: number; longitude: number; }
 function PanelesSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<PanelItem>({
     url: `/api/panels?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => ((d.panels ?? d.data ?? d) as PanelItem[]).filter((p) => typeof p.latitude === "number" && p.message),
+    pick: (d) => ((d as PanelsResponse).panels ?? []).filter(
+      (p) => typeof p.latitude === "number" && !!p.message,
+    ),
     filter: (p) => inBbox(p.latitude, p.longitude, bbox) && distanceToRouteKm(p.latitude, p.longitude, route) <= CORRIDOR_DISTANCES_KM.panel,
     deps: [bboxKey, routeKey],
   });
@@ -692,12 +728,12 @@ function PanelesSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route:
   );
 }
 
-interface IncidentItem { id: string | number; description?: string | null; type?: string | null; severity?: string | null; road?: string | null; km?: number | null; province?: string | null; latitude?: number | null; longitude?: number | null; }
 function IncidenciasSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<IncidentItem>({
     url: `/api/incidents?status=active&bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => ((d.incidents ?? d.data ?? []) as IncidentItem[]).filter((i) => typeof i.latitude === "number"),
+    pick: (d) => ((d as IncidentsResponse).incidents ?? []).filter(
+      (i) => typeof i.latitude === "number",
+    ),
     filter: (i) => inBbox(i.latitude as number, i.longitude as number, bbox)
       && distanceToRouteKm(i.latitude as number, i.longitude as number, route) <= CORRIDOR_DISTANCES_KM.incident,
     deps: [bboxKey, routeKey],
@@ -705,22 +741,26 @@ function IncidenciasSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; ro
   return (
     <Section icon={AlertTriangle} title="Incidencias activas ≤ 1 km" count={items?.length} loading={loading} error={error} accent="#fb923c"
       empty={!loading && items?.length === 0 ? "Sin incidencias activas en el corredor" : undefined}>
-      {items?.slice(0, 12).map((i) => (
-        <Row key={i.id} icon={AlertTriangle}
-          iconColor={i.severity === "HIGH" ? "#ef4444" : i.severity === "MEDIUM" ? "#f59e0b" : "#94b6ff"}
-          title={i.description ?? i.type ?? "Incidencia"}
-          subtitle={`${i.road ?? ""} ${i.km != null ? "km " + i.km : ""} ${i.province ? "· " + i.province : ""}`.trim()} />
-      ))}
+      {items?.slice(0, 12).map((i) => {
+        const km = i.kmPoint ?? i.km;
+        const road = i.roadNumber ?? i.road;
+        return (
+          <Row key={i.id} icon={AlertTriangle}
+            iconColor={i.severity === "HIGH" || i.severity === "VERY_HIGH" ? "#ef4444" : i.severity === "MEDIUM" ? "#f59e0b" : "#94b6ff"}
+            title={i.description ?? i.type ?? "Incidencia"}
+            subtitle={`${road ?? ""} ${km != null ? "km " + km : ""} ${i.province ? "· " + i.province : ""}`.trim()} />
+        );
+      })}
     </Section>
   );
 }
 
-interface HotspotItem { id: string | number; road?: string | null; km?: number | null; province?: string | null; accidentCount?: number; latitude?: number; longitude?: number; }
 function PuntosNegrosSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; route: OSRMRoute; bboxKey: string; routeKey: string }) {
   const { items, loading, error } = useCorridorData<HotspotItem>({
     url: `/api/accidentes/hotspots?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=200`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => ((d.hotspots ?? d.data ?? d.results ?? []) as HotspotItem[]).filter((h) => typeof h.latitude === "number"),
+    pick: (d) => ((d as HotspotsResponse).hotspots ?? []).filter(
+      (h) => typeof h.latitude === "number",
+    ),
     filter: (h) => inBbox(h.latitude as number, h.longitude as number, bbox)
       && distanceToRouteKm(h.latitude as number, h.longitude as number, route) <= CORRIDOR_DISTANCES_KM.hotspot,
     deps: [bboxKey, routeKey],
@@ -728,17 +768,19 @@ function PuntosNegrosSection({ bbox, route, bboxKey, routeKey }: { bbox: BBox; r
   return (
     <Section icon={Skull} title="Puntos negros (accidentes históricos)" count={items?.length} loading={loading} error={error} accent="#dc2626" defaultOpen={false}
       empty={!loading && items?.length === 0 ? "Sin puntos negros conocidos" : undefined}>
-      {items?.slice(0, 10).map((h) => (
-        <Row key={h.id} icon={Skull} iconColor="#dc2626"
-          title={`${h.road ?? "?"} ${h.km != null ? "km " + h.km : ""}`.trim()}
-          subtitle={h.province ?? ""}
-          value={h.accidentCount ? `${h.accidentCount} ev.` : undefined} />
-      ))}
+      {items?.slice(0, 10).map((h, idx) => {
+        const count = h.count ?? h.accidentCount;
+        return (
+          <Row key={h.id ?? `${h.road}-${h.km}-${idx}`} icon={Skull} iconColor="#dc2626"
+            title={`${h.road ?? "?"} ${h.km != null ? "km " + h.km : ""}`.trim()}
+            subtitle={h.province ?? ""}
+            value={count ? `${count} ev.` : undefined} />
+        );
+      })}
     </Section>
   );
 }
 
-interface TrainRouteItem { id: string | number; shortName?: string; longName?: string; brand?: string; origin?: string; destination?: string; durationMin?: number | null; }
 function TrenesAltSection({ route, routeKey }: { route: OSRMRoute; routeKey: string }) {
   // Use origin + destination of OSRM polyline (first + last coord) to guess city pair
   const coords = route.geometry.coordinates as [number, number][];
@@ -746,8 +788,7 @@ function TrenesAltSection({ route, routeKey }: { route: OSRMRoute; routeKey: str
   const dest = coords[coords.length - 1];
   const { items, loading, error } = useCorridorData<TrainRouteItem>({
     url: `/api/trenes/rutas?originLat=${origin[1].toFixed(3)}&originLng=${origin[0].toFixed(3)}&destLat=${dest[1].toFixed(3)}&destLng=${dest[0].toFixed(3)}&limit=20`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.routes ?? d.results ?? d.data ?? []) as TrainRouteItem[],
+    pick: (d) => (d as TrainRoutesResponse).data?.routes ?? [],
     filter: () => true,
     deps: [routeKey],
   });
@@ -764,12 +805,10 @@ function TrenesAltSection({ route, routeKey }: { route: OSRMRoute; routeKey: str
   );
 }
 
-interface WeatherAlertItem { id: string | number; title?: string | null; level?: string | null; province?: string | null; area?: string | null; startsAt?: string; endsAt?: string; }
 function MeteoSection({ bboxKey }: { bboxKey: string }) {
   const { items, loading, error } = useCorridorData<WeatherAlertItem>({
     url: `/api/weather-alerts?active=true&limit=500`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.alerts ?? d.data ?? []) as WeatherAlertItem[],
+    pick: (d) => (d as WeatherAlertsResponse).alerts ?? [],
     filter: () => true, // alerts are province-level; we keep all active and show
     deps: [bboxKey],
   });
@@ -785,12 +824,10 @@ function MeteoSection({ bboxKey }: { bboxKey: string }) {
   );
 }
 
-interface AirReading { id: string | number; stationName?: string; city?: string; province?: string; ica?: number | null; icaLabel?: string | null; latitude?: number; longitude?: number; }
 function CalidadAireSection({ bbox, bboxKey }: { bbox: BBox; bboxKey: string }) {
   const { items, loading, error } = useCorridorData<AirReading>({
     url: `/api/calidad-aire?bbox=${bbox.minLng},${bbox.minLat},${bbox.maxLng},${bbox.maxLat}&limit=50`,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pick: (d: any) => (d.stations ?? d.readings ?? d.data ?? []) as AirReading[],
+    pick: (d) => (d as AirQualityResponse).data?.stations ?? [],
     filter: () => true,
     deps: [bboxKey],
   });

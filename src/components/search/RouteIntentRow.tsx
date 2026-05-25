@@ -89,19 +89,33 @@ export function RouteIntentRow({ query, onNavigate }: Props) {
     setTo(null);
 
     const t = setTimeout(async () => {
+      // Distinguish operational failures (5xx, timeout, offline) from
+      // not-found, so /api/geocode incidents surface as "service down"
+      // instead of "place doesn't exist".
+      const fmt = (q: string, reason: "error" | "not_found") =>
+        reason === "error"
+          ? `No se ha podido buscar «${q}» (servicio no disponible)`
+          : `No se ha encontrado «${q}»`;
+
       if (intent.kind === "oneway") {
         const [a, b] = await Promise.all([geocodeOne(intent.from), geocodeOne(intent.to)]);
         if (cancelled) return;
         setFrom(a.ok ? a.result : null);
         setTo(b.ok ? b.result : null);
-        if (!a.ok && !b.ok) setError("No se han encontrado los lugares");
-        else if (!a.ok) setError(`No se ha encontrado «${intent.from}»`);
-        else if (!b.ok) setError(`No se ha encontrado «${intent.to}»`);
+        if (!a.ok && !b.ok) {
+          // Prefer the operational message if either side errored.
+          setError(
+            a.reason === "error" || b.reason === "error"
+              ? "No se ha podido buscar (servicio no disponible)"
+              : "No se han encontrado los lugares",
+          );
+        } else if (!a.ok) setError(fmt(intent.from, a.reason));
+        else if (!b.ok) setError(fmt(intent.to, b.reason));
       } else {
         const b = await geocodeOne(intent.to);
         if (cancelled) return;
         setTo(b.ok ? b.result : null);
-        if (!b.ok) setError(`No se ha encontrado «${intent.to}»`);
+        if (!b.ok) setError(fmt(intent.to, b.reason));
       }
       setLoading(false);
     }, 400);
