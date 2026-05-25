@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Navigation,
   Clock,
@@ -225,6 +226,93 @@ export default function RoutingPanel({ map }: RoutingPanelProps) {
       setLoading(false);
     }
   }, [origin, destination, costing, map, clearRoute, paintRoutes]);
+
+  // ─── URL params auto-route ──────────────────────────────────────────────
+  // Supports deep links like:
+  //   /mapa?from=40.4,-3.7&to=41.4,2.1
+  //   /mapa?from=40.4,-3.7,Madrid&to=41.4,2.1,Barcelona&via=auto
+  //   /mapa?to=37.4,-6.0&fromMe=1   (uses browser geolocation as origin)
+  //
+  // Fires once on mount AFTER the map is available. After auto-routing we
+  // strip the params from the URL bar so the browser back button works as
+  // expected and reloads don't re-route forever.
+  const autoRoutedRef = useRef(false);
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (autoRoutedRef.current) return;
+    if (!map) return;
+    if (!searchParams) return;
+
+    const fromRaw = searchParams.get("from");
+    const toRaw = searchParams.get("to");
+    const viaRaw = searchParams.get("via") as CostingModel | null;
+    const fromMe = searchParams.get("fromMe") === "1";
+
+    if (!toRaw) return;
+
+    autoRoutedRef.current = true;
+
+    const parsePoint = (raw: string | null): { lat: number; lon: number } | null => {
+      if (!raw) return null;
+      const parts = raw.split(",").map((s) => s.trim());
+      if (parts.length < 2) return null;
+      const lat = Number(parts[0]);
+      const lon = Number(parts[1]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+      return { lat, lon };
+    };
+
+    const dest = parsePoint(toRaw);
+    if (!dest) return;
+    setDestination(dest);
+    if (viaRaw && ["auto", "truck", "bicycle", "pedestrian"].includes(viaRaw)) {
+      setCosting(viaRaw);
+    }
+
+    const startWith = (orig: { lat: number; lon: number } | null) => {
+      if (!orig) return;
+      setOrigin(orig);
+      setOpen(true);
+      // Defer route calc one tick so the state setters above commit
+      setTimeout(() => {
+        const evt = new CustomEvent("trafico:autoroute");
+        window.dispatchEvent(evt);
+      }, 50);
+    };
+
+    const orig = parsePoint(fromRaw);
+    if (orig) {
+      startWith(orig);
+    } else if (fromMe && typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => startWith({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        () => setError("No se pudo obtener tu ubicación"),
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
+      );
+    } else {
+      // No origin given — leave the panel open with destination pre-filled
+      setOpen(true);
+    }
+
+    // Strip route params from URL to avoid re-firing on hot reload / back nav
+    try {
+      const url = new URL(window.location.href);
+      ["from", "to", "via", "fromMe"].forEach((k) => url.searchParams.delete(k));
+      window.history.replaceState(null, "", url.toString());
+    } catch {
+      // ignore
+    }
+  }, [map, searchParams]);
+
+  // Listen for the deferred autoroute event to trigger calculation
+  useEffect(() => {
+    const fire = () => {
+      if (origin && destination && map && !loading) handleRoute();
+    };
+    window.addEventListener("trafico:autoroute", fire);
+    return () => window.removeEventListener("trafico:autoroute", fire);
+  }, [origin, destination, map, loading, handleRoute]);
 
   // Isochrones not available with OSRM — would need Valhalla or custom implementation
 
