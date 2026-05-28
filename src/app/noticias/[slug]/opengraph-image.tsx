@@ -110,7 +110,7 @@ export default async function OGImage({
             {categoryLabel}
           </div>
           {article.source && (
-            <div style={{ color: "#9ca3af", fontSize: 18 }}>
+            <div style={{ display: "flex", color: "#9ca3af", fontSize: 18 }}>
               Datos: {article.source}
             </div>
           )}
