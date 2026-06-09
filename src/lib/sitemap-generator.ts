@@ -2,7 +2,6 @@ import prisma from "@/lib/db";
 import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
-import { vesselSlug } from "@/lib/vessel-utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -44,7 +43,6 @@ const FALLBACK_RAILWAY_STATION_SHARDS = 1; // ~1 506 stations
 const FALLBACK_RAILWAY_LINE_SHARDS = 1;    // ~1 251 routes
 const FALLBACK_AIR_QUALITY_SHARDS = 1;     // ~565 stations
 const FALLBACK_CLIMATE_STATION_SHARDS = 1; // ~900 stations
-const FALLBACK_AIRCRAFT_SHARDS = 1;     // active ICAO24s in last 7d
 const FALLBACK_SPANISH_PORT_SHARDS = 1; // 197 Spanish ports
 
 export interface SitemapEntry {
@@ -141,17 +139,11 @@ export async function getActiveShardIds(): Promise<{ id: number }[]> {
       fallback: FALLBACK_CLIMATE_STATION_SHARDS,
       count: () => prisma.climateStation.count(),
     },
-    {
-      offset: AIRCRAFT_OFFSET,
-      fallback: FALLBACK_AIRCRAFT_SHARDS,
-      count: async () => {
-        const rows = await prisma.aircraftPosition.findMany({
-          select: { icao24: true },
-          distinct: ["icao24"],
-        });
-        return rows.length;
-      },
-    },
+    // Aircraft shard (offset 1200) intentionally omitted (2026-06 SEO triage):
+    // per-ICAO24 pages rotate with ADS-B traffic and are crawl-budget waste
+    // while Google is not even downloading our child sitemaps. The
+    // /sitemap/12xx.xml routes still resolve via generateSitemapForShard for
+    // any crawler that has them on record — they just aren't advertised.
     {
       offset: SPANISH_PORT_OFFSET,
       fallback: FALLBACK_SPANISH_PORT_SHARDS,
@@ -222,9 +214,6 @@ export function getSitemapShardIds(): { id: number }[] {
     })),
     ...Array.from({ length: FALLBACK_CLIMATE_STATION_SHARDS }, (_, i) => ({
       id: CLIMATE_STATION_OFFSET + i,
-    })),
-    ...Array.from({ length: FALLBACK_AIRCRAFT_SHARDS }, (_, i) => ({
-      id: AIRCRAFT_OFFSET + i,
     })),
     ...Array.from({ length: FALLBACK_SPANISH_PORT_SHARDS }, (_, i) => ({
       id: SPANISH_PORT_OFFSET + i,
@@ -1361,19 +1350,22 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   ];
 
   // City-based pages
-  // NOTE: /trafico/:city is 301-redirected to /ciudad/:city — excluded from sitemap.
+  // /trafico/[city] is a real route (10-city registry) and our top organic
+  // entry point on Bing — it MUST be in the sitemap so Google discovers it.
+  // /ciudad/:city has no dynamic route (soft-404) — 301-redirected to
+  // /trafico/:city in next.config.ts and excluded here.
   const cityPages: SitemapEntry[] = [
+    ...TRAFFIC_CITY_SLUGS.map((c) => ({
+      url: `${BASE_URL}/trafico/${c}`,
+      lastModified: now,
+      changeFrequency: "hourly" as const,
+      priority: 0.95,
+    })),
     ...ZBE_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/zbe/${c}`,
       lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.88,
-    })),
-    ...CITIES.map((c) => ({
-      url: `${BASE_URL}/ciudad/${c}`,
-      lastModified: today,
-      changeFrequency: "daily" as const,
-      priority: 0.75,
     })),
     ...CITIES.slice(0, 10).map((c) => ({
       url: `${BASE_URL}/carga-ev/${c}`,
@@ -1602,107 +1594,13 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.7,
     }));
 
-  // Vessel detail pages (/maritimo/buques/[slug]) — emit canonical slug URLs
-  // (mmsi + name), matching the redirect target of the page at
-  // src/app/maritimo/buques/[slug]/page.tsx. Only vessels with a name whose
-  // slug is non-empty are included — vessels without a usable slug would
-  // receive a generic {mmsi}-only URL that 307-redirects, which wastes
-  // crawl budget. Also enforces the 9-digit MMSI range to filter AIS
-  // base stations and anomalous broadcasts.
-  //
-  // 7-day recency filter (added iter-4): the unfiltered query returned
-  // ~82,318 vessel URLs (well above the 50k-URL sitemap limit and most
-  // returning 404 on the detail page since AIS data is ephemeral). At
-  // ~2-5k active vessels per week this trims the shard back under-limit
-  // and lets Googlebot spend crawl budget on URLs that actually resolve.
-  const VESSEL_RECENCY_DAYS = 7;
-  const vesselSeenSince = new Date(
-    Date.now() - VESSEL_RECENCY_DAYS * 24 * 60 * 60 * 1000
-  );
-  let vesselPages: SitemapEntry[] = [];
-  try {
-    const namedVessels = await prisma.vessel.findMany({
-      select: { mmsi: true, name: true, updatedAt: true },
-      where: {
-        mmsi: { gte: 100_000_000, lte: 999_999_999 },
-        name: { not: null },
-        updatedAt: { gte: vesselSeenSince },
-      },
-      orderBy: { mmsi: "asc" },
-    });
-    vesselPages = namedVessels.flatMap((v) => {
-      const slug = vesselSlug(v.mmsi, v.name);
-      // vesselSlug falls back to bare mmsi when name has no slugifiable chars —
-      // skip those to keep the sitemap canonical (no redirects).
-      if (!slug.includes("-")) return [];
-      return [
-        {
-          url: `${BASE_URL}/maritimo/buques/${slug}`,
-          lastModified: v.updatedAt ?? today,
-          changeFrequency: "daily" as const,
-          priority: 0.55,
-        },
-      ];
-    });
-  } catch (err) {
-    reportApiError(err, "sitemap vessel pages");
-  }
-
-  // /maritimo/buques/[slug]/recorrido — voyage-history sub-pages added
-  // in iter-4. Only emit for vessels with at least one Voyage row so
-  // Google doesn't crawl empty histories. The sub-page's own ISR is
-  // 1h matching the voyage-detector cadence.
-  let vesselRecorridoPages: SitemapEntry[] = [];
-  let vesselHistorialPages: SitemapEntry[] = [];
-  try {
-    const vesselsWithVoyages = await prisma.voyage.findMany({
-      distinct: ["mmsi"],
-      select: { mmsi: true },
-      take: 500,
-    });
-    if (vesselsWithVoyages.length > 0) {
-      const namedRows = await prisma.vessel.findMany({
-        where: {
-          mmsi: { in: vesselsWithVoyages.map((v) => v.mmsi) },
-          name: { not: null },
-        },
-        select: { mmsi: true, name: true, updatedAt: true },
-      });
-
-      vesselRecorridoPages = namedRows.flatMap((v) => {
-        const slug = vesselSlug(v.mmsi, v.name);
-        if (!slug.includes("-")) return [];
-        return [
-          {
-            url: `${BASE_URL}/maritimo/buques/${slug}/recorrido`,
-            lastModified: v.updatedAt ?? today,
-            changeFrequency: "weekly" as const,
-            priority: 0.45,
-          },
-        ];
-      });
-
-      // /maritimo/buques/[slug]/historial/[year] — yearly archive pages (iter-9).
-      // One entry per vessel × year for the last 5 calendar years.
-      // Only emitted if the vessel has at least one Voyage row (otherwise the
-      // historial page would 404 on render). Priority 0.4 (archival content).
-      const currentYear = new Date().getFullYear();
-      const archiveYears = Array.from({ length: 5 }, (_, i) => currentYear - i);
-
-      vesselHistorialPages = namedRows.flatMap((v) => {
-        const slug = vesselSlug(v.mmsi, v.name);
-        if (!slug.includes("-")) return [];
-        return archiveYears.map((year) => ({
-          url: `${BASE_URL}/maritimo/buques/${slug}/historial/${year}`,
-          lastModified: v.updatedAt ?? today,
-          changeFrequency: "yearly" as const,
-          priority: 0.4,
-        }));
-      });
-    }
-  } catch (err) {
-    reportApiError(err, "sitemap vessel recorrido pages");
-  }
+  // Vessel detail pages (/maritimo/buques/[slug], /recorrido, /historial/[year])
+  // are deliberately NOT emitted (2026-06 SEO triage): AIS data is ephemeral —
+  // thousands of daily-rotating vessel URLs buried the ~2k stable money pages
+  // in this shard while Google was already rationing crawl (child sitemaps
+  // never downloaded, GSC 2026-06). Pages stay live and internally linked via
+  // /maritimo/buques. Re-add behind a shard of their own once the domain has
+  // crawl trust.
 
   return [
     ...staticPages,
@@ -1710,13 +1608,10 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     ...roadPages,
     ...cameraRoadPages,
     ...provincePages,
-    ...vesselRecorridoPages,
-    ...vesselHistorialPages,
     ...communityPages,
     ...maritimePortPages,
     ...transitOperatorPages,
     ...airportPages,
-    ...vesselPages,
   ];
 }
 
