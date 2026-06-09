@@ -248,6 +248,15 @@ const nextConfig: NextConfig = {
       // NOTE: /trafico/:city redirect removed — the destination /ciudad/:city had
       // no dynamic route, causing 15 city links from header+footer+home to 404.
       // /trafico/[city]/page.tsx exists and handles the city view directly.
+      // Reverse direction: /ciudad/:city has no dynamic route (soft-404) but
+      // was emitted in old sitemaps and crawled — 301 the 10 slugs the
+      // /trafico/[city] registry supports. /ciudad hub itself is untouched.
+      {
+        source:
+          "/ciudad/:city(madrid|barcelona|valencia|sevilla|malaga|zaragoza|bilbao|alicante|murcia|granada)",
+        destination: "/trafico/:city",
+        permanent: true,
+      },
       // /explorar/territorios/:slug → /espana/:slug
       {
         source: "/explorar/territorios/:slug",
