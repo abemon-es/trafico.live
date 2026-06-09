@@ -12,6 +12,7 @@
     "@sentry/node": "^10.47.0",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.3.3",
+    "googleapis": "^172.0.0",
     "gtfs-realtime-bindings": "^1.1.1",
     "pg": "^8.17.2",
     "tsx": "^4.21.0",

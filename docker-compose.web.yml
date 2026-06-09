@@ -13,6 +13,11 @@ services:
     restart: unless-stopped
     expose:
       - "3000"
+    # Radar PNG tiles written by collector-realtime (eumetsat-radar) are served
+    # statically from Next.js public/ at trafico.live/radar/*. Read-only here —
+    # the collector is the sole writer. Shared external volume, see below.
+    volumes:
+      - radar-tiles:/app/public/radar:ro
     environment:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
@@ -42,3 +47,11 @@ services:
         labels: "app=trafico-web"
         max-size: "50m"
         max-file: "5"
+
+# Shared with the collectors compose project (docker-compose.collectors.yml).
+# External + fixed name so both separate compose projects mount the same volume.
+# Bootstrap once (see docker-compose.collectors.yml for the chown command).
+volumes:
+  radar-tiles:
+    external: true
+    name: trafico-radar-tiles

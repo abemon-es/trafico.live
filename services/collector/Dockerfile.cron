@@ -82,6 +82,15 @@ ENV TZ=Europe/Madrid
 ENV NODE_ENV=production
 ENV CRONTAB_TIER=realtime
 
+# The eumetsat-radar task writes PNG tiles to /app/public/radar, which the web
+# container serves at trafico.live/radar/*. Create it owned by the collector
+# user (uid 1001 / primary group nogroup 65534 from `adduser --system`) so:
+#   1. the dir exists — otherwise `mkdir /app/public` throws EACCES every 15min
+#      and supercronic floods Sentry/GlitchTip with "exit status 1" (~11k/day).
+#   2. a fresh shared named volume mounted here inherits collector ownership on
+#      first mount. See the radar-tiles volume in docker-compose.collectors.yml.
+RUN mkdir -p /app/public/radar && chown -R 1001:65534 /app/public
+
 USER collector
 
 HEALTHCHECK --interval=60s --timeout=10s --start-period=60s --retries=3 \
