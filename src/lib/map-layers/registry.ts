@@ -787,6 +787,10 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
   },
 
   // ── Accident microdata (static PMTiles) ───────────────────────────────────
+  // NOT exposed in any preset (2026-06-10): AccidentMicrodata has 0 rows with
+  // coordinates (DGT public XLSX ships no lat/lon — collector.ts hardcodes
+  // null), so accidents.pmtiles cannot be generated and the source 404s.
+  // Definition kept for when road+km geocoding populates coordinates.
   // TODO: accidents-heatmap agent will add a heatmap variant. Once LAYER_STYLES
   // in map-tiles.ts has "accidentsHeatmap", add "accidents-heatmap" entry here.
   {

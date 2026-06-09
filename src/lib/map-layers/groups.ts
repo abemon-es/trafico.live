@@ -133,7 +133,10 @@ export const PRESET_LAYERS: Record<MapPreset, string[]> = {
     "city-sensors",
     "incidents",
     "roadworks",
-    "accidents",
+    // "accidents" removed 2026-06-10: AccidentMicrodata has 0 rows with
+    // coordinates (DGT public microdata ships no lat/lon), so the tile layer
+    // is empty and accidents.pmtiles 404s. Re-add once road+km geocoding
+    // lands (see docs/audit/2026-06-10-cto-audit.md).
     "gas-stations",
     "portugal-gas",
     "chargers",

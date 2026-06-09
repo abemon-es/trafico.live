@@ -343,7 +343,7 @@ export function AccidentesClient({
           initialView={{ center: [-3.7, 40.4], zoom: 5 }}
           preset="entity-focus"
           initialLayers={["province-choropleth"]}
-          availableLayers={["province-choropleth", "accidents"]}
+          availableLayers={["province-choropleth"]}
           controls={{ layerPanel: true, legend: true, themeToggle: false }}
         />
       </section>
