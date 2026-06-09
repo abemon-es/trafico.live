@@ -2,7 +2,6 @@
 
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { Map as MapIcon } from "lucide-react";
 import { EntitySamples } from "@/components/home/EntitySamples";
 
 export interface HomeStats {
@@ -15,24 +14,11 @@ export interface HomeStats {
   detectorCount: number;
 }
 
-// TraficoMap: ssr: false — depends on MapLibre / browser globals
-const TraficoMap = dynamic(
-  () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className="w-full bg-tl-50 dark:bg-gray-900 animate-pulse flex items-center justify-center"
-        style={{ height: "calc(70vh - 64px)" }}
-      >
-        <div className="text-center">
-          <MapIcon className="w-14 h-14 text-tl-200 dark:text-tl-800 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">Cargando mapa interactivo...</p>
-        </div>
-      </div>
-    ),
-  }
-);
+// Hero map moved to HeroMapDeferred: static panel first paint, live map
+// mounts post-hydration on desktop and on tap on mobile — keeps the ~260 KB
+// MapLibre chunk off the mobile critical path (Lighthouse mobile LCP was
+// 7.9 s with the map mounting unconditionally).
+import { HeroMapDeferred } from "@/components/home/HeroMapDeferred";
 
 // SSR-enabled (no maplibre/browser globals at module scope)
 const LiveCounterStrip = dynamic(
@@ -133,12 +119,7 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
             </p>
           </div>
         </header>
-        <TraficoMap
-          preset="home"
-          controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
-          initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
-          className="w-full h-full"
-        />
+        <HeroMapDeferred />
       </section>
 
       <Suspense fallback={null}>
