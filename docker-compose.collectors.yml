@@ -39,6 +39,10 @@ services:
     # panel, intensity, ...) each up to ~2 GB heap totalled past the cgroup.
     mem_limit: 5120m
     cpus: 2.0
+    # eumetsat-radar (*/15) writes radar PNG tiles to /app/public/radar; the web
+    # container serves them at trafico.live/radar/* via this same shared volume.
+    volumes:
+      - radar-tiles:/app/public/radar
 
   collector-frequent:
     <<: *collector-base
@@ -102,3 +106,14 @@ services:
 networks:
   web:
     external: true
+
+# Shared with the web compose project (docker-compose.web.yml) so radar tiles
+# written by collector-realtime are served by trafico-live. External + fixed
+# name because collectors and web deploy as separate compose projects.
+# One-time bootstrap (owned by collector uid so the writer can create files):
+#   docker volume create trafico-radar-tiles
+#   docker run --rm -v trafico-radar-tiles:/v alpine chown -R 1001:65534 /v
+volumes:
+  radar-tiles:
+    external: true
+    name: trafico-radar-tiles
