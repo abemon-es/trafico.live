@@ -83,17 +83,21 @@ async function getStats() {
   // Use UTC date to ensure consistency across timezones
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const yesterdayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
 
-  const [nationalStats, yesterday, taxFreeStats, terrestrialCount, maritimeCount, maritimeStats] = await Promise.all([
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: today },
+  // National stats: take the two most recent rows instead of hard-matching
+  // today/yesterday. The daily aggregation lands hours into the day; with the
+  // exact-date match the national price block (the page's primary content)
+  // silently vanished until then and maritime prices led the page
+  // (2026-06-10 audit P1).
+  const [nationalRows, taxFreeStats, terrestrialCount, maritimeCount, maritimeStats] = await Promise.all([
+    prisma.fuelPriceDailyStats.findMany({
+      where: { scope: "national", date: { lte: today } },
+      orderBy: { date: "desc" },
+      take: 2,
     }),
     prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: yesterdayDate },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "tax-free", date: today },
+      where: { scope: "tax-free", date: { lte: today } },
+      orderBy: { date: "desc" },
     }),
     prisma.gasStation.count({
       where: { province: { notIn: TAX_FREE_PROVINCES } },
@@ -107,13 +111,19 @@ async function getStats() {
     }),
   ]);
 
-  // Stats individuales de territorios especiales
+  const nationalStats = nationalRows[0] ?? null;
+  const yesterday = nationalRows[1] ?? null;
+
+  // Stats individuales de territorios especiales (same latest-available
+  // fallback as the national block)
   const [ceutaStats, melillaStats, canariasStats] = await Promise.all([
     prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "province:51", date: today },
+      where: { scope: "province:51", date: { lte: today } },
+      orderBy: { date: "desc" },
     }),
     prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "province:52", date: today },
+      where: { scope: "province:52", date: { lte: today } },
+      orderBy: { date: "desc" },
     }),
     prisma.fuelPriceDailyStats.findMany({
       where: { scope: { in: ["province:35", "province:38"] }, date: today },
@@ -276,22 +286,22 @@ export default async function GasolinerasPage() {
         </Link>
         <Link
           href="/gasolineras/precios"
-          className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/50 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+          className="flex items-center gap-3 p-4 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-700/50 hover:bg-tl-amber-100 dark:hover:bg-tl-amber-900/30 transition-colors"
         >
-          <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <TrendingUp className="w-8 h-8 text-tl-amber-500 dark:text-tl-amber-400" />
           <div>
-            <div className="font-semibold text-green-900 dark:text-green-300">Precios</div>
-            <div className="text-sm text-green-700 dark:text-green-400">Hoy por provincia</div>
+            <div className="font-semibold text-tl-amber-700 dark:text-tl-amber-300">Precios</div>
+            <div className="text-sm text-tl-amber-600 dark:text-tl-amber-400">Hoy por provincia</div>
           </div>
         </Link>
         <Link
           href="/gasolineras/mapa"
-          className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800/50 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+          className="flex items-center gap-3 p-4 bg-tl-50 dark:bg-tl-900/20 rounded-lg border border-tl-200 dark:border-tl-800/50 hover:bg-tl-100 dark:hover:bg-tl-900/30 transition-colors"
         >
-          <MapPin className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+          <MapPin className="w-8 h-8 text-tl-600 dark:text-tl-400" />
           <div>
-            <div className="font-semibold text-purple-900 dark:text-purple-300">Mapa</div>
-            <div className="text-sm text-purple-700 dark:text-purple-400">Ver en mapa</div>
+            <div className="font-semibold text-tl-900 dark:text-tl-300">Mapa</div>
+            <div className="text-sm text-tl-700 dark:text-tl-400">Ver en mapa</div>
           </div>
         </Link>
       </div>
@@ -330,16 +340,16 @@ export default async function GasolinerasPage() {
                 Min: {formatPrice(stats.nationalStats.minGasolina95)} | Max: {formatPrice(stats.nationalStats.maxGasolina95)}
               </div>
             </div>
-            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-              <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">Gasolina 98</div>
-              <div className="text-3xl font-bold text-purple-700 dark:text-purple-300 mb-2 font-data">
+            <div className="bg-tl-50 dark:bg-tl-900/20 rounded-lg p-4">
+              <div className="text-sm text-tl-600 dark:text-tl-400 mb-1">Gasolina 98</div>
+              <div className="text-3xl font-bold text-tl-700 dark:text-tl-300 mb-2 font-data">
                 {formatPrice(stats.nationalStats.avgGasolina98)}
               </div>
               <TrendBadge
                 current={stats.nationalStats.avgGasolina98 ? Number(stats.nationalStats.avgGasolina98) : null}
                 previous={stats.yesterday?.avgGasolina98 ? Number(stats.yesterday.avgGasolina98) : null}
               />
-              <div className="text-xs text-purple-600 dark:text-purple-400 mt-2 font-data">
+              <div className="text-xs text-tl-600 dark:text-tl-400 mt-2 font-data">
                 Min: {formatPrice(stats.nationalStats.minGasolina98)} | Max: {formatPrice(stats.nationalStats.maxGasolina98)}
               </div>
             </div>

@@ -121,7 +121,12 @@ const PROVINCE_MAP = new Map<string, ProvinceConfig>(
 );
 
 export const dynamic = "force-static";
-export const dynamicParams = false;
+// dynamicParams=true (2026-06-10): with dynamicParams=false + ISR
+// revalidate, RSC (_rsc) prefetch requests intermittently threw
+// "Internal: NoFallbackError" -> HTTP 500 even for params in
+// generateStaticParams (24 hits/6h in prod logs; direct loads were 200).
+// Unknown slugs are still rejected by the notFound() guard in the page.
+export const dynamicParams = true;
 export const revalidate = 86400; // 24h — DGT microdata updated annually
 
 export function generateStaticParams() {
