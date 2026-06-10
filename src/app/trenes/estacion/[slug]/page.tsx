@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import { slugify } from "@/lib/geo/slugify";
 import {
   Train,
@@ -274,6 +275,7 @@ export default async function EstacionDetallePage({ params }: Props) {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+      <TrackEntityView entityType="railway_station" entityId={slug} />
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
