@@ -54,6 +54,8 @@ interface IncidentFeature {
 interface IncidentsResponse {
   count: number;
   totalCount: number;
+  /** Total matching active incidents after filters, before pagination. */
+  filteredTotal: number;
   lastUpdated: string;
   counts: {
     byEffect: Record<string, number>;
@@ -136,16 +138,9 @@ export function IncidenciasContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Actions bar */}
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
-          <Link
-            href="/incidencias/analytics"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 hover:bg-tl-100 dark:bg-tl-900/30 transition-colors text-sm font-medium border border-tl-200 dark:border-tl-800 whitespace-nowrap self-start"
-          >
-            <BarChart2 className="w-4 h-4" />
-            Ver análisis histórico
-          </Link>
-        </div>
+        {/* "Ver análisis histórico" removed (2026-06-10 audit): it duplicated
+            the SSR "Análisis de incidencias" link above — three stacked CTAs
+            with near-identical labels on mobile. */}
 
         {/* Stats bar */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 mb-4">
@@ -153,7 +148,8 @@ export function IncidenciasContent() {
             <div className="flex items-center gap-6">
               <div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {isLoading ? "-" : data?.count || 0}
+                  {/* filteredTotal = real active total (count is just the page size) */}
+                  {isLoading ? "-" : data?.filteredTotal ?? data?.count ?? 0}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Incidencias activas</p>
               </div>

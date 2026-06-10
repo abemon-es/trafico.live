@@ -581,7 +581,12 @@ const CITIES: Record<string, CityConfig> = {
 export function generateStaticParams() {
   return Object.keys(CITIES).map((ciudad) => ({ ciudad }));
 }
-export const dynamicParams = false;
+// dynamicParams=true (2026-06-10): with dynamicParams=false + ISR
+// revalidate, RSC (_rsc) prefetch requests intermittently threw
+// "Internal: NoFallbackError" -> HTTP 500 even for params in
+// generateStaticParams (24 hits/6h in prod logs; direct loads were 200).
+// Unknown slugs are still rejected by the notFound() guard in the page.
+export const dynamicParams = true;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data fetching
