@@ -28,6 +28,7 @@ import { installFlow } from "@/lib/map-layers/animators/flow";
 import { installPulse } from "@/lib/map-layers/animators/pulse";
 import { installIconRegistry } from "@/lib/map-layers/icons";
 import { TraficoMapControls } from "./TraficoMapControls";
+import { trackMapInteraction } from "@/lib/analytics";
 import { TraficoMapLegend } from "./TraficoMapLegend";
 import type { LayerDefinition, MapPreset, EntityType } from "@/lib/map-layers/types";
 import type { ThemeProp } from "@/lib/map-layers/hooks/useMapTheme";
@@ -469,7 +470,13 @@ function TraficoMapInner({
         <TraficoMapControls
           availableLayers={availableLayers}
           activeLayers={activeLayers}
-          onToggle={toggleLayer}
+          onToggle={(id) => {
+            trackMapInteraction(
+              activeLayers.includes(id) ? "layer_off" : "layer_on",
+              id
+            );
+            toggleLayer(id);
+          }}
           resolvedTheme={resolvedTheme}
           onThemeToggle={themeToggle ? toggleTheme : undefined}
           showThemeToggle={themeToggle}
