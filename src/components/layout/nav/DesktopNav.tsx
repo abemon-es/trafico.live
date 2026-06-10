@@ -64,6 +64,12 @@ export function DesktopNav() {
       if (navRef.current?.contains(target)) return;
       const shell = document.getElementById("mega-panel-shell");
       if (shell?.contains(target)) return;
+      // DesktopNav stays mounted (CSS-hidden) on mobile, so this document
+      // listener also fires there. Taps inside the mobile drawer were closing
+      // it on mousedown before their click could land — accordion sections and
+      // the search trigger were dead on mobile (2026-06-10 audit P0).
+      const mobileNav = document.getElementById("mobile-nav");
+      if (mobileNav?.contains(target)) return;
       cancelTimers();
       closeAll();
     }

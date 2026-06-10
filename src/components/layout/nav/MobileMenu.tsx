@@ -361,9 +361,12 @@ export function MobileMenu() {
     returnFocus: true,
   });
 
-  // Reset search when menu closes
+  // Reset search whenever the menu open-state flips. Resetting on open too
+  // (not just close) recovers from a race where a tap's click set
+  // searchActive=true after the close-reset already ran — the next open then
+  // started with the search overlay silently covering the menu.
   useEffect(() => {
-    if (!mobileMenuOpen) setSearchActive(false);
+    setSearchActive(false);
   }, [mobileMenuOpen]);
 
   return (
