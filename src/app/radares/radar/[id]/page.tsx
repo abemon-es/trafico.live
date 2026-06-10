@@ -15,6 +15,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import {
   AlertTriangle,
   ArrowRight,
@@ -279,6 +280,7 @@ export default async function RadarDetailPage({ params }: Props) {
 
   return (
     <>
+      <TrackEntityView entityType="radar" entityId={id} />
       <StructuredData data={[placeSchema, breadcrumbSchema]} />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

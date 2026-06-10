@@ -16,6 +16,7 @@ import Image from "next/image";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import {
   Camera,
   MapPin,
@@ -276,6 +277,7 @@ export default async function CameraDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <TrackEntityView entityType="camera" entityId={id} />
       {videoSchema && <StructuredData data={videoSchema} />}
       <StructuredData data={placeSchema} />
 

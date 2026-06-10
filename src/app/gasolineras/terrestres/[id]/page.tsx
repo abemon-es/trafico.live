@@ -7,6 +7,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedByArea } from "@/components/seo/RelatedByArea";
 import { PriceComparisonCard, StationRanking, PriceHistoryChart } from "@/components/gas-stations";
 import { TraficoMapCard } from "@/components/map/TraficoMapCard";
+import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
 export const revalidate = 86400;
@@ -303,6 +304,7 @@ export default async function StationDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      <TrackEntityView entityType="gas_station" entityId={id} />
       {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Map as MapIcon, Play } from "lucide-react";
+import { trackCtaClick } from "@/lib/analytics";
 
 // MapLibre + protomaps + pmtiles ≈ 260 KB gz. next/dynamic only fetches the
 // chunk when the component actually renders, so gating the render gates the
@@ -73,7 +74,10 @@ export function HeroMapDeferred() {
       />
       <button
         type="button"
-        onClick={() => setShowMap(true)}
+        onClick={() => {
+          trackCtaClick("hero_map_load", "Ver mapa en vivo", "home_hero");
+          setShowMap(true);
+        }}
         className="absolute inset-x-0 bottom-8 mx-auto flex w-fit items-center gap-2.5 rounded-full bg-tl-600 px-6 py-3.5 text-white shadow-xl shadow-tl-600/25 active:scale-[0.98] transition-transform md:hidden"
         aria-label="Cargar el mapa interactivo en vivo"
       >
