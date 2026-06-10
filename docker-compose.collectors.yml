@@ -37,7 +37,12 @@ services:
     # 2026-05-07: bumped 3 GB → 5 GB after 12 OOM kills/hr — multiple
     # concurrent supercronic-spawned Node tasks (ais-stream, transit-realtime,
     # panel, intensity, ...) each up to ~2 GB heap totalled past the cgroup.
-    mem_limit: 5120m
+    # 2026-06-10: 5 GB still blows on the 6-hourly burst (00/06/12/18:00:15) —
+    # ~55 child OOM kills/day, fully silent: PID 1 survives so health stays
+    # green and ContainerOOMKill excludes collector*. GlitchTip "exit status
+    # 137" ×1565/wk corroborates. Bumped 5 GB → 8 GB; per-task heap cap
+    # (NODE_OPTIONS=2048) unchanged — it's the concurrent-task total that peaks.
+    mem_limit: 8192m
     cpus: 2.0
     # eumetsat-radar (*/15) writes radar PNG tiles to /app/public/radar; the web
     # container serves them at trafico.live/radar/* via this same shared volume.
