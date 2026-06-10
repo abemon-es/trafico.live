@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import runwaysData from "../../../../../public/data/runways.json";
 import PaxChart from "./pax-chart";
+import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import { AirportEntityMap } from "./entity-map";
 
 export const revalidate = 300;
@@ -542,6 +543,7 @@ export default async function AirportDetailPage({ params }: Props) {
 
   return (
     <>
+      <TrackEntityView entityType="airport" entityId={iata} />
       <StructuredData data={[airportSchema, breadcrumbSchema, faqSchema]} />
 
       <div className="max-w-7xl mx-auto px-4 pt-6">
