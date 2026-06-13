@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import RoutingPanel from "./routing-panel";
+import { DEFAULT_LENS } from "@/lib/map-layers/lenses";
 
 const TraficoMap = dynamic(
   () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
@@ -17,7 +18,9 @@ const TraficoMap = dynamic(
   }
 );
 
-/** Unified infrastructure dashboard — all transport layers via TraficoMap preset="all". */
+/** Unified infrastructure map. Opens on the Tráfico lens; the pinned lens bar
+ *  swaps intents in one tap (see lenses.ts). Was preset="all" (29 layers) until
+ *  the 2026-06-13 mobile UX overhaul. */
 export function MapaInfraClient() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [mapInstance, setMapInstance] = useState<any>(null);
@@ -36,8 +39,8 @@ export function MapaInfraClient() {
   return (
     <div style={{ height: "calc(100dvh - 64px)" }}>
       <TraficoMap
-        preset="all"
-        controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: true }}
+        initialLayers={DEFAULT_LENS.layers}
+        controls={{ layerPanel: true, lensBar: true, legend: true, themeToggle: true, fullscreen: true }}
         syncUrl
         initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
         className="w-full h-full"
