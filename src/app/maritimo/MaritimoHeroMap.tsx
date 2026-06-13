@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { defaultLensLayers } from "@/lib/map-layers/lenses";
 
 const TraficoMap = dynamic(
   () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
@@ -15,8 +16,8 @@ const TraficoMap = dynamic(
 export function MaritimoHeroMap() {
   return (
     <TraficoMap
-      preset="maritimo"
-      controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
+      initialLayers={defaultLensLayers("maritimo")}
+      controls={{ lensBar: "maritimo", layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
       initialView={{ center: [0, 39], zoom: 5 }}
       className="w-full h-[500px] md:h-[600px] rounded-xl overflow-hidden"
     />

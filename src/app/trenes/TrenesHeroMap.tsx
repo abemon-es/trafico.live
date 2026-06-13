@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { defaultLensLayers } from "@/lib/map-layers/lenses";
 import { Train } from "lucide-react";
 
 const TraficoMap = dynamic(
@@ -18,8 +19,8 @@ const TraficoMap = dynamic(
 export function TrenesHeroMap() {
   return (
     <TraficoMap
-      preset="trenes"
-      controls={{ layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
+      initialLayers={defaultLensLayers("trenes")}
+      controls={{ lensBar: "trenes", layerPanel: true, legend: true, themeToggle: true, fullscreen: false }}
       initialView={{ center: [-3.7, 40.4], zoom: 5.6 }}
       className="w-full h-[500px] md:h-[600px] rounded-2xl overflow-hidden"
     />
