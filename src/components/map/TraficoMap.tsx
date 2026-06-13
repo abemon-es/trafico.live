@@ -28,6 +28,8 @@ import { installFlow } from "@/lib/map-layers/animators/flow";
 import { installPulse } from "@/lib/map-layers/animators/pulse";
 import { installIconRegistry } from "@/lib/map-layers/icons";
 import { TraficoMapControls } from "./TraficoMapControls";
+import { MapLensBar } from "./MapLensBar";
+import type { MapLens } from "@/lib/map-layers/lenses";
 import { trackMapInteraction } from "@/lib/analytics";
 import { TraficoMapLegend } from "./TraficoMapLegend";
 import type { LayerDefinition, MapPreset, EntityType } from "@/lib/map-layers/types";
@@ -45,6 +47,9 @@ export interface TraficoMapProps {
     themeToggle?: boolean;
     legend?: boolean;
     fullscreen?: boolean;
+    /** Intent-lens selector pinned at the top (2026-06 mobile UX). When on,
+     *  the layer panel is demoted to a "Personalizar" power-user control. */
+    lensBar?: boolean;
   };
   initialView?: {
     center?: [number, number];
@@ -94,6 +99,7 @@ function TraficoMapInner({
     themeToggle = true,
     legend = true,
     fullscreen = false,
+    lensBar = false,
   } = controlsCfg;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,12 +110,20 @@ function TraficoMapInner({
 
   const { resolvedTheme, mapStyle, toggleTheme } = useMapTheme(themeProp);
 
-  const { activeLayers, availableLayers, toggleLayer } = useMapLayers({
+  const { activeLayers, availableLayers, toggleLayer, setActiveLayers } = useMapLayers({
     preset,
     initialLayers,
     availableLayers: allowedIds,
     syncUrl,
   });
+
+  const handleSelectLens = useCallback(
+    (lens: MapLens) => {
+      trackMapInteraction("lens", lens.id);
+      setActiveLayers(lens.layers);
+    },
+    [setActiveLayers],
+  );
 
   // Track which logical layers are currently mounted on the map
   const mountedLayers = useRef<Set<string>>(new Set());
@@ -465,7 +479,13 @@ function TraficoMapInner({
         /gasolineras.
       </p>
 
-      {/* Layer toggle panel */}
+      {/* Intent-lens selector — primary map control on mobile */}
+      {lensBar && mapReady && (
+        <MapLensBar activeLayers={activeLayers} onSelectLens={handleSelectLens} />
+      )}
+
+      {/* Layer toggle panel. With the lens bar on it's demoted to a
+          "Personalizar" power-user control, sitting below the lens bar. */}
       {layerPanel && mapReady && (
         <TraficoMapControls
           availableLayers={availableLayers}
@@ -480,6 +500,8 @@ function TraficoMapInner({
           resolvedTheme={resolvedTheme}
           onThemeToggle={themeToggle ? toggleTheme : undefined}
           showThemeToggle={themeToggle}
+          title={lensBar ? "Personalizar" : "Capas"}
+          offsetTop={lensBar}
         />
       )}
 

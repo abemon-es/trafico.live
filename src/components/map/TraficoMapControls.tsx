@@ -12,6 +12,11 @@ interface TraficoMapControlsProps {
   resolvedTheme: "light" | "dark";
   onThemeToggle?: () => void;
   showThemeToggle?: boolean;
+  /** Header label. "Capas" by default; "Personalizar" when a lens bar owns
+   *  primary layer selection. */
+  title?: string;
+  /** Drop the panel below a pinned lens bar so they don't overlap. */
+  offsetTop?: boolean;
 }
 
 /**
@@ -27,15 +32,19 @@ export function TraficoMapControls({
   resolvedTheme,
   onThemeToggle,
   showThemeToggle = true,
+  title = "Capas",
+  offsetTop = false,
 }: TraficoMapControlsProps) {
-  // On mobile / narrow viewports default to collapsed so the map isn't
-  // covered by the panel on first load. Desktop users see it open.
+  // Default collapsed on mobile so the panel doesn't cover the map on load.
+  // When a lens bar is present the panel is also collapsed by default on
+  // desktop — it's now secondary to the lens selector.
   const [open, setOpen] = useState(true);
   useEffect(() => {
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches) {
-      setOpen(false);
-    }
-  }, []);
+    const narrow =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 640px)").matches;
+    if (narrow || offsetTop) setOpen(false);
+  }, [offsetTop]);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   // Group layers by their group key, preserving GROUP_ORDER
@@ -54,7 +63,7 @@ export function TraficoMapControls({
   };
 
   return (
-    <div className="absolute top-3 right-3 z-10 w-56">
+    <div className={`absolute right-3 z-10 w-56 ${offsetTop ? "top-[4.75rem]" : "top-3"}`}>
       {/* Panel toggle header */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -65,7 +74,7 @@ export function TraficoMapControls({
       >
         <span className="flex items-center gap-2 font-semibold text-sm font-['DM_Sans']">
           <Layers className="w-4 h-4 text-tl-600 dark:text-tl-300" aria-hidden />
-          Capas
+          {title}
         </span>
         <div className="flex items-center gap-1">
           {showThemeToggle && onThemeToggle && (
