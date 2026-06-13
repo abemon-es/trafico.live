@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { defaultLensLayers } from "@/lib/map-layers/lenses";
 import dynamic from "next/dynamic";
 import { Ship, Filter } from "lucide-react";
 import { LivePanel } from "@/components/maritime/LivePanel";
@@ -30,8 +31,8 @@ export function MapaClient() {
   return (
     <div className="relative h-[calc(100dvh-64px)] w-full">
       <TraficoMap
-        preset="maritimo"
-        controls={{
+        initialLayers={defaultLensLayers("maritimo")}
+        controls={{ lensBar: "maritimo",
           layerPanel: true,
           legend: true,
           themeToggle: true,

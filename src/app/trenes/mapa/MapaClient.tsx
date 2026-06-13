@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { defaultLensLayers } from "@/lib/map-layers/lenses";
 import { Train } from "lucide-react";
 
 const TraficoMap = dynamic(
@@ -21,8 +22,8 @@ const TraficoMap = dynamic(
 export function MapaClient() {
   return (
     <TraficoMap
-      preset="trenes"
-      controls={{
+      initialLayers={defaultLensLayers("trenes")}
+      controls={{ lensBar: "trenes",
         layerPanel: true,
         legend: true,
         themeToggle: true,

@@ -29,7 +29,8 @@ import { installPulse } from "@/lib/map-layers/animators/pulse";
 import { installIconRegistry } from "@/lib/map-layers/icons";
 import { TraficoMapControls } from "./TraficoMapControls";
 import { MapLensBar } from "./MapLensBar";
-import type { MapLens } from "@/lib/map-layers/lenses";
+import { lensSet, type MapLens, type LensContext } from "@/lib/map-layers/lenses";
+import { useAnnouncer } from "@/lib/a11y/live-region";
 import { trackMapInteraction } from "@/lib/analytics";
 import { TraficoMapLegend } from "./TraficoMapLegend";
 import type { LayerDefinition, MapPreset, EntityType } from "@/lib/map-layers/types";
@@ -47,9 +48,10 @@ export interface TraficoMapProps {
     themeToggle?: boolean;
     legend?: boolean;
     fullscreen?: boolean;
-    /** Intent-lens selector pinned at the top (2026-06 mobile UX). When on,
-     *  the layer panel is demoted to a "Personalizar" power-user control. */
-    lensBar?: boolean;
+    /** Intent-lens selector pinned at the top (2026-06 mobile UX). `true` =
+     *  global 10-lens bar (/mapa); a context key = that vertical's scoped
+     *  sub-view lenses. When on, the layer panel is demoted to "Personalizar". */
+    lensBar?: boolean | LensContext;
   };
   initialView?: {
     center?: [number, number];
@@ -109,6 +111,7 @@ function TraficoMapInner({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const { resolvedTheme, mapStyle, toggleTheme } = useMapTheme(themeProp);
+  const [announcerNode, announce] = useAnnouncer();
 
   const { activeLayers, availableLayers, toggleLayer, setActiveLayers } = useMapLayers({
     preset,
@@ -121,8 +124,13 @@ function TraficoMapInner({
     (lens: MapLens) => {
       trackMapInteraction("lens", lens.id);
       setActiveLayers(lens.layers);
+      // The map canvas redraws silently — announce the change for SR users.
+      const n = lens.layers.length;
+      announce(
+        `Vista de ${lens.label} activada. ${n} ${n === 1 ? "capa visible" : "capas visibles"}.`,
+      );
     },
-    [setActiveLayers],
+    [setActiveLayers, announce],
   );
 
   // Track which logical layers are currently mounted on the map
@@ -479,9 +487,17 @@ function TraficoMapInner({
         /gasolineras.
       </p>
 
-      {/* Intent-lens selector — primary map control on mobile */}
+      {/* SR live region — announces lens/layer changes (map redraws silently) */}
+      {announcerNode}
+
+      {/* Intent-lens selector — primary map control on mobile. Global bar on
+          /mapa; a vertical's scoped sub-views elsewhere. */}
       {lensBar && mapReady && (
-        <MapLensBar activeLayers={activeLayers} onSelectLens={handleSelectLens} />
+        <MapLensBar
+          lenses={lensSet(lensBar)}
+          activeLayers={activeLayers}
+          onSelectLens={handleSelectLens}
+        />
       )}
 
       {/* Layer toggle panel. With the lens bar on it's demoted to a
@@ -501,7 +517,7 @@ function TraficoMapInner({
           onThemeToggle={themeToggle ? toggleTheme : undefined}
           showThemeToggle={themeToggle}
           title={lensBar ? "Personalizar" : "Capas"}
-          offsetTop={lensBar}
+          offsetTop={!!lensBar}
         />
       )}
 
