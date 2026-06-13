@@ -46,12 +46,12 @@ export const MAP_LENSES: MapLens[] = [
   { id: "radares", label: "Radares", icon: Radar, layers: ["radars"] },
   { id: "camaras", label: "Cámaras", icon: Camera, layers: ["cameras"] },
   { id: "gasolineras", label: "Gasolineras", icon: Fuel, layers: ["gas-stations", "portugal-gas"] },
-  { id: "carga-ev", label: "Carga EV", icon: Zap, layers: ["chargers"] },
+  { id: "carga-ev", label: "Recarga", icon: Zap, layers: ["chargers"] },
   { id: "trenes", label: "Trenes", icon: TrainFront, layers: ["fleet", "railway-stations", "railway-routes"] },
   { id: "vuelos", label: "Vuelos", icon: Plane, layers: ["aircraft", "airports"] },
   { id: "barcos", label: "Barcos", icon: Ship, layers: ["vessels", "ferry-routes", "ports", "shipping-lanes", "emergencies"] },
   { id: "transporte", label: "Transporte", icon: Bus, layers: ["transit-vehicles", "transit-routes", "transit-stops"] },
-  { id: "aire", label: "Aire", icon: Wind, layers: ["air-quality", "climate-stations"] },
+  { id: "aire", label: "Contaminación", icon: Wind, layers: ["air-quality", "climate-stations"] },
 ];
 
 // ── Per-vertical scoped lens sets. First entry = calm default for that page. ──
@@ -62,7 +62,7 @@ export const LENS_SETS = {
     { id: "incidencias", label: "Incidencias", icon: TriangleAlert, layers: ["incidents", "roadworks"] },
     { id: "camaras", label: "Cámaras", icon: Camera, layers: ["cameras"] },
     { id: "radares", label: "Radares", icon: Radar, layers: ["radars"] },
-    { id: "flujo", label: "Flujo", icon: Activity, layers: ["sensors", "city-sensors"] },
+    { id: "flujo", label: "Sensores", icon: Activity, layers: ["sensors", "city-sensors"] },
   ],
 
   // Defaults carry a static context anchor so the live layer isn't a handful
@@ -102,7 +102,7 @@ export const LENS_SETS = {
   // of air quality. Calidad del aire leads; weather is the secondary lens.
   aire: [
     { id: "calidad", label: "Calidad del aire", icon: Wind, layers: ["air-quality"] },
-    { id: "meteo", label: "Meteo", icon: CloudSun, layers: ["climate-stations"] },
+    { id: "meteo", label: "Tiempo", icon: CloudSun, layers: ["climate-stations"] },
   ],
 } satisfies Record<string, MapLens[]>;
 

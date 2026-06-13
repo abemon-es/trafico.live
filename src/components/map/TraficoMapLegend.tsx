@@ -27,6 +27,13 @@ export function TraficoMapLegend({ layers, activeLayers }: TraficoMapLegendProps
 
   if (visibleLayers.length === 0) return null;
 
+  // Suppress on a single-layer, single-entry default (e.g. Radares): the active
+  // lens chip already says what's shown, so the legend is redundant noise
+  // (2026-06-13 UX panel). Keep it for multi-entry layers (incidents severity)
+  // and multi-layer views that need disambiguation.
+  const totalEntries = visibleLayers.reduce((n, l) => n + (l.legend?.length ?? 0), 0);
+  if (visibleLayers.length === 1 && totalEntries <= 1) return null;
+
   return (
     <div className="absolute bottom-8 left-3 z-10">
       {/* Mobile: compact pill that expands on tap */}
@@ -43,7 +50,7 @@ export function TraficoMapLegend({ layers, activeLayers }: TraficoMapLegendProps
             <ChevronUp className="w-3 h-3 opacity-60" aria-hidden />
           </button>
         ) : (
-          <div className="max-w-[80vw] max-h-[60vh] overflow-y-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm rounded-xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 px-3 py-2">
+          <div className="max-w-[80vw] max-h-[60vh] overflow-y-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 px-3 py-2">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-['DM_Sans']">
                 Leyenda
@@ -63,7 +70,7 @@ export function TraficoMapLegend({ layers, activeLayers }: TraficoMapLegendProps
       </div>
 
       {/* Desktop: always-on panel, capped height so very-many-layers scrolls */}
-      <div className="hidden md:block max-w-[220px] max-h-[70vh] overflow-y-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 px-3 py-2">
+      <div className="hidden md:block max-w-[220px] max-h-[70vh] overflow-y-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 px-3 py-2">
         <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 font-['DM_Sans']">
           Leyenda
         </p>

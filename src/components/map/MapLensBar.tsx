@@ -30,7 +30,7 @@ export function MapLensBar({
   lenses,
   activeLayers,
   onSelectLens,
-  ariaLabel = "¿Qué quieres ver en el mapa?",
+  ariaLabel = "Vistas del mapa",
 }: MapLensBarProps) {
   const activeLens = matchLens(activeLayers, lenses);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,7 +75,7 @@ export function MapLensBar({
         aria-label={ariaLabel}
         aria-orientation="horizontal"
         onKeyDown={handleKeyDown}
-        className="flex items-center gap-1.5 overflow-x-auto rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md shadow-lg border border-tl-300/20 dark:border-tl-600/20 p-1.5 [&::-webkit-scrollbar]:hidden"
+        className="flex items-center gap-2 overflow-x-auto rounded-2xl bg-white/92 dark:bg-slate-900/92 backdrop-blur-md shadow-xl shadow-tl-900/10 border border-tl-300/20 dark:border-tl-600/20 p-1.5 [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: "none" }}
       >
         {lenses.map((lens, i) => {
@@ -93,11 +93,12 @@ export function MapLensBar({
                 onSelectLens(lens);
               }}
               className={[
-                "flex items-center gap-1.5 shrink-0 rounded-xl px-3.5 py-2.5 min-h-[44px] text-sm font-semibold font-['Exo_2'] transition-colors",
+                "flex items-center gap-1.5 shrink-0 rounded-xl px-3.5 py-2.5 min-h-[44px] min-w-[44px] text-sm font-semibold font-['Exo_2']",
+                "transition-[color,background-color,transform] duration-150 ease-in-out motion-safe:active:scale-[0.94]",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-500 focus-visible:ring-offset-1",
                 isActive
                   ? "bg-tl-600 text-white shadow-sm"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
+                  : "text-slate-600 dark:text-slate-300 hover:bg-ink-100 dark:hover:bg-slate-800",
               ].join(" ")}
             >
               <Icon className="w-4 h-4 shrink-0" aria-hidden />
