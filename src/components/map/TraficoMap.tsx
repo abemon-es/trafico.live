@@ -516,7 +516,7 @@ function TraficoMapInner({
           resolvedTheme={resolvedTheme}
           onThemeToggle={themeToggle ? toggleTheme : undefined}
           showThemeToggle={themeToggle}
-          title={lensBar ? "Personalizar" : "Capas"}
+          title="Capas"
           offsetTop={!!lensBar}
         />
       )}

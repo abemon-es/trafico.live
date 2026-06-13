@@ -67,12 +67,12 @@ export function TraficoMapControls({
       {/* Panel toggle header */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-900 transition-colors"
+        className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-900 transition-colors"
         aria-label={open ? "Ocultar capas del mapa" : "Mostrar capas del mapa"}
         aria-expanded={open}
         aria-controls="trafico-map-layer-panel"
       >
-        <span className="flex items-center gap-2 font-semibold text-sm font-['DM_Sans']">
+        <span className="flex items-center gap-2 font-semibold text-sm font-['Exo_2']">
           <Layers className="w-4 h-4 text-tl-600 dark:text-tl-300" aria-hidden />
           {title}
         </span>
@@ -83,7 +83,7 @@ export function TraficoMapControls({
               tabIndex={0}
               onClick={(e) => { e.stopPropagation(); onThemeToggle(); }}
               onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onThemeToggle(); } }}
-              className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1 rounded-md hover:bg-ink-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label={resolvedTheme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
             >
               {resolvedTheme === "dark"
@@ -103,7 +103,7 @@ export function TraficoMapControls({
       {open && (
         <div
           id="trafico-map-layer-panel"
-          className="mt-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto"
+          className="mt-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-tl-300/20 dark:border-tl-600/20 overflow-hidden max-h-[calc(100vh-200px)] overflow-y-auto"
         >
           {Object.entries(grouped).map(([groupKey, layers]) => {
             const isCollapsed = collapsedGroups.has(groupKey);
@@ -115,7 +115,7 @@ export function TraficoMapControls({
               <div key={groupKey}>
                 <button
                   onClick={() => toggleGroup(groupKey)}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-slate-50/80 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700/50"
+                  className="w-full flex items-center justify-between px-3 py-2 bg-slate-50/80 dark:bg-slate-800/60 hover:bg-ink-100 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700/50"
                   aria-expanded={!isCollapsed}
                   aria-controls={groupPanelId}
                   aria-label={
