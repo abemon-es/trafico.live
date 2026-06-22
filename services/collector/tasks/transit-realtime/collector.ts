@@ -128,8 +128,35 @@ async function fetchFeed(feed: RealtimeFeed): Promise<any> {
   const buffer = await response.arrayBuffer();
   const bytes = new Uint8Array(buffer);
 
-  // gtfs-realtime-bindings decode accepts Uint8Array
-  return transit_realtime.FeedMessage.decode(bytes);
+  // Some operators intermittently return HTTP 200 with a body that is NOT valid
+  // GTFS-RT protobuf — an HTML maintenance/error page, an empty body, or a
+  // rate-limit notice. Decoding that throws protobufjs "missing required 'header'",
+  // which is an UPSTREAM data-quality issue, not a collector bug. Treat it as the
+  // documented "null on error" case (caller skips the cycle) with a WARN, instead
+  // of a thrown exception that floods Sentry/GlitchTip (issue 1674).
+  if (bytes.length === 0) {
+    log(TASK, `[${feed.operatorSlug}] WARN: empty feed body (HTTP ${response.status}) — skipping cycle`);
+    return null;
+  }
+  const contentType = response.headers.get("content-type") ?? "";
+  if (/text\/html|application\/json|text\/plain/i.test(contentType)) {
+    log(
+      TASK,
+      `[${feed.operatorSlug}] WARN: non-protobuf response (content-type '${contentType}', ${bytes.length}B) — skipping cycle`,
+    );
+    return null;
+  }
+
+  try {
+    // gtfs-realtime-bindings decode accepts Uint8Array
+    return transit_realtime.FeedMessage.decode(bytes);
+  } catch (err) {
+    log(
+      TASK,
+      `[${feed.operatorSlug}] WARN: GTFS-RT decode failed (content-type '${contentType}', ${bytes.length}B): ${err instanceof Error ? err.message : String(err)} — skipping cycle`,
+    );
+    return null;
+  }
 }
 
 // ── Per-feed processor ─────────────────────────────────────────────────────────
