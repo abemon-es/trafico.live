@@ -115,7 +115,18 @@ async function fetchJSON<T>(url: string): Promise<T> {
 }
 
 async function processAlerts(prisma: PrismaClient): Promise<number> {
-  const feed = await fetchJSON<GTFSRTFeed>(ALERTS_URL);
+  let feed: GTFSRTFeed;
+  try {
+    feed = await fetchJSON<GTFSRTFeed>(ALERTS_URL);
+  } catch (error) {
+    // Transient Renfe upstream failure (timeout / 5xx / rate-limit). Degrade
+    // gracefully and skip this run — same pattern as processTripUpdates(). A
+    // re-throw here propagates out of run(), exits the dispatcher non-zero, and
+    // the supercronic supervisor reports "error running command: exit status 1"
+    // to GlitchTip on every flaky run (top accreting issue, ~+1/pulse).
+    logError(TASK, `Failed to fetch alerts feed (skipping this run):`, error);
+    return 0;
+  }
   const entities = feed.entity || [];
   log(TASK, `Fetched ${entities.length} alert entities from Cercanías feed`);
 
