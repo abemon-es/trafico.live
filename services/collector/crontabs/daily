@@ -15,7 +15,7 @@
 # 03:30 weekly; still well inside INE's quarterly cadence with headroom.
 30 3 * * 0 TASK=ine-stats npx tsx index.ts 2>&1
 
-0 4 * * * TASK=camera npx tsx index.ts 2>&1 && touch /tmp/last-run
+0 4 * * * TASK=camera npx tsx index.ts 2>&1; touch /tmp/last-run
 
 # AENA airport passenger stats — Eurostat AVIA_PAOA publishes annually with
 # a ~12-month lag. Daily polling was pure noise. Now monthly on the 1st at

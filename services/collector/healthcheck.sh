@@ -11,7 +11,10 @@
 #   daily:    26 hours (runs daily)
 #   weekly:   8 days (runs weekly)
 #
-# The dispatcher touches /tmp/last-run on every successful execution.
+# Each tier's heartbeat task(s) touch /tmp/last-run after running (with `;`, not
+# `&&`, so a transient upstream error still marks the cron alive). Container
+# health = "is the dispatcher running tasks", NOT "is upstream data fresh"
+# (data freshness is tracked separately by Prometheus/GlitchTip).
 
 TIER="${CRONTAB_TIER:-realtime}"
 MARKER="/tmp/last-run"
