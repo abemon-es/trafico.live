@@ -137,9 +137,15 @@ interface FrameMeta {
  * Ensure the radar output directory exists.
  */
 async function ensureRadarDir(): Promise<void> {
-  if (!existsSync(RADAR_DIR)) {
+  // mkdir(recursive) is idempotent; calling it unconditionally removes the
+  // existsSync→mkdir TOCTOU race that produced intermittent EACCES floods under
+  // overlapping runs (11k GlitchTip events). If it still throws but the dir is
+  // present, tolerate it rather than crash-looping the whole collector.
+  try {
     await mkdir(RADAR_DIR, { recursive: true });
-    log(TASK, `Created output directory: ${RADAR_DIR}`);
+  } catch (err) {
+    if (existsSync(RADAR_DIR)) return;
+    throw err;
   }
 }
 
