@@ -10,7 +10,37 @@ collectors unhealthy, 3 silent failures, SEO pipeline never once succeeded.
 
 ## P0 — active outage, user-visible
 
-### 1. `ais-stream` — dead 11 days, entire maritime vertical stale
+### 1. `ais-stream` — dead 11 days → **root-caused, escalated; detection fixed**
+
+**Cycle 1 (2026-08-15) result.** Root cause is **upstream account-side at
+aisstream.io**, not our code. Proven by live test from inside `collector-ais`:
+
+| Test | Result |
+|------|--------|
+| Real key, Spanish bbox | socket opens, **0 frames, no error, no close** |
+| Real key, global bbox `[[[-90,-180],[90,180]]]` | **silent** — rules out bbox/filters |
+| Deliberately invalid key | **closed 1006 immediately** |
+
+The server closes invalid keys but holds ours open and silent → the key is
+authenticated and accepted, yet the account receives no data. That points to
+quota exhausted, plan lapsed/suspended, or a key needing re-issue. **Moved to
+ESCALATIONS #2** — the loop cannot fix an upstream billing/entitlement state.
+
+**What was fixed instead (shipped `b83ca26e`):** the detection defect. The only
+`heartbeat()` call was on graceful shutdown, and with `COLLECTOR_DURATION=0` the
+process never shuts down — so the heartbeat was written once per restart and
+never during operation. `/api/health` reported this task stale whether AIS was
+healthy or dead, i.e. the signal carried no information. It now heartbeats every
+60 s with status derived from *frame arrival*, not process liveness.
+
+Verified in prod: `status: error`, `"No AIS frames for 360s (threshold 300s) —
+socket open but upstream silent"`, surfaced 6 min after restart. An 11-day
+silent blackout is now a loud, self-describing failure.
+
+**Still stale until the account is fixed:** `/maritimo`, vessel positions, port
+calls, voyages.
+
+### 1b. Original diagnosis notes (superseded, kept for history)
 - **Evidence:** heartbeat age 948,341s (~11 d) vs 600 s threshold. Logs show the
   loop: `Connected` → 300 s of zero messages → `Staleness watchdog … forcing
   terminate` → `Connection closed: 1006` → reconnect → repeat → `Circuit
@@ -87,6 +117,9 @@ collectors unhealthy, 3 silent failures, SEO pipeline never once succeeded.
   `partial`. Each needs a look at *what* is partial; `partial` has become
   background noise, which is how real degradation hides.
 - **Smoke test: 5 warnings** (107 pass, 0 fail) — identify and clear.
+- **`tasks/monthly-report/render.ts` is unparseable** — ~626 TS syntax errors,
+  JSX in a `.ts` file (should be `.tsx`). Drowns every other typecheck result,
+  so `tsc --noEmit` is currently worthless as a CI gate for the collector tree.
 - **Docs drift** — `CLAUDE.md` says 43 collectors; `/api/health` reports 51 and
   there are 63 task directories. It also claims Loki as the collector log
   driver, which is wrong (see #5). Stale docs cost diagnosis time.
@@ -116,6 +149,13 @@ Secrets cannot be invented. The loop must not fabricate, guess, or stub these.
    `siteFullUser` on `sc-domain:trafico.live` and Viewer on GA4
    `properties/521333149`.
 
+2. **aisstream.io account state** (P0 #1) — the API key authenticates but the
+   account receives zero data. Someone needs to log into aisstream.io and check
+   plan status / quota / whether the key needs re-issuing. Evidence table in
+   P0 #1 above. Until this is resolved the maritime vertical stays stale; the
+   collector will now correctly and loudly report `error` the whole time, which
+   is the intended behaviour, not a new bug.
+
 *(`CAMS_API_KEY` was initially thought to be an escalation — it is not. The value
 exists in `.env`; it just never propagated to `.env.collectors`.)*
 
@@ -123,4 +163,21 @@ exists in `.env`; it just never propagated to `.env.collectors`.)*
 
 ## Resolved
 
-*(empty — first cycle pending)*
+### Cycle 1 — 2026-08-15 — AIS blackout detection (`b83ca26e`)
+`ais-stream` heartbeated only on shutdown, so an always-on collector never
+reported liveness and `/api/health` could not tell healthy from dead. Now
+heartbeats every 60 s on frame arrival. Proven in prod: silent feed → `error`
+with idle duration inside 6 minutes. Root cause of the outage itself is upstream
+and escalated (ESCALATIONS #2).
+
+**Cycle 1 also learned:**
+- The deployed collector stack tracks `main` via a plain git checkout at
+  `/opt/apps/trafico-live`; deploy is
+  `git pull` → `docker compose -f docker-compose.collectors.yml -p trafico-live
+  build <svc>` → `up -d <svc>`. Compose project is `trafico-live`.
+- Pushing to `main` prints a "Changes must be made through a pull request"
+  warning but the ref update succeeds.
+- The repo-root `tsconfig.json` covers `services/collector` too;
+  `tasks/monthly-report/render.ts` has ~626 pre-existing syntax errors (JSX in a
+  `.ts` file) that swamp any typecheck output. Filter by path when checking a
+  change. **Worth fixing** — it makes `tsc` useless as a gate. Added to P2.
