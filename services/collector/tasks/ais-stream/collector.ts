@@ -20,6 +20,11 @@ import { log, logError } from "../../shared/utils.js";
 
 const TASK = "ais-stream";
 
+// Silence longer than this means the feed is dead even if the socket is open.
+// Drives both the reconnect watchdog and the health heartbeat, so the two can
+// never disagree about what "stalled" means.
+const STALE_MESSAGE_TIMEOUT_MS = 5 * 60 * 1000;
+
 // Trafico.live is a Spanish product; global subscription was 7× overzealous and stored vessels we don't surface.
 // Single bbox covering Spanish exclusive economic zone: Peninsula + Canary Islands + Balearic Islands.
 // Override via AIS_BBOX env var (JSON array, e.g. '[[25,-20],[48,15]]') for ad-hoc expansion.
@@ -171,12 +176,16 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let messagesReceived = 0;
   let positionsStored = 0;
   let vesselsUpdated = 0;
+  // Last time an AIS frame actually arrived. This — not "is the process
+  // alive" — is what determines whether this collector is healthy.
+  let lastMessageAt = Date.now();
 
   // Message handler
   function handleMessage(data: unknown) {
     const msg = data as AISMessage;
     if (!msg?.MetaData?.MMSI) return;
     messagesReceived++;
+    lastMessageAt = Date.now();
 
     const mmsi = msg.MetaData.MMSI;
     const type = msg.MessageType;
@@ -331,7 +340,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
       // traffic — exactly what bit us 2026-05-07 → 2026-05-23 (15d blackout).
       // Force terminate + reconnect if we see >5 min of silence on a busy
       // global feed (real cadence is thousands of messages per minute).
-      staleMessageTimeoutMs: 5 * 60 * 1000,
+      staleMessageTimeoutMs: STALE_MESSAGE_TIMEOUT_MS,
     },
     ac.signal
   );
@@ -344,12 +353,41 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   // cleanupTimer disabled — full retention
 
-  // Stats logging every 60 seconds
+  // Stats logging + liveness heartbeat every 60 seconds.
+  //
+  // This collector runs indefinitely (COLLECTOR_DURATION=0), so the shutdown
+  // heartbeat below effectively never fires. Until 2026-08-15 that was the ONLY
+  // heartbeat write, which made /api/health blind to this task: it reported
+  // stale whether the stream was healthy or dead, so "stale" carried no
+  // information. That is how the 2026-05-07 (15 d) and 2026-08-04 (11 d)
+  // blackouts both ran undetected.
+  //
+  // Report on data flow, not process liveness: aisstream.io can hold a socket
+  // open indefinitely while sending nothing — verified 2026-08-15, a valid key
+  // stays connected and silent while an invalid one is closed immediately.
   const statsTimer = setInterval(() => {
+    const idleMs = Date.now() - lastMessageAt;
     log(
       TASK,
-      `Stats: ${messagesReceived} received, ${positionsStored} positions stored, ${vesselsUpdated} vessels updated, ${positionBatch.length} pending`
+      `Stats: ${messagesReceived} received, ${positionsStored} positions stored, ${vesselsUpdated} vessels updated, ${positionBatch.length} pending, idle ${Math.floor(idleMs / 1000)}s`
     );
+
+    const starved = idleMs > STALE_MESSAGE_TIMEOUT_MS;
+    // heartbeat() derives errorMessage from meta.error — there is no separate
+    // message argument, so the reason must travel inside meta.
+    void heartbeat(prisma, TASK, starved ? "error" : "ok", {
+      messages: messagesReceived,
+      positions: positionsStored,
+      vessels: vesselsUpdated,
+      idleSeconds: Math.floor(idleMs / 1000),
+      ...(starved
+        ? {
+            error: `No AIS frames for ${Math.floor(idleMs / 1000)}s (threshold ${
+              STALE_MESSAGE_TIMEOUT_MS / 1000
+            }s) — socket open but upstream silent`,
+          }
+        : {}),
+    }).catch((err) => logError(TASK, "Heartbeat write failed:", err));
   }, 60_000);
 
   // Run initial cleanup
