@@ -1324,6 +1324,16 @@ export async function run(prisma: PrismaClient): Promise<void> {
   // Delta loads always upsert, full loads replace
   const defaultSyncFn = mode === "full" ? replaceCollection : upsertCollection;
   const totals: Record<string, number> = {};
+  // Log load rejections with their reason. Before this, a rejected loader was
+  // only a +1 on failedLoads — the pages collection failed on every run for
+  // months and the logs never once said why, or even that it had.
+  for (let i = 0; i < loaded.length; i++) {
+    const r = loaded[i];
+    if (r.status === "rejected") {
+      console.error(`[typesense-sync] Load FAILED for ${names[i]}:`, r.reason);
+    }
+  }
+
   const successes = loaded.filter((r): r is PromiseFulfilledResult<{ name: string; docs: Record<string, unknown>[]; isDelta: boolean }> => r.status === "fulfilled");
 
   for (let i = 0; i < successes.length; i += 4) {
