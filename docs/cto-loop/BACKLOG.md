@@ -77,9 +77,25 @@ Ordered work list (each item unlocks disproportionate value):
    the ranking); "linea 27" finds nothing because "linea" is not in any doc
    (operator+number works: "EMT 27"). Ranking pass = future cycle.
 
-1b. **`pages` loader broken** — never logs a Load line, collection absent on
-   the server, correctly flagged by the new partial heartbeat. Likely the
-   embed field (`ts/multilingual-e5-small`) in its schema. Diagnose next.
+1b. ~~**`pages` loader broken**~~ — ✅ FIXED cycle 12 (`b9fde540`, `4aa33690`).
+   Root cause was **not** the embed field: `loadPages` filtered municipalities
+   on `slug != null`, but a schema migration made `Municipality.slug` a
+   required column, turning the invocation invalid — Prisma rejected it on
+   every run from that migration onward and the whole pages load died with it.
+   Nobody knew because **load rejections were never logged** (only a +1 on a
+   counter); that logging is now in place and found the cause on its first run.
+   Synced: **345 pages**. Verified live: "trafico Sevilla" → `/ciudad/sevilla`.
+   Another rotation-without-consumer-inventory fossil, schema edition.
+
+1c. **Search quality pass** (grouped refinements, one future cycle):
+   - Static-page hits (e.g. "Precio Diésel Hoy") exist in Typesense (`found: 1`
+     direct) but don't surface through `/api/search` for fuel queries —
+     suspect per-collection interleave or the pages request shape.
+   - The "demote Páginas" ranking rule matches `category === "Páginas"`, but
+     page docs carry their own categories (Combustible, Ciudades…) so it
+     never fires.
+   - Multi-token cross-field queries ("AVE Madrid") don't match trains.
+   - Incidents still outrank entities for name queries ("estacion Aranjuez").
 2. ~~**Add `trains` + `aircraft` collections**~~ — ✅ DONE cycle 11 (`931b8098`,
    `bb533a0a`), verified end to end with live references:
    - `trains` **14,873 docs** (latest row per number, 48 h window). Search
