@@ -64,7 +64,7 @@ else
 fi
 
 # ── 3. Remote: containers, Loki, SEO snapshot ────────────────────────────────
-CONTAINERS='null'; LOKI='null'; SEO='null'; COLLECTOR_LOGS='null'
+CONTAINERS='null'; LOKI='null'; SEO='null'; COLLECTOR_LOGS='null'; ORIGIN='null'
 if (( NO_REMOTE == 0 )); then
 
   # Container state — name, status, health.
@@ -100,6 +100,26 @@ if (( NO_REMOTE == 0 )); then
        docker logs --since 2h "$c" 2>&1 | grep -iE "error|fatal|not set|failed|refused" | tail -8
      done' 2>/dev/null)"
   COLLECTOR_LOGS="$(jq -R -s '.' <<<"$LOGS_RAW")"
+
+  # Origin health, measured at the container — NOT through the public URL.
+  #
+  # On 2026-08-16 a bad image left trafico-live crash-looping for 25 minutes
+  # while Cloudflare kept serving 200s from cache. The public probe above said
+  # everything was fine; only a direct origin check saw it. Trust this section
+  # over `health` when they disagree.
+  ORIGIN_RAW="$("${SSH[@]}" \
+    'st=$(docker inspect trafico-live --format "{{.State.Status}}" 2>/dev/null || echo missing);
+     hl=$(docker inspect trafico-live --format "{{.State.Health.Status}}" 2>/dev/null || echo none);
+     rc=$(docker inspect trafico-live --format "{{.RestartCount}}" 2>/dev/null || echo -1);
+     code=$(docker exec trafico-live node -e "fetch(\"http://localhost:3000/api/health\").then(r=>{console.log(r.status);process.exit(0)}).catch(()=>{console.log(0);process.exit(0)})" 2>/dev/null | tail -1);
+     printf "%s|%s|%s|%s" "$st" "$hl" "$rc" "${code:-0}"' 2>/dev/null \
+    | jq -R 'split("|") | {
+        state: .[0], health: .[1],
+        restarts: ((.[2] // "-1") | tonumber),
+        direct_status: ((.[3] // "0") | tonumber),
+        ok: (.[0] == "running" and ((.[3] // "0") | tonumber) == 200)
+      }')"
+  ORIGIN="$(json_or_null "$ORIGIN_RAW")"
 
   # GSC/GA4 snapshot freshness — the SEO growth loop is blind without this.
   # NB: no coalesce here — in Postgres "" is an identifier, not an empty string.
@@ -162,6 +182,7 @@ RESULT="$(jq -n \
   --argjson containers "$CONTAINERS" \
   --argjson loki "$LOKI" \
   --argjson seo "$SEO" \
+  --argjson origin "$ORIGIN" \
   --argjson silent "$SILENT" \
   --argjson git "$GIT" \
   --argjson logs "${COLLECTOR_LOGS:-null}" \
@@ -173,6 +194,7 @@ RESULT="$(jq -n \
     containers: $containers,
     loki_errors_1h: $loki,
     seo_snapshot: $seo,
+    origin: $origin,
     degraded_collectors: $silent,
     recent_error_logs: $logs,
     git: $git,
@@ -187,6 +209,7 @@ RESULT="$(jq -n \
       # stops seeing real outages. Test presence explicitly instead.
       smoke_ok: (if ($smoke|type) == "object" and ($smoke|has("ok")) then $smoke.ok else null end),
       seo_pipeline_ok: (if ($seo|type) == "object" and ($seo|has("ok")) then $seo.ok else null end),
+      origin_ok: (if ($origin|type) == "object" and ($origin|has("ok")) then $origin.ok else null end),
       db_ok: (if ($health|type) == "object" and ($health.db|type) == "object" then $health.db.ok else null end),
       redis_ok: (if ($health|type) == "object" and ($health.redis|type) == "object" then $health.redis.ok else null end)
     }
@@ -197,6 +220,7 @@ if (( PRETTY )); then
     "── trafico.live signals @ \(.captured_at) ──",
     "overall:     \(.summary.overall)   db=\(.summary.db_ok) redis=\(.summary.redis_ok)",
     "collectors:  \(.summary.collectors_degraded)/\(.summary.collectors_total) degraded, \(.summary.stale_count) stale, \(.summary.silent_failures) SILENT",
+    "origin:      \(.summary.origin_ok)   (container=\(.origin.state // "?") health=\(.origin.health // "?") restarts=\(.origin.restarts // "?") direct=\(.origin.direct_status // "?"))",
     "smoke:       \(.summary.smoke_ok)",
     "seo pipe:    \(.summary.seo_pipeline_ok)   (snapshots=\(.seo_snapshot.rows // "?"))",
     "git:         \(.git.branch) @\(.git.head) (\(.git.uncommitted) uncommitted)",
