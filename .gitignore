@@ -87,3 +87,6 @@ packages/mcp-server/dist/
 packages/mcp-server/node_modules/
 .trash/
 docs/seo-research-2026-04-19/raw/
+
+# Deployed credentials — mounted into collectors at runtime, never committed
+secrets/
