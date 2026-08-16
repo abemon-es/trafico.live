@@ -14,7 +14,18 @@ RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/db" npx pr
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm run build
+# Build with a real DATABASE_URL when deploy.sh supplies one as a BuildKit
+# secret, so the ~177 pages that query Postgres prerender with actual data
+# instead of baking empty HTML into the image (see deploy.sh for the full
+# rationale). The guard keeps local/CI builds without the secret working
+# exactly as before.
+RUN --mount=type=secret,id=database_url,required=false \
+    if [ -s /run/secrets/database_url ]; then \
+      DATABASE_URL="$(cat /run/secrets/database_url)" npm run build; \
+    else \
+      echo "no database_url secret — prerendering without DB"; \
+      npm run build; \
+    fi
 
 FROM node:24-slim AS runtime
 
