@@ -393,7 +393,13 @@ The underlying class — two hand-maintained env files with no sync mechanism �
 is still open. A generated `.env.collectors` (filtered from `.env` by an
 explicit allowlist) would close it for good.
 
-### L1.3 `opensky` uses retired Basic auth while OAuth2 credentials sit unused
+### L1.3 `opensky` OAuth2 — ✅ FIXED cycle 14 (`509b8375`)
+First authenticated run ever: heartbeat `ok` (was `partial` on every run) with
+`{"stored": 2088, "authenticated": true}`. Client-credentials token per run,
+Basic fallback kept, anonymous degradation if the token endpoint fails.
+`OPENSKY_CLIENT_ID/SECRET` propagated to `.env.collectors` (backup taken).
+
+### L1.3b (original entry)
 `services/collector/tasks/opensky/collector.ts:105-106` reads
 `OPENSKY_USERNAME` / `OPENSKY_PASSWORD` (HTTP Basic). `.env` instead holds
 `OPENSKY_CLIENT_ID` (16 chars) and `OPENSKY_CLIENT_SECRET` (32) — OAuth2 client
