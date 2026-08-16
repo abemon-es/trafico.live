@@ -499,6 +499,37 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
       icon: "Bus",
     }),
   },
+  {
+    collection: "trains",
+    queryBy: "trainNumber,brand,originStation,destStation",
+    queryByWeights: "4,2,1,1",
+    category: "Trenes en vivo",
+    icon: "TrainFront",
+    mapHit: (doc) => ({
+      title: [doc.brand, doc.trainNumber].filter(Boolean).join(" ") || (doc.trainNumber as string),
+      subtitle:
+        doc.originStation && doc.destStation
+          ? `${doc.originStation as string} → ${doc.destStation as string}`
+          : null,
+      href: `/trenes/tren/${encodeURIComponent(doc.trainNumber as string)}`,
+      category: "Trenes en vivo",
+      icon: "TrainFront",
+    }),
+  },
+  {
+    collection: "aircraft",
+    queryBy: "callsign,icao24",
+    queryByWeights: "3,2",
+    category: "Aeronaves",
+    icon: "Plane",
+    mapHit: (doc) => ({
+      title: (doc.callsign as string) || (doc.icao24 as string),
+      subtitle: doc.callsign ? `ICAO24 ${doc.icao24 as string}` : null,
+      href: `/aviacion/avion/${encodeURIComponent(doc.icao24 as string)}`,
+      category: "Aeronaves",
+      icon: "Plane",
+    }),
+  },
 ];
 
 // ---------------------------------------------------------------------------

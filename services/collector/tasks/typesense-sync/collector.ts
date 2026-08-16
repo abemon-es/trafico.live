@@ -445,6 +445,31 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "location", type: "geopoint", optional: true },
     ] as CollectionFieldSchema[],
   },
+
+  // Live vehicle references: the set of train numbers and aircraft seen in the
+  // last 48 h. The entity pages themselves fetch live data on render, so the
+  // daily sync only needs to keep the *set of searchable references* current —
+  // a commercial train number ("03241") repeats day after day on the same
+  // route, and an airframe keeps its icao24 for life.
+  trains: {
+    name: "trains",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "trainNumber", type: "string" },
+      { name: "brand", type: "string", optional: true, facet: true },
+      { name: "originStation", type: "string", optional: true },
+      { name: "destStation", type: "string", optional: true },
+    ] as CollectionFieldSchema[],
+    token_separators: ["-"],
+  },
+  aircraft: {
+    name: "aircraft",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "icao24", type: "string" },
+      { name: "callsign", type: "string", optional: true },
+    ] as CollectionFieldSchema[],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1022,6 +1047,7 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
   voyages: loadVoyages, port_calls: loadPortCalls,
   vessels: loadVessels, ferry_routes: loadFerryRoutes,
   transit_routes: loadTransitRoutes, transit_stops: loadTransitStops,
+  trains: loadTrains, aircraft: loadAircraft,
 };
 
 // ---------------------------------------------------------------------------
@@ -1188,6 +1214,33 @@ async function loadTransitStops(prisma: PrismaClient) {
       location: [Number(s.latitude), Number(s.longitude)],
     };
   });
+}
+
+async function loadTrains(prisma: PrismaClient) {
+  // Latest row per trainNumber over the last 48 h. `distinct` with a desc
+  // order gives the most recent brand/route per number.
+  const rows = await prisma.renfeFleetPosition.findMany({
+    where: { fetchedAt: { gte: new Date(Date.now() - 48 * 3600 * 1000) } },
+    distinct: ["trainNumber"],
+    orderBy: { fetchedAt: "desc" },
+    select: { trainNumber: true, brand: true, originStation: true, destStation: true },
+  });
+  return rows.map((t) => ({
+    id: t.trainNumber, trainNumber: t.trainNumber, brand: t.brand || "",
+    originStation: t.originStation || "", destStation: t.destStation || "",
+  }));
+}
+
+async function loadAircraft(prisma: PrismaClient) {
+  const rows = await prisma.aircraftPosition.findMany({
+    where: { createdAt: { gte: new Date(Date.now() - 48 * 3600 * 1000) } },
+    distinct: ["icao24"],
+    orderBy: { createdAt: "desc" },
+    select: { icao24: true, callsign: true },
+  });
+  return rows.map((a) => ({
+    id: a.icao24, icao24: a.icao24, callsign: (a.callsign || "").trim(),
+  }));
 }
 
 async function getLastSyncTime(collectionName: string): Promise<Date | null> {
