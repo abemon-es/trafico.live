@@ -105,7 +105,10 @@ const EV_KEYWORDS = [
 ];
 
 // Collection targeting (when no fuel keyword matched)
-const COLLECTION_KEYWORD_MAP: Array<{ phrases: string[]; collection: string; label: string }> = [
+// `collection` may be a comma-separated list — the search route fans out to
+// every listed collection. `keepPhrase` targets without stripping the matched
+// words from the query (for phrases that are also searchable content).
+const COLLECTION_KEYWORD_MAP: Array<{ phrases: string[]; collection: string; label: string; keepPhrase?: boolean }> = [
   {
     phrases: ["estación de servicio", "estacion de servicio", "gasolineras", "gasolinera", "surtidor de gasolina", "estación gasolina", "estacion gasolina", "surtidor", "gasinera", "tanque lleno", "repostar"],
     collection: "gas_stations",
@@ -113,9 +116,22 @@ const COLLECTION_KEYWORD_MAP: Array<{ phrases: string[]; collection: string; lab
   },
   { phrases: ["cámaras de tráfico", "camaras de trafico", "cámaras", "camaras", "cámara", "camara", "webcam"], collection: "cameras", label: "Cámaras" },
   { phrases: ["radares fijos", "cinemómetro", "radares", "radar", "multa velocidad"], collection: "radars", label: "Radares" },
+  // Live-train intent: brand names and generic train words target the trains
+  // collection alongside stations/routes. Two subtleties, both learned from
+  // "AVE Madrid" returning zero trains while Typesense held 129 matches:
+  // (1) this entry predated the trains collection and pointed everything at
+  // railway_stations only; (2) the brand token was stripped from the query,
+  // but "AVE"/"Alvia" are searchable content in trains.brand — stripping them
+  // threw away the most selective token. keepPhrase leaves the query intact.
   {
-    phrases: ["estación de tren", "estacion de tren", "ferrocarril", "cercanías", "cercanias", "trenes", "tren", "renfe", "ave", "alvia", "avant", "retraso tren", "cancelación tren", "línea", "linea"],
-    collection: "railway_stations",
+    phrases: ["trenes", "tren", "renfe", "ave", "alvia", "avant", "euromed", "intercity", "avlo"],
+    collection: "trains,railway_stations,railway_routes",
+    label: "Trenes",
+    keepPhrase: true,
+  },
+  {
+    phrases: ["estación de tren", "estacion de tren", "ferrocarril", "cercanías", "cercanias", "retraso tren", "cancelación tren", "línea", "linea"],
+    collection: "railway_stations,railway_routes,trains",
     label: "Trenes",
   },
   {
@@ -499,7 +515,9 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
         const stripped = stripPhrase(q, phrase);
         if (stripped !== q) {
           filters.targetCollection = entry.collection;
-          q = stripped;
+          // keepPhrase entries target without consuming the token — brand
+          // words like "AVE" are searchable content, not just intent.
+          if (!entry.keepPhrase) q = stripped;
           labels.push(entry.label);
           break outer;
         }

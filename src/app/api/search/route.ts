@@ -647,15 +647,19 @@ async function performSearch(
   }
 
   try {
-    // When a targetCollection is set, restrict to that single config
-    const configs = filters.targetCollection
-      ? (SEARCH_CONFIGS.filter((c) => c.collection === filters.targetCollection).length > 0
-          ? SEARCH_CONFIGS.filter((c) => c.collection === filters.targetCollection)
-          : SEARCH_CONFIGS)
-      : SEARCH_CONFIGS;
+    // When a targetCollection is set, restrict to those configs. The value may
+    // be a comma-separated list ("trains,railway_stations,railway_routes") so
+    // one intent can fan out to every relevant collection.
+    const targetSet = filters.targetCollection
+      ? new Set(filters.targetCollection.split(",").map((s) => s.trim()).filter(Boolean))
+      : null;
+    const targeted = targetSet
+      ? SEARCH_CONFIGS.filter((c) => targetSet.has(c.collection))
+      : [];
+    const configs = targetSet && targeted.length > 0 ? targeted : SEARCH_CONFIGS;
 
-    const perCollection = filters.targetCollection
-      ? limit
+    const perCollection = targetSet && targeted.length > 0
+      ? Math.max(5, Math.ceil(limit / configs.length))
       : Math.max(3, Math.ceil(limit / SEARCH_CONFIGS.length));
 
     const isShortQuery = query.length <= 3;
@@ -760,7 +764,13 @@ async function performSearch(
 
     const response = await typesenseClient.multiSearch.perform(searchRequests, {});
 
-    const results: SearchResult[] = [];
+    // Carry the source collection and Typesense relevance score with each hit:
+    // the source drives pages demotion (page docs carry their own display
+    // categories, so matching on category never worked), and the score drives
+    // a global relevance sort (results used to be concatenated in
+    // SEARCH_CONFIGS order and trimmed, so a perfect station match lost to a
+    // weak congestion match purely because incidents is defined earlier).
+    const scored: Array<{ r: SearchResult; src: string; score: number }> = [];
 
     const searchResults = (
       response as { results: SearchResponse<DocumentSchema>[] }
@@ -788,14 +798,15 @@ async function performSearch(
             const distM = distMap.location ?? Object.values(distMap)[0];
             if (distM != null) result.distance = Math.round(distM / 10) / 100; // meters → km, 2 decimals
           }
-          results.push(result);
+          const textMatch = (hit as unknown as { text_match?: number }).text_match ?? 0;
+          scored.push({ r: result, src: config.collection, score: textMatch });
         }
       }
     }
 
     // Sparse result fallback — if filtered search returns < 5 results,
     // retry without filters (keep text query) to fill the gap
-    if (results.length < 5 && (filters.roadFilter || filters.provinceFilter || filters.is24hFilter || filters.priceThreshold)) {
+    if (scored.length < 5 && (filters.roadFilter || filters.provinceFilter || filters.is24hFilter || filters.priceThreshold)) {
       try {
         const fallbackReq = {
           searches: SEARCH_CONFIGS.slice(0, 6).map((config) => ({
@@ -811,14 +822,15 @@ async function performSearch(
         };
         const fallbackResponse = await typesenseClient.multiSearch.perform(fallbackReq, {});
         const fallbackResults = (fallbackResponse as { results: SearchResponse<DocumentSchema>[] }).results;
-        const existingIds = new Set(results.map((r) => r.href));
+        const existingIds = new Set(scored.map((s) => s.r.href));
         for (let i = 0; i < fallbackResults.length; i++) {
           const config = SEARCH_CONFIGS[i];
           if (fallbackResults[i].hits) {
             for (const hit of fallbackResults[i].hits!) {
               const result = config.mapHit(hit.document, filters.fuelType);
               if (!existingIds.has(result.href)) {
-                results.push(result);
+                const textMatch = (hit as unknown as { text_match?: number }).text_match ?? 0;
+                scored.push({ r: result, src: config.collection, score: textMatch });
                 existingIds.add(result.href);
               }
             }
@@ -827,16 +839,22 @@ async function performSearch(
       } catch { /* fallback failure is not critical */ }
     }
 
-    // Smart ranking: if we have entity results, demote pages to the end
-    // so users see real data before navigation links
-    let ranked = results;
+    // Global relevance sort — Typesense text_match scores share a formula, so
+    // they are comparable across collections. Skip under proximity sorting,
+    // where the caller asked for nearest-first and scores are secondary.
+    if (!hasProximity) {
+      scored.sort((a, b) => b.score - a.score);
+    }
+
+    // Demote navigation pages below real data, keyed on the source collection.
+    // The old rule matched category === "Páginas", but page docs carry their
+    // own display categories (Combustible, Ciudades, …), so it never fired.
+    let ranked: SearchResult[];
     if (filters.targetCollection) {
-      // Collection targeting active — results are already filtered, keep order
-      ranked = results;
+      ranked = scored.map((s) => s.r);
     } else {
-      const entityResults = results.filter((r) => r.category !== "Páginas");
-      const pageResults = results.filter((r) => r.category === "Páginas");
-      // Keep max 3 pages, interleave at the end
+      const entityResults = scored.filter((s) => s.src !== "pages").map((s) => s.r);
+      const pageResults = scored.filter((s) => s.src === "pages").map((s) => s.r);
       ranked = [...entityResults, ...pageResults.slice(0, 3)];
     }
     const trimmed = ranked.slice(0, limit);
