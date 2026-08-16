@@ -127,7 +127,20 @@ export const dynamic = "force-static";
 // generateStaticParams (24 hits/6h in prod logs; direct loads were 200).
 // Unknown slugs are still rejected by the notFound() guard in the page.
 export const dynamicParams = true;
-export const revalidate = 86400; // 24h — DGT microdata updated annually
+// 5 min — NOT because the data changes (DGT microdata is annual), but because
+// `next build` runs with DATABASE_URL='' (see package.json), so every one of
+// these pages is prerendered with no data and ships as pure chrome. Verified
+// 2026-08-16: /accidentes/madrid served 4,778 chars of nav and zero accident
+// figures against 466,123 rows in AccidentMicrodata.
+//
+// ISR is the only thing that puts real data on these pages, and it only runs at
+// runtime where the database is reachable. At 86400 the empty build output was
+// served for 24 h after every deploy — and with several deploys a day these
+// pages were effectively never correct. Keep this short until the build can
+// prerender against the database (blocked on connection-pool work; see
+// docs/cto-loop/BACKLOG.md L0.1 — do not simply remove the DATABASE_URL guard,
+// that exhausts PgBouncer and broke production on 2026-08-16).
+export const revalidate = 300;
 
 export function generateStaticParams() {
   return PROVINCES.map((p) => ({ provincia: p.slug }));

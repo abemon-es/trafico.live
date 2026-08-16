@@ -71,7 +71,11 @@ const PREGEN_ROADS = [
 
 export const dynamic = "force-static";
 export const dynamicParams = true;
-export const revalidate = 86400;
+// 5 min, for the same reason as /accidentes/[provincia]: the build runs with
+// DATABASE_URL='' so these pages prerender empty, and only a runtime ISR
+// regeneration gives them real data. At 86400 the empty output was served for
+// 24 h after each deploy. See docs/cto-loop/BACKLOG.md L0.1.
+export const revalidate = 300;
 
 export async function generateStaticParams() {
   return PREGEN_ROADS.map((road) => ({ road }));
