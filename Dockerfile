@@ -19,15 +19,28 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # instead of baking empty HTML into the image (see deploy.sh for the full
 # rationale). The guard keeps local/CI builds without the secret working
 # exactly as before.
+# Write the secret to .env.production.local rather than only exporting it.
+#
+# Next.js runs static generation in worker processes that do NOT inherit an
+# ad-hoc shell variable: with `DATABASE_URL=... npm run build` the parent shell
+# had the value while 63 workers still logged "DATABASE_URL not set at init"
+# and every DB-backed page prerendered empty. Next loads .env.production.local
+# itself, so the value reaches every worker. Exported too, belt and braces.
+#
+# The file is created and removed inside this single layer, so the credential
+# never reaches the runtime image (which copies only .next, node_modules,
+# package.json, public, prisma and data).
 RUN --mount=type=secret,id=database_url,required=false \
     echo "[build] secret path exists: $([ -e /run/secrets/database_url ] && echo yes || echo no), size: $(wc -c < /run/secrets/database_url 2>/dev/null || echo 0)"; \
     if [ -s /run/secrets/database_url ]; then \
+      printf 'DATABASE_URL=%s\n' "$(cat /run/secrets/database_url)" > .env.production.local; \
+      export DATABASE_URL="$(cat /run/secrets/database_url)"; \
       echo "[build] prerendering WITH database"; \
-      DATABASE_URL="$(cat /run/secrets/database_url)" npm run build; \
     else \
       echo "[build] prerendering WITHOUT database — DB-backed pages will be empty until ISR heals them"; \
-      npm run build; \
-    fi
+    fi; \
+    npm run build; \
+    rm -f .env.production.local
 
 FROM node:24-slim AS runtime
 
