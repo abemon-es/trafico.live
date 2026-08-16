@@ -74,8 +74,10 @@ Commit freely while working; push at the end of the cycle.
 
 **Deploy notification protocol (agreed with the infra session, 2026-08-17):**
 notify CTO before *risky* deploys only — changes to the build system
-(Dockerfile, deploy.sh, the package.json build script), the container swap, or
-anything touching PgBouncer/DB at build time. Routine app deploys need no
+(Dockerfile, deploy.sh, the package.json build script), the container swap,
+anything touching PgBouncer/DB at build time, or anything that alters what its
+probes see structurally (moving/renaming /api/health, Traefik routing or
+hostname changes, the swap healthcheck). CTO's addition, accepted 2026-08-17. Routine app deploys need no
 notice; they are zero-downtime and its monitoring confirms zero errors. This
 replaces an earlier per-deploy promise that was not being kept.
 
