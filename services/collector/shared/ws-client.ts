@@ -88,6 +88,11 @@ export function createReconnectingWS(
   function connect() {
     if (stopped || signal?.aborted) return;
 
+    // Clear per-attempt state up front. Without this, a handshake rejected
+    // after an earlier successful connection would still carry the previous
+    // connectTime and be misread as a long-lived silent connection.
+    connectTime = 0;
+
     try {
       ws = new WebSocket(url);
     } catch (err) {
@@ -99,6 +104,8 @@ export function createReconnectingWS(
 
     ws.on("open", () => {
       log(task, `Connected to ${url}`);
+      // Set here and nowhere else: `opened` in the close handler is derived
+      // from this being non-zero.
       connectTime = Date.now();
       receivedMessage = false;
       lastMessageAt = Date.now();
@@ -128,13 +135,22 @@ export function createReconnectingWS(
     });
 
     ws.on("close", (code: number, reason: Buffer) => {
-      const duration = Date.now() - connectTime;
-      log(task, `Connection closed: ${code} ${reason.toString()} (was open ${(duration / 1000).toFixed(1)}s)`);
+      // connectTime is only set once the socket opens. A handshake that is
+      // rejected (e.g. HTTP 429) closes with it still at 0, so guard every use
+      // of it — otherwise the "duration" is the Unix epoch and the checks below
+      // read a failed handshake as a long-lived silent connection.
+      const opened = connectTime > 0;
+      const duration = opened ? Date.now() - connectTime : 0;
+      log(
+        task,
+        `Connection closed: ${code} ${reason.toString()}` +
+          (opened ? ` (was open ${(duration / 1000).toFixed(1)}s)` : " (never opened)")
+      );
       disarmStalenessWatchdog();
       if (!stopped) {
         // If connection was open for less than minHealthyDuration and we
         // never received a message, count it as a failure
-        if (duration < minHealthyDuration && !receivedMessage) {
+        if (opened && duration < minHealthyDuration && !receivedMessage) {
           consecutiveFailures++;
           log(task, `Short-lived connection counted as failure (${consecutiveFailures} consecutive)`);
         }
@@ -145,7 +161,7 @@ export function createReconnectingWS(
         // roughly every 6 minutes and making the throttle permanent. Escalate
         // the same minutes-scale backoff so a silent upstream is given room to
         // recover instead of being hammered.
-        if (!receivedMessage && duration >= minHealthyDuration) {
+        if (opened && !receivedMessage && duration >= minHealthyDuration) {
           throttleDelay = throttleDelay
             ? Math.min(throttleDelay * 2, THROTTLE_MAX_MS)
             : Math.floor(THROTTLE_BASE_MS / 3);
