@@ -19,7 +19,7 @@ last.
 
 ## L0 — Build, deploy, observability
 
-### L0.1 `next build` had no database access — ✅ FIXED (`671001fd`)
+### L0.1 `next build` has no database access — ⚠️ FIX SHIPPED BUT NOT YET EFFECTIVE
 177 pages query Postgres server-side; the build ran with only a placeholder
 `DATABASE_URL` for `prisma generate`. Their prerenders were produced with no
 data and the empty HTML baked into the image, served until ISR regenerated —
@@ -30,8 +30,32 @@ stations existed**. Now passed as a BuildKit secret (never in image history),
 with a verified fallback so secretless local/CI builds behave as before. Build
 runs before the container swap, so a DB-unreachable build leaves the site up.
 
-**Still to verify next cycle:** that the first deploy after this change serves
-correct data *immediately*, rather than only after ISR heals it.
+**Status after `671001fd` deployed: still broken.** The build log shows
+deploy.sh printed "Build will use DATABASE_URL…" and the new RUN step executed
+(406 s, not cached), yet `next build` still logged `[db] DATABASE_URL not set at
+init` and the resulting image's `.next/server/app/trenes/estaciones.html`
+(254 KB) contains **0** station links.
+
+Ruled out by direct test on the host and inside the `deployer` container:
+BuildKit secret syntax, the exact multi-line `RUN` continuation, `--memory`
+flags alongside `--secret`, and absolute vs relative `src` — all pass, secret
+readable, if-branch taken. The discrepancy is **not yet explained**; do not
+assume it is fixed.
+
+`53900a54` adds a build-time log of whether the secret path exists and its size
+(never contents), so the next deploy states definitively which branch runs.
+Start the next cycle by reading that line in `/var/log/deploys/trafico.log`.
+
+**Why the build never fails:** `src/lib/db.ts:11-25` deliberately tolerates a
+missing `DATABASE_URL`, returning a lazy proxy that re-checks at runtime
+(comment cites Coolify running `DATABASE_URL='' next build`). So a DB-less
+build produces empty pages *silently* instead of erroring — the same
+silent-failure family as AIS and GA4. Any real fix must also make this loud.
+
+**Working mitigation meanwhile:** short `revalidate` (300 s) — ISR regenerates
+at runtime where the DB is reachable. Verified: 1,506 links served. The pages
+at `revalidate=86400` stay empty for 24 h after each deploy, and the two using
+`force-static` never self-heal.
 
 ### L0.2 Deploys are not zero-downtime — OPEN
 `deploy.sh` does `docker rm -f` then `docker run`; there is a real gap until the
