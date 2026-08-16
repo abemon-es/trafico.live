@@ -1181,6 +1181,17 @@ async function loadFerryRoutes(prisma: PrismaClient) {
   }));
 }
 
+// 109 TransitOperator rows carry the NAP feed attribution as their name
+// ("Raw data from the Spanish National Access Point, powered by MIMTRANS…") —
+// an import defect in transit-gtfs that turns search subtitles into
+// boilerplate. Blank it here so results render clean; the durable fix is in
+// the importer.
+function cleanOperatorName(name: string | null | undefined): string {
+  if (!name) return "";
+  if (/raw data from|national access point|powered by/i.test(name)) return "";
+  return name;
+}
+
 async function loadTransitRoutes(prisma: PrismaClient) {
   const [rows, operators] = await Promise.all([
     prisma.transitRoute.findMany({
@@ -1193,7 +1204,7 @@ async function loadTransitRoutes(prisma: PrismaClient) {
     const op = ops.get(r.operatorId);
     return {
       id: r.id, operatorId: r.operatorId,
-      operatorName: op?.name || "", operatorSlug: op?.mdbId || "",
+      operatorName: cleanOperatorName(op?.name), operatorSlug: op?.mdbId || "",
       shortName: r.shortName || "", longName: r.longName || "",
       routeType: r.routeType,
     };
@@ -1212,7 +1223,7 @@ async function loadTransitStops(prisma: PrismaClient) {
     const op = ops.get(s.operatorId);
     return {
       id: s.id, operatorId: s.operatorId,
-      operatorName: op?.name || "", operatorSlug: op?.mdbId || "",
+      operatorName: cleanOperatorName(op?.name), operatorSlug: op?.mdbId || "",
       stopName: s.stopName,
       location: [Number(s.latitude), Number(s.longitude)],
     };

@@ -134,6 +134,16 @@ const COLLECTION_KEYWORD_MAP: Array<{ phrases: string[]; collection: string; lab
     collection: "railway_stations,railway_routes,trains",
     label: "Trenes",
   },
+  // Bare "estación X": scope to station-like collections and strip the word,
+  // so the place name does the matching. Without this, "estacion Aranjuez"
+  // ranked transit stops literally named "ESTACION" above the Aranjuez railway
+  // station — the generic token outscored the specific one. Must come after
+  // the more specific "estación de tren"/"estación de servicio" entries.
+  {
+    phrases: ["estaciones", "estación", "estacion", "parada"],
+    collection: "railway_stations,transit_stops,portugal_stations",
+    label: "Estaciones",
+  },
   {
     phrases: ["retraso", "cancelación", "cancelacion", "avería", "averia", "suprimido", "demora"],
     collection: "railway_alerts",
