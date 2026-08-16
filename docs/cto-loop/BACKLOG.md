@@ -53,9 +53,33 @@ result set. `typesense-sync` reports **ok** while railway_stations is empty —
 the green-but-broken family again.
 
 Ordered work list (each item unlocks disproportionate value):
-1. **Fix typesense-sync**: make railway_stations actually populate; create and
-   sync vessels / transit_stops / transit_routes / ferry_routes; make the task
-   report `partial` when any collection lands empty.
+1. ~~**Fix typesense-sync**~~ — ✅ DONE cycle 10 (`e6c267dd`), verified live:
+   - `railway_stations` 0 → **1,506** (loader filtered `locationType: 1`; every
+     row is 0). Station search now returns the station with a working
+     `/trenes/estacion/[slug]` link — the old href pointed at
+     `/trenes/estaciones/<cuid>`, which 404'd even when docs existed.
+   - New collections synced and searchable: **vessels 86,562** ·
+     **transit_stops 244,886** · **transit_routes 25,811** · **ferry_routes 53**,
+     with search configs (Buques/Ferries/Líneas/Paradas) added to `/api/search`.
+   - End-to-end proof: MMSI `225342000` → ILLETAS JET; "Volcan de Tagoro" →
+     vessel page HTTP 200. Neither worked before.
+   - **Item 3 solved itself:** the full replace collapsed `incidents` from
+     1.66 M accumulated docs to **3,285 active** — the bloat was delta upserts
+     never pruned; a periodic full sync keeps it bounded.
+   - Empty-collection detection shipped: full syncs landing 0 docs now report
+     `partial` with the names in the heartbeat meta. It immediately caught a
+     real one: **`pages` loader fails and that collection does not exist on the
+     server** (pre-existing — Cmd-K page suggestions have never worked). New
+     item 1b.
+
+   *Remaining quality gaps (not blockers):* incidents still rank above entity
+   hits ("EMT", "estacion X" surface congestion first — SEARCH_CONFIGS order is
+   the ranking); "linea 27" finds nothing because "linea" is not in any doc
+   (operator+number works: "EMT 27"). Ranking pass = future cycle.
+
+1b. **`pages` loader broken** — never logs a Load line, collection absent on
+   the server, correctly flagged by the new partial heartbeat. Likely the
+   embed field (`ts/multilingual-e5-small`) in its schema. Diagnose next.
 2. **Add `trains` + `aircraft` collections** (trainNumber/brand/route;
    icao24/callsign) syncing from the RT tables — this makes "search 03241 → its
    live page" work, which is the heart of the vision.
