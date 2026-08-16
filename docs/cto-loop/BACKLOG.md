@@ -19,7 +19,50 @@ last.
 
 ## L0 — Build, deploy, observability
 
-### L0.1 `next build` has no database access — ⚠️ FIX SHIPPED BUT NOT YET EFFECTIVE
+### L0.1 `next build` has no database access — ⛔ ATTEMPTED, REVERTED, CAUSED AN OUTAGE
+
+**Do not retry this without solving the connection pool first. Read this whole
+entry before touching the build.**
+
+The blanking of `DATABASE_URL` in the build script was **deliberate defensive
+design, not an oversight.** I read it as a bug and removed it. That was wrong.
+
+What happened on 2026-08-16, in order:
+1. Traced empty prerenders to the build having no DB. Added a BuildKit secret
+   (`671001fd`) — no effect.
+2. Found Next's static-generation workers were not receiving the value; passed
+   it through the env file Next loads itself (`9e1d572d`) — **this worked**.
+3. Removed `DATABASE_URL=''` from the build script (`331452eb`).
+4. With a real database, `next build` prerendered the ~40k DB-backed pages for
+   real and **exhausted PgBouncer**: `no more connections allowed
+   (max_client_conn)`, build worker exited 1.
+5. My Dockerfile change had put `rm -f` *after* `npm run build`, so the RUN
+   step returned rm's exit code. **The failed build silently produced an image
+   with no `.next`**, which deployed and crash-looped with "Could not find a
+   production build". 15 restarts; origin down, masked at the edge by
+   Cloudflare still serving 200s.
+6. Reverted (`aa6cffdd`). Production healthy, `RestartCount=0`, smoke 106/0,
+   station directory back to 1,506 links via ISR.
+
+**Three lessons worth more than the fix:**
+- A guard that looks pointless may be load-bearing. `DATABASE_URL=''` was
+  holding back 40k prerenders against a pooled database.
+- **Never end a gating RUN with a cleanup command** — it replaces the real exit
+  code and converts a failed build into a broken image.
+- The edge hid the outage. Cloudflare served 200 while the origin restart-looped;
+  `bin/cto-signals.sh` should check origin health directly, not just the URL.
+
+**If this is retried**, the pool is the prerequisite, not the build flag: cap
+`next build` concurrency (`experimental.cpus` / `--experimental-build-mode`),
+give the build a dedicated pooler with its own connection budget, or prerender
+only a curated subset and leave the long tail to ISR.
+
+**Current state: reverted and safe.** Builds prerender empty; ISR regenerates
+at runtime where connections are not contended — verified twice. Pages at
+`revalidate=86400` still serve empty for 24 h after each deploy, and the two
+using `force-static` never self-heal. **That is the real remaining exposure and
+it is fixable per-page without touching the build at all** — the correct next
+step for this item.
 177 pages query Postgres server-side; the build ran with only a placeholder
 `DATABASE_URL` for `prisma generate`. Their prerenders were produced with no
 data and the empty HTML baked into the image, served until ISR regenerated —
