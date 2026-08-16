@@ -87,15 +87,32 @@ Ordered work list (each item unlocks disproportionate value):
    Synced: **345 pages**. Verified live: "trafico Sevilla" → `/ciudad/sevilla`.
    Another rotation-without-consumer-inventory fossil, schema edition.
 
-1c. **Search quality pass** (grouped refinements, one future cycle):
-   - Static-page hits (e.g. "Precio Diésel Hoy") exist in Typesense (`found: 1`
-     direct) but don't surface through `/api/search` for fuel queries —
-     suspect per-collection interleave or the pages request shape.
-   - The "demote Páginas" ranking rule matches `category === "Páginas"`, but
-     page docs carry their own categories (Combustible, Ciudades…) so it
-     never fires.
-   - Multi-token cross-field queries ("AVE Madrid") don't match trains.
-   - Incidents still outrank entities for name queries ("estacion Aranjuez").
+1c. ~~**Search quality pass**~~ — ✅ DONE (MJ go-ahead, `ccff279a` + `9ea9e157`),
+   every item verified live:
+   - "AVE Madrid" → AVE/AVLO routes+trains with Madrid endpoints. Cause: the
+     intent parser consumed "AVE" and targeted railway_stations only (entry
+     predated the trains collection), stripping the most selective token.
+     Railway intent now fans out (targetCollection accepts a comma list) and
+     brand words stay in the query (`keepPhrase`).
+   - Global relevance sort by Typesense `text_match` before trimming. The old
+     pipeline concatenated in SEARCH_CONFIGS order and cut at the limit, so
+     any collection past ~position 7 was invisible on busy queries and
+     incidents beat everything by definition order. Skipped under proximity.
+   - Pages demotion now keyed on source collection (the category-string rule
+     never fired). Fuel-query "missing pages" was NOT a bug: fuel intent
+     deliberately targets gas_stations.
+   - "estacion Aranjuez" → **#1 Estaciones de tren → Aranjuez**. Bare
+     "estación"/"parada" scopes to station collections and strips the generic
+     token; ordered after "estación de tren"/"estación de servicio" (verified
+     both still resolve correctly).
+   - NAP boilerplate subtitles blanked at sync: **109 TransitOperator rows have
+     the feed attribution as their name** — durable fix belongs in the
+     transit-gtfs importer → new item L1.5.
+
+L1.5 **transit-gtfs stores NAP attribution as operator names** (109 rows:
+   "Raw data from the Spanish National Access Point, powered by MIMTRANS…").
+   Fix the importer to read the real agency name from agency.txt and re-import;
+   then remove `cleanOperatorName` from typesense-sync.
 2. ~~**Add `trains` + `aircraft` collections**~~ — ✅ DONE cycle 11 (`931b8098`,
    `bb533a0a`), verified end to end with live references:
    - `trains` **14,873 docs** (latest row per number, 48 h window). Search
