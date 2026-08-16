@@ -107,10 +107,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, `  GA4: ${ga4Data.sessions30d} sessions, ${ga4Data.users30d} users, ${ga4Data.pageviews30d} pageviews (30d)`);
   log(TASK, "────────────────────────────────────────────────────");
 
-  await heartbeat(prisma, TASK, "ok", {
+  // A GA4 section that failed leaves its accumulator at zero, which reads
+  // exactly like a property with no traffic. Report partial so /api/health
+  // shows the difference instead of blessing incomplete figures as "ok".
+  const degraded = ga4Data.failedSections > 0;
+  await heartbeat(prisma, TASK, degraded ? "partial" : "ok", {
     gscClicks30d: gscData.clicks30d,
     gscImpressions30d: gscData.impressions30d,
     ga4Sessions30d: ga4Data.sessions30d,
     ga4Users30d: ga4Data.users30d,
+    ga4FailedSections: ga4Data.failedSections,
   });
 }

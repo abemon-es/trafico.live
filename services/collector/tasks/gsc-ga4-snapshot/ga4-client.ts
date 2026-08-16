@@ -68,17 +68,31 @@ export interface Ga4Data {
   events30d: number;
   dailySeries: Ga4DailyRow[];
   breakdowns: Ga4Breakdowns;
+  /**
+   * How many of the five runReport calls failed. Each is caught individually so
+   * one bad section cannot lose the rest, but that also means a total failure
+   * returns all-zeros — indistinguishable from a property with no traffic.
+   * The caller reports `partial` when this is non-zero so the failure is
+   * visible in /api/health instead of being recorded as real zeros.
+   */
+  failedSections: number;
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
 function ga4Date(d: Date): string {
-  // GA4 uses YYYYMMDD format
-  return d.toISOString().slice(0, 10).replace(/-/g, "");
+  // Request ranges must be YYYY-MM-DD. The Data API v1beta rejects YYYYMMDD
+  // with INVALID_ARGUMENT ("startDate must be YYYY-MM-DD, NdaysAgo, yesterday,
+  // or today"). Every runReport call failed on this and, because each is
+  // wrapped in a catch that leaves its accumulator at zero, the task still
+  // reported success — so the first snapshot ever written recorded 0 sessions
+  // for a property that actually had 752. Fixed 2026-08-16.
+  return d.toISOString().slice(0, 10);
 }
 
 function isoDate(ga4: string): string {
-  // Convert YYYYMMDD → YYYY-MM-DD
+  // Response *dimension* values still come back as YYYYMMDD — this is only for
+  // parsing rows, never for building request ranges.
   return `${ga4.slice(0, 4)}-${ga4.slice(4, 6)}-${ga4.slice(6, 8)}`;
 }
 
@@ -99,12 +113,13 @@ export async function fetchGa4Data(): Promise<Ga4Data> {
   const analyticsdata = google.analyticsdata({ version: "v1beta", auth: authClient as never });
 
   const { startDate, endDate } = getDateRange30d();
-  log(TASK, `GA4 date range: ${isoDate(startDate)} → ${isoDate(endDate)}`);
+  log(TASK, `GA4 date range: ${startDate} → ${endDate}`);
 
   let sessions30d = 0;
   let users30d = 0;
   let pageviews30d = 0;
   let events30d = 0;
+  let failedSections = 0;
   let dailySeries: Ga4DailyRow[] = [];
   const breakdowns: Ga4Breakdowns = {
     byCountry: [],
@@ -152,6 +167,7 @@ export async function fetchGa4Data(): Promise<Ga4Data> {
     log(TASK, `GA4 totals: ${sessions30d} sessions, ${users30d} users, ${pageviews30d} pageviews, ${events30d} events`);
   } catch (err) {
     logError(TASK, "Failed to fetch GA4 aggregate + daily:", err);
+    failedSections++;
   }
 
   // ── 2. By country (top 20) ────────────────────────────────────────────────
@@ -173,6 +189,7 @@ export async function fetchGa4Data(): Promise<Ga4Data> {
     log(TASK, `GA4 by country: ${breakdowns.byCountry.length} countries`);
   } catch (err) {
     logError(TASK, "Failed to fetch GA4 by country:", err);
+    failedSections++;
   }
 
   // ── 3. By device category ─────────────────────────────────────────────────
@@ -194,6 +211,7 @@ export async function fetchGa4Data(): Promise<Ga4Data> {
     log(TASK, `GA4 by device: ${breakdowns.byDevice.length} categories`);
   } catch (err) {
     logError(TASK, "Failed to fetch GA4 by device:", err);
+    failedSections++;
   }
 
   // ── 4. By traffic source/medium ───────────────────────────────────────────
@@ -216,6 +234,7 @@ export async function fetchGa4Data(): Promise<Ga4Data> {
     log(TASK, `GA4 by source: ${breakdowns.bySource.length} sources`);
   } catch (err) {
     logError(TASK, "Failed to fetch GA4 by source:", err);
+    failedSections++;
   }
 
   // ── 5. Top pages by pageviews ─────────────────────────────────────────────
@@ -237,6 +256,14 @@ export async function fetchGa4Data(): Promise<Ga4Data> {
     log(TASK, `GA4 top pages: ${breakdowns.byPage.length}`);
   } catch (err) {
     logError(TASK, "Failed to fetch GA4 top pages:", err);
+    failedSections++;
+  }
+
+  if (failedSections > 0) {
+    logError(
+      TASK,
+      `GA4: ${failedSections}/5 report sections failed — returned figures are incomplete, not real zeros`
+    );
   }
 
   return {
@@ -246,5 +273,6 @@ export async function fetchGa4Data(): Promise<Ga4Data> {
     events30d,
     dailySeries,
     breakdowns,
+    failedSections,
   };
 }
