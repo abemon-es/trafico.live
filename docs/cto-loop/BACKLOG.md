@@ -369,7 +369,18 @@ healthcheck passes. The infra loop measured two ~30 s outage windows on
 It nearly escalated them as an incident. Fix: build the new image, start it
 alongside, wait for healthy, then switch Traefik and retire the old container.
 
-### L0.3 Collector logs never reach Loki — OPEN
+### L0.3 Collector logs → Loki — ✅ CLOSED cycle 15: the premise was wrong
+Collector logs HAVE been reaching Loki all along — under the `service` label
+(Vector's `exp-vector` maps container names there), not `container`, which was
+the only label the original probe queried. `{service=~"collector-.*"}` returns
+live streams for every tier. `bin/cto-signals.sh` corrected; first run with the
+right label immediately surfaced collector-realtime at 289 errors/h (19× a
+never-provisioned TELEGRAM_CHANNEL → ESCALATIONS; 14× known Barcelona/Zaragoza
+upstream failures; rest grep false-positives). Also found `exp-vector`'s
+parse_json transform failing ~2/min ("expected string, got integer") — reported
+to CTO, its config.
+
+### L0.3b (original entry, premise incorrect)
 Loki has no `collector-*` values for the `container` label; only `trafico-*`
 infra and the web app. `docker-compose.collectors.yml` intends Vector to scrape
 json-file and ship them, but that path does not deliver. **This is the direct
@@ -703,6 +714,11 @@ consumers that took a month to be noticed. Applies directly to our Google SA
 key, which now lives in two places (Mac + compute `secrets/google-sa.json`).
 
 ## ESCALATIONS — need MJ, loop cannot self-serve
+
+0. **TELEGRAM_CHANNEL / TELEGRAM_BOT_TOKEN never provisioned** — the
+   social-broadcast task errors every run wanting them; they exist in neither
+   `.env` nor `.env.collectors`. Decide: provision a bot+channel, or disable
+   the task in the realtime crontab.
 
 Secrets cannot be invented. The loop must not fabricate, guess, or stub these.
 

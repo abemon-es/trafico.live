@@ -81,15 +81,17 @@ if (( NO_REMOTE == 0 )); then
   # NB: the LogQL line filter uses a double-quoted regex, never backticks —
   # backticks inside the SSH command string get substituted by the remote shell.
   #
-  # Scope caveat: the collector-* containers use the json-file log driver
-  # (docker-compose.collectors.yml), so they do NOT ship to Loki at all. Only
-  # the web app and trafico-* infra do. Collector-side errors come from the
-  # docker-logs probe below instead. Widen this the day collectors move to Loki.
-  LOKI_QUERY='sum by (container) (count_over_time({container=~"trafico-.*|collector-.*"} |~ "(?i)error" [1h]))'
+  # Label taxonomy: Vector (exp-vector) tails every container's json-file logs
+  # and ships them to Loki under the `service` label — collector-* and the web
+  # app land there. The `container` label only exists for streams shipped other
+  # ways (compose-labeled infra). An earlier version of this probe queried
+  # `container` only and concluded collector logs never reached Loki at all —
+  # they did, under the other label, for months.
+  LOKI_QUERY='sum by (service) (count_over_time({service=~"collector-.*|trafico-.*"} |~ "(?i)error" [1h]))'
   LOKI_RAW="$("${SSH[@]}" \
     "curl -sG --max-time 15 'http://10.100.0.2:3100/loki/api/v1/query' \
       --data-urlencode 'query=${LOKI_QUERY}'" 2>/dev/null \
-    | jq '[.data.result[]? | {container: .metric.container, errors_1h: (.value[1] | tonumber)}]
+    | jq '[.data.result[]? | {container: .metric.service, errors_1h: (.value[1] | tonumber)}]
           | sort_by(-.errors_1h)' 2>/dev/null)"
   LOKI="$(json_or_null "$LOKI_RAW")"
 
