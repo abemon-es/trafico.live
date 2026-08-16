@@ -80,9 +80,25 @@ Ordered work list (each item unlocks disproportionate value):
 1b. **`pages` loader broken** — never logs a Load line, collection absent on
    the server, correctly flagged by the new partial heartbeat. Likely the
    embed field (`ts/multilingual-e5-small`) in its schema. Diagnose next.
-2. **Add `trains` + `aircraft` collections** (trainNumber/brand/route;
-   icao24/callsign) syncing from the RT tables — this makes "search 03241 → its
-   live page" work, which is the heart of the vision.
+2. ~~**Add `trains` + `aircraft` collections**~~ — ✅ DONE cycle 11 (`931b8098`,
+   `bb533a0a`), verified end to end with live references:
+   - `trains` **14,873 docs** (latest row per number, 48 h window). Search
+     `05792` → "AVE 05792 · Burgos-Rosa Manzano → Murcia del Carmen" →
+     `/trenes/tren/05792`. Origin/dest codes resolved to names via
+     `RailwayStation.code`.
+   - `aircraft` **809 docs**. Search `IBB5757` → `/aviacion/avion/348305`.
+   - The daily sync keeps the *set of references* current; the entity pages
+     fetch live data on render. Refinement queued: multi-token cross-field
+     queries ("AVE Madrid") don't match yet.
+
+   ⚠️ **Operational incident during this cycle, self-inflicted:**
+   `docker compose up -d collector-daily` RECREATED every container in the
+   project (config hash changed after the image rebuild) but only STARTED the
+   named one — realtime/frequent/fuel/weekly/ais sat in `Created` for ~19 min
+   until the sweep caught 8 tasks going stale at once. Full `up -d` + a clean
+   `down && up -d` restored canonical names; stale fell 11→3 within minutes.
+   **Rule for collector deploys: after `up -d <service>`, always run a bare
+   `up -d` (no service name) to start anything compose recreated alongside.**
 3. **Prune `incidents`** to active-only so entity results are not drowned.
 4. **Per-vehicle transit pages** for the 4 RT operators (page per vehicleId is
    feasible; per-line live view is the SEO-sane default).
