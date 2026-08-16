@@ -128,6 +128,18 @@ at runtime where the DB is reachable. Verified: 1,506 links served. The pages
 at `revalidate=86400` stay empty for 24 h after each deploy, and the two using
 `force-static` never self-heal.
 
+### L0.5 Build context was 28 GB — ✅ FIXED cycle 6 (`22d967f4`)
+Every build tarred `/opt/trafico/osrm` (27 GB of routing graphs) into the Docker
+context: 28.31 GB transferred, 93 s on transfer plus 118 s on `COPY`, and one
+build still running after **61 minutes** against a normal ~12. `.dockerignore`
+already named OSRM in its header but only ever matched `tiles/` — the identical
+miss its own comment describes for the 75 GB planet pmtiles.
+
+Expect materially faster deploys (shorter non-zero-downtime windows, see L0.2)
+and slower `/var/lib/docker` growth, since each build was writing a 28 GB
+context into the build cache. **Verify both next cycle** — the fix only takes
+effect on the first build after it lands, and there is a queue.
+
 ### L0.2 Deploys are not zero-downtime — OPEN
 `deploy.sh` does `docker rm -f` then `docker run`; there is a real gap until the
 healthcheck passes. The infra loop measured two ~30 s outage windows on
@@ -142,7 +154,43 @@ json-file and ship them, but that path does not deliver. **This is the direct
 reason an 11-day AIS outage produced zero alerts.** Until fixed, collector
 errors are only visible by SSHing to the host.
 
-### L0.4 `.env` vs `.env.collectors` drift — OPEN
+### L0.4 `.env` vs `.env.collectors` drift — ✅ AUDITED cycle 6, `cams-aq` fixed
+
+`CAMS_API_KEY` was **entirely absent** from `.env.collectors` (not merely
+empty) while `.env` held a 36-char value. Propagated it, backed the file up to
+`.env.collectors.bak-20260816-cto`, recreated `collector-daily`. Verified: key
+visible in the container, task ran `upserted=1050 skipped=0 errors=0`,
+heartbeat now **ok** with no error message (was `error` every run).
+
+Full key-by-key audit of the two files: the only other differences are
+web-only (`SERVICE_*_WEB`, `NEXTAUTH_*`, `TURNSTILE_*`, `REVALIDATE_SECRET`,
+`MIGRATE_DATABASE_URL`), correctly absent from collectors — **except OpenSky,
+see L1.3 below.**
+
+The underlying class — two hand-maintained env files with no sync mechanism —
+is still open. A generated `.env.collectors` (filtered from `.env` by an
+explicit allowlist) would close it for good.
+
+### L1.3 `opensky` uses retired Basic auth while OAuth2 credentials sit unused
+`services/collector/tasks/opensky/collector.ts:105-106` reads
+`OPENSKY_USERNAME` / `OPENSKY_PASSWORD` (HTTP Basic). `.env` instead holds
+`OPENSKY_CLIENT_ID` (16 chars) and `OPENSKY_CLIENT_SECRET` (32) — OAuth2 client
+credentials, which is what OpenSky moved to when it retired Basic auth.
+
+So the collector authenticates as **anonymous** and is rate-limited, which is
+almost certainly why it reports `partial`. **Propagating the variables would
+achieve nothing** — the code never reads those names. Needs the OAuth2
+client-credentials token flow implemented instead. Checked before copying; a
+blind propagation here would have looked like a fix and changed nothing.
+
+### L1.4 `cams-aq` runs green but ingests no CAMS data
+Now that it executes, every city logs `CAMS RAQ error: fetch failed` followed by
+`ADS key present but NetCDF parsing not implemented in S0 — skipping`, then
+falls back to MITECO persistence. The task reports `ok` and writes 1,050 rows,
+but **none of them are CAMS forecast data**. Green heartbeat, wrong source —
+the same "reports success while doing something else" family as the GA4 zeros.
+
+### L0.4b (superseded — original entry)
 `.env.collectors` (the file collectors actually load) is dated **Apr 17** while
 `.env` has moved on. `CAMS_API_KEY` is present in `.env` but **empty** in
 `.env.collectors`, which is the entire cause of the `cams-aq` error. No new
