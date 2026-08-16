@@ -61,7 +61,16 @@ next item. Spinning on an unobtainable secret wastes the whole cycle.
 A fix is not done because the code looks right. It is done when the signal that
 detected the problem has flipped green.
 
-### 5. Ship
+### 5. Ship — once per cycle, not once per edit
+
+**Batch the cycle's commits and push once.** Every push to `main` triggers a
+full rebuild (~12 min) plus a `docker rm -f` / `docker run` swap that is not
+zero-downtime. On 2026-08-16 this loop pushed roughly ten times in a day: ten
+rebuilds, ten brief origin gaps that the infra monitoring flagged as incidents,
+a deploy queue several builds deep, and enough layer churn to contribute to a
+`HostDiskWarning` (-57 GB in 24 h on `/var/lib/docker`).
+
+Commit freely while working; push at the end of the cycle.
 
 Conventional commits (`fix:`/`feat:`/`refactor:`). No AI attribution anywhere in
 commits, PRs, or any public-visible text. Push, then confirm the deploy landed

@@ -17,6 +17,34 @@ last.
 
 ---
 
+## L2 — Pages serving empty content after every deploy
+
+### L2.1 Accident pages — ✅ FIXED cycle 5 (`ed0e2748`, deploy pending)
+`/accidentes/madrid` served 4,778 chars — exactly the nav/footer chrome
+baseline, zero accident figures — against 466,123 rows in `AccidentMicrodata`
+(70,636 for Madrid alone). Same for `/accidentes/carretera/A-1`. Confirmed the
+query itself matches rows first, so this was a rendering window, not a bad
+query. `revalidate` 86400 → 300. `force-static`/`dynamicParams` deliberately
+untouched — a 2026-06-10 comment records them fixing `NoFallbackError` 500s.
+
+### L2.2 Other long-revalidate DB pages — SUSPECTED, needs per-page proof
+These query Postgres and use `revalidate` ≥ 21600 with no `force-dynamic`, so
+they share the mechanism. Text-length probing was **inconclusive** — each sits
+a few hundred chars above chrome baseline, which could be real data or could be
+headings with empty sections. **Do not bulk-edit them on that signal.** Verify
+one at a time by checking a data-specific string against the DB, the way L2.1
+was confirmed:
+
+`/peajes/comparativa` · `/estadisticas/accidentes` · `/calidad-aire/prevision` ·
+`/maritimo/seguridad/estadisticas` · `/peajes/[road]` · `/peajes/operador/[slug]` ·
+`/radares/radar/[id]` · `/gasolineras/terrestres/[id]` · `/carga-ev/punto/[id]` ·
+`/analisis/carreteras/[roadId]` · `/analisis/accidentes/[provincia]`
+
+The `inteligencia/*` pages use `force-dynamic` and render per request, so they
+are not affected.
+
+---
+
 ## L0 — Build, deploy, observability
 
 ### L0.1 `next build` has no database access — ⛔ ATTEMPTED, REVERTED, CAUSED AN OUTAGE
