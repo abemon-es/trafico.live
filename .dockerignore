@@ -9,6 +9,15 @@
 tiles/
 services/tiles/build/
 
+# OSRM routing graphs — 27 GB of car/bike/foot data under /opt/trafico/osrm on
+# compute, consumed by the separate trafico-osrm-* containers, never by the web
+# image. The comment above mentions OSRM but the pattern only ever covered
+# tiles/, so this was still being tar'd into every build: measured 2026-08-16 at
+# a 28.31 GB build context, 93 s just to transfer plus 118 s on COPY, turning a
+# ~12 min deploy into over an hour and churning enough layers to contribute to a
+# HostDiskWarning. No source file references this path.
+osrm/
+
 # Dependencies — installed inside the image
 node_modules/
 packages/*/node_modules/
