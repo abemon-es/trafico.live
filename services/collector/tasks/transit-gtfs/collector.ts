@@ -111,10 +111,20 @@ async function discoverFeeds(): Promise<DiscoveredFeed[]> {
     const downloadUrl = values[iLatest]?.trim() || values[iDirect]?.trim();
     if (!downloadUrl) continue;
 
+    // The catalog's `name` column is not always a name: NAP-sourced feeds put
+    // their attribution blurb there ("Raw data from the Spanish National
+    // Access Point, powered by MIMTRANS…"), which ended up as the operator
+    // name on 109 rows and leaked into search results as subtitles. When name
+    // reads like attribution, prefer the provider column, which carries the
+    // actual operator.
+    const rawName = values[iName]?.trim() || "";
+    const rawProvider = values[iProvider]?.trim() || "";
+    const nameIsAttribution = /raw data from|national access point|powered by/i.test(rawName);
+
     feeds.push({
       mdbId,
-      name: values[iName]?.trim() || values[iProvider]?.trim() || `Feed ${mdbId}`,
-      provider: values[iProvider]?.trim() || "",
+      name: (nameIsAttribution ? rawProvider : rawName) || rawProvider || `Feed ${mdbId}`,
+      provider: rawProvider,
       city: values[iCity]?.trim() || "",
       region: values[iRegion]?.trim() || "",
       downloadUrl,
