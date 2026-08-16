@@ -27,7 +27,38 @@ query itself matches rows first, so this was a rendering window, not a bad
 query. `revalidate` 86400 → 300. `force-static`/`dynamicParams` deliberately
 untouched — a 2026-06-10 comment records them fixing `NoFallbackError` 500s.
 
-### L2.2 Other long-revalidate DB pages — SUSPECTED, needs per-page proof
+### ⚠️ Method correction (cycle 7) — do not use "text character count"
+
+Cycles 5–6 judged pages empty by stripping tags and counting text characters.
+**That metric is invalid here.** On `/accidentes/madrid` it reported 4,778 chars
+("pure chrome") for a page whose crawlable HTML is 136 KB and contains the exact
+DB figure `70.636` five times, including in `<title>` and the meta description.
+Tailwind class strings and inline SVG dominate the markup, so text-stripping
+discards the signal.
+
+**Use content-specific probes instead**, and confirm against the database:
+- a formatted-number grep, e.g. `grep -oE '>[0-9]{1,3}\.[0-9]{3}<'`
+- a known value pulled from the DB first (`70.636` for Madrid, `1.067` for A-1)
+- the page's own empty-state string (`Sin datos`) — its presence or absence is
+  far more informative than any length heuristic
+
+This method error caused two wrong conclusions in one day: it declared healthy
+pages empty, and then declared a working fix ineffective.
+
+### L2.1b `/accidentes/carretera/[road]` still not populating — OPEN
+The province page is confirmed fixed; **this one is not.** `/accidentes/carretera/A-1`
+returns 321 KB with the right `<title>`, "A-1" ×50 and "Autovía" ×7, but no
+`1.067` (its real count), no `siniestros`, and **no `Sin datos` either** — so it
+is rendering neither the data nor the empty state. `roadNumber = 'A-1'` has
+1,067 rows, so the data exists.
+
+Two hypotheses for the next cycle: ISR has not regenerated this specific path
+(dynamic param, regenerates per-path on request), or the page's road filter does
+not match `roadNumber` the way the province page matches `provinceName`. Check
+the query in `src/app/accidentes/carretera/[road]/page.tsx` against the DB before
+changing anything.
+
+### L2.2 Other long-revalidate DB pages — RE-ASSESS, prior triage was unsound
 These query Postgres and use `revalidate` ≥ 21600 with no `force-dynamic`, so
 they share the mechanism. Text-length probing was **inconclusive** — each sits
 a few hundred chars above chrome baseline, which could be real data or could be
@@ -128,7 +159,29 @@ at runtime where the DB is reachable. Verified: 1,506 links served. The pages
 at `revalidate=86400` stay empty for 24 h after each deploy, and the two using
 `force-static` never self-heal.
 
-### L0.5 Build context was 28 GB — ✅ FIXED cycle 6 (`22d967f4`)
+### L0.6 Deploy pipeline jammed on an orphaned build — ✅ CLEARED cycle 7
+A `docker build` ran for **93 minutes** with no log output for the last 31, its
+parent deploy process (pid 435718) already dead, while two deploys sat queued
+behind it. The per-app lock directory was empty — the holder died without
+running its retrigger, so the queue would never have drained on its own.
+
+Killed the orphan; the queue immediately retriggered on the latest commit and
+deployed cleanly. **Worth hardening:** the queue trusts a recorded PID with no
+liveness check, so any abnormally-terminated deploy strands every later push
+indefinitely. A `kill -0` on the holder before queueing would close it.
+
+### L0.5 Build context was 28 GB — ✅ FIXED AND VERIFIED cycle 7 (`22d967f4`)
+Measured before and after on real deploys:
+
+| | context | transfer | deploy total |
+|---|---|---|---|
+| before | 28.31 GB | 92.9 s | ~700 s (one run hung at 93 min) |
+| after | **204 KB** | **7.3 s** | **381 s** |
+
+A ~140,000× smaller context, deploy time roughly halved, and the pathological
+hour-long builds gone.
+
+### L0.5b (original entry)
 Every build tarred `/opt/trafico/osrm` (27 GB of routing graphs) into the Docker
 context: 28.31 GB transferred, 93 s on transfer plus 118 s on `COPY`, and one
 build still running after **61 minutes** against a normal ~12. `.dockerignore`
