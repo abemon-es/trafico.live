@@ -72,6 +72,18 @@ a deploy queue several builds deep, and enough layer churn to contribute to a
 
 Commit freely while working; push at the end of the cycle.
 
+**Deploy notification protocol (agreed with the infra session, 2026-08-17):**
+notify CTO before *risky* deploys only — changes to the build system
+(Dockerfile, deploy.sh, the package.json build script), the container swap, or
+anything touching PgBouncer/DB at build time. Routine app deploys need no
+notice; they are zero-downtime and its monitoring confirms zero errors. This
+replaces an earlier per-deploy promise that was not being kept.
+
+**End-of-batch hygiene:** after a night of chained builds, reclaim build cache
+(`docker builder prune --keep-storage 25GB`) — tonight's chain grew it to
+88 GB before pruning back to 53 GB. The shared docker-prune.sh only clears
+cache older than 24 h, so same-day churn is ours to clean.
+
 Conventional commits (`fix:`/`feat:`/`refactor:`). No AI attribution anywhere in
 commits, PRs, or any public-visible text. Push, then confirm the deploy landed
 and the app came back healthy.
