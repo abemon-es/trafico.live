@@ -61,6 +61,23 @@ export function createReconnectingWS(
   let ws: WebSocket | null = null;
   let currentDelay = initialDelay;
   let consecutiveFailures = 0;
+
+  // Upstream throttling needs a different response from a network blip.
+  //
+  // aisstream.io rejects the WebSocket handshake with HTTP 429 once a key has
+  // opened too many connections, and retrying on the normal 5→60 s ladder only
+  // deepens the penalty. Confirmed 2026-08-16: the staleness watchdog was
+  // terminating every 300 s and reconnecting 60 s later, so an 11-day silence
+  // produced thousands of connection attempts. The key ended up rejected at the
+  // handshake, and the collector never noticed because a 429 was logged exactly
+  // like any transient error. The credentials were valid throughout — the
+  // reconnect storm was the outage.
+  //
+  // Back off in minutes, not seconds, and escalate while the upstream keeps
+  // refusing. Reset only once a connection actually delivers a message.
+  const THROTTLE_BASE_MS = 15 * 60_000;
+  const THROTTLE_MAX_MS = 2 * 60 * 60_000;
+  let throttleDelay = 0;
   let stopped = false;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let connectTime = 0;
@@ -101,6 +118,7 @@ export function createReconnectingWS(
           receivedMessage = true;
           consecutiveFailures = 0;
           currentDelay = initialDelay;
+          throttleDelay = 0; // only real data clears a throttle, not a bare open
           log(task, "First message received — connection confirmed healthy");
         }
         onMessage(data);
@@ -120,12 +138,47 @@ export function createReconnectingWS(
           consecutiveFailures++;
           log(task, `Short-lived connection counted as failure (${consecutiveFailures} consecutive)`);
         }
+
+        // A socket that opened, stayed open and still delivered nothing is the
+        // signature of a soft throttle rather than a network fault — it is
+        // exactly the state the AIS collector sat in for 11 days, reconnecting
+        // roughly every 6 minutes and making the throttle permanent. Escalate
+        // the same minutes-scale backoff so a silent upstream is given room to
+        // recover instead of being hammered.
+        if (!receivedMessage && duration >= minHealthyDuration) {
+          throttleDelay = throttleDelay
+            ? Math.min(throttleDelay * 2, THROTTLE_MAX_MS)
+            : Math.floor(THROTTLE_BASE_MS / 3);
+          log(
+            task,
+            `Connection delivered no data in ${(duration / 1000).toFixed(0)}s — ` +
+              `treating as upstream throttle, next attempt in ${Math.round(throttleDelay / 60_000)} min`
+          );
+        }
+
         scheduleReconnect();
       }
     });
 
     ws.on("error", (err: Error) => {
-      logError(task, "WebSocket error", err);
+      // The ws library reports handshake rejections as
+      // "Unexpected server response: <status>". Treat throttling separately —
+      // retrying fast is what causes it to persist.
+      const status = /Unexpected server response:\s*(\d{3})/.exec(err.message ?? "")?.[1];
+      if (status === "429") {
+        throttleDelay = throttleDelay
+          ? Math.min(throttleDelay * 2, THROTTLE_MAX_MS)
+          : THROTTLE_BASE_MS;
+        logError(
+          task,
+          `Upstream refused the handshake with HTTP 429 (rate limited). ` +
+            `Backing off ${Math.round(throttleDelay / 60_000)} min — fast retries deepen the penalty.`
+        );
+      } else if (status) {
+        logError(task, `WebSocket handshake rejected with HTTP ${status}`, err);
+      } else {
+        logError(task, "WebSocket error", err);
+      }
       consecutiveFailures++;
       ws?.terminate();
     });
@@ -161,6 +214,14 @@ export function createReconnectingWS(
 
   function scheduleReconnect() {
     if (stopped || signal?.aborted) return;
+
+    // A throttled upstream outranks the normal ladder and the circuit breaker:
+    // both retry far too quickly to let a rate limit decay.
+    if (throttleDelay > 0) {
+      log(task, `Rate limited — next attempt in ${Math.round(throttleDelay / 60_000)} min`);
+      reconnectTimer = setTimeout(connect, throttleDelay);
+      return;
+    }
 
     if (consecutiveFailures >= maxConsecutiveFailures) {
       log(task, `Circuit breaker: ${consecutiveFailures} failures, cooling down ${circuitBreakerCooldown / 1000}s`);
