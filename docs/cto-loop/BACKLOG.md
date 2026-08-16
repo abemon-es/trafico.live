@@ -17,6 +17,58 @@ last.
 
 ---
 
+## NORTH STAR (MJ, 2026-08-16): universal vehicle findability
+
+> "For each train, no matter how big or small, and each bus, ship, ferry,
+> plane — any publicly accessible vehicle in Spain and Portugal — you should be
+> able to find it via its reference numbers, ID, name, address, date, and see
+> realtime location, next stop, final destination and overall stats, all linked
+> together."
+
+**Audit (cycle 10).** Data ≈75% · entity pages ≈60% · discovery ≈15% ·
+linking ≈35%. The bottleneck is DISCOVERY, and it is cheap relative to what
+already exists.
+
+Per-day live data measured: 12,773 distinct train numbers (RenfeFleetPosition),
+263,043 distinct transit vehicle IDs / 1.25 M positions (TransitVehiclePosition,
+but only **4 of 164 operators** emit RT), 876 aircraft (icao24), 86,562 known
+vessels (**0 positions 48 h — AIS throttle**), 53 ferry routes, 1.24 M port
+calls, 625 K voyages. Portugal: 18 transit operators, no CP rail, no PT
+vehicle RT.
+
+Entity pages that already fulfil the vision per-vehicle:
+`/trenes/tren/[trainId]` (live position, next stop, ETA, destination,
+punctuality, 30-day history — the template for everything else),
+`/maritimo/buques/[slug]` (+historial/recorrido), `/aviacion/avion/[icao24]`,
+`/maritimo/ferries/[slug]`.
+
+**The discovery layer is where the vision dies today.** `/api/search` queries
+22 collections but on the server: `vessels`, `transit_stops`, `transit_routes`,
+`ferry_routes`, `pages` **do not exist**; `railway_stations` has **0 docs**
+(2,154 in DB); there is **no trains collection and no aircraft collection even
+in the schema**. Searching a live train number returns a road incident.
+Searching a real ferry name, an MMSI, a callsign, a bus line: nothing.
+Meanwhile `incidents` holds 1.66 M docs (never pruned) and dominates every
+result set. `typesense-sync` reports **ok** while railway_stations is empty —
+the green-but-broken family again.
+
+Ordered work list (each item unlocks disproportionate value):
+1. **Fix typesense-sync**: make railway_stations actually populate; create and
+   sync vessels / transit_stops / transit_routes / ferry_routes; make the task
+   report `partial` when any collection lands empty.
+2. **Add `trains` + `aircraft` collections** (trainNumber/brand/route;
+   icao24/callsign) syncing from the RT tables — this makes "search 03241 → its
+   live page" work, which is the heart of the vision.
+3. **Prune `incidents`** to active-only so entity results are not drowned.
+4. **Per-vehicle transit pages** for the 4 RT operators (page per vehicleId is
+   feasible; per-line live view is the SEO-sane default).
+5. **Portugal**: CP GTFS(-RT?), Carris/Metro Lisboa via MobilityData — the ES
+   pipeline generalises.
+6. **Identity linking**: vessel↔ferry-route↔port-call↔voyage joins exist in
+   data (1.2 M port calls) but are not surfaced as cross-links on entity pages.
+
+---
+
 ## L2 — Pages serving empty content after every deploy
 
 ### L2.1 Accident pages — ✅ FIXED cycle 5 (`ed0e2748`, deploy pending)
