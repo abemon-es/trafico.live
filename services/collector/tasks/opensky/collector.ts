@@ -99,9 +99,44 @@ interface OpenSkyResponse {
 }
 
 /**
- * Build Authorization header value from env vars, or undefined if not set.
+ * Build Authorization header value, or undefined to run anonymously.
+ *
+ * OpenSky retired HTTP Basic auth in favour of OAuth2 client credentials.
+ * The old OPENSKY_USERNAME/PASSWORD pair kept this collector silently
+ * anonymous — the account's CLIENT_ID/SECRET sat unused in .env while every
+ * run was rate-limited to the anonymous tier and reported partial. Prefer the
+ * OAuth2 flow; keep Basic as a fallback for any deployment still carrying the
+ * old variables. A token lasts ~30 min and each cron run is far shorter, so
+ * one token per run is enough — no caching needed.
  */
-function buildAuthHeader(): string | undefined {
+async function buildAuthHeader(): Promise<string | undefined> {
+  const clientId = process.env.OPENSKY_CLIENT_ID;
+  const clientSecret = process.env.OPENSKY_CLIENT_SECRET;
+  if (clientId && clientSecret) {
+    try {
+      const res = await fetch(
+        "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type: "client_credentials",
+            client_id: clientId,
+            client_secret: clientSecret,
+          }),
+          signal: AbortSignal.timeout(15_000),
+        }
+      );
+      if (res.ok) {
+        const data = (await res.json()) as { access_token?: string };
+        if (data.access_token) return `Bearer ${data.access_token}`;
+      }
+      logError(TASK, `OAuth2 token request failed: HTTP ${res.status} — falling back to anonymous`);
+    } catch (err) {
+      logError(TASK, "OAuth2 token request errored — falling back to anonymous:", err);
+    }
+  }
+
   const user = process.env.OPENSKY_USERNAME;
   const pass = process.env.OPENSKY_PASSWORD;
   if (!user || !pass) return undefined;
@@ -290,7 +325,7 @@ async function pollOnce(prisma: PrismaClient, authHeader: string | undefined): P
 }
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  const authHeader = buildAuthHeader();
+  const authHeader = await buildAuthHeader();
   const isAuthenticated = !!authHeader;
 
   log(TASK, `Starting — mode: ${isAuthenticated ? "authenticated" : "anonymous"}`);
