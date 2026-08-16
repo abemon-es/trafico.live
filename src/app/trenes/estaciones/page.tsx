@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import prisma from "@/lib/db";
 import EstacionesTrenContent from "./content";
+import LinkDirectory from "@/components/seo/LinkDirectory";
+
+// The interactive catalogue below is client-rendered, so its station links do
+// not exist in the HTML Googlebot parses. Revalidate daily and emit a
+// server-rendered directory alongside it so the detail pages are actually
+// reachable by a crawler.
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Estaciones de tren en España — catálogo completo",
@@ -16,21 +25,35 @@ export const metadata: Metadata = {
   },
 };
 
-export default function EstacionesTrenPage() {
+export default async function EstacionesTrenPage() {
+  const stations = await prisma.railwayStation.findMany({
+    where: { slug: { not: null } },
+    select: { slug: true, name: true, provinceName: true },
+    orderBy: { name: "asc" },
+  });
+
+  const directoryItems = stations
+    .filter((s): s is typeof s & { slug: string } => Boolean(s.slug))
+    .map((s) => ({
+      href: `/trenes/estacion/${s.slug}`,
+      label: s.name,
+      group: s.provinceName,
+    }));
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <nav className="text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
         <ol className="flex items-center gap-2 list-none p-0 m-0">
           <li>
-            <a href="/" className="hover:text-[var(--tl-primary)] transition-colors">
+            <Link href="/" className="hover:text-[var(--tl-primary)] transition-colors">
               Inicio
-            </a>
+            </Link>
           </li>
           <li aria-hidden="true" className="select-none">/</li>
           <li>
-            <a href="/trenes" className="hover:text-[var(--tl-primary)] transition-colors">
+            <Link href="/trenes" className="hover:text-[var(--tl-primary)] transition-colors">
               Red Ferroviaria
-            </a>
+            </Link>
           </li>
           <li aria-hidden="true" className="select-none">/</li>
           <li className="text-gray-900 dark:text-gray-100" aria-current="page">
@@ -40,6 +63,12 @@ export default function EstacionesTrenPage() {
       </nav>
 
       <EstacionesTrenContent />
+
+      <LinkDirectory
+        title="Todas las estaciones por provincia"
+        description="Índice completo de estaciones ferroviarias, agrupadas por provincia."
+        items={directoryItems}
+      />
 
       <script
         type="application/ld+json"
