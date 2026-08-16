@@ -271,7 +271,9 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
     mapHit: (doc) => ({
       title: doc.name as string,
       subtitle: [doc.municipality, doc.provinceName].filter(Boolean).join(", ") || null,
-      href: `/trenes/estaciones/${doc.id}`,
+      // The detail route is /trenes/estacion/[slug] (singular, slug) — the old
+      // href pointed at /trenes/estaciones/<cuid>, which 404s.
+      href: doc.slug ? `/trenes/estacion/${doc.slug as string}` : "/trenes/estaciones",
       category: "Estaciones de tren",
       icon: "TrainFront",
     }),
@@ -427,6 +429,75 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
         icon: "Fuel",
       };
     },
+  },
+
+  // ── Vehicle findability (north star, 2026-08-16): buques, ferries, líneas y
+  // paradas de transporte. Estas colecciones existían como schema pero nunca se
+  // sincronizaban ni se consultaban — un MMSI, un nombre de buque o una línea
+  // de bus no devolvían nada.
+  {
+    collection: "vessels",
+    queryBy: "name,mmsi,imo,callsign",
+    queryByWeights: "3,2,2,1",
+    category: "Buques",
+    icon: "Ship",
+    mapHit: (doc) => ({
+      title: (doc.name as string) || `MMSI ${doc.mmsi as string}`,
+      subtitle: [
+        doc.mmsi ? `MMSI ${doc.mmsi as string}` : null,
+        (doc.flag as string) || null,
+        (doc.destination as string) ? `→ ${doc.destination as string}` : null,
+      ].filter(Boolean).join(" · ") || null,
+      href: `/maritimo/buques/${doc.slug as string}`,
+      category: "Buques",
+      icon: "Ship",
+    }),
+  },
+  {
+    collection: "ferry_routes",
+    queryBy: "routeName,operator",
+    queryByWeights: "3,2",
+    category: "Ferries",
+    icon: "Ship",
+    mapHit: (doc) => ({
+      title: doc.routeName as string,
+      subtitle: (doc.operator as string) || null,
+      href: doc.slug ? `/maritimo/ferries/${doc.slug as string}` : "/maritimo/ferries",
+      category: "Ferries",
+      icon: "Ship",
+    }),
+  },
+  {
+    collection: "transit_routes",
+    queryBy: "shortName,longName,operatorName",
+    queryByWeights: "3,2,1",
+    category: "Líneas de transporte",
+    icon: "Bus",
+    mapHit: (doc) => ({
+      title: [doc.shortName, doc.longName].filter(Boolean).join(" — ") || (doc.operatorName as string),
+      subtitle: (doc.operatorName as string) || null,
+      href: doc.operatorSlug
+        ? `/transporte-publico/${encodeURIComponent(doc.operatorSlug as string)}`
+        : "/transporte-publico",
+      category: "Líneas de transporte",
+      icon: "Bus",
+    }),
+  },
+  {
+    collection: "transit_stops",
+    queryBy: "stopName,operatorName",
+    queryByWeights: "3,1",
+    category: "Paradas",
+    icon: "Bus",
+    mapHit: (doc) => ({
+      title: doc.stopName as string,
+      subtitle: (doc.operatorName as string) || null,
+      href: doc.operatorSlug
+        ? `/transporte-publico/${encodeURIComponent(doc.operatorSlug as string)}`
+        : "/transporte-publico",
+      category: "Paradas",
+      icon: "Bus",
+    }),
   },
 ];
 

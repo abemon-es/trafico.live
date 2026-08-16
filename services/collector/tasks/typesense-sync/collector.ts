@@ -201,6 +201,7 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     fields: [
       { name: "id", type: "string" },
       { name: "name", type: "string" },
+      { name: "slug", type: "string", optional: true },
       { name: "province", type: "string", optional: true, facet: true },
       { name: "provinceName", type: "string", optional: true, facet: true },
       { name: "municipality", type: "string", optional: true },
@@ -392,6 +393,57 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "location", type: "geopoint" },
     ] as CollectionFieldSchema[],
     default_sorting_field: "arrivedAt",
+  },
+
+  // ── Vehicle findability (north star): these four are declared in
+  // src/lib/typesense.ts and queried by /api/search, but were never synced —
+  // the collections did not exist on the server, so no vessel, ferry, bus line
+  // or transit stop was findable by name or reference. Added 2026-08-16.
+  vessels: {
+    name: "vessels",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "mmsi", type: "string" }, // string so partial/prefix search works
+      { name: "imo", type: "string", optional: true },
+      { name: "name", type: "string", optional: true },
+      { name: "callsign", type: "string", optional: true },
+      { name: "slug", type: "string" },
+      { name: "shipType", type: "int32", optional: true, facet: true },
+      { name: "flag", type: "string", optional: true, facet: true },
+      { name: "destination", type: "string", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+  ferry_routes: {
+    name: "ferry_routes",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "operator", type: "string", facet: true },
+      { name: "routeName", type: "string" },
+      { name: "slug", type: "string", optional: true },
+    ] as CollectionFieldSchema[],
+  },
+  transit_routes: {
+    name: "transit_routes",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "operatorId", type: "string", facet: true },
+      { name: "operatorName", type: "string", facet: true },
+      { name: "operatorSlug", type: "string", optional: true },
+      { name: "shortName", type: "string", optional: true },
+      { name: "longName", type: "string", optional: true },
+      { name: "routeType", type: "int32", facet: true },
+    ] as CollectionFieldSchema[],
+  },
+  transit_stops: {
+    name: "transit_stops",
+    fields: [
+      { name: "id", type: "string" },
+      { name: "operatorId", type: "string", facet: true },
+      { name: "operatorName", type: "string", facet: true },
+      { name: "operatorSlug", type: "string", optional: true },
+      { name: "stopName", type: "string" },
+      { name: "location", type: "geopoint", optional: true },
+    ] as CollectionFieldSchema[],
   },
 };
 
@@ -698,11 +750,17 @@ async function loadRadars(prisma: PrismaClient) {
 }
 
 async function loadRailwayStations(prisma: PrismaClient) {
-  const rows = await prisma.railwayStation.findMany({ where: { locationType: 1 },
-    select: { id: true, name: true, province: true, provinceName: true, municipality: true,
-      latitude: true, longitude: true, serviceTypes: true } });
-  return rows.map((s) => ({ id: s.id, name: s.name, province: s.province || "",
-    provinceName: s.provinceName || "", municipality: s.municipality || "",
+  // No locationType filter: the GTFS import leaves every row at the default 0
+  // (stop), so the old `locationType: 1` filter matched nothing. The collection
+  // sat at 0 documents while the task reported ok, and searching a station name
+  // surfaced traffic incidents instead of the station. Filter on slug instead —
+  // a station without one has no page to link to.
+  const rows = await prisma.railwayStation.findMany({ where: { slug: { not: null } },
+    select: { id: true, name: true, slug: true, province: true, provinceName: true,
+      municipality: true, latitude: true, longitude: true, serviceTypes: true } });
+  return rows.map((s) => ({ id: s.id, name: s.name, slug: s.slug || "",
+    province: s.province || "", provinceName: s.provinceName || "",
+    municipality: s.municipality || "",
     location: [Number(s.latitude), Number(s.longitude)], serviceTypes: s.serviceTypes || [] }));
 }
 
@@ -962,6 +1020,8 @@ const LOADERS: Record<string, (p: PrismaClient) => Promise<Record<string, unknow
   traffic_stations: loadTrafficStations, toll_roads: loadTollRoads,
   airports: loadAirports,
   voyages: loadVoyages, port_calls: loadPortCalls,
+  vessels: loadVessels, ferry_routes: loadFerryRoutes,
+  transit_routes: loadTransitRoutes, transit_stops: loadTransitStops,
 };
 
 // ---------------------------------------------------------------------------
@@ -1051,6 +1111,84 @@ const DELTA_LOADERS: Partial<Record<string, DeltaLoader>> = {
 
 // Redis key for tracking last sync time per collection
 const SYNC_TS_PREFIX = "typesense:last_sync:";
+
+// Mirrors src/lib/vessel-utils.ts vesselSlug() — the collector cannot import
+// from src/, so keep the two in lockstep if the slug scheme ever changes.
+function vesselSlugLocal(mmsi: number, name: string | null | undefined): string {
+  if (!name || !name.trim()) return String(mmsi);
+  const nameSlug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return nameSlug ? `${mmsi}-${nameSlug}` : String(mmsi);
+}
+
+async function loadVessels(prisma: PrismaClient) {
+  // Named vessels only: an anonymous MMSI has nothing a person would search for
+  // and no readable page title. Keeps the collection at ~half the 86k table.
+  const rows = await prisma.vessel.findMany({
+    where: { name: { not: null } },
+    select: { id: true, mmsi: true, imo: true, name: true, callsign: true,
+      shipType: true, flag: true, destination: true },
+  });
+  return rows.map((v) => ({
+    id: v.id, mmsi: String(v.mmsi), imo: v.imo ? String(v.imo) : "",
+    name: v.name || "", callsign: v.callsign || "",
+    slug: vesselSlugLocal(v.mmsi, v.name),
+    shipType: v.shipType ?? undefined, flag: v.flag || "",
+    destination: v.destination || "",
+  }));
+}
+
+async function loadFerryRoutes(prisma: PrismaClient) {
+  const rows = await prisma.ferryRoute.findMany({
+    select: { id: true, operator: true, routeId: true, routeName: true },
+  });
+  return rows.map((r) => ({
+    id: r.id, operator: r.operator, routeName: r.routeName, slug: r.routeId,
+  }));
+}
+
+async function loadTransitRoutes(prisma: PrismaClient) {
+  const [rows, operators] = await Promise.all([
+    prisma.transitRoute.findMany({
+      select: { id: true, operatorId: true, shortName: true, longName: true, routeType: true },
+    }),
+    prisma.transitOperator.findMany({ select: { id: true, mdbId: true, name: true } }),
+  ]);
+  const ops = new Map(operators.map((o) => [o.id, o]));
+  return rows.map((r) => {
+    const op = ops.get(r.operatorId);
+    return {
+      id: r.id, operatorId: r.operatorId,
+      operatorName: op?.name || "", operatorSlug: op?.mdbId || "",
+      shortName: r.shortName || "", longName: r.longName || "",
+      routeType: r.routeType,
+    };
+  });
+}
+
+async function loadTransitStops(prisma: PrismaClient) {
+  const [rows, operators] = await Promise.all([
+    prisma.transitStop.findMany({
+      select: { id: true, operatorId: true, stopName: true, latitude: true, longitude: true },
+    }),
+    prisma.transitOperator.findMany({ select: { id: true, mdbId: true, name: true } }),
+  ]);
+  const ops = new Map(operators.map((o) => [o.id, o]));
+  return rows.map((s) => {
+    const op = ops.get(s.operatorId);
+    return {
+      id: s.id, operatorId: s.operatorId,
+      operatorName: op?.name || "", operatorSlug: op?.mdbId || "",
+      stopName: s.stopName,
+      location: [Number(s.latitude), Number(s.longitude)],
+    };
+  });
+}
 
 async function getLastSyncTime(collectionName: string): Promise<Date | null> {
   try {
@@ -1151,12 +1289,29 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const elapsedSecs = ((Date.now() - start) / 1000).toFixed(1);
   const totalDocs = Object.values(totals).reduce((s, v) => s + v, 0);
   const failedLoads = loaded.filter((r) => r.status === "rejected").length;
+
+  // A full sync that lands 0 documents for a collection is a defect, not a
+  // success: railway_stations sat empty for months behind an ok heartbeat
+  // because its loader's filter matched nothing, and searching a station name
+  // returned traffic incidents. Deltas legitimately produce 0 (no changes), so
+  // only full replaces count. risk_zones is the one collection whose source
+  // table can genuinely be empty.
+  const EXPECTED_EMPTY = new Set(["risk_zones"]);
+  const emptyCollections = successes
+    .filter((r) => !r.value.isDelta && r.value.docs.length === 0 && !EXPECTED_EMPTY.has(r.value.name))
+    .map((r) => r.value.name);
+  if (emptyCollections.length > 0) {
+    console.error(`[typesense-sync] Collections synced EMPTY on a full load: ${emptyCollections.join(", ")}`);
+  }
+
+  const degraded = failedLoads > 0 || emptyCollections.length > 0;
   console.log(`[typesense-sync] ${mode} sync complete in ${elapsedSecs}s`, totals);
-  await heartbeat(prisma, TASK, failedLoads === 0 ? "ok" : "partial", {
+  await heartbeat(prisma, TASK, degraded ? "partial" : "ok", {
     mode,
     collections: names.length,
     totalDocs,
     failedLoads,
+    emptyCollections,
     elapsedSecs: parseFloat(elapsedSecs),
   });
 }
