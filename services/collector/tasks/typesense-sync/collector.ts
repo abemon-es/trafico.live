@@ -657,9 +657,12 @@ async function loadPages(prisma: PrismaClient) {
     { id: "p-andorra", title: "Andorra", subtitle: "Tráfico e incidencias", href: "/andorra", category: "Herramientas", icon: "Mountain", keywords: ["andorra", "pirineos"] },
   ];
 
-  // Dynamic municipality pages — top cities by population/relevance
+  // Dynamic municipality pages — top cities by population/relevance.
+  // No slug filter: Municipality.slug is a required unique column, and the old
+  // `{ slug: { not: null } }` became an invalid invocation when the schema made
+  // it non-nullable — which silently killed the whole pages sync (Cmd-K page
+  // suggestions) from that migration onward.
   const municipalities = await prisma.municipality.findMany({
-    where: { slug: { not: null } },
     select: { code: true, name: true, slug: true, provinceCode: true, province: { select: { name: true } } },
     orderBy: { name: "asc" },
     take: 300,
