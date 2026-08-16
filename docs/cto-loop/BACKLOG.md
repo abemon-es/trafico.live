@@ -45,7 +45,26 @@ discards the signal.
 This method error caused two wrong conclusions in one day: it declared healthy
 pages empty, and then declared a working fix ineffective.
 
-### L2.1b `/accidentes/carretera/[road]` still not populating — OPEN
+### L2.1b `/accidentes/carretera/[road]` — ✅ RESOLVED cycle 8
+Both accident templates now render real data. `/accidentes/carretera/A-1`
+returns the full stats section (`Fallecidos`, `Mortales`, `Punto km`), matching
+`/accidentes/madrid` (24 formatted figures including the DB-exact `70.636`).
+
+**It was ISR timing, not a query mismatch.** The discriminator: `AC-840` (65
+accidents, *not* in `PREGEN_ROADS`, so rendered on demand) served the full
+section immediately, while pre-generated `A-1` — whose build-time prerender was
+produced with no database — kept serving that empty output until ISR eventually
+regenerated it. It did regenerate, just later than several rounds of checking
+suggested.
+
+**Operational note worth keeping:** ISR regeneration of a prerendered path needs
+a *request* to trigger it and serves the stale copy first. On low-traffic pages
+the empty build output can therefore persist well beyond the nominal
+`revalidate` window. Judging a fix "not working" within a few minutes of deploy
+is unreliable — this is the second time in two cycles that impatience produced a
+wrong conclusion.
+
+### L2.1c (superseded — original entry)
 The province page is confirmed fixed; **this one is not.** `/accidentes/carretera/A-1`
 returns 321 KB with the right `<title>`, "A-1" ×50 and "Autovía" ×7, but no
 `1.067` (its real count), no `siniestros`, and **no `Sin datos` either** — so it
