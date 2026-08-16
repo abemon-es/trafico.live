@@ -600,6 +600,27 @@ event tracking is actually configured, since conversion measurement depends on i
 
 ---
 
+## Cross-team: traffic-turbo freshness exporter (closed with CTO, 2026-08-16)
+
+Diagnosed jointly with the infra session. The `traffic_freshness.prom` exporter
+on database-primary froze on ~12 July because the monitoring PG password was
+rotated while the script carried it hardcoded. CTO staged a fixed script
+(`traffic_freshness.sh.staged-20260816`, inert; reads the password from a
+secrets file, `PGPASSWORD` via env so it stops leaking into `ps`).
+
+**MJ's activation sequence, agreed and pending:** rotate the monitoring
+password → provision `/opt/monitoring/secrets/monitoring_pass` (0600) **on
+db-primary — the directory only exists on compute today** → `mv` the staged
+script over the original. Signal of completion: `TrafficFreshnessExporterDead`
+goes green. Do not ping CTO about it; watch the alert.
+
+That password currently lives in **four** places: journald on compute,
+`/opt/traffic-turbo/env.sh`, hardcoded in the old script, and in `ps` argv
+while its psql runs. Canonical lesson (shared with CTO): **rotation without a
+consumer inventory produces silent fossils** — the 12-Jul rotation killed two
+consumers that took a month to be noticed. Applies directly to our Google SA
+key, which now lives in two places (Mac + compute `secrets/google-sa.json`).
+
 ## ESCALATIONS — need MJ, loop cannot self-serve
 
 Secrets cannot be invented. The loop must not fabricate, guess, or stub these.
