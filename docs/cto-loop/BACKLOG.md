@@ -212,7 +212,30 @@ and slower `/var/lib/docker` growth, since each build was writing a 28 GB
 context into the build cache. **Verify both next cycle** — the fix only takes
 effect on the first build after it lands, and there is a queue.
 
-### L0.2 Deploys are not zero-downtime — OPEN
+### L0.2 Deploys are not zero-downtime — ✅ FIXED cycle 9 (`4136de5e`)
+The new container now starts alongside the old but **off the `web` network**, so
+Traefik cannot route to it, and the script polls the app directly instead of
+waiting on Docker's 30 s healthcheck cadence. Only once it serves `/api/health`
+does it join `web` — both containers then back the same Traefik service — after
+which the old one is retired and the name handed over.
+
+Verified on the deploy of this very commit:
+`trafico-live-next is serving — joining the web network` →
+`Retiring previous container` → `swapped in with no gap in service`, container
+healthy on both networks, no leftover `-next`.
+
+Two consequences beyond the outage windows: the infra monitoring should stop
+raising incidents for routine deploys, and **a broken image is now a no-op
+rather than an outage** — the healthy container is never destroyed until its
+replacement is proven. That is precisely what turned a failed build into 25
+minutes of downtime earlier today.
+
+Recovery paths for a deploy that dies mid-swap: adopt the staging container if
+the live name is missing, and wait for the name to free before renaming,
+failing loudly rather than leaving production under the staging name where the
+next deploy would treat it as a leftover.
+
+### L0.2b (original entry)
 `deploy.sh` does `docker rm -f` then `docker run`; there is a real gap until the
 healthcheck passes. The infra loop measured two ~30 s outage windows on
 2026-08-16 (11:42:45, 11:55:15 CEST) that line up with this loop's own deploys.
@@ -312,6 +335,25 @@ epoch as its duration and double-escalated one failure.
 Verified in production: `Upstream refused the handshake with HTTP 429 … Backing
 off 15 min` → `Connection closed: 1006 (never opened)` → `next attempt in
 15 min`. The storm has stopped.
+
+**Cycle 9 update — the 429 has cleared, the silence has not.** The collector now
+connects successfully and receives nothing for 300 s, then backs off 5 min via
+the new soft-throttle path instead of 60 s. So the storm fix works and the rate
+limit decayed, but the underlying "opens but delivers nothing" state is back —
+which is exactly where the 11 days were spent.
+
+What is now ruled out, measured: the network (identical from two independent
+networks), the bounding box (global bbox equally silent), the message filters
+(silent with none set), our client code (an independent minimal client behaves
+identically), and a stale key (no second aisstream key exists anywhere in local
+config; deployed key fingerprint `f855bfd7`).
+
+That leaves account entitlement — the key authenticates but the account streams
+no data. MJ states the credentials work, so **the open question is narrow: does
+the working key he has match fingerprint `f855bfd7`?** If it does, this is a
+plan/quota matter at aisstream.io; if not, the deployed key is simply the wrong
+one. Do not spend further cycles probing — each attempt risks re-triggering the
+throttle for no new information.
 
 **Remaining:** whether data returns now depends on the throttle decaying at
 aisstream.io. If it does not clear within a day of quiet, *then* it is worth
