@@ -1219,15 +1219,26 @@ async function loadTransitStops(prisma: PrismaClient) {
 async function loadTrains(prisma: PrismaClient) {
   // Latest row per trainNumber over the last 48 h. `distinct` with a desc
   // order gives the most recent brand/route per number.
-  const rows = await prisma.renfeFleetPosition.findMany({
-    where: { fetchedAt: { gte: new Date(Date.now() - 48 * 3600 * 1000) } },
-    distinct: ["trainNumber"],
-    orderBy: { fetchedAt: "desc" },
-    select: { trainNumber: true, brand: true, originStation: true, destStation: true },
-  });
+  const [rows, stations] = await Promise.all([
+    prisma.renfeFleetPosition.findMany({
+      where: { fetchedAt: { gte: new Date(Date.now() - 48 * 3600 * 1000) } },
+      distinct: ["trainNumber"],
+      orderBy: { fetchedAt: "desc" },
+      select: { trainNumber: true, brand: true, originStation: true, destStation: true },
+    }),
+    prisma.railwayStation.findMany({
+      where: { code: { not: null } },
+      select: { code: true, name: true },
+    }),
+  ]);
+  // The fleet API reports origin/destination as Renfe station codes ("60000"),
+  // not names. Resolve so the search doc reads "Madrid-Puerta de Atocha", which
+  // both looks right and lets "AVE Madrid" match. Unknown codes pass through.
+  const names = new Map(stations.map((s) => [s.code as string, s.name]));
+  const resolve = (v: string | null) => (v ? names.get(v) ?? v : "");
   return rows.map((t) => ({
     id: t.trainNumber, trainNumber: t.trainNumber, brand: t.brand || "",
-    originStation: t.originStation || "", destStation: t.destStation || "",
+    originStation: resolve(t.originStation), destStation: resolve(t.destStation),
   }));
 }
 
