@@ -97,13 +97,35 @@ green, widen a staleness threshold to silence an alert, `DROP`/`DELETE` without
 `WHERE`, or touch `.env*` in git. Raising a threshold to stop an alert is how
 the blackout stayed invisible — fix the cause.
 
-**Respect the four scopes** (MJ's priority, all four active):
-1. Data source health — 51 collectors, staleness, silent failures, upstream drift
-2. SEO growth — GSC/GA4 pipeline, then act on it: click loss, ranking drops, indexation
-3. Frontend quality — Lighthouse mobile, CWV, console errors, a11y, broken routes
-4. Backend & security — API errors, latency, DB, rate limits, auth, CVEs
+## Work bottom-up, not by rotation
 
-Don't spend every cycle on scope 1 because it is the loudest. Rotate deliberately.
+**Superseded on 2026-08-16 by MJ: "all of this needs to be fixed first and from
+the bottom up."** The earlier instruction to rotate across four scopes each
+cycle is withdrawn. Rotation produced a real failure: an SEO fix was shipped on
+top of a build that could not reach the database, so it deployed empty. Work the
+layers in order, and do not spend cycles on a higher layer while a lower one is
+known broken.
+
+**L0 — Build, deploy and observability.** The ground everything stands on. A
+defect here silently corrupts every layer above it and is invisible in code
+review. Examples found: `next build` running without `DATABASE_URL`; deploys
+that are not zero-downtime; collector logs never reaching Loki; `.env` and
+`.env.collectors` drifting apart.
+
+**L1 — Data integrity.** Collectors actually producing correct, fresh data, and
+failing loudly when they cannot. No point ranking pages whose numbers are wrong.
+
+**L2 — Correct rendering.** The app truthfully presenting L1 data: no empty
+prerenders, no client-only content where a crawler or a user without JS needs it.
+
+**L3 — Discovery and growth.** SEO, indexation, rankings, conversion. Only
+meaningful once L0–L2 hold, because this layer's whole job is to send people to
+pages that must already be correct.
+
+Within a layer, rank by user impact × confidence ÷ effort. Escalate anything
+that blocks a lower layer above anything in a higher one. When a higher-layer
+symptom is really a lower-layer cause — the empty station directory was an L0
+build defect wearing an L3 costume — fix the layer where the cause lives.
 
 ---
 

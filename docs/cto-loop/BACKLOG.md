@@ -1,7 +1,60 @@
 # CTO Loop — Backlog
 
 Persistent state across loop cycles. Every cycle reads this first and updates it
-last. Ranked by user impact × confidence ÷ effort.
+last.
+
+> **Ordering changed 2026-08-16 (MJ): work bottom-up by layer, not by scope
+> rotation.** See PLAYBOOK "Work bottom-up". Current layer status:
+>
+> | Layer | State |
+> |-------|-------|
+> | **L0 build / deploy / observability** | **IN PROGRESS** — build DB access fixed (`671001fd`); deploy downtime, Loki gap and env drift still open |
+> | L1 data integrity | Partly done — AIS + GSC/GA4 detection fixed; 6 collectors still `partial`/`error` |
+> | L2 correct rendering | Started — station directory shipped; ~40k pages still orphaned by client-only hubs |
+> | L3 discovery / SEO | Diagnosed, **on hold** until L0–L2 hold |
+>
+> Do not open L3 work while an L0 item is red.
+
+---
+
+## L0 — Build, deploy, observability
+
+### L0.1 `next build` had no database access — ✅ FIXED (`671001fd`)
+177 pages query Postgres server-side; the build ran with only a placeholder
+`DATABASE_URL` for `prisma generate`. Their prerenders were produced with no
+data and the empty HTML baked into the image, served until ISR regenerated —
+up to 24 h on `revalidate=86400` pages, never on the two using `force-static`.
+
+Caught only because a new station directory deployed with **0 links while 1,506
+stations existed**. Now passed as a BuildKit secret (never in image history),
+with a verified fallback so secretless local/CI builds behave as before. Build
+runs before the container swap, so a DB-unreachable build leaves the site up.
+
+**Still to verify next cycle:** that the first deploy after this change serves
+correct data *immediately*, rather than only after ISR heals it.
+
+### L0.2 Deploys are not zero-downtime — OPEN
+`deploy.sh` does `docker rm -f` then `docker run`; there is a real gap until the
+healthcheck passes. The infra loop measured two ~30 s outage windows on
+2026-08-16 (11:42:45, 11:55:15 CEST) that line up with this loop's own deploys.
+It nearly escalated them as an incident. Fix: build the new image, start it
+alongside, wait for healthy, then switch Traefik and retire the old container.
+
+### L0.3 Collector logs never reach Loki — OPEN
+Loki has no `collector-*` values for the `container` label; only `trafico-*`
+infra and the web app. `docker-compose.collectors.yml` intends Vector to scrape
+json-file and ship them, but that path does not deliver. **This is the direct
+reason an 11-day AIS outage produced zero alerts.** Until fixed, collector
+errors are only visible by SSHing to the host.
+
+### L0.4 `.env` vs `.env.collectors` drift — OPEN
+`.env.collectors` (the file collectors actually load) is dated **Apr 17** while
+`.env` has moved on. `CAMS_API_KEY` is present in `.env` but **empty** in
+`.env.collectors`, which is the entire cause of the `cams-aq` error. No new
+secret needed — this is propagation. Two hand-maintained env files with no sync
+will keep producing this class.
+
+---
 
 **Seeded:** 2026-08-15 from `bin/cto-signals.sh` — prod `degraded`, 9/51
 collectors unhealthy, 3 silent failures, SEO pipeline never once succeeded.
