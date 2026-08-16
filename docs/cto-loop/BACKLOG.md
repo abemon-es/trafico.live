@@ -109,10 +109,12 @@ Ordered work list (each item unlocks disproportionate value):
      the feed attribution as their name** — durable fix belongs in the
      transit-gtfs importer → new item L1.5.
 
-L1.5 **transit-gtfs stores NAP attribution as operator names** (109 rows:
-   "Raw data from the Spanish National Access Point, powered by MIMTRANS…").
-   Fix the importer to read the real agency name from agency.txt and re-import;
-   then remove `cleanOperatorName` from typesense-sync.
+L1.5 **transit-gtfs NAP operator names** — ✅ IMPORTER FIXED cycle 13
+   (`ec5028ac`): when the catalog's name column reads like attribution, the
+   provider column (the real operator) wins. All six collector tiers rebuilt so
+   the Sunday 04:05 weekly run heals the 109 rows; the 05:00 typesense sync
+   then carries clean names. **Verify Sunday morning**, then remove
+   `cleanOperatorName` from typesense-sync.
 2. ~~**Add `trains` + `aircraft` collections**~~ — ✅ DONE cycle 11 (`931b8098`,
    `bb533a0a`), verified end to end with live references:
    - `trains` **14,873 docs** (latest row per number, 48 h window). Search
