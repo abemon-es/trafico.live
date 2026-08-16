@@ -278,7 +278,51 @@ collectors unhealthy, 3 silent failures, SEO pipeline never once succeeded.
 
 ## P0 — active outage, user-visible
 
-### 1. `ais-stream` — dead 11 days → **root-caused, escalated; detection fixed**
+### 1. `ais-stream` — ❌ EARLIER DIAGNOSIS WRONG. Cause was our own reconnect storm
+
+**Corrected 2026-08-16 after MJ said the credentials work.** They do. Cycle 1
+concluded "the account receives no data" from a single asymmetry (valid key →
+socket opens silently; invalid key → closed 1006). That inference was too thin,
+and it pointed the escalation at aisstream.io when the defect was ours.
+
+What is actually happening, measured:
+- Identical silence from **two independent networks** (compute and a laptop), so
+  it was never a network path.
+- The handshake is now refused outright with **HTTP 429 — rate limited**.
+- Still 429 after five minutes with **zero** connection attempts in flight, so
+  it is not a concurrency cap.
+- The failure mode **worsened as probing continued**, from "opens but silent" to
+  "rejected at handshake". Our own attempts were making it worse.
+
+**Mechanism:** the staleness watchdog terminated the socket after 300 s of
+silence and the client reconnected 60 s later — roughly 240 attempts a day, for
+11 days. `ws` surfaces handshake rejections through the generic `error` event,
+so a 429 was logged exactly like a transient blip and retried on the same
+5→60 s ladder. The collector was sustaining its own outage, and no signal
+distinguished "throttled" from "network hiccup".
+
+**Fixed** (`12dde3d5`, `00cc881a`), in the shared client so every WebSocket
+collector benefits: parse the HTTP status, back off 15 min on 429 escalating to
+a 2 h cap ahead of both the ladder and the circuit breaker, and treat
+open-but-silent as a soft throttle rather than a fault. Only a delivered message
+clears the backoff. A follow-up commit fixed a bug in that first version —
+`connectTime` is set only on `open`, so a rejected handshake logged the Unix
+epoch as its duration and double-escalated one failure.
+
+Verified in production: `Upstream refused the handshake with HTTP 429 … Backing
+off 15 min` → `Connection closed: 1006 (never opened)` → `next attempt in
+15 min`. The storm has stopped.
+
+**Remaining:** whether data returns now depends on the throttle decaying at
+aisstream.io. If it does not clear within a day of quiet, *then* it is worth
+contacting them — but with a clean connection history rather than the record of
+thousands of retries we had built up.
+
+**Lesson:** the single sharpest one of the day. A plausible mechanism that
+explains the symptom is not a diagnosis. "Their account is broken" required no
+evidence about our own behaviour, and I never gathered any until told to.
+
+### 1b. Original (incorrect) diagnosis, kept for the record
 
 **Cycle 1 (2026-08-15) result.** Root cause is **upstream account-side at
 aisstream.io**, not our code. Proven by live test from inside `collector-ais`:
@@ -475,12 +519,10 @@ Secrets cannot be invented. The loop must not fabricate, guess, or stub these.
    container, `0400`, owned by the collector uid. A dedicated per-site service
    account remains the cleaner end state whenever MJ has console time.
 
-2. **aisstream.io account state** (P0 #1) — the API key authenticates but the
-   account receives zero data. Someone needs to log into aisstream.io and check
-   plan status / quota / whether the key needs re-issuing. Evidence table in
-   P0 #1 above. Until this is resolved the maritime vertical stays stale; the
-   collector will now correctly and loudly report `error` the whole time, which
-   is the intended behaviour, not a new bug.
+2. ~~**aisstream.io account state**~~ — **WITHDRAWN, this was never an
+   escalation.** The credentials are valid; the cause was our own reconnect
+   storm triggering an HTTP 429 throttle. Fixed client-side — see P0 #1. Nothing
+   is required from MJ unless the throttle fails to decay after a day of quiet.
 
 *(`CAMS_API_KEY` was initially thought to be an escalation — it is not. The value
 exists in `.env`; it just never propagated to `.env.collectors`.)*
