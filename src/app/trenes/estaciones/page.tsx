@@ -5,10 +5,17 @@ import EstacionesTrenContent from "./content";
 import LinkDirectory from "@/components/seo/LinkDirectory";
 
 // The interactive catalogue below is client-rendered, so its station links do
-// not exist in the HTML Googlebot parses. Revalidate daily and emit a
-// server-rendered directory alongside it so the detail pages are actually
-// reachable by a crawler.
-export const revalidate = 86400;
+// not exist in the HTML Googlebot parses. This page emits a server-rendered
+// directory alongside it so the detail pages are reachable by a crawler.
+//
+// revalidate MUST stay short. The Docker build has no database access — it runs
+// `next build` with only a placeholder DATABASE_URL for `prisma generate` — so
+// this query returns nothing during static prerendering and an EMPTY directory
+// is baked into the build output. The page only becomes correct when ISR
+// regenerates it at runtime, where the DB is reachable. A first attempt at
+// 86400 shipped an empty directory that would have stayed empty for a full day;
+// 300 matches /trenes and /trenes/estacion/[slug] and self-heals in 5 minutes.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Estaciones de tren en España — catálogo completo",
