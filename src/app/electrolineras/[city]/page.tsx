@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import LinkDirectory from "@/components/seo/LinkDirectory";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -598,6 +599,18 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
               </div>
             </div>
           </div>
+
+          <LinkDirectory
+            title={`Todos los puntos de carga en ${cityData.name}`}
+            description="Índice completo de cargadores públicos de la provincia, agrupados por municipio."
+            items={chargers.map((c) => ({
+              href: `/carga-ev/punto/${encodeURIComponent(c.id)}`,
+              label: [c.name || c.address, c.powerKw ? `${Number(c.powerKw).toFixed(0)} kW` : null]
+                .filter(Boolean)
+                .join(" · "),
+              group: c.city,
+            }))}
+          />
         </main>
       </div>
     </>
