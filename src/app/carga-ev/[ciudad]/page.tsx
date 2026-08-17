@@ -7,6 +7,11 @@ import prisma from "@/lib/db";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
+// Without this the page is FULLY static: the DB-less build's copy (no charger
+// directory, empty data) was cached forever — x-nextjs-cache HIT on a build
+// prerender with no expiry. 300 puts it on the same heal cadence as the rest.
+export const revalidate = 300;
+
 // City data for SEO and matching
 const CITIES: Record<string, { name: string; province: string }> = {
   madrid: { name: "Madrid", province: "Madrid" },
