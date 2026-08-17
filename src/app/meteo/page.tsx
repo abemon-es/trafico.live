@@ -11,6 +11,7 @@ import {
   Droplets,
 } from "lucide-react";
 import prisma from "@/lib/db";
+import LinkDirectory from "@/components/seo/LinkDirectory";
 import { VerticalHub } from "@/components/ui/VerticalHub";
 import { StatCard } from "@/components/ui/StatCard";
 import { TickerStrip, type TickerItem } from "@/components/ui/TickerStrip";
@@ -21,7 +22,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { MeteoHeroMap } from "./MeteoHeroMap";
 
-export const revalidate = 900;
+// 300: deploy-blank policy — DB-less builds prerender this page empty.
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -294,6 +296,12 @@ export default async function MeteoHubPage() {
 
   const faq = <FAQAccordion items={FAQ_ITEMS} title="Preguntas frecuentes — meteorología" />;
 
+  const allStations = await prisma.climateStation.findMany({
+    where: { isActive: true },
+    select: { stationCode: true, name: true, provinceName: true },
+    orderBy: { name: "asc" },
+  });
+
   return (
     <>
       <StructuredData data={[placeSchema, collectionSchema]} />
@@ -314,6 +322,16 @@ export default async function MeteoHubPage() {
             { title: "Marítimo", description: "Oleaje, viento y alertas costeras", href: "/maritimo", icon: Droplets },
           ]}
         />
+        <LinkDirectory
+          title="Todas las estaciones meteorológicas AEMET"
+          description="Índice de estaciones con registro climático diario, agrupadas por provincia."
+          items={allStations.map((st) => ({
+            href: `/meteo/estaciones/${encodeURIComponent(st.stationCode)}`,
+            label: st.name,
+            group: st.provinceName,
+          }))}
+        />
+
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-6">
           Fuente: AEMET (CAP alerts + OpenData). Actualización: alertas cada 5 min, observaciones
           diarias.
