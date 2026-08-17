@@ -138,38 +138,55 @@ async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Respon
 
 /**
  * AEMET two-step fetch: step1 → datos URL → JSON data.
- * Retries once on 429 with exponential backoff then skips.
+ * Retries once on 429, 5xx or network failure with backoff, then skips.
  */
+
+/**
+ * One fetch with a single retry. AEMET's OpenData API fails transiently in
+ * three ways — 429 rate limits, sporadic 500s, and dropped connections — and
+ * the original code only retried the 429s, so every run reported partial with
+ * ~90 endpoint errors that a second attempt would have absorbed.
+ */
+async function fetchWithRetry(
+  url: string,
+  endpoint: string,
+  step: string,
+  backoffMs: number
+): Promise<Response | null> {
+  let res: Response | null = null;
+  try {
+    res = await fetchWithTimeout(url);
+  } catch (err) {
+    logJson("warn", `${step} fetch failed, retrying`, { endpoint, error: String(err) });
+  }
+
+  if (res && res.ok) return res;
+  if (res && res.status === 404) return res; // definitive, not transient
+
+  const status = res?.status ?? "network";
+  logJson("warn", `${step} transient failure (${status}), retrying after backoff`, {
+    endpoint,
+    backoff_ms: backoffMs,
+  });
+  await sleep(backoffMs);
+
+  try {
+    return await fetchWithTimeout(url);
+  } catch (err) {
+    logJson("error", `${step} retry fetch failed`, { endpoint, error: String(err) });
+    return null;
+  }
+}
+
 async function aemetFetch<T>(endpoint: string, apiKey: string): Promise<T | null> {
   const step1Url = `${AEMET_BASE}${endpoint}?api_key=${apiKey}`;
 
-  // Step 1: Get the datos URL
-  let step1Res: Response;
-  try {
-    step1Res = await fetchWithTimeout(step1Url);
-  } catch (err) {
-    logJson("error", "Step1 fetch failed", { endpoint, error: String(err) });
-    return null;
-  }
-
-  if (step1Res.status === 429) {
-    logJson("warn", "429 on step1, retrying after backoff", { endpoint, backoff_ms: RETRY_BACKOFF_MS });
-    await sleep(RETRY_BACKOFF_MS);
-    try {
-      step1Res = await fetchWithTimeout(step1Url);
-    } catch (err) {
-      logJson("error", "Step1 retry fetch failed", { endpoint, error: String(err) });
-      return null;
-    }
-    if (step1Res.status === 429) {
-      logJson("warn", "Still 429 after retry, skipping", { endpoint });
-      return null;
-    }
-  }
+  const step1Res = await fetchWithRetry(step1Url, endpoint, "Step1", RETRY_BACKOFF_MS);
+  if (!step1Res) return null;
 
   if (!step1Res.ok) {
     if (step1Res.status !== 404) {
-      logJson("warn", "Step1 non-OK response", { endpoint, status: step1Res.status });
+      logJson("warn", "Step1 non-OK after retry", { endpoint, status: step1Res.status });
     }
     return null;
   }
@@ -189,32 +206,11 @@ async function aemetFetch<T>(endpoint: string, apiKey: string): Promise<T | null
 
   await sleep(RATE_LIMIT_MS);
 
-  // Step 2: Fetch the actual data
-  let step2Res: Response;
-  try {
-    step2Res = await fetchWithTimeout(step1Body.datos);
-  } catch (err) {
-    logJson("error", "Step2 fetch failed", { endpoint, error: String(err) });
-    return null;
-  }
-
-  if (step2Res.status === 429) {
-    logJson("warn", "429 on step2, retrying after backoff", { endpoint, backoff_ms: RETRY_BACKOFF_MS * 2 });
-    await sleep(RETRY_BACKOFF_MS * 2);
-    try {
-      step2Res = await fetchWithTimeout(step1Body.datos);
-    } catch (err) {
-      logJson("error", "Step2 retry failed", { endpoint, error: String(err) });
-      return null;
-    }
-    if (!step2Res.ok) {
-      logJson("warn", "Step2 still failed after retry, skipping", { endpoint });
-      return null;
-    }
-  }
+  const step2Res = await fetchWithRetry(step1Body.datos, endpoint, "Step2", RETRY_BACKOFF_MS * 2);
+  if (!step2Res) return null;
 
   if (!step2Res.ok) {
-    logJson("error", "Step2 non-OK", { endpoint, status: step2Res.status });
+    logJson("error", "Step2 non-OK after retry", { endpoint, status: step2Res.status });
     return null;
   }
 
