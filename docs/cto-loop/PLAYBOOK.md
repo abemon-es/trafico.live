@@ -159,10 +159,15 @@ Learned the hard way; assume these unless re-verified.
 - Collector containers use the **`json-file`** log driver, not Loki, despite
   what `CLAUDE.md` claims. Collector logs are only on the host via `docker logs`.
   Loki has the web app and `trafico-*` infra only.
-- Collectors run as a **separate compose stack** at `/opt/apps/trafico-live` on
-  `compute` and are **deployed manually** — the webhook only redeploys the web
-  app to `/opt/trafico`. A collector fix that is only pushed to git has not
-  shipped.
+- Collectors run as a **separate compose stack** at `/opt/apps/trafico-live`
+  on `compute` — and, contrary to what this playbook and the repo CLAUDE.md
+  said for two days, they DO auto-deploy: a `trafico-collectors` webhook job
+  pulls, builds and `up -d`s on every push. **Do not deploy collectors manually
+  after a push** — the manual pass races the webhook's compose reconcile, and
+  that race is what produced the hash-prefixed container names and the zombie
+  that blocked the queue on 2026-08-17. Manual deploys are for emergencies
+  only, never overlapping a push; afterwards verify
+  /var/log/deploys/trafico-collectors.log goes SUCCESS on the next push.
 - The web app auto-deploys from `main` via `deploy.abemon.es`.
 - `psql` is available on `compute`; the DB is reachable by sourcing
   `/opt/apps/trafico-live/.env` there. There is no local `.env` on the Mac.
