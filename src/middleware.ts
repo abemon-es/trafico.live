@@ -49,6 +49,66 @@ function detectAiBot(userAgent: string): string | null {
   return null;
 }
 
+
+// Province slug → community slug (INE-stable, generated from the DB
+// 2026-08-17). The footer's "Provincias" row links /espana/<province>, but that
+// segment resolves community slugs — and an in-page redirect proved unreliable
+// under ISR (the cached soft-404 kept being served). Middleware is cache-proof.
+const PROVINCE_TO_COMMUNITY: Record<string, string> = {
+  "a-coruna": "galicia",
+  "alava": "pais-vasco",
+  "albacete": "castilla-la-mancha",
+  "alicante": "comunidad-valenciana",
+  "almeria": "andalucia",
+  "asturias": "principado-de-asturias",
+  "avila": "castilla-y-leon",
+  "badajoz": "extremadura",
+  "baleares": "islas-baleares",
+  "barcelona": "cataluna",
+  "bizkaia": "pais-vasco",
+  "burgos": "castilla-y-leon",
+  "caceres": "extremadura",
+  "cadiz": "andalucia",
+  "cantabria": "cantabria",
+  "castellon": "comunidad-valenciana",
+  "ceuta": "ceuta",
+  "ciudad-real": "castilla-la-mancha",
+  "cordoba": "andalucia",
+  "cuenca": "castilla-la-mancha",
+  "gipuzkoa": "pais-vasco",
+  "girona": "cataluna",
+  "granada": "andalucia",
+  "guadalajara": "castilla-la-mancha",
+  "huelva": "andalucia",
+  "huesca": "aragon",
+  "jaen": "andalucia",
+  "la-rioja": "la-rioja",
+  "las-palmas": "canarias",
+  "leon": "castilla-y-leon",
+  "lleida": "cataluna",
+  "lugo": "galicia",
+  "madrid": "comunidad-de-madrid",
+  "malaga": "andalucia",
+  "melilla": "melilla",
+  "murcia": "region-de-murcia",
+  "navarra": "navarra",
+  "ourense": "galicia",
+  "palencia": "castilla-y-leon",
+  "pontevedra": "galicia",
+  "salamanca": "castilla-y-leon",
+  "santa-cruz-de-tenerife": "canarias",
+  "segovia": "castilla-y-leon",
+  "sevilla": "andalucia",
+  "soria": "castilla-y-leon",
+  "tarragona": "cataluna",
+  "teruel": "aragon",
+  "toledo": "castilla-la-mancha",
+  "valencia": "comunidad-valenciana",
+  "valladolid": "castilla-y-leon",
+  "zamora": "castilla-y-leon",
+  "zaragoza": "aragon",
+};
+
 /**
  * Resolve a municipality or city slug to its full /espana/... path.
  * Uses the internal API to avoid direct Prisma imports in middleware (edge runtime).
@@ -165,6 +225,18 @@ export async function middleware(request: NextRequest) {
   // Redirect www → apex
   if (hostname === `www.${CANONICAL_DOMAIN}`) {
     return NextResponse.redirect(`${CANONICAL_ORIGIN}${pathname}${search}`, 301);
+  }
+
+  // /espana/<province-slug> → canonical /espana/<community>/<province>
+  const provSlugMatch = pathname.match(/^\/espana\/([^/]+)$/);
+  if (provSlugMatch) {
+    const community = PROVINCE_TO_COMMUNITY[provSlugMatch[1]];
+    if (community && community !== provSlugMatch[1]) {
+      return NextResponse.redirect(
+        `${request.nextUrl.origin}/espana/${community}/${provSlugMatch[1]}${search}`,
+        301
+      );
+    }
   }
 
   // -----------------------------------------------------------------------
