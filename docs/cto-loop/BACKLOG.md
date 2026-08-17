@@ -11,7 +11,7 @@ last.
 > | **L0 build / deploy / observability** | **IN PROGRESS** — build DB access fixed (`671001fd`); deploy downtime, Loki gap and env drift still open |
 > | L1 data integrity | Partly done — AIS + GSC/GA4 detection fixed; 6 collectors still `partial`/`error` |
 > | L2 correct rendering | Started — station directory shipped; ~40k pages still orphaned by client-only hubs |
-> | L3 discovery / SEO | Diagnosed, **on hold** until L0–L2 hold |
+> | L3 discovery / SEO | **ACTIVE (MJ directive 2026-08-17)** — LinkDirectory rollout underway: trenes/estaciones 1,506 ✓, radares 737 ✓ verified live, calidad-aire 817 pending ISR verify. Next: municipios (needs per-province tier), gasolineras, carga-ev, clima |
 >
 > Do not open L3 work while an L0 item is red.
 

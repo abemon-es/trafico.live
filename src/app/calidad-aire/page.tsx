@@ -20,7 +20,9 @@ import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { CalidadAireHeroMap } from "./CalidadAireHeroMap";
 
-export const revalidate = 900;
+// 300: deploy-blank class — the build prerenders this page with no DB, so the
+// window is how long the empty copy (directory included) survives a deploy.
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
