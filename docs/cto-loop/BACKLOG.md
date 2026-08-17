@@ -31,9 +31,9 @@ correct information" — browser-rendered diagnostic run (Playwright, 36 pages +
 | B | /camaras/madrid | "Sin cámaras" with 365 active in DB — 1 h ISR on a live-data page | ✅ FIXED: revalidate 3600→300 (verify after next regen) |
 | C | /espana/madrid | Footer linked /espana/<province> on every page; segment only resolves communities → ~50 soft-404s (HTTP 200!) | ✅ FIXED `00801264`: middleware 301 → /espana/<community>/<province> (static INE map; in-page redirect proved unreliable under ISR). Verified: madrid+sevilla 301, andalucia 200 |
 | D | /trenes | Alert text concatenated (tripId glues train number+date) | ✅ FIXED `0a1040a7` in renfe-alerts collector; rows heal on 2-min rewrites |
-| E | /aviacion | "Pasajeros/año: —" for every airport (stats not joined) | OPEN |
+| E | /aviacion | Pax dashes — page queried periodType "yearly"/"monthly"; data is "annual" only | ✅ FIXED `d5bda0e8`; verified live (46.402.803 renders) |
 | F | /maritimo | "Buques última hora: 0" | known — AIS throttle |
-| G | /informe-diario | Incoherent: "10 nuevas hoy (media 7d: 58.966)" — windows/definitions mixed | OPEN — read generator; may partially heal via A |
+| G | /informe-diario | avg7d used DailyStats.incidentTotal = SUM of hourly active-count snapshots (incident-hours, ~24x unit) vs "nuevas hoy" = real starts | ✅ FIXED `d5bda0e8`: avg7d now counts startedAt per day; next 22:30 insights run emits coherent summaries |
 | H | /espana | networkidle timeout in browser (something polls forever) | OPEN |
 | I | /operativos/verano | "No hay datos" on the ACTIVE summer operation | OPEN |
 | J | /maritimo | copy: "Algeria" → "Argelia" | OPEN trivial |
