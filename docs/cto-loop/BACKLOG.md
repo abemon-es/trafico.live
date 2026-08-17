@@ -109,12 +109,16 @@ Ordered work list (each item unlocks disproportionate value):
      the feed attribution as their name** — durable fix belongs in the
      transit-gtfs importer → new item L1.5.
 
-L1.5 **transit-gtfs NAP operator names** — ✅ IMPORTER FIXED cycle 13
-   (`ec5028ac`): when the catalog's name column reads like attribution, the
-   provider column (the real operator) wins. All six collector tiers rebuilt so
-   the Sunday 04:05 weekly run heals the 109 rows; the 05:00 typesense sync
-   then carries clean names. **Verify Sunday morning**, then remove
-   `cleanOperatorName` from typesense-sync.
+L1.5 **transit-gtfs NAP operator names** — ✅ FULLY HEALED cycles 13+19.
+   Importer fixed (`ec5028ac`), but the first manual run healed only 6 of 109:
+   the hash-match fast path returned before the upsert, so hash-stable feeds
+   never got the corrected catalog name. `579f6177` refreshes name/city on the
+   skip path too; rerun healed **109/109 → 0 "raw data" rows**, transit
+   collections resynced, and live search now shows real operators
+   ("Consorcio Regional de Transportes de Madrid"). Scheduling note: the
+   cycle-13 plan assumed a Sunday-04:05 heal that had already passed — it was
+   Monday; ran manually instead. `cleanOperatorName` in typesense-sync is KEPT
+   deliberately as defense-in-depth against catalog regressions.
 2. ~~**Add `trains` + `aircraft` collections**~~ — ✅ DONE cycle 11 (`931b8098`,
    `bb533a0a`), verified end to end with live references:
    - `trains` **14,873 docs** (latest row per number, 48 h window). Search
