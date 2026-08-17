@@ -673,9 +673,12 @@ other collectors for catch-blocks that swallow into a default value.
 
 ## P2 — degraded, not broken
 
-- **`aemet-forecast`** — retry widened to 5xx/network (`85219af9`, was
-  429-only). Verify error count drops at the next 6-hourly run (15:00 CEST);
-  expect partial→ok or near it.
+- **`aemet-forecast`** — retry widened (`85219af9`) helped only marginally:
+  15:00 run = 82 errors (was ~88), upserted 840 (was 798). The 500s persist
+  through a single retry. Next test: determinism — 79 failing municipio codes
+  from the 15:00 run saved at compute:/tmp/fail2.txt; intersect with the 21:00
+  run's failures. Same set → retire/replace bad codes; disjoint → upstream
+  flakiness needing longer backoff, or accept partial as honest.
 - ~~`cnmc-fuel`~~ — ✅ HEALED cycle 43 (`5d5cd2e1`): CNMC rotated the 2026
   resource id ~03-31 and fuel history froze at March. Live id + rotation
   self-healing shipped; backfill upserted 7,378 rows → heartbeat **ok**,
