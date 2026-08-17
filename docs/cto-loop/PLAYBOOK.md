@@ -172,5 +172,10 @@ Learned the hard way; assume these unless re-verified.
 - `psql` is available on `compute`; the DB is reachable by sourcing
   `/opt/apps/trafico-live/.env` there. There is no local `.env` on the Mac.
 - macOS has no `timeout`; use `curl --max-time` / `ssh -o ConnectTimeout`.
+- **Never verify a before/after with a relative time window.** `docker logs
+  --since 10m` measured minutes *before* a restart and re-labelled them as
+  post-fix failures (2026-08-17, compounded by reading CEST as UTC — the
+  container clock is UTC, the shell prompt is CEST). Anchor to the event:
+  `--since 2026-08-17T07:04:00Z`, absolute, in Z.
 - In jq, `.x // null` **swallows `false`** — a broken boolean becomes "unknown".
   Test with `has("ok")` instead. This bug briefly hid the SEO pipeline outage.
