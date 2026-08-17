@@ -11,7 +11,7 @@ last.
 > | **L0 build / deploy / observability** | **IN PROGRESS** — build DB access fixed (`671001fd`); deploy downtime, Loki gap and env drift still open |
 > | L1 data integrity | Partly done — AIS + GSC/GA4 detection fixed; 6 collectors still `partial`/`error` |
 > | L2 correct rendering | Started — station directory shipped; ~40k pages still orphaned by client-only hubs |
-> | L3 discovery / SEO | **ACTIVE (MJ directive 2026-08-17)** — LinkDirectory rollout underway: trenes/estaciones 1,506 ✓, radares 737 ✓ verified live, calidad-aire 817 pending ISR verify. Next: municipios (needs per-province tier), gasolineras, carga-ev, clima |
+> | L3 discovery / SEO | **ACTIVE** — crawl paths open: trenes/estaciones 1,506 ✓ · radares 737 ✓ · calidad-aire 817 ✓ (origin-verified) · gasolineras chain 54 province anchors ✓ → ~5,200 station links behind them. **Systemic fix `a3e76eb3`: revalidate normalized to 300 on all 78 DB-backed prerendered pages** (build-blank policy) — this alone un-blanks most previously "senseless" pages after every deploy. Remaining: carga-ev + meteo/estaciones tiers, municipios, codigo-postal |
 >
 > Do not open L3 work while an L0 item is red.
 
