@@ -220,16 +220,23 @@ async function seedAirports(prisma: PrismaClient): Promise<void> {
 }
 
 /**
- * Remove aircraft positions older than 1 hour (rolling window).
+ * Remove aircraft positions beyond the retention window.
+ *
+ * 7 days, matching what cleanup-realtime declares for AircraftPosition. This
+ * function used to delete at 1 HOUR, silently overriding that config — the
+ * shorter deleter always wins — so no aircraft ever had more than an hour of
+ * track history and the declared 7-day retention was a fiction. Keeping the
+ * delete here (as well as in cleanup-realtime) is deliberate redundancy; the
+ * windows must agree.
  */
 async function cleanupOldPositions(prisma: PrismaClient): Promise<void> {
-  const cutoff = new Date(Date.now() - 60 * 60 * 1000);
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   try {
     const result = await prisma.aircraftPosition.deleteMany({
       where: { createdAt: { lt: cutoff } },
     });
     if (result.count > 0) {
-      log(TASK, `Cleaned ${result.count} positions older than 1h`);
+      log(TASK, `Cleaned ${result.count} positions older than 7d`);
     }
   } catch (err) {
     logError(TASK, "Cleanup failed", err);
