@@ -673,12 +673,13 @@ other collectors for catch-blocks that swallow into a default value.
 
 ## P2 — degraded, not broken
 
-- **`aemet-forecast`** — retry widened (`85219af9`) helped only marginally:
-  15:00 run = 82 errors (was ~88), upserted 840 (was 798). The 500s persist
-  through a single retry. Next test: determinism — 79 failing municipio codes
-  from the 15:00 run saved at compute:/tmp/fail2.txt; intersect with the 21:00
-  run's failures. Same set → retire/replace bad codes; disjoint → upstream
-  flakiness needing longer backoff, or accept partial as honest.
+- **`aemet-forecast`** — root-caused cycle 68 (`b71509ef`): determinism test
+  showed 63/77 failures identical across runs, BUT a "failing" code returns
+  estado:200 queried alone → the 500s are AEMET's per-minute quota (returned
+  as 500, not 429), exhausting at the same positions every run because request
+  order is stable. Fix: pace 1100→1500 ms + retry backoff 5→30 s so retries
+  land outside the quota window. **Verify at the 03:00 run** — expect errors
+  ~80 → near zero.
 - ~~`cnmc-fuel`~~ — ✅ HEALED cycle 43 (`5d5cd2e1`): CNMC rotated the 2026
   resource id ~03-31 and fuel history froze at March. Live id + rotation
   self-healing shipped; backfill upserted 7,378 rows → heartbeat **ok**,
