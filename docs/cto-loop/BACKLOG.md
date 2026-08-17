@@ -676,9 +676,13 @@ other collectors for catch-blocks that swallow into a default value.
 - **`aemet-forecast`** — retry widened to 5xx/network (`85219af9`, was
   429-only). Verify error count drops at the next 6-hourly run (15:00 CEST);
   expect partial→ok or near it.
-- **`cnmc-fuel`, `transit-gtfs`, `city-traffic`, `health-check`** — all
-  `partial`. Each needs a look at *what* is partial; `partial` has become
-  background noise, which is how real degradation hides.
+- ~~`cnmc-fuel`~~ — ✅ HEALED cycle 43 (`5d5cd2e1`): CNMC rotated the 2026
+  resource id ~03-31 and fuel history froze at March. Live id + rotation
+  self-healing shipped; backfill upserted 7,378 rows → heartbeat **ok**,
+  latestDate 2026-08-12 (CNMC's normal ~5-day lag).
+- **`transit-gtfs`** (3/16 feeds fail, upstream), **`city-traffic`**
+  (Barcelona/Zaragoza upstreams), **`health-check`** — remaining partials,
+  all upstream-flavoured.
 - **Smoke test: 5 warnings** (107 pass, 0 fail) — identify and clear.
 - **`tasks/monthly-report/render.ts` is unparseable** — ~626 TS syntax errors,
   JSX in a `.ts` file (should be `.tsx`). Drowns every other typecheck result,
