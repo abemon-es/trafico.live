@@ -61,26 +61,26 @@ export default function CargaEVPage() {
           <div>
             <a href="/carga-ev/cerca" tabIndex={-1}>Cargadores eléctricos cerca de mí</a>
             <a href="/electrolineras" tabIndex={-1}>Electrolineras en España</a>
-            <a href="/electrolineras/madrid" tabIndex={-1}>Electrolineras en Madrid</a>
-            <a href="/electrolineras/barcelona" tabIndex={-1}>Electrolineras en Barcelona</a>
-            <a href="/electrolineras/valencia" tabIndex={-1}>Electrolineras en Valencia</a>
-            <a href="/electrolineras/sevilla" tabIndex={-1}>Electrolineras en Sevilla</a>
-            <a href="/electrolineras/zaragoza" tabIndex={-1}>Electrolineras en Zaragoza</a>
-            <a href="/electrolineras/malaga" tabIndex={-1}>Electrolineras en Malaga</a>
-            <a href="/electrolineras/murcia" tabIndex={-1}>Electrolineras en Murcia</a>
-            <a href="/electrolineras/palma" tabIndex={-1}>Electrolineras en Palma</a>
-            <a href="/electrolineras/bilbao" tabIndex={-1}>Electrolineras en Bilbao</a>
-            <a href="/electrolineras/alicante" tabIndex={-1}>Electrolineras en Alicante</a>
-            <a href="/electrolineras/cordoba" tabIndex={-1}>Electrolineras en Cordoba</a>
-            <a href="/electrolineras/valladolid" tabIndex={-1}>Electrolineras en Valladolid</a>
-            <a href="/electrolineras/vigo" tabIndex={-1}>Electrolineras en Vigo</a>
-            <a href="/electrolineras/gijon" tabIndex={-1}>Electrolineras en Gijon</a>
-            <a href="/electrolineras/vitoria" tabIndex={-1}>Electrolineras en Vitoria</a>
-            <a href="/electrolineras/granada" tabIndex={-1}>Electrolineras en Granada</a>
-            <a href="/electrolineras/oviedo" tabIndex={-1}>Electrolineras en Oviedo</a>
-            <a href="/electrolineras/santander" tabIndex={-1}>Electrolineras en Santander</a>
-            <a href="/electrolineras/san-sebastian" tabIndex={-1}>Electrolineras en San Sebastian</a>
-            <a href="/electrolineras/pamplona" tabIndex={-1}>Electrolineras en Pamplona</a>
+            <a href="/carga-ev/madrid" tabIndex={-1}>Electrolineras en Madrid</a>
+            <a href="/carga-ev/barcelona" tabIndex={-1}>Electrolineras en Barcelona</a>
+            <a href="/carga-ev/valencia" tabIndex={-1}>Electrolineras en Valencia</a>
+            <a href="/carga-ev/sevilla" tabIndex={-1}>Electrolineras en Sevilla</a>
+            <a href="/carga-ev/zaragoza" tabIndex={-1}>Electrolineras en Zaragoza</a>
+            <a href="/carga-ev/malaga" tabIndex={-1}>Electrolineras en Malaga</a>
+            <a href="/carga-ev/murcia" tabIndex={-1}>Electrolineras en Murcia</a>
+            <a href="/carga-ev/palma" tabIndex={-1}>Electrolineras en Palma</a>
+            <a href="/carga-ev/bilbao" tabIndex={-1}>Electrolineras en Bilbao</a>
+            <a href="/carga-ev/alicante" tabIndex={-1}>Electrolineras en Alicante</a>
+            <a href="/carga-ev/cordoba" tabIndex={-1}>Electrolineras en Cordoba</a>
+            <a href="/carga-ev/valladolid" tabIndex={-1}>Electrolineras en Valladolid</a>
+            <a href="/carga-ev/vigo" tabIndex={-1}>Electrolineras en Vigo</a>
+            <a href="/carga-ev/gijon" tabIndex={-1}>Electrolineras en Gijon</a>
+            <a href="/carga-ev/vitoria" tabIndex={-1}>Electrolineras en Vitoria</a>
+            <a href="/carga-ev/granada" tabIndex={-1}>Electrolineras en Granada</a>
+            <a href="/carga-ev/oviedo" tabIndex={-1}>Electrolineras en Oviedo</a>
+            <a href="/carga-ev/santander" tabIndex={-1}>Electrolineras en Santander</a>
+            <a href="/carga-ev/san-sebastian" tabIndex={-1}>Electrolineras en San Sebastian</a>
+            <a href="/carga-ev/pamplona" tabIndex={-1}>Electrolineras en Pamplona</a>
             <a href="/cuanto-cuesta-cargar" tabIndex={-1}>¿Cuánto cuesta cargar un coche eléctrico?</a>
             <a href="/etiqueta-ambiental" tabIndex={-1}>Etiqueta ambiental DGT</a>
           </div>

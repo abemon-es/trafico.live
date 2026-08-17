@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CiudadCargaEVContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import LinkDirectory from "@/components/seo/LinkDirectory";
+import prisma from "@/lib/db";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -80,6 +82,18 @@ export default async function CiudadCargaEVPage({ params }: Props) {
     notFound();
   }
 
+  // Server-rendered so crawlers can reach the charger detail pages: the
+  // interactive content below is a client component, and the 12k
+  // /carga-ev/punto/* pages had no crawlable inbound links at all. NOTE: this
+  // is the REAL city route — /electrolineras/:city 308s here (next.config), so
+  // an earlier attempt to add this on that route never served.
+  const chargers = await prisma.eVCharger.findMany({
+    where: { city: { contains: cityData.name, mode: "insensitive" }, isPublic: true },
+    orderBy: { powerKw: "desc" },
+    select: { id: true, name: true, address: true, city: true, powerKw: true },
+    take: 500,
+  });
+
   return (
     <>
       <Breadcrumbs
@@ -90,6 +104,19 @@ export default async function CiudadCargaEVPage({ params }: Props) {
         ]}
       />
       <CiudadCargaEVContent ciudad={ciudad} cityData={cityData} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <LinkDirectory
+          title={`Todos los puntos de carga en ${cityData.name}`}
+          description="Índice de cargadores públicos con potencia, para acceso directo a cada punto."
+          items={chargers.map((c) => ({
+            href: `/carga-ev/punto/${encodeURIComponent(c.id)}`,
+            label: [c.name || c.address, c.powerKw ? `${Number(c.powerKw).toFixed(0)} kW` : null]
+              .filter(Boolean)
+              .join(" · "),
+            group: c.city,
+          }))}
+        />
+      </div>
     </>
   );
 }
