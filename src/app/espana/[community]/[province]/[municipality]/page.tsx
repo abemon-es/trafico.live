@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { prisma } from "@/lib/db";
+import { municipalityCodeForms } from "@/lib/geo/ine-codes";
 import LinkDirectory from "@/components/seo/LinkDirectory";
 import type { GeoEntity } from "@/lib/geo/types";
 import { LocationShell } from "@/components/location/LocationShell";
@@ -39,13 +40,6 @@ import {
 
 export const revalidate = 300;
 
-// GasStation.municipalityCode stores the MINETUR id WITHOUT leading zeros
-// ("4280") while Municipality.code keeps them ("04280") — an equality filter
-// silently matches nothing for any code starting with 0. Match both forms.
-function municipalityCodeForms(code: string): string[] {
-  const stripped = String(parseInt(code, 10));
-  return stripped === code ? [code] : [code, stripped];
-}
 
 export const dynamicParams = true;
 

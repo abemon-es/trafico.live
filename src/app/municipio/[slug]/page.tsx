@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import prisma from "@/lib/db";
+import { municipalityCodeForms } from "@/lib/geo/ine-codes";
 import type { GeoEntity } from "@/lib/geo/types";
 import { LocationShell } from "@/components/location/LocationShell";
 import { HeroSection } from "@/components/location/HeroSection";
@@ -54,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Count gas stations for the quality gate
   const gasStationCount = await prisma.gasStation.count({
-    where: { municipalityCode: municipality.code },
+    where: { municipalityCode: { in: municipalityCodeForms(municipality.code) } },
   });
 
   // Quality gate: noindex thin pages (pop < 2000 AND no gas stations)
@@ -176,7 +177,7 @@ export default async function MunicipioPage({ params }: Props) {
 
   // JSON-LD: FAQPage schema — pre-fetch counts for FAQ accuracy
   const [gasStationCount, incidentCount] = await Promise.all([
-    prisma.gasStation.count({ where: { municipalityCode: munCode } }),
+    prisma.gasStation.count({ where: { municipalityCode: { in: municipalityCodeForms(munCode) } } }),
     prisma.trafficIncident.count({
       where: { province: provinceCode, isActive: true },
     }),

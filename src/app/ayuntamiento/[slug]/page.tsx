@@ -7,6 +7,7 @@ import { BrandingShell, type MunicipalBranding } from "@/components/ayuntamiento
 import { MunicipalDashboard } from "@/components/ayuntamiento/MunicipalDashboard";
 import type { MunicipalKPIs } from "@/components/ayuntamiento/KPIGrid";
 import prisma from "@/lib/db";
+import { municipalityCodeForms } from "@/lib/geo/ine-codes";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -201,7 +202,7 @@ async function getPageData(slug: string): Promise<PageData | null> {
       // Average gasolina 95 price in municipality
       prisma.gasStation.aggregate({
         where: {
-          municipalityCode: municipality.code,
+          municipalityCode: { in: municipalityCodeForms(municipality.code) },
           priceGasolina95E5: { not: null },
         },
         _avg: { priceGasolina95E5: true },

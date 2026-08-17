@@ -165,3 +165,16 @@ export function isProvinceCovered(provinceCode: string): boolean {
   const community = getCommunityByProvince(provinceCode);
   return community ? !community.isExcluded : false;
 }
+
+/**
+ * GasStation.municipalityCode stores the MINETUR municipality id WITHOUT
+ * leading zeros ("4280") while Municipality.code keeps them ("04280"). An
+ * equality filter therefore silently matches nothing for any code starting
+ * with 0 — this blanked postal-code directories and gas-station counts on a
+ * large share of municipality pages until 2026-08-17. Use with
+ * `municipalityCode: { in: municipalityCodeForms(code) }`.
+ */
+export function municipalityCodeForms(code: string): string[] {
+  const stripped = String(parseInt(code, 10));
+  return stripped === code ? [code] : [code, stripped];
+}
