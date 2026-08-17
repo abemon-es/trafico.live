@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import type { GeoEntity } from "@/lib/geo/types";
 import { LocationShell } from "@/components/location/LocationShell";
@@ -63,7 +63,21 @@ export default async function CommunityPage({ params }: Props) {
   const { community: slug } = await params;
   const comm = await getCommunity(slug);
 
-  if (!comm) notFound();
+  // Province slugs land here too: the footer's "Provincias" row on every page
+  // linked /espana/<province-slug>, but this segment only resolves community
+  // slugs — so /espana/madrid served the not-found UI (as a soft 404, HTTP
+  // 200) on ~50 footer links sitewide. Resolve the province and redirect to
+  // its canonical nested URL instead of dead-ending the visitor.
+  if (!comm) {
+    const province = await prisma.province.findUnique({
+      where: { slug },
+      select: { slug: true, community: { select: { slug: true } } },
+    });
+    if (province?.community?.slug) {
+      permanentRedirect(`/espana/${province.community.slug}/${province.slug}`);
+    }
+    notFound();
+  }
 
   const entity: GeoEntity = {
     level: "community",

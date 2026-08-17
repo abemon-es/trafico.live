@@ -243,9 +243,15 @@ async function processTripUpdates(prisma: PrismaClient, url: string, source: str
       ?.filter((stu) => stu.stopId)
       .map((stu) => stu.stopId!) || [];
 
+    // Renfe tripIds glue the train number to the service date
+    // ("3890812026-08-16"), which rendered as "Tren 3890812026-08-16
+    // cancelado" on /trenes. Split them apart for humans; Cercanías internal
+    // codes ("1027L20203C4a") pass through unchanged.
+    const tripRef = /^(\d+?)(\d{4}-\d{2}-\d{2})$/.exec(tu.trip.tripId);
+    const trainLabel = tripRef ? `${tripRef[1]} (${tripRef[2]})` : tu.trip.tripId;
     const description = isCancelled
-      ? `Tren ${tu.trip.tripId} cancelado`
-      : `Tren ${tu.trip.tripId} con retraso de ${Math.round(maxDelay / 60)} minutos`;
+      ? `Tren ${trainLabel} cancelado`
+      : `Tren ${trainLabel} con retraso de ${Math.round(maxDelay / 60)} minutos`;
 
     const effect: RailwayAlertEffect = isCancelled ? "NO_SERVICE" : "SIGNIFICANT_DELAYS";
     const alertId = `TU_${source}_${tu.trip.tripId}_${now.toISOString().slice(0, 10)}`;
