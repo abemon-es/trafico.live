@@ -38,6 +38,15 @@ import {
 } from "@/components/location/sections";
 
 export const revalidate = 300;
+
+// GasStation.municipalityCode stores the MINETUR id WITHOUT leading zeros
+// ("4280") while Municipality.code keeps them ("04280") — an equality filter
+// silently matches nothing for any code starting with 0. Match both forms.
+function municipalityCodeForms(code: string): string[] {
+  const stripped = String(parseInt(code, 10));
+  return stripped === code ? [code] : [code, stripped];
+}
+
 export const dynamicParams = true;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -79,7 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const provinceName = prov.name;
 
   const gasStationCount = await prisma.gasStation.count({
-    where: { municipalityCode: mun.code },
+    where: { municipalityCode: { in: municipalityCodeForms(mun.code) } },
   });
 
   const hasData = (mun.population ?? 0) >= 2000 || gasStationCount > 0;
@@ -125,7 +134,7 @@ export default async function MunicipalityPage({ params }: Props) {
   // anchors per page.
   const postalCodes = await prisma.gasStation.groupBy({
     by: ["postalCode"],
-    where: { municipalityCode: mun.code, postalCode: { not: null } },
+    where: { municipalityCode: { in: municipalityCodeForms(mun.code) }, postalCode: { not: null } },
     orderBy: { postalCode: "asc" },
   });
 
