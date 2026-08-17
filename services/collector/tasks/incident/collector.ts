@@ -355,12 +355,16 @@ export async function run(prisma: PrismaClient) {
       return true;
     });
 
-    // Get existing IDs to track creates vs updates
+    // Get existing IDs to track creates vs updates, and which of them are
+    // currently inactive — those are REACTIVATIONS, not continuations.
     const existingIncidents = await prisma.trafficIncident.findMany({
       where: { situationId: { in: validIncidents.map(i => i.situationId) } },
-      select: { situationId: true },
+      select: { situationId: true, isActive: true },
     });
     const existingIds = new Set(existingIncidents.map(i => i.situationId));
+    const reactivatedIds = existingIncidents
+      .filter((i) => !i.isActive)
+      .map((i) => i.situationId);
 
     // Chunked parallel upserts (50x parallelism per chunk)
     const CHUNK = 50;
@@ -436,6 +440,22 @@ export async function run(prisma: PrismaClient) {
       }
 
       processed += chunk.length;
+    }
+
+    // A reactivated incident is a NEW episode: reset startedAt so its age
+    // reads from this appearance, not from the first time the situationId was
+    // ever seen. Sources with stable per-location IDs (Madrid measurement
+    // points, urban sensors) re-up the same situationId every time that spot
+    // congests — without this reset, a jam that began ten minutes ago renders
+    // as "Hace 3.277h" because the row was first created in April, and city
+    // pages fill with months-old-looking "active" incidents. firstSeenAt keeps
+    // the historical first sighting; startedAt now means "this episode began".
+    if (reactivatedIds.length > 0) {
+      await prisma.trafficIncident.updateMany({
+        where: { situationId: { in: reactivatedIds } },
+        data: { startedAt: now },
+      });
+      console.log(`[collector] Reset episode start for ${reactivatedIds.length} reactivated incidents`);
     }
 
     console.log(`[collector] Processing complete: ${created} created, ${updated} updated, ${skipped} skipped`);

@@ -8,7 +8,11 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
-export const revalidate = 3600;
+// 5 min, not 1 h: this page renders live DB state (camera availability per
+// province) and the build prerenders it empty (no DB at build). At 3600 a
+// deploy or an upstream re-import left "Sin cámaras" on screen for up to an
+// hour while the DB held 365 active Madrid cameras — seen live 2026-08-17.
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
