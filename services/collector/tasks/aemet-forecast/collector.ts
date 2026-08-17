@@ -26,8 +26,14 @@ import { dirname, join } from "path";
 
 const TASK = "aemet-forecast";
 const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
-const RATE_LIMIT_MS = 1100; // 1100ms between requests — safe below 1 req/s
-const RETRY_BACKOFF_MS = 5000; // Exponential backoff on 429
+const RATE_LIMIT_MS = 1500; // was 1100 — slower pace stays under AEMET's per-minute quota
+// 30 s, not 5 s: AEMET returns 500 (not 429) when its per-minute quota is
+// exhausted, and a 5 s retry lands inside the same quota window — which is why
+// 63 of 77 "failing" municipios were identical across the 15:00 and 21:00 runs
+// (stable request order → quota exhausts at the same positions → deterministic-
+// looking failures). Verified: a "failing" code returns estado:200 when
+// queried alone. A retry must wait out the window.
+const RETRY_BACKOFF_MS = 30000;
 const REQUEST_TIMEOUT_MS = 30_000; // 30s abort signal per request
 
 const __filename = fileURLToPath(import.meta.url);
