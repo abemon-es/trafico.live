@@ -2522,6 +2522,8 @@ model Airport {
   statistics AirportStatistic[]
 
   @@index([province])
+  flightOrigins Flight[] @relation("flightOrigins")
+  flightDests   Flight[] @relation("flightDests")
 }
 
 model AirportStatistic {
@@ -2537,6 +2539,40 @@ model AirportStatistic {
 
   @@unique([airportId, metric, periodStart])
   @@index([airportId, periodStart(sort: Desc)])
+}
+
+
+/// Derived flight history per airframe — the aviation counterpart of Voyage.
+/// Raw AircraftPosition rows roll off after 7 days; a Flight survives forever:
+/// one row per continuous airborne session (a >30 min gap in positions closes
+/// the flight). Origin/destination are the nearest AENA airports to the first
+/// and last low/ground positions, when within 20 km.
+/// Produced by services/collector/tasks/flight-detector/ (hourly).
+model Flight {
+  id        String   @id @default(cuid())
+  icao24    String
+  callsign  String? // most frequent callsign during the session
+
+  firstSeenAt DateTime @db.Timestamptz
+  lastSeenAt  DateTime @db.Timestamptz
+
+  originAirportId String?
+  destAirportId   String?
+  originAirport   Airport? @relation("flightOrigins", fields: [originAirportId], references: [id])
+  destAirport     Airport? @relation("flightDests", fields: [destAirportId], references: [id])
+
+  maxAltitude    Int?
+  positionsCount Int     @default(0)
+  isActive       Boolean @default(true) // still receiving positions
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@unique([icao24, firstSeenAt])
+  @@index([icao24, lastSeenAt(sort: Desc)])
+  @@index([isActive])
+  @@index([originAirportId])
+  @@index([destAirportId])
 }
 
 model AircraftPosition {

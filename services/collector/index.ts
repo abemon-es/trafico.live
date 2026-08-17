@@ -72,6 +72,7 @@ const VALID_TASKS = [
   "health-check",
   // Voyage analytics
   "voyage-detector",
+  "flight-detector",
   // Weather radar
   "eumetsat-radar",
   // Alert matching + social broadcast (realtime tier, every 5 min)

@@ -15,3 +15,6 @@
 # Source: opendata-sasemar.hub.arcgis.com (2019-2024 historical records)
 # Idempotent: upserts by external ID; safe to run frequently
 #*/15 * * * * TASK=sasemar npx tsx index.ts 2>&1
+
+# Derive permanent per-airframe flight history from 7-day raw positions
+20 * * * * flock -n /tmp/flight-detector.lock -c 'TASK=flight-detector npx tsx index.ts 2>&1' || echo "[flight-detector] skipped — previous run still in progress"
