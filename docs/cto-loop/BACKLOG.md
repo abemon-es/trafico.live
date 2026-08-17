@@ -3,6 +3,10 @@
 Persistent state across loop cycles. Every cycle reads this first and updates it
 last.
 
+> 🎯 **MILESTONE 2026-08-18 00:26 — degraded = 0/51.** Every collector healthy
+> simultaneously for the first time. Saturday's baseline: 9 degraded including
+> an 11-day silent AIS blackout and a never-once-successful SEO pipeline.
+
 > **Ordering changed 2026-08-16 (MJ): work bottom-up by layer, not by scope
 > rotation.** See PLAYBOOK "Work bottom-up". Current layer status:
 >
