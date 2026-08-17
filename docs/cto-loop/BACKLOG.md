@@ -768,10 +768,12 @@ Secrets cannot be invented. The loop must not fabricate, guess, or stub these.
    container, `0400`, owned by the collector uid. A dedicated per-site service
    account remains the cleaner end state whenever MJ has console time.
 
-2. ~~**aisstream.io account state**~~ — **WITHDRAWN, this was never an
-   escalation.** The credentials are valid; the cause was our own reconnect
-   storm triggering an HTTP 429 throttle. Fixed client-side — see P0 #1. Nothing
-   is required from MJ unless the throttle fails to decay after a day of quiet.
+2. ~~**aisstream.io**~~ — ✅ **FULLY RESOLVED cycle 46 (2026-08-17 ~12:00Z)**:
+   the stream RESUMED on its own once the client stopped hammering — 65k+
+   messages, ~5,900 vessels, 69,827 positions in the first 2 h. Confirms the
+   whole arc: valid credentials (MJ was right), self-inflicted throttle via the
+   5→60s reconnect ladder, cured by the minutes-scale backoff. ~12 days of
+   maritime blackout ended with zero upstream action. Nothing pending.
 
 *(`CAMS_API_KEY` was initially thought to be an escalation — it is not. The value
 exists in `.env`; it just never propagated to `.env.collectors`.)*
