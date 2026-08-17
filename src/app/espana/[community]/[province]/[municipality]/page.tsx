@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { prisma } from "@/lib/db";
+import LinkDirectory from "@/components/seo/LinkDirectory";
 import type { GeoEntity } from "@/lib/geo/types";
 import { LocationShell } from "@/components/location/LocationShell";
 import { HeroSection } from "@/components/location/HeroSection";
@@ -117,6 +118,16 @@ export default async function MunicipalityPage({ params }: Props) {
   const mun = await getMunicipality(community, province, munSlug);
 
   if (!mun) notFound();
+
+  // Postal-code pages (/codigo-postal/[cp]) are generated from gas-station
+  // data and had no inbound links anywhere. Each municipality links its own
+  // codes, distributing ~4,600 CP pages across the municipality tier at a few
+  // anchors per page.
+  const postalCodes = await prisma.gasStation.groupBy({
+    by: ["postalCode"],
+    where: { municipalityCode: mun.code, postalCode: { not: null } },
+    orderBy: { postalCode: "asc" },
+  });
 
   const {
     name,
@@ -376,6 +387,17 @@ export default async function MunicipalityPage({ params }: Props) {
 
         {/* SEO prose (premium: pop >= 50K) */}
         <CitySeoProse entity={entity} />
+
+        <LinkDirectory
+          title={`Códigos postales de ${mun.name}`}
+          description="Gasolineras y servicios de tráfico por código postal."
+          items={postalCodes
+            .filter((p) => p.postalCode)
+            .map((p) => ({
+              href: `/codigo-postal/${p.postalCode as string}`,
+              label: p.postalCode as string,
+            }))}
+        />
       </LocationShell>
     </>
   );
