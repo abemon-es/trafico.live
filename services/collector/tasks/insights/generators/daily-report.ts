@@ -47,7 +47,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     avgGas95Today,
     yesterdayFuelStats,
     todayDailyStats,
-    sevenDayStats,
+    sevenDayStartedCount,
     provinceNameMap,
   ] = await Promise.all([
     prisma.trafficIncident.count({ where: { isActive: true } }),
@@ -75,9 +75,12 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     prisma.dailyStats.findFirst({
       where: { dateStart: todayStart },
     }),
-    prisma.dailyStats.findMany({
-      where: { dateStart: { gte: sevenDaysAgo, lt: todayStart } },
-      select: { incidentTotal: true },
+    // Same unit as todayIncidents: incidents STARTED per day. The previous
+    // source (DailyStats.incidentTotal) is a sum of hourly active-incident
+    // snapshots — incident-hours, ~24x larger — which produced summaries like
+    // "10 nuevas hoy (media 7d: 58.966)". Comparable numbers or none.
+    prisma.trafficIncident.count({
+      where: { startedAt: { gte: sevenDaysAgo, lt: todayStart } },
     }),
     getProvinceNameMap(prisma),
   ]);
@@ -107,10 +110,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
       : null;
 
   // ── 7-day average ────────────────────────────────────────────────────────
-  const avg7d =
-    sevenDayStats.length > 0
-      ? sevenDayStats.reduce((sum, d) => sum + d.incidentTotal, 0) / sevenDayStats.length
-      : null;
+  const avg7d = sevenDayStartedCount > 0 ? sevenDayStartedCount / 7 : null;
 
   // ── DailyStats breakdowns ────────────────────────────────────────────────
   const byIncidentType = (todayDailyStats?.byIncidentType ?? {}) as Record<string, number>;
