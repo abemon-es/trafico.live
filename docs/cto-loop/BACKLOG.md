@@ -17,6 +17,35 @@ last.
 
 ---
 
+## DIRECTIVE (MJ, 2026-08-17): L3 UNBLOCKED + full content diagnostics
+
+MJ: unblock L3/SEO fixes, AND "most pages make no sense or are not showing the
+correct information" — browser-rendered diagnostic run (Playwright, 36 pages +
+12 deep-read). The do-not-open-L3 rule is lifted.
+
+### Content defects found (browser-verified), status:
+
+| # | Page | Defect | Status |
+|---|------|--------|--------|
+| A | /atascos/[ciudad] | "Active" incidents aged months ("Hace 3.277h") — stable situationIds froze startedAt at first-ever sighting | ✅ FIXED `bd5b2c11`: reactivation = new episode; healed 1,499 rows; live page now shows "Hace 8–56 min" |
+| B | /camaras/madrid | "Sin cámaras" with 365 active in DB — 1 h ISR on a live-data page | ✅ FIXED: revalidate 3600→300 (verify after next regen) |
+| C | /espana/madrid | **404 from the homepage nav** (link exists in nav; page doesn't) | OPEN — check nav slug vs [provincia] params |
+| D | /trenes | Alert text concatenated: "Tren 3890812026-08-16 cancelado", "Tren 1027L20203C4a" | OPEN — alert formatter |
+| E | /aviacion | "Pasajeros/año: —" for every airport (stats not joined) | OPEN |
+| F | /maritimo | "Buques última hora: 0" | known — AIS throttle |
+| G | /informe-diario | Incoherent: "10 nuevas hoy (media 7d: 58.966)" — windows/definitions mixed | OPEN — read generator; may partially heal via A |
+| H | /espana | networkidle timeout in browser (something polls forever) | OPEN |
+| I | /operativos/verano | "No hay datos" on the ACTIVE summer operation | OPEN |
+| J | /maritimo | copy: "Algeria" → "Argelia" | OPEN trivial |
+
+Healthy verified: /mejor-hora, /calidad-aire, /gasolineras, /intensidad,
+/accidentes/madrid, /trenes (data itself fine at 04:30 — 1 train circulating is
+real at that hour).
+
+Diagnostic method note: curl probes are blind to client-rendered content —
+browser (Playwright) + reading the visible main text is the only honest way.
+Scripts in scratchpad: browser-diag.py, page-read.py.
+
 ## NORTH STAR (MJ, 2026-08-16): universal vehicle findability
 
 > "For each train, no matter how big or small, and each bus, ship, ferry,
