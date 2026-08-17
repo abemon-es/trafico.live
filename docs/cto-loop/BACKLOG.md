@@ -673,9 +673,9 @@ other collectors for catch-blocks that swallow into a default value.
 
 ## P2 — degraded, not broken
 
-- **`aemet-forecast`** — `partial`, 88 upstream errors/run (AEMET 500s +
-  `fetch failed`). Mostly upstream flakiness; needs retry/backoff so partial
-  runs don't mask a real regression.
+- **`aemet-forecast`** — retry widened to 5xx/network (`85219af9`, was
+  429-only). Verify error count drops at the next 6-hourly run (15:00 CEST);
+  expect partial→ok or near it.
 - **`cnmc-fuel`, `transit-gtfs`, `city-traffic`, `health-check`** — all
   `partial`. Each needs a look at *what* is partial; `partial` has become
   background noise, which is how real degradation hides.
