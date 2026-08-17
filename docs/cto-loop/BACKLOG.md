@@ -758,7 +758,23 @@ consumer inventory produces silent fossils** — the 12-Jul rotation killed two
 consumers that took a month to be noticed. Applies directly to our Google SA
 key, which now lives in two places (Mac + compute `secrets/google-sa.json`).
 
-## PROPOSED to MJ (2026-08-17, awaiting decision): derived-history model
+## Derived-history model — IN PROGRESS (MJ "go on", 2026-08-18)
+
+✅ **Aviation shipped** (`3b645e83`): `Flight` model + hourly flight-detector.
+First run: **2,111 flights from 1,545 airframes** (442 with origin airport, 542
+with destination, 373 in the air right now). Permanent per-airframe history now
+accumulates; raw stays 7-day windowed.
+
+⚠️ **Found en route: the web container's migration pipeline is BROKEN** —
+`prisma migrate deploy` fails with 42501 (MIGRATE_DATABASE_URL uses
+`trafico_app`, which has no DDL; tables belong to `trafico_admin`). Applied
+manually as trafico_admin on trafico-postgres + `migrate resolve`. **Every
+future migration will fail the same way until MIGRATE_DATABASE_URL gets a DDL
+role → ESCALATIONS.**
+
+Next: per-train service history (consolidate DelaySnapshot per trainNumber).
+
+## (superseded) PROPOSED to MJ (2026-08-17, awaiting decision): derived-history model
 
 Retention audit findings (full table in the 16:20 report): ships keep identity
 + voyages + port calls forever (the right pattern); trains keep 48 h positions
@@ -770,6 +786,11 @@ windowed. Full-raw-forever needs TimescaleDB (~3.6B rows/yr AIS alone) — infra
 decision. Loop proceeds on flights/train-services only if MJ approves.
 
 ## ESCALATIONS — need MJ, loop cannot self-serve
+
+00. **MIGRATE_DATABASE_URL has no DDL rights** — migrations silently fail at
+   every deploy (42501) and the container logs "[migrate] Skipped". Point it at
+   a `trafico_admin` credential (direct :5440, not PgBouncer) in
+   `/opt/apps/trafico-live/.env`, or provision a dedicated migrator role.
 
 0. **TELEGRAM_CHANNEL / TELEGRAM_BOT_TOKEN never provisioned** — the
    social-broadcast task errors every run wanting them; they exist in neither
