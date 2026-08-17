@@ -7,10 +7,13 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
+import LinkDirectory from "@/components/seo/LinkDirectory";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const revalidate = 3600;
+// 300 not 3600: DB-backed page, and the build prerenders it empty (no DB at
+// build) — the shorter window is what heals it after each deploy.
+export const revalidate = 300;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -70,6 +73,12 @@ const FAQ_ITEMS = [
 ];
 
 export default async function RadaresPage() {
+  const allRadars = await prisma.radar.findMany({
+    where: { isActive: true },
+    select: { id: true, roadNumber: true, kmPoint: true, provinceName: true, province: true },
+    orderBy: [{ roadNumber: "asc" }, { kmPoint: "asc" }],
+  });
+
   const [totalCount, byType, byRoad, byProvince] = await Promise.all([
     prisma.radar.count({ where: { isActive: true } }),
     prisma.radar.groupBy({
@@ -325,6 +334,16 @@ export default async function RadaresPage() {
               ))}
             </div>
           </section>
+
+          <LinkDirectory
+            title="Todos los radares por provincia"
+            description="Índice completo de radares fijos y de tramo DGT, con carretera y punto kilométrico."
+            items={allRadars.map((r) => ({
+              href: `/radares/radar/${r.id}`,
+              label: `${r.roadNumber} km ${Number(r.kmPoint).toFixed(0)}`,
+              group: r.provinceName || (r.province ? PROVINCE_NAMES[r.province] : null),
+            }))}
+          />
 
           <RelatedLinks
             links={[

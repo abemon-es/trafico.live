@@ -11,6 +11,8 @@ import prisma from "@/lib/db";
 import { VerticalHub } from "@/components/ui/VerticalHub";
 import { StatCard } from "@/components/ui/StatCard";
 import { TickerStrip, type TickerItem } from "@/components/ui/TickerStrip";
+import LinkDirectory from "@/components/seo/LinkDirectory";
+import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
@@ -138,6 +140,11 @@ const FAQ_ITEMS = [
 
 export default async function CalidadAireHubPage() {
   const data = await getHubData();
+
+  const directoryStations = await prisma.airQualityStation.findMany({
+    select: { stationId: true, name: true, province: true },
+    orderBy: { name: "asc" },
+  });
 
   const breadcrumbs = [{ name: "Calidad del aire", href: "/calidad-aire" }];
 
@@ -305,6 +312,15 @@ export default async function CalidadAireHubPage() {
         faq={faq}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <LinkDirectory
+          title="Todas las estaciones de calidad del aire"
+          description="Índice completo de estaciones MITECO y redes autonómicas, agrupadas por provincia."
+          items={directoryStations.map((st) => ({
+            href: `/calidad-aire/estacion/${encodeURIComponent(st.stationId)}`,
+            label: st.name,
+            group: st.province ? PROVINCE_NAMES[st.province] ?? st.province : null,
+          }))}
+        />
         <RelatedLinks
           columns={3}
           items={[
