@@ -8,7 +8,10 @@ import { renderMarkdown } from "@/lib/insights/render-markdown";
 import { Calendar, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
-export const revalidate = 86400; // 24h — evergreen content
+// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
+// page prerenders empty and the revalidate window is how long that blank copy
+// survives every deploy. Data freshness is not the constraint here.
+export const revalidate = 300; // 24h — evergreen content
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

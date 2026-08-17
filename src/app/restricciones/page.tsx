@@ -19,7 +19,10 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const revalidate = 3600;
+// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
+// page prerenders empty and the revalidate window is how long that blank copy
+// survives every deploy. Data freshness is not the constraint here.
+export const revalidate = 300;
 
 const CURRENT_YEAR = new Date().getFullYear();
 

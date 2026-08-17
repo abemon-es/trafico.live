@@ -10,7 +10,10 @@ import { TraficoMapCard } from "@/components/map/TraficoMapCard";
 import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 
-export const revalidate = 86400;
+// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
+// page prerenders empty and the revalidate window is how long that blank copy
+// survives every deploy. Data freshness is not the constraint here.
+export const revalidate = 300;
 
 interface Props {
   params: Promise<{ id: string }>;

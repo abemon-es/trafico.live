@@ -19,7 +19,10 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import prisma from "@/lib/db";
 
-export const revalidate = 3600; // Refresh hourly so port count stays current
+// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
+// page prerenders empty and the revalidate window is how long that blank copy
+// survives every deploy. Data freshness is not the constraint here.
+export const revalidate = 300; // Refresh hourly so port count stays current
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 

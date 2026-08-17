@@ -33,7 +33,10 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // ISR: hourly (data will only change if AIS voyage-detector picks up new PortCalls)
-export const revalidate = 3600;
+// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
+// page prerenders empty and the revalidate window is how long that blank copy
+// survives every deploy. Data freshness is not the constraint here.
+export const revalidate = 300;
 export const dynamicParams = true;
 
 // ---------------------------------------------------------------------------

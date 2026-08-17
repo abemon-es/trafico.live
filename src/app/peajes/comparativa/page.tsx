@@ -13,7 +13,10 @@ export const metadata: Metadata = {
   openGraph: { title: "Peaje vs Ruta Gratis — ¿Merece la pena?", description: "Comparativa completa de 17 autopistas de pago con su alternativa gratuita.", locale: "es_ES" },
 };
 
-export const revalidate = 86400;
+// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
+// page prerenders empty and the revalidate window is how long that blank copy
+// survives every deploy. Data freshness is not the constraint here.
+export const revalidate = 300;
 
 function fmt(n: number | { toNumber?: () => number }, d = 2) {
   const v = typeof n === "object" && n.toNumber ? n.toNumber() : Number(n);

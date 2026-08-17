@@ -2,7 +2,10 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import MaritimasClient from "./MaritimasClient";
 
-export const revalidate = 3600;
+// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
+// page prerenders empty and the revalidate window is how long that blank copy
+// survives every deploy. Data freshness is not the constraint here.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Gasolineras Marítimas en España — Precios y Directorio",
