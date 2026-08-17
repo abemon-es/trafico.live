@@ -753,6 +753,17 @@ consumer inventory produces silent fossils** — the 12-Jul rotation killed two
 consumers that took a month to be noticed. Applies directly to our Google SA
 key, which now lives in two places (Mac + compute `secrets/google-sa.json`).
 
+## PROPOSED to MJ (2026-08-17, awaiting decision): derived-history model
+
+Retention audit findings (full table in the 16:20 report): ships keep identity
++ voyages + port calls forever (the right pattern); trains keep 48 h positions
++ 90 d snapshots + daily aggregates; aircraft kept ONE HOUR with nothing
+derived (config conflict now fixed → 7 d raw, `566be3fb`); buses 48 h raw,
+nothing derived. Proposal: extend the ship pattern — derived "flight" events
+per aircraft (like Voyage), consolidated per-train service history; raw stays
+windowed. Full-raw-forever needs TimescaleDB (~3.6B rows/yr AIS alone) — infra
+decision. Loop proceeds on flights/train-services only if MJ approves.
+
 ## ESCALATIONS — need MJ, loop cannot self-serve
 
 0. **TELEGRAM_CHANNEL / TELEGRAM_BOT_TOKEN never provisioned** — the
