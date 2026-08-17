@@ -309,6 +309,16 @@ async function processFeed(
         where: { operator: { mdbId: mdbIdKey } },
       });
       if (existingRouteCount > 0) {
+        // Refresh catalog metadata even when the feed content is unchanged.
+        // The name comes from the MobilityData catalog, not the feed, so a
+        // catalog-side correction (like replacing the NAP attribution blurb
+        // with the real provider) never reached operators whose feeds were
+        // hash-stable — 103 of the 109 bad names survived the first healing
+        // run precisely because their feeds had not changed.
+        await prisma.transitOperator.updateMany({
+          where: { mdbId: mdbIdKey },
+          data: { name: feed.name, city: feed.city || undefined },
+        });
         log(TASK, `${feed.name}: unchanged (hash match, ${existingRouteCount} routes), skipping`);
         return { routes: 0, stops: 0 };
       }
