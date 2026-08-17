@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { prisma } from "@/lib/db";
 import type { GeoEntity } from "@/lib/geo/types";
 import { LocationShell } from "@/components/location/LocationShell";
+import LinkDirectory from "@/components/seo/LinkDirectory";
 import { HeroSection } from "@/components/location/HeroSection";
 import { StatsBar } from "@/components/location/StatsBar";
 import { SectionSkeleton } from "@/components/location/SectionSkeleton";
@@ -85,6 +86,11 @@ async function getProvince(communitySlug: string, provinceSlug: string) {
         take: 50,
         select: { slug: true, name: true, population: true },
       },
+      // Full slug list for the crawl directory below — the top-50 cards leave
+      // the long tail of municipality pages unreachable except via sitemaps
+      // Google does not fetch. Slug+name only, so even Madrid's 179 rows are
+      // a few KB.
+      _count: { select: { municipalities: true } },
     },
   });
 
@@ -120,6 +126,12 @@ export default async function ProvincePage({ params }: Props) {
   const prov = await getProvince(community, provSlug);
 
   if (!prov) notFound();
+
+  const allMunicipalities = await prisma.municipality.findMany({
+    where: { provinceCode: prov.code },
+    select: { slug: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   const entity: GeoEntity = {
     level: "province",
@@ -357,6 +369,15 @@ export default async function ProvincePage({ params }: Props) {
             </Link>
           </div>
         </section>
+
+        <LinkDirectory
+          title={`Todos los municipios de ${prov.name}`}
+          description="Índice completo de municipios de la provincia con su página de tráfico."
+          items={allMunicipalities.map((m) => ({
+            href: `/espana/${community}/${provSlug}/${m.slug}`,
+            label: m.name,
+          }))}
+        />
       </LocationShell>
     </>
   );
