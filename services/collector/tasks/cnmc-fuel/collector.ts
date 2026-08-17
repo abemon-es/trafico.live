@@ -30,7 +30,10 @@ const YEAR_RESOURCES: Record<number, string> = {
   2023: "b5a89db0-239f-4c8a-bd98-6575858359ae",
   2024: "141fdb3b-7c56-4eed-bf8d-bee56e577aa6",
   2025: "3b60baeb-a422-4b6d-a35f-af748adefcb1",
-  2026: "a5b93d30-5fa4-4577-a057-dadc9c9bb2bc",
+  // 2026 id rotated by CNMC around 2026-03-31 — the old resource
+  // (a5b93d30-…) started returning success:false and data froze at March,
+  // with every weekly run skipping 75k rows against a dead endpoint.
+  2026: "cf676c72-4aa6-4404-bed1-06f4918884b2",
 };
 
 const BASE_URL = "https://catalogodatos.cnmc.es/api/3/action/datastore_search";
@@ -59,7 +62,9 @@ async function discoverNewResources(): Promise<Record<number, string>> {
       if (!yearMatch) continue;
       const year = parseInt(yearMatch[1], 10);
       if (year < 2016 || year > 2050) continue;
-      if (YEAR_RESOURCES[year]) continue; // already known
+      // NOTE: no longer skips years present in YEAR_RESOURCES — CNMC rotates
+      // resource ids mid-year (2026 did on ~03-31), and skipping mapped years
+      // meant discovery could never replace a dead id. Freshest catalog wins.
 
       // Find the CSV/JSON datastore resource
       const resource = pkg.resources.find(r => r.format?.toUpperCase() === "CSV" || r.id);
@@ -334,9 +339,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
       continue;
     }
 
-    const { upserted, skipped } = await processYear(prisma, year, resourceId, minDate);
-    totalUpserted += upserted;
-    totalSkipped += skipped;
+    let result = await processYear(prisma, year, resourceId, minDate);
+    // Dead resource id (CNMC rotation): if the mapped id yielded nothing and a
+    // discovered id differs, retry once with the catalog's current id.
+    if (result.upserted === 0 && result.skipped === 0 && discovered[year] && discovered[year] !== resourceId) {
+      log(TASK, `Year ${year}: mapped resource dead, retrying with discovered ${discovered[year]}`);
+      result = await processYear(prisma, year, discovered[year], minDate);
+    }
+    totalUpserted += result.upserted;
+    totalSkipped += result.skipped;
   }
 
   log(TASK, `Collection complete — total upserted: ${totalUpserted.toLocaleString()}, skipped: ${totalSkipped}`);
