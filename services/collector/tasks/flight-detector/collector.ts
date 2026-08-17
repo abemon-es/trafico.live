@@ -25,7 +25,7 @@ const GAP_MINUTES = 30;
 const AIRPORT_RADIUS_KM = 20;
 // Look back far enough to catch anything since the previous hourly run, with
 // margin for a missed run or two.
-const LOOKBACK_HOURS = 4;
+const LOOKBACK_HOURS = Number(process.env.FLIGHT_LOOKBACK_HOURS || 4);
 
 interface Pos {
   icao24: string;
