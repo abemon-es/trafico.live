@@ -170,6 +170,23 @@ provisions a DDL role (BACKLOG ESCALATIONS #00), a new migration needs:
 Step 4 is not optional. Skipping it on 2026-08-18 left a migration blocking the
 queue for nine hours; the infra session found it, not this loop.
 
+### Every push to main recreates the collector stack — batch them
+`deploy-trafico-collectors.sh` does `git reset --hard origin/main` +
+`docker compose up -d` on **any** commit, including docs-only ones. Six
+containers get recreated and whatever they were running dies mid-flight.
+On 2026-08-18 four pushes in six minutes recreated the stack four times and
+killed the 09:00 AEMET cycle — the very run that was going to verify the
+previous night's fix, whose logs went with it.
+
+So: one push per cycle, at the end, with the doc update included. If a cycle
+genuinely needs an intermediate push, expect the stack to bounce and do not
+schedule verification against a long-running collector immediately after.
+
+Corollary for evidence: a deploy-log check is only valid for the moment it ran.
+Re-check it before concluding anything about restarts that happened *after* it —
+reporting a stale read as current evidence is how this loop spent a morning
+hunting an actor that was itself.
+
 ### Restarting trafico-live outside a deploy causes a public outage
 The container gets a new IP on the `web` network and the edge-cache keeps the
 old one: the homepage stays 200 from cache while everything dynamic returns 502
