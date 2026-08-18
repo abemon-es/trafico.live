@@ -677,15 +677,26 @@ other collectors for catch-blocks that swallow into a default value.
 
 ## P2 — degraded, not broken
 
-- **`aemet-forecast`** — pacing fix WORKED (`b71509ef`, verified 03:00 run):
-  **errors 82 → 13, upserted ~840 → 1,323** (+57% coverage). Status stays
-  `partial` because 13 of 202 municipios still fail. Open question: are they the
-  same 13 every run (bad codes → prune them) or rotating (transient quota → the
-  next 6-hourly cycle covers it, and `partial` is honest)? Could not answer at
-  the 09:00 run because an out-of-band stack restart killed it mid-flight and
-  wiped the logs. `fc31e9f8` now persists the failing codes in the heartbeat so
-  the comparison survives restarts — **compare `failedCodes` across the 15:00
-  and 21:00 runs.**
+- **`aemet-forecast`** — RESOLVED, and the quota errors turned out to be the
+  small half of the problem. Pacing fix verified (errors 82 → 13→11, upserted
+  ~840 → 1,337). The `failedCodes` in the heartbeat then answered the
+  determinism question: 6 codes returned 404 — they do not exist in AEMET.
+  Checking those against AEMET's own master list (`/maestro/municipios`,
+  8,122 entries) exposed the real defect: **145 of 202 codes were wrong**, 139
+  of them resolving to a *different municipality* than the name we paired with
+  them. Ceuta and Melilla swapped; Cádiz served Jerez; Fuengirola served
+  Marbella; Madrid shifted by one across a whole cascade (Getafe→Colmenar
+  Viejo, Leganés→Getafe, Móstoles→Leganés) — the signature of a name list
+  zipped against a misaligned code list. **We were publishing the wrong town's
+  weather under the right town's name, for every municipality page.**
+  Rebuilt from the master (`deb257fa`): 197 municipalities, all verified, 5
+  duplicates removed (we fetched San Sebastián twice while other towns went
+  uncovered), 14,158 mislabelled forecast rows deleted, collector re-run.
+
+  **Lesson for other collectors: an external ID list we assembled ourselves is
+  a claim, not a fact. Validate against the provider's master list.** The same
+  question is open for every other code-keyed source — INE municipality codes,
+  Renfe station codes, MITECO station IDs, airport IATA/ICAO.
 
 ---
 
