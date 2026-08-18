@@ -684,11 +684,18 @@ other collectors for catch-blocks that swallow into a default value.
   Checking those against AEMET's own master list (`/maestro/municipios`,
   8,122 entries) exposed the real defect: **145 of 202 codes were wrong**, 139
   of them resolving to a *different municipality* than the name we paired with
-  them. Ceuta and Melilla swapped; Cádiz served Jerez; Fuengirola served
-  Marbella; Madrid shifted by one across a whole cascade (Getafe→Colmenar
-  Viejo, Leganés→Getafe, Móstoles→Leganés) — the signature of a name list
-  zipped against a misaligned code list. **We were publishing the wrong town's
-  weather under the right town's name, for every municipality page.**
+  them. Ceuta and Melilla swapped; our "Cádiz" entry was Jerez's code; our
+  "Marbella" was Fuengirola's; Madrid shifted by one across a whole cascade
+  (Getafe→Colmenar Viejo, Leganés→Getafe, Móstoles→Leganés) — the signature of
+  a name list zipped against a misaligned code list.
+
+  **Scope, checked rather than assumed:** `municipios.json` is read only by the
+  collector, and `/api/meteo/forecast` is keyed by code with no UI consumer yet,
+  so no user was ever shown one town's weather under another town's name. The
+  real damage was **coverage**: the towns we believed we covered largely had no
+  data (nothing was ever fetched for Marbella, Getafe or Cádiz), while towns we
+  did not know we covered had data sitting unused. Six fetched nothing at all,
+  five were the same place twice.
   Rebuilt from the master (`deb257fa`): 197 municipalities, all verified, 5
   duplicates removed (we fetched San Sebastián twice while other towns went
   uncovered), 14,158 mislabelled forecast rows deleted, collector re-run.
