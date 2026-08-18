@@ -677,27 +677,15 @@ other collectors for catch-blocks that swallow into a default value.
 
 ## P2 — degraded, not broken
 
-- **`aemet-forecast`** — root-caused cycle 68 (`b71509ef`): determinism test
-  showed 63/77 failures identical across runs, BUT a "failing" code returns
-  estado:200 queried alone → the 500s are AEMET's per-minute quota (returned
-  as 500, not 429), exhausting at the same positions every run because request
-  order is stable. Fix: pace 1100→1500 ms + retry backoff 5→30 s so retries
-  land outside the quota window. **Verify at the 03:00 run** — expect errors
-  ~80 → near zero.
-- ~~`cnmc-fuel`~~ — ✅ HEALED cycle 43 (`5d5cd2e1`): CNMC rotated the 2026
-  resource id ~03-31 and fuel history froze at March. Live id + rotation
-  self-healing shipped; backfill upserted 7,378 rows → heartbeat **ok**,
-  latestDate 2026-08-12 (CNMC's normal ~5-day lag).
-- **`transit-gtfs`** (3/16 feeds fail, upstream), **`city-traffic`**
-  (Barcelona/Zaragoza upstreams), **`health-check`** — remaining partials,
-  all upstream-flavoured.
-- **Smoke test: 5 warnings** (107 pass, 0 fail) — identify and clear.
-- **`tasks/monthly-report/render.ts` is unparseable** — ~626 TS syntax errors,
-  JSX in a `.ts` file (should be `.tsx`). Drowns every other typecheck result,
-  so `tsc --noEmit` is currently worthless as a CI gate for the collector tree.
-- **Docs drift** — `CLAUDE.md` says 43 collectors; `/api/health` reports 51 and
-  there are 63 task directories. It also claims Loki as the collector log
-  driver, which is wrong (see #5). Stale docs cost diagnosis time.
+- **`aemet-forecast`** — pacing fix WORKED (`b71509ef`, verified 03:00 run):
+  **errors 82 → 13, upserted ~840 → 1,323** (+57% coverage). Status stays
+  `partial` because 13 of 202 municipios still fail. Open question: are they the
+  same 13 every run (bad codes → prune them) or rotating (transient quota → the
+  next 6-hourly cycle covers it, and `partial` is honest)? Could not answer at
+  the 09:00 run because an out-of-band stack restart killed it mid-flight and
+  wiped the logs. `fc31e9f8` now persists the failing codes in the heartbeat so
+  the comparison survives restarts — **compare `failedCodes` across the 15:00
+  and 21:00 runs.**
 
 ---
 
