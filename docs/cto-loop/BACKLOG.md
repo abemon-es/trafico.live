@@ -778,9 +778,23 @@ a full re-run left avg positionsCount at 13.3, unchanged.
 aircraft (Flight), trains (TrainService).** Raw stays windowed; identity and
 history survive.
 
-Next: surface TrainService/Flight on the public entity pages (a train page
-should show its recent runs; an aircraft page its recent flights) — the data
-now exists but nothing renders it.
+✅ **Surfaced on entity pages** (`eff2e918`, verified in prod): train pages now
+list that train's own runs — /trenes/tren/00752 renders "Pamplona/Iruña →
+Madrid-Puerta de Atocha, 31 min, en curso" plus the previous day's run. This
+fixed a real defect, not just a gap: the only history on a train page was
+fleet-wide RailwayDailyStats, so a page about train X answered "how is Renfe
+doing". Aircraft pages had no such defect (they segment live from raw
+positions) but silently capped at 7 days; they now show the permanent count and
+record start date from Flight.
+
+Next candidates:
+- Migrate the aircraft flight LIST to read from `Flight` rather than
+  re-segmenting positions per request — permanence for free, and drops a 7-day
+  position scan + segmentation from every page render. The analytics below it
+  (altitude histogram, speed phases) legitimately stay position-bound.
+- Ship/voyage cross-linking on vessel and port pages (Voyage/PortCall exist,
+  nothing links them).
+- Portugal remains the biggest north-star hole: no CP rail, no PT real-time.
 
 ## (superseded) PROPOSED to MJ (2026-08-17, awaiting decision): derived-history model
 
