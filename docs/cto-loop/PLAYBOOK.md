@@ -154,6 +154,38 @@ build defect wearing an L3 costume — fix the layer where the cause lives.
 
 ## Known infrastructure facts
 
+### Migrations do NOT auto-apply (as of 2026-08-18)
+`MIGRATE_DATABASE_URL` points at `trafico_app`, which has no DDL rights, so
+`prisma migrate deploy` fails with 42501 at every container start and logs
+`[migrate] Skipped` — the app then serves against a schema that does not match
+the code, and the failed row **blocks every later migration**. Until MJ
+provisions a DDL role (BACKLOG ESCALATIONS #00), a new migration needs:
+
+1. `scp` the SQL to `database-primary`, `docker cp` into `trafico-postgres`,
+   apply with `psql -U trafico_admin -d le_trafico -f ...`
+2. `GRANT SELECT, INSERT, UPDATE, DELETE ON "<Table>" TO trafico_app;`
+3. `docker exec trafico-live sh -c 'DATABASE_URL=$MIGRATE_DATABASE_URL npx prisma migrate resolve --applied <migration_name>'`
+4. **Verify** — `select migration_name from _prisma_migrations where finished_at is null and rolled_back_at is null;` must come back empty.
+
+Step 4 is not optional. Skipping it on 2026-08-18 left a migration blocking the
+queue for nine hours; the infra session found it, not this loop.
+
+### Restarting trafico-live outside a deploy causes a public outage
+The container gets a new IP on the `web` network and the edge-cache keeps the
+old one: the homepage stays 200 from cache while everything dynamic returns 502
+until someone reloads the edge-cache. Two incidents on 2026-08-18 (~20 min,
+~8 min). If you restart it outside `deploy.sh`, tell the CTO session or reload
+the edge-cache immediately. `bin/cto-signals.sh` raises `routing_fault` for
+exactly this shape (origin healthy, public not 200).
+
+### The container healthcheck is honest — don't "fix" it for routing faults
+It fetches `/api/health`, which runs `SELECT 1`, pings Redis and aggregates all
+51 heartbeats, returning 503 when the DB is down. During a routing fault it
+correctly reports healthy, because the container *is* healthy. Making it assert
+its own public reachability would turn unrelated CDN incidents into container
+restarts — which is what caused the first outage of 2026-08-18.
+
+
 Learned the hard way; assume these unless re-verified.
 
 - Collector containers use the **`json-file`** log driver, not Loki, despite
