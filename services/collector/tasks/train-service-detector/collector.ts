@@ -72,6 +72,17 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const since = new Date(Date.now() - LOOKBACK_HOURS * 3600 * 1000);
   const gapMs = GAP_MINUTES * 60 * 1000;
 
+  // Positions carry Renfe station codes ("60000"); a history nobody can read
+  // is not a history, so resolve them to names ("Madrid-Puerta de Atocha").
+  // Unknown codes pass through unchanged rather than becoming null.
+  const stations = await prisma.railwayStation.findMany({
+    where: { code: { not: null } },
+    select: { code: true, name: true },
+  });
+  const stationName = new Map(stations.map((s) => [s.code as string, s.name]));
+  const resolve = (code: string | null): string | null =>
+    code ? stationName.get(code) ?? code : null;
+
   const raw = await prisma.renfeFleetPosition.findMany({
     where: { fetchedAt: { gte: since } },
     orderBy: [{ trainNumber: "asc" }, { fetchedAt: "asc" }],
@@ -120,9 +131,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
       const data = {
         brand: mode(session.map((p) => p.brand)),
         serviceType: mode(session.map((p) => p.serviceType)),
-        originStation: mode(session.map((p) => p.originStation)),
-        destStation: mode(session.map((p) => p.destStation)),
-        lastStation: last.nextStation,
+        originStation: resolve(mode(session.map((p) => p.originStation))),
+        destStation: resolve(mode(session.map((p) => p.destStation))),
+        lastStation: resolve(last.nextStation),
         rollingStock: mode(session.map((p) => p.rollingStock)),
         maxDelay,
         avgDelay,
