@@ -314,6 +314,13 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let upserted = 0;
   let skipped = 0;
   let errors = 0;
+  // Which municipios failed, not just how many. Container logs vanish on
+  // restart (a stack restart on 2026-08-18 erased the run that would have
+  // proved the pacing fix), so the codes have to survive in the heartbeat to
+  // answer the only question that matters: are the same municipios failing
+  // every run — real bad codes — or do they rotate, meaning transient quota
+  // pressure that the next cycle covers anyway.
+  const failedCodes: string[] = [];
   const forecastAt = new Date();
 
   for (const mun of municipios) {
@@ -324,6 +331,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
     if (!data) {
       errors++;
+      failedCodes.push(mun.code);
       logJson("warn", "No data returned", { municipio: mun.code, status: "skip" });
       await sleep(RATE_LIMIT_MS);
       continue;
@@ -485,5 +493,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
     skipped,
     errors,
     duration_ms: totalMs,
+    failedCodes: failedCodes.slice(0, 120),
   });
 }
