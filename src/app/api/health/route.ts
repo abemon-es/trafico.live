@@ -24,6 +24,9 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "renfe-ld-realtime": 600,    // */2
   "renfe-positions": 600,      // */2
   "transit-realtime": 300,     // every 1 min cron with 2 internal passes
+  "transit-rt-madrid": 300,    // every 1 min
+  "transit-rt-tmb": 300,       // every 1 min
+  "transit-rt-valencia": 300,  // every 1 min
   "opensky": 900,              // */4
   "air-quality": 4500,         // hourly @ :00
   "eumetsat-radar": 1800,      // */15
@@ -37,6 +40,10 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "weather": 4500,             // hourly @ :00 (AEMET)
   "maritime-forecast": 25200,  // every 6h (4×/day)
   "voyage-detector": 7200,     // hourly with internal flock
+  "flight-detector": 7200,     // hourly @ :20
+  "train-service-detector": 7200, // hourly @ :35
+  "portugal-weather": 25200,   // every 6h — was defaulting to 4h and so
+                               // reported stale for 2 of every 6 hours
   // fuel (collector-fuel)
   "gas-station": 36000,        // 3×/day at 06/13/20 — 10h buffer
   "maritime-fuel": 36000,      // 3×/day at 07/14/21
@@ -47,6 +54,8 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "camera": 96000,             // 04:00 daily
   "aena-stats": 2764800,       // monthly 1st 04:30 (post-iter-2) → 32d
   "typesense-sync": 90000,     // 05:00 daily
+  "gsc-ga4-snapshot": 90000,   // 06:00 daily — was defaulting to 4h and so
+                               // reported stale for 20 of every 24 hours
   "charger": 96000,            // 06:00 daily
   "aemet-historical": 90000,   // 08:00 daily
   "aemet-forecast": 25200,     // every 6h (00/06/12/18 staggered → 4×/day)
@@ -80,6 +89,7 @@ interface CollectorEntry {
   lastRunAt: string | null;
   ageSeconds: number | null;
   threshold: number;
+  thresholdUndeclared?: boolean;
   stale: boolean;
   errorMessage?: string | null;
 }
@@ -126,7 +136,14 @@ async function checkHeartbeats(): Promise<{
     const collectors: CollectorEntry[] = rows
       .filter((row) => !HIDDEN_TASKS.has(row.task))
       .map((row) => {
-      const threshold = STALE_THRESHOLDS[row.task] ?? STALE_THRESHOLDS["_default"];
+      // A task with no declared threshold inherits 4h, which is wrong for
+      // anything slower than that and silently mislabels it stale forever —
+      // seven tasks were in that state, including two added this week. The
+      // default stays (an unknown task should err toward noisy, not silent),
+      // but the response now says the threshold was guessed, so the gap shows
+      // up as a config gap rather than as a data problem.
+      const declared = STALE_THRESHOLDS[row.task];
+      const threshold = declared ?? STALE_THRESHOLDS["_default"];
       const ageSeconds = row.lastRunAt
         ? Math.floor((now - row.lastRunAt.getTime()) / 1000)
         : null;
@@ -138,6 +155,7 @@ async function checkHeartbeats(): Promise<{
         lastRunAt: row.lastRunAt?.toISOString() ?? null,
         ageSeconds,
         threshold,
+        ...(declared === undefined ? { thresholdUndeclared: true } : {}),
         stale,
         ...(row.errorMessage ? { errorMessage: row.errorMessage } : {}),
       };
