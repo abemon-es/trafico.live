@@ -18,3 +18,6 @@
 
 # Derive permanent per-airframe flight history from 7-day raw positions
 20 * * * * flock -n /tmp/flight-detector.lock -c 'TASK=flight-detector npx tsx index.ts 2>&1' || echo "[flight-detector] skipped — previous run still in progress"
+
+# Derive permanent per-train service history from the 48h position window
+35 * * * * flock -n /tmp/train-service-detector.lock -c 'TASK=train-service-detector npx tsx index.ts 2>&1' || echo "[train-service-detector] skipped — previous run still in progress"

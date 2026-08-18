@@ -1950,6 +1950,46 @@ model CNMCFuelPrice {
 // Source: https://tiempo-real.largorecorrido.renfe.com/renfe-visor/flotaLD.json
 // Collector: TASK=renfe-ld-realtime (every 2 min, rolling 48h)
 
+
+/// Derived per-train service history — the rail counterpart of Flight/Voyage.
+/// RenfeFleetPosition keeps only a 48 h rolling window, so without this a train
+/// run vanishes two days after it happened. One TrainService row = one
+/// continuous run of a train number (a >30 min gap in positions closes it),
+/// carrying its route, delay profile and rolling stock permanently.
+/// serviceDate makes "this train, on this date" directly queryable.
+/// Produced by services/collector/tasks/train-service-detector/ (hourly).
+model TrainService {
+  id          String              @id @default(cuid())
+  trainNumber String
+  brand       String?
+  serviceType RailwayServiceType?
+
+  serviceDate DateTime @db.Date // civil date of firstSeenAt (Europe/Madrid)
+  firstSeenAt DateTime @db.Timestamptz
+  lastSeenAt  DateTime @db.Timestamptz
+
+  originStation String?
+  destStation   String?
+  lastStation   String? // station it was heading to at the last observation
+
+  maxDelay   Int? // worst delay seen during the run, minutes
+  avgDelay   Decimal? @db.Decimal(5, 1)
+  finalDelay Int? // delay at the last observation — arrival-delay proxy
+
+  rollingStock   String?
+  positionsCount Int     @default(0)
+  isActive       Boolean @default(true)
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@unique([trainNumber, firstSeenAt])
+  @@index([trainNumber, serviceDate(sort: Desc)])
+  @@index([serviceDate])
+  @@index([brand, serviceDate])
+  @@index([isActive])
+}
+
 model RenfeFleetPosition {
   id          String              @id @default(cuid())
   trainNumber String // e.g. "04204"
