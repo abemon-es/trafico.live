@@ -51,6 +51,10 @@ json_or_null() { jq -e . >/dev/null 2>&1 <<<"$1" && printf '%s' "$1" || printf '
 # staleness thresholds, so it is the single richest probe we have.
 HEALTH_RAW="$("${CURL[@]}" "$BASE/api/health" 2>/dev/null)"
 HEALTH="$(json_or_null "$HEALTH_RAW")"
+# Public HTTP status, kept separately: when the edge-cache holds a stale
+# upstream IP the body is a 502 error page, not JSON, and HEALTH collapses to
+# null — indistinguishable from "probe failed" unless we record the code.
+PUBLIC_CODE="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$BASE/api/health" 2>/dev/null || echo 000)"
 
 # ── 2. Smoke test ─────────────────────────────────────────────────────────────
 # Status codes, SEO basics, sitemap, canonical. Skipped in --quick.
@@ -181,6 +185,7 @@ RESULT="$(jq -n \
   --arg base "$BASE" \
   --argjson health "$HEALTH" \
   --argjson smoke "$SMOKE" \
+  --arg public_code "$PUBLIC_CODE" \
   --argjson containers "$CONTAINERS" \
   --argjson loki "$LOKI" \
   --argjson seo "$SEO" \
@@ -212,6 +217,16 @@ RESULT="$(jq -n \
       smoke_ok: (if ($smoke|type) == "object" and ($smoke|has("ok")) then $smoke.ok else null end),
       seo_pipeline_ok: (if ($seo|type) == "object" and ($seo|has("ok")) then $seo.ok else null end),
       origin_ok: (if ($origin|type) == "object" and ($origin|has("ok")) then $origin.ok else null end),
+      public_code: $public_code,
+      # Routing fault: the container serves fine but the public URL does not.
+      # Neither number alone shows it — this is exactly the shape of both
+      # 2026-08-18 outages (edge-cache holding a stale container IP after an
+      # out-of-band restart), where the app was healthy throughout and the
+      # container healthcheck was correct to say so.
+      routing_fault: (
+        (if ($origin|type) == "object" and ($origin|has("ok")) then $origin.ok else false end)
+        and ($public_code != "200")
+      ),
       db_ok: (if ($health|type) == "object" and ($health.db|type) == "object" then $health.db.ok else null end),
       redis_ok: (if ($health|type) == "object" and ($health.redis|type) == "object" then $health.redis.ok else null end)
     }
@@ -222,6 +237,8 @@ if (( PRETTY )); then
     "── trafico.live signals @ \(.captured_at) ──",
     "overall:     \(.summary.overall)   db=\(.summary.db_ok) redis=\(.summary.redis_ok)",
     "collectors:  \(.summary.collectors_degraded)/\(.summary.collectors_total) degraded, \(.summary.stale_count) stale, \(.summary.silent_failures) SILENT",
+    (if .summary.routing_fault then "⚠ ROUTING FAULT: container healthy but public returns \(.summary.public_code) — edge-cache likely holds a stale upstream IP; notify CTO" else empty end),
+    "public:      \(.summary.public_code)",
     "origin:      \(.summary.origin_ok)   (container=\(.origin.state // "?") health=\(.origin.health // "?") restarts=\(.origin.restarts // "?") direct=\(.origin.direct_status // "?"))",
     "smoke:       \(.summary.smoke_ok)",
     "seo pipe:    \(.summary.seo_pipeline_ok)   (snapshots=\(.seo_snapshot.rows // "?"))",
