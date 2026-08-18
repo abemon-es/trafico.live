@@ -276,6 +276,30 @@ async function loadMonthlyHistory() {
   return rows;
 }
 
+/** Past runs of THIS train, from derived TrainService history.
+ *  The monthly table below it is fleet-wide — useful context, but it answers
+ *  "how is Renfe doing" on a page asking "how is train 03930 doing". These
+ *  rows are the actual answer: every run of this exact train number we have
+ *  observed, surviving the 48 h pruning of raw positions. */
+async function loadTrainRuns(trainNumber: string) {
+  return prisma.trainService.findMany({
+    where: { trainNumber },
+    orderBy: { firstSeenAt: "desc" },
+    take: 20,
+    select: {
+      id: true,
+      serviceDate: true,
+      firstSeenAt: true,
+      lastSeenAt: true,
+      originStation: true,
+      destStation: true,
+      maxDelay: true,
+      finalDelay: true,
+      isActive: true,
+    },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Metadata — noindex
 // ---------------------------------------------------------------------------
@@ -388,6 +412,7 @@ export default async function TrainEntityPage(
 
   // Monthly history (last 30 days)
   const monthlyHistory = await loadMonthlyHistory();
+  const trainRuns = await loadTrainRuns(cleanId);
 
   // Recharts data — daily avg delay for chart
   const chartData = monthlyHistory.map((d) => ({
@@ -750,6 +775,97 @@ export default async function TrainEntityPage(
               mode="train"
               chartData={chartData.length > 0 ? chartData : undefined}
             />
+          </section>
+        )}
+
+        {/* Past runs of this specific train */}
+        {trainRuns.length > 0 && (
+          <section
+            aria-label="Circulaciones anteriores de este tren"
+            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6"
+          >
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <TrainFront className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+              Circulaciones del {cleanId}
+              <span className="text-xs font-mono bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full px-2 py-0.5">
+                {trainRuns.length} registradas
+              </span>
+            </h2>
+            <div className="overflow-x-auto -mx-1">
+              <table className="w-full text-sm text-left min-w-[520px]">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                    <th className="pb-2 pr-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Fecha
+                    </th>
+                    <th className="pb-2 pr-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Recorrido
+                    </th>
+                    <th className="pb-2 pr-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+                      Retraso máx.
+                    </th>
+                    <th className="pb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+                      Al final
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                  {trainRuns.map((run) => {
+                    const maxD = run.maxDelay ?? 0;
+                    const finD = run.finalDelay ?? 0;
+                    const tone = (d: number) =>
+                      d <= 2
+                        ? "text-green-600 dark:text-green-400"
+                        : d <= 15
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-red-600 dark:text-red-400";
+                    return (
+                      <tr
+                        key={run.id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                      >
+                        <td className="py-2 pr-4 font-mono text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                          {new Date(run.serviceDate).toLocaleDateString("es-ES", {
+                            weekday: "short",
+                            day: "2-digit",
+                            month: "2-digit",
+                          })}
+                          {run.isActive && (
+                            <span className="ml-2 text-[10px] uppercase tracking-wide text-tl-600 dark:text-tl-400">
+                              en curso
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 pr-4 text-gray-700 dark:text-gray-300">
+                          {run.originStation && run.destStation ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              {run.originStation}
+                              <ArrowRight className="w-3 h-3 text-gray-400 shrink-0" />
+                              {run.destStation}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-500">
+                              Recorrido no informado
+                            </span>
+                          )}
+                        </td>
+                        <td className={`py-2 pr-4 font-mono text-right ${tone(maxD)}`}>
+                          {maxD} min
+                        </td>
+                        <td className={`py-2 font-mono text-right ${tone(finD)}`}>
+                          {finD > 0 ? `+${finD}` : finD} min
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-3">
+              Historial propio de este tren, derivado de las posiciones GPS que
+              registramos. «Al final» es el retraso en la última observación,
+              la mejor aproximación al retraso de llegada.
+            </p>
           </section>
         )}
 

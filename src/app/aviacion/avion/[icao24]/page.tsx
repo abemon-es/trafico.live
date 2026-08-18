@@ -233,6 +233,18 @@ export default async function AircraftEntityPage({
   const speedPhases = computeSpeedByPhase(positions);
   const summary = computeAircraftSummary(enrichedFlights, positions);
 
+  // Permanent flight record. The list above is segmented live from raw
+  // positions, which are pruned after 7 days — so it can only ever show the
+  // last week. Flight rows survive that pruning, so this is the count that
+  // keeps growing and the date the record actually starts.
+  const flightRecord = await prisma.flight.aggregate({
+    where: { icao24: cleanId },
+    _count: { _all: true },
+    _min: { firstSeenAt: true },
+  });
+  const historicalFlights = flightRecord._count._all;
+  const recordSince = flightRecord._min.firstSeenAt;
+
   const countryInfo = lookupIcaoCountry(cleanId);
   const callsign = latest?.callsign?.trim() ?? null;
 
@@ -376,6 +388,21 @@ export default async function AircraftEntityPage({
             icon={<Plane className="w-4 h-4 text-tl-600 dark:text-tl-400" />}
           >
             <FlightTable flights={recentFlights} icao24={cleanId} />
+            {historicalFlights > recentFlights.length && recordSince && (
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-3">
+                La tabla muestra los últimos 7 días. De esta aeronave tenemos{" "}
+                <span className="font-mono text-gray-600 dark:text-gray-300">
+                  {historicalFlights.toLocaleString("es-ES")}
+                </span>{" "}
+                vuelos registrados desde el{" "}
+                {new Date(recordSince).toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+                .
+              </p>
+            )}
           </Section>
         )}
 
