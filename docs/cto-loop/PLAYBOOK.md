@@ -170,6 +170,17 @@ provisions a DDL role (BACKLOG ESCALATIONS #00), a new migration needs:
 Step 4 is not optional. Skipping it on 2026-08-18 left a migration blocking the
 queue for nine hours; the infra session found it, not this loop.
 
+### A new collector MUST declare its staleness threshold
+`STALE_THRESHOLDS` in `src/app/api/health/route.ts` falls back to 4h. Any task
+slower than that reports stale permanently while running perfectly — on
+2026-08-18 seven tasks were in that state, including both detectors added the
+same week, and the infra session reasonably read them as failures.
+
+Rule: `threshold = 2 × cadence` (5 min floor). The response now sets
+`thresholdUndeclared` on anything that had to fall back, so check it after
+adding a collector. Noise that never means anything is how a real blackout gets
+ignored — that is exactly how the 15-day AIS outage stayed invisible.
+
 ### Every push to main recreates the collector stack — batch them
 `deploy-trafico-collectors.sh` does `git reset --hard origin/main` +
 `docker compose up -d` on **any** commit, including docs-only ones. Six
