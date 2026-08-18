@@ -150,16 +150,19 @@ export async function run(prisma: PrismaClient): Promise<void> {
       try {
         if (existing) {
           const wasActive = existing.isActive;
+          // Only positions newer than what this flight already covers —
+          // consecutive runs overlap, so a plain increment double-counts.
+          const fresh = session.filter((p) => p.createdAt > existing.lastSeenAt).length;
           await prisma.flight.update({
             where: { id: existing.id },
             data: {
-              lastSeenAt: last.createdAt,
+              lastSeenAt: last.createdAt > existing.lastSeenAt ? last.createdAt : existing.lastSeenAt,
               callsign: existing.callsign ?? callsign,
               maxAltitude:
                 maxAltitude != null && (existing.maxAltitude == null || maxAltitude > existing.maxAltitude)
                   ? maxAltitude
                   : existing.maxAltitude,
-              positionsCount: { increment: session.length },
+              positionsCount: { increment: fresh },
               isActive: stillActive,
               destAirportId: destAirportId ?? existing.destAirportId,
             },

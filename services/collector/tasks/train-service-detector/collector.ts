@@ -143,6 +143,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
       try {
         if (existing) {
           const wasActive = existing.isActive;
+          // Count only positions newer than what this service already covers:
+          // consecutive runs overlap by (LOOKBACK - 1) hours, so a plain
+          // increment would count the same positions once per run.
+          const fresh = session.filter((p) => p.fetchedAt > existing.lastSeenAt).length;
           await prisma.trainService.update({
             where: { id: existing.id },
             data: {
@@ -151,8 +155,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
                 maxDelay != null && (existing.maxDelay == null || maxDelay > existing.maxDelay)
                   ? maxDelay
                   : existing.maxDelay,
-              lastSeenAt: last.fetchedAt,
-              positionsCount: { increment: session.length },
+              lastSeenAt: last.fetchedAt > existing.lastSeenAt ? last.fetchedAt : existing.lastSeenAt,
+              positionsCount: { increment: fresh },
               isActive: stillActive,
             },
           });
