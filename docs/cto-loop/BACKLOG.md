@@ -772,7 +772,27 @@ manually as trafico_admin on trafico-postgres + `migrate resolve`. **Every
 future migration will fail the same way until MIGRATE_DATABASE_URL gets a DDL
 role → ESCALATIONS.**
 
-Next: per-train service history (consolidate DelaySnapshot per trainNumber).
+✅ **Rail shipped** (`0d99bbe6`, `d2441b52`): `TrainService` + hourly
+train-service-detector. Backfill: **28,754 services over 19,750 train numbers**
+from the 48 h window — all of which used to evaporate after two days. Carries
+route (station codes resolved to names), brand, rolling stock, and the delay
+profile (max / avg / final-as-arrival-proxy). Worst run captured: Intercity
+17012 Madrid-Atocha → Mérida, 200 min.
+
+🐛 **Bug found and fixed by verification** (`9b89f760`): `positionsCount` used a
+plain increment, so positions inside the overlap between consecutive lookback
+windows were counted once per run (~4× inflation with the hourly cron). Both
+detectors now increment only by positions newer than `lastSeenAt`. Stored
+counts repaired in place (28,754 + 5,137 rows). Idempotency then re-proven:
+a full re-run left avg positionsCount at 13.3, unchanged.
+
+**All three modes now have permanent derived history: ships (Voyage/PortCall),
+aircraft (Flight), trains (TrainService).** Raw stays windowed; identity and
+history survive.
+
+Next: surface TrainService/Flight on the public entity pages (a train page
+should show its recent runs; an aircraft page its recent flights) — the data
+now exists but nothing renders it.
 
 ## (superseded) PROPOSED to MJ (2026-08-17, awaiting decision): derived-history model
 
