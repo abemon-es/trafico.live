@@ -618,5 +618,17 @@ export async function run(prisma: PrismaClient): Promise<void> {
   await cleanup(prisma);
 
   log(TASK, "City traffic collection complete");
-  await heartbeat(prisma, TASK, totalReadings > 0 ? "ok" : "partial", { sensors: totalSensors, readings: totalReadings });
+  // Zero readings from every city is a failure, not a partial success.
+  // Reporting `partial` here hid three simultaneously broken upstreams
+  // (Barcelona 502/403, Valencia 0 segments, Zaragoza 400) behind a status
+  // that reads as "some data arrived" — the table sat empty while the
+  // collector ran every five minutes and never once said error.
+  const status = totalReadings > 0 ? "ok" : "error";
+  await heartbeat(prisma, TASK, status, {
+    sensors: totalSensors,
+    readings: totalReadings,
+    ...(totalReadings === 0
+      ? { error: "No readings from any city — all upstream sources failed" }
+      : {}),
+  });
 }
