@@ -55,6 +55,11 @@ HEALTH="$(json_or_null "$HEALTH_RAW")"
 # upstream IP the body is a 502 error page, not JSON, and HEALTH collapses to
 # null — indistinguishable from "probe failed" unless we record the code.
 PUBLIC_CODE="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$BASE/api/health" 2>/dev/null || echo 000)"
+# Which build is actually serving, versus what main says it should be. A deploy
+# that reports SUCCESS while the old container keeps serving looks identical to
+# a healthy site from every other angle.
+LIVE_COMMIT="$(jq -r '.commit // "unknown"' <<<"$HEALTH" 2>/dev/null || echo unknown)"
+HEAD_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
 # ── 2. Smoke test ─────────────────────────────────────────────────────────────
 # Status codes, SEO basics, sitemap, canonical. Skipped in --quick.
@@ -186,6 +191,8 @@ RESULT="$(jq -n \
   --argjson health "$HEALTH" \
   --argjson smoke "$SMOKE" \
   --arg public_code "$PUBLIC_CODE" \
+  --arg live_commit "$LIVE_COMMIT" \
+  --arg head_commit "$HEAD_COMMIT" \
   --argjson containers "$CONTAINERS" \
   --argjson loki "$LOKI" \
   --argjson seo "$SEO" \
@@ -218,6 +225,14 @@ RESULT="$(jq -n \
       seo_pipeline_ok: (if ($seo|type) == "object" and ($seo|has("ok")) then $seo.ok else null end),
       origin_ok: (if ($origin|type) == "object" and ($origin|has("ok")) then $origin.ok else null end),
       public_code: $public_code,
+      live_commit: $live_commit,
+      head_commit: $head_commit,
+      # True only when both are known and differ — an unknown build (older
+      # image, before commit stamping) must not masquerade as a mismatch.
+      commit_drift: (
+        $live_commit != "unknown" and $head_commit != "unknown"
+        and $live_commit != $head_commit
+      ),
       # Routing fault: the container serves fine but the public URL does not.
       # Neither number alone shows it — this is exactly the shape of both
       # 2026-08-18 outages (edge-cache holding a stale container IP after an
@@ -238,7 +253,8 @@ if (( PRETTY )); then
     "overall:     \(.summary.overall)   db=\(.summary.db_ok) redis=\(.summary.redis_ok)",
     "collectors:  \(.summary.collectors_degraded)/\(.summary.collectors_total) degraded, \(.summary.stale_count) stale, \(.summary.silent_failures) SILENT",
     (if .summary.routing_fault then "⚠ ROUTING FAULT: container healthy but public returns \(.summary.public_code) — edge-cache likely holds a stale upstream IP; notify CTO" else empty end),
-    "public:      \(.summary.public_code)",
+    (if .summary.commit_drift then "⚠ COMMIT DRIFT: serving \(.summary.live_commit) but HEAD is \(.summary.head_commit) — a deploy reported success without swapping" else empty end),
+    "public:      \(.summary.public_code)   build=\(.summary.live_commit)",
     "origin:      \(.summary.origin_ok)   (container=\(.origin.state // "?") health=\(.origin.health // "?") restarts=\(.origin.restarts // "?") direct=\(.origin.direct_status // "?"))",
     "smoke:       \(.summary.smoke_ok)",
     "seo pipe:    \(.summary.seo_pipeline_ok)   (snapshots=\(.seo_snapshot.rows // "?"))",
