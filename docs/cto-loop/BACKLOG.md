@@ -866,6 +866,40 @@ per aircraft (like Voyage), consolidated per-train service history; raw stays
 windowed. Full-raw-forever needs TimescaleDB (~3.6B rows/yr AIS alone) — infra
 decision. Loop proceeds on flights/train-services only if MJ approves.
 
+## Data funnel audit — 2026-08-19 (source→ingest→store→API→page, full trace)
+
+Full report published as artifact "Trafico Data Funnel". Evidence: 53 heartbeats,
+max-timestamp sweep on 31 tables, repo-wide model→API→page consumer trace.
+Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
+
+1. **Tier enforcement is inert (REVENUE).** `enforceTier()`
+   (`src/lib/tier-enforcement.ts:63`) is never called — middleware never imports
+   it. All PRO/ENTERPRISE endpoints (`/api/estadisticas`, `/api/movilidad`,
+   `/api/combustible/historico`, `/api/clima/historico`,
+   `/api/accidentes/microdata`) are free today despite Stripe billing existing.
+   Wiring it requires a same-origin exemption or `/estadisticas-transporte` and
+   `/gasolineras/historico` break (they SWR-fetch those endpoints client-side).
+2. **Rain radar is a dead-end** — `eumetsat-radar` writes PNG frames every
+   15 min to the shared `trafico-radar-tiles` volume, web serves them at
+   `/radar/*`, and NO page or map layer references them. One MapLibre raster
+   layer on /mapa + /meteo away from being a feature.
+3. **Dead-end tables:** `GTFSArchive` (mobilitydata-sync, zero readers),
+   `PortugalGasStationPriceHistory` (212k rows, zero readers — /portugal/
+   combustible could show trends), `CityTrafficReading` (see P0 #0 — also
+   page-dead even when healthy: only consumer is /api/trafico/ciudades, which
+   no page fetches; sensors surface as `.count()` only).
+4. **Green liars:** `cnmc-fuel` reports ok with newest data 2026-08-12 (7 days
+   stale — heartbeat measures the run, not max(date)); `cams-aq` still the
+   known wrong-source green (L1.4).
+5. **portugal-accidents does not exist** — no task, no model; the API route is
+   a hardcoded stub returning `total: 0`. CLAUDE.md lists it as a valid task —
+   doc drift. Build it or remove stub + doc line.
+6. **Aging one-shots:** AccidentMicrodata ends 2023 (DGT 2024 likely published
+   by now), MobilityODFlow ends 2024-01. Worth an upstream refresh check.
+7. **Thin surfaces:** `Flight` shows only count+first-seen on aircraft pages
+   (list still re-segments raw positions — queued item); SeoSnapshot renders a
+   single latest row; `/api/estadisticas/modal` is fully orphaned.
+
 ## ESCALATIONS — need MJ, loop cannot self-serve
 
 0. **Newsletter: two parallel systems, and the live one has no exit.** Verified
