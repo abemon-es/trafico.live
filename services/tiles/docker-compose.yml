@@ -1,5 +1,11 @@
 services:
   tiles:
+    # Without this Docker defaults to `no`: a crash or a host reboot leaves
+    # tiles.trafico.live dead until someone notices and runs compose by hand.
+    # These two were the only public-facing containers in the fleet without a
+    # policy — and the exporter that measures them had one, so a reboot would
+    # have left a healthy monitor reporting on containers that no longer exist.
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,6 +28,7 @@ services:
       - "traefik.enable=false"
 
   martin:
+    restart: unless-stopped
     build:
       context: ../martin
       dockerfile: Dockerfile
