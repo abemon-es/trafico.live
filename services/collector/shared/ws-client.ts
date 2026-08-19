@@ -76,7 +76,15 @@ export function createReconnectingWS(
   // Back off in minutes, not seconds, and escalate while the upstream keeps
   // refusing. Reset only once a connection actually delivers a message.
   const THROTTLE_BASE_MS = 15 * 60_000;
+  // A refusal (HTTP 429) is upstream telling us to stop, so back off hard.
   const THROTTLE_MAX_MS = 2 * 60 * 60_000;
+  // An open-but-silent socket is a different signal: we were *accepted* and
+  // simply given nothing, which happens when the provider is down rather than
+  // when it is punishing us. Escalating that to two hours means up to two hours
+  // of lost positions after upstream recovers — verified on 2026-08-19, when a
+  // fresh connection with a correct subscription also received zero frames, so
+  // the reconnect cadence was not the cause and slowing it down bought nothing.
+  const SILENT_MAX_MS = 20 * 60_000;
   let throttleDelay = 0;
   let stopped = false;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -163,7 +171,7 @@ export function createReconnectingWS(
         // recover instead of being hammered.
         if (opened && !receivedMessage && duration >= minHealthyDuration) {
           throttleDelay = throttleDelay
-            ? Math.min(throttleDelay * 2, THROTTLE_MAX_MS)
+            ? Math.min(throttleDelay * 2, SILENT_MAX_MS)
             : Math.floor(THROTTLE_BASE_MS / 3);
           log(
             task,
