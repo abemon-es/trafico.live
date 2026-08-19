@@ -30,6 +30,7 @@ fi
 echo "Building $IMAGE..."
 DOCKER_BUILDKIT=1 docker build --memory 4096m --memory-swap 4096m \
   --secret id=database_url,src="$DBURL_FILE" \
+  --build-arg GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)" \
   -f Dockerfile -t "$IMAGE" .
 
 # ─── Zero-downtime swap ───────────────────────────────────────────────────────
@@ -103,7 +104,14 @@ echo "$NEW is serving — joining the web network so Traefik routes to it..."
 docker network connect web "$NEW"
 
 # Both containers now back the same Traefik service, so requests are served
-# throughout the swap. Retire the old one, then take its name.
+# throughout the swap — but only once Traefik has actually noticed the new one.
+# It learns from the Docker event stream, which is fast but not instantaneous,
+# and removing the old container before that lands leaves the load balancer
+# pointing at a backend that no longer exists. Being on the network and being
+# routed to are not the same thing.
+echo "Letting Traefik pick up $NEW before retiring the old container..."
+sleep 5
+
 echo "Retiring previous container..."
 docker rm -f "$APP_NAME" 2>/dev/null || true
 

@@ -195,6 +195,10 @@ export async function GET() {
     totalCollectors: heartbeats.collectors.length,
     ...(heartbeats.error ? { collectorsError: heartbeats.error } : {}),
     timestamp: new Date().toISOString(),
+    // Baked in at build time. Makes "which build is actually live" answerable
+    // from outside, and lets a deploy verify the router reaches the new
+    // container rather than assuming it did.
+    commit: process.env.GIT_COMMIT ?? "unknown",
   };
 
   return NextResponse.json(body, {

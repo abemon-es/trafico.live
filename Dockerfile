@@ -51,6 +51,11 @@ RUN chown -R nextjs:nodejs .next && \
 
 ENV NODE_ENV=production
 ENV PORT=3000
+# Which build this is. Surfaced by /api/health so "what is actually live" is a
+# question with an answer, and so a deploy can prove the router reaches the new
+# container instead of assuming it.
+ARG GIT_COMMIT=unknown
+ENV GIT_COMMIT=$GIT_COMMIT
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
