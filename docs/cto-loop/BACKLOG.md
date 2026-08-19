@@ -342,6 +342,31 @@ at runtime where the DB is reachable. Verified: 1,506 links served. The pages
 at `revalidate=86400` stay empty for 24 h after each deploy, and the two using
 `force-static` never self-heal.
 
+### L0.7 Smoke test could never pass on a fully-healthy fleet — ✅ FIXED 2026-08-19
+`bin/smoke-test.sh` expected `/api/health` status `ok|degraded`, but the route
+has emitted `healthy|degraded|unhealthy` since it was created — `ok` was dead
+code. Every prior green smoke run passed via the `degraded` *warn* branch; the
+first time all collectors were simultaneously non-stale (this cycle), the
+endpoint said `healthy` and smoke FAILED. An inverted detector: maximum health
+reported as the only failure. Fixed the case arms; verified 108/0 against prod.
+Family: same green-but-broken class as the AIS healthcheck — a detector nobody
+ever saw pass its happy path.
+
+### L0.8 `bin/backup-verify.sh` is unwired — and has an uncommitted MinIO edit
+Evidence (2026-08-19): no cron on `compute` or `database-primary` invokes it,
+`/var/log/trafico-backup.log` exists on neither host, and neither host has the
+`r2` rclone remote it defaults to (compute: `cifex-r2`, `gdrive`; db-primary:
+`cifex-r2`). Real DB backups run from `/opt/scripts/backup-trafico-6h.sh`
+(3×/day) + `/opt/scripts/verify-morning-backup.sh` on database-primary. A prior
+session left an uncommitted working-tree edit retargeting the script R2→MinIO
+(`s3.abemon.es`, remote `minio` — also unconfigured); it was never committed,
+deployed, or scheduled. **Left uncommitted deliberately** — shipping it changes
+nothing (nothing runs the script) and the remote does not exist. Decision
+needed: either wire this script up properly (provision the `minio` rclone
+remote, add the cron, then commit the edit) or delete it from the repo as dead
+infrastructure. Off-site status of the *real* backup path is unverified →
+worth one cycle.
+
 ### L0.6 Deploy pipeline jammed on an orphaned build — ✅ CLEARED cycle 7
 A `docker build` ran for **93 minutes** with no log output for the last 31, its
 parent deploy process (pid 435718) already dead, while two deploys sat queued
@@ -482,7 +507,23 @@ collectors unhealthy, 3 silent failures, SEO pipeline never once succeeded.
 
 ## P0 — active outage, user-visible
 
+### 0. `city-traffic` — zero readings from ALL three cities — **NEXT CYCLE'S ITEM**
+Flagged loud by `23e3709d` (zero readings across all sources is now `error`,
+not `partial`). Barcelona returns 502 then 403, Valencia parses 0 segments,
+Zaragoza returns 400 — three independent upstream investigations, almost
+certainly endpoint changes. `CityTrafficReading` is empty; sensor catalog
+(1,054 rows) survives. User impact: city intensity data absent from
+`/api/trafico/ciudades` consumers.
+
 ### 1. `ais-stream` — ❌ EARLIER DIAGNOSIS WRONG. Cause was our own reconnect storm
+
+> **RECURRENCE (2026-08-19):** upstream silent again — `No AIS frames for
+> 41041s` (~11.4 h, since ~08:48Z) with the socket open and backoff clean. The
+> 2026-08-17 recovery was not durable. Second occurrence of "authenticated but
+> silent" with our client exonerated; per the standing rule, do not burn cycles
+> probing — if it holds past a full day, contact aisstream.io with the clean
+> connection history, or MJ checks plan/quota against key fingerprint
+> `f855bfd7`.
 
 **Corrected 2026-08-16 after MJ said the credentials work.** They do. Cycle 1
 concluded "the account receives no data" from a single asymmetry (valid key →
