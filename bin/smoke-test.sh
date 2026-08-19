@@ -284,13 +284,14 @@ done
 # -----------------------------------------------------------------------------
 
 section "5. API endpoints"
-# /api/health: accept "ok" or "degraded" (degraded = stale collector, still functional)
+# /api/health emits healthy|degraded|unhealthy (src/app/api/health/route.ts) —
+# it has never emitted "ok", so a fully-green fleet used to FAIL this check.
 health_body=$(curl "${CURL_OPTS[@]}" -H "Origin: ${BASE}" "${BASE}/api/health" 2>/dev/null || echo "{}")
 health_status=$(printf "%s" "$health_body" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status','?'))" 2>/dev/null || echo "?")
 case "$health_status" in
-  ok)        log_pass "/api/health status=ok" ;;
+  healthy)   log_pass "/api/health status=healthy" ;;
   degraded)  log_warn "/api/health status=degraded" "stale collector(s) — investigate" ;;
-  *)         log_fail "/api/health status" "expected ok|degraded, got '${health_status}'" ;;
+  *)         log_fail "/api/health status" "expected healthy|degraded, got '${health_status}'" ;;
 esac
 expect_json_field "/api/health" '["db"]["ok"]' "true"
 expect_json_field "/api/health" '["redis"]["ok"]' "true"
