@@ -827,6 +827,31 @@ decision. Loop proceeds on flights/train-services only if MJ approves.
 
 ## ESCALATIONS — need MJ, loop cannot self-serve
 
+0. **Newsletter: two parallel systems, and the live one has no exit.** Verified
+   end to end on 2026-08-19 by actually subscribing through the public endpoint
+   and following the row (test row deleted afterwards).
+
+   - The footer/hero forms POST `/api/newsletter/subscribe`, which writes to
+     **`newsletter_subscribers`**. That route is the only code that touches
+     that table: **no confirmation email, no unsubscribe path, no sender.**
+   - The complete double-opt-in machinery — `/api/newsletter/route.ts`,
+     `/confirm`, `/unsubscribe`, Resend integration — operates on
+     **`NewsletterSubscription`**, which is empty and unreachable from any UI.
+   - `RESEND_*` is not configured in prod, so neither system can send anyway.
+
+   Every leg works in isolation; the chain does not exist. Today the cost is
+   zero because there are no real subscribers — which is exactly why it would
+   have stayed invisible until the first one arrived. **It also collects an
+   email marked `active` with no unsubscribe route, which is a GDPR problem the
+   moment a real person signs up.**
+
+   Needs MJ: which system is canonical (double opt-in or single), and whether
+   to provision Resend or take the forms down until there is a sender. The loop
+   should not pick this unilaterally — switching the live form to the
+   unconfigured system would break signups outright.
+
+
+
 00. **MIGRATE_DATABASE_URL has no DDL rights** — migrations silently fail at
    every deploy (42501) and the container logs "[migrate] Skipped". Point it at
    a `trafico_admin` credential (direct :5440, not PgBouncer) in
