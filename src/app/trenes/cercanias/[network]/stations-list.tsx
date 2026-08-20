@@ -20,7 +20,9 @@ export default function StationsList({
   networkName: string;
 }) {
   const [search, setSearch] = useState("");
-  const [showAll, setShowAll] = useState(false);
+  // Default expanded: the server render then carries every station link in the
+  // HTML (crawlable), instead of only the first 30.
+  const [showAll, setShowAll] = useState(true);
 
   const filtered = useMemo(() => {
     if (!search) return stations;

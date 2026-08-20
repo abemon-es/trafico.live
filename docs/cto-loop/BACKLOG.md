@@ -21,6 +21,32 @@ last.
 
 ---
 
+## DIRECTIVE (MJ, 2026-08-20): rail section is a mess — navigate it like a network
+
+MJ: stations/lines not clickable on cercanías pages, /trenes/incidencias "poco
+útil", /trenes/cercanias showed 0 alertas/0 estaciones, whole section hard to
+navigate. What people want: network status by zone, then drill into lines,
+trains, stations, live.
+
+**Shipped `0a1d09c2` (origin-verified):** /trenes/cercanias server-rendered
+with real per-network stats (stations were hardcoded 0; alerts were substring-
+grepped) + punctuality/trains-now + linked alert banner. [network] pages
+server-rendered, every line → /trenes/linea/[slug] (93 anchors on madrid),
+every station → /trenes/estacion/[slug], alerts joined via routeIds with
+line chips + all-clear state. /trenes/incidencias: affected lines/stations as
+clickable chips (12+190 anchors live), relative times, Programada badge,
+per-service section links. /trenes hub got an "Estado de la red" button
+(incidencias was unreachable from the hub). Old client content.tsx deleted.
+
+**Pending (local commit, next push):** stations list defaults expanded so all
+~96-161 station anchors are in the crawlable HTML, not just 30.
+
+**Still open in this directive (next cycles):** /trenes/lineas brand chips on
+the hub are unlinked spans; a "estado por zonas/destino" view (network-level
+status rollup with delay data per network from RailwayDelaySnapshot/brand);
+/trenes/estaciones catalog could filter by network; per-line live view
+(trains currently on that line, from fleet positions ∩ route).
+
 ## DIRECTIVE (MJ, 2026-08-17): L3 UNBLOCKED + full content diagnostics
 
 MJ: unblock L3/SEO fixes, AND "most pages make no sense or are not showing the
