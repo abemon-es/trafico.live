@@ -41,11 +41,37 @@ per-service section links. /trenes hub got an "Estado de la red" button
 **Pending (local commit, next push):** stations list defaults expanded so all
 ~96-161 station anchors are in the crawlable HTML, not just 30.
 
+**Shipped 2026-08-20 evening (`8bb9b8bd`..`2cdb55a5`, all origin-verified):**
+MJ's full vision statement: navigate by zones/lines, find ANY reference via
+search, land on a line/train page with live route, next station, stats, and
+everything clickable.
+- **Per-line live trains**: /trenes/linea/[slug] now lists trains on that line
+  right now, each linking /trenes/tren/[id] with delay badge, next station +
+  ETA, speed. Two matchers: exact `routeId` for Cercanías (NEW COLUMN
+  `RenfeFleetPosition.routeId`, migration applied manually + resolved, queue
+  verified clean), station-CODE endpoint matching for LD (flotaLD stores codes
+  like 60000, not names — first attempt with name-matching found 0 trains).
+  Cercanías routeId is DERIVED in renfe-positions: the GTFS-RT feed omits
+  trip.routeId, but vehicle label carries the line code ("C5-23833") and
+  stopId disambiguates the network. Verified: AVE Mad-Sevilla 4 live trains,
+  Rodalies R16 8 live trains.
+- **Correspondencias**: crossing lines sharing stations, ranked by overlap,
+  interchange station named, all linked (18 line anchors/page verified).
+- **Search fixed for lines**: railway_routes hits pointed at
+  /trenes/lineas/<cuid> → 404 (same class as the cycle-10 station-cuid bug);
+  now /trenes/linea/[slug] (slug added to Typesense doc + full resync run).
+  Titles deduped and carry the network ("Cercanías C4 Bilbao"). Bare line
+  codes ("C4", "R2", "línea C1") now parse as railway intent BEFORE road-id
+  normalization (which used to turn C4 into road C-4); R codes keep roads in
+  the fan-out (R-2..R-5 radiales). All verified live.
+
 **Still open in this directive (next cycles):** /trenes/lineas brand chips on
 the hub are unlinked spans; a "estado por zonas/destino" view (network-level
 status rollup with delay data per network from RailwayDelaySnapshot/brand);
-/trenes/estaciones catalog could filter by network; per-line live view
-(trains currently on that line, from fleet positions ∩ route).
+/trenes/estaciones catalog could filter by network; station pages could show
+live arrivals (trains whose nextStation = this station, from fleet rows);
+Cercanías routeId resolution is ~16%/tick (label without line prefix or train
+between stations) — could propagate last-known routeId per trainNumber.
 
 ## DIRECTIVE (MJ, 2026-08-17): L3 UNBLOCKED + full content diagnostics
 
