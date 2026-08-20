@@ -171,6 +171,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
           trainNumber,
           serviceType,
           brand: "Cercanías",
+          routeId: routeId || null,
           latitude: lat,
           longitude: lng,
           speed: speedKmh,
@@ -186,6 +187,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
         update: {
           serviceType,
           brand: "Cercanías",
+          routeId: routeId || null,
           latitude: lat,
           longitude: lng,
           speed: speedKmh,

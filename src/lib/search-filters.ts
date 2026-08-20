@@ -391,19 +391,44 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchQuery {
     q = q.replace(pattern, replacement);
   }
 
+  // ── -0.5. Bare line-code intent ────────────────────────────────────────
+  // "C4", "c-4", "R2", "línea C1": a lone Cercanías/Rodalies line code is a
+  // railway query, not a road. Must run before road-id normalization, which
+  // would rewrite C4 → C-4 and hand the query to the roads collection.
+  // C codes cap at 10 (no C-1..C-10 roads exist; C-31/C-32 stay roads).
+  // R codes also fan out to roads — R-2..R-5 are the Madrid radiales.
+  const lineCodeMatch = q.trim().match(/^(?:l[ií]nea\s+)?([cr])\s?-?\s?(\d{1,2})([ab])?$/i);
+  const lineCodeLetter = lineCodeMatch?.[1].toLowerCase();
+  const lineCodeNum = lineCodeMatch ? Number(lineCodeMatch[2]) : 0;
+  const lineIntent =
+    !!lineCodeMatch &&
+    ((lineCodeLetter === "c" && lineCodeNum >= 1 && lineCodeNum <= 10) ||
+      (lineCodeLetter === "r" && lineCodeNum >= 1 && lineCodeNum <= 18));
+  if (lineIntent && lineCodeMatch) {
+    filters.targetCollection =
+      lineCodeLetter === "r"
+        ? "railway_routes,railway_stations,roads"
+        : "railway_routes,railway_stations";
+    q = `${lineCodeMatch[1].toUpperCase()}${lineCodeMatch[2]}${(lineCodeMatch[3] || "").toUpperCase()}`;
+    labels.push("Líneas de tren");
+  }
+
   // ── 0. Road ID normalization ───────────────────────────────────────────
   // Must run before keyword stripping — "autopista a6" → "A-6"
-  q = normalizeRoadIds(q);
+  // Skipped under line intent so C4 stays C4 instead of becoming road C-4.
+  if (!lineIntent) {
+    q = normalizeRoadIds(q);
 
-  // Strip contextual road words (they express intent, not search terms)
-  const qLower = stripAccents(q.toLowerCase());
-  for (const word of ROAD_CONTEXT_WORDS) {
-    if (qLower.includes(word)) {
-      q = q.replace(new RegExp(`\\b${word}\\b`, "gi"), " ");
-      // If we stripped a road context word, hint at roads collection
-      if (!filters.targetCollection && ROAD_PREFIX_RE.test(q)) {
-        filters.targetCollection = "roads";
-        labels.push("Carreteras");
+    // Strip contextual road words (they express intent, not search terms)
+    const qLower = stripAccents(q.toLowerCase());
+    for (const word of ROAD_CONTEXT_WORDS) {
+      if (qLower.includes(word)) {
+        q = q.replace(new RegExp(`\\b${word}\\b`, "gi"), " ");
+        // If we stripped a road context word, hint at roads collection
+        if (!filters.targetCollection && ROAD_PREFIX_RE.test(q)) {
+          filters.targetCollection = "roads";
+          labels.push("Carreteras");
+        }
       }
     }
   }

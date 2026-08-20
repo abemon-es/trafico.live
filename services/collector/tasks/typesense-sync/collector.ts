@@ -213,6 +213,7 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
     name: "railway_routes",
     fields: [
       { name: "id", type: "string" },
+      { name: "slug", type: "string", optional: true },
       { name: "shortName", type: "string", optional: true },
       { name: "longName", type: "string", optional: true },
       { name: "brand", type: "string", optional: true, facet: true },
@@ -794,11 +795,11 @@ async function loadRailwayStations(prisma: PrismaClient) {
 
 async function loadRailwayRoutes(prisma: PrismaClient) {
   const rows = await prisma.railwayRoute.findMany({
-    select: { id: true, shortName: true, longName: true, brand: true, serviceType: true,
+    select: { id: true, slug: true, shortName: true, longName: true, brand: true, serviceType: true,
       network: true, originName: true, destName: true, stopNames: true, stopsCount: true },
   });
   return rows.map((r) => ({
-    id: r.id, shortName: r.shortName || "", longName: r.longName || "",
+    id: r.id, slug: r.slug || "", shortName: r.shortName || "", longName: r.longName || "",
     brand: r.brand || "", serviceType: r.serviceType, network: r.network || "",
     originName: r.originName || "", destName: r.destName || "",
     stopNames: r.stopNames || [], stopsCount: r.stopsCount ?? undefined,

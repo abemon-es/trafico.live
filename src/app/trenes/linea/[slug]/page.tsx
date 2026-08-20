@@ -13,6 +13,8 @@ import {
   Circle,
   Info,
   ExternalLink,
+  Radio,
+  Shuffle,
 } from "lucide-react";
 
 export const revalidate = 300;
@@ -298,6 +300,92 @@ export default async function LineaDetailPage({ params }: Props) {
       })
     : [];
 
+  // ── Live trains currently on this line ────────────────────
+  // Cercanías GTFS-RT rows carry the GTFS routeId (exact match); LD rows have
+  // no routeId, so they are matched by the line's endpoints in either direction.
+  const since = new Date();
+  since.setMinutes(since.getMinutes() - 12);
+  const normName = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  const dedupByTrain = <T extends { trainNumber: string }>(rows: T[]): T[] => {
+    const seen = new Set<string>();
+    return rows.filter((r) =>
+      seen.has(r.trainNumber) ? false : (seen.add(r.trainNumber), true)
+    );
+  };
+
+  let liveTrains = dedupByTrain(
+    await prisma.renfeFleetPosition.findMany({
+      where: { routeId: route.routeId, fetchedAt: { gte: since } },
+      orderBy: { fetchedAt: "desc" },
+      take: 400,
+    })
+  ).slice(0, 40);
+
+  if (liveTrains.length === 0 && route.originName && route.destName) {
+    const recent = dedupByTrain(
+      await prisma.renfeFleetPosition.findMany({
+        where: { fetchedAt: { gte: since }, originStation: { not: null } },
+        orderBy: { fetchedAt: "desc" },
+        take: 1500,
+      })
+    );
+    const o = normName(route.originName);
+    const d = normName(route.destName);
+    const sameStop = (a: string, b: string) =>
+      a.length > 2 && b.length > 2 && (a.includes(b) || b.includes(a));
+    liveTrains = recent
+      .filter((t) => {
+        const to = normName(t.originStation ?? "");
+        const td = normName(t.destStation ?? "");
+        return (
+          (sameStop(to, o) && sameStop(td, d)) ||
+          (sameStop(to, d) && sameStop(td, o))
+        );
+      })
+      .slice(0, 40);
+  }
+
+  // ── Crossing lines (correspondencias) ─────────────────────
+  const stopIdSet = new Set(route.stopIds);
+  const connectionsRaw = route.stopIds.length
+    ? await prisma.railwayRoute.findMany({
+        where: {
+          id: { not: route.id },
+          slug: { not: null },
+          stopIds: { hasSome: route.stopIds },
+        },
+        select: {
+          slug: true,
+          shortName: true,
+          longName: true,
+          brand: true,
+          color: true,
+          textColor: true,
+          network: true,
+          originName: true,
+          destName: true,
+          stopIds: true,
+        },
+        take: 80,
+      })
+    : [];
+  const connections = connectionsRaw
+    .map((r) => {
+      const shared = r.stopIds.filter((id) => stopIdSet.has(id));
+      return {
+        ...r,
+        sharedCount: shared.length,
+        sharedFirst: shared.length ? stationMap.get(shared[0])?.name ?? null : null,
+      };
+    })
+    .sort((a, b) => b.sharedCount - a.sharedCount)
+    .slice(0, 12);
+
   // Resolve display values
   const brandLabel = resolveBrandLabel(route.brand);
   const brandColor = resolveBrandColor(route.brand, route.color);
@@ -455,6 +543,84 @@ export default async function LineaDetailPage({ params }: Props) {
           </section>
         )}
 
+        {/* ── Live trains on this line ────────────────────────── */}
+        {liveTrains.length > 0 && (
+          <section>
+            <h2 className="font-heading font-semibold text-gray-900 dark:text-gray-100 text-lg mb-3 flex items-center gap-2">
+              <Radio className="w-5 h-5 text-[var(--tl-success)]" />
+              Trenes en esta línea ahora
+              <span className="font-mono text-sm font-normal text-gray-500">
+                ({liveTrains.length})
+              </span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {liveTrains.map((t) => {
+                const nextName = t.nextStation
+                  ? stationMap.get(t.nextStation)?.name ?? t.nextStation
+                  : null;
+                const prevName = t.prevStation
+                  ? stationMap.get(t.prevStation)?.name ?? t.prevStation
+                  : null;
+                const delayBadge =
+                  t.delay == null ? null : t.delay <= 1 ? (
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      Puntual
+                    </span>
+                  ) : (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                        t.delay >= 15
+                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          : "bg-tl-amber-100 text-tl-amber-700 dark:bg-tl-amber-900/30 dark:text-tl-amber-300"
+                      }`}
+                    >
+                      +{t.delay} min
+                    </span>
+                  );
+                return (
+                  <Link
+                    key={t.trainNumber}
+                    href={`/trenes/tren/${t.trainNumber}`}
+                    className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-[var(--tl-primary)] hover:shadow-sm transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="font-mono font-bold text-gray-900 dark:text-gray-100 group-hover:text-[var(--tl-primary)] transition-colors">
+                        {t.brand || "Tren"} {t.trainNumber}
+                      </span>
+                      {delayBadge}
+                    </div>
+                    <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                      {nextName && (
+                        <p className="flex items-center gap-1.5 truncate">
+                          <ArrowRight className="w-3 h-3 shrink-0 text-[var(--tl-primary)]" />
+                          Próxima: <span className="font-medium text-gray-900 dark:text-gray-200 truncate">{nextName}</span>
+                          {t.nextStationEta && (
+                            <span className="font-mono">
+                              {new Date(t.nextStationEta).toLocaleTimeString("es-ES", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          )}
+                        </p>
+                      )}
+                      {!nextName && prevName && (
+                        <p className="flex items-center gap-1.5 truncate">
+                          <MapPin className="w-3 h-3 shrink-0" />
+                          Última parada: <span className="font-medium text-gray-900 dark:text-gray-200 truncate">{prevName}</span>
+                        </p>
+                      )}
+                      {t.speed != null && (
+                        <p className="font-mono text-gray-500">{t.speed} km/h</p>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* ── Active alerts ───────────────────────────────────── */}
         {alerts.length > 0 && (
           <section>
@@ -605,6 +771,65 @@ export default async function LineaDetailPage({ params }: Props) {
                   })}
                 </ul>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Crossing lines (correspondencias) ───────────────── */}
+        {connections.length > 0 && (
+          <section>
+            <h2 className="font-heading font-semibold text-gray-900 dark:text-gray-100 text-lg mb-3 flex items-center gap-2">
+              <Shuffle className="w-5 h-5" style={{ color: brandColor }} />
+              Correspondencias
+              <span className="text-sm font-normal text-gray-500">
+                líneas que comparten estación
+              </span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {connections.map((c) => {
+                const cColor = resolveBrandColor(c.brand, c.color);
+                const cName = c.shortName?.trim() || resolveBrandLabel(c.brand);
+                return (
+                  <Link
+                    key={c.slug}
+                    href={`/trenes/linea/${c.slug}`}
+                    className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all group"
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold text-white"
+                        style={{ backgroundColor: cColor }}
+                      >
+                        {cName}
+                      </span>
+                      {c.network && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                          {c.network}
+                        </span>
+                      )}
+                      <span className="ml-auto text-[11px] font-mono text-gray-500 dark:text-gray-400">
+                        {c.sharedCount} est.
+                      </span>
+                    </div>
+                    {c.originName && c.destName ? (
+                      <p className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">
+                        <span className="truncate">{c.originName}</span>
+                        <ArrowRight className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span className="truncate">{c.destName}</span>
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {c.longName || "—"}
+                      </p>
+                    )}
+                    {c.sharedFirst && (
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 truncate">
+                        Enlace en {c.sharedFirst}
+                      </p>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}

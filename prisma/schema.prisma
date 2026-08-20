@@ -1995,6 +1995,7 @@ model RenfeFleetPosition {
   trainNumber String // e.g. "04204"
   serviceType RailwayServiceType?
   brand       String? // "AVE", "Alvia", "Avant", etc.
+  routeId     String? // GTFS route_id (Cercanías GTFS-RT carries it; LD does not)
 
   // Position
   latitude  Decimal @db.Decimal(9, 6)
@@ -2022,6 +2023,7 @@ model RenfeFleetPosition {
   @@index([brand, fetchedAt])
   @@index([serviceType])
   @@index([latitude, longitude])
+  @@index([routeId, fetchedAt])
 }
 
 // ---- AEMET Climate Stations ----

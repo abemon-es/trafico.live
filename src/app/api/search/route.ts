@@ -284,13 +284,28 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
     queryByWeights: "3,2,2,1,2,2,1",
     category: "Líneas de tren",
     icon: "TrainFront",
-    mapHit: (doc) => ({
-      title: `${doc.brand || ""} ${doc.shortName || doc.longName || ""}`.trim(),
-      subtitle: [doc.originName, doc.destName].filter(Boolean).join(" → ") || (doc.network as string) || null,
-      href: `/trenes/lineas/${doc.id}`,
-      category: "Líneas de tren",
-      icon: "TrainFront",
-    }),
+    mapHit: (doc) => {
+      // Dedup tokens: brand/longName often repeat the shortName ("Rodalies R2"
+      // + "R2" used to render as "Rodalies R2 R2"). Network disambiguates the
+      // ten different C1s (Madrid, Valencia, Sevilla…).
+      const name = (doc.shortName as string) || (doc.longName as string) || "";
+      const parts = `${doc.brand || ""} ${doc.network || ""} ${name}`.split(/\s+/).filter(Boolean);
+      const title = parts
+        .filter((p, i) => parts.findIndex((x) => x.toLowerCase() === p.toLowerCase()) === i)
+        .join(" ");
+      return {
+        title: title || "Línea",
+        subtitle:
+          [doc.originName, doc.destName].filter(Boolean).join(" → ") ||
+          (doc.network as string) ||
+          null,
+        // The old href pointed at /trenes/lineas/<cuid>, which 404s — the
+        // detail route is /trenes/linea/[slug].
+        href: doc.slug ? `/trenes/linea/${doc.slug as string}` : "/trenes/lineas",
+        category: "Líneas de tren",
+        icon: "TrainFront",
+      };
+    },
   },
   {
     collection: "railway_alerts",
