@@ -65,13 +65,34 @@ everything clickable.
   normalization (which used to turn C4 into road C-4); R codes keep roads in
   the fan-out (R-2..R-5 radiales). All verified live.
 
-**Still open in this directive (next cycles):** /trenes/lineas brand chips on
-the hub are unlinked spans; a "estado por zonas/destino" view (network-level
-status rollup with delay data per network from RailwayDelaySnapshot/brand);
-/trenes/estaciones catalog could filter by network; station pages could show
-live arrivals (trains whose nextStation = this station, from fleet rows);
-Cercanías routeId resolution is ~16%/tick (label without line prefix or train
-between stations) — could propagate last-known routeId per trainNumber.
+**Shipped 2026-08-20 night (`83210f2c`, `b7348d7e`, origin-verified):**
+- **ETA bugs on train pages**: Renfe mixes "HH:MM" and full ISO stamps in the
+  same field; split(":") read the YEAR as hours → "120252 min" + raw ISO shown
+  to users. Robust parser, midnight wrap, sanity clamp, HH:MM display.
+- **Train pages now indexable** when the train has TrainService history (were
+  blanket `noindex`!); title carries identity: "AVE 02202: Madrid → Málaga —
+  en directo, retraso y paradas" (verified live). "Sobre este tren" editorial
+  block (own GPS punctuality, brand explainer, rolling-stock series decoded
+  from the material code via new src/lib/trenes/brand-info.ts) + FAQ with
+  FAQPage JSON-LD answering ¿dónde está? ¿lleva retraso? ¿es puntual?.
+- **Line pages: operator comparison** on the same O-D (TrainService 30 d):
+  runs, punctuality ≤5 min, mean final delay, observed journey time — AVE vs
+  Alvia vs Avlo with data nobody else publishes. Prices skipped honestly: no
+  price source exists in the platform. Brand explainer section added. Route
+  map live marker is now a train icon.
+- **Station pages: live arrivals** (fleet rows with nextStation = this
+  station; Barcelona Sants verified with 17 linked inbound trains) + "Sobre
+  la estación" editorial paragraph (municipality, network link, line counts,
+  accessibility). /trenes hub brand chips are links now.
+
+**Still open in this directive (next cycles):** "estado por zonas/destino"
+rollup view (per-network delay from RailwayDelaySnapshot/brand);
+/trenes/estaciones catalog filter by network; slugged train URLs
+(/trenes/tren/ave-02202-madrid-malaga) — deferred: the title now carries the
+identity and churning 14k canonicals deserves its own considered change;
+Cercanías routeId resolution is ~16%/tick — propagate last-known routeId per
+trainNumber; Cercanías arrivals on station pages (their fleet rows carry only
+prevStation, no nextStation).
 
 ## DIRECTIVE (MJ, 2026-08-17): L3 UNBLOCKED + full content diagnostics
 
