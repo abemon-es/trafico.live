@@ -21,6 +21,33 @@ last.
 
 ---
 
+## DIRECTIVE (MJ, 2026-08-20): mobile map "que se vea de cojones"
+
+Root causes found from MJ's screenshots + Playwright repro (390×844):
+1. The red rings flooding national zoom were the **pulse-halo layer**: it
+   copies the symbol layer's source and filter but NOT its zoom bounds, so
+   HIGH-incident halos rendered at every zoom and merged into blobs. Fixed in
+   the animator (halo inherits min/maxzoom).
+2. Incidents/roadworks rendered full icons with icon-allow-overlap at z5.5.
+   Now zoom-graded: severity-colored density dots below z7, icons from z7 up
+   (style arrays; TraficoMap no longer overrides per-sub-layer zoom bounds).
+3. First-run stacked cookie banner + PWA install prompt on top of each other
+   over the map. PWA prompt now waits for cookie consent (subscribes to the
+   consent store event).
+4. Capas chip was a fixed 224px pill with a duplicated theme toggle; now
+   content-sized icon chip on phones, moon hidden below sm.
+
+Shipped `a98a5f8f`, verified with post-deploy mobile screenshot: national view
+reads as a clean severity heat-dot map, chrome minimal. Before/after shots in
+session scratchpad (shot-default.png / after-nacional.png).
+
+Candidates for the next mobile-design pass: lens bar horizontal-scroll
+affordance (last chip clipped with no fade hint); Rutas FAB + fullscreen +
+Leyenda pill could consolidate into one bottom cluster; basemap dashed-blue
+road styling at national zoom competes with data layers (Protomaps style
+tweak); same dots treatment for other dense layers if ever defaulted on
+(cameras/radars are already zoom-gated ≥7).
+
 ## DIRECTIVE (MJ, 2026-08-20): rail section is a mess — navigate it like a network
 
 MJ: stations/lines not clickable on cercanías pages, /trenes/incidencias "poco
