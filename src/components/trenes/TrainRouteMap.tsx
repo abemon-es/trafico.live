@@ -161,7 +161,7 @@ export default function TrainRouteMap({
           display:flex;align-items:center;justify-content:center;
           cursor:default;z-index:10;
         `;
-        el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l7-9 7 9"/><path d="M3 11h18"/><path d="M5 11v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>`;
+        el.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3.1V7a4 4 0 0 0 8 0V3.1"/><path d="m9 15-1-1"/><path d="m15 15 1-1"/><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z"/><path d="m8 19-2 3"/><path d="m16 19 2 3"/></svg>`;
 
         new maplibregl.Marker({ element: el })
           .setLngLat([trainLon, trainLat])

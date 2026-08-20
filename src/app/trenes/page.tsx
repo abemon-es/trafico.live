@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   Train,
   Route,
@@ -243,10 +244,14 @@ export default async function TrenesHubPage() {
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           <div className="flex flex-wrap gap-2">
             {["AVE", "AVLO", "Alvia", "Euromed", "Intercity", "Avant", "MD", "Regional", "Cercanías", "Rodalies", "FEVE"].map((b) => (
-              <span key={b} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-tl-50 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 text-xs font-semibold">
+              <Link
+                key={b}
+                href={`/trenes/lineas?brand=${encodeURIComponent(b)}`}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-tl-50 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 text-xs font-semibold hover:bg-tl-100 dark:hover:bg-tl-900/50 transition-colors"
+              >
                 <Trophy className="w-3 h-3" />
                 {b}
-              </span>
+              </Link>
             ))}
           </div>
           <div className="mt-4">

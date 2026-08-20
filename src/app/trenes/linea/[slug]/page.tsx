@@ -22,6 +22,7 @@ export const revalidate = 300;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 import RouteMap from "./route-map-wrapper";
+import { getBrandInfo } from "@/lib/trenes/brand-info";
 
 // ──────────────────────────────────────────────────────────────
 // Brand configuration (colors + labels)
@@ -416,6 +417,97 @@ export default async function LineaDetailPage({ params }: Props) {
     })
     .sort((a, b) => b.sharedCount - a.sharedCount)
     .slice(0, 12);
+
+  // ── Brand comparison on this origin–destination (30 days) ─
+  // TrainService is our own GPS-derived history: real punctuality and observed
+  // journey times per brand on this exact O-D — data no one else publishes.
+  let brandComparison: {
+    brand: string;
+    runs: number;
+    punctualPct: number | null;
+    avgFinal: number | null;
+    medianDurationMin: number | null;
+    slug: string | null;
+  }[] = [];
+  if (route.originCode && route.destCode) {
+    const originStationName =
+      stationMap.get(route.originCode)?.name ?? route.originName;
+    const destStationName = stationMap.get(route.destCode)?.name ?? route.destName;
+    if (originStationName && destStationName) {
+      const since30 = new Date();
+      since30.setDate(since30.getDate() - 30);
+      const [services, siblingRoutes] = await Promise.all([
+        prisma.trainService.findMany({
+          where: {
+            serviceDate: { gte: since30 },
+            OR: [
+              { originStation: originStationName, destStation: destStationName },
+              { originStation: destStationName, destStation: originStationName },
+            ],
+          },
+          select: {
+            brand: true,
+            finalDelay: true,
+            firstSeenAt: true,
+            lastSeenAt: true,
+            isActive: true,
+          },
+        }),
+        prisma.railwayRoute.findMany({
+          where: {
+            slug: { not: null },
+            OR: [
+              { originCode: route.originCode, destCode: route.destCode },
+              { originCode: route.destCode, destCode: route.originCode },
+            ],
+          },
+          select: { brand: true, slug: true },
+        }),
+      ]);
+      const slugByBrand = new Map<string, string>();
+      for (const r of siblingRoutes) {
+        if (r.brand && r.slug && !slugByBrand.has(r.brand)) {
+          slugByBrand.set(r.brand, r.slug);
+        }
+      }
+      const byBrand = new Map<string, typeof services>();
+      for (const s of services) {
+        const b = s.brand ?? "Renfe";
+        if (!byBrand.has(b)) byBrand.set(b, []);
+        byBrand.get(b)!.push(s);
+      }
+      brandComparison = [...byBrand.entries()]
+        .map(([brand, rows]) => {
+          const finished = rows.filter((r) => !r.isActive && r.finalDelay != null);
+          const durations = rows
+            .map((r) => (r.lastSeenAt.getTime() - r.firstSeenAt.getTime()) / 60000)
+            .filter((m) => m >= 25 && m <= 720)
+            .sort((a, b) => a - b);
+          return {
+            brand,
+            runs: rows.length,
+            punctualPct:
+              finished.length >= 3
+                ? Math.round(
+                    (100 * finished.filter((r) => (r.finalDelay ?? 99) <= 5).length) /
+                      finished.length
+                  )
+                : null,
+            avgFinal:
+              finished.length >= 3
+                ? finished.reduce((s, r) => s + (r.finalDelay ?? 0), 0) / finished.length
+                : null,
+            medianDurationMin:
+              durations.length >= 3
+                ? Math.round(durations[Math.floor(durations.length / 2)])
+                : null,
+            slug: slugByBrand.get(brand) ?? null,
+          };
+        })
+        .filter((b) => b.runs >= 3)
+        .sort((a, b) => b.runs - a.runs);
+    }
+  }
 
   // Resolve display values
   const brandLabel = resolveBrandLabel(route.brand);
@@ -869,6 +961,89 @@ export default async function LineaDetailPage({ params }: Props) {
           </section>
         )}
 
+        {/* ── Brand comparison on this O-D (own GPS data) ─────── */}
+        {brandComparison.length > 0 && route.originName && route.destName && (
+          <section>
+            <h2 className="font-heading font-semibold text-gray-900 dark:text-gray-100 text-lg mb-1 flex items-center gap-2">
+              <Clock className="w-5 h-5" style={{ color: brandColor }} />
+              {brandComparison.length > 1
+                ? `¿Qué operador es más puntual entre ${route.originName} y ${route.destName}?`
+                : `Puntualidad real de esta ruta`}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              Últimos 30 días, medido por trafico.live sobre las posiciones GPS reales de
+              cada circulación — no son datos oficiales de Renfe.
+            </p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
+              <table className="w-full text-sm min-w-[560px]">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                    <th className="px-4 py-2.5 font-semibold">Operador</th>
+                    <th className="px-4 py-2.5 font-semibold text-right">Circulaciones</th>
+                    <th className="px-4 py-2.5 font-semibold text-right">Puntualidad ≤5 min</th>
+                    <th className="px-4 py-2.5 font-semibold text-right">Retraso final medio</th>
+                    <th className="px-4 py-2.5 font-semibold text-right">Duración observada</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                  {brandComparison.map((b) => {
+                    const bColor = resolveBrandColor(b.brand, null);
+                    const badge = (
+                      <span
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold text-white"
+                        style={{ backgroundColor: bColor }}
+                      >
+                        {b.brand}
+                      </span>
+                    );
+                    return (
+                      <tr key={b.brand}>
+                        <td className="px-4 py-2.5">
+                          {b.slug && b.slug !== slug ? (
+                            <Link href={`/trenes/linea/${b.slug}`} className="hover:opacity-80">
+                              {badge}
+                            </Link>
+                          ) : (
+                            badge
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono text-gray-900 dark:text-gray-100">
+                          {b.runs}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono">
+                          {b.punctualPct != null ? (
+                            <span
+                              className={
+                                b.punctualPct >= 80
+                                  ? "text-green-600 dark:text-green-400"
+                                  : b.punctualPct >= 60
+                                    ? "text-amber-600 dark:text-amber-400"
+                                    : "text-red-600 dark:text-red-400"
+                              }
+                            >
+                              {b.punctualPct}%
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono text-gray-900 dark:text-gray-100">
+                          {b.avgFinal != null ? `${b.avgFinal.toFixed(1)} min` : "—"}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono text-gray-900 dark:text-gray-100">
+                          {b.medianDurationMin != null
+                            ? `${Math.floor(b.medianDurationMin / 60)} h ${String(b.medianDurationMin % 60).padStart(2, "0")} min`
+                            : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
         {/* ── Route info ──────────────────────────────────────── */}
         <section>
           <h2 className="font-heading font-semibold text-gray-900 dark:text-gray-100 text-lg mb-3 flex items-center gap-2">
@@ -897,6 +1072,23 @@ export default async function LineaDetailPage({ params }: Props) {
             />
           </div>
         </section>
+
+        {/* ── Brand explainer (SEO) ───────────────────────────── */}
+        {(() => {
+          const bi = getBrandInfo(route.brand);
+          if (!bi) return null;
+          return (
+            <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h2 className="font-heading font-semibold text-gray-900 dark:text-gray-100 text-base mb-2">
+                ¿Qué es un {bi.name}? · {bi.category}
+              </h2>
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {bi.description}{" "}
+                <span className="text-gray-500 dark:text-gray-400">{bi.audience}</span>
+              </p>
+            </section>
+          );
+        })()}
 
         {/* ── Related routes ──────────────────────────────────── */}
         {relatedRoutes.length > 0 && (
