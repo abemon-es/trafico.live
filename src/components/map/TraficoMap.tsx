@@ -352,8 +352,13 @@ function TraficoMapInner({
             // For pmtiles/martin: remap source to our logical id
             source: layer.source.type === "geojson" ? sub.source : sid,
           };
-          if (layer.minZoom !== undefined) layerSpec.minzoom = layer.minZoom;
-          if (layer.maxZoom !== undefined) layerSpec.maxzoom = layer.maxZoom;
+          // Definition-level zoom bounds are a fallback: a sub-layer that
+          // declares its own minzoom/maxzoom (e.g. low-zoom density dots vs
+          // full icons) keeps them.
+          if (layer.minZoom !== undefined && layerSpec.minzoom === undefined)
+            layerSpec.minzoom = layer.minZoom;
+          if (layer.maxZoom !== undefined && layerSpec.maxzoom === undefined)
+            layerSpec.maxzoom = layer.maxZoom;
           map.addLayer(layerSpec);
           if (layer.interactive) {
             interactiveSubLayerIds.current.add(sub.id);

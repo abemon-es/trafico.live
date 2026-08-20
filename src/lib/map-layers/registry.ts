@@ -466,24 +466,51 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
         filter: ["==", ["get", "severity"], "HIGH"],
       },
     },
-    style: {
-      id: "incidents-symbol",
-      type: "symbol",
-      source: "incidents",
-      "source-layer": "incidents",
-      layout: {
-        "icon-image": [
-          "match", ["get", "severity"],
-          "HIGH",   "icon-incident-high",
-          "MEDIUM", "icon-incident-medium",
-          "LOW",    "icon-incident-low",
-          "icon-incident-medium",
-        ],
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.3, 10, 0.48, 14, 0.7],
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
+    // Two zoom regimes (2026-08 mobile declutter): at national zoom hundreds
+    // of overlapping icons + HIGH pulse halos merged into red blobs. Below z7
+    // incidents read as severity-colored density dots; icons (and the pulse
+    // animator, which targets incidents-symbol) only exist from z7 up.
+    style: [
+      {
+        id: "incidents-dots",
+        type: "circle",
+        source: "incidents",
+        "source-layer": "incidents",
+        maxzoom: 7,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 2.5, 7, 4.5],
+          "circle-color": [
+            "match", ["get", "severity"],
+            "HIGH",   "#dc2626",
+            "MEDIUM", "#f97316",
+            "LOW",    "#eab308",
+            "#f97316",
+          ],
+          "circle-opacity": 0.85,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "#ffffff",
+        },
       },
-    },
+      {
+        id: "incidents-symbol",
+        type: "symbol",
+        source: "incidents",
+        "source-layer": "incidents",
+        minzoom: 7,
+        layout: {
+          "icon-image": [
+            "match", ["get", "severity"],
+            "HIGH",   "icon-incident-high",
+            "MEDIUM", "icon-incident-medium",
+            "LOW",    "icon-incident-low",
+            "icon-incident-medium",
+          ],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 7, 0.34, 10, 0.48, 14, 0.7],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      },
+    ],
     legend: [
       { color: "#dc2626", label: "Alta" },
       { color: "#f97316", label: "Media" },
@@ -499,18 +526,37 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     source: { type: "martin", ref: `${TILES_BASE}/dynamic/roadworks` },
     interactive: true,
     minZoom: 5,
-    style: {
-      id: "roadworks-symbol",
-      type: "symbol",
-      source: "roadworks",
-      "source-layer": "roadworks",
-      layout: {
-        "icon-image": "icon-roadworks",
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.26, 10, 0.44, 14, 0.65],
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
+    // Same two-regime treatment as incidents: amber density dots below z7,
+    // cone icons from z7 up.
+    style: [
+      {
+        id: "roadworks-dots",
+        type: "circle",
+        source: "roadworks",
+        "source-layer": "roadworks",
+        maxzoom: 7,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 2.5, 7, 4],
+          "circle-color": "#f59e0b",
+          "circle-opacity": 0.85,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "#ffffff",
+        },
       },
-    },
+      {
+        id: "roadworks-symbol",
+        type: "symbol",
+        source: "roadworks",
+        "source-layer": "roadworks",
+        minzoom: 7,
+        layout: {
+          "icon-image": "icon-roadworks",
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 10, 0.44, 14, 0.65],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      },
+    ],
     legend: [{ color: "#f59e0b", label: "Obras" }],
   },
 

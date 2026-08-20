@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { readConsent, subscribe } from "@/components/cookie-consent/store";
 
 // Key stored in localStorage to track visit count
 const VISIT_COUNT_KEY = "tl_pwa_visit_count";
@@ -15,7 +16,18 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function PwaInstallPrompt() {
   const [visible, setVisible] = useState(false);
+  // One banner at a time: while the cookie dialog is unresolved this prompt
+  // stays hidden (they used to stack on top of each other on mobile).
+  const [consentResolved, setConsentResolved] = useState(false);
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    if (readConsent()) {
+      setConsentResolved(true);
+      return;
+    }
+    return subscribe(() => setConsentResolved(true));
+  }, []);
 
   useEffect(() => {
     // Do nothing in SSR or if already installed (navigator.standalone for Safari)
@@ -74,7 +86,7 @@ export function PwaInstallPrompt() {
     localStorage.setItem(DISMISSED_KEY, "1");
   };
 
-  if (!visible) return null;
+  if (!visible || !consentResolved) return null;
 
   return (
     <div

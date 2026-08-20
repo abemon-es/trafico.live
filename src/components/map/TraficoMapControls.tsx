@@ -63,7 +63,9 @@ export function TraficoMapControls({
   };
 
   return (
-    <div className={`absolute right-3 z-10 w-56 ${offsetTop ? "top-[4.75rem]" : "top-3"}`}>
+    // Closed: content-sized chip (on phones the old fixed 224px pill covered
+    // a third of the viewport width for a single word). Open: full panel width.
+    <div className={`absolute right-3 z-10 ${open ? "w-56" : "w-auto"} ${offsetTop ? "top-[4.75rem]" : "top-3"}`}>
       {/* Panel toggle header */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -74,7 +76,7 @@ export function TraficoMapControls({
       >
         <span className="flex items-center gap-2 font-semibold text-sm font-['Exo_2']">
           <Layers className="w-4 h-4 text-tl-600 dark:text-tl-300" aria-hidden />
-          {title}
+          <span className={open ? "" : "hidden sm:inline"}>{title}</span>
         </span>
         <div className="flex items-center gap-1">
           {showThemeToggle && onThemeToggle && (
@@ -83,7 +85,9 @@ export function TraficoMapControls({
               tabIndex={0}
               onClick={(e) => { e.stopPropagation(); onThemeToggle(); }}
               onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onThemeToggle(); } }}
-              className="p-1 rounded-md hover:bg-ink-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              // The site header already carries a theme toggle on mobile; a
+              // second moon inside the Capas chip was duplicated chrome.
+              className="hidden sm:block p-1 rounded-md hover:bg-ink-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label={resolvedTheme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
             >
               {resolvedTheme === "dark"

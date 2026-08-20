@@ -148,6 +148,11 @@ export function installPulse(args: PulseInstallArgs): () => void {
           type: "circle",
           source: srcId ?? "",
           ...(srcLayer ? { "source-layer": srcLayer } : {}),
+          // Inherit the target's zoom bounds — without this, halos rendered at
+          // every zoom while their base icons were zoom-gated (the "red rings
+          // over all of Spain" mobile bug).
+          ...(spec.minzoom !== undefined ? { minzoom: spec.minzoom } : {}),
+          ...(spec.maxzoom !== undefined ? { maxzoom: spec.maxzoom } : {}),
           filter,
           paint: {
             // Literal radius — see module-level trade-off comment.
