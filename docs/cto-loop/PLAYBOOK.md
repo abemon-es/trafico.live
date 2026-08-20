@@ -202,9 +202,23 @@ hunting an actor that was itself.
 The container gets a new IP on the `web` network and the edge-cache keeps the
 old one: the homepage stays 200 from cache while everything dynamic returns 502
 until someone reloads the edge-cache. Two incidents on 2026-08-18 (~20 min,
-~8 min). If you restart it outside `deploy.sh`, tell the CTO session or reload
-the edge-cache immediately. `bin/cto-signals.sh` raises `routing_fault` for
-exactly this shape (origin healthy, public not 200).
+~8 min). If you restart it outside `deploy.sh`, tell the CTO session or run
+`docker exec edge-cache nginx -s reload` immediately (zero-downtime). The
+`bin/cto-signals.sh` probe raises `routing_fault` for exactly this shape
+(origin healthy, public not 200).
+
+**2026-08-20: the serial restarter was found** — the platform's
+`container-layer-watchdog.sh` (hourly at :00) auto-restarts any container whose
+writable layer exceeds 4 GB, and had restarted trafico-live **24 times** (each
+one an edge 502 until nginx reload; `docker restart` doesn't even reclaim the
+layer, so the remedy only caused the outage). Our `revalidate=300` rollout grew
+the ISR cache at ~600 MB/h, tripping it daily. Fix on our side: the ISR prune
+cron (`/etc/cron.d/compute-trafico-isr-prune`, canonical copy in the server
+repo `cluster/scripts/cron.d/`) now runs **hourly at :30 with `-mmin +120`**
+(anything older than 2 h is stale at revalidate=300 — loss-free), keeping the
+layer ~1–2 GB, far from the tripwire. If the layer ever nears 4 GB again,
+investigate what new route family is writing — do not widen the watchdog
+threshold.
 
 ### The container healthcheck is honest — don't "fix" it for routing faults
 It fetches `/api/health`, which runs `SELECT 1`, pings Redis and aggregates all
