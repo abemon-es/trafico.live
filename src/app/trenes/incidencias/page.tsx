@@ -124,15 +124,56 @@ async function getIncidencias() {
     }),
   ]);
 
-  return { alerts, snapshot };
+  // Resolve affected route_ids / stop_ids to linkable lines and stations
+  const routeIds = [...new Set(alerts.flatMap((a) => a.routeIds))];
+  const stopIds = [...new Set(alerts.flatMap((a) => a.stopIds))];
+  const [routes, stations] = await Promise.all([
+    routeIds.length
+      ? prisma.railwayRoute.findMany({
+          where: { routeId: { in: routeIds } },
+          select: {
+            routeId: true,
+            shortName: true,
+            brand: true,
+            slug: true,
+            color: true,
+            network: true,
+          },
+        })
+      : Promise.resolve([]),
+    stopIds.length
+      ? prisma.railwayStation.findMany({
+          where: { stopId: { in: stopIds } },
+          select: { stopId: true, name: true, slug: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  return {
+    alerts,
+    snapshot,
+    routeById: new Map(routes.map((r) => [r.routeId, r])),
+    stationById: new Map(stations.map((s) => [s.stopId, s])),
+  };
+}
+
+function relTime(date: Date, now: Date): string {
+  const diffMin = Math.round((now.getTime() - date.getTime()) / 60000);
+  if (diffMin < 0) return ""; // future — handled by the "Programada" badge
+  if (diffMin < 60) return `hace ${diffMin} min`;
+  const h = Math.floor(diffMin / 60);
+  if (h < 24) return `hace ${h} h`;
+  const d = Math.floor(h / 24);
+  return `hace ${d} d`;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function IncidenciasPage() {
-  const { alerts, snapshot } = await getIncidencias();
+  const { alerts, snapshot, routeById, stationById } = await getIncidencias();
 
-  const updatedAt = alerts[0]?.lastSeenAt ?? new Date();
+  const now = new Date();
+  const updatedAt = alerts[0]?.lastSeenAt ?? now;
 
   // Group alerts by service type
   const byService = new Map<string, typeof alerts>();
@@ -329,6 +370,19 @@ export default async function IncidenciasPage() {
                 <span className="font-data text-xs px-2 py-0.5 rounded-full bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300">
                   {group.length}
                 </span>
+                <Link
+                  href={
+                    svcKey === "CERCANIAS" || svcKey === "RODALIES" || svcKey === "PROXIMIDAD"
+                      ? "/trenes/cercanias"
+                      : "/trenes/lineas"
+                  }
+                  className="ml-auto text-xs font-body font-semibold text-tl-600 dark:text-tl-400 hover:underline flex items-center gap-1"
+                >
+                  {svcKey === "CERCANIAS" || svcKey === "RODALIES" || svcKey === "PROXIMIDAD"
+                    ? "Redes Cercanías"
+                    : "Ver líneas"}
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
               </h2>
 
               <div className="space-y-3">
@@ -371,16 +425,93 @@ export default async function IncidenciasPage() {
                         </p>
                       )}
 
+                      {/* Affected lines and stations — the reason this page exists */}
+                      {(() => {
+                        const lines = [
+                          ...new Map(
+                            alert.routeIds
+                              .map((rid) => routeById.get(rid))
+                              .filter((r): r is NonNullable<typeof r> => !!r?.slug)
+                              .map((r) => [r.slug as string, r])
+                          ).values(),
+                        ];
+                        const stops = [
+                          ...new Map(
+                            alert.stopIds
+                              .map((sid) => stationById.get(sid))
+                              .filter((s): s is NonNullable<typeof s> => !!s?.slug)
+                              .map((s) => [s.slug as string, s])
+                          ).values(),
+                        ];
+                        if (lines.length === 0 && stops.length === 0) return null;
+                        return (
+                          <div className="flex flex-wrap items-center gap-1.5 ml-6">
+                            {lines.slice(0, 8).map((r) => (
+                              <Link
+                                key={r.slug}
+                                href={`/trenes/linea/${r.slug}`}
+                                className="px-2 py-0.5 rounded text-[11px] font-data font-semibold text-white hover:opacity-80 transition-opacity"
+                                style={{
+                                  backgroundColor: r.color
+                                    ? `#${r.color.replace(/^#/, "")}`
+                                    : "var(--tl-primary)",
+                                }}
+                                title={r.network ? `Cercanías ${r.network}` : r.brand ?? undefined}
+                              >
+                                {r.shortName || r.brand || "línea"}
+                              </Link>
+                            ))}
+                            {lines.length > 8 && (
+                              <span className="text-[11px] text-gray-400 font-data">
+                                +{lines.length - 8} líneas
+                              </span>
+                            )}
+                            {stops.slice(0, 4).map((s) => (
+                              <Link
+                                key={s.slug}
+                                href={`/trenes/estacion/${s.slug}`}
+                                className="px-2 py-0.5 rounded text-[11px] font-body font-medium bg-tl-50 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800 hover:border-tl-400 transition-colors"
+                              >
+                                {s.name}
+                              </Link>
+                            ))}
+                            {stops.length > 4 && (
+                              <span className="text-[11px] text-gray-400 font-data">
+                                +{stops.length - 4} estaciones
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-500 ml-6">
                         {alert.activePeriodStart && (
                           <span className="flex items-center gap-1 font-data">
                             <Clock className="w-3 h-3" />
-                            {new Date(alert.activePeriodStart).toLocaleString("es-ES", {
-                              day: "numeric",
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(alert.activePeriodStart) > now ? (
+                              <>
+                                <span className="px-1.5 py-0.5 rounded bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 font-semibold">
+                                  Programada
+                                </span>{" "}
+                                {new Date(alert.activePeriodStart).toLocaleString("es-ES", {
+                                  day: "numeric",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </>
+                            ) : (
+                              <>
+                                {relTime(new Date(alert.activePeriodStart), now)}
+                                {" · "}
+                                {new Date(alert.activePeriodStart).toLocaleString("es-ES", {
+                                  day: "numeric",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </>
+                            )}
                           </span>
                         )}
                         {alert.cause && (

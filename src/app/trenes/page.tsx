@@ -179,7 +179,16 @@ export default async function TrenesHubPage() {
           <ButtonLink href="/trenes/mapa" variant="primary" icon={<MapIcon className="w-4 h-4" />}>
             Abrir mapa completo
           </ButtonLink>
-          <ButtonLink href="/trenes/estaciones" variant="secondary">
+          <ButtonLink
+            href="/trenes/incidencias"
+            variant="secondary"
+            icon={<AlertTriangle className="w-4 h-4" />}
+          >
+            {data.activeAlertsCount > 0
+              ? `Incidencias (${data.activeAlertsCount})`
+              : "Estado de la red"}
+          </ButtonLink>
+          <ButtonLink href="/trenes/estaciones" variant="ghost">
             Ver estaciones
           </ButtonLink>
           <ButtonLink href="/trenes/cercanias" variant="ghost">
