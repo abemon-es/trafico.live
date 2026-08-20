@@ -326,7 +326,7 @@ export default async function LineaDetailPage({ params }: Props) {
     })
   ).slice(0, 40);
 
-  if (liveTrains.length === 0 && route.originName && route.destName) {
+  if (liveTrains.length === 0 && (route.originCode || route.originName)) {
     const recent = dedupByTrain(
       await prisma.renfeFleetPosition.findMany({
         where: { fetchedAt: { gte: since }, originStation: { not: null } },
@@ -334,20 +334,51 @@ export default async function LineaDetailPage({ params }: Props) {
         take: 1500,
       })
     );
-    const o = normName(route.originName);
-    const d = normName(route.destName);
+    // flotaLD stores station CODES ("60000"), not names — codes match exactly
+    // against the route's originCode/destCode. Name matching stays as fallback
+    // for rows where the feed did send names.
+    const oC = route.originCode;
+    const dC = route.destCode;
+    const o = normName(route.originName ?? "");
+    const d = normName(route.destName ?? "");
     const sameStop = (a: string, b: string) =>
       a.length > 2 && b.length > 2 && (a.includes(b) || b.includes(a));
     liveTrains = recent
       .filter((t) => {
-        const to = normName(t.originStation ?? "");
-        const td = normName(t.destStation ?? "");
+        const to = t.originStation ?? "";
+        const td = t.destStation ?? "";
+        if (oC && dC && ((to === oC && td === dC) || (to === dC && td === oC))) {
+          return true;
+        }
+        const tno = normName(to);
+        const tnd = normName(td);
         return (
-          (sameStop(to, o) && sameStop(td, d)) ||
-          (sameStop(to, d) && sameStop(td, o))
+          (sameStop(tno, o) && sameStop(tnd, d)) ||
+          (sameStop(tno, d) && sameStop(tnd, o))
         );
       })
       .slice(0, 40);
+  }
+
+  // Resolve station codes referenced by live trains that are not stops of this
+  // route (flotaLD prev/next can be any station; code == stopId in the catalog)
+  const extraCodes = [
+    ...new Set(
+      liveTrains
+        .flatMap((t) => [t.nextStation, t.prevStation])
+        .filter((c): c is string => !!c && !stationMap.has(c))
+    ),
+  ];
+  const extraStations = extraCodes.length
+    ? await prisma.railwayStation.findMany({
+        where: { OR: [{ stopId: { in: extraCodes } }, { code: { in: extraCodes } }] },
+        select: { stopId: true, code: true, name: true },
+      })
+    : [];
+  const codeNameMap = new Map<string, string>();
+  for (const s of extraStations) {
+    codeNameMap.set(s.stopId, s.name);
+    if (s.code) codeNameMap.set(s.code, s.name);
   }
 
   // ── Crossing lines (correspondencias) ─────────────────────
@@ -556,10 +587,14 @@ export default async function LineaDetailPage({ params }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {liveTrains.map((t) => {
                 const nextName = t.nextStation
-                  ? stationMap.get(t.nextStation)?.name ?? t.nextStation
+                  ? stationMap.get(t.nextStation)?.name ??
+                    codeNameMap.get(t.nextStation) ??
+                    t.nextStation
                   : null;
                 const prevName = t.prevStation
-                  ? stationMap.get(t.prevStation)?.name ?? t.prevStation
+                  ? stationMap.get(t.prevStation)?.name ??
+                    codeNameMap.get(t.prevStation) ??
+                    t.prevStation
                   : null;
                 const delayBadge =
                   t.delay == null ? null : t.delay <= 1 ? (
