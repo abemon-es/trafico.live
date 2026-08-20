@@ -126,6 +126,22 @@ export async function run(prisma: PrismaClient): Promise<void> {
     return;
   }
 
+  // ── 1.5. Line index for routeId derivation ────────────────────────────
+  // The feed carries trip.tripId but NO trip.routeId. The line code is in the
+  // vehicle label ("C5-23833" → C5); the stopId disambiguates which network's
+  // C5 (Madrid vs Sevilla…), since a stop belongs to exactly one network.
+  const cercaniasRoutes = await prisma.railwayRoute.findMany({
+    where: { network: { not: null } },
+    select: { routeId: true, shortName: true, stopIds: true },
+  });
+  const routesByLine = new Map<string, { routeId: string; stops: Set<string> }[]>();
+  for (const r of cercaniasRoutes) {
+    if (!r.shortName) continue;
+    const key = r.shortName.toUpperCase();
+    if (!routesByLine.has(key)) routesByLine.set(key, []);
+    routesByLine.get(key)!.push({ routeId: r.routeId, stops: new Set(r.stopIds) });
+  }
+
   // ── 2. Process each vehicle position ──────────────────────────────────
   const fetchedAt = new Date();
   // Round to nearest minute for dedup (matches LD collector pattern)
@@ -134,6 +150,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   let stored = 0;
   let skipped = 0;
+  let routeResolved = 0;
 
   for (const entity of entities) {
     if (!entity.vehicle) continue;
@@ -151,9 +168,20 @@ export async function run(prisma: PrismaClient): Promise<void> {
     const trainNumber = veh.vehicle?.label?.trim() || veh.vehicle?.id?.trim() || entity.id;
     if (!trainNumber) { skipped++; continue; }
 
-    const routeId = veh.trip?.routeId;
+    let routeId: string | null = veh.trip?.routeId || null;
+    if (!routeId) {
+      const lineCode = (veh.vehicle?.label || "").split("-")[0]?.trim().toUpperCase();
+      const candidates = lineCode ? routesByLine.get(lineCode) : undefined;
+      if (candidates?.length === 1) {
+        routeId = candidates[0].routeId;
+      } else if (candidates && candidates.length > 1 && veh.stopId) {
+        const hits = candidates.filter((c) => c.stops.has(veh.stopId!));
+        if (hits.length === 1) routeId = hits[0].routeId;
+      }
+    }
+    if (routeId) routeResolved++;
     const tripId = veh.trip?.tripId;
-    const serviceType = detectServiceType(routeId, tripId);
+    const serviceType = detectServiceType(routeId ?? undefined, tripId);
 
     // Speed comes in m/s from GTFS-RT — convert to km/h for consistency with LD collector
     const speedMps = pos.speed;
@@ -201,7 +229,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  log(TASK, `Positions stored: ${stored}, skipped (no coords/error): ${skipped}`);
+  log(TASK, `Positions stored: ${stored}, skipped (no coords/error): ${skipped}, routeId resolved: ${routeResolved}`);
 
   // ── 3. Rolling window cleanup ──────────────────────────────────────────
   try {
