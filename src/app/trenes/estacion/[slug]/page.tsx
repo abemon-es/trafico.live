@@ -185,8 +185,12 @@ export default async function EstacionDetallePage({ params }: Props) {
   const stationLat = Number(station.latitude);
   const stationLng = Number(station.longitude);
 
-  // Parallel queries: routes, alerts, nearby
-  const [routes, alerts, nearbyRaw] = await Promise.all([
+  const twelveMinAgo = new Date();
+  twelveMinAgo.setMinutes(twelveMinAgo.getMinutes() - 12);
+  const arrivalCodes = [station.stopId, ...(station.code ? [station.code] : [])];
+
+  // Parallel queries: routes, alerts, nearby, live approaching trains
+  const [routes, alerts, nearbyRaw, approachingRaw] = await Promise.all([
     prisma.railwayRoute.findMany({
       where: { stopNames: { has: station.name } },
       select: {
@@ -240,7 +244,38 @@ export default async function EstacionDetallePage({ params }: Props) {
       orderBy: { name: "asc" },
       take: 15,
     }),
+    // Trains whose NEXT stop is this station, from live fleet positions
+    prisma.renfeFleetPosition.findMany({
+      where: {
+        fetchedAt: { gte: twelveMinAgo },
+        nextStation: { in: arrivalCodes },
+      },
+      orderBy: { fetchedAt: "desc" },
+      select: {
+        trainNumber: true,
+        brand: true,
+        delay: true,
+        speed: true,
+        originStation: true,
+        destStation: true,
+        nextStationEta: true,
+      },
+      take: 200,
+    }),
   ]);
+
+  // Dedup approaching trains by number (newest row wins), soonest ETA first
+  const seenTrains = new Set<string>();
+  const approaching = approachingRaw
+    .filter((t) =>
+      seenTrains.has(t.trainNumber) ? false : (seenTrains.add(t.trainNumber), true)
+    )
+    .sort((a, b) => {
+      const ta = a.nextStationEta?.getTime() ?? Infinity;
+      const tb = b.nextStationEta?.getTime() ?? Infinity;
+      return ta - tb;
+    })
+    .slice(0, 8);
 
   // Compute distances and sort
   const nearby = nearbyRaw
@@ -345,6 +380,103 @@ export default async function EstacionDetallePage({ params }: Props) {
             )}
           </div>
         </div>
+      </section>
+
+      {/* --- Live arrivals --- */}
+      {approaching.length > 0 && (
+        <section
+          aria-label="Trenes llegando ahora"
+          className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-4"
+        >
+          <h2 className="font-heading text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+            </span>
+            Trenes llegando a {station.name} ahora
+          </h2>
+          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+            {approaching.map((t) => (
+              <li key={t.trainNumber}>
+                <Link
+                  href={`/trenes/tren/${encodeURIComponent(t.trainNumber)}`}
+                  className="flex items-center gap-3 py-2.5 group"
+                >
+                  <span className="font-mono font-bold text-sm text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors whitespace-nowrap">
+                    {t.brand || "Tren"} {t.trainNumber}
+                  </span>
+                  {t.destStation && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      → destino {t.destStation}
+                    </span>
+                  )}
+                  <span className="ml-auto flex items-center gap-2 whitespace-nowrap">
+                    {t.delay != null && t.delay > 1 ? (
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-tl-amber-100 text-tl-amber-700 dark:bg-tl-amber-900/30 dark:text-tl-amber-300">
+                        +{t.delay} min
+                      </span>
+                    ) : t.delay != null ? (
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        Puntual
+                      </span>
+                    ) : null}
+                    {t.nextStationEta && (
+                      <span className="font-mono text-sm text-gray-700 dark:text-gray-300">
+                        {t.nextStationEta.toLocaleTimeString("es-ES", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[11px] text-gray-400">
+            Trenes cuya próxima parada es esta estación, según las posiciones GPS del visor
+            de Renfe. Se actualiza cada pocos minutos.
+          </p>
+        </section>
+      )}
+
+      {/* --- About this station (editorial/SEO) --- */}
+      <section
+        aria-label="Sobre esta estación"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
+      >
+        <h2 className="font-heading text-base font-semibold text-gray-900 dark:text-gray-50 mb-2">
+          Sobre la estación de {station.name}
+        </h2>
+        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+          La estación de <strong>{station.name}</strong>
+          {station.municipality ? <> se encuentra en {station.municipality}</> : null}
+          {station.provinceName ? <> ({station.provinceName})</> : null}
+          {station.network ? (
+            <>
+              {" "}
+              y forma parte del núcleo de{" "}
+              {networkSlug ? (
+                <Link
+                  href={`/trenes/cercanias/${networkSlug}`}
+                  className="text-tl-600 dark:text-tl-400 hover:underline"
+                >
+                  Cercanías {station.network}
+                </Link>
+              ) : (
+                <>Cercanías {station.network}</>
+              )}
+            </>
+          ) : null}
+          . Por ella {routes.length === 1 ? "pasa" : "pasan"}{" "}
+          <strong>{routes.length} línea{routes.length === 1 ? "" : "s"}</strong>
+          {routesByBrand.size > 1 ? (
+            <> de {routesByBrand.size} servicios ({[...routesByBrand.keys()].slice(0, 5).join(", ")})</>
+          ) : null}
+          . En esta página tienes las líneas con parada aquí, las alertas activas que la
+          afectan, las estaciones cercanas y los trenes que se aproximan en tiempo real
+          {station.wheelchair === 1 ? <>. Estación con accesibilidad certificada</> : null}.
+        </p>
       </section>
 
       {/* --- Map Section --- */}
