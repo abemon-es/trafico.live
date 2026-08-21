@@ -193,10 +193,37 @@ slower than that reports stale permanently while running perfectly — on
 2026-08-18 seven tasks were in that state, including both detectors added the
 same week, and the infra session reasonably read them as failures.
 
-Rule: `threshold = 2 × cadence` (5 min floor). The response now sets
-`thresholdUndeclared` on anything that had to fall back, so check it after
-adding a collector. Noise that never means anything is how a real blackout gets
-ignored — that is exactly how the 15-day AIS outage stayed invisible.
+**The rule here used to read `threshold = 2 × cadence`. That is wrong for
+periodic tasks and it was corrected on 2026-08-21** (refinement from the infra
+sentinel, after this loop showed it a real failure it had read as a tight
+threshold). Why: a strictly periodic task's heartbeat age sawtooths from 0 up
+to ~1× its period during *healthy* operation. Setting the threshold at 2× means
+the alert only fires after **two consecutive failures** — for a daily task, two
+days with no data.
+
+Use instead:
+
+- **Period + grace (10–25%)** whenever one missed run means real data loss —
+  everything hourly and slower. A daily task belongs at ~25 h, not 48 h. A
+  weekly one at ~8 d, not 14 d.
+- **A multiple (2–5×) only for high-frequency tasks (≤15 min)**, where a single
+  missed tick is jitter, costs nothing, and alerting on it is pure noise. This
+  is deliberate tolerance; do not "fix" `incident` at 5× down to 1.1×.
+- **Never set the threshold equal to the period.** The heartbeat is written when
+  the run *finishes*, so age peaks slightly above the nominal gap and the
+  detector flaps whenever a run is slower than the one before it. Four tasks
+  were sitting on that knife edge (`gas-station`, `maritime-fuel`,
+  `portugal-fuel`, `health-check`) until the same-day audit.
+
+Corollary, learned the hard way in the same cycle: **a tight ratio is rigour,
+not miscalibration.** `aemet-historical` at 1.04× was read as "suspiciously
+tight" when it was the only detector doing its job. Never widen a threshold to
+explain away a stale task — find out why the run did not happen.
+
+The response sets `thresholdUndeclared` on anything that had to fall back, so
+check it after adding a collector. Noise that never means anything is how a real
+blackout gets ignored — that is exactly how the 15-day AIS outage stayed
+invisible.
 
 ### Every push to main recreates the collector stack — batch them
 `deploy-trafico-collectors.sh` does `git reset --hard origin/main` +

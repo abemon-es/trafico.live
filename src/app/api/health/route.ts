@@ -32,22 +32,26 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "eumetsat-radar": 1800,      // */15
   "alert-matcher": 900,        // */5
   "social-broadcast": 1800,    // */5 but tolerant
-  "health-check": 1800,        // */30
+  "health-check": 2100,        // */30 + 5 min grace (1800 equalled the period)
   // continuous (collector-ais — always-on WebSocket)
   "ais-stream": 600,           // watchdog kicks at 5min idle (post-iter-3),
                                // so 10min covers reconnect cycle
   // frequent (collector-frequent)
   "weather": 4500,             // hourly @ :00 (AEMET)
   "maritime-forecast": 25200,  // every 6h (4×/day)
-  "voyage-detector": 7200,     // hourly with internal flock
-  "flight-detector": 7200,     // hourly @ :20
-  "train-service-detector": 7200, // hourly @ :35
+  "voyage-detector": 5400,     // hourly + 30 min grace (was 7200 = 2x, blind
+                               // to a single missed run — see PLAYBOOK)
+  "flight-detector": 5400,     // hourly @ :20 + 30 min grace (was 2x)
+  "train-service-detector": 5400, // hourly @ :35 + 30 min grace (was 2x)
   "portugal-weather": 25200,   // every 6h — was defaulting to 4h and so
                                // reported stale for 2 of every 6 hours
   // fuel (collector-fuel)
-  "gas-station": 36000,        // 3×/day at 06/13/20 — 10h buffer
-  "maritime-fuel": 36000,      // 3×/day at 07/14/21
-  "portugal-fuel": 36000,      // 3×/day at 08/15/22
+  "gas-station": 39600,        // 3x/day at 06/13/20 — max gap 10h + 1h grace.
+                               // 36000 equalled the gap exactly: age peaks just
+                               // under it, so any run slower than the previous
+                               // one tipped it stale. Knife-edge, not a buffer.
+  "maritime-fuel": 39600,      // 3x/day at 07/14/21 — max gap 10h + 1h grace
+  "portugal-fuel": 39600,      // 3x/day at 08/15/22 — max gap 10h + 1h grace
   // daily (collector-daily)
   "daily-stats": 90000,        // 00:30 daily
   "ine-stats": 691200,         // weekly Sunday 03:30 (post-iter-2)
