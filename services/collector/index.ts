@@ -293,6 +293,23 @@ async function main() {
     }
   } catch (error) {
     console.error(`[dispatcher] Task ${TASK} failed:`, error);
+
+    // Record the crash in the heartbeat before dying. Without this a thrown
+    // task leaves its LAST SUCCESSFUL heartbeat in place, so /api/health keeps
+    // reporting `ok` until the staleness threshold eventually trips — hours
+    // later for daily tasks, and reading as a threshold problem rather than a
+    // failure. (Found 2026-08-21: aemet-historical had been crashing on an
+    // AEMET socket error while its heartbeat still said "ok".) Applies to all
+    // 53 tasks, not just the one that exposed it.
+    try {
+      await heartbeat(getPrisma(), TASK!, "error", {
+        crashed: true,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } catch (hbError) {
+      console.error(`[dispatcher] Could not write failure heartbeat:`, hbError);
+    }
+
     Sentry.captureException(error, {
       tags: { task: TASK!, layer: "collector" },
     });

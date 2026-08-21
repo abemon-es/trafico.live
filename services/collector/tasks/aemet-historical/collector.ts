@@ -102,14 +102,50 @@ interface AEMETStep1Response {
   descripcion?: string;
 }
 
+/**
+ * fetch with retries for transient transport failures.
+ *
+ * AEMET drops connections mid-handshake ("SocketError: other side closed").
+ * An unretried throw here killed the whole daily run — on 2026-08-21 the very
+ * first call (station inventory) failed 4 s in and the task exited 1, leaving
+ * the day with no climate data at all.
+ */
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  label: string,
+  attempts = 3,
+): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (error) {
+      lastError = error;
+      const cause = error instanceof Error && error.cause ? ` (${String(error.cause)})` : "";
+      if (attempt < attempts) {
+        const backoffMs = 2000 * attempt;
+        logError(
+          TASK,
+          `${label} transport error on attempt ${attempt}/${attempts}${cause} — retrying in ${backoffMs}ms`,
+        );
+        await sleep(backoffMs);
+      }
+    }
+  }
+  throw lastError;
+}
+
 async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
   // Sanitize URL for logging — never log the API key
   const safeUrl = url.replace(/api_key=[^&]+/, "api_key=***");
 
   // Step 1: get datos URL (pass key via header, not query string)
-  const step1Res = await fetch(url, {
-    headers: { Accept: "application/json", api_key: apiKey },
-  });
+  const step1Res = await fetchWithRetry(
+    url,
+    { headers: { Accept: "application/json", api_key: apiKey } },
+    `Step-1 ${safeUrl}`,
+  );
 
   if (!step1Res.ok) {
     logError(TASK, `Step-1 HTTP ${step1Res.status} for ${safeUrl}`);
@@ -132,9 +168,11 @@ async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
   // accented char with U+FFFD (e.g. TORREJÓN → TORREJ�N). Fix: read raw
   // bytes, try UTF-8 first (in case AEMET ever fixes their header), fall
   // back to Latin-1 when we detect the replacement character.
-  const step2Res = await fetch(step1.datos, {
-    headers: { Accept: "application/json" },
-  });
+  const step2Res = await fetchWithRetry(
+    step1.datos,
+    { headers: { Accept: "application/json" } },
+    "Step-2 datos URL",
+  );
 
   if (!step2Res.ok) {
     logError(TASK, `Step-2 HTTP ${step2Res.status} for datos URL`);

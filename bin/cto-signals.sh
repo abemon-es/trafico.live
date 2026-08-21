@@ -59,7 +59,12 @@ PUBLIC_CODE="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$BASE/api/health" 2>
 # that reports SUCCESS while the old container keeps serving looks identical to
 # a healthy site from every other angle.
 LIVE_COMMIT="$(jq -r '.commit // "unknown"' <<<"$HEALTH" 2>/dev/null || echo unknown)"
-HEAD_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+# Compare against origin/main, NOT local HEAD: the playbook has this loop commit
+# freely and push once per cycle, so a local unpushed commit is the normal state
+# and comparing it to the deployed build cried wolf on every held commit (it did
+# exactly that in the 2026-08-21 handover). What deploys is what origin/main has.
+git fetch --quiet origin main 2>/dev/null || true
+HEAD_COMMIT="$(git rev-parse --short origin/main 2>/dev/null || echo unknown)"
 
 # ── 2. Smoke test ─────────────────────────────────────────────────────────────
 # Status codes, SEO basics, sitemap, canonical. Skipped in --quick.
@@ -253,7 +258,7 @@ if (( PRETTY )); then
     "overall:     \(.summary.overall)   db=\(.summary.db_ok) redis=\(.summary.redis_ok)",
     "collectors:  \(.summary.collectors_degraded)/\(.summary.collectors_total) degraded, \(.summary.stale_count) stale, \(.summary.silent_failures) SILENT",
     (if .summary.routing_fault then "⚠ ROUTING FAULT: container healthy but public returns \(.summary.public_code) — edge-cache likely holds a stale upstream IP; notify CTO" else empty end),
-    (if .summary.commit_drift then "⚠ COMMIT DRIFT: serving \(.summary.live_commit) but HEAD is \(.summary.head_commit) — a deploy reported success without swapping" else empty end),
+    (if .summary.commit_drift then "⚠ COMMIT DRIFT: serving \(.summary.live_commit) but origin/main is \(.summary.head_commit) — a deploy reported success without swapping" else empty end),
     "public:      \(.summary.public_code)   build=\(.summary.live_commit)",
     "origin:      \(.summary.origin_ok)   (container=\(.origin.state // "?") health=\(.origin.health // "?") restarts=\(.origin.restarts // "?") direct=\(.origin.direct_status // "?"))",
     "smoke:       \(.summary.smoke_ok)",

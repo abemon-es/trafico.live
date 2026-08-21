@@ -19,6 +19,35 @@ const parser = new XMLParser({
   isArray: (name) => ["situation", "situationRecord", "location"].includes(name),
 });
 
+/**
+ * Flatten a DATEX II enum value to a plain string.
+ *
+ * DATEX II allows extending a closed enum: instead of a bare string the XML
+ * carries `_extended` plus the real value in an attribute, which the parser
+ * turns into `{ "#text": "_extended", "@__extendedValue": "giveWay" }`.
+ * Casting that object with `as string` compiles fine and then hands Prisma an
+ * object, which rejects the whole upsert — so a single extended-enum incident
+ * failed to store on every 2-minute run, silently and indefinitely
+ * (DGT-22745955 on the CV-500, found 2026-08-21).
+ *
+ * Returns the extended value when present, otherwise the text node, otherwise
+ * the primitive itself.
+ */
+function datexString(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "string") return value || undefined;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const extended = obj["@__extendedValue"] ?? obj["@_extendedValue"];
+    if (typeof extended === "string" && extended) return extended;
+    const text = obj["#text"];
+    if (typeof text === "string" && text && text !== "_extended") return text;
+    if (typeof extended === "number") return String(extended);
+  }
+  return undefined;
+}
+
 export interface DGTIncident {
   situationId: string;
   type: IncidentType;
@@ -147,7 +176,7 @@ function parseRecord(
 
     // Extract cause categorization
     const cause = record.cause as Record<string, unknown> | undefined;
-    const causeType = cause?.causeType as string | undefined;
+    const causeType = datexString(cause?.causeType);
     const detailedCause = cause?.detailedCauseType as Record<string, unknown> | undefined;
     // detailedCauseType is usually an object like { fog: {} } - extract the key
     let detailedCauseType = detailedCause
@@ -224,7 +253,7 @@ function mapToIncidentType(
 ): IncidentType {
   // Check for specific cause types first
   const cause = record.cause as Record<string, unknown> | undefined;
-  const causeType = cause?.causeType as string | undefined;
+  const causeType = datexString(cause?.causeType);
 
   if (causeType === "roadMaintenance") return "ROADWORK";
   if (causeType === "accident") return "ACCIDENT";
@@ -389,7 +418,7 @@ function extractDescription(record: Record<string, unknown>): string | undefined
     }
   }
 
-  const freeText = record.situationDescription as string | undefined;
+  const freeText = datexString(record.situationDescription);
   if (freeText) return freeText;
 
   return undefined;
@@ -397,7 +426,7 @@ function extractDescription(record: Record<string, unknown>): string | undefined
 
 function extractManagementType(record: Record<string, unknown>): string | undefined {
   // Check for road/carriageway/lane management type (direct DATEX II field)
-  const managementType = record.roadOrCarriagewayOrLaneManagementType as string | undefined;
+  const managementType = datexString(record.roadOrCarriagewayOrLaneManagementType);
   if (managementType) return managementType;
 
   // Check within nested management object
