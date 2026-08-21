@@ -77,7 +77,21 @@ const BCN_GEO_URL_PRIMARY =
 // Fallback: the old bcn.cat CSV (may return 403)
 const BCN_GEO_URL_FALLBACK = "https://www.bcn.cat/transit/dades/dadestrams_geo.csv";
 
-async function fetchBcnCoordinates(): Promise<Map<string, { lat: number; lon: number; desc: string }>> {
+/**
+ * Barcelona tram coordinates.
+ *
+ * The geometry is STATIC — tram sections do not move — but this used to be
+ * re-fetched from the Open Data portal on every 5-minute run, and when both
+ * remote sources went down (primary 502, fallback 403) the whole Barcelona
+ * ingest threw, even though the live traffic feed itself was answering 200.
+ * That single dependency is what emptied CityTrafficReading.
+ *
+ * So: remote first (to pick up new sections), and our own DB as the fallback.
+ * We already hold every section with its coordinates and street name.
+ */
+async function fetchBcnCoordinates(
+  prisma: PrismaClient,
+): Promise<Map<string, { lat: number; lon: number; desc: string }>> {
   const coordMap = new Map<string, { lat: number; lon: number; desc: string }>();
 
   // Try primary source first (long-format: Tram,Tram_Components,Descripció,Longitud,Latitud)
@@ -134,6 +148,32 @@ async function fetchBcnCoordinates(): Promise<Map<string, { lat: number; lon: nu
     }
   }
 
+  // Both remote sources unavailable — use the catalog we already stored.
+  if (coordMap.size === 0) {
+    try {
+      const known = await prisma.cityTrafficSensor.findMany({
+        where: { city: "BARCELONA", sensorId: { startsWith: "BCN-" } },
+        select: { sensorId: true, latitude: true, longitude: true, streetName: true },
+      });
+      for (const s of known) {
+        if (s.latitude === null || s.longitude === null) continue;
+        // Stored ids are "BCN-<tram>"; the live feed keys on the bare tram id.
+        const tramId = s.sensorId.replace(/^BCN-/, "");
+        if (!tramId || coordMap.has(tramId)) continue;
+        coordMap.set(tramId, {
+          lat: Number(s.latitude),
+          lon: Number(s.longitude),
+          desc: s.streetName ?? "",
+        });
+      }
+      if (coordMap.size > 0) {
+        log(TASK, `Barcelona geo: remote sources down — using ${coordMap.size} cached coordinates from DB`);
+      }
+    } catch (err) {
+      logError(TASK, "Barcelona geo: DB fallback failed:", err);
+    }
+  }
+
   return coordMap;
 }
 
@@ -157,7 +197,7 @@ function parseCSVLine(line: string, delim: string): string[] {
   return fields;
 }
 
-async function fetchBarcelona(): Promise<SensorReading[]> {
+async function fetchBarcelona(prisma: PrismaClient): Promise<SensorReading[]> {
   log(TASK, "Fetching Barcelona tram data...");
 
   const [tramsResp, coordMap] = await Promise.all([
@@ -165,7 +205,7 @@ async function fetchBarcelona(): Promise<SensorReading[]> {
       headers: { "User-Agent": "trafico.live-collector/1.0" },
       signal: AbortSignal.timeout(15000),
     }),
-    fetchBcnCoordinates(),
+    fetchBcnCoordinates(prisma),
   ]);
 
   if (!tramsResp.ok) {
@@ -235,7 +275,7 @@ async function fetchBarcelona(): Promise<SensorReading[]> {
  * Format is identical to dadestrams.dat but uses a separate dataset (~527 sections).
  * Coordinates are resolved using the same geo CSV used by fetchBarcelona().
  */
-async function fetchBarcelonaSections(): Promise<SensorReading[]> {
+async function fetchBarcelonaSections(prisma: PrismaClient): Promise<SensorReading[]> {
   log(TASK, "Fetching Barcelona Open Data road sections...");
 
   const [sectionsResp, coordMap] = await Promise.all([
@@ -243,7 +283,7 @@ async function fetchBarcelonaSections(): Promise<SensorReading[]> {
       headers: { "User-Agent": "trafico.live-collector/1.0" },
       signal: AbortSignal.timeout(15000),
     }),
-    fetchBcnCoordinates(),
+    fetchBcnCoordinates(prisma),
   ]);
 
   if (!sectionsResp.ok) {
@@ -307,18 +347,28 @@ async function fetchBarcelonaSections(): Promise<SensorReading[]> {
 // Valencia — ArcGIS REST traffic state
 // ---------------------------------------------------------------------------
 
+// outSR=4326 is load-bearing: the service is natively EPSG:25830 (UTM 30N) and
+// returns coordinates like [725634, 4372463]. Without it every feature failed
+// the Valencia bounds check below and the parser reported "0 road segments"
+// on a perfectly healthy 252 KB response (found 2026-08-21).
 const VLC_ARCGIS_URL =
-  "https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/192/query?where=1%3D1&outFields=*&f=json";
+  "https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/192/query?where=1%3D1&outFields=*&outSR=4326&f=json";
 
-/** Valencia ArcGIS estado numeric code → serviceLevel (0-3) */
-function vlcArcGisEstadoToLevel(estado: number | null): number {
-  if (estado === null || estado === undefined) return 0;
-  // 0=no data, 1=very fluid, 2=fluid, 3=dense, 4=very dense, 5=congestion, 6=blocked
+/**
+ * Valencia ArcGIS estado code → serviceLevel (0-3), or null when unknown.
+ *
+ * estado 0 means "no data", not "fluid". Mapping it to level 0 painted 406 of
+ * 446 segments green — an answer where we have none, which is the failure mode
+ * that made the GA4 zeros look like real traffic. Unknown stays null.
+ */
+function vlcArcGisEstadoToLevel(estado: number | null): number | null {
+  if (estado === null || estado === undefined || estado === 0) return null;
+  // 1=very fluid, 2=fluid, 3=dense, 4=very dense, 5=congestion, 6=blocked
   if (estado <= 2) return 0;
   if (estado === 3) return 1;
   if (estado === 4) return 2;
   if (estado >= 5) return 3;
-  return 0;
+  return null;
 }
 
 interface VlcArcGisFeature {
@@ -338,7 +388,7 @@ interface VlcArcGisFeature {
  * Fetches Valencia road segment traffic state from the Geoportal Valencia ArcGIS REST service.
  * Updated every 3 minutes. Returns road segment midpoint as sensor coordinate.
  */
-async function fetchValenciaArcGIS(): Promise<SensorReading[]> {
+async function fetchValenciaArcGIS(_prisma: PrismaClient): Promise<SensorReading[]> {
   log(TASK, "Fetching Valencia ArcGIS traffic state...");
 
   const resp = await fetch(VLC_ARCGIS_URL, {
@@ -428,7 +478,7 @@ function zgzEstadoToLevel(estado: string | number | null): number {
   return 0;
 }
 
-async function fetchZaragoza(): Promise<SensorReading[]> {
+async function fetchZaragoza(_prisma: PrismaClient): Promise<SensorReading[]> {
   log(TASK, "Fetching Zaragoza traffic data...");
 
   const resp = await fetch(ZGZ_URL, {
@@ -602,7 +652,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   for (const city of cities) {
     try {
-      const readings = await city.fetch();
+      const readings = await city.fetch(prisma);
       const { sensors, readings: inserted } = await upsertSensorsAndReadings(prisma, readings);
       totalSensors += sensors;
       totalReadings += inserted;
