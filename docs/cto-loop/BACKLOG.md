@@ -664,13 +664,45 @@ collectors unhealthy, 3 silent failures, SEO pipeline never once succeeded.
 
 ## P0 — active outage, user-visible
 
-### 0. `city-traffic` — zero readings from ALL three cities — **NEXT CYCLE'S ITEM**
-Flagged loud by `23e3709d` (zero readings across all sources is now `error`,
-not `partial`). Barcelona returns 502 then 403, Valencia parses 0 segments,
-Zaragoza returns 400 — three independent upstream investigations, almost
-certainly endpoint changes. `CityTrafficReading` is empty; sensor catalog
-(1,054 rows) survives. User impact: city intensity data absent from
-`/api/trafico/ciudades` consumers.
+### 0. `city-traffic` — ✅ FIXED 2026-08-21 (`d5a3bc81`). Two of three were OURS.
+
+"All upstream sources failed" was wrong, and believing it is what kept this
+open for days. Probed from inside the collector container: Barcelona's and
+Valencia's feeds both answer **200 with real data**. Only Zaragoza is upstream.
+
+- **Barcelona — self-inflicted.** The live feed was healthy; the failure was
+  the STATIC section geometry being re-fetched from the Open Data portal on
+  every 5-minute run. With both geo sources down (primary 502, fallback 403)
+  the whole city ingest threw before touching the working feed. Coordinates do
+  not change and we already held all **1,054 with street names**, so the DB is
+  now the fallback. *Lesson: never make a 5-minute task depend at runtime on a
+  remote fetch of data that is static by nature.*
+- **Valencia — self-inflicted.** The service is natively **EPSG:25830** and
+  returns coordinates like `[725634, 4372463]`; all 446 features failed the
+  WGS84 bounds check, so a healthy 252 KB response logged "0 road segments
+  parsed". Now requests `outSR=4326`. *Lesson: "0 parsed" on a 200 response is
+  a parser bug until proven otherwise — it was read as an upstream change.*
+- **Valencia honesty fix:** `estado 0` means "no data", not "fluid"; it was
+  mapped to serviceLevel 0, painting 406 of 446 segments green. Unknown is now
+  `null`. Same family as the GA4 zeros.
+- **Zaragoza — genuinely upstream.** Every endpoint variant returns HTTP 400
+  `java.lang.NullPointerException` (their server). Left probing; the task now
+  reports `partial` instead of dragging the other two cities down.
+- Barcelona *sections* (the second BCN source) still 502s upstream; trams
+  covers the city.
+
+**Verified:** manual run 939 readings, then the unattended 5-min cron stored
+Barcelona 527 + Valencia 412. Heartbeat `ok`. `/api/trafico/ciudades` serves
+Barcelona with 500 sensors / 12 congested. Table went from **0 rows to flowing**.
+
+**Immediate next item — the consumer gap.** These readings still reach no page:
+the only consumer is `/api/trafico/ciudades`, which no page fetches, and the
+sensors appear on `/trafico` and `/atascos/[ciudad]` as a `.count()` only. The
+data funnel audit flagged this as page-dead; now that the data flows again,
+surfacing it (city cards on /trafico, sensor detail on /atascos/[ciudad]) is
+the cheapest real user-facing win on the board. Note for that work: Valencia
+reports `estado 0` on ~90% of segments at midday, so a Valencia panel must
+render "sin datos" honestly rather than implying free-flowing traffic.
 
 ### 1. `ais-stream` — ❌ EARLIER DIAGNOSIS WRONG. Cause was our own reconnect storm
 
