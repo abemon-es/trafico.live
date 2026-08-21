@@ -57,6 +57,25 @@ hitting us — zero 429s in the collector logs; our collectors egress to DGT/
 AEMET/Renfe and never traverse their catch-all. The residual ~216 errors/h in
 collector-realtime is the known `TELEGRAM_CHANNEL not set` (ESCALATIONS #0).
 
+**Follow-up same day (`d4c96795`) — threshold audit, all 53 tasks.** The infra
+sentinel refined our own written rule (`2 × cadence`) and the corrected version
+found real defects when applied as an audit:
+- **Blind to a single failure (ratio 2.00):** voyage-detector, flight-detector,
+  train-service-detector — hourly tasks at a 2 h threshold only alerted after
+  TWO missed runs. Now 5400 (period + 30 min).
+- **Knife-edge (ratio 1.00):** gas-station, maritime-fuel, portugal-fuel (max
+  gap 10 h, threshold 36000 = exactly 10 h) and health-check (*/30 at 1800).
+  The heartbeat is written when a run *finishes*, so age peaks just above the
+  gap and the detector flaps whenever one run is slower than the last. Given
+  grace (39600 / 2100). All four were healthy — this is removing false
+  positives, not widening to hide a failure.
+- **Deliberately left at 2×:** eumetsat-radar (*/15) and the high-frequency
+  realtime tasks. One missed 15-min frame costs nothing; alerting on it is the
+  noise that teaches everyone to ignore the board. The multiplier should scale with
+  what ONE missed run costs, not with the cadence.
+- Correct already: every daily (1.04–1.11×) and weekly (1.14×) task.
+Verified live after deploy: seven new thresholds served, all seven tasks `ok`.
+
 **Next cycle: `city-traffic` (P0 #0)** — still the oldest real failure.
 
 ## DIRECTIVE (MJ, 2026-08-20): mobile map "que se vea de cojones"
