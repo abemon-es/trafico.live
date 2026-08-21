@@ -170,6 +170,23 @@ provisions a DDL role (BACKLOG ESCALATIONS #00), a new migration needs:
 Step 4 is not optional. Skipping it on 2026-08-18 left a migration blocking the
 queue for nine hours; the infra session found it, not this loop.
 
+### A crashed task now reports `error`, not a stale `ok` (fixed 2026-08-21)
+Until `d27e3aad` the dispatcher caught a thrown task, logged it, sent it to
+Sentry and exited 1 — **without writing a heartbeat**. The row kept its last
+SUCCESSFUL status, so `/api/health` reported `ok` while the task had been
+crashing for days; only the staleness threshold eventually exposed it, hours
+(daily tasks) later and wearing the costume of a miscalibrated threshold. The
+infra sentinel read exactly that way on 2026-08-21 and proposed widening the
+threshold, which would have buried a real failure for two more days.
+
+Consequence when triaging: a dead collector should now appear as `error` fast.
+If you see a task go `stale` while still claiming `ok`, that is a NEW instance
+of this class, not a threshold issue — find what swallowed the failure.
+
+**Corollary — do not widen a threshold to explain a stale task.** For a daily
+task, `threshold ≈ 25 h` is correct (age resets each run, peaks at 24 h, 1 h of
+grace). It is not "1.04× and therefore tight"; it is a working detector.
+
 ### A new collector MUST declare its staleness threshold
 `STALE_THRESHOLDS` in `src/app/api/health/route.ts` falls back to 4h. Any task
 slower than that reports stale permanently while running perfectly — on

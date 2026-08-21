@@ -21,6 +21,44 @@ last.
 
 ---
 
+## Cycle 2026-08-21 — sentinel handover: crashed tasks lied `ok` (`d27e3aad`)
+
+Infra sentinel handed over 5/53 degraded and read `aemet-historical` (stale at
+1.04× threshold) as a miscalibrated threshold. **It was a real failure**, and
+widening would have hidden it — corrected back to them with the log evidence.
+
+Three fixes, all verified in production:
+1. **Class defect — dispatcher never heartbeats a crash.** A thrown task did
+   log + Sentry + `exit 1`, leaving the last SUCCESSFUL heartbeat in place, so
+   `/api/health` said `ok` while the task had been dying daily. All 53 tasks
+   affected. Now writes `status=error` + message. See PLAYBOOK entry.
+2. **aemet-historical**: no retry around `fetch`; AEMET's
+   `SocketError: other side closed` on the FIRST call (station inventory)
+   killed the whole daily run → zero climate rows that day. 3× linear backoff
+   on both steps. Verified: manual run upserted **921 stations in 11.1 s**.
+3. **Silent data loss in DGT incidents**: DATEX II extended enums arrive as
+   `{#text:"_extended", @__extendedValue:"giveWay"}` and were cast `as string`
+   — compiles, then hands Prisma an object, which rejects the entire upsert.
+   DGT-22745955 (CV-500) had been failing on every 2-minute run. `datexString()`
+   flattens them, applied to all four unsafe casts. Verified: the row is now in
+   the DB with `managementType=giveWay`, and the error is gone from the logs.
+4. **cto-signals false alarm (ours)**: commit-drift compared the deployed build
+   against **local HEAD**, so a held commit (which this playbook mandates) cried
+   wolf every cycle. Now compares `origin/main`. Confirmed working: it stayed
+   quiet on the held commit and correctly flagged the real in-flight window
+   during this cycle's web deploy, then cleared when `d27e3aad` swapped in.
+
+Closing state: overall `healthy`, 4/53 degraded, **0 stale, 0 SILENT**,
+smoke 108/0. `ais-stream` recovered on its own again mid-cycle (same pattern as
+2026-08-17 — upstream returns once the backoff stops hammering).
+
+Also confirmed for the infra session: the new edge-cache `limit_req` is NOT
+hitting us — zero 429s in the collector logs; our collectors egress to DGT/
+AEMET/Renfe and never traverse their catch-all. The residual ~216 errors/h in
+collector-realtime is the known `TELEGRAM_CHANNEL not set` (ESCALATIONS #0).
+
+**Next cycle: `city-traffic` (P0 #0)** — still the oldest real failure.
+
 ## DIRECTIVE (MJ, 2026-08-20): mobile map "que se vea de cojones"
 
 Root causes found from MJ's screenshots + Playwright repro (390×844):
