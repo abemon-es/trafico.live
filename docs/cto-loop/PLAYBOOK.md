@@ -264,6 +264,39 @@ layer ~1–2 GB, far from the tripwire. If the layer ever nears 4 GB again,
 investigate what new route family is writing — do not widen the watchdog
 threshold.
 
+### The homepage has its own cached vhost — probe it, not just /api/health
+2026-08-24: `https://trafico.live/` served an infinite `301 → itself` for hours.
+Users got `ERR_TOO_MANY_REDIRECTS`; every one of our probes said healthy.
+
+Cause, in the edge-cache (`conf.d/trafico-live.conf`, `location = /`):
+`proxy_cache` was set with **no `proxy_cache_key`**, so nginx used its default
+key `$scheme$proxy_host$request_uri` — which keys on the *upstream* name, not
+the client's Host. `trafico.live/` and `www.trafico.live/` therefore shared one
+cache entry. The infra session added a `www.trafico.live` uptime probe that
+night; our app answered it with a correct `301 → https://trafico.live/`
+(www→apex), nginx cached that redirect under the shared key for 1 h
+(`proxy_cache_valid 301 302 1h`), and every apex visitor was then served the
+redirect-to-self. The probe re-poisoned it each cycle, so it never self-healed.
+
+Our app was blameless — origin answered `200` for `Host: trafico.live` and
+`301` only for `Host: www.trafico.live`, which is the correct behaviour — and
+no deploy had happened in three days. **When the symptom is host-dependent and
+the code has not changed, suspect a cache key before suspecting the app.**
+
+Two lessons that are ours:
+- **`public:` in `bin/cto-signals.sh` probed `/api/health`, never the
+  homepage.** `/api/health` is served by the edge's no-cache catch-all, so the
+  one path that broke was the one path we never measured. A homepage probe with
+  a bounded redirect budget now runs alongside it (`curl` exits 47 on
+  `--max-redirs` exhaustion — that is the loop's signature; a self-referential
+  301 chain otherwise reads as a normal redirect).
+- **A redirect that varies by Host must never be cached under a host-less key.**
+  We cannot defend against this from the app: that `location` block sets
+  `proxy_ignore_headers Cache-Control Set-Cookie Expires X-Accel-Expires Vary`,
+  so `no-store` and `Vary: Host` from Next.js are discarded by design. The only
+  lever is the edge config, which belongs to the infra session — do not edit it
+  from this loop, it fronts bm.consulting, finest.press and gastronomia.club.
+
 ### The container healthcheck is honest — don't "fix" it for routing faults
 It fetches `/api/health`, which runs `SELECT 1`, pings Redis and aggregates all
 51 heartbeats, returning 503 when the DB is down. During a routing fault it

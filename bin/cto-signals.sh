@@ -55,6 +55,25 @@ HEALTH="$(json_or_null "$HEALTH_RAW")"
 # upstream IP the body is a 502 error page, not JSON, and HEALTH collapses to
 # null — indistinguishable from "probe failed" unless we record the code.
 PUBLIC_CODE="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$BASE/api/health" 2>/dev/null || echo 000)"
+
+# The HOMEPAGE, probed separately and with a bounded redirect budget.
+#
+# Until 2026-08-24 "public" above was the only public probe, and it asks
+# /api/health — which the edge-cache serves from its no-cache catch-all. The
+# homepage sits in its own cached `location = /`, so an outage confined to the
+# homepage was invisible here: the loop ran for hours reporting public 200.
+# curl exits 47 when it exhausts --max-redirs, which is the loop's signature; a
+# self-referential 301 chain otherwise looks like a healthy redirect.
+HOME_CODE="$(curl --silent --max-time 20 --location --max-redirs 5 \
+  -A "cto-loop/1.0" -o /dev/null -w '%{http_code}' "$BASE/" 2>/dev/null)"
+HOME_CURL_RC=$?
+if [ "$HOME_CURL_RC" -eq 47 ]; then
+  HOME_STATE="redirect_loop"
+elif [ "$HOME_CODE" = "200" ]; then
+  HOME_STATE="ok"
+else
+  HOME_STATE="http_${HOME_CODE:-000}"
+fi
 # Which build is actually serving, versus what main says it should be. A deploy
 # that reports SUCCESS while the old container keeps serving looks identical to
 # a healthy site from every other angle.
@@ -196,6 +215,8 @@ RESULT="$(jq -n \
   --argjson health "$HEALTH" \
   --argjson smoke "$SMOKE" \
   --arg public_code "$PUBLIC_CODE" \
+  --arg home_state "$HOME_STATE" \
+  --arg home_code "$HOME_CODE" \
   --arg live_commit "$LIVE_COMMIT" \
   --arg head_commit "$HEAD_COMMIT" \
   --argjson containers "$CONTAINERS" \
@@ -230,6 +251,11 @@ RESULT="$(jq -n \
       seo_pipeline_ok: (if ($seo|type) == "object" and ($seo|has("ok")) then $seo.ok else null end),
       origin_ok: (if ($origin|type) == "object" and ($origin|has("ok")) then $origin.ok else null end),
       public_code: $public_code,
+      home_state: $home_state,
+      home_code: $home_code,
+      # A homepage that never resolves is a total outage for users even while
+      # every API probe stays green.
+      homepage_down: ($home_state != "ok"),
       live_commit: $live_commit,
       head_commit: $head_commit,
       # True only when both are known and differ — an unknown build (older
@@ -260,6 +286,7 @@ if (( PRETTY )); then
     (if .summary.routing_fault then "⚠ ROUTING FAULT: container healthy but public returns \(.summary.public_code) — edge-cache likely holds a stale upstream IP; notify CTO" else empty end),
     (if .summary.commit_drift then "⚠ COMMIT DRIFT: serving \(.summary.live_commit) but origin/main is \(.summary.head_commit) — a deploy reported success without swapping" else empty end),
     "public:      \(.summary.public_code)   build=\(.summary.live_commit)",
+    (if .summary.homepage_down then "🚨 HOMEPAGE DOWN: / is \(.summary.home_state) — users cannot load the site even though the API answers" else "homepage:    ok" end),
     "origin:      \(.summary.origin_ok)   (container=\(.origin.state // "?") health=\(.origin.health // "?") restarts=\(.origin.restarts // "?") direct=\(.origin.direct_status // "?"))",
     "smoke:       \(.summary.smoke_ok)",
     "seo pipe:    \(.summary.seo_pipeline_ok)   (snapshots=\(.seo_snapshot.rows // "?"))",
