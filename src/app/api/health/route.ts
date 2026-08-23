@@ -96,6 +96,10 @@ interface CollectorEntry {
   thresholdUndeclared?: boolean;
   stale: boolean;
   errorMessage?: string | null;
+  /** Structured reason the collector recorded (stored counts, failed sections,
+   *  skipped sources...). Without this a `partial` carries no information and
+   *  triage means SSHing to the host to grep container logs. */
+  meta?: unknown;
 }
 
 async function checkDatabase(): Promise<{ ok: boolean; latency_ms?: number; error?: string }> {
@@ -134,6 +138,7 @@ async function checkHeartbeats(): Promise<{
         lastRunAt: true,
         status: true,
         errorMessage: true,
+        meta: true,
       },
     });
 
@@ -162,6 +167,9 @@ async function checkHeartbeats(): Promise<{
         ...(declared === undefined ? { thresholdUndeclared: true } : {}),
         stale,
         ...(row.errorMessage ? { errorMessage: row.errorMessage } : {}),
+        // Collectors have always written this; the response dropped it, so
+        // every degraded status arrived unexplained (2026-08-24).
+        ...(row.meta !== null && row.meta !== undefined ? { meta: row.meta } : {}),
       };
     });
 

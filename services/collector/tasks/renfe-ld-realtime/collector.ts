@@ -276,14 +276,48 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   // ── 4. Summary stats ──────────────────────────────────────────────────────
+  //
+  // Zero trains is only a problem during service hours. Renfe Larga Distancia
+  // runs roughly 05:30–01:00, so `stored > 0 ? ok : partial` marked this task
+  // degraded every single night for hours while it was working perfectly, and
+  // an alert that always fires at 02:00 is how a real one gets ignored.
+  // Outside service hours an empty fleet is the correct answer; inside them it
+  // still deserves `partial`, and either way the heartbeat now says which.
+  const hourMadrid = Number(
+    new Intl.DateTimeFormat("es-ES", {
+      timeZone: "Europe/Madrid",
+      hour: "2-digit",
+      hour12: false,
+    }).format(new Date()),
+  );
+  const overnight = hourMadrid >= 1 && hourMadrid < 6;
+  const status = stored > 0 || overnight ? "ok" : "partial";
+  const reason =
+    stored > 0
+      ? undefined
+      : overnight
+        ? "no active LD trains — outside Renfe service hours (01:00-06:00 Europe/Madrid)"
+        : "fleet API returned no active trains during service hours";
+
   try {
     const totalActive = await prisma.renfeFleetPosition.count({
       where: { fetchedAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } },
     });
     log(TASK, `Active fleet positions (last 5min): ${totalActive}`);
-    await heartbeat(prisma, TASK, stored > 0 ? "ok" : "partial", { stored, skipped, activePositions: totalActive });
+    await heartbeat(prisma, TASK, status, {
+      stored,
+      skipped,
+      activePositions: totalActive,
+      hourMadrid,
+      ...(reason ? { reason } : {}),
+    });
   } catch {
     // Non-fatal — stats are informational only
-    await heartbeat(prisma, TASK, stored > 0 ? "ok" : "partial", { stored, skipped });
+    await heartbeat(prisma, TASK, status, {
+      stored,
+      skipped,
+      hourMadrid,
+      ...(reason ? { reason } : {}),
+    });
   }
 }
