@@ -21,6 +21,42 @@ last.
 
 ---
 
+## Cycle 2026-08-24 (late) — degraded statuses carried no reason (`b7e0780e`)
+
+**Homepage outage first** (see PLAYBOOK "The homepage has its own cached
+vhost"): `/` served an infinite 301-to-self for ~2 h. Root cause was a missing
+`proxy_cache_key` in the shared edge-cache, fixed by the infra session — the
+same defect turned out to exist in 35 blocks across six other sites. Our probe
+gap (`public:` measured `/api/health`, never `/`) closed in `9f4f6c41` with a
+bounded-redirect homepage check, validated against a real >5-hop chain.
+
+**Then the cycle item.** `/api/health` selected only
+`task/lastRunAt/status/errorMessage`, so the structured `meta` every collector
+already writes was **discarded at the API boundary**. Every `partial` arrived
+unexplained; triage meant SSHing to grep container logs, which is exactly what
+both this loop and the sentinel had been doing for days on `transit-gtfs` and
+`aemet-forecast`. Now exposed, and immediately useful:
+- `transit-gtfs`: `{processed: 59, failed: 3, skipped: 105, routes: 16661,
+  stops: 135875}` — 3 feeds failing, now a concrete next investigation instead
+  of a shrug.
+- `aemet-forecast`: `{upserted: 1337, errors: 6, failedCodes: [...]}` —
+  confirms the known 6 non-existent AEMET codes rather than assuming it.
+
+**First thing the exposed meta caught:** `renfe-ld-realtime` used
+`stored > 0 ? "ok" : "partial"`, so it reported degraded EVERY night from 01:00
+because Renfe runs no long-distance service then. An alert that always fires at
+02:00 is how a real one gets ignored. Zero trains is now `ok` overnight,
+`partial` during service hours, and the heartbeat states which. Verified live:
+`{reason: "no active LD trains — outside Renfe service hours", hourMadrid: 1}`.
+
+Closing state: healthy · 2/53 degraded (both now self-describing) · 0 stale ·
+0 SILENT · homepage ok · smoke 108/0. `ais-stream` and `city-traffic` both
+stayed out of the degraded list.
+
+**Next cycle:** the city-traffic consumer gap (data flows again since
+`d5a3bc81` but no page renders it — only `/api/trafico/ciudades`, which nothing
+fetches). Then `transit-gtfs`'s 3 failing feeds, now that we can see them.
+
 ## Cycle 2026-08-21 — sentinel handover: crashed tasks lied `ok` (`d27e3aad`)
 
 Infra sentinel handed over 5/53 degraded and read `aemet-historical` (stale at
