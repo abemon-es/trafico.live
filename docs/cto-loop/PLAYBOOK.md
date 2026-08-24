@@ -237,6 +237,23 @@ So: one push per cycle, at the end, with the doc update included. If a cycle
 genuinely needs an intermediate push, expect the stack to bounce and do not
 schedule verification against a long-running collector immediately after.
 
+**Measured consequence, 2026-08-24 — long tasks produce false staleness.**
+`opensky` takes a consistent **188 s** per run (7 polls, 30 s apart) on a
+`*/10` schedule. The collector deploy for `e820bd2` recreated the container at
+11:13:31, and that cycle's run — started 11:10:25 — would have finished at
+11:13:33: **killed two seconds short**. Its heartbeat then aged 20 min against
+a 900 s threshold and showed `[SILENT] stale` while the task was perfectly
+healthy (the next run stored 3,227 positions).
+
+Two rules follow. First, a task whose run duration is a material fraction of
+its period has a window each cycle where a deploy destroys it — so after any
+intermediate push, treat staleness on `opensky`, `voyage-detector`,
+`flight-detector` and `train-service-detector` as deploy fallout until proven
+otherwise, and let the next cycle clear it. Second, **do not "fix" those
+thresholds**: this session nearly widened `opensky` twice before checking, and
+the detector was right both times. Confirm against the container's `StartedAt`
+versus the task's start/completion log lines before touching anything.
+
 Corollary for evidence: a deploy-log check is only valid for the moment it ran.
 Re-check it before concluding anything about restarts that happened *after* it —
 reporting a stale read as current evidence is how this loop spent a morning
