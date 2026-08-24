@@ -85,7 +85,30 @@ const STALE_THRESHOLDS: Record<string, number> = {
 
 // Tasks that should be hidden from the health response entirely.
 // Currently disabled by design — including them would always show stale=true.
-const HIDDEN_TASKS = new Set<string>(["sasemar", "test-heartbeat-debug"]);
+/**
+ * Tasks deliberately kept out of the collector list, each with its reason.
+ *
+ * This used to be a bare Set. Hiding a task by name is the most dangerous shape
+ * a detector config can take: it REMOVES signal, and it does so silently, so
+ * nobody auditing the fleet can tell the task exists at all. Reviewing this on
+ * 2026-08-24 I found `sasemar` last ran 117 days ago with a frozen `ok`, spent
+ * ten minutes believing a live collector had been dead since April, and only
+ * then found the crontab note saying it is a deliberately retired one-shot.
+ * The suppression was right; its silence was not.
+ *
+ * So the reasons live here and ship in the response as `excludedTasks`. A
+ * future cycle (or the infra sentinel) can now see what is being suppressed and
+ * decide whether it still should be, instead of never learning it exists.
+ * Generalised from the same failure elsewhere in the estate: a whitelist guard
+ * that ran every 2 minutes for four months protecting an IP that had changed —
+ * ask a detector WHAT it acts on, not merely whether it runs.
+ */
+const HIDDEN_TASKS: Record<string, string> = {
+  sasemar:
+    "one-shot historical import (SASEMAR 2019-2024 archive, 2,140 rows); cron intentionally disabled, would otherwise report stale forever",
+  "test-heartbeat-debug":
+    "debug artefact from 2026-04-18, never a real collector",
+};
 
 interface CollectorEntry {
   task: string;
@@ -143,7 +166,7 @@ async function checkHeartbeats(): Promise<{
     });
 
     const collectors: CollectorEntry[] = rows
-      .filter((row) => !HIDDEN_TASKS.has(row.task))
+      .filter((row) => !(row.task in HIDDEN_TASKS))
       .map((row) => {
       // A task with no declared threshold inherits 4h, which is wrong for
       // anything slower than that and silently mislabels it stale forever —
@@ -205,6 +228,8 @@ export async function GET() {
     collectors: heartbeats.collectors,
     staleCount: heartbeats.staleCount,
     totalCollectors: heartbeats.collectors.length,
+    // Declared, not silent: what is excluded from the list above and why.
+    excludedTasks: HIDDEN_TASKS,
     ...(heartbeats.error ? { collectorsError: heartbeats.error } : {}),
     timestamp: new Date().toISOString(),
     // Baked in at build time. Makes "which build is actually live" answerable
