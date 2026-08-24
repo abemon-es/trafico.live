@@ -117,10 +117,29 @@ recorded above built inbound paths for municipios (~8,100), codigo-postal
 zero impressions*. Making invisible pages crawlable did not make them visible.
 Crawlability was never the binding constraint; demand was.
 
+**Post-deployment window tested (and it is underpowered — do not read it as a
+verdict).** The CMO rightly noted that judging August's linking work on a 90d
+window dilutes it in ~84 days of "before", so I re-measured 2026-08-18→22
+against 2026-05-24→08-15 for the eight templates that work targeted:
+
+- All eight (`/municipio/`, `/codigo-postal/`, `/carga-ev/punto/`,
+  `/meteo/estaciones/`, `/radares/radar/`, `/calidad-aire/estacion/`,
+  `/trenes/estacion/`, `/trenes/linea/`): **0 pages, 0 impressions post.**
+- But the whole site only had **40 pages with any impression in those 5 days**,
+  against 635 across the 84-day pre-window — the same ~8/day base rate. Even
+  `/trenes/estacion/` and `/trenes/linea/`, which do earn (16 and 30 pages
+  pre), show zero post purely because 5 days sits below the sampling floor.
+
+So the test cannot yet distinguish "the linking did not work" from "not enough
+data". **Re-measure ~2026-09-20** with a 30-day post window; only then is the
+comparison meaningful. Recording this so a future cycle does not mistake the
+current zeros for a verdict and prune on them.
+
 **Do NOT unilaterally prune the corpus.** Two reasons: the 90d window mostly
 predates the August linking work, so some of those templates have never really
-been tried; and removing ~21k URLs is a strategy call with brand/product
-implications that belongs to MJ, not to a loop cycle. What this data *does*
+been tried (and the post-window test above is not yet powered to say); and
+removing ~21k URLs is a strategy call with brand/product implications that
+belongs to MJ, not to a loop cycle. What this data *does*
 justify: stop investing in per-entity templates, and put effort where the
 measurement says it pays (province/road/news-shaped aggregates, plus the
 citation-oriented SSR editorial + FAQPage work already underway).
