@@ -222,6 +222,47 @@ export function getSitemapShardIds(): { id: number }[] {
 }
 
 /**
+ * Is `id` a shard the index could legitimately advertise?
+ *
+ * The index is built from `getActiveShardIds()` (DB row counts) while the shard
+ * route used to validate against `getSitemapShardIds()` (static fallbacks), and
+ * the two disagreed: with >10 000 public chargers the index advertised
+ * /sitemap/702.xml while FALLBACK_CHARGER_SHARDS = 2 made the route 404 it.
+ * A sitemap index pointing at a 404 is an error Google records against the
+ * whole index, and it went unnoticed because nothing ever fetched our own
+ * sitemaps end to end (found 2026-08-24 while auditing template yield).
+ *
+ * Categories are spaced 100 apart, so any id inside a category's band belongs
+ * to it. Validating on the band instead of an exact count means growth in any
+ * table can never again produce an advertised-but-404 shard; a genuinely empty
+ * shard just serves a valid empty sitemap.
+ */
+export function isKnownShardId(id: number): boolean {
+  if (!Number.isInteger(id) || id < 0) return false;
+  if (id === 0) return true; // core pages
+  const CATEGORY_BAND = 100;
+  const knownOffsets = [
+    GAS_STATION_OFFSET,
+    MUNICIPALITY_OFFSET,
+    POSTAL_CODE_OFFSET,
+    INSIGHTS_OFFSET,
+    MARITIME_OFFSET,
+    RADAR_OFFSET,
+    CAMERA_OFFSET,
+    CHARGER_OFFSET,
+    RAILWAY_STATION_OFFSET,
+    RAILWAY_LINE_OFFSET,
+    AIR_QUALITY_OFFSET,
+    CLIMATE_STATION_OFFSET,
+    AIRCRAFT_OFFSET,
+    SPANISH_PORT_OFFSET,
+  ];
+  return knownOffsets.some(
+    (offset) => id >= offset && id < offset + CATEGORY_BAND
+  );
+}
+
+/**
  * Generates sitemap entries for a specific shard ID.
  * Always queries the DB at runtime — no build-time caching.
  */

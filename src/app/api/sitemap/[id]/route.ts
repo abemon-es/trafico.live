@@ -2,15 +2,13 @@ import { reportApiError } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import {
   generateSitemapForShard,
-  getSitemapShardIds,
+  isKnownShardId,
   entriesToXml,
 } from "@/lib/sitemap-generator";
 
 // Cache sitemap XML for 1 hour — Cloudflare + browsers respect this.
 // No ISR dependency: each request runs the DB query if cache is expired.
 const CACHE_MAX_AGE = 3600;
-
-const validShardIds = new Set(getSitemapShardIds().map((s) => s.id));
 
 export async function GET(
   _request: Request,
@@ -19,7 +17,10 @@ export async function GET(
   const { id: idStr } = await params;
   const id = Number(idStr);
 
-  if (isNaN(id) || !validShardIds.has(id)) {
+  // Validate on the category band, not an exact shard count: the index is
+  // built from live DB counts and used to advertise shards this route 404'd
+  // (see isKnownShardId). An empty shard now serves a valid empty sitemap.
+  if (!isKnownShardId(id)) {
     return new NextResponse("Not found", { status: 404 });
   }
 
