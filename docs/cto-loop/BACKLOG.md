@@ -1125,6 +1125,21 @@ db-primary — the directory only exists on compute today** → `mv` the staged
 script over the original. Signal of completion: `TrafficFreshnessExporterDead`
 goes green. Do not ping CTO about it; watch the alert.
 
+**Verified still blocked, 2026-08-24** (checked on db-primary, not assumed):
+`/opt/monitoring/secrets/monitoring_pass` does not exist · no
+`traffic_freshness.prom` in the textfile collector · staged script not in
+place. Eight days since the sequence was agreed, six weeks since the July 12
+password rotation broke it. The infra session reports the dead exporter is now
+one of three named causes their ingestion monitoring is stalled, and had the
+alert silenced in `known_alerts` as "chronic benign" — which it had stopped
+being. **Not ours to fix** (db-primary + a credential only MJ can rotate), but
+worth keeping visible here rather than trusting an alert that was muted.
+
+Scope note for whoever reads this next: this exporter measures the *traffic-turbo
+monitoring* pipeline, NOT trafico.live ingestion. Ours is healthy and was never
+affected — verified same day: 53 collectors, 21 heartbeating inside 15 min,
+2 degraded and both self-describing.
+
 That password currently lives in **four** places: journald on compute,
 `/opt/traffic-turbo/env.sh`, hardcoded in the old script, and in `ps` argv
 while its psql runs. Canonical lesson (shared with CTO): **rotation without a
