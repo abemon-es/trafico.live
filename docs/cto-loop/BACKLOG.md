@@ -81,6 +81,58 @@ sessions, so clean structured data and JS-free parseable text (which the
 train/line/station editorial blocks now provide) pay in citation where clicks
 under-report. CMO offered a coverage sweep on sc-domain:trafico.live — accepted.
 
+### 📊 TEMPLATE YIELD — measured 2026-08-24, 90d GSC vs sitemap composition
+
+The CMO sweep put coverage at **1.6%**: of 40,916 sitemap URLs, only **643**
+earned a single impression in 90 days. I broke that down per template on our own
+data (script pattern: pull GSC `page` dimension 90d, collapse paths to
+templates, compare against URL counts parsed from all 18 shards).
+
+**What earns** (coverage · avg position):
+| template | published | visible | cov | impr | pos |
+|---|---|---|---|---|---|
+| `/radares/*` | 30 | 19 | **63%** | 124 | 19.8 |
+| `/camaras/*` | 20 | 12 | **60%** | 428 | 31.7 |
+| `/provincias/*` | 43 | 22 | **51%** | 394 | **6.0** |
+| `/carreteras/*` | 365 | 111 | 30% | 1,119 | 47.1 |
+| `/carreteras/*/*` | 170 | 23 | 14% | 64 | **8.2** |
+| `/noticias/*` | 754 | 51 | 7% | 110 | **12.5** |
+
+**What is dead weight — 21,158 URLs (52% of the corpus) with ZERO impressions:**
+`/carga-ev/punto/*` **10,000** · `/codigo-postal/*` 4,620 · `/municipio/*`
+3,459 · `/clima/estacion/*` 949 · `/calidad-aire/estacion/*` 817 ·
+`/radares/radar/*` 737 · `/maritimo/puerto/*` 181 · `/transporte-publico/*` 162.
+And `/gasolineras/terrestres/*`: **12,426 URLs → 1.4% coverage, 2 clicks in
+90 days**.
+
+**The pattern is unambiguous: 43 province pages outperform 12,426 gas-station
+pages.** What earns is small, curated, aggregate-level pages; what does not is
+the per-entity long tail. The best positions on the whole site (6.0, 8.2, 12.5)
+belong to `/provincias`, `/carreteras/*/*` and `/noticias` — never to a
+per-entity page.
+
+**Uncomfortable corollary for this loop's own history:** the L3 "crawl rollout"
+recorded above built inbound paths for municipios (~8,100), codigo-postal
+(~4,600), carga-ev (500/city) and meteo (949) — *precisely the templates with
+zero impressions*. Making invisible pages crawlable did not make them visible.
+Crawlability was never the binding constraint; demand was.
+
+**Do NOT unilaterally prune the corpus.** Two reasons: the 90d window mostly
+predates the August linking work, so some of those templates have never really
+been tried; and removing ~21k URLs is a strategy call with brand/product
+implications that belongs to MJ, not to a loop cycle. What this data *does*
+justify: stop investing in per-entity templates, and put effort where the
+measurement says it pays (province/road/news-shaped aggregates, plus the
+citation-oriented SSR editorial + FAQPage work already underway).
+
+Fixed while measuring (`e820bd28`): **the index advertised `/sitemap/702.xml`
+and the route 404'd it** — index built from live DB counts (>10,000 public
+chargers → 3 shards) vs route validating against static fallbacks
+(`FALLBACK_CHARGER_SHARDS = 2`). A sitemap index pointing at a 404 is an error
+Google records against the whole index. Validation now keys on the category
+band, so table growth can never produce an advertised-but-404 shard again. This
+survived because nothing had ever fetched our own sitemaps end to end.
+
 **Next cycle:** the city-traffic consumer gap (data flows again since
 `d5a3bc81` but no page renders it — only `/api/trafico/ciudades`, which nothing
 fetches). Then `transit-gtfs`'s 3 failing feeds, now visible in the heartbeat
