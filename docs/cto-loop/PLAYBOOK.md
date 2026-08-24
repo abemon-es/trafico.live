@@ -170,6 +170,29 @@ provisions a DDL role (BACKLOG ESCALATIONS #00), a new migration needs:
 Step 4 is not optional. Skipping it on 2026-08-18 left a migration blocking the
 queue for nine hours; the infra session found it, not this loop.
 
+### Ask a detector WHAT it acts on, not whether it runs
+The hardest failure of the week left no hole to look into. On the infra side a
+whitelist guard ran every 2 minutes **for four months** with `ADMIN_IPS` set to
+an address that had changed: never failed, never logged, never alerted,
+protecting nobody. Nothing was broken — it did its job correctly over an empty
+set. The only way to catch that shape is to make a detector state its subject,
+not its liveness. A guard that logged `protecting: <ip>` hourly would have made
+it obvious in April.
+
+Applied here the same day (`7f291d94`): `HIDDEN_TASKS` in
+`src/app/api/health/route.ts` was a bare Set of names filtered out of the
+collector list. **Suppression by name is the most dangerous config shape there
+is** — it removes signal silently, so an auditor cannot tell the task exists.
+Checking it cost ten minutes of believing `sasemar` (last run 117 days ago,
+frozen `ok`) was a live collector dead since April; it is in fact a
+deliberately retired one-shot, and the crontab says so. The suppression was
+right, its silence was not. Reasons now sit beside each entry and ship as
+`excludedTasks`.
+
+Worth re-running that question against any config keyed on an identity — an IP,
+a hostname, a task name, a channel, a token. If it names something concrete, it
+can end up guarding nothing while looking healthy.
+
 ### A crashed task now reports `error`, not a stale `ok` (fixed 2026-08-21)
 Until `d27e3aad` the dispatcher caught a thrown task, logged it, sent it to
 Sentry and exited 1 — **without writing a heartbeat**. The row kept its last
