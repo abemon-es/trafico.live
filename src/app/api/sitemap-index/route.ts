@@ -13,7 +13,14 @@ export async function GET() {
   } catch {
     shards = getSitemapShardIds();
   }
-  const now = new Date().toISOString();
+  // Day granularity, not millisecond. Every ISR regeneration used to stamp all
+  // 18 shards with the exact current instant, so `lastmod` tracked *our cache*
+  // rather than any content change and shifted on essentially every fetch.
+  // Google states it uses lastmod only while it looks consistent and honest,
+  // and a value that is always "seconds ago" is the textbook way to be ignored.
+  // The shards genuinely do regenerate daily (live data, revalidate=300), so a
+  // date is both stable and true. W3C Datetime permits date-only.
+  const now = new Date().toISOString().slice(0, 10);
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
