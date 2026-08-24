@@ -53,9 +53,40 @@ Closing state: healthy · 2/53 degraded (both now self-describing) · 0 stale ·
 0 SILENT · homepage ok · smoke 108/0. `ais-stream` and `city-traffic` both
 stayed out of the degraded list.
 
+**Sitemap triage same cycle (`92201c62`).** The CMO session flagged 8 sitemaps
+in GSC as `lastDownloaded=never, isPending=true` and proposed deleting them as
+"routes that never existed". **Verified false and NOT deleted** — every path
+returns 200 with real URLs today (`0.xml` 1,585 · `1.xml` 5,000 · `100.xml`
+3,459 · `200.xml` 4,620). Deleting would have removed a working discovery path.
+Also ruled out bot blocking: Googlebot UA gets 200 on `/`, `/robots.txt`,
+`/sitemap.xml`, `/sitemap/0.xml`; the index validates (correct root, namespace,
+18 `<loc>`, `application/xml`).
+
+The real signal: **`/sitemap.xml` last downloaded 2026-06-09 reporting 0 URLs**
+— a record from the June crisis, when the index genuinely was empty. Google has
+not re-read it in 2.5 months, so the shards it declares have no reason to be
+fetched. All nine re-submitted via `sitemaps().submit` (the only API lever;
+there is no "request indexing" for sitemaps).
+
+Found while checking: the index stamped all 18 children with
+`new Date().toISOString()`, so `lastmod` tracked ISR regeneration rather than
+content and moved on nearly every fetch — the documented way to have Google
+ignore lastmod entirely. Now day-granularity: stable and true.
+
+GSC 28d: 6 clicks (−14%), 2,093 impressions (−16%), avg position **56.3** (was
+51.9). Indexed but out of play. That is a content/authority problem, not
+plumbing — do not manufacture technical fixes that pretend otherwise. CMO's
+framing worth carrying: on bm.consulting the "AI Assistant" channel is 17% of
+sessions, so clean structured data and JS-free parseable text (which the
+train/line/station editorial blocks now provide) pay in citation where clicks
+under-report. CMO offered a coverage sweep on sc-domain:trafico.live — accepted.
+
 **Next cycle:** the city-traffic consumer gap (data flows again since
 `d5a3bc81` but no page renders it — only `/api/trafico/ciudades`, which nothing
-fetches). Then `transit-gtfs`'s 3 failing feeds, now that we can see them.
+fetches). Then `transit-gtfs`'s 3 failing feeds, now visible in the heartbeat
+meta. Re-check the sitemap re-fetch in a few days: if `/sitemap.xml` still
+shows 2026-06-09 after a week, escalate — that would mean the re-submit lever
+does not work either.
 
 ## Cycle 2026-08-21 — sentinel handover: crashed tasks lied `ok` (`d27e3aad`)
 
