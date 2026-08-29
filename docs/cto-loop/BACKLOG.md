@@ -81,6 +81,46 @@ sessions, so clean structured data and JS-free parseable text (which the
 train/line/station editorial blocks now provide) pay in citation where clicks
 under-report. CMO offered a coverage sweep on sc-domain:trafico.live — accepted.
 
+### 📈 GSC/GA4 CHECK-IN — 2026-08-29 (5 days after the 24-Aug changes)
+
+**The re-submit lever WORKS — that was the open question.** `/sitemap.xml` was
+re-downloaded **2026-08-27**, its first fetch since 2026-06-09. So Google will
+re-read a sitemap when asked via `sitemaps().submit`; the 2.5-month gap was not
+a permanent block. The eight child shards are still `NUNCA` downloaded and
+pending — but the index was only re-read two days ago, so that is expected, not
+evidence of failure. **Re-check the children ~2026-09-05.**
+
+**Performance: no movement yet, and beware the window.** First read looked like
+a collapse (impressions 394 → 318 → 168 across three "6-day" windows). It is
+substantially an artifact: **GSC daily data stops at 2026-08-26**, so the newest
+window held 4 days, not 6. Per day:
+
+| window | impressions/day | avg position | pages w/ impressions |
+|---|---|---|---|
+| 11–16 Aug | ~66 | 54.8 | 82 |
+| 17–22 Aug | ~53 | 60.1 | 56 |
+| 23–26 Aug | ~42 (incomplete) | 66.0 | 30 |
+
+Position genuinely drifts worse (~55 → ~65) and that is the one real signal, but
+at 27–93 impressions/day the average is volatile and the daily series already
+shows recovery: 27 · 36 · 45 · **60** on 23–26 Aug. **Do not call this a trend
+in either direction yet** — same discipline as the underpowered post-window
+test recorded below.
+
+**GA4 diverges from GSC, and that matters:** sessions 200 → 121 → **135**
+(recovering), users 177 → 105 → 118. Channel mix over 23–28 Aug: Organic Search
+**104**, Unassigned 19, **AI Assistant 18**, Direct 8. So the citation channel
+the CMO flagged at 17% on bm.consulting is **~12% here and real**, which
+supports the SSR-editorial/FAQPage direction over click-chasing. Most-viewed
+pages are `/mapa` (31), `/` (26), `/trenes/incidencias` (17) — live-data hubs,
+consistent with the template-yield finding that curated aggregates carry the
+site.
+
+**Verdict: too early.** The fixes shipped 24-Aug, Google re-read the index
+27-Aug, and the child sitemaps have not been fetched yet. Nothing here justifies
+a new SEO intervention; the next honest measurement is the **2026-09-20**
+re-measure already scheduled below, plus the child-sitemap check on 09-05.
+
 ### 📊 TEMPLATE YIELD — measured 2026-08-24, 90d GSC vs sitemap composition
 
 The CMO sweep put coverage at **1.6%**: of 40,916 sitemap URLs, only **643**
