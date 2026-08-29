@@ -1165,6 +1165,39 @@ db-primary — the directory only exists on compute today** → `mv` the staged
 script over the original. Signal of completion: `TrafficFreshnessExporterDead`
 goes green. Do not ping CTO about it; watch the alert.
 
+### ✅ RESOLVED 2026-08-29 — exporter alive after 7 weeks dead
+
+MJ said "hazlo todo", so this was executed end to end. **Crucially, without
+rotating the password** — rotation is what broke it on 12 July, and repeating a
+rotation without a consumer inventory would have repeated the exact failure.
+
+What was actually wrong, measured rather than assumed:
+- The live script carried the pre-rotation password **inside a URI in argv**
+  (leaking into `ps`). Tested directly: `password authentication failed`.
+- `/opt/monitoring/secrets/monitoring_pass` **already existed on compute**
+  (0600, 12 July) but not on db-primary, where the exporter runs — exactly the
+  gap the 2026-08-16 note described.
+
+Done: verified that compute's secret authenticates from db-primary (`AUTH_OK`),
+provisioned it on db-primary (`0600 root`, directory `0700`), backed up the
+broken script (`.bak-preswap-20260829`) and activated the staged one. Secret is
+never echoed anywhere; the new script passes it via `PGPASSWORD` env, so it no
+longer leaks into `ps`. **Zero embedded passwords remain in the script.**
+
+Verified end to end, not just at the file: the run emits real gauges, and
+`exp-node` (which mounts `/var/lib/node_exporter/textfile` → `/host/textfile`)
+now exposes **14 `traffic_source` series**. First data since 12 July.
+
+First thing it revealed, immediately: **`bing` staleness 4,329,893 s ≈ 50 days**
+(cf 1.7 h, ga4/gsc 9.7 h — those are healthy). That belongs to traffic-turbo,
+not trafico.live, but it is exactly the kind of thing that was invisible while
+the exporter was dead. Worth passing to whoever owns that ingest.
+
+**Still outstanding (hygiene, deliberately not done):** the password itself is
+unchanged and has historically leaked into journald on compute and
+`/opt/traffic-turbo/env.sh`. Rotating it needs a consumer inventory first —
+that is the lesson from July, and it is a separate, deliberate action.
+
 **Verified still blocked, 2026-08-24** (checked on db-primary, not assumed):
 `/opt/monitoring/secrets/monitoring_pass` does not exist · no
 `traffic_freshness.prom` in the textfile collector · staged script not in
@@ -1314,10 +1347,17 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
    a `trafico_admin` credential (direct :5440, not PgBouncer) in
    `/opt/apps/trafico-live/.env`, or provision a dedicated migrator role.
 
-0. **TELEGRAM_CHANNEL / TELEGRAM_BOT_TOKEN never provisioned** — the
-   social-broadcast task errors every run wanting them; they exist in neither
-   `.env` nor `.env.collectors`. Decide: provision a bot+channel, or disable
-   the task in the realtime crontab.
+0. ~~**TELEGRAM_CHANNEL / TELEGRAM_BOT_TOKEN never provisioned**~~ — ✅ CLOSED
+   2026-08-29 on MJ's "hazlo todo", by taking the disable branch (`aae44117`).
+   Checked the production `.env` first: **all five** social credentials are
+   absent (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL`, `BLUESKY_HANDLE`,
+   `BLUESKY_PASSWORD`, `X_API_KEY`) — so the task had no destination at all and
+   never had one, composing a post every 5 min and publishing it nowhere:
+   ~216 errors/h, the largest noise source in collector-realtime. The
+   provisioning branch is not doable from here (a Telegram bot needs BotFather;
+   fabricating a token is never acceptable). Cron line commented with the
+   re-enable instructions; verified 0 active lines in the deployed crontab.
+   **One uncommented line away from returning** once credentials exist.
 
 Secrets cannot be invented. The loop must not fabricate, guess, or stub these.
 
