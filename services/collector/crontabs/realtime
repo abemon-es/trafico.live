@@ -68,7 +68,16 @@
 */5 * * * * TASK=alert-matcher npx tsx index.ts 2>&1
 
 # Social broadcast (every 5 min, dedup via Redis 24h) — T4.9d
-*/5 * * * * TASK=social-broadcast npx tsx index.ts 2>&1
+# DISABLED 2026-08-29: it has no destination and never had one. Verified in
+# production .env — TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL, BLUESKY_HANDLE,
+# BLUESKY_PASSWORD and X_API_KEY are all absent, so every run composed a post,
+# tried to publish it nowhere and logged an error: ~216 errors/h, the single
+# largest source of noise in collector-realtime. A detector (or publisher) whose
+# channel does not exist is a diary, and constant noise is how a real failure
+# gets ignored.
+# TO RE-ENABLE: provision the credentials in /opt/apps/trafico-live/.env and
+# uncomment the line below. Nothing else is needed; the task itself works.
+#*/5 * * * * TASK=social-broadcast npx tsx index.ts 2>&1
 
 # Health check failsafe — checks all tables against SLAs, triggers recovery for stale data
 */30 * * * * TASK=health-check npx tsx index.ts 2>&1
