@@ -90,3 +90,11 @@ docs/seo-research-2026-04-19/raw/
 
 # Deployed credentials — mounted into collectors at runtime, never committed
 secrets/
+
+# Lighthouse output (8+ MB of generated reports; regenerate with the audit run)
+.lighthouse-reports/
+
+# Screenshots dropped at the repo root during design review — scratch, not source
+/*.jpg
+/*.jpeg
+/*.png
