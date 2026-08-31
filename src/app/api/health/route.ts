@@ -108,6 +108,8 @@ const HIDDEN_TASKS: Record<string, string> = {
     "one-shot historical import (SASEMAR 2019-2024 archive, 2,140 rows); cron intentionally disabled, would otherwise report stale forever",
   "test-heartbeat-debug":
     "debug artefact from 2026-04-18, never a real collector",
+  "social-broadcast":
+    "disabled 2026-08-29 (crontabs/realtime) — no destination configured: Telegram, Bluesky and X credentials are all absent. Re-enable the cron line and delete this entry once they exist",
 };
 
 interface CollectorEntry {
