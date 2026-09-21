@@ -1,8 +1,16 @@
 # Frequent collectors — hourly weather, 6h maritime/portugal
 # Weather hourly for storm freshness (AEMET alerts change within minutes)
-0 * * * * TASK=weather npx tsx index.ts 2>&1; touch /tmp/last-run
-0 */6 * * * TASK=maritime-forecast npx tsx index.ts 2>&1
-0 */6 * * * TASK=portugal-weather npx tsx index.ts 2>&1
+0 * * * * TASK=weather npx tsx index.ts 2>&1 && touch /tmp/last-run
+# ESCALONADOS A PROPOSITO (21-09-2026). Los dos iban a `0 */6`, el mismo minuto en
+# que ya arrancan `weather` y `voyage-detector` (los dos a :00): CUATRO procesos de
+# node a la vez, con 700 MB de heap cada uno, en un contenedor de 1 GB. El kernel
+# mataba a uno en cada tanda -- oom-kill a las 00:00:18, 06:00:19, 18:00 (x2)... -- y
+# la victima rotaba: un dia voyage-detector ("previous run still in progress"), otro
+# portugal-weather, otro maritime-forecast. Nadie lo arreglaba porque el health-check
+# de collector-realtime relanza lo caducado a las dos horas y tapa el sintoma.
+# Minutos ocupados en este tier: :00 weather+voyage · :20 flight · :35 train.
+10 */6 * * * TASK=maritime-forecast npx tsx index.ts 2>&1
+45 */6 * * * TASK=portugal-weather npx tsx index.ts 2>&1
 # NOTE: air-quality runs in the realtime crontab (hourly at :00) — do NOT add here
 
 # Voyage detector — groups VesselPosition rows into PortCalls & Voyages (hourly)

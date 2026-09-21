@@ -63,8 +63,12 @@ services:
     container_name: collector-fuel
     environment:
       CRONTAB_TIER: fuel
-      NODE_OPTIONS: "--max-old-space-size=350"
-    mem_limit: 512m
+      # 512m/350 no daba: gas-station muere por OOM al guardar el historico diario de
+      # 11.475 estaciones (kernel: anon-rss 455 MB contra un techo de 512, el 18-09 a
+      # las 06:00:42 y 20:00:41, y el 19-09 a las 13:0x). Solo entraban precios cuando
+      # lo rescataba el health-check de collector-realtime.
+      NODE_OPTIONS: "--max-old-space-size=768"
+    mem_limit: 1024m
     cpus: 0.5
 
   collector-daily:

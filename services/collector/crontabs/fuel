@@ -1,5 +1,10 @@
 # Fuel price collectors — 3x daily
 # MINETUR terrestrial + maritime, DGEG Portugal
-0 6,13,20 * * * TASK=gas-station npx tsx index.ts 2>&1; touch /tmp/last-run
-0 7,14,21 * * * TASK=maritime-fuel npx tsx index.ts 2>&1; touch /tmp/last-run
-0 8,15,22 * * * TASK=portugal-fuel npx tsx index.ts 2>&1; touch /tmp/last-run
+# `&&` Y NO `;` (21-09-2026). Con `;` el codigo de salida de la linea era el del
+# `touch`, asi que ofelia apuntaba "job succeeded" aunque la tarea hubiera muerto. Paso
+# el 19-09 a las 13:00: gas-station bajo 11.475 estaciones, murio por OOM en "Saving
+# daily price history" y quedo registrada como pasada BUENA. Una pasada que muere
+# tiene que verse como un fallo, no como frescura.
+0 6,13,20 * * * TASK=gas-station npx tsx index.ts 2>&1 && touch /tmp/last-run
+0 7,14,21 * * * TASK=maritime-fuel npx tsx index.ts 2>&1 && touch /tmp/last-run
+0 8,15,22 * * * TASK=portugal-fuel npx tsx index.ts 2>&1 && touch /tmp/last-run
