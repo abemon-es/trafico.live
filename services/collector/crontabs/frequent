@@ -1,6 +1,12 @@
 # Frequent collectors — hourly weather, 6h maritime/portugal
 # Weather hourly for storm freshness (AEMET alerts change within minutes)
-0 * * * * TASK=weather npx tsx index.ts 2>&1 && touch /tmp/last-run
+# Latido del tier: el `touch` va SIEMPRE y la linea sale con el codigo de la tarea
+# (03-10-2026). Con `&&` un fallo de AEMET dejaba de marcar el latido, el healthcheck
+# daba unhealthy y container-guardian reiniciaba el contenedor cada 5 min (140 veces
+# el 02/03-10), matando a mitad las tareas largas: voyage-detector 16 h sin datos.
+# Con `;` a secas ofelia apuntaba "job succeeded" sobre una tarea muerta (#71). El
+# latido dice "el despachador corre"; la frescura del dato la mide /api/health.
+0 * * * * TASK=weather npx tsx index.ts 2>&1; rc=$?; touch /tmp/last-run; exit $rc
 # ESCALONADOS A PROPOSITO (21-09-2026). Los dos iban a `0 */6`, el mismo minuto en
 # que ya arrancan `weather` y `voyage-detector` (los dos a :00): CUATRO procesos de
 # node a la vez, con 700 MB de heap cada uno, en un contenedor de 1 GB. El kernel

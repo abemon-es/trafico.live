@@ -1,10 +1,11 @@
 # Fuel price collectors — 3x daily
 # MINETUR terrestrial + maritime, DGEG Portugal
-# `&&` Y NO `;` (21-09-2026). Con `;` el codigo de salida de la linea era el del
-# `touch`, asi que ofelia apuntaba "job succeeded" aunque la tarea hubiera muerto. Paso
-# el 19-09 a las 13:00: gas-station bajo 11.475 estaciones, murio por OOM en "Saving
-# daily price history" y quedo registrada como pasada BUENA. Una pasada que muere
-# tiene que verse como un fallo, no como frescura.
-0 6,13,20 * * * TASK=gas-station npx tsx index.ts 2>&1 && touch /tmp/last-run
-0 7,14,21 * * * TASK=maritime-fuel npx tsx index.ts 2>&1 && touch /tmp/last-run
-0 8,15,22 * * * TASK=portugal-fuel npx tsx index.ts 2>&1 && touch /tmp/last-run
+# `; rc=$?; touch ...; exit $rc` (03-10-2026). Con `;` a secas el codigo de salida era
+# el del `touch` y ofelia apuntaba "job succeeded" aunque la tarea hubiera muerto (19-09:
+# gas-station murio por OOM y quedo como pasada BUENA). Con `&&` (#71) el fallo se veia,
+# pero el latido dejaba de marcarse y container-guardian entraba en bucle de reinicios
+# (lo que paso en frequent el 02-10). Asi la linea sale con el codigo de la tarea y el
+# latido sigue diciendo solo "el despachador corre" (contrato de healthcheck.sh).
+0 6,13,20 * * * TASK=gas-station npx tsx index.ts 2>&1; rc=$?; touch /tmp/last-run; exit $rc
+0 7,14,21 * * * TASK=maritime-fuel npx tsx index.ts 2>&1; rc=$?; touch /tmp/last-run; exit $rc
+0 8,15,22 * * * TASK=portugal-fuel npx tsx index.ts 2>&1; rc=$?; touch /tmp/last-run; exit $rc
