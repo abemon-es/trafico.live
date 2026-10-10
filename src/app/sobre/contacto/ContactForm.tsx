@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
 
 const TOPICS = [
@@ -46,6 +47,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
   const [email, setEmail] = useState("");
   const [empresa, setEmpresa] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [turnstileToken, setTurnstileToken] = useState<string>("");
@@ -114,6 +116,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
           empresa: empresa.trim(),
           topic,
           mensaje: mensaje.trim(),
+          consentPrivacy: consent,
           turnstileToken,
         }),
       });
@@ -127,6 +130,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       setEmail("");
       setEmpresa("");
       setMensaje("");
+      setConsent(false);
       setTopic("general");
       setTurnstileToken("");
       if (widgetIdRef.current && window.turnstile) {
@@ -168,6 +172,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
     nombre.trim().length >= 2 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
     mensaje.trim().length >= 20 &&
+    consent &&
     turnstileReady;
 
   return (
@@ -264,6 +269,25 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
         />
       </div>
 
+      {/* Privacidad */}
+      <div className="flex items-start gap-3">
+        <input
+          id="consent"
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          required
+          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-tl-600 focus:ring-tl-500"
+        />
+        <label htmlFor="consent" className="text-sm text-gray-700 dark:text-gray-300 leading-snug">
+          He leído y acepto la{" "}
+          <Link href="/privacidad" className="text-tl-600 hover:underline dark:text-tl-400">
+            política de privacidad
+          </Link>
+          . <span className="text-rose-500">*</span>
+        </label>
+      </div>
+
       {/* Turnstile */}
       {turnstileSiteKey ? (
         <div>
@@ -282,11 +306,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       {/* Submit */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Al enviar aceptas nuestra{" "}
-          <a href="/privacidad" className="text-tl-600 hover:underline dark:text-tl-400">
-            política de privacidad
-          </a>
-          .
+          Usaremos tus datos solo para responderte.
         </p>
         <button
           type="submit"
