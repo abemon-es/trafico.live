@@ -17,6 +17,7 @@ import { redis } from "@/lib/redis";
 import { reportApiError } from "@/lib/api-error";
 import { getClientIP } from "@/lib/api-utils";
 import { isSESConfigured, sendEmail } from "@/lib/email/ses";
+import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,6 +40,8 @@ interface ContactPayload {
   topic: string;
   mensaje: string;
   turnstileToken?: string;
+  /** true solo si la persona marcó la casilla de privacidad en el formulario. */
+  consentPrivacy: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,7 +98,9 @@ function validate(body: unknown):
     return { ok: false, error: "El mensaje debe tener entre 20 y 5000 caracteres" };
   }
 
-  return { ok: true, data: { nombre, email, empresa, topic, mensaje, turnstileToken } };
+  const consentPrivacy = b.consentPrivacy === true;
+
+  return { ok: true, data: { nombre, email, empresa, topic, mensaje, turnstileToken, consentPrivacy } };
 }
 
 // ---------------------------------------------------------------------------
@@ -191,6 +196,25 @@ function internalEmailHtml(data: ContactPayload, meta: { ip: string; userAgent: 
 }
 
 // ---------------------------------------------------------------------------
+// Copia a la plataforma BMC (CRM de Certus SPV). Segundo plano e invisible
+// para el visitante; solo con la casilla de privacidad marcada.
+// ---------------------------------------------------------------------------
+
+function forwardAccepted(data: ContactPayload): void {
+  if (!data.consentPrivacy) return;
+  forwardToBmcAfterResponse({
+    name: data.nombre,
+    email: data.email,
+    company: data.empresa || undefined,
+    subject: `Contacto trafico.live: ${TOPIC_LABELS[data.topic] ?? data.topic}`,
+    message: data.mensaje,
+    consentPrivacy: true,
+    language: "es",
+    page: `${process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live"}/sobre/contacto`,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // POST handler
 // ---------------------------------------------------------------------------
 
@@ -239,6 +263,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!isSESConfigured()) {
     console.warn("[contacto-general] SES not configured. Logging payload only.");
     console.log("[contacto-general]", v.data);
+    forwardAccepted(v.data);
     return NextResponse.json({ ok: true });
   }
 
@@ -258,5 +283,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  forwardAccepted(v.data);
   return NextResponse.json({ ok: true });
 }

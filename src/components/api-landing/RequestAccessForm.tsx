@@ -7,6 +7,7 @@
  */
 
 import { useState, useId } from "react";
+import Link from "next/link";
 import { Loader2, CheckCircle2, AlertCircle, Send } from "lucide-react";
 import {
   trackCtaClick as trackCtaClickEvent,
@@ -21,6 +22,7 @@ interface FormState {
   company: string;
   useCase: string;
   newsletter: boolean;
+  consent: boolean;
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -36,6 +38,7 @@ export default function RequestAccessForm() {
     company: "",
     useCase: "",
     newsletter: false,
+    consent: false,
   });
   const [status, setStatus] = useState<Status>("idle");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormState, string>>>({});
@@ -51,6 +54,7 @@ export default function RequestAccessForm() {
       errors.email = "Introduce un email válido";
     }
     if (!form.useCase.trim()) errors.useCase = "Cuéntanos brevemente tu caso de uso";
+    if (!form.consent) errors.consent = "Debes aceptar la política de privacidad";
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -74,6 +78,7 @@ export default function RequestAccessForm() {
           company: form.company.trim() || undefined,
           useCase: form.useCase.trim(),
           source: "api-landing",
+          consentPrivacy: form.consent,
         }),
       });
 
@@ -261,6 +266,33 @@ export default function RequestAccessForm() {
         )}
       </div>
 
+      {/* Privacidad */}
+      <div>
+        <div className="flex items-start gap-3">
+          <input
+            id={`${formId}-consent`}
+            type="checkbox"
+            required
+            checked={form.consent}
+            onChange={(e) => setForm((f) => ({ ...f, consent: e.target.checked }))}
+            aria-describedby={fieldErrors.consent ? `${formId}-consent-error` : undefined}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-tl-600 focus:ring-tl-500"
+          />
+          <label htmlFor={`${formId}-consent`} className="text-sm text-gray-600 leading-snug">
+            He leído y acepto la{" "}
+            <Link href="/privacidad" className="underline-offset-2 hover:underline">
+              política de privacidad
+            </Link>{" "}
+            <span aria-hidden="true" className="text-[var(--tl-danger)]">*</span>
+          </label>
+        </div>
+        {fieldErrors.consent && (
+          <p id={`${formId}-consent-error`} className="mt-1 text-xs text-[var(--tl-danger)]">
+            {fieldErrors.consent}
+          </p>
+        )}
+      </div>
+
       {/* Newsletter opt-in */}
       <div className="flex items-start gap-3">
         <input
@@ -296,11 +328,7 @@ export default function RequestAccessForm() {
       </button>
 
       <p className="text-center text-xs text-gray-400">
-        Al enviar, aceptas nuestra{" "}
-        <a href="/privacidad" className="underline-offset-2 hover:underline">
-          política de privacidad
-        </a>
-        . Sin spam. Cancelación inmediata.
+        Sin spam. Cancelación inmediata.
       </p>
     </form>
   );

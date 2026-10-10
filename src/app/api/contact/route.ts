@@ -12,6 +12,7 @@ import { redis } from "@/lib/redis";
 import { reportApiError } from "@/lib/api-error";
 import { getClientIP } from "@/lib/api-utils";
 import { sendEmail, isSESConfigured } from "@/lib/email/ses";
+import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
 
 // ---------------------------------------------------------------------------
 // Rate limiter — 3 peticiones por hora por IP
@@ -44,6 +45,8 @@ interface ContactPayload {
   company?: string;
   useCase: string;
   source?: string;
+  /** true solo si la persona marcó la casilla de privacidad en el formulario. */
+  consentPrivacy?: boolean;
 }
 
 function internalEmailHtml(data: ContactPayload): string {
@@ -209,7 +212,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  const { name, email, company, useCase, source } = body;
+  const { name, email, company, useCase, source, consentPrivacy } = body;
 
   // Validate required fields
   if (
@@ -263,6 +266,22 @@ export async function POST(request: NextRequest) {
   } else {
     // Development fallback — log to console
     console.log("[contact] SES not configured. Would send to:", payload.email, payload);
+  }
+
+  // Copia a la plataforma BMC (CRM de Certus SPV) una vez aceptada la solicitud.
+  // Segundo plano, invisible para el visitante; solo si marcó la casilla de privacidad.
+  // El mapeo es fiel: nombre, email, empresa y el caso de uso como mensaje.
+  if (consentPrivacy === true) {
+    forwardToBmcAfterResponse({
+      name: payload.name,
+      email: payload.email,
+      company: payload.company,
+      subject: "Solicitud de acceso a la API",
+      message: payload.useCase,
+      consentPrivacy: true,
+      language: "es",
+      page: `${BASE_URL}/api-landing`,
+    });
   }
 
   // Always return generic success (never leak details)
