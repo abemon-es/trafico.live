@@ -200,6 +200,20 @@ const nextConfig: NextConfig = {
         destination: "/gasolineras",
         permanent: true,
       },
+      // Legacy province fuel pages. The generic rule below sent
+      // /combustible/madrid to /gasolineras/madrid — the station-id route —
+      // which answered a soft 404 (200) until #82 and a real 404 since.
+      // Province slugs = PROVINCE_SLUGS in gasolineras/precios/[province].
+      {
+        source: "/combustible/:province(alava|albacete|alicante|almeria|avila|badajoz|baleares|barcelona|burgos|caceres|cadiz|castellon|ciudad-real|cordoba|a-coruna|cuenca|girona|granada|guadalajara|gipuzkoa|huelva|huesca|jaen|leon|lleida|la-rioja|lugo|madrid|malaga|murcia|navarra|ourense|asturias|palencia|las-palmas|pontevedra|salamanca|santa-cruz-de-tenerife|cantabria|segovia|sevilla|soria|tarragona|teruel|toledo|valencia|valladolid|bizkaia|zamora|zaragoza|ceuta|melilla)",
+        destination: "/gasolineras/precios/:province",
+        permanent: true,
+      },
+      {
+        source: "/gasolineras/:province(alava|albacete|alicante|almeria|avila|badajoz|baleares|barcelona|burgos|caceres|cadiz|castellon|ciudad-real|cordoba|a-coruna|cuenca|girona|granada|guadalajara|gipuzkoa|huelva|huesca|jaen|leon|lleida|la-rioja|lugo|madrid|malaga|murcia|navarra|ourense|asturias|palencia|las-palmas|pontevedra|salamanca|santa-cruz-de-tenerife|cantabria|segovia|sevilla|soria|tarragona|teruel|toledo|valencia|valladolid|bizkaia|zamora|zaragoza|ceuta|melilla)",
+        destination: "/gasolineras/precios/:province",
+        permanent: true,
+      },
       {
         source: "/combustible/:path*",
         destination: "/gasolineras/:path*",

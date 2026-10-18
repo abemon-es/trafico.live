@@ -264,7 +264,7 @@ section "4. Removed routes + redirects"
 expect_redirect "/calendario" "/sobre/contacto"
 expect_redirect "/calendario/booking" "/sobre/contacto"
 expect_redirect "/provincias" "/espana"
-expect_redirect "/combustible/madrid" "/gasolineras"
+expect_redirect "/combustible/madrid" "/gasolineras/precios/madrid"
 # Note: /trenes/tren, /carga-ev/punto, /maritimo/buque are stub-redirect pages
 # in code but observed serving 200 in prod (see followup: iter-7). Test as
 # warn-only via best-effort probe — don't block the suite on these.
