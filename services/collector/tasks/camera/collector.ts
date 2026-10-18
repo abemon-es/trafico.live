@@ -14,7 +14,7 @@ import { createXMLParser } from "../../shared/xml.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
 const DGT_CAMERAS_URL =
-  "https://nap.dgt.es/datex2/v3/dgt/DevicePublication/camaras_datex2_v36.xml";
+  "https://nap.dgt.es/datex2/v3/dgt/DevicePublication/camaras_datex2_v37.xml";
 
 interface CameraData {
   id: string;

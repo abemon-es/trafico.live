@@ -13,7 +13,7 @@ import { aggregateStats } from "./aggregator.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
 const DGT_URL = process.env.DGT_DATEX_URL ||
-  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
+  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml";
 
 // Consider beacon inactive if not seen for 3 consecutive fetches (15 min)
 const STALE_THRESHOLD_MINUTES = 15;

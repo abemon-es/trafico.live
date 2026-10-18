@@ -21,6 +21,32 @@ last.
 
 ---
 
+## Cycle 2026-10-18 (3) — DGT v36 feed names → v37 (pre-emptive, zero parse risk)
+
+The NAP index lists only `*_v37.xml`; we read `*_v36.xml`. Downloaded both
+at 21:20Z: **byte-identical** (`sha256 0263be61…` situation, `d94ad70b…`
+cameras) and both declare `profileVersion 3.7_1.0` / `xsd/3.7_1.0`. So the
+v36 name is an unadvertised alias already serving v3.7 content — our parsers
+read v3.7 today. Switched the 4 live collectors (`incident`, `v16`,
+`roadworks`, `camera`), `src/lib/parsers/datex2.ts` (cameras) and the docs to
+the advertised names, so the paneles pattern (alias silently pulled →
+18 days of 404) cannot repeat here. Not touched: legacy
+`services/{incident,v16,camera}-collector/` — no compose file deploys them;
+delete in a cleanup.
+**Verify after deploy:** `incident`, `v16`, `camera` heartbeats stay `ok`
+with counts in the same range (incident ~1,990 total, camera 1,960).
+
+Found en route (ranked into Next):
+- **`dgt-extras` reports `ok` while ingesting nothing:** its heartbeat is the
+  dispatcher fallback (`reason: "collector completed without writing its own
+  heartbeat"`). All 4 candidate URLs are 404/dead. Live instance of item 4
+  below — fix the fallback to `partial` and either retire the task or point it
+  at the situation feed.
+- **`roadworks` is not scheduled at all** — no crontab line, absent from
+  `/api/health`. Check what feeds `/api/trafico/obras` and how stale it is.
+
+---
+
 ## Cycle 2026-10-18 (2) — false licence claims removed
 
 **Opening signals 21:11Z:** healthy · 2/52 degraded (known) · build
@@ -41,6 +67,11 @@ ESCALATIONS entry. `aviso-legal` L219-224 was already correct. No behaviour
 change: OpenSky ingestion and `/api/v1/vuelos` untouched pending MJ.
 Verified: 0 leftovers by regex; 17 changed TS/TSX files parse clean
 (TypeScript `transpileModule`, no root node_modules on the Mac).
+**Post-deploy check caught 2 misses** (fixed in cycle 3, `107bab94`): the
+rendered `/aviacion` still said "Datos CC-BY 4.0" — JSX text wrapped across
+two lines, invisible to a line-based grep (same in `/aviacao`). Lesson: sweep
+text claims with a cross-line proximity search, and always confirm on the
+rendered page, not the source.
 
 ---
 
@@ -89,7 +120,8 @@ TRAFICO-LIVE-3 (`exit status 1`, 14,310 lifetime) also last seen 20:00:50Z:
 
 ### Next, ranked (found this cycle, not yet acted on)
 
-1. **L1, pre-emptive — DGT v36 feeds are unlisted.** The NAP index now lists
+1. ✅ *Done cycle 3 (v36 was a byte-identical alias; names switched).*
+   **L1, pre-emptive — DGT v36 feeds are unlisted.** The NAP index now lists
    only `datex2_v37.xml` under SituationPublication and
    `camaras_datex2_v37.xml` under DevicePublication. We read
    `SituationPublication/datex2_v36.xml` (incidents — the core of the site)
@@ -122,6 +154,32 @@ TRAFICO-LIVE-3 (`exit status 1`, 14,310 lifetime) also last seen 20:00:50Z:
    fill-extrusion. Either ship it (MapLibre v5 `setProjection({type:'globe'})`
    at low zoom + Protomaps building extrusions, S) or change the badge. Audit
    the other "Activo" badges on that component the same way.
+
+### CMO brief 2026-10-18 — Google never fetched the shards; Bing is the channel
+
+Source: CMO session, GSC + GA4 18-09→15-10 (brief at
+`~/logs/cmo-loop/briefs/2026-10-18-trafico-live.md`; Monday refreshes).
+- GA4 1,240 sessions (+46 %), organic 949 of which **~942 via Bing's index**
+  (Bing, Yahoo, DDG, Ecosia, Qwant). Google 9 clicks / 1,183 impr in 28 d.
+  AI assistants 97 sessions (ChatGPT 91) = third channel.
+- GSC per CMO: the 10 child sitemaps submitted 24-08 are all still pending,
+  never downloaded; index not submitted. (Contradicts our 08-29 note that
+  `/sitemap.xml` was re-read 08-27 — could not re-check: a hook blocks the
+  Google credential on the Mac. Take CMO's live read as current.)
+- **Verified by us on the public site:** 43,336 URLs; 40,920 carry today's
+  `lastmod` stamped at cron hours (00:00/04:00/18:00), not content changes;
+  `/trenes/incidencias` (#1 landing, 187), `/carreteras/AP-7/hoy`,
+  `/atascos/granada` absent from every shard; `/rondas/ronda-de-dalt` linked
+  from the homepage alongside `ronda-dalt`.
+
+Taken on (L3, after the L1 DGT v37 migration), in this order:
+1. `/sitemap/priority.xml` (<500 live hubs) + add the missing hubs + 301
+   ronda-de-dalt → ronda-dalt. Then CMO submits index + priority in GSC and
+   requests indexing for the top 20.
+2. Real `lastmod` (date the page's data changed).
+3. IndexNow (key file + ping on change) — Bing is the main channel.
+Needs MJ: pruning thin record pages (proposal: drop from sitemap but keep
+crawlable, measure 4 weeks, then noindex). Bing Webmaster Tools API key → CMO.
 
 ### Research 2026-10-18 — Argos Atlas / God's Eye View (MJ's reels)
 

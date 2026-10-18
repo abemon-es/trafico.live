@@ -815,7 +815,7 @@ function parseDeviceAsCamera(device: Record<string, unknown>): CameraData | null
 
 // Fetch cameras from DGT DevicePublication
 export async function fetchDGTCameras(): Promise<CameraData[]> {
-  const url = "https://nap.dgt.es/datex2/v3/dgt/DevicePublication/camaras_datex2_v36.xml";
+  const url = "https://nap.dgt.es/datex2/v3/dgt/DevicePublication/camaras_datex2_v37.xml";
 
   const response = await fetch(url, {
     headers: {

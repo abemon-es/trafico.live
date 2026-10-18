@@ -296,7 +296,7 @@ trafico.live agrega información de más de 20 fuentes oficiales y abiertas para
 
 ### Licencias
 
-La mayoría de las fuentes son **abiertas** (Open Data, CC-BY). Los datos se atribuyen en cada endpoint de la API y en las páginas de visualización.`,
+La mayoría de las fuentes son **abiertas** (Open Data, CC-BY); OpenSky Network y aisstream.io tienen condiciones de uso propias. Los datos se atribuyen en cada endpoint de la API y en las páginas de visualización.`,
   },
   {
     slug: "flota-onboarding",

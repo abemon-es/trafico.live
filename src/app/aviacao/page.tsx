@@ -208,8 +208,8 @@ export default async function AviacacoHubPage() {
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
           Posições ADS-B de aeronaves sobre o espaço aéreo português em tempo real.
-          Chegadas e partidas ao vivo em Lisboa, Porto, Madeira e Açores. Dados CC-BY 4.0
-          via OpenSky Network.
+          Chegadas e partidas ao vivo em Lisboa, Porto, Madeira e Açores. Dados via OpenSky Network,
+          sujeitos às suas condições de utilização.
         </p>
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink

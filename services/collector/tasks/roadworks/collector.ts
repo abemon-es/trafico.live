@@ -17,7 +17,7 @@
  *
  * Schedule: daily (roadworks change daily, not real-time)
  *
- * Source: https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml
+ * Source: https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml
  */
 
 import { PrismaClient, RoadType, Direction } from "@prisma/client";
@@ -29,7 +29,7 @@ const TAG = "roadworks";
 
 const DGT_NAP_URL =
   process.env.DGT_NAP_URL ||
-  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
+  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml";
 
 const parser = createXMLParser({
   isArray: (name) =>
