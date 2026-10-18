@@ -44,6 +44,42 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (5) — first daily mobile pass: the cookie banner was the LCP
+
+**Baseline, Lighthouse 12 mobile (local Chrome, prod, 2026-10-18 ~22:00Z).**
+PageSpeed Insights API was not usable: anonymous daily quota exhausted (429)
+— a free PSI API key would let the loop measure from Google's side daily
+(ask MJ/CTO). Lab numbers, so read deltas, not absolutes:
+
+| route | perf | a11y | seo | LCP s | TBT ms | KB |
+|---|---|---|---|---|---|---|
+| `/` | 52 | 95 | 100 | 8.0 | 574 | 823 |
+| `/trenes/incidencias` | 65 | 96 | 100 | 6.1 | 436 | 752 |
+| `/rondas/ronda-dalt` | 63 | 100 | 100 | 6.1 | 503 | 725 |
+| `/prediccion/precio-combustible` | 60 | 96 | 100 | 5.2 | 872 | 926 |
+| `/carreteras/AP-7/hoy` | 61 | 93 | 100 | 6.8 | 508 | 926 |
+| `/mapa` | 36 | 100 | 100 | 6.4 | 8,897 | 3,869 |
+| `/trenes` | 52 | 96 | 100 | 4.4 | 8,780 | 3,947 |
+| `/gasolineras` | 62 | 93 | 100 | 6.7 | 516 | 773 |
+
+**Root cause of LCP on most pages:** the LCP element was the **cookie
+banner's paragraph** — TTFB 0.7 s, FCP 1.2 s, then *Render Delay 5.5 s*. The
+banner mounted in a `useEffect` after hydration, and on a phone it is the
+largest text in the viewport. Fix: server-render it for everyone; an inline
+`<head>` script marks `<html data-consent="set">` for visitors who already
+chose (same key/version as `store.ts`) and CSS hides it before paint; focus
+is trapped only after the mount check. Regression test:
+`tests/mobile/cookie-consent.spec.ts` (server HTML contains the banner; new
+visitor sees it at once and it stays gone after choosing; returning visitor
+never sees it, no hydration errors) — **5/5 fail against prod before the
+deploy**, as they should.
+Next on the same pass: home LCP is the `MapaFAB` "Ver mapa en vivo" button
+(Render Delay 7.2 s, same mount-late shape); `/mapa` and `/trenes` TBT ~8.8 s
+from ~3.9 MB of JS — separate items. `bin/mobile-routes.json` now includes
+the real top landings (GA4), not only the hubs.
+
+---
+
 ## Cycle 2026-10-18 (4) — contact forms said "sent" and delivered nothing
 
 Triggered by a CMO report of a "visitor" failing `/api/contacto/general`
@@ -66,6 +102,13 @@ eu-west-1, per-domain identity, IAM limited to it, sender
 `noreply@trafico.live`, DKIM CNAMEs in Cloudflare unproxied, keys in
 `/opt/trafico/.env`. PR #74 (forward to BMC platform) parked: depends on
 bm.consulting#7733. When SES lands: redeploy, then one real end-to-end test.
+**✅ VERIFIED after deploy (PR #79 → `12f24b98`):** one labelled test POST to
+`/api/contact` (`source: "cto-loop-test"`, 21:49Z) → `{"ok":true,
+"delivered":false}`; GlitchTip opened **TRAFICO-LIVE-II** (count 1 = that
+test); `/sobre/contacto` renders; smoke pass. **Any count above 1 on
+TRAFICO-LIVE-II is a real visitor whose message reached nobody** — recover it
+from Loki (`{service="trafico-live-next"} |~ "SES not configured"`) and
+forward it to MJ until SES is live.
 
 ---
 
