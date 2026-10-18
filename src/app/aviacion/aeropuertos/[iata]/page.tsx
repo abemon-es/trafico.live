@@ -9,7 +9,7 @@
  *
  * Data sources:
  *   - Airport catalog: AENA
- *   - Aircraft positions: OpenSky Network (CC BY 4.0) — last 4h within 30km
+ *   - Aircraft positions: OpenSky Network (terms of use, not CC BY) — last 4h within 30km
  *   - Passenger statistics: Eurostat AVIA_PAOA via AENA stats collector
  *   - Runways: OurAirports
  *   - Air quality: MITECO ICA (nearest station within 30km)
@@ -940,7 +940,7 @@ export default async function AirportDetailPage({ params }: Props) {
           )}
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 flex items-center gap-1">
             <Info className="w-3 h-3" />
-            Datos ADS-B: OpenSky Network (CC BY 4.0). Actualizados cada 15 min.
+            Datos ADS-B: OpenSky Network, sujetos a sus condiciones de uso. Actualizados cada 15 min.
           </p>
         </section>
 
@@ -1178,7 +1178,7 @@ export default async function AirportDetailPage({ params }: Props) {
         {/* Attribution                                                       */}
         {/* ---------------------------------------------------------------- */}
         <footer className="text-xs text-gray-400 dark:text-gray-500 text-center py-4 border-t border-gray-100 dark:border-gray-800">
-          Datos: AENA Aeropuertos, Eurostat AVIA_PAOA, OpenSky Network (CC BY 4.0), OurAirports, MITECO ICA.
+          Datos: AENA Aeropuertos, Eurostat AVIA_PAOA, OpenSky Network, OurAirports, MITECO ICA.
           Posiciones de aeronaves actualizadas cada 15 minutos.
         </footer>
       </div>

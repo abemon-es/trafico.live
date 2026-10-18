@@ -10,7 +10,7 @@
  *
  * Response: GeoJSON FeatureCollection with AircraftPosition features
  * Cache: 30s CDN, 120s stale-while-revalidate
- * Attribution: The OpenSky Network (CC BY 4.0)
+ * Attribution: The OpenSky Network (https://opensky-network.org) — use subject to its terms of use — NOT CC BY; commercial/operational use needs a written licence (docs/cto-loop/BACKLOG.md ESCALATIONS, 2026-10-18)
  */
 
 import { NextRequest } from "next/server";

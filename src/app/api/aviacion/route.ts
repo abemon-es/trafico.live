@@ -10,7 +10,7 @@
  *   ?onGround=true|false                   (filter airborne or on-ground)
  *   ?limit=500                             (default 500, max 2000)
  *
- * Attribution: © The OpenSky Network, https://opensky-network.org (CC BY 4.0)
+ * Attribution: © The OpenSky Network, https://opensky-network.org — use subject to its terms of use — NOT CC BY; commercial/operational use needs a written licence (docs/cto-loop/BACKLOG.md ESCALATIONS, 2026-10-18)
  */
 
 import { reportApiError } from "@/lib/api-error";

@@ -109,7 +109,7 @@ const FAQ_ITEMS = [
   {
     question: "¿De dónde provienen las posiciones de aeronaves?",
     answer:
-      "Las posiciones ADS-B proceden del OpenSky Network, una red colaborativa de receptores terrestres bajo licencia Creative Commons (CC BY 4.0). Nuestro colector consulta la API de OpenSky cada 15 minutos limitado al espacio aéreo español.",
+      "Las posiciones ADS-B proceden del OpenSky Network, una red colaborativa de receptores terrestres; su uso está sujeto a las condiciones de la red OpenSky. Nuestro colector consulta la API de OpenSky cada 15 minutos limitado al espacio aéreo español.",
   },
   {
     question: "¿Qué es AENA y cuántos aeropuertos gestiona?",
@@ -154,7 +154,7 @@ export default async function AviacionHubPage() {
     "@type": "DataFeed",
     name: "Posiciones ADS-B aeronaves sobre España",
     description:
-      "Feed de posiciones ADS-B en tiempo real de aeronaves sobre el espacio aéreo español y portugués. Fuente: OpenSky Network (CC BY 4.0).",
+      "Feed de posiciones ADS-B en tiempo real de aeronaves sobre el espacio aéreo español y portugués. Fuente: OpenSky Network, sujeto a sus condiciones de uso.",
     url: `${BASE_URL}/api/aviacion`,
     encodingFormat: "application/geo+json",
     license: "https://creativecommons.org/licenses/by/4.0/",
@@ -315,7 +315,7 @@ export default async function AviacionHubPage() {
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-6 flex items-center gap-1.5">
           <Info className="w-3 h-3" />
-          Fuentes: OpenSky Network (ADS-B, CC-BY 4.0), AENA Aeropuertos (catálogo + estadísticas), Eurostat AVIA_PAOA (series anuales), OurAirports (geometría de pistas).
+          Fuentes: OpenSky Network (ADS-B), AENA Aeropuertos (catálogo + estadísticas), Eurostat AVIA_PAOA (series anuales), OurAirports (geometría de pistas).
         </p>
       </div>
     </>

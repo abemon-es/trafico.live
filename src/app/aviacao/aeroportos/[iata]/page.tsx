@@ -433,7 +433,7 @@ export default async function AeroportoDetailPage({ params }: Props) {
         {/* Attribution */}
         <footer className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5 border-t border-gray-100 dark:border-gray-800 pt-4">
           <Info className="w-3 h-3 flex-shrink-0" />
-          Fontes: ANA Aeroportos de Portugal, OpenSky Network (ADS-B, CC BY 4.0), OurAirports.
+          Fontes: ANA Aeroportos de Portugal, OpenSky Network (ADS-B), OurAirports.
           Posições de aeronaves atualizadas a cada 15 minutos.
         </footer>
       </div>

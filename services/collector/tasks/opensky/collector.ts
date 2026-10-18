@@ -19,7 +19,7 @@
  * On first run with empty Airport table, seeds airport catalog from
  * data/airports-spain.json.
  *
- * Attribution: © The OpenSky Network, CC BY 4.0
+ * Attribution: © The OpenSky Network — use subject to its terms of use — NOT CC BY; commercial/operational use needs a written licence (docs/cto-loop/BACKLOG.md ESCALATIONS, 2026-10-18)
  * https://opensky-network.org
  */
 

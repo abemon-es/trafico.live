@@ -94,7 +94,7 @@ const FAQ_ITEMS = [
   {
     question: "¿Qué es el sistema AIS?",
     answer:
-      "El AIS (Automatic Identification System) es un sistema obligatorio en buques mayores de 300 TRB en viajes internacionales y en todos los buques de pasaje. Cada barco emite por VHF su identificador MMSI, posición, rumbo y velocidad, permitiendo su seguimiento en tiempo real. trafico.live recibe estas emisiones vía aisstream.io bajo licencia CC-BY.",
+      "El AIS (Automatic Identification System) es un sistema obligatorio en buques mayores de 300 TRB en viajes internacionales y en todos los buques de pasaje. Cada barco emite por VHF su identificador MMSI, posición, rumbo y velocidad, permitiendo su seguimiento en tiempo real. trafico.live recibe estas emisiones vía aisstream.io, sujeto a sus condiciones de servicio.",
   },
   {
     question: "¿Por qué no veo todos los barcos en el mapa?",
@@ -330,7 +330,7 @@ export default async function MaritimoHubPage() {
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-6 flex items-center gap-1.5">
           <Waves className="w-3 h-3" />
-          Fuentes: aisstream.io (AIS, CC-BY), Puertos del Estado (WFS INSPIRE), MITERD (combustible), AEMET (alertas costeras), MobilityData (ferries GTFS).
+          Fuentes: aisstream.io (AIS), Puertos del Estado (WFS INSPIRE), MITERD (combustible), AEMET (alertas costeras), MobilityData (ferries GTFS).
         </p>
       </div>
     </>
