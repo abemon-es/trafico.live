@@ -10,7 +10,7 @@ import { IncidentType, Severity } from "@prisma/client";
 
 const DGT_NAP_URL =
   process.env.DGT_NAP_URL ||
-  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml";
+  "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml";
 
 const parser = new XMLParser({
   ignoreAttributes: false,

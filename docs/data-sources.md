@@ -6,7 +6,7 @@ All data originates from official Spanish government open-data portals. No third
 
 | Field | Value |
 |-------|-------|
-| **URL** | `https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml` |
+| **URL** | `https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml` |
 | **Format** | DATEX II XML (v3.6) |
 | **Auth** | None (public) |
 | **Data** | Road incidents, works, restrictions |
@@ -18,7 +18,7 @@ All data originates from official Spanish government open-data portals. No third
 
 | Field | Value |
 |-------|-------|
-| **URL** | `https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml` |
+| **URL** | `https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml` |
 | **Format** | DATEX II XML (same feed as incidents) |
 | **Auth** | None |
 | **Data** | Emergency V16 beacon activations |

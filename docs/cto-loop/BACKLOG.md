@@ -21,6 +21,32 @@ last.
 
 ---
 
+## Cycle 2026-10-18 (3) — DGT v36 feed names → v37 (pre-emptive, zero parse risk)
+
+The NAP index lists only `*_v37.xml`; we read `*_v36.xml`. Downloaded both
+at 21:20Z: **byte-identical** (`sha256 0263be61…` situation, `d94ad70b…`
+cameras) and both declare `profileVersion 3.7_1.0` / `xsd/3.7_1.0`. So the
+v36 name is an unadvertised alias already serving v3.7 content — our parsers
+read v3.7 today. Switched the 4 live collectors (`incident`, `v16`,
+`roadworks`, `camera`), `src/lib/parsers/datex2.ts` (cameras) and the docs to
+the advertised names, so the paneles pattern (alias silently pulled →
+18 days of 404) cannot repeat here. Not touched: legacy
+`services/{incident,v16,camera}-collector/` — no compose file deploys them;
+delete in a cleanup.
+**Verify after deploy:** `incident`, `v16`, `camera` heartbeats stay `ok`
+with counts in the same range (incident ~1,990 total, camera 1,960).
+
+Found en route (ranked into Next):
+- **`dgt-extras` reports `ok` while ingesting nothing:** its heartbeat is the
+  dispatcher fallback (`reason: "collector completed without writing its own
+  heartbeat"`). All 4 candidate URLs are 404/dead. Live instance of item 4
+  below — fix the fallback to `partial` and either retire the task or point it
+  at the situation feed.
+- **`roadworks` is not scheduled at all** — no crontab line, absent from
+  `/api/health`. Check what feeds `/api/trafico/obras` and how stale it is.
+
+---
+
 ## Cycle 2026-10-18 (2) — false licence claims removed
 
 **Opening signals 21:11Z:** healthy · 2/52 degraded (known) · build
@@ -89,7 +115,8 @@ TRAFICO-LIVE-3 (`exit status 1`, 14,310 lifetime) also last seen 20:00:50Z:
 
 ### Next, ranked (found this cycle, not yet acted on)
 
-1. **L1, pre-emptive — DGT v36 feeds are unlisted.** The NAP index now lists
+1. ✅ *Done cycle 3 (v36 was a byte-identical alias; names switched).*
+   **L1, pre-emptive — DGT v36 feeds are unlisted.** The NAP index now lists
    only `datex2_v37.xml` under SituationPublication and
    `camaras_datex2_v37.xml` under DevicePublication. We read
    `SituationPublication/datex2_v36.xml` (incidents — the core of the site)

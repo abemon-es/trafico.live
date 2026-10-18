@@ -202,7 +202,7 @@ ssh compute "docker logs atgqhoy0dfhohmdheh2rd1r5-manual-1774956936 --tail 100"
 
 1. Check collector logs for errors
 2. Check data freshness query (above)
-3. Verify external API is reachable: `curl -sf https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml | head -5`
+3. Verify external API is reachable: `curl -sf https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml | head -5`
 4. Flush Redis cache if data is fresh in DB but stale in API response
 
 ### Database Unreachable
