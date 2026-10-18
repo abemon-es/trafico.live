@@ -161,6 +161,21 @@ series from the Mac is fine. And a checker that gets 429s must report
 "unverified" (exit 2), never green — that one did, and its "0 redirects" was
 worthless.
 
+**Hard rule (CTO session, 2026-10-19, after a *second* ban the same night —
+01:26, 11 requests to missing routes + a contact POST from the Mac = CrowdSec
+`http-probing`, 4 h ban, SSH cut for the whole Mac again):**
+- Any check that requests routes that do not exist, that gets 4xx on
+  purpose, or that makes **more than 5 requests in a row** runs **on compute**
+  (`curl --resolve trafico.live:443:127.0.0.1`). No exceptions.
+- From the Mac: only Lighthouse and Playwright, **in series, on pages that
+  exist**. `tests/e2e/10-status-codes.spec.ts` is localhost/staging only.
+- **Never POST to a production `/api/contacto*` or `/api/contact` to test
+  it** — if it passes validation it sends a real e-mail.
+- `bin/smoke-test.sh` and `bin/check-internal-redirects.sh` enforce this
+  themselves: against prod they re-exec on compute; the smoke no longer POSTs
+  to the contact form on prod and carries the 404 guard (section 4b).
+  `bin/cto-signals.sh` calls the smoke, so it inherits this.
+
 ## Work bottom-up, not by rotation
 
 **Superseded on 2026-08-16 by MJ: "all of this needs to be fixed first and from

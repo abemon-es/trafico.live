@@ -16,6 +16,24 @@
 set -u
 set -o pipefail
 
+# Production is smoke-tested ON COMPUTE only (CTO rule, 2026-10-19). ~110
+# requests from the Mac — several deliberately 4xx — trip CrowdSec
+# (http-crawl-non_statics / http-probing): it bans the office IP and cuts SSH to
+# compute for every session on the Mac. On compute every request goes to the
+# local Traefik via --resolve …:127.0.0.1 (loopback is CrowdSec-exempt). Never
+# point this at compute's public IP. Other targets (localhost, staging) run here.
+if [[ "${SMOKE_ON_HOST:-0}" != 1 ]] \
+   && [[ "${1:-https://trafico.live}" == "https://trafico.live" || "${1:-}" == --* ]]; then
+  exec ssh -o ConnectTimeout=10 -o BatchMode=yes "${CTO_REMOTE_HOST:-compute}" \
+    "SMOKE_ON_HOST=1 VERBOSE='${VERBOSE:-0}' bash -s -- $*" < "${BASH_SOURCE[0]}"
+fi
+if [[ "${SMOKE_ON_HOST:-0}" == 1 ]]; then
+  curl() {
+    command curl --resolve "trafico.live:443:127.0.0.1" \
+      --resolve "www.trafico.live:443:127.0.0.1" "$@"
+  }
+fi
+
 # -----------------------------------------------------------------------------
 # Config
 # -----------------------------------------------------------------------------
@@ -54,8 +72,14 @@ section() { (( QUIET == 0 )) && printf "\n${B}─── %s ───${X}\n" "$1"
 # same_origin: yes (default — sends Origin: $BASE) | no
 expect_status() {
   local want="$1" path="$2" follow="${3:-yes}" origin="${4:-yes}"
-  local opts=("${CURL_OPTS[@]}")
-  [[ "$follow" == "no" ]] && opts=("${opts[@]/--location/}")
+  # Drop --location for no-follow probes. (The old ${opts[@]/--location/}
+  # left an empty "" argument, which curl reads as a second URL: -o /dev/null
+  # then applied to "" and the real body leaked into $got.)
+  local opts=() o
+  for o in "${CURL_OPTS[@]}"; do
+    [[ "$follow" == "no" && "$o" == "--location" ]] && continue
+    opts+=("$o")
+  done
   [[ "$origin" == "yes" ]] && opts+=("-H" "Origin: ${BASE}")
   local got
   got=$(curl "${opts[@]}" -o /dev/null -w "%{http_code}" "${BASE}${path}" 2>/dev/null || echo "000")
@@ -280,6 +304,17 @@ for stub in "/trenes/tren" "/carga-ev/punto" "/maritimo/buque"; do
 done
 
 # -----------------------------------------------------------------------------
+# 4b. Missing pages must answer 404, not 200 + noindex (soft 404) — #82
+# -----------------------------------------------------------------------------
+
+section "4b. Missing pages → 404"
+expect_status 404 "/ruta-inexistente-smoke-$$" no
+expect_status 404 "/espana/no-existe" no
+expect_status 404 "/carreteras/ZZ-999" no
+expect_status 404 "/noticias/no-existe" no
+expect_status 404 "/municipio/no-existe" no
+
+# -----------------------------------------------------------------------------
 # 5. API endpoints — same-origin & x-api-key probes
 # -----------------------------------------------------------------------------
 
@@ -341,6 +376,12 @@ expect_html_contains "/sitemap/0.xml" "<loc>https://trafico.live</loc>" "shard 0
 # -----------------------------------------------------------------------------
 
 section "8. Contact form security"
+if [[ "$BASE" == "https://trafico.live" ]]; then
+  # Never POST to a production contact endpoint to test it (CTO rule,
+  # 2026-10-19): a payload that passes validation sends a real e-mail, and the
+  # 400 + 401 pair these checks produced was once mistaken for a lost lead.
+  log_warn "contact form POST checks" "skipped on production by rule; run against staging/local"
+else
 # Bad input → 400 (validation). If rate-limited from prior smoke runs → 429.
 # Both are correct defensive behavior.
 local_code=$(curl "${CURL_OPTS[@]}" -X POST -H "Content-Type: application/json" -H "Origin: ${BASE}" -o /dev/null -w "%{http_code}" -d '{"nombre":"x"}' "${BASE}/api/contacto/general" 2>/dev/null || echo "000")
@@ -356,6 +397,7 @@ if [[ "$xorigin_code" == "401" || "$xorigin_code" == "403" ]]; then
   log_pass "/api/contacto/general blocks cross-origin → ${xorigin_code}"
 else
   log_fail "/api/contacto/general cross-origin" "expected 401/403, got ${xorigin_code}"
+fi
 fi
 
 # -----------------------------------------------------------------------------

@@ -39,8 +39,17 @@
 # EMT Madrid: requiere EMT_MADRID_CLIENT_ID + EMT_MADRID_PASS_KEY (omite si faltan)
 # TMB Barcelona: requiere TMB_APP_ID + TMB_APP_KEY (omite si faltan)
 # EMT Valencia: sin autenticación (datos abiertos Ayuntamiento de Valencia)
-* * * * * TASK=transit-rt-madrid npx tsx index.ts 2>&1
-* * * * * TASK=transit-rt-tmb npx tsx index.ts 2>&1
+# DISABLED 2026-10-19 — EMT Madrid and TMB Barcelona have never had
+# credentials in production (absent from .env, .env.collectors and the
+# container). Each line spawned a Node process every minute only to log
+# "no configurados — terminando sin error" and write an `ok` heartbeat: ~2,900
+# no-op runs a day reporting healthy while storing nothing.
+# TO RE-ENABLE: add EMT_MADRID_CLIENT_ID + EMT_MADRID_PASS_KEY (EMT
+# MobilityLabs) / TMB_APP_ID + TMB_APP_KEY (developer.tmb.cat) to
+# /opt/apps/trafico-live/.env.collectors, uncomment the line, and delete the
+# task's entry in HIDDEN_TASKS (src/app/api/health/route.ts).
+#* * * * * TASK=transit-rt-madrid npx tsx index.ts 2>&1
+#* * * * * TASK=transit-rt-tmb npx tsx index.ts 2>&1
 * * * * * TASK=transit-rt-valencia npx tsx index.ts 2>&1
 
 # OpenSky aircraft positions — anonymous limit 400 req/day.
