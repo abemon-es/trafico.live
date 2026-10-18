@@ -84,7 +84,7 @@ export default function ProvinciasPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={[
           { name: "Inicio", href: "/" },
-          { name: "Provincias", href: "/provincias" },
+          { name: "Provincias", href: "/espana" },
         ]} />
         {/* Header */}
         <div className="mb-8">

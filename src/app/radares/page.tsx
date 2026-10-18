@@ -235,7 +235,7 @@ export default async function RadaresPage() {
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-gray-400 w-5 text-right">{idx + 1}</span>
                       <Link
-                        href={`/carreteras/${encodeURIComponent(item.roadNumber)}/radares`}
+                        href={`/radares/${encodeURIComponent(item.roadNumber)}`}
                         className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                       >
                         {item.roadNumber}
@@ -307,7 +307,7 @@ export default async function RadaresPage() {
               {byRoad.map((item) => (
                 <Link
                   key={item.roadNumber}
-                  href={`/carreteras/${encodeURIComponent(item.roadNumber)}/radares`}
+                  href={`/radares/${encodeURIComponent(item.roadNumber)}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
                 >
                   {item.roadNumber}

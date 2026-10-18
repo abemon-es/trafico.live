@@ -451,7 +451,7 @@ export default async function GuiaPuntosRecargaPage() {
                 ))}
                 <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
                   <Link
-                    href="/electrolineras"
+                    href="/carga-ev"
                     className="flex items-center gap-2 text-sm font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300"
                   >
                     <PlugZap className="w-4 h-4" />

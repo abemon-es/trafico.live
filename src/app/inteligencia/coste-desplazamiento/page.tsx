@@ -270,7 +270,7 @@ export default async function CosteDesplazamientoPage() {
               title: "Precio del combustible",
               description:
                 "Historico de precios de gasolina y gasoleo por provincia",
-              href: "/combustible",
+              href: "/gasolineras",
               icon: <BarChart3 className="w-5 h-5" />,
             },
             {

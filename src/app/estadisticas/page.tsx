@@ -73,7 +73,7 @@ export default function EstadisticasPage({
           { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
           { title: "Estaciones de aforo", description: "IMD y aforos de la Red de Carreteras del Estado", href: "/estaciones-aforo", icon: <GaugeCircle className="w-5 h-5" /> },
           { title: "Intensidad de tráfico (IMD)", description: "Datos de intensidad media diaria por carretera", href: "/intensidad", icon: <Activity className="w-5 h-5" /> },
-          { title: "Estadísticas de incidencias", description: "Análisis estadístico de incidencias por tipo y zona", href: "/incidencias/estadisticas", icon: <BarChart2 className="w-5 h-5" /> },
+          { title: "Estadísticas de incidencias", description: "Análisis estadístico de incidencias por tipo y zona", href: "/incidencias/analytics", icon: <BarChart2 className="w-5 h-5" /> },
         ]} />
       </div>
     </>

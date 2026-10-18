@@ -864,7 +864,7 @@ export default async function PortDetailPage({ params }: Props) {
                   return (
                     <Link
                       key={station.id}
-                      href={`/gasolineras/maritimas/${station.id}`}
+                      href={`/maritimo/combustible/${station.id}`}
                       className="group block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-sea-300 dark:hover:border-tl-sea-700 transition-all"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">

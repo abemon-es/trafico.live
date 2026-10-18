@@ -471,7 +471,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                     {cameraCount !== 1 ? "s" : ""} en la {roadId}.
                   </p>
                   <Link
-                    href={`/carreteras/${encodeURIComponent(roadId)}/camaras`}
+                    href={`/camaras/carretera/${encodeURIComponent(roadId)}`}
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                   >
                     Ver todas las cámaras

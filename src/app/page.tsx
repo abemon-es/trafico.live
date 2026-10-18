@@ -45,7 +45,7 @@ const SECTION_LINKS = [
   { href: "/carga-ev", label: "Cargadores EV", Icon: Zap },
   { href: "/noticias", label: "Noticias", Icon: Newspaper },
   { href: "/zbe", label: "Zonas de Bajas Emisiones", Icon: Ban },
-  { href: "/electrolineras", label: "Electrolineras", Icon: Zap },
+  { href: "/carga-ev", label: "Electrolineras", Icon: Zap },
   { href: "/maritimo", label: "Marítimo", Icon: Anchor },
   { href: "/estadisticas", label: "Estadísticas", Icon: BarChart3 },
   { href: "/mapa", label: "Mapa en vivo", Icon: Map },
@@ -63,7 +63,7 @@ const SECTION_LINKS = [
   { href: "/accidentes", label: "Puntos negros y accidentes", Icon: AlertTriangle },
   { href: "/clima", label: "Clima histórico", Icon: Cloud },
   { href: "/corredores", label: "Corredores de transporte", Icon: Route },
-  { href: "/insights", label: "Insights de movilidad", Icon: Newspaper },
+  { href: "/noticias", label: "Insights de movilidad", Icon: Newspaper },
 ];
 
 async function getHomeStats() {

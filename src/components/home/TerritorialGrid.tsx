@@ -2,8 +2,8 @@ import Link from "next/link";
 
 interface Community {
   name: string;
+  /** DB slug — /espana/<slug> is the final URL (see lib/geo/geo-paths.ts). */
   slug: string;
-  incidents: number;
 }
 
 interface City {
@@ -11,23 +11,26 @@ interface City {
   slug: string;
 }
 
+// Hard-coded incident counts used to sit next to each name ("Madrid 67") as if
+// they were live; they were not. Names only until a live count is wired.
 const COMMUNITIES: Community[] = [
-  { name: "Andalucía", slug: "andalucia", incidents: 42 },
-  { name: "Aragón", slug: "aragon", incidents: 12 },
-  { name: "Asturias", slug: "asturias", incidents: 8 },
-  { name: "Baleares", slug: "baleares", incidents: 6 },
-  { name: "Canarias", slug: "canarias", incidents: 15 },
-  { name: "Cantabria", slug: "cantabria", incidents: 5 },
-  { name: "C.-La Mancha", slug: "castilla-la-mancha", incidents: 18 },
-  { name: "C. y León", slug: "castilla-y-leon", incidents: 22 },
-  { name: "Catalunya", slug: "catalunya", incidents: 56 },
-  { name: "C. Valenciana", slug: "comunitat-valenciana", incidents: 31 },
-  { name: "Extremadura", slug: "extremadura", incidents: 7 },
-  { name: "Galicia", slug: "galicia", incidents: 19 },
-  { name: "Madrid", slug: "madrid", incidents: 67 },
-  { name: "Murcia", slug: "murcia", incidents: 11 },
-  { name: "Navarra", slug: "navarra", incidents: 9 },
-  { name: "País Vasco", slug: "pais-vasco", incidents: 14 },
+  { name: "Andalucía", slug: "andalucia" },
+  { name: "Aragón", slug: "aragon" },
+  { name: "Asturias", slug: "principado-de-asturias" },
+  { name: "Baleares", slug: "islas-baleares" },
+  { name: "Canarias", slug: "canarias" },
+  { name: "Cantabria", slug: "cantabria" },
+  { name: "C.-La Mancha", slug: "castilla-la-mancha" },
+  { name: "C. y León", slug: "castilla-y-leon" },
+  { name: "Catalunya", slug: "cataluna" },
+  { name: "C. Valenciana", slug: "comunidad-valenciana" },
+  { name: "Extremadura", slug: "extremadura" },
+  { name: "Galicia", slug: "galicia" },
+  { name: "La Rioja", slug: "la-rioja" },
+  { name: "Madrid", slug: "comunidad-de-madrid" },
+  { name: "Murcia", slug: "region-de-murcia" },
+  { name: "Navarra", slug: "navarra" },
+  { name: "País Vasco", slug: "pais-vasco" },
 ];
 
 const CITIES: City[] = [
@@ -80,13 +83,10 @@ export function TerritorialGrid() {
           {COMMUNITIES.map((community) => (
             <Link
               key={community.slug}
-              href={`/comunidad-autonoma/${community.slug}`}
+              href={`/espana/${community.slug}`}
               className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-400 hover:bg-tl-50 dark:hover:bg-tl-900/30 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
             >
               <span>{community.name}</span>
-              <span className="font-data text-xs text-gray-400 dark:text-gray-500 tabular-nums">
-                {community.incidents}
-              </span>
             </Link>
           ))}
         </div>

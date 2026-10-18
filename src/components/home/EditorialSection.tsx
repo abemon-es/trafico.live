@@ -14,28 +14,28 @@ const ARTICLES: Article[] = [
     categoryColor: "text-tl-600",
     title: "Tráfico hoy: miércoles 2 de abril",
     description: "342 incidencias activas, 12 retenciones. Alertas en Galicia y el litoral norte.",
-    href: "/blog/trafico-hoy-2-abril",
+    href: "/noticias/trafico-hoy-2-abril",
   },
   {
     category: "Análisis",
     categoryColor: "text-tl-amber-500",
     title: "El diésel cae un 3% en marzo",
     description: "Estaciones más baratas de España y evolución mensual del precio del combustible.",
-    href: "/blog/diesel-marzo-2025",
+    href: "/noticias/diesel-marzo-2025",
   },
   {
     category: "Seguridad vial",
     categoryColor: "text-signal-red",
     title: "50 puntos negros 2025",
     description: "Accidentalidad histórica por tramo. Los tramos con mayor siniestralidad en la red.",
-    href: "/blog/puntos-negros-2025",
+    href: "/noticias/puntos-negros-2025",
   },
   {
     category: "Movilidad",
     categoryColor: "text-signal-green",
     title: "ZBE Madrid: cambios en abril",
     description: "Nuevas restricciones de acceso a Madrid Central y Madrid 360 a partir de abril.",
-    href: "/blog/zbe-madrid-abril-2025",
+    href: "/noticias/zbe-madrid-abril-2025",
   },
 ];
 
@@ -54,7 +54,7 @@ export function EditorialSection() {
             </h2>
           </div>
           <Link
-            href="/blog"
+            href="/noticias"
             className="text-xs font-medium text-tl-600 hover:text-tl-700 dark:text-tl-400 dark:hover:text-tl-300 whitespace-nowrap"
           >
             Ver todas &rarr;
