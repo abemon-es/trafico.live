@@ -239,7 +239,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!isSESConfigured()) {
     console.warn("[contacto-general] SES not configured. Logging payload only.");
     console.log("[contacto-general]", v.data);
-    return NextResponse.json({ ok: true });
+    // Accepted but NOT delivered: the visitor is told the message was sent and
+    // nobody receives it. Until 2026-10-18 this branch was silent while SES was
+    // unconfigured in production. The payload logged above stays in Loki (90 d)
+    // so it can be recovered; this event carries no personal data and exists so
+    // that someone goes and looks. Fix the sender, never this alert.
+    reportApiError(
+      new Error("Contact form accepted but NOT delivered — no email sender configured"),
+      "contacto-general",
+      { form: "contacto-general", topic: v.data.topic }
+    );
+    // `delivered: false` lets the form say "received", not "sent".
+    return NextResponse.json({ ok: true, delivered: false });
   }
 
   try {

@@ -38,6 +38,8 @@ export default function RequestAccessForm() {
     newsletter: false,
   });
   const [status, setStatus] = useState<Status>("idle");
+  // false when the server registered the request but cannot deliver it
+  const [delivered, setDelivered] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormState, string>>>({});
 
   // ----------------------------------------------------------------- validate
@@ -87,6 +89,9 @@ export default function RequestAccessForm() {
         return;
       }
 
+      const data = (await res.json().catch(() => ({}))) as { delivered?: boolean };
+      setDelivered(data.delivered !== false);
+
       // Newsletter opt-in (parallel, non-blocking)
       if (form.newsletter) {
         trackNewsletterSignupEvent("api-landing-form");
@@ -120,11 +125,25 @@ export default function RequestAccessForm() {
           className="mb-2 font-['Exo_2'] text-xl font-bold text-gray-900"
           style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
         >
-          ¡Solicitud recibida!
+          {delivered ? "¡Solicitud recibida!" : "Solicitud registrada"}
         </h3>
         <p className="text-sm text-gray-600 leading-relaxed">
-          Hemos recibido tu solicitud y nuestro equipo te responderá en{" "}
-          <strong>24 horas hábiles</strong>. Mientras tanto, puedes explorar la{" "}
+          {delivered ? (
+            <>
+              Hemos recibido tu solicitud y nuestro equipo te responderá en{" "}
+              <strong>24 horas hábiles</strong>.
+            </>
+          ) : (
+            <>
+              La hemos registrado, pero ahora mismo no podemos garantizarte una respuesta por esta
+              vía. Si la necesitas, escríbenos también a{" "}
+              <a href="mailto:support@trafico.live" className="text-tl-600 underline-offset-2 hover:underline">
+                support@trafico.live
+              </a>
+              .
+            </>
+          )}{" "}
+          Mientras tanto, puedes explorar la{" "}
           <a href="/api-docs" className="text-tl-600 underline-offset-2 hover:underline">
             documentación pública
           </a>
