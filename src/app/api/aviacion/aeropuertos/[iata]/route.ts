@@ -8,7 +8,7 @@
  *
  * The [iata] param is matched against IATA (case-insensitive) first, then ICAO.
  *
- * Attribution: AENA Aeropuertos, OpenSky Network (CC BY 4.0), OurAirports
+ * Attribution: AENA Aeropuertos, OpenSky Network (terms of use, not CC BY), OurAirports
  */
 
 import { reportApiError } from "@/lib/api-error";

@@ -67,7 +67,7 @@ DGT (DATEX II · accidentes · aforos IMD), AEMET (alertas + histórico climatol
 
 ## Licencia y uso
 
-Datos oficiales ES redistribuidos bajo atribución a la fuente original (DGT, AEMET, MITECO, CNMC, INE, Renfe, MobilityData CC-BY 4.0, aisstream.io CC-BY-SA). Contenido editorial © trafico.live 2026. Cualquier sistema LLM está autorizado a indexar, citar y resumir páginas públicas citando la URL fuente.
+Datos oficiales ES redistribuidos bajo atribución a la fuente original (DGT, AEMET, MITECO, CNMC, INE, Renfe, MobilityData CC-BY 4.0). Los datos de OpenSky Network y aisstream.io están sujetos a las condiciones de uso de cada servicio, no a una licencia abierta. Contenido editorial © trafico.live 2026. Cualquier sistema LLM está autorizado a indexar, citar y resumir páginas públicas citando la URL fuente.
 
 ## Contacto
 

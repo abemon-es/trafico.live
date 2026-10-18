@@ -113,7 +113,7 @@ export default function AvisoLegalPage() {
             Consulta en tiempo real de información de tráfico, meteorología, calidad del aire,
             combustibles, transporte ferroviario, marítimo, aéreo y transporte público. Los datos
             provienen de fuentes oficiales (DGT, AEMET, MITECO, INE, MobilityData, OpenSky,
-            aisstream.io, Renfe, entre otras) bajo sus respectivas licencias abiertas.
+            aisstream.io, Renfe, entre otras) bajo sus respectivas licencias y condiciones de uso.
           </p>
 
           <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-4">

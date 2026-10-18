@@ -55,7 +55,7 @@ export default function VuelosHubPage() {
           <FeatureCard
             icon={Info}
             title="Click → ficha del vuelo"
-            description="Callsign, ruta estimada, tipo de aeronave y último contacto. Atribución OpenSky (CC BY 4.0)."
+            description="Callsign, ruta estimada, tipo de aeronave y último contacto. Datos: OpenSky Network, sujetos a sus condiciones de uso."
           />
         </div>
 

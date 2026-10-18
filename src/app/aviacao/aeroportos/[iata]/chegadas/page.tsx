@@ -396,7 +396,7 @@ export default async function ChegadasPage({ params }: Props) {
         {/* Attribution */}
         <footer className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5 border-t border-gray-100 dark:border-gray-800 pt-4">
           <Info className="w-3 h-3 flex-shrink-0" />
-          Dados ADS-B: OpenSky Network (CC BY 4.0). Aeronaves na área do aeroporto (raio 30 km).
+          Dados ADS-B: OpenSky Network, sujeitos às suas condições de utilização. Aeronaves na área do aeroporto (raio 30 km).
           Atualização a cada 15 minutos. O callsign ADS-B pode diferir do número de voo IATA.
         </footer>
       </div>

@@ -112,7 +112,7 @@ const FAQ_ITEMS = [
   {
     question: "De onde vêm as posições das aeronaves?",
     answer:
-      "As posições ADS-B provêm da rede OpenSky Network, uma rede colaborativa de recetores terrestres com licença Creative Commons (CC BY 4.0). O nosso coletor consulta a API OpenSky a cada 15 minutos, limitado ao espaço aéreo português.",
+      "As posições ADS-B provêm da rede OpenSky Network, uma rede colaborativa de recetores terrestres; a sua utilização está sujeita às condições da rede OpenSky. O nosso coletor consulta a API OpenSky a cada 15 minutos, limitado ao espaço aéreo português.",
   },
   {
     question: "O que é a ANA Aeroportos?",
@@ -161,7 +161,7 @@ export default async function AviacacoHubPage() {
     "@type": "DataFeed",
     name: "Posições ADS-B aeronaves sobre Portugal",
     description:
-      "Feed de posições ADS-B em tempo real de aeronaves sobre o espaço aéreo português. Fonte: OpenSky Network (CC BY 4.0).",
+      "Feed de posições ADS-B em tempo real de aeronaves sobre o espaço aéreo português. Fonte: OpenSky Network, sujeita às suas condições de utilização.",
     url: `${BASE_URL}/api/aviacion`,
     encodingFormat: "application/geo+json",
     license: "https://creativecommons.org/licenses/by/4.0/",
@@ -437,7 +437,7 @@ export default async function AviacacoHubPage() {
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-6 flex items-center gap-1.5">
           <Info className="w-3 h-3" />
-          Fontes: OpenSky Network (ADS-B, CC-BY 4.0), ANA Aeroportos de Portugal, OurAirports.
+          Fontes: OpenSky Network (ADS-B), ANA Aeroportos de Portugal, OurAirports.
         </p>
       </div>
     </>

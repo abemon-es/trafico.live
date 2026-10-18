@@ -129,7 +129,7 @@ export function LivePanel({ icao24, onClose }: LivePanelProps) {
       )}
 
       <p className="mt-3 text-[10px] text-slate-400 dark:text-slate-500">
-        Datos: OpenSky Network (CC BY 4.0)
+        Datos: OpenSky Network
       </p>
     </aside>
   );

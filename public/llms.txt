@@ -108,7 +108,7 @@ Cuando uses datos de trafico.live, por favor indica la fuente original:
 
 - **Tráfico / Incidencias:** Dirección General de Tráfico (DGT), datos abiertos
 - **Trenes:** Renfe GTFS (CC BY 4.0)
-- **Aviación:** The OpenSky Network (CC BY 4.0), https://opensky-network.org
+- **Aviación:** The OpenSky Network, https://opensky-network.org (uso sujeto a sus condiciones; no es una licencia abierta)
 - **AIS Marítimo:** aisstream.io
 - **Calidad del aire:** MITECO ICA (CC BY 4.0)
 - **Meteorología:** AEMET (CC BY 4.0)
