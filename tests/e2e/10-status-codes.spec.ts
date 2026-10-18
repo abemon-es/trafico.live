@@ -8,9 +8,10 @@ import { expect, test } from '@playwright/test'
  * canonical to the homepage. Cause: a root `src/app/loading.tsx` made every
  * route stream, so the 200 status was flushed before `notFound()` ran.
  *
- * Runs against production without a local server:
- *   PLAYWRIGHT_NO_WEBSERVER=1 PLAYWRIGHT_BASE_URL=https://trafico.live \
- *     npx playwright test tests/e2e/10-status-codes.spec.ts --project=chromium-desktop
+ * Run it against localhost/staging only. Do NOT point it at production from
+ * the Mac: requests for missing pages are what CrowdSec calls http-probing and
+ * they got the office IP banned on 2026-10-19. The production guard for the
+ * same rule is section 4b of bin/smoke-test.sh, which runs on compute.
  */
 
 const MUST_404 = [
