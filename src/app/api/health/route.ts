@@ -110,6 +110,10 @@ const HIDDEN_TASKS: Record<string, string> = {
     "debug artefact from 2026-04-18, never a real collector",
   "social-broadcast":
     "disabled 2026-08-29 (crontabs/realtime) — no destination configured: Telegram, Bluesky and X credentials are all absent. Re-enable the cron line and delete this entry once they exist",
+  "transit-rt-madrid":
+    "disabled 2026-10-19 (crontabs/realtime) — EMT_MADRID_CLIENT_ID/PASS_KEY never provisioned; it reported ok every minute while storing nothing. Escalated to MJ; re-enable the cron line and delete this entry once the keys exist",
+  "transit-rt-tmb":
+    "disabled 2026-10-19 (crontabs/realtime) — TMB_APP_ID/APP_KEY never provisioned; it reported ok every minute while storing nothing. Escalated to MJ; re-enable the cron line and delete this entry once the keys exist",
 };
 
 interface CollectorEntry {

@@ -141,5 +141,13 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   log(TASK, "Health check complete");
-  await heartbeat(prisma, TASK, stale.length === 0 ? "ok" : "partial", { healthy: healthy.length, stale: stale.length, empty: empty.length, errors: errors.length });
+  // A check that cannot read a table has not checked it: errors are partial
+  // too (it said `ok` with errors: 1 for AircraftPosition on 2026-10-19).
+  await heartbeat(prisma, TASK, stale.length === 0 && errors.length === 0 ? "ok" : "partial", {
+    healthy: healthy.length,
+    stale: stale.length,
+    empty: empty.length,
+    errors: errors.length,
+    ...(errors.length > 0 && { errorDetails: errors.slice(0, 5) }),
+  });
 }

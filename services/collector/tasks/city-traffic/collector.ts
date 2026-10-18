@@ -649,6 +649,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   let totalSensors = 0;
   let totalReadings = 0;
+  const failedCities: { city: string; error: string }[] = [];
 
   for (const city of cities) {
     try {
@@ -659,6 +660,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
       log(TASK, `${city.name}: ${sensors} sensors, ${inserted} readings stored`);
     } catch (error) {
       logError(TASK, `${city.name} failed — continuing with other cities:`, error);
+      failedCities.push({ city: city.name, error: String(error).slice(0, 160) });
     }
   }
 
@@ -673,12 +675,20 @@ export async function run(prisma: PrismaClient): Promise<void> {
   // (Barcelona 502/403, Valencia 0 segments, Zaragoza 400) behind a status
   // that reads as "some data arrived" — the table sat empty while the
   // collector ran every five minutes and never once said error.
-  const status = totalReadings > 0 ? "ok" : "error";
+  //
+  // And the inverse: some readings must not read as "all good". Until
+  // 2026-10-19 Zaragoza and Barcelona (sections) failed on every run while the
+  // heartbeat said `ok` with 941 sensors. A partial run is `partial`, and it
+  // names what failed.
+  const status = totalReadings === 0 ? "error" : failedCities.length > 0 ? "partial" : "ok";
   await heartbeat(prisma, TASK, status, {
     sensors: totalSensors,
     readings: totalReadings,
+    ...(failedCities.length > 0 && { failedCities }),
     ...(totalReadings === 0
       ? { error: "No readings from any city — all upstream sources failed" }
-      : {}),
+      : failedCities.length > 0
+        ? { reason: `${failedCities.length}/${cities.length} sources failed: ${failedCities.map((c) => c.city).join(", ")}` }
+        : {}),
   });
 }
