@@ -123,6 +123,32 @@ TRAFICO-LIVE-3 (`exit status 1`, 14,310 lifetime) also last seen 20:00:50Z:
    at low zoom + Protomaps building extrusions, S) or change the badge. Audit
    the other "Activo" badges on that component the same way.
 
+### CMO brief 2026-10-18 — Google never fetched the shards; Bing is the channel
+
+Source: CMO session, GSC + GA4 18-09→15-10 (brief at
+`~/logs/cmo-loop/briefs/2026-10-18-trafico-live.md`; Monday refreshes).
+- GA4 1,240 sessions (+46 %), organic 949 of which **~942 via Bing's index**
+  (Bing, Yahoo, DDG, Ecosia, Qwant). Google 9 clicks / 1,183 impr in 28 d.
+  AI assistants 97 sessions (ChatGPT 91) = third channel.
+- GSC per CMO: the 10 child sitemaps submitted 24-08 are all still pending,
+  never downloaded; index not submitted. (Contradicts our 08-29 note that
+  `/sitemap.xml` was re-read 08-27 — could not re-check: a hook blocks the
+  Google credential on the Mac. Take CMO's live read as current.)
+- **Verified by us on the public site:** 43,336 URLs; 40,920 carry today's
+  `lastmod` stamped at cron hours (00:00/04:00/18:00), not content changes;
+  `/trenes/incidencias` (#1 landing, 187), `/carreteras/AP-7/hoy`,
+  `/atascos/granada` absent from every shard; `/rondas/ronda-de-dalt` linked
+  from the homepage alongside `ronda-dalt`.
+
+Taken on (L3, after the L1 DGT v37 migration), in this order:
+1. `/sitemap/priority.xml` (<500 live hubs) + add the missing hubs + 301
+   ronda-de-dalt → ronda-dalt. Then CMO submits index + priority in GSC and
+   requests indexing for the top 20.
+2. Real `lastmod` (date the page's data changed).
+3. IndexNow (key file + ping on change) — Bing is the main channel.
+Needs MJ: pruning thin record pages (proposal: drop from sitemap but keep
+crawlable, measure 4 weeks, then noindex). Bing Webmaster Tools API key → CMO.
+
 ### Research 2026-10-18 — Argos Atlas / God's Eye View (MJ's reels)
 
 Full report: `docs/research/2026-10-18-argos-atlas-gods-eye-view.md`.
