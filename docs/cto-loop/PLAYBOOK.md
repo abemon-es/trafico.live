@@ -150,6 +150,17 @@ What that means for the loop, every day (Europe/Madrid calendar day):
 
 Bottom-up still holds: none of this outranks a red L0 or a stale L1.
 
+**Never sweep the site from the Mac.** On 2026-10-19 00:49 a link check fired
+43 GETs in 9 s from the office IP; CrowdSec (`http-crawl-non_statics`) banned
+it, which also cut SSH to compute for *every* session on the Mac until the CTO
+session lifted it. More than ~10 pages in a row → run it on compute against
+the local Traefik (`curl --resolve trafico.live:443:127.0.0.1`, loopback is
+CrowdSec-exempt — **never** target compute's public IP), or use scrape-turbo
+with ≥ 1 s between requests. Lighthouse/Playwright on a handful of pages in
+series from the Mac is fine. And a checker that gets 429s must report
+"unverified" (exit 2), never green — that one did, and its "0 redirects" was
+worthless.
+
 ## Work bottom-up, not by rotation
 
 **Superseded on 2026-08-16 by MJ: "all of this needs to be fixed first and from

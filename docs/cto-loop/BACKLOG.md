@@ -75,6 +75,50 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (7) — every missing URL answered 200 (site-wide soft 404)
+
+**Finding.** Any unknown URL — `/esto-no-existe`, `/espana/no-existe`,
+`/carreteras/ZZ-999`, `/noticias/…`, `/municipio/…`, `/rondas/…`,
+`/gasolineras/terrestres/99999999` — answered **200** with two conflicting
+robots metas (layout `index, follow` + Next's injected `noindex`) and a
+canonical to the homepage, **for Googlebot and Bingbot too** (checked with
+their UAs). That is a soft 404 on every typo, retired slug and stale external
+link — a domain-quality signal (H1). Cause: a root `src/app/loading.tsx`
+(homepage skeleton) wrapped every route in Suspense, so the 200 status was
+flushed with the shell before `notFound()` ran. The existing
+`tests/e2e/09-404-navigate.spec.ts` already expected 404 — it just never ran
+against prod.
+**Fix:** root `loading.tsx` removed. Checked the one risk (prerender error for
+`useSearchParams` without a boundary): all 34 `TraficoMap` imports are
+`ssr:false` (covers `RoutingPanel`, `useMapLayers`); `/explorar`,
+`/incidencias`, `/camaras`, `/explorar/infraestructura` have their own
+`<Suspense>`; `/verify-email` is dynamic. New
+`tests/e2e/10-status-codes.spec.ts`: 7 templates must 404, existing pages 200 —
+**7/7 fail against prod before the deploy**. Still soft-404 by design of this
+cycle: the 9 segments with their own `loading.tsx` (`/camaras`, `/trenes`,
+`/maritimo`, `/aviacion`, `/calidad-aire`, `/intensidad`, `/estaciones-aforo`,
+`/transporte-publico`, `/barcos/mapa`) — their dynamic children (camera cities,
+1,506 station pages, ports, airports, 817 AQ stations…) need the skeleton
+scoped to the hub page only (route group). Marked `test.fixme`.
+Also in this PR: cookie-banner title hidden on phones (36 % → ~32 % of an SE
+viewport); `bin/check-internal-redirects.sh` rewritten after it got the
+office IP banned (see PLAYBOOK "Never sweep the site from the Mac").
+
+**Next, L1 — "ok" that isn't (found in collector-realtime's 200 err/h):**
+- `transit-rt-madrid`, `transit-rt-tmb`: heartbeat `ok` with
+  `{reason: "missing_credentials", skipped: true}` every run — no data ever.
+  Credentials are free developer keys (EMT MobilityLabs, TMB developer
+  portal) → **MJ** (`EMT_MADRID_CLIENT_ID/PASS_KEY`, `TMB_APP_ID/APP_KEY`).
+  Meanwhile the heartbeat must say `partial` (or the task be declared retired
+  with a reason, like `HIDDEN_TASKS`), not `ok`.
+- `city-traffic`: `ok` with 941 sensors while **Zaragoza** and **Barcelona
+  (sections)** throw API errors every run → `partial` with the failing cities.
+- `health-check`: `ok` with `errors: 1` (`Query error: AircraftPosition`).
+Same class as the dispatcher-fallback `ok` (item 4): a status that does not
+state what failed.
+
+---
+
 ## Cycle 2026-10-19 (6) — internal links to final URLs; 450 redirects out of the sitemap
 
 **Cycle 5 verification first (PR #80 → `aef21433`):** smoke pass; LCP
@@ -87,7 +131,7 @@ hidden Suspense segment, and with **0 hydration errors** (checked with
 Playwright on 7 pages). Cause: its `animate-in slide-in-from-bottom` starts
 below the viewport, LCP only counts it once on screen, and with the main thread
 busy hydrating the animation stalls for seconds. Animation removed. Also: the
-banner was **322 of 667 px on an iPhone SE** — now compact (one row of three
+banner was **322 of 568 px (57 %) on an iPhone SE** (Playwright's SE is 320×568) — now compact (one row of three
 44 px buttons, smaller copy) and the spec asserts ≤ 35 % of the viewport. The
 spec's one failure was its own bug (the wrapper is 0 px tall; visibility is now
 asserted on the dialog) and it now also catches minified hydration errors
@@ -121,8 +165,22 @@ pages. Main sources and fixes:
   other shards already list — removed.
 - `next.config`: `/explorar` → `/espana` in one hop (was via
   `/comunidad-autonoma`); `/espana/catalunya|comunitat-valenciana/*` → DB slugs.
-**Verify after deploy:** detector → 0 (or only externally-driven aliases);
-CMO's Monday 308 recount.
+**✅ VERIFIED after deploy (PR #81 → `7eb50089`):** smoke pass. The first
+detector run ("0 redirects in 886") was **void** — it got the office IP banned
+by CrowdSec and counted the 429s as clean. Re-run on-host with the fixed
+script: **3,991 internal URLs, 0 redirect · 0 broken · 0 unverified** (was
+70 redirects from the same 24 seeds). Banner now 204 px
+(36 % of 568) — 1 px-ish over the spec's 35 % → title hidden on phones in
+cycle 7 (dialog keeps its aria-label). CMO's Monday 308 recount pending.
+**Lighthouse after #81 — the banner no longer hides the real problem:** on
+most pages the LCP element is now the page's own hero text, and it paints
+late: `/trenes/incidencias` 6.6 s ("Alertas y retrasos en tiempo real…"),
+`/prediccion/precio-combustible` 5.8 s, `/gasolineras` 5.0 s, `/` 6.9 s
+(perf 48-66). With a smaller banner, the next-largest element is the hero
+copy, which renders at hydration — likely an entrance animation or a client
+component. That is the real mobile LCP item (ranked after the soft 404s).
+Lab numbers on a loaded Mac are noisy (±1-2 s between runs): judge by which
+element is LCP and its Render Delay, not by the score.
 
 **New, ranked next — L2: `notFound()` answers 200.** Unknown slugs
 (`/espana/catalunya`, `/rondas/ronda-de-dalt` before this cycle) return
