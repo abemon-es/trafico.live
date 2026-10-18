@@ -21,6 +21,29 @@ last.
 
 ---
 
+## Cycle 2026-10-18 (2) — false licence claims removed
+
+**Opening signals 21:11Z:** healthy · 2/52 degraded (known) · build
+`db3640d1` serving · smoke ok · GlitchTip **+0 events in 64 min** across all
+issues. TRAFICO-LIVE-3 (`exit status 1`, 14,310) flat since 20:00:50Z →
+**confirmed: it was supercronic reporting panel's failing exit every 5 min.**
+Panel fix fully verified; HD/HE/3 can be resolved in the GlitchTip UI (our
+token is read-only).
+
+**Item: we asserted licences that do not exist.** Legal (2026-10-18) flagged
+"OpenSky CC BY 4.0" and "aisstream.io CC-BY-SA" in 4 places as "fix today,
+no discussion". A full sweep found **25 occurrences in 18 files** — Spanish and
+Portuguese aviation pages, airport pages, the live map panel, `/maritimo`, both
+`llms.txt`, API route headers, the collector header and `aviso-legal` L116
+("licencias abiertas"). All now read "sujeto a sus condiciones de uso" (PT:
+"sujeitos às suas condições de utilização"); code comments point to the
+ESCALATIONS entry. `aviso-legal` L219-224 was already correct. No behaviour
+change: OpenSky ingestion and `/api/v1/vuelos` untouched pending MJ.
+Verified: 0 leftovers by regex; 17 changed TS/TSX files parse clean
+(TypeScript `transpileModule`, no root node_modules on the Mac).
+
+---
+
 ## Cycle 2026-10-18 — loop restarted after 4 weeks dark · GlitchTip wired · panels back
 
 **Context.** Last recorded cycle was 2026-09-22. MJ restarted the loop
@@ -55,10 +78,14 @@ province pages. An empty/unparseable feed now throws instead of returning an
 empty map or exiting without a heartbeat; a messages publication >30 min old
 reports `partial` with a reason. Dry-run against the live feeds: 2,517
 locations, 0 without province, 954 messages, 0 orphans.
-**Verify after deploy:** `panel` heartbeat `ok`, `VariablePanel.fetchedAt`
-advancing, GlitchTip TRAFICO-LIVE-HD/HE stop growing — and watch whether
-TRAFICO-LIVE-3 (`exit status 1`) slows: if it does, it was supercronic
-reporting panel's exit every 5 min.
+**✅ VERIFIED after deploy (PR #76 → `db3640d1`, collectors SUCCESS
+20:03:45Z):** first run on the new code 20:05:34Z → `panel` `ok`,
+`{total: 2515, withMessage: 931, messagesPublishedAt: 20:04:41Z}`; DB 2,515
+active · 931 with message · 0 `[object Object]` names; degraded 3 → 2/52.
+GlitchTip HD/HE last seen 20:00:41Z / 19:55:24Z — nothing after the swap.
+TRAFICO-LIVE-3 (`exit status 1`, 14,310 lifetime) also last seen 20:00:50Z:
+**if it stays flat, that noise was supercronic reporting panel's exit every
+5 min** — confirm next cycle, then it can be resolved.
 
 ### Next, ranked (found this cycle, not yet acted on)
 
@@ -88,6 +115,32 @@ reporting panel's exit every 5 min.
    400s.
 7. Known: `transit-gtfs` partial (3 feeds), `aemet-forecast` partial (6
    non-existent AEMET codes).
+8. **L2 — homepage claims a feature that does not exist.**
+   `src/components/home/AdvancedFeatures.tsx` badges "Globe View 3D — Activo"
+   ("zoom desde la Tierra hasta nivel calle con edificios 3D",
+   `projection: 'globe'`); no map in `src/` sets a globe projection or
+   fill-extrusion. Either ship it (MapLibre v5 `setProjection({type:'globe'})`
+   at low zoom + Protomaps building extrusions, S) or change the badge. Audit
+   the other "Activo" badges on that component the same way.
+
+### Research 2026-10-18 — Argos Atlas / God's Eye View (MJ's reels)
+
+Full report: `docs/research/2026-10-18-argos-atlas-gods-eye-view.md`.
+What matters for this loop, revenue first:
+- **Licence risk, escalated to the Legal session (2026-10-18):** OpenSky's
+  terms require a written licence for commercial/operational use and forbid
+  redistribution; we poll it every 15 min and resell via `/api/v1/vuelos`.
+  Fallback source if needed: adsb.lol (ODbL). Await Legal + MJ; do not
+  switch unilaterally.
+- **Argos Atlas competes on our core query** ("cámaras DGT", 10,894 feeds
+  claimed for Spain) while `/camaras` says "más de 500" and we ingest DGT only.
+  Camera parity (SCT, Euskadi, Madrid, Portugal, mountain passes) before
+  winter is the strongest L3 lever — after L0–L2 hold.
+- Revenue ideas needing MJ: pitch Argos/World Monitor as API customers
+  (they lack V16, incidents, punctuality, fuel); PRO "watching" tier
+  (corridor alerts + daily brief) rather than raw JSON.
+- Not worth copying: Google 3D Tiles/Cesium, spy shaders, surveillance framing,
+  AGPL code (World Monitor).
 
 ---
 
@@ -1386,6 +1439,27 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
    single latest row; `/api/estadisticas/modal` is fully orphaned.
 
 ## ESCALATIONS — need MJ, loop cannot self-serve
+
+0. **OpenSky licence — OPEN, awaiting MJ (raised 2026-10-18).** Legal session
+   read the terms: for-profit entity + "operational use … in any live product
+   or automated system" + no redistribution → a written licence is required;
+   being free to users does not change that. Verified the same day: Stripe NOT
+   live, 10 FREE keys only, ads disabled (`AdSlot`/`StickyFooterAd` return
+   null) → damages exposure ~0; realistic risk is OpenSky revoking our OAuth2
+   account and `/aviacion` going dark. MJ's position: "es gratuito, no
+   debería haber problema". Proposed: (1) ~~correct false licence claims~~ ✅
+   done cycle 2 (25 occurrences); (2) draft OpenSky licence request + adsb.lol
+   (ODbL) production request — **Legal drafted the OpenSky request**
+   (2026-10-18; send from the OAuth2 account's mailbox, truthful per cl. 2(i);
+   the line "We have stopped redistributing the data through our API" may
+   only stay if `/api/v1/vuelos` is actually closed first; needs MJ's OK);
+   (3) flights resolved = precondition for turning Stripe or ads live.
+   Legal's adjusted recommendation: this week, stop serving OpenSky data from
+   `/api/v1/vuelos` (the most clearly prohibited part); the `/aviacion` map
+   may stay meanwhile without ads, with aircraft identifiers hidden or
+   anonymised (cl. 3(i)). Both are product changes → MJ.
+   **aisstream.io: MJ decided 2026-10-18 to leave as is** (no published ToS;
+   Legal rated legal risk low, operational medium).
 
 0. **Newsletter: two parallel systems, and the live one has no exit.** Verified
    end to end on 2026-08-19 by actually subscribing through the public endpoint
