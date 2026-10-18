@@ -67,6 +67,11 @@ ESCALATIONS entry. `aviso-legal` L219-224 was already correct. No behaviour
 change: OpenSky ingestion and `/api/v1/vuelos` untouched pending MJ.
 Verified: 0 leftovers by regex; 17 changed TS/TSX files parse clean
 (TypeScript `transpileModule`, no root node_modules on the Mac).
+**Post-deploy check caught 2 misses** (fixed in cycle 3, `107bab94`): the
+rendered `/aviacion` still said "Datos CC-BY 4.0" — JSX text wrapped across
+two lines, invisible to a line-based grep (same in `/aviacao`). Lesson: sweep
+text claims with a cross-line proximity search, and always confirm on the
+rendered page, not the source.
 
 ---
 

@@ -201,7 +201,7 @@ export default async function AviacionHubPage() {
         <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
           Posiciones ADS-B de aeronaves sobre el espacio aéreo español y portugués en
           tiempo real. Radar aviones vía OpenSky Network, 46 aeropuertos AENA y vuelos
-          en directo. Datos CC-BY 4.0.
+          en directo.
         </p>
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink href="/aviacion/mapa" variant="primary" icon={<Navigation className="w-4 h-4" />}>
