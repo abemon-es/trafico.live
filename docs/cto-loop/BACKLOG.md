@@ -21,6 +21,54 @@ last.
 
 ---
 
+## Why we don't rank — joint diagnosis with CMO (opened 2026-10-18, MJ)
+
+MJ: "¿Por qué no estamos bien posicionados? Tenemos muchísimas páginas.
+Discútelo con el CMO." Anchor fact: **Bing ranks us, Google doesn't** — same
+content, ~942 Bing-index sessions vs 9 Google clicks in 28 d (pos 51-65). So
+the gap is how Google judges the domain, not missing content. Hypotheses sent
+to CMO, each with the datum that confirms or kills it:
+
+| # | Hypothesis | Evidence so far | Datum needed (owner) |
+|---|---|---|---|
+| H1 | Google distrusts the domain after a quality history | June empty sitemap index; build-blank pages after every deploy until Aug; 24-08 homepage 301 loop ~2 h; paneles 18 days stale | GSC "crawled/discovered – not indexed" trend per template; manual actions (CMO) |
+| H2 | Too programmatic for a domain with no authority | 43k URLs, 1.6 % earn any impression; yield is in few templates with own data (radares 63 %, cámaras 60 %, provincias 51 % at pos 6.0) | 0-impression/0-session list per template, 90 d (CMO) |
+| H3 | Discovery: shards never fetched + tiny crawl budget | CMO: 10 shards pending since 24-08 | GSC Crawl stats: req/day, response mix, smartphone vs desktop (CMO, UI → MJ) |
+| H4 | Mobile CWV: heavy MapLibre pages, mobile-first index | none yet | GSC CWV mobile per URL group (CMO); `bin/lighthouse-mobile.sh` on top 20 templates (loop) |
+| H5 | No authority / links vs DGT, infocar, Waze, Argos | Argos already ranks "cámaras DGT" | GSC links report; competitor backlinks on 10 target queries (CMO) |
+| H6 | Query/intent mismatch | none yet | top queries by impressions; pos ≤10 Bing but >50 Google (CMO) |
+
+Close the diagnosis at the Monday 2026-10-19/20 CMO refresh, ranked by
+evidence → 4-week plan (pruning + priority sitemap, real lastmod, mobile CWV,
+own text on hubs).
+
+---
+
+## Cycle 2026-10-18 (4) — contact forms said "sent" and delivered nothing
+
+Triggered by a CMO report of a "visitor" failing `/api/contacto/general`
+(400 then 401). **It was our own probe** — 88.21.5.192 is this Mac's public
+IP; 14-byte bodies; the 401 is the same POST without `Origin`, correctly
+rejected by `src/lib/auth.ts`. `/api/session/reset_password` does not exist
+(generic scan; auth layer answers 401 before any handler).
+
+**The real finding:** SES is not configured in production (no `AWS_SES_*` in
+the container). `/api/contacto/general` and `/api/contact` logged the payload
+and returned `{ok:true}` → the visitor saw "Mensaje enviado" and nobody got
+anything. Loki 89 d: **0 valid submissions**, so no lead lost yet — latent.
+Changes: both routes now report `Contact form accepted but NOT delivered — no
+email sender configured` to GlitchTip (no personal data; the payload stays in
+Loki for recovery) and return `delivered:false`; both forms then say
+"Mensaje recibido" / "Solicitud registrada" without promising a reply and
+point to hola@ / support@trafico.live (inbound Cloudflare routing works).
+CTO session (2026-10-18): approved; **SES for trafico.live on Monday** —
+eu-west-1, per-domain identity, IAM limited to it, sender
+`noreply@trafico.live`, DKIM CNAMEs in Cloudflare unproxied, keys in
+`/opt/trafico/.env`. PR #74 (forward to BMC platform) parked: depends on
+bm.consulting#7733. When SES lands: redeploy, then one real end-to-end test.
+
+---
+
 ## Cycle 2026-10-18 (3) — DGT v36 feed names → v37 (pre-emptive, zero parse risk)
 
 The NAP index lists only `*_v37.xml`; we read `*_v36.xml`. Downloaded both
