@@ -42,6 +42,95 @@ Close the diagnosis at the Monday 2026-10-19/20 CMO refresh, ranked by
 evidence → 4-week plan (pruning + priority sitemap, real lastmod, mobile CWV,
 own text on hubs).
 
+**RESULTS (CMO, night of 2026-10-18→19; brief
+`~/logs/cmo-loop/briefs/2026-10-19-trafico-live-diagnostico.md`):**
+- *Index sample* (URL Inspection API, 15 random URLs × 16 templates = 240):
+  **90 % "URL unknown to Google"**, 6 % crawled-not-indexed, 3 % indexed (only
+  carreteras 4, provincias 2, cámaras 1), 2 noindex pages *listed in the
+  sitemap*. 15/15 unknown in carga-ev, codigo-postal, municipio, clima,
+  calidad-aire, maritimo, analisis, transporte-publico, accidentes. All 23
+  crawled URLs were crawled as **mobile**.
+- *Crawlers* (edge.log ~01-09 → 18-10): **Googlebot 855 requests vs Bingbot
+  244,264 (285×)**. Not blocked (831×200, 24×308) — it barely comes. Read
+  `/sitemap.xml` twice and `/sitemap/702.xml` twice in ~7 weeks, never the 10
+  submitted shards. The 308s are internal links to non-final URLs
+  (`/comunidad-autonoma/pais-vasco`, `/analisis/carreteras/a-6`…).
+- *Ranking:* **H3 confirmed, dominant** (Google doesn't know 90 %; crawl
+  demand ~0) ← caused by **H1+H2 confirmed** (of what it fetched, it rejected
+  2 of 3 → low perceived value → low demand, domain-wide). **H4 red in lab**
+  (our Lighthouse: LCP 4.4-8 s; banner fix #80). H5/H6 open (Bing backfills
+  in 1-2 days; links report is UI-only).
+- *Added by CMO:* **H7** nothing Google can't get from DGT/MITECO/AEMET/Renfe
+  directly — our unique value is aggregation by road/city/time + analysis,
+  and that must be the hub text, not boilerplate. **H8** scaled-content
+  pattern (43k template pages on a young low-trust domain).
+- *Plan, by evidence (one per cycle):* (1) hygiene — noindex out of every
+  sitemap, internal links to final URLs (0×308); (2) `/sitemap/priority.xml`
+  ~500 URLs; (3) real lastmod; (4) dated own text on 5 hubs (CMO picks hubs +
+  queries); (5) CWV mobile (MapaFAB late paint, map JS). **Needs MJ:** drop
+  low-value templates from the sitemap (4-week test) + GSC UI-only checks
+  (manual actions, indexing report trend, crawl stats, links, CWV mobile,
+  request indexing top 20). Leading metric, re-measured every Monday by CMO:
+  Googlebot requests/day, then "unknown" → "crawled".
+
+---
+
+## Cycle 2026-10-19 (6) — internal links to final URLs; 450 redirects out of the sitemap
+
+**Cycle 5 verification first (PR #80 → `aef21433`):** smoke pass; LCP
+improved where the main thread is light — `/trenes/incidencias` 6.1→**2.8 s**
+(perf 65→76), `/prediccion/precio-combustible` 5.2→**2.8 s** (60→74),
+`/carreteras/AP-7/hoy` 6.8→**3.8 s** (61→74), `/` 8.0→5.3 s — but on
+`/gasolineras`, `/mapa`, `/trenes` the banner was *still* LCP at 6.4-6.8 s
+with Render Delay 5.7 s although it sat in the HTML at byte 102 k, outside any
+hidden Suspense segment, and with **0 hydration errors** (checked with
+Playwright on 7 pages). Cause: its `animate-in slide-in-from-bottom` starts
+below the viewport, LCP only counts it once on screen, and with the main thread
+busy hydrating the animation stalls for seconds. Animation removed. Also: the
+banner was **322 of 667 px on an iPhone SE** — now compact (one row of three
+44 px buttons, smaller copy) and the spec asserts ≤ 35 % of the viewport. The
+spec's one failure was its own bug (the wrapper is 0 px tall; visibility is now
+asserted on the dialog) and it now also catches minified hydration errors
+(#418/#423/#425).
+
+**Item — crawl waste on our own links.** CMO's edge-log list (3,045 paths
+308'd since 01-09; `/gasolineras/maritimas` 3,070 hits alone) + a new detector
+`bin/check-internal-redirects.sh` (seeds = mobile routes + hubs, plus a
+per-shard sitemap sample; requests every internal href once without following
+redirects; exits 1 on any 3xx). Before: **70 redirecting links** from 24 seed
+pages. Main sources and fixes:
+- **Footer `GeoLinks` (every page): 52 province links `/espana/<province>` →
+  301.** Now `/espana/<community>/<province>` from a static table generated
+  from prod (`src/lib/geo/geo-paths.ts`; DB slugs ≠ slugify(name)). Its Ronda
+  de Dalt link pointed at `/rondas/ronda-de-dalt`, a **soft 404** (200,
+  noindex, canonical → home) — now `ronda-dalt`, plus a 301 for the old one.
+- **Homepage `TerritorialGrid`:** 16 links to `/comunidad-autonoma/<alias>` →
+  308 → `/espana/catalunya` (soft 404) or a 2-hop chain ending on a *province*
+  page (`baleares`, `madrid`, `murcia`, `asturias`). Now DB slugs, all 17
+  communities (La Rioja was missing) — and **hard-coded incident counts shown
+  as if live ("Madrid 67") removed**.
+- Road-scoped `/carreteras/<r>/radares|camaras` → `/radares/<r>`,
+  `/camaras/carretera/<r>`; `/gasolineras/maritimas[/id]` →
+  `/maritimo/combustible[/id]` (incl. map popups and a `permanentRedirect`);
+  `/electrolineras` → `/carga-ev`; `/provincias` → `/espana`;
+  `/incidencias/estadisticas` → `/incidencias/analytics`; `/blog*`,
+  `/insights`, `/informes` → `/noticias*`; `/combustible` → `/gasolineras`;
+  the road page's "Análisis" related link (308'd back to itself) removed.
+- **Sitemap listed 450 redirecting URLs** (`/analisis/accidentes/*` 52,
+  `/analisis/carreteras/*` 398, lower-case so likely 2 hops) whose targets
+  other shards already list — removed.
+- `next.config`: `/explorar` → `/espana` in one hop (was via
+  `/comunidad-autonoma`); `/espana/catalunya|comunitat-valenciana/*` → DB slugs.
+**Verify after deploy:** detector → 0 (or only externally-driven aliases);
+CMO's Monday 308 recount.
+
+**New, ranked next — L2: `notFound()` answers 200.** Unknown slugs
+(`/espana/catalunya`, `/rondas/ronda-de-dalt` before this cycle) return
+**200 + noindex + canonical→home + two conflicting robots metas** — soft
+404s. Find why the status is not 404 (streaming started before `notFound()`
+in `generateMetadata`/page?) and fix at the root; every typo'd or retired URL
+on the site behaves like this today.
+
 ---
 
 ## Cycle 2026-10-19 (5) — first daily mobile pass: the cookie banner was the LCP
