@@ -99,19 +99,22 @@ export function CookieConsent() {
       ariaModal
       ariaLabel="Consentimiento de cookies"
       initialFocus="container"
-      className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-5 animate-in slide-in-from-bottom duration-300"
+      // No entrance animation: a slide-in starts below the viewport, and LCP
+      // only counts it once it is on screen — with the main thread busy
+      // hydrating, that took 5-6 s on mobile even with the banner in the HTML.
+      className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-5"
     >
-      <div className="mx-auto max-w-4xl rounded-xl border border-gray-200 bg-white p-5 shadow-2xl md:p-6 dark:border-gray-800 dark:bg-gray-900">
+      <div className="mx-auto max-w-4xl rounded-xl border border-gray-200 bg-white p-3 shadow-2xl md:p-6 dark:border-gray-800 dark:bg-gray-900">
         {!showSettings ? (
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:gap-4">
             <div className="flex-1">
               <p
                 id="cookie-consent-title"
-                className="mb-1 font-heading text-sm font-semibold text-gray-900 dark:text-white"
+                className="mb-0.5 font-heading text-sm font-semibold text-gray-900 dark:text-white md:mb-1"
               >
                 Tu privacidad importa
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs leading-snug text-gray-600 dark:text-gray-400 md:text-sm md:leading-normal">
                 Usamos cookies técnicas necesarias, analíticas (Google Analytics)
                 para mejorar el servicio y cookies de socios comerciales cuando
                 muestras ofertas de combustible o transporte. Lee más en{" "}
@@ -124,25 +127,25 @@ export function CookieConsent() {
                 .
               </p>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <div className="grid shrink-0 grid-cols-3 items-center gap-1.5 md:flex md:flex-wrap md:gap-2">
               <button
                 type="button"
                 onClick={() => setShowSettings(true)}
-                className="rounded-lg bg-gray-100 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 min-h-[44px]"
+                className="rounded-lg bg-gray-100 px-2 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 min-h-[44px] md:px-4 md:py-3 md:text-sm"
               >
                 Configurar
               </button>
               <button
                 type="button"
                 onClick={handleRejectAll}
-                className="rounded-lg bg-gray-100 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 min-h-[44px]"
+                className="rounded-lg bg-gray-100 px-2 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 min-h-[44px] md:px-4 md:py-3 md:text-sm"
               >
                 Solo necesarias
               </button>
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="rounded-lg bg-tl-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-tl-700 min-h-[44px]"
+                className="rounded-lg bg-tl-600 px-2 py-2 text-xs font-medium text-white transition-colors hover:bg-tl-700 min-h-[44px] md:px-4 md:py-3 md:text-sm"
               >
                 Aceptar todas
               </button>

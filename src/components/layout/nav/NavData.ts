@@ -364,7 +364,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Cargadores EV", href: "/carga-ev", icon: Zap, description: "Puntos de carga" },
           { name: "Calculadora ruta", href: "/calculadora", icon: Calculator, description: "Combustible y peajes" },
-          { name: "Electrolineras", href: "/electrolineras", icon: Zap, description: "Puntos de carga rápida" },
+          { name: "Electrolineras", href: "/carga-ev", icon: Zap, description: "Puntos de carga rápida" },
           { name: "Coste de cargar", href: "/cuanto-cuesta-cargar", icon: Calculator, description: "Calcula el coste EV" },
         ],
       },

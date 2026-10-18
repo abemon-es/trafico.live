@@ -58,7 +58,7 @@ export default function GasolinerasMapaPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400">Ver todas las gasolineras terrestres</p>
         </Link>
         <Link
-          href="/gasolineras/maritimas"
+          href="/maritimo/combustible"
           className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
         >
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Listado Marítimas</h3>

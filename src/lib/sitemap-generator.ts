@@ -1765,7 +1765,7 @@ async function maritimeStationSitemap(
 // ---------------------------------------------------------------------------
 
 async function insightsSitemap(): Promise<SitemapEntry[]> {
-  const [articles, tags, provinces, roads] = await Promise.all([
+  const [articles, tags] = await Promise.all([
     prisma.article.findMany({
       where: { status: "PUBLISHED" },
       select: {
@@ -1781,17 +1781,7 @@ async function insightsSitemap(): Promise<SitemapEntry[]> {
       select: { slug: true },
       where: { articles: { some: {} } },
     }),
-    prisma.province.findMany({ select: { slug: true } }),
-    prisma.trafficFlow.findMany({
-      select: { roadNumber: true },
-      distinct: ["roadNumber"],
-    }),
   ]);
-
-  const now = new Date();
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
 
   const evergreenCategories = new Set([
     "ANNUAL_REPORT",
@@ -1826,18 +1816,9 @@ async function insightsSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily" as const,
       priority: 0.5,
     })),
-    ...provinces.map((p) => ({
-      url: `${BASE_URL}/analisis/accidentes/${p.slug}`,
-      lastModified: today,
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-    })),
-    ...roads.map((r) => ({
-      url: `${BASE_URL}/analisis/carreteras/${r.roadNumber.toLowerCase()}`,
-      lastModified: today,
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    })),
+    // /analisis/accidentes/* and /analisis/carreteras/* used to be listed here:
+    // 450 URLs that only 308 to /estadisticas/accidentes/* and /carreteras/*,
+    // which other shards already list. A sitemap should hold final URLs only.
   ];
 }
 

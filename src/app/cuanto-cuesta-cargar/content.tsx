@@ -881,7 +881,7 @@ export default function CuantoCuestaCargarContent() {
               title: "Blog — consejos EV",
               description:
                 "Artículos sobre coches eléctricos, carga en casa y ahorro en carretera.",
-              href: "/blog",
+              href: "/noticias",
               icon: <Info className="w-5 h-5" />,
             },
           ]}

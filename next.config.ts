@@ -273,7 +273,7 @@ const nextConfig: NextConfig = {
       // Must come AFTER the more-specific /explorar/territorios and /explorar/carreteras
       {
         source: "/explorar",
-        destination: "/comunidad-autonoma",
+        destination: "/espana",
         permanent: true,
       },
       // TODO: /comunidad-autonoma/:community/:province → /provincias/:code
@@ -353,6 +353,24 @@ const nextConfig: NextConfig = {
       {
         source: "/electrolineras/:city",
         destination: "/carga-ev/:city",
+        permanent: true,
+      },
+      // Alias slugs that answered 200 + noindex + canonical→home (a soft 404).
+      // The homepage grid and /comunidad-autonoma/* used them; the community
+      // pages live at the DB slugs (src/lib/geo/geo-paths.ts).
+      {
+        source: "/espana/catalunya/:path*",
+        destination: "/espana/cataluna/:path*",
+        permanent: true,
+      },
+      {
+        source: "/espana/comunitat-valenciana/:path*",
+        destination: "/espana/comunidad-valenciana/:path*",
+        permanent: true,
+      },
+      {
+        source: "/rondas/ronda-de-dalt",
+        destination: "/rondas/ronda-dalt",
         permanent: true,
       },
       // -----------------------------------------------------------------------

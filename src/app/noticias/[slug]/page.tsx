@@ -156,7 +156,7 @@ export default async function ArticlePage({ params }: Props) {
     "diésel": { href: "/precio-diesel-hoy", label: "Precio del diésel hoy" },
     "gasolina": { href: "/precio-gasolina-hoy", label: "Precio de la gasolina hoy" },
     "cargadores": { href: "/carga-ev", label: "Cargadores eléctricos" },
-    "electrolineras": { href: "/electrolineras", label: "Electrolineras" },
+    "electrolineras": { href: "/carga-ev", label: "Electrolineras" },
     "zbe": { href: "/zbe", label: "Zonas de Bajas Emisiones" },
     "accidentes": { href: "/estadisticas/accidentes", label: "Estadísticas de accidentes" },
     "meteorología": { href: "/alertas-meteo", label: "Alertas meteorológicas" },

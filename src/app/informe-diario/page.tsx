@@ -164,7 +164,7 @@ export default async function InformeDiarioIndexPage() {
           { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },
           { title: "Estadísticas de tráfico", description: "Datos históricos de siniestralidad vial", href: "/estadisticas", icon: <BarChart3 className="w-5 h-5" /> },
           { title: "Estado del tráfico hoy", description: "Mapa interactivo con incidencias en tiempo real", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
-          { title: "Todos los informes", description: "Archivo completo de informes de tráfico", href: "/informes", icon: <FolderOpen className="w-5 h-5" /> },
+          { title: "Todos los informes", description: "Archivo completo de informes de tráfico", href: "/noticias", icon: <FolderOpen className="w-5 h-5" /> },
         ]} />
       </main>
     </div>

@@ -336,7 +336,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                       Y {cameras.length - 10} cámaras más...
                     </p>
                     <Link
-                      href={`/carreteras/${road.id}/camaras`}
+                      href={`/camaras/carretera/${road.id}`}
                       className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline flex items-center gap-1"
                     >
                       Ver todas <ExternalLink className="w-3 h-3" />
@@ -392,7 +392,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                       Y {radars.length - 15} radares más...
                     </p>
                     <Link
-                      href={`/carreteras/${road.id}/radares`}
+                      href={`/radares/${road.id}`}
                       className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline flex items-center gap-1"
                     >
                       Ver todos <ExternalLink className="w-3 h-3" />
@@ -772,12 +772,6 @@ export default async function RoadDetailPage({ params }: PageProps) {
         {/* Related links */}
         <div className="mt-2">
           <RelatedLinks links={[
-            {
-              title: `Análisis de tráfico en ${road.id}`,
-              description: `Informe detallado de volúmenes, velocidades medias y tendencias en la ${road.id}.`,
-              href: `/analisis/carreteras/${road.id}`,
-              icon: <TrendingUp className="w-5 h-5" />,
-            },
             {
               title: `Estadísticas de ${road.id}`,
               description: `Datos históricos de accidentalidad, IMD y carga de tráfico en la ${road.id}.`,

@@ -321,7 +321,7 @@ export default async function CamarasCityPage({ params }: Props) {
                       </div>
                       {road !== "Sin carretera" && (
                         <Link
-                          href={`/carreteras/${encodeURIComponent(road)}/camaras`}
+                          href={`/camaras/carretera/${encodeURIComponent(road)}`}
                           className="flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                         >
                           Ver carretera

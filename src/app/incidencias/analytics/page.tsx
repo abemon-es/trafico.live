@@ -32,7 +32,7 @@ export default function IncidenciasAnalyticsPage() {
           { title: "Estadísticas de tráfico", description: "Datos históricos de siniestralidad vial", href: "/estadisticas", icon: <BarChart3 className="w-5 h-5" /> },
           { title: "Puntos negros de la DGT", description: "Tramos de concentración de accidentes", href: "/puntos-negros", icon: <MapPin className="w-5 h-5" /> },
           { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
-          { title: "Estadísticas de incidencias", description: "Análisis estadístico de incidencias por tipo y zona", href: "/incidencias/estadisticas", icon: <BarChart2 className="w-5 h-5" /> },
+          { title: "Estadísticas de incidencias", description: "Análisis estadístico de incidencias por tipo y zona", href: "/incidencias/analytics", icon: <BarChart2 className="w-5 h-5" /> },
           { title: "Mejor hora para viajar", description: "Franjas horarias con menos tráfico por ruta", href: "/mejor-hora", icon: <Clock className="w-5 h-5" /> },
         ]} />
       </div>

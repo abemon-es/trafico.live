@@ -62,7 +62,7 @@ export default function IncidenciasPage() {
       <div className="bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 flex flex-wrap gap-3">
           <Link
-            href="/incidencias/estadisticas"
+            href="/incidencias/analytics"
             className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
           >
             <BarChart2 className="w-4 h-4 text-tl-600 dark:text-tl-400" />
@@ -103,7 +103,7 @@ export default function IncidenciasPage() {
       {/* SSR crawlable related-page links — hidden from sighted users, indexed by crawlers */}
       <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
         <div>
-          <a href="/incidencias/estadisticas" tabIndex={-1}>Estadísticas de incidencias</a>
+          <a href="/incidencias/analytics" tabIndex={-1}>Estadísticas de incidencias</a>
           <a href="/cortes-trafico" tabIndex={-1}>Cortes de tráfico</a>
           <a href="/restricciones" tabIndex={-1}>Restricciones</a>
           <a href="/atascos" tabIndex={-1}>Atascos</a>
@@ -127,7 +127,7 @@ export default function IncidenciasPage() {
           { title: "Cámaras DGT", description: "Imágenes en vivo de las principales carreteras", href: "/camaras", icon: <Video className="w-5 h-5" /> },
           { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
           { title: "Atascos y retenciones", description: "Puntos negros de tráfico y vías saturadas", href: "/atascos", icon: <Car className="w-5 h-5" /> },
-          { title: "Estadísticas de incidencias", description: "Tendencias y patrones históricos de incidencias", href: "/incidencias/estadisticas", icon: <BarChart2 className="w-5 h-5" /> },
+          { title: "Estadísticas de incidencias", description: "Tendencias y patrones históricos de incidencias", href: "/incidencias/analytics", icon: <BarChart2 className="w-5 h-5" /> },
           { title: "Análisis de incidencias", description: "Distribución horaria, por día y carretera", href: "/incidencias/analytics", icon: <BarChart3 className="w-5 h-5" /> },
           { title: "Cortes de tráfico", description: "Cortes de carretera activos en España", href: "/cortes-trafico", icon: <AlertOctagon className="w-5 h-5" /> },
           { title: "Alertas meteorológicas", description: "Alertas AEMET que afectan a la circulación", href: "/alertas-meteo", icon: <CloudLightning className="w-5 h-5" /> },

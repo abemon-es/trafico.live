@@ -34,7 +34,7 @@ interface DetailRoute {
 
 const DETAIL_ROUTES: Record<string, DetailRoute> = {
   "gas-stations":     { idKey: "id",   pattern: "/gasolineras/terrestres/{id}" },
-  "maritime-fuel":    { idKey: "id",   pattern: "/gasolineras/maritimas/{id}" },
+  "maritime-fuel":    { idKey: "id",   pattern: "/maritimo/combustible/{id}" },
   "cameras":          { idKey: "id",   pattern: "/camaras/camara/{id}" },
   "radars":           { idKey: "id",   pattern: "/radares/radar/{id}" },
   "airports":         { idKey: "iata", pattern: "/aviacion/aeropuertos/{id}" },

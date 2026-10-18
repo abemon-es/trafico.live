@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { provinceSlug } from "@/lib/geo/slugify";
+import { PROVINCE_SLUGS } from "@/lib/geo/geo-paths";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
 // ─── 50 cities for /atascos/{slug} ──────────────────────────────────────────
@@ -91,7 +92,7 @@ const GEO_RONDAS: { name: string; slug: string }[] = [
   { name: "M-40", slug: "m-40" },
   { name: "M-45", slug: "m-45" },
   { name: "M-50", slug: "m-50" },
-  { name: "Ronda Dalt", slug: "ronda-de-dalt" },
+  { name: "Ronda Dalt", slug: "ronda-dalt" },
   { name: "Ronda Litoral", slug: "ronda-litoral" },
   { name: "Bypass Valencia", slug: "bypass-valencia" },
 ];
@@ -127,7 +128,11 @@ const GEO_PROVINCES: { name: string; slug: string; code: string }[] =
   Object.entries(PROVINCE_NAMES).map(([code, name]) => ({
     code,
     name,
-    slug: provinceSlug(name),
+    // "<community>/<province>": the final URL. "/espana/<province>" alone
+    // answered 301 on every page that renders the footer (52 per page).
+    slug: PROVINCE_SLUGS[code]
+      ? `${PROVINCE_SLUGS[code].community}/${PROVINCE_SLUGS[code].province}`
+      : provinceSlug(name),
   }));
 
 // ─── Row component ───────────────────────────────────────────────────────────

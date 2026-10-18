@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PROVINCES, COMMUNITY_NAMES } from "@/lib/geo/ine-codes";
 import { communitySlug, provinceSlug } from "@/lib/geo/slugify";
+import { communityPathForProvince } from "@/lib/geo/geo-paths";
 import type { GeoEntity } from "@/lib/geo/types";
 import { LocationShell } from "@/components/location/LocationShell";
 import { HeroSection } from "@/components/location/HeroSection";
@@ -94,7 +95,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
     provinceCode: code,
     communityCode,
     parentName: communityName,
-    parentHref: `/comunidad-autonoma/${cSlug}`,
+    parentHref: communityPathForProvince(code) ?? `/espana/${cSlug}`,
   };
 
   const visibleSections = [
@@ -120,7 +121,7 @@ export default async function ProvinciaDetailPage({ params }: Props) {
   const breadcrumbs = [
     { label: "Inicio", href: "/" },
     { label: "España", href: "/espana" },
-    { label: communityName, href: `/comunidad-autonoma/${cSlug}` },
+    { label: communityName, href: communityPathForProvince(code) ?? `/espana/${cSlug}` },
     { label: province.name, href: `/provincias/${code}` },
   ];
 

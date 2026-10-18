@@ -41,7 +41,7 @@ export default async function GasStationShortcutPage({ params }: PageProps) {
   }
 
   if (maritime) {
-    permanentRedirect(`/gasolineras/maritimas/${encodeURIComponent(maritime.id)}`);
+    permanentRedirect(`/maritimo/combustible/${encodeURIComponent(maritime.id)}`);
   }
 
   notFound();

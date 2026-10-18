@@ -275,7 +275,7 @@ export default async function GasolinerasPage() {
           </div>
         </Link>
         <Link
-          href="/gasolineras/maritimas"
+          href="/maritimo/combustible"
           className="flex items-center gap-3 p-4 bg-tl-50 dark:bg-tl-900/20 rounded-lg border border-tl-200 dark:border-tl-800/50 hover:bg-tl-100 dark:hover:bg-tl-900/30 transition-colors"
         >
           <Anchor className="w-8 h-8 text-tl-600 dark:text-tl-400" />
@@ -527,7 +527,7 @@ export default async function GasolinerasPage() {
             {cheapest.cheapestMaritimeDiesel.map((station, idx) => (
               <Link
                 key={station.id}
-                href={`/gasolineras/maritimas/${station.id}`}
+                href={`/maritimo/combustible/${station.id}`}
                 className="flex items-center justify-between p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg hover:bg-tl-100 dark:hover:bg-tl-900/30 transition-colors"
               >
                 <div className="flex items-center gap-3">

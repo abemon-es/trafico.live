@@ -264,7 +264,7 @@ export default async function GuiaRadaresPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-400 w-5 text-right font-data">{i + 1}</span>
                           <Link
-                            href={`/carreteras/${encodeURIComponent(r.roadNumber)}/radares`}
+                            href={`/radares/${encodeURIComponent(r.roadNumber)}`}
                             className="text-sm font-semibold text-tl-600 dark:text-tl-400 hover:underline"
                           >
                             {r.roadNumber}

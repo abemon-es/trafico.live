@@ -179,7 +179,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
               <span className="text-sm text-gray-600 dark:text-gray-400">Cámaras</span>
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{cameras}</div>
-            <Link href={`/carreteras/${road.id}/camaras`} className="text-sm text-tl-600 dark:text-tl-400 hover:underline">
+            <Link href={`/camaras/carretera/${road.id}`} className="text-sm text-tl-600 dark:text-tl-400 hover:underline">
               Ver todas →
             </Link>
           </div>
@@ -189,7 +189,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
               <span className="text-sm text-gray-600 dark:text-gray-400">Radares</span>
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{radars}</div>
-            <Link href={`/carreteras/${road.id}/radares`} className="text-sm text-yellow-600 dark:text-yellow-400 hover:underline">
+            <Link href={`/radares/${road.id}`} className="text-sm text-yellow-600 dark:text-yellow-400 hover:underline">
               Ver todos →
             </Link>
           </div>

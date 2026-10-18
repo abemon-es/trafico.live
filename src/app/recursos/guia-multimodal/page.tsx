@@ -433,7 +433,7 @@ export default function GuiaMultimodalPage() {
           10.000 gasolineras en{" "}
           <Link href="/carreteras" className="text-tl-600 hover:underline">carreteras</Link>{" "}
           y{" "}
-          <Link href="/combustible" className="text-tl-600 hover:underline">combustible</Link>{" "}
+          <Link href="/gasolineras" className="text-tl-600 hover:underline">combustible</Link>{" "}
           de trafico.live.
         </InfoBox>
 
@@ -530,7 +530,7 @@ export default function GuiaMultimodalPage() {
               desc: "Metro, autobús y tranvía: 15+ operadores, rutas y paradas GTFS.",
             },
             {
-              href: "/combustible",
+              href: "/gasolineras",
               icon: Euro,
               title: "Combustible",
               desc: "Precios en más de 10.000 gasolineras, histórico CNMC desde 2016.",
