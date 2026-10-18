@@ -24,6 +24,9 @@ set -o pipefail
 BASE="${CTO_BASE_URL:-https://trafico.live}"
 REMOTE="${CTO_REMOTE_HOST:-compute}"
 APP_DIR="/opt/apps/trafico-live"
+GLITCHTIP_PROJECT="${CTO_GLITCHTIP_PROJECT:-9}"   # trafico-live on errors.abemon.es
+# Lifetime counts from the previous probe, so each run can report a rate.
+GT_STATE="${XDG_CACHE_HOME:-$HOME/.cache}/trafico-cto-loop/glitchtip-counts.json"
 
 QUICK=0
 NO_REMOTE=0
@@ -97,7 +100,7 @@ else
 fi
 
 # ── 3. Remote: containers, Loki, SEO snapshot ────────────────────────────────
-CONTAINERS='null'; LOKI='null'; SEO='null'; COLLECTOR_LOGS='null'; ORIGIN='null'
+CONTAINERS='null'; LOKI='null'; SEO='null'; COLLECTOR_LOGS='null'; ORIGIN='null'; GLITCHTIP='null'
 if (( NO_REMOTE == 0 )); then
 
   # Container state — name, status, health.
@@ -170,6 +173,72 @@ if (( NO_REMOTE == 0 )); then
                            ga4_sessions_30d: (.[3] // ""),
                            ok: ((.[0] // "0" | tonumber) > 0)}')"
   SEO="$(json_or_null "$SEO_RAW")"
+
+  # GlitchTip — what the app and collectors actually throw.
+  #
+  # The header of this script listed GlitchTip from the start, but no probe
+  # ever read it: the tracker was a write-only sink. When the loop restarted on
+  # 2026-10-18 it held ~5,300 events of `DGT Panel … 404` (since 2026-09-30)
+  # and an `ArcGIS 499: Token Required` from transit-rt-valencia, none of which
+  # any signal here had surfaced as a cause.
+  #
+  # Read-only token `sentinel-ro` (shared with the CSO pulse) lives only on
+  # compute; the request runs there so the value never leaves the host.
+  # `count` is lifetime and the API returns no per-period stats, so the rate is
+  # the delta against the previous probe (GT_STATE).
+  GT_RAW="$("${SSH[@]}" \
+    'T=$(cat /root/.sentinel-glitchtip-token 2>/dev/null)
+     [ -n "$T" ] || { echo "{\"error\":\"token file /root/.sentinel-glitchtip-token missing on compute\"}"; exit 0; }
+     curl -s --max-time 15 -H "Authorization: Bearer $T" \
+       "http://10.100.0.3:8000/api/0/organizations/abemon/issues/?project='"$GLITCHTIP_PROJECT"'&query=is%3Aunresolved&sort=-last_seen&limit=100"' 2>/dev/null)"
+  GT_PREV="$(json_or_null "$(cat "$GT_STATE" 2>/dev/null)")"
+  GT_NOW="$(date +%s)"
+  GLITCHTIP="$(jq --argjson prev "$GT_PREV" --argjson now "$GT_NOW" '
+    def t: sub("\\.[0-9]+"; "") | sub("\\+00:00$"; "Z") | fromdateiso8601;
+    if type != "array" then
+      {ok: false, error: ((.error? // .detail? // "unexpected response") | tostring)}
+    else
+      (($prev // {}).counts // {}) as $pc
+      | map({
+          id, short: .shortId,
+          title: (.title | tostring | gsub("\n"; " ") | .[0:110]),
+          source: ((.metadata.filename? // .culprit // "") | tostring
+                   | sub("^/app/"; "")),
+          count: (.count | tonumber),
+          first: (.firstSeen | t), last: (.lastSeen | t),
+          url: .permalink
+        })
+      | map(. + {delta: (if $pc[.id] == null then null else .count - $pc[.id] end)})
+      | . as $i
+      | {
+          ok: true,
+          unresolved: ($i | length),
+          capped: (($i | length) >= 100),
+          since_prev_s: (if ($prev | type) == "object" and ($prev | has("at")) then $now - $prev.at else null end),
+          events_since_prev: ([$i[] | .delta // 0] | add // 0),
+          active_24h: ([$i[] | select(.last > $now - 86400)] | length),
+          new_24h:    ([$i[] | select(.first > $now - 86400)] | length),
+          new_7d:     ([$i[] | select(.first > $now - 604800)] | length),
+          # Ranked by growth since the previous probe, then lifetime count —
+          # a quiet issue with a huge history must not outrank a fresh storm.
+          active: ([$i[] | select(.last > $now - 86400)]
+                   | sort_by(-(.delta // 0), -.count) | .[0:8]
+                   | map(. + {first: (.first | todate), last: (.last | todate)})),
+          new_7d_issues: ([$i[] | select(.first > $now - 604800)]
+                   | sort_by(-.count) | .[0:8]
+                   | map(. + {first: (.first | todate), last: (.last | todate)})),
+          counts: (map({(.id): .count}) | add // {})
+        }
+    end' <<<"${GT_RAW:-null}" 2>/dev/null)"
+  GLITCHTIP="$(json_or_null "$GLITCHTIP")"
+  # Persist counts only from a good read, so one failed probe cannot zero the
+  # baseline and make the next run report every lifetime event as new.
+  if [[ "$(jq -r '.ok' <<<"$GLITCHTIP" 2>/dev/null)" == "true" ]]; then
+    mkdir -p "$(dirname "$GT_STATE")" \
+      && jq --argjson now "$GT_NOW" '{at: $now, counts: .counts}' <<<"$GLITCHTIP" > "$GT_STATE.tmp" \
+      && mv "$GT_STATE.tmp" "$GT_STATE"
+  fi
+  GLITCHTIP="$(jq 'del(.counts)' <<<"$GLITCHTIP" 2>/dev/null || printf 'null')"
 fi
 
 # ── 4. Silent-failure detection ───────────────────────────────────────────────
@@ -222,6 +291,7 @@ RESULT="$(jq -n \
   --argjson containers "$CONTAINERS" \
   --argjson loki "$LOKI" \
   --argjson seo "$SEO" \
+  --argjson glitchtip "$GLITCHTIP" \
   --argjson origin "$ORIGIN" \
   --argjson silent "$SILENT" \
   --argjson git "$GIT" \
@@ -234,6 +304,7 @@ RESULT="$(jq -n \
     containers: $containers,
     loki_errors_1h: $loki,
     seo_snapshot: $seo,
+    glitchtip: $glitchtip,
     origin: $origin,
     degraded_collectors: $silent,
     recent_error_logs: $logs,
@@ -249,6 +320,9 @@ RESULT="$(jq -n \
       # stops seeing real outages. Test presence explicitly instead.
       smoke_ok: (if ($smoke|type) == "object" and ($smoke|has("ok")) then $smoke.ok else null end),
       seo_pipeline_ok: (if ($seo|type) == "object" and ($seo|has("ok")) then $seo.ok else null end),
+      glitchtip_ok: (if ($glitchtip|type) == "object" and ($glitchtip|has("ok")) then $glitchtip.ok else null end),
+      glitchtip_active_24h: ($glitchtip.active_24h? // null),
+      glitchtip_new_24h: ($glitchtip.new_24h? // null),
       origin_ok: (if ($origin|type) == "object" and ($origin|has("ok")) then $origin.ok else null end),
       public_code: $public_code,
       home_state: $home_state,
@@ -297,7 +371,18 @@ if (( PRETTY )); then
       "  \(if .silent_failure then "[SILENT] " else "" end)\(.task)  status=\(.status) stale=\(.stale) age=\(.ageSeconds)s  \(.errorMessage // "")"),
     "",
     "top loki error sources (1h):",
-    (.loki_errors_1h[]? | "  \(.container): \(.errors_1h)")
+    (.loki_errors_1h[]? | "  \(.container): \(.errors_1h)"),
+    "",
+    (if (.glitchtip|type) != "object" then "glitchtip:   not probed"
+     elif .glitchtip.ok != true then "⚠ GLITCHTIP PROBE FAILED: \(.glitchtip.error // "?")"
+     else
+       "glitchtip:   \(.glitchtip.unresolved)\(if .glitchtip.capped then "+" else "" end) unresolved · active24h=\(.glitchtip.active_24h) new24h=\(.glitchtip.new_24h) new7d=\(.glitchtip.new_7d) · \(if .glitchtip.since_prev_s == null then "first probe, no rate yet" else "+\(.glitchtip.events_since_prev) events in \((.glitchtip.since_prev_s / 60) | floor)m" end)",
+       (.glitchtip.active[]? |
+         "  \(if .delta == null then "   ?" else "+\(.delta)" end)  n=\(.count)  [\(.short)] \(.title[0:70])  ← \(.source)"),
+       (if (.glitchtip.new_7d_issues | length) > 0 then "  new in 7d:" else empty end),
+       (.glitchtip.new_7d_issues[]? |
+         "    \(.first[0:10]) n=\(.count) [\(.short)] \(.title[0:70])")
+     end)
   ' <<<"$RESULT"
 else
   printf '%s\n' "$RESULT"
