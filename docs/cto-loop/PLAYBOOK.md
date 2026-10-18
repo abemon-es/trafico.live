@@ -120,6 +120,36 @@ green, widen a staleness threshold to silence an alert, `DROP`/`DELETE` without
 `WHERE`, or touch `.env*` in git. Raising a threshold to stop an alert is how
 the blackout stayed invisible — fix the cause.
 
+## Standing directive (MJ, 2026-10-18): a little better every day
+
+> "El objetivo principal es que todos los días vayas mejorando la página un
+> poco, encuentres fallos, veas formas de optimizar el UX, UI, sobre todo en
+> mobile, y que todos los servicios y los datos que tenemos sean frescos,
+> estén bien, y que la web sea útil, sobre todo en móvil, para todos los use
+> cases que tenemos. [...] posicionándola. ¿Por qué no estamos bien
+> posicionados? [...] Discútelo con el CMO."
+
+What that means for the loop, every day (Europe/Madrid calendar day):
+
+1. **Ship at least one user-visible improvement**, preferably mobile: a bug,
+   a layout/tap-target/overflow fix, a faster page, a clearer flow for one
+   use case (driver before leaving, commuter on Cercanías, fleet manager,
+   fuel price hunter, journalist). One per cycle still applies; this is a
+   floor per day, not a reason to batch.
+2. **Mobile pass once a day:** `bash bin/lighthouse-mobile.sh` on the routes
+   in `bin/mobile-routes.json`, plus a real-viewport look (375 px) at one hub
+   per day in rotation. Record LCP/INP/CLS deltas in BACKLOG; a regression is
+   an L2 item, ranked like a bug.
+3. **Freshness stays first.** Data that is stale while the page looks live is
+   the worst failure this site has (paneles: 18 days). The probe owns this;
+   the daily pass only adds "does the page *show* how fresh it is?".
+4. **Ranking is a shared diagnosis with the CMO session**, not a guess. The
+   hypotheses (opened 2026-10-18, see BACKLOG "Why we don't rank") are tested
+   against GSC/Bing data the CMO pulls; the loop builds the technical side
+   only once a hypothesis has evidence. Monday CMO refresh = measurement.
+
+Bottom-up still holds: none of this outranks a red L0 or a stale L1.
+
 ## Work bottom-up, not by rotation
 
 **Superseded on 2026-08-16 by MJ: "all of this needs to be fixed first and from

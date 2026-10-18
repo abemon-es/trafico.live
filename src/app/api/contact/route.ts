@@ -261,8 +261,19 @@ export async function POST(request: NextRequest) {
       reportApiError(error, "contact] Failed to send access request emails");
     }
   } else {
-    // Development fallback — log to console
     console.log("[contact] SES not configured. Would send to:", payload.email, payload);
+    // Accepted but NOT delivered: the visitor is told the message was sent and
+    // nobody receives it. Until 2026-10-18 this branch was silent while SES was
+    // unconfigured in production. The payload logged above stays in Loki (90 d)
+    // so it can be recovered; this event carries no personal data and exists so
+    // that someone goes and looks. Fix the sender, never this alert.
+    reportApiError(
+      new Error("Contact form accepted but NOT delivered — no email sender configured"),
+      "contact",
+      { form: "api-access-request", source: payload.source ?? null }
+    );
+    // `delivered: false` lets the form say "registered", not promise a reply.
+    return NextResponse.json({ ok: true, delivered: false }, { status: 200 });
   }
 
   // Always return generic success (never leak details)

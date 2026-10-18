@@ -49,6 +49,8 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [turnstileToken, setTurnstileToken] = useState<string>("");
+  // false when the server accepted the message but has no way to deliver it
+  const [delivered, setDelivered] = useState(true);
 
   const turnstileContainerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
@@ -117,10 +119,11 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
           turnstileToken,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; delivered?: boolean };
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "No se pudo enviar el mensaje");
       }
+      setDelivered(data.delivered !== false);
       setStatus("success");
       // Reset form for next submission
       setNombre("");
@@ -147,11 +150,22 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/30 p-8 text-center">
         <CheckCircle2 className="w-12 h-12 text-emerald-600 dark:text-emerald-400 mx-auto mb-4" />
         <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-50 mb-2">
-          Mensaje enviado
+          {delivered ? "Mensaje enviado" : "Mensaje recibido"}
         </h3>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
-          Gracias por escribirnos. Te responderemos a la mayor brevedad posible.
-        </p>
+        {delivered ? (
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            Gracias por escribirnos. Te responderemos a la mayor brevedad posible.
+          </p>
+        ) : (
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            Lo hemos registrado, pero ahora mismo no podemos garantizarte una respuesta por esta
+            vía. Si necesitas contestación, escríbenos también a{" "}
+            <a href="mailto:hola@trafico.live" className="font-semibold text-tl-600 hover:underline dark:text-tl-400">
+              hola@trafico.live
+            </a>
+            .
+          </p>
+        )}
         <button
           type="button"
           onClick={() => setStatus("idle")}
