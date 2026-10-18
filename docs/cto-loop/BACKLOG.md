@@ -75,6 +75,25 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (8) — the first thing real 404s exposed: /combustible/<province>
+
+**Cycle 7 verified (PR #82 → `09926449`):** `10-status-codes` + the old
+`09-404-navigate` against prod: **9 passed**, 2 fixme (segment loadings) —
+`/esto-no-existe-*`, `/espana/no-existe`, `/carreteras/ZZ-999` → 404; `/`,
+`/espana/cataluna`, `/api/health` → 200. **Smoke failed 1/107:** `/combustible/madrid`
+→ 308 → `/gasolineras/madrid` → **404**. Not a regression — a broken redirect
+the soft 404 had been hiding: the generic `/combustible/:path*` →
+`/gasolineras/:path*` sends legacy province fuel URLs into the station-id
+route `/gasolineras/[id]`. Rolling back would have re-hidden it, so fixed
+forward: `/combustible/<province>` and `/gasolineras/<province>` (the 52
+slugs of `gasolineras/precios/[province]`) → `/gasolineras/precios/<province>`,
+ahead of the generic rule; smoke expectation updated to the real target.
+Lesson: turning soft 404s into real ones will surface more of these — the CMO's
+Monday edge-log pass should list top 404 paths so each gets a redirect or a
+fix, not a shrug.
+
+---
+
 ## Cycle 2026-10-19 (7) — every missing URL answered 200 (site-wide soft 404)
 
 **Finding.** Any unknown URL — `/esto-no-existe`, `/espana/no-existe`,
