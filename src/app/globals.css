@@ -301,3 +301,11 @@ body.map-immersive .sticky-footer-ad {
     max-height: 35vh;
   }
 }
+
+/* Cookie banner is server-rendered for everyone so it paints with the first
+   frame (it was the mobile LCP element at 5-7 s when mounted after hydration).
+   The <head> pre-paint script marks <html data-consent="set"> for visitors who
+   already chose; hide it for them before paint — no flash, no layout shift. */
+html[data-consent="set"] #cookie-consent-banner {
+  display: none;
+}

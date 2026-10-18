@@ -33,19 +33,35 @@ function removeAnalyticsCookies() {
 }
 
 export function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+  // Rendered on the server for everyone (visible = true), so the banner paints
+  // with the first frame instead of after hydration. On mobile it is the
+  // largest text in the viewport, so the old mount-then-show made it the LCP
+  // element at 5-7 s on every page (Lighthouse, 2026-10-18). Visitors who
+  // already chose never see it: CONSENT_PRE_PAINT_SCRIPT (layout <head>) marks
+  // <html data-consent="set"> before paint and globals.css hides the banner.
+  const [visible, setVisible] = useState(true);
+  // Focus is trapped only once we know the visitor has not chosen yet.
+  const [checked, setChecked] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [analytics, setAnalytics] = useState(true);
   const [affiliates, setAffiliates] = useState(true);
 
   useEffect(() => {
     const current = readConsent();
-    if (!current) {
-      setVisible(true);
-    } else {
+    if (current) {
       applyGtagConsent(current);
+      setVisible(false);
     }
+    setChecked(true);
   }, []);
+
+  // If the banner must show while <html> still carries the pre-paint marker
+  // (consent cleared in this session), drop the marker so CSS stops hiding it.
+  useEffect(() => {
+    if (visible && checked && document.documentElement.getAttribute("data-consent") === "set") {
+      document.documentElement.removeAttribute("data-consent");
+    }
+  }, [visible, checked]);
 
   const commit = useCallback(
     (state: ConsentState) => {
@@ -75,8 +91,9 @@ export function CookieConsent() {
   if (!visible) return null;
 
   return (
+    <div id="cookie-consent-banner">
     <FocusTrap
-      active={visible}
+      active={visible && checked}
       onEscape={handleRejectAll}
       role="dialog"
       ariaModal
@@ -235,6 +252,7 @@ export function CookieConsent() {
         )}
       </div>
     </FocusTrap>
+    </div>
   );
 }
 
