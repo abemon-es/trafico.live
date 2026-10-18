@@ -75,6 +75,38 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (9) — statuses that said "ok" while not doing the job
+
+**Cycle 8 verified (PR #83 → `fdb58a32`):** smoke **110 pass · 6 warn · 0
+fail**, run on compute (new section 4b 404 guard included).
+**Tooling in this PR** (after the second CrowdSec ban, see PLAYBOOK hard
+rule): `bin/smoke-test.sh` re-execs on compute for prod, no contact-form POSTs
+on prod (those were the "visitor with 400 + 401" the CMO reported on 10-18),
+new 404 guard, and a pre-existing `expect_status` bug fixed (no-follow left an
+empty `""` arg that curl read as a second URL, leaking the body into the code).
+
+**Item (L1):**
+- `transit-rt-madrid`, `transit-rt-tmb` — credentials verified absent in
+  `.env`, `.env.collectors` and the container; each spawned a Node process
+  **every minute** to log "no configurados" and write `ok` (~2,900 no-op runs
+  a day). Cron lines disabled with re-enable steps; declared in
+  `HIDDEN_TASKS` with the reason (precedent: `social-broadcast`). Keys →
+  **MJ** (EMT MobilityLabs, developer.tmb.cat; both free).
+- `city-traffic` — `ok` with 941 sensors while Zaragoza and Barcelona
+  (sections) failed every run. Now `partial` with `failedCities` + reason;
+  still `error` when every source fails.
+- `health-check` — `ok` with `errors: 1`. A table it cannot read is a table
+  it did not check → `partial` with `errorDetails`.
+**Verify after deploy:** the two transit tasks appear in `excludedTasks`, not
+`collectors`; `city-traffic` and `health-check` say what fails.
+**Deferred, same class:** the dispatcher fallback writes `ok` for 4 tasks
+(`aena-stats`, `dgt-extras`, `alert-matcher`, `renfe-positions`); two of them
+work fine, so the order is: give each its own heartbeat, *then* make the
+fallback `partial`. Plus `roadworks` unscheduled and `dgt-extras` reading 4
+dead URLs. Next L1 cycle.
+
+---
+
 ## Cycle 2026-10-19 (8) — the first thing real 404s exposed: /combustible/<province>
 
 **Cycle 7 verified (PR #82 → `09926449`):** `10-status-codes` + the old
