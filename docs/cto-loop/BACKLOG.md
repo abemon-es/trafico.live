@@ -21,6 +21,76 @@ last.
 
 ---
 
+## Cycle 2026-10-18 — loop restarted after 4 weeks dark · GlitchTip wired · panels back
+
+**Context.** Last recorded cycle was 2026-09-22. MJ restarted the loop
+(24/7, self-paced) on 2026-10-18. Commits to `main` from this checkout are now
+blocked by a hook (shared with other worktrees): the loop works from its own
+worktree `trafico.live-worktrees/cto-loop` and ships one PR per cycle.
+
+**Opening signals:** healthy · 3/52 degraded (`panel` error, `transit-gtfs`
+partial, `aemet-forecast` partial) · 0 stale · 0 SILENT · homepage ok ·
+smoke ok · collector-realtime ~250 Loki errors/h.
+
+**L0 — the probe claimed GlitchTip and never read it (`a86ac5a5`).** The
+header of `bin/cto-signals.sh` listed GlitchTip from day one; no line queried
+it. The tracker held, unseen by this loop: `DGT Panel … 404` ×5,300 since
+09-30, `ArcGIS 499 Token Required` (transit-rt-valencia) since 10-13, and a
+generic `error running command: exit status 1` ×14,307. The probe now reads
+project 9 with the read-only `sentinel-ro` token (shared with the CSO pulse;
+the request runs on compute so the value never leaves it). GlitchTip `count`
+is lifetime and the API gives no per-period stats, so the rate is a delta
+against the previous probe, cached in `~/.cache/trafico-cto-loop/`.
+Same lesson as the PLAYBOOK "ask a detector what it acts on": a section header
+is a claim, not a probe.
+
+**L1 — `panel` dead 18 days (`6ed38cdc`).** DGT retired the DATEX II v1 feeds
+`infocar.dgt.es/.../paneles/content.xml` on 2026-09-30. Replacements on the NAP:
+`DevicePublication/vms_datex2_v37.xml` (2,517 devices) and
+`VmsPublication/datex2_v37.xml` (2,473 statuses). v3 ids = v1 ids without
+`GUID_PMV_` (2,508/2,517 overlap) → prefix kept, rows update in place. The site
+had been serving 09-30 messages as current during a heavy-rain alert. Also
+fixed: `name` was stored as `[object Object]` on every panel and rendered on
+province pages. An empty/unparseable feed now throws instead of returning an
+empty map or exiting without a heartbeat; a messages publication >30 min old
+reports `partial` with a reason. Dry-run against the live feeds: 2,517
+locations, 0 without province, 954 messages, 0 orphans.
+**Verify after deploy:** `panel` heartbeat `ok`, `VariablePanel.fetchedAt`
+advancing, GlitchTip TRAFICO-LIVE-HD/HE stop growing — and watch whether
+TRAFICO-LIVE-3 (`exit status 1`) slows: if it does, it was supercronic
+reporting panel's exit every 5 min.
+
+### Next, ranked (found this cycle, not yet acted on)
+
+1. **L1, pre-emptive — DGT v36 feeds are unlisted.** The NAP index now lists
+   only `datex2_v37.xml` under SituationPublication and
+   `camaras_datex2_v37.xml` under DevicePublication. We read
+   `SituationPublication/datex2_v36.xml` (incidents — the core of the site)
+   and `DevicePublication/camaras_datex2_v36.xml`. Both still answer 200 but
+   are no longer advertised — exactly the state paneles v1 was in before its
+   404. Migrate incident + camera parsers to v37 before DGT pulls them.
+2. **L1 — NAP `obras.xml`, `conos_conectados.xml`, `roadworks.xml` all 404**
+   (checked 2026-10-18), yet no collector reports an error. Find who reads them
+   and whether it falls back or silently stores nothing.
+3. **L1 — `transit-rt-valencia`: ArcGIS 499 Token Required** since 10-13
+   (423 events, last seen 10-13 15:39 — went quiet, did it stop running?).
+4. **L0 — dispatcher fallback writes `ok`** when a task returns without its own
+   heartbeat (`services/collector/index.ts` ~237-254). An early return on an
+   empty feed is not success; it should be `partial` with the reason it
+   already logs.
+5. **L0 — GlitchTip hygiene:** 100+ unresolved (list is capped), many dead
+   (Typesense unreachable last 10-09, InvariantError Aug). Resolve the ones
+   that stopped, so `active24h` / `new7d` stay readable.
+6. **Security note for CSO, low:** PrismaClientValidationError ×~500 on
+   2026-10-05 carrying values like `DEFAULTSTRINGV…` — scanner fuzzing query
+   params straight into Prisma `where` clauses (500s, no injection: Prisma
+   rejects the type). Input validation on those routes would turn them into
+   400s.
+7. Known: `transit-gtfs` partial (3 feeds), `aemet-forecast` partial (6
+   non-existent AEMET codes).
+
+---
+
 ## Cycle 2026-08-24 (late) — degraded statuses carried no reason (`b7e0780e`)
 
 **Homepage outage first** (see PLAYBOOK "The homepage has its own cached
