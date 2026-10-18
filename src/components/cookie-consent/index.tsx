@@ -110,7 +110,7 @@ export function CookieConsent() {
             <div className="flex-1">
               <p
                 id="cookie-consent-title"
-                className="mb-0.5 font-heading text-sm font-semibold text-gray-900 dark:text-white md:mb-1"
+                className="hidden font-heading text-sm font-semibold text-gray-900 dark:text-white md:mb-1 md:block"
               >
                 Tu privacidad importa
               </p>
