@@ -536,6 +536,18 @@ const SYNONYM_RULES: Record<string, Array<{ id: string; synonyms: string[] }>> =
 // Sync engine
 // ---------------------------------------------------------------------------
 
+// Documents Typesense rejected in this run, per collection. A rejected import
+// used to be only a log dump: risk_zones lost all 1,331 documents on every run
+// (Decimal coordinates are not a geopoint) behind an `ok` heartbeat.
+const importFailures = new Map<string, { failed: number; reasons: string[] }>();
+
+function recordImportFailure(name: string, failed: number, reasons: string[]): void {
+  const prev = importFailures.get(name) ?? { failed: 0, reasons: [] };
+  prev.failed += failed;
+  for (const r of reasons) if (!prev.reasons.includes(r) && prev.reasons.length < 3) prev.reasons.push(r);
+  importFailures.set(name, prev);
+}
+
 async function importBatched(
   client: Typesense.Client,
   name: string,
@@ -552,7 +564,17 @@ async function importBatched(
         .import(batch as Record<string, unknown>[], { action, batch_size: batchSize });
       count += results.filter((r: { success: boolean }) => r.success).length;
     } catch (error) {
-      console.error(`[typesense-sync] ${name}: batch ${Math.floor(i / batchSize) + 1} failed:`, error);
+      // A partial import throws ImportError with one result per document; the
+      // accepted ones are already in the collection and still count.
+      const results = (error as { importResults?: Array<{ success: boolean; error?: string }> }).importResults;
+      const ok = results ? results.filter((r) => r.success).length : 0;
+      const failed = batch.length - ok;
+      const reasons = results
+        ? [...new Set(results.filter((r) => !r.success).map((r) => r.error ?? "unknown"))]
+        : [(error as Error)?.message ?? String(error)];
+      count += ok;
+      recordImportFailure(name, failed, reasons);
+      console.error(`[typesense-sync] ${name}: batch ${Math.floor(i / batchSize) + 1}: ${failed}/${batch.length} documents rejected — ${reasons.slice(0, 3).join(" | ")}`);
     }
   }
   return count;
@@ -839,9 +861,11 @@ async function loadZBEZones(prisma: PrismaClient) {
 async function loadRiskZones(prisma: PrismaClient) {
   const rows = await prisma.roadRiskZone.findMany({ where: { isActive: true },
     select: { id: true, type: true, road: true, province: true, description: true, startLat: true, startLng: true } });
+  // startLat/startLng are Prisma Decimals: they serialise as strings, which
+  // Typesense rejects as a geopoint, so they must be converted to numbers.
   return rows.map((z) => ({ id: z.id, type: z.type, road: z.road, province: z.province || "",
     description: z.description || "",
-    location: z.startLat && z.startLng ? [z.startLat, z.startLng] : undefined }));
+    location: [Number(z.startLat), Number(z.startLng)] }));
 }
 
 async function loadVariablePanels(prisma: PrismaClient) {
@@ -1300,6 +1324,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const mode = target ? "single" : incremental ? "incremental" : "full";
   console.log(`[typesense-sync] ${mode} sync${target ? ` (${target})` : ""}...`);
   const start = Date.now();
+  importFailures.clear();
 
   const client = getTypesenseClient();
   await client.health.retrieve().catch((e: unknown) => { throw new Error(`Typesense unreachable: ${e}`); });
@@ -1313,7 +1338,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const loaded = await Promise.allSettled(
     names.map(async (name) => {
       const t0 = Date.now();
-      let docs: Record<string, unknown>[];
 
       if (incremental && DELTA_LOADERS[name]) {
         const lastSync = await getLastSyncTime(name);
@@ -1328,7 +1352,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
         console.log(`[typesense-sync] No delta for ${name}, falling back to full load`);
       }
 
-      docs = await LOADERS[name](prisma);
+      const docs = await LOADERS[name](prisma);
       console.log(`[typesense-sync] Loaded ${docs.length} ${name} in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
       return { name, docs, isDelta: false };
     })
@@ -1393,7 +1417,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
     console.error(`[typesense-sync] Collections synced EMPTY on a full load: ${emptyCollections.join(", ")}`);
   }
 
-  const degraded = failedLoads > 0 || emptyCollections.length > 0;
+  const rejected = Object.fromEntries(importFailures);
+  const degraded = failedLoads > 0 || emptyCollections.length > 0 || importFailures.size > 0;
   console.log(`[typesense-sync] ${mode} sync complete in ${elapsedSecs}s`, totals);
   await heartbeat(prisma, TASK, degraded ? "partial" : "ok", {
     mode,
@@ -1401,6 +1426,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     totalDocs,
     failedLoads,
     emptyCollections,
+    ...(importFailures.size > 0 && { rejected }),
     elapsedSecs: parseFloat(elapsedSecs),
   });
 }

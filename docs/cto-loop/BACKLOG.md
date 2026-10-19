@@ -75,6 +75,53 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (13) — search had 0 of 1,331 risk zones, behind an `ok` heartbeat
+
+**Cycle 12 verified (PR #87 → `21959693`, collectors recreated 02:49Z):**
+`city-traffic` 02:50Z `partial` "1/3 sources failed: Barcelona (sections)" —
+Zaragoza gone from the reason; overall healthy, 0 stale.
+
+**Signal:** Loki "top error sources" jumped to collector-daily 206/h at 03:50Z.
+200 of them were one line repeated: `error: 'Field \`location\` must be a
+geopoint.'` from the 03:00Z `typesense-sync` run. **Finding:** every sync
+loads 1,331 active `RoadRiskZone` rows and imports **0** into the
+`risk_zones` collection (both batches: "0 documents imported successfully,
+1000/331 failed"). `startLat`/`startLng` are Prisma `Decimal`s passed
+straight through, so they serialise as strings; every other loader wraps
+coordinates in `Number()`. Nobody noticed because (a) `importBatched`
+swallowed the `ImportError` and dumped it to the log, and (b) `risk_zones` is
+in `EXPECTED_EMPTY`, so "synced 0 on a full load" isn't flagged either.
+User impact: Cmd+K search and `/api/search/nearby` never return a risk zone
+(`src/app/api/search/route.ts`, `search-filters.ts` both query it).
+**Fix:** `Number()` on both coordinates (DB check: all 1,331 inside Spain,
+lat/lng order correct, 0 out of range). `importBatched` now reads
+`importResults` on a partial import: accepted documents still count,
+rejected ones are tallied per collection with up to 3 distinct reasons, and
+it logs one line per batch instead of one per document (that dump was the
+206/h). Any rejection makes the heartbeat `partial` with
+`rejected: {collection: {failed, reasons}}`. Same file: `let docs` → `const`
+(the only lint error, pre-existing). Lint clean; collector `tsc` on this file
+= the 8 errors already on main, no new ones.
+**Verify after deploy:** run `SYNC_COLLECTION=risk_zones TASK=typesense-sync`
+once in collector-daily (upsert, 1,331 docs) → "Synced 1331 risk_zones",
+heartbeat `ok`, no "rejected" line; Typesense `risk_zones` num_documents
+1,331. The cron run (05:00 container time = 03:00Z) re-confirms tomorrow.
+**Found en route (latent, next to fix in this file):** the `gas_stations`
+and `incidents` delta loaders select fields that don't exist
+(`priceGasolina95E5Premium`; `TrafficIncident.updatedAt`) — two of the 8
+`tsc` errors. They never run because every incremental run logs "No delta
+for …, falling back to full load" (the Redis last-sync key is never found),
+so `SYNC_MODE=incremental` is in practice a full upsert of every collection.
+If the Redis key ever starts working, both loaders throw. Fix both together
+(real field names + why the key is missing).
+**Loki matcher (L0) — new constraint:** these 200 real errors arrived as
+`level=info … channel=stdout` (supercronic logs job output at info, and the
+crontab's `2>&1` merges stderr). A `level=error` matcher would have missed
+them; key the matcher on message content (`[task] … failed|rejected|Error:`,
+`logError` prefix), not on the level.
+
+---
+
 ## Cycle 2026-10-19 (12) — Zaragoza stopped publishing live traffic in March 2025
 
 **Cycle 11 verified (PR #86 → `ab0956fc`, serving 01:50Z):**
