@@ -173,6 +173,28 @@ heartbeat would erase the second run's `runStartedAt`. supercronic v0.2.33
 runs without `-overlapping`, so the same job does not start twice, and 83 min
 is far from the 6 h period. Note only.
 
+**Security, out of band: PR #105 → `0cb19ff7`, merged 22:33Z by the CSO.**
+- The finding: `enricher/enrich-server.py`, in this PUBLIC repo since
+  427f890c (2026-04-17), carried the Geonode residential-proxy user and
+  password as literals.
+  - The CSO compared hashes: it is the live credential of the whole Geonode
+    account, which CIFEX production also uses (~20 containers).
+  - The script also read the DB password from `/opt/trafico/collector.env`.
+- The CSO retired that file and the legacy `run-collector.sh` on 2026-10-20.
+  They now sit in `/root/retirado-20261020-trafico/` on compute.
+- The fix: the 3 credentials come from `os.environ`, and `docs/operations.md`
+  no longer says to `cat` the env.
+- **The literals stay in history.** They are in 554 main commits up to
+  `5d0ba9b0` and in 48 remote branches. History is not rewritten, so the real
+  fix is the rotation, which MJ does with CIFEX (the CSO escalates it).
+- **It doubled as the first web-only PR since #104, and the #103 test
+  PASSED.**
+  - Collectors deploy: 2 s.
+  - All 6 collector image IDs and StartedAt are unchanged
+    (15:55:18Z, the baseline above).
+  - Web: DEPLOY SUCCESS 317 s.
+  - Smoke after deploy: 113 pass, 5 warn, 0 fail.
+
 **Next:**
 - Probe table.
 - The 01:20Z run as the night sample (duration, quotaHits, failedCodes).
