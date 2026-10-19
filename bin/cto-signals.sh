@@ -123,7 +123,23 @@ if (( NO_REMOTE == 0 )); then
   # ways (compose-labeled infra). An earlier version of this probe queried
   # `container` only and concluded collector logs never reached Loki at all —
   # they did, under the other label, for months.
-  LOKI_QUERY='sum by (service) (count_over_time({service=~"collector-.*|trafico-.*"} |~ "(?i)error" [1h]))'
+  #
+  # What counts as an error line (2026-10-19). Keyed on content, not on the
+  # level: supercronic logs all job output as level=info (crontabs merge stderr
+  # with 2>&1) and logError() adds no level, so `level=error` alone misses most
+  # real failures. A bare (?i)error was worse: ~80% of its hits were count
+  # summaries ("skipped (no coords/error): N", "Errors: 0", "(N errors)").
+  #   counts:  "Error:" (incl. TypeError:/ImportError:), "Error [", [error],
+  #            failed/failure, fatal, exception, unhandled, rejected,
+  #            out of memory, killed, and a JSON or supercronic level=error.
+  #   ignores: zero counters ("errors: 0", "0 failed"), retry/backoff notices
+  #            and Next's "Read more: …" doc links.
+  # Plural only in the zero-counter rule: "ImportError: 0 documents imported"
+  # is a real failure. No backslashes on purpose: the query crosses bash, ssh
+  # and a LogQL string literal.
+  LOKI_ERR='(?i)(level[^a-z0-9]{1,8}error|[[]error[]]|error:|error [[]|failed|failure|fatal|exception|unhandled|rejected|out of memory|killed)'
+  LOKI_NOISE='(?i)((^|[^0-9])0 (failed|errors|rejected)|(failed|errors|rejected): 0([^0-9]|$)|read more: https?://|backoff|retrying)'
+  LOKI_QUERY="sum by (service) (count_over_time({service=~\"collector-.*|trafico-.*\"} |~ \"${LOKI_ERR}\" !~ \"${LOKI_NOISE}\" [1h]))"
   LOKI_RAW="$("${SSH[@]}" \
     "curl -sG --max-time 15 'http://10.100.0.2:3100/loki/api/v1/query' \
       --data-urlencode 'query=${LOKI_QUERY}'" 2>/dev/null \
