@@ -5,6 +5,7 @@ import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { MapPin, Clock, TrendingDown, Fuel, ChevronRight, AlertCircle } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { BARATAS_CITIES } from "@/lib/geo/area-routes";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -13,28 +14,6 @@ export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-const CITIES: Record<string, { name: string; province: string; provinceCode: string; provinceSlug: string }> = {
-  madrid: { name: "Madrid", province: "Madrid", provinceCode: "28", provinceSlug: "madrid" },
-  barcelona: { name: "Barcelona", province: "Barcelona", provinceCode: "08", provinceSlug: "barcelona" },
-  valencia: { name: "Valencia", province: "Valencia", provinceCode: "46", provinceSlug: "valencia" },
-  sevilla: { name: "Sevilla", province: "Sevilla", provinceCode: "41", provinceSlug: "sevilla" },
-  zaragoza: { name: "Zaragoza", province: "Zaragoza", provinceCode: "50", provinceSlug: "zaragoza" },
-  malaga: { name: "Málaga", province: "Málaga", provinceCode: "29", provinceSlug: "malaga" },
-  murcia: { name: "Murcia", province: "Murcia", provinceCode: "30", provinceSlug: "murcia" },
-  bilbao: { name: "Bilbao", province: "Vizcaya", provinceCode: "48", provinceSlug: "bizkaia" },
-  alicante: { name: "Alicante", province: "Alicante", provinceCode: "03", provinceSlug: "alicante" },
-  cordoba: { name: "Córdoba", province: "Córdoba", provinceCode: "14", provinceSlug: "cordoba" },
-  valladolid: { name: "Valladolid", province: "Valladolid", provinceCode: "47", provinceSlug: "valladolid" },
-  granada: { name: "Granada", province: "Granada", provinceCode: "18", provinceSlug: "granada" },
-  oviedo: { name: "Oviedo", province: "Asturias", provinceCode: "33", provinceSlug: "asturias" },
-  santander: { name: "Santander", province: "Cantabria", provinceCode: "39", provinceSlug: "cantabria" },
-  pamplona: { name: "Pamplona", province: "Navarra", provinceCode: "31", provinceSlug: "navarra" },
-  "san-sebastian": { name: "San Sebastián", province: "Guipúzcoa", provinceCode: "20", provinceSlug: "gipuzkoa" },
-  vitoria: { name: "Vitoria", province: "Álava", provinceCode: "01", provinceSlug: "alava" },
-  palma: { name: "Palma", province: "Baleares", provinceCode: "07", provinceSlug: "baleares" },
-  "las-palmas": { name: "Las Palmas", province: "Las Palmas", provinceCode: "35", provinceSlug: "las-palmas" },
-  "santa-cruz": { name: "S.C. Tenerife", province: "S.C. Tenerife", provinceCode: "38", provinceSlug: "santa-cruz-de-tenerife" },
-};
 
 interface Props {
   params: Promise<{ city: string }>;
@@ -42,12 +21,12 @@ interface Props {
 
 export function generateStaticParams() {
   if (isBuildWithoutDb()) return [];
-  return Object.keys(CITIES).map((city) => ({ city }));
+  return Object.keys(BARATAS_CITIES).map((city) => ({ city }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city } = await params;
-  const cityData = CITIES[city];
+  const cityData = BARATAS_CITIES[city];
 
   if (!cityData) {
     return { title: "Ciudad no encontrada" };
@@ -148,7 +127,7 @@ function SavingsExplainer({
 
 export default async function BaratasCityPage({ params }: Props) {
   const { city } = await params;
-  const cityData = CITIES[city];
+  const cityData = BARATAS_CITIES[city];
 
   if (!cityData) {
     notFound();

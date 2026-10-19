@@ -21,6 +21,7 @@ import {
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { TRAFFIC_CITIES } from "@/lib/geo/area-routes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -29,26 +30,6 @@ export const revalidate = 120;
 // -------------------------------------------------------------------------
 // City registry — 10 major cities targeting "tráfico [city] hoy"
 // -------------------------------------------------------------------------
-const TRAFFIC_CITIES: Record<
-  string,
-  { name: string; province: string; provinceCode: string }
-> = {
-  madrid: { name: "Madrid", province: "Madrid", provinceCode: "28" },
-  barcelona: { name: "Barcelona", province: "Barcelona", provinceCode: "08" },
-  valencia: { name: "Valencia", province: "Valencia", provinceCode: "46" },
-  sevilla: { name: "Sevilla", province: "Sevilla", provinceCode: "41" },
-  malaga: { name: "Málaga", province: "Málaga", provinceCode: "29" },
-  zaragoza: { name: "Zaragoza", province: "Zaragoza", provinceCode: "50" },
-  bilbao: { name: "Bilbao", province: "Vizcaya", provinceCode: "48" },
-  alicante: { name: "Alicante", province: "Alicante", provinceCode: "03" },
-  murcia: { name: "Murcia", province: "Murcia", provinceCode: "30" },
-  granada: { name: "Granada", province: "Granada", provinceCode: "18" },
-  palma: { name: "Palma", province: "Baleares", provinceCode: "07" },
-  valladolid: { name: "Valladolid", province: "Valladolid", provinceCode: "47" },
-  cordoba: { name: "Córdoba", province: "Córdoba", provinceCode: "14" },
-  vigo: { name: "Vigo", province: "Pontevedra", provinceCode: "36" },
-  oviedo: { name: "Oviedo", province: "Asturias", provinceCode: "33" },
-};
 
 // City-specific FAQ content
 const CITY_FAQ: Record<string, { q1: string; a1: string; q2: string; a2: string }> = {

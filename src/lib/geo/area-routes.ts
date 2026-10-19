@@ -1,0 +1,133 @@
+/**
+ * Slug lists that decide whether an area page exists. Each route reads its
+ * list from here (in its notFound() check), and RelatedByArea only links a
+ * slug that is in that same list, so a cross-link never points at a 404.
+ * Until 2026-10-19 these lived inside each page.tsx, and RelatedByArea built
+ * links from a station's free-text locality (/radares/provincia/muxia...).
+ */
+
+/** /gasolineras/precios/[province]: the provinces that have a page (slug → INE code + name). */
+export const PRICE_PROVINCE_SLUGS: Record<string, { code: string; name: string }> = {
+  "alava": { code: "01", name: "Álava" },
+  "albacete": { code: "02", name: "Albacete" },
+  "alicante": { code: "03", name: "Alicante" },
+  "almeria": { code: "04", name: "Almería" },
+  "avila": { code: "05", name: "Ávila" },
+  "badajoz": { code: "06", name: "Badajoz" },
+  "baleares": { code: "07", name: "Baleares" },
+  "barcelona": { code: "08", name: "Barcelona" },
+  "burgos": { code: "09", name: "Burgos" },
+  "caceres": { code: "10", name: "Cáceres" },
+  "cadiz": { code: "11", name: "Cádiz" },
+  "castellon": { code: "12", name: "Castellón" },
+  "ciudad-real": { code: "13", name: "Ciudad Real" },
+  "cordoba": { code: "14", name: "Córdoba" },
+  "a-coruna": { code: "15", name: "A Coruña" },
+  "cuenca": { code: "16", name: "Cuenca" },
+  "girona": { code: "17", name: "Girona" },
+  "granada": { code: "18", name: "Granada" },
+  "guadalajara": { code: "19", name: "Guadalajara" },
+  "gipuzkoa": { code: "20", name: "Gipuzkoa" },
+  "huelva": { code: "21", name: "Huelva" },
+  "huesca": { code: "22", name: "Huesca" },
+  "jaen": { code: "23", name: "Jaén" },
+  "leon": { code: "24", name: "León" },
+  "lleida": { code: "25", name: "Lleida" },
+  "la-rioja": { code: "26", name: "La Rioja" },
+  "lugo": { code: "27", name: "Lugo" },
+  "madrid": { code: "28", name: "Madrid" },
+  "malaga": { code: "29", name: "Málaga" },
+  "murcia": { code: "30", name: "Murcia" },
+  "navarra": { code: "31", name: "Navarra" },
+  "ourense": { code: "32", name: "Ourense" },
+  "asturias": { code: "33", name: "Asturias" },
+  "palencia": { code: "34", name: "Palencia" },
+  "las-palmas": { code: "35", name: "Las Palmas" },
+  "pontevedra": { code: "36", name: "Pontevedra" },
+  "salamanca": { code: "37", name: "Salamanca" },
+  "santa-cruz-de-tenerife": { code: "38", name: "Santa Cruz de Tenerife" },
+  "cantabria": { code: "39", name: "Cantabria" },
+  "segovia": { code: "40", name: "Segovia" },
+  "sevilla": { code: "41", name: "Sevilla" },
+  "soria": { code: "42", name: "Soria" },
+  "tarragona": { code: "43", name: "Tarragona" },
+  "teruel": { code: "44", name: "Teruel" },
+  "toledo": { code: "45", name: "Toledo" },
+  "valencia": { code: "46", name: "Valencia" },
+  "valladolid": { code: "47", name: "Valladolid" },
+  "bizkaia": { code: "48", name: "Bizkaia" },
+  "zamora": { code: "49", name: "Zamora" },
+  "zaragoza": { code: "50", name: "Zaragoza" },
+  "ceuta": { code: "51", name: "Ceuta" },
+  "melilla": { code: "52", name: "Melilla" },
+};
+
+/** /gasolineras/baratas/[city]: the cities that have a page. */
+export const BARATAS_CITIES: Record<string, { name: string; province: string; provinceCode: string; provinceSlug: string }> = {
+  madrid: { name: "Madrid", province: "Madrid", provinceCode: "28", provinceSlug: "madrid" },
+  barcelona: { name: "Barcelona", province: "Barcelona", provinceCode: "08", provinceSlug: "barcelona" },
+  valencia: { name: "Valencia", province: "Valencia", provinceCode: "46", provinceSlug: "valencia" },
+  sevilla: { name: "Sevilla", province: "Sevilla", provinceCode: "41", provinceSlug: "sevilla" },
+  zaragoza: { name: "Zaragoza", province: "Zaragoza", provinceCode: "50", provinceSlug: "zaragoza" },
+  malaga: { name: "Málaga", province: "Málaga", provinceCode: "29", provinceSlug: "malaga" },
+  murcia: { name: "Murcia", province: "Murcia", provinceCode: "30", provinceSlug: "murcia" },
+  bilbao: { name: "Bilbao", province: "Vizcaya", provinceCode: "48", provinceSlug: "bizkaia" },
+  alicante: { name: "Alicante", province: "Alicante", provinceCode: "03", provinceSlug: "alicante" },
+  cordoba: { name: "Córdoba", province: "Córdoba", provinceCode: "14", provinceSlug: "cordoba" },
+  valladolid: { name: "Valladolid", province: "Valladolid", provinceCode: "47", provinceSlug: "valladolid" },
+  granada: { name: "Granada", province: "Granada", provinceCode: "18", provinceSlug: "granada" },
+  oviedo: { name: "Oviedo", province: "Asturias", provinceCode: "33", provinceSlug: "asturias" },
+  santander: { name: "Santander", province: "Cantabria", provinceCode: "39", provinceSlug: "cantabria" },
+  pamplona: { name: "Pamplona", province: "Navarra", provinceCode: "31", provinceSlug: "navarra" },
+  "san-sebastian": { name: "San Sebastián", province: "Guipúzcoa", provinceCode: "20", provinceSlug: "gipuzkoa" },
+  vitoria: { name: "Vitoria", province: "Álava", provinceCode: "01", provinceSlug: "alava" },
+  palma: { name: "Palma", province: "Baleares", provinceCode: "07", provinceSlug: "baleares" },
+  "las-palmas": { name: "Las Palmas", province: "Las Palmas", provinceCode: "35", provinceSlug: "las-palmas" },
+  "santa-cruz": { name: "S.C. Tenerife", province: "S.C. Tenerife", provinceCode: "38", provinceSlug: "santa-cruz-de-tenerife" },
+};
+
+/** /trafico/[city]: the city registry (10 cities). */
+export const TRAFFIC_CITIES: Record<
+  string,
+  { name: string; province: string; provinceCode: string }
+> = {
+  madrid: { name: "Madrid", province: "Madrid", provinceCode: "28" },
+  barcelona: { name: "Barcelona", province: "Barcelona", provinceCode: "08" },
+  valencia: { name: "Valencia", province: "Valencia", provinceCode: "46" },
+  sevilla: { name: "Sevilla", province: "Sevilla", provinceCode: "41" },
+  malaga: { name: "Málaga", province: "Málaga", provinceCode: "29" },
+  zaragoza: { name: "Zaragoza", province: "Zaragoza", provinceCode: "50" },
+  bilbao: { name: "Bilbao", province: "Vizcaya", provinceCode: "48" },
+  alicante: { name: "Alicante", province: "Alicante", provinceCode: "03" },
+  murcia: { name: "Murcia", province: "Murcia", provinceCode: "30" },
+  granada: { name: "Granada", province: "Granada", provinceCode: "18" },
+  palma: { name: "Palma", province: "Baleares", provinceCode: "07" },
+  valladolid: { name: "Valladolid", province: "Valladolid", provinceCode: "47" },
+  cordoba: { name: "Córdoba", province: "Córdoba", provinceCode: "14" },
+  vigo: { name: "Vigo", province: "Pontevedra", provinceCode: "36" },
+  oviedo: { name: "Oviedo", province: "Asturias", provinceCode: "33" },
+};
+
+/** /camaras/[city]: city slug → province INE code (the page counts that province's cameras). */
+export const CAMERA_CITY_PROVINCES: Record<string, { name: string; code: string }> = {
+  madrid: { name: "Madrid", code: "28" },
+  barcelona: { name: "Barcelona", code: "08" },
+  valencia: { name: "Valencia", code: "46" },
+  sevilla: { name: "Sevilla", code: "41" },
+  zaragoza: { name: "Zaragoza", code: "50" },
+  malaga: { name: "Málaga", code: "29" },
+  murcia: { name: "Murcia", code: "30" },
+  bilbao: { name: "Vizcaya", code: "48" },
+  alicante: { name: "Alicante", code: "03" },
+  cordoba: { name: "Córdoba", code: "14" },
+  valladolid: { name: "Valladolid", code: "47" },
+  granada: { name: "Granada", code: "18" },
+  oviedo: { name: "Asturias", code: "33" },
+  santander: { name: "Cantabria", code: "39" },
+  pamplona: { name: "Navarra", code: "31" },
+  "san-sebastian": { name: "Guipúzcoa", code: "20" },
+  vitoria: { name: "Álava", code: "01" },
+  palma: { name: "Baleares", code: "07" },
+  "las-palmas": { name: "Las Palmas", code: "35" },
+  "santa-cruz": { name: "S.C. Tenerife", code: "38" },
+};
