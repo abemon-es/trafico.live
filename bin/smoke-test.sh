@@ -368,6 +368,9 @@ expect_html_contains "/sitemap.xml" "<sitemapindex" "is sitemap-index"
 expect_html_contains "/robots.txt" "User-Agent:" "has user-agent rules"
 expect_html_contains "/robots.txt" "GPTBot" "allows GPTBot"
 expect_html_contains "/sitemap/0.xml" "<loc>https://trafico.live</loc>" "shard 0 has homepage URL"
+expect_status 200 "/sitemap/priority.xml"
+expect_html_contains "/sitemap/priority.xml" "<loc>https://trafico.live/trenes/incidencias</loc>" "priority sitemap has the hubs"
+expect_html_contains "/sitemap.xml" "/sitemap/priority.xml" "index lists the priority sitemap"
 
 # -----------------------------------------------------------------------------
 # 8. Contact form — POST with bad input (should 400)

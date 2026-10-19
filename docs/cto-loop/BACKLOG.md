@@ -75,6 +75,82 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (17) — /sitemap/priority.xml, and the canonical province pages were in no sitemap at all
+
+**Trigger:** the CMO's weekly brief (19-10).
+- GSC 7 d: 5 clicks / 224 impressions (−62 % impressions w/w).
+- Googlebot still at 855 requests since 01-09 (Bingbot ~237k).
+- URL Inspection sample unchanged: 216/240 "unknown to Google".
+- `/sitemap.xml` now "ok" (read 16-10), but the 8 child shards are still
+  pending since 24-08.
+- `/sitemap/priority.xml` returned the Next error page, and it's the CMO's
+  #1 unblocker: they submit it to GSC + Bing and send MJ the top 20 for
+  "Solicitar indexación". Taken ahead of the weekly-digest cron line.
+
+**Found while building it (prod sitemap, all 18 shards):**
+- **No `/espana/<community>` or `/espana/<community>/<province>` URL in any
+  sitemap.** Instead, shard 0 listed:
+  - 43 × `/provincias/<code>`: 200 and *self-canonical*, i.e. a duplicate of
+    `/espana/castilla-y-leon/leon`, which is self-canonical too;
+  - 19 × `/comunidad-autonoma/<slug>`: 308 → `/espana/<slug>`.
+  - The sitemap's community list didn't even match the canonical slugs
+    (`madrid` vs `comunidad-de-madrid`, `asturias` vs
+    `principado-de-asturias`).
+- Also in no sitemap, though live and verified 200 + self-canonical +
+  indexable:
+  - `/trenes/incidencias` (GA4's #1 landing);
+  - `/atascos/<city>` ×10;
+  - `/carreteras/<state road>/hoy` ×109.
+- `/rondas/ronda-de-dalt` already 308s; that part of the plan was done
+  earlier.
+
+**Change:**
+- The province → community slug map moves from the middleware to
+  `src/lib/geo/province-slugs.ts`, shared by the middleware redirect and the
+  sitemaps.
+- Shard 0:
+  - communities → `/espana/<community>` (19, priority 0.8);
+  - provinces → `/espana/<community>/<province>` (47, 0.85; single-province
+    communities are the community page);
+  - plus `/atascos/<city>` (10, 0.9), `/trenes/incidencias` (0.9), and
+    `/carreteras/<road>/hoy` for the state network (AP-, A-1…A-99, N-; the
+    `Road` table types regional roads like A-1000 as AUTOVIA too).
+  - All 186 added URLs were checked in prod beforehand: 200,
+    self-canonical, no noindex.
+- `/sitemap/priority.xml` (rewrite → `/api/sitemap/priority`, first entry in
+  the index) is built from shard 0. Rules:
+  - priority ≥ 0.8;
+  - plus all of `/espana*` and `/trenes*`;
+  - roads: the 3 type hubs, plus state roads' page and `/hoy` (not regional
+    roads, not `/estadisticas`, which reached 0.8 via `(0.85-0.1).toFixed(1)`);
+  - minus `/mapa`, `/ciudad` and the past 2026 holiday pages;
+  - capped at 500.
+
+  Simulated on prod data: **490 URLs**: carreteras 99, gasolineras 84,
+  radares 82, espana 66, cámaras 20, trenes 16, trafico/atascos/zbe 10 each,
+  plus hubs and guides.
+- `bin/smoke-test.sh` checks `priority.xml` (200, contains
+  `/trenes/incidencias`, listed in the index).
+
+eslint 0 errors (2 pre-existing warnings); web `tsc` 11 = baseline.
+
+**Verify after deploy (compute, loopback):**
+- `/sitemap/priority.xml` 200 `application/xml`, ~490 `<loc>`;
+- all of them 200 + self-canonical + no noindex;
+- index lists it first;
+- shard 0 has no `/provincias/` or `/comunidad-autonoma/`;
+- `/espana/madrid` still 301s (middleware map moved).
+
+Then tell the CMO.
+
+**New item (L2/L3, duplicate content):** `/provincias/<code>` should 301 to
+its `/espana/…` page. The middleware tries to (`resolveSlugToGeoPath
+("_province:<code>")`), but the lookup returns nothing, so the page renders
+and self-canonicalises. 43 duplicates of the province pages Google ranks
+best (CMO: provincias 51 % of impressions at position 6.0).
+
+---
+
 ## Cycle 2026-10-19 (16) — the Loki error count now counts errors (and caught weekly-digest on its first hour)
 
 **Cycle 15 verified (PR #90 → `ebf5ae85`, web serving 06:05:44Z):**
