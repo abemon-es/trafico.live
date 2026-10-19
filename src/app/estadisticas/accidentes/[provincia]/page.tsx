@@ -4,7 +4,7 @@ import { AlertTriangle, Users, Activity, TrendingDown, TrendingUp, ArrowLeft } f
 import Link from "next/link";
 import * as fs from "fs";
 import * as path from "path";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -35,6 +35,7 @@ function getProvinceBySlug(slug: string) {
 // ─── generateStaticParams ─────────────────────────────────────────────────────
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return PROVINCES.map((p) => ({ provincia: provinceSlug(p.name) }));
 }
 

@@ -27,7 +27,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import {
@@ -179,6 +179,7 @@ function fmtKm(km: number): string {
 // Pre-generate the 500 most recently-updated public chargers. ISR
 // handles the rest lazily.
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const chargers = await prisma.eVCharger.findMany({
     where: { isPublic: true },
     select: { id: true },

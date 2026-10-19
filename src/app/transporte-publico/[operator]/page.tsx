@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { slugify } from "@/lib/geo/slugify";
@@ -236,6 +236,7 @@ type Props = {
 };
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const operators = await prisma.transitOperator.findMany({
     where: { routes: { some: {} } },
     select: { name: true },

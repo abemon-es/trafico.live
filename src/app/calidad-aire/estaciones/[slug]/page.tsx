@@ -10,7 +10,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Wind, MapPin, Mountain, ArrowRight, AlertTriangle } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
@@ -86,6 +86,7 @@ function fmt(value: number | null | undefined, decimals = 1): string {
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   try {
     const stations = await prisma.airQualityStation.findMany({
       select: { stationId: true },

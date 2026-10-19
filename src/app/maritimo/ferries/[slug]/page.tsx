@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import {
   Ship,
   Anchor,
@@ -98,6 +98,7 @@ const getPortSlugs = cache(async () => {
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const routes = await getAllRoutes();
   return routes.map((r) => ({
     slug: `${slugify(r.operator)}-${slugify(r.routeName)}`,

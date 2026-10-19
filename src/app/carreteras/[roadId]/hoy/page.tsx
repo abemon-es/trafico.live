@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import {
   AlertTriangle,
   Camera,
@@ -107,6 +107,7 @@ async function getData(roadId: string) {
 // Static params for top 20 roads
 // ─────────────────────────────────────────────────────────────────────────────
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   try {
     const roads = await prisma.road.findMany({
       where: { id: { in: TOP_ROADS } },

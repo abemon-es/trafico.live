@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import {
   Train,
@@ -147,6 +147,7 @@ export async function getSlugList(): Promise<string[]> {
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const slugs = await getSlugList();
   return slugs.map((slug) => ({ slug }));
 }

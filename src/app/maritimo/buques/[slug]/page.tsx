@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import {
   Ship,
   Anchor,
@@ -42,6 +42,7 @@ export const dynamicParams = true;
 
 // Pre-generate top 500 active vessels (>5 positions in last 30d)
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   try {
     const since30d = new Date(Date.now() - 30 * 24 * 3600_000);
     const active = await prisma.vesselPosition.findMany({

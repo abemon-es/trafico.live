@@ -12,7 +12,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { TrackEntityView } from "@/components/analytics/TrackEntityView";
@@ -164,6 +164,7 @@ function fmtKm(km: number): string {
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const radars = await prisma.radar.findMany({
     where: { isActive: true },
     select: { id: true },

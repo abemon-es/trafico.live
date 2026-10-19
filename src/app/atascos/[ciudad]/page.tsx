@@ -20,7 +20,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import {
   AlertTriangle,
   Car,
@@ -579,6 +579,7 @@ const CITIES: Record<string, CityConfig> = {
 // generateStaticParams — 50 ciudades
 // ─────────────────────────────────────────────────────────────────────────────
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return Object.keys(CITIES).map((ciudad) => ({ ciudad }));
 }
 // dynamicParams=true (2026-06-10): with dynamicParams=false + ISR

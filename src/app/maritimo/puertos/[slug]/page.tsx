@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import {
   Anchor,
   MapPin,
@@ -315,6 +315,7 @@ export async function getSlugList(): Promise<string[]> {
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const slugs = await getSlugList();
   return slugs.map((slug) => ({ slug }));
 }

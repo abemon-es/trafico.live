@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import {
   Route,
   Camera,
@@ -83,6 +83,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   // Generate static pages for main roads (autopistas, autovías, nacionales)
   try {
     const roads = await prisma.road.findMany({

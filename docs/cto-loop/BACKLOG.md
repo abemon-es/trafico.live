@@ -75,6 +75,71 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (18) — no more build-time prerender from the empty DB stub (54 pages)
+
+**Cycle 17 verified (PR #95 → `55d151bc`, web 07:59:32Z):**
+- `priority.xml`: 200, `application/xml`, 490 URLs; the index lists it
+  first.
+- Shard 0 has 1,711 URLs: `/provincias/` 0 · `/comunidad-autonoma/` 0 ·
+  `/espana` 67 · `/hoy` 109 · `/atascos/` 10 · `/trenes/incidencias` 1.
+- `/espana/madrid` → 301 `/espana/comunidad-de-madrid/madrid` (middleware
+  map moved, still works).
+- URL sweep: 462 OK, 4 × 429 (our own sweep, 200 on retry), and 24 bad:
+  - **`/camaras/<city>` ×20 `noindex`**;
+  - **`/peajes/operador/*` ×4 "Página no encontrada" with 200**.
+
+  Both are this cycle's item.
+- The CMO submitted `priority.xml` + `sitemap.xml` to GSC (API, 10:04) and
+  Bing (feed 200). They sent MJ the top 20 for "Solicitar indexación" (all
+  200/self-canonical/indexable, excluding `/camaras` and the operator pages)
+  and the 4-week pruning OK.
+
+**Cause (`src/lib/db.ts`):** the Docker `next build` has no `DATABASE_URL`,
+so Prisma is a stub that answers `count` → 0, `findMany` → [] and
+`findUnique` → null. Every page with a fixed `generateStaticParams` list is
+prerendered from that. Where "no rows" means `noindex` (`/camaras/[city]`:
+`cameraCount === 0`) or `notFound()`, the deploy ships a noindex page or a
+soft 404. ISR then serves that copy (`x-nextjs-cache: STALE`) until a visit
+past `revalidate=300` regenerates it, and that visit still gets the stale
+copy.
+- Measured: `/camaras/madrid` STALE `noindex`, then HIT `index` on the next
+  request.
+- With ~10 deploys a day, Googlebot's rare visits can land in that window.
+- `/peajes/operador/*` never recovered (still "Página no encontrada" HIT
+  minutes later, no log line). To be re-checked after this change.
+
+Two pages had already dropped `generateStaticParams` for this reason
+("Coolify builds with DATABASE_URL='' causing empty pre-renders").
+
+**Fix:**
+- New `isBuildWithoutDb()` in `src/lib/db.ts` (same condition that selects
+  the stub).
+- The first line of `generateStaticParams` in **54 DB-backed pages** is now
+  `if (isBuildWithoutDb()) return [];`. At runtime nothing changes; at build
+  those paths aren't prerendered, so each renders on its first request with
+  real data and is ISR-cached from then on. `dynamicParams` is true
+  everywhere: the two `dynamicParams=false` hits are comments, there are no
+  edge-runtime pages and no `cacheComponents`.
+- Scope:
+  - left as they were: 11 pages that already `return []`; 4 static-content
+    pages (`/ayuda`, `/ir`, `/ruta`, `/viaje`), whose `notFound` is a static
+    slug check;
+  - `/provincias/[code]` guarded (its sections read the DB).
+- Side effect: fewer prerendered pages per build. The build has peaked at
+  16-32 GB RSS (next.config note).
+- eslint on the 55 files = main (46 problems, the same 9 pre-existing
+  `Date.now`-in-render errors); web `tsc` identical to baseline.
+
+**Verify after deploy (compute, loopback, the first request after the
+deploy):**
+- `/camaras/madrid` `index` and not STALE;
+- `/peajes/operador/abertis` real content (or a real 404 if the runtime
+  lookup is broken; that would be a second bug);
+- `/espana/andalucia/granada` 200 with data;
+- smoke.
+
+---
+
 ## Cycle 2026-10-19 (17) — /sitemap/priority.xml, and the canonical province pages were in no sitemap at all
 
 **Trigger:** the CMO's weekly brief (19-10).

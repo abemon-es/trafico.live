@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Route, MapPin, Clock, Building2, Calculator, ArrowRight, ChevronRight, GitCompareArrows } from "lucide-react";
@@ -34,6 +34,7 @@ async function getData(slug: string) {
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const roads = await prisma.tollRoad.findMany({ select: { slug: true } });
   return roads.map((r) => ({ road: r.slug }));
 }

@@ -6,7 +6,7 @@ import { StructuredData } from "@/components/seo/StructuredData";
 import { BrandingShell, type MunicipalBranding } from "@/components/ayuntamiento/BrandingShell";
 import { MunicipalDashboard } from "@/components/ayuntamiento/MunicipalDashboard";
 import type { MunicipalKPIs } from "@/components/ayuntamiento/KPIGrid";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { municipalityCodeForms } from "@/lib/geo/ine-codes";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
@@ -31,6 +31,7 @@ function humanizeName(slug: string): string {
 // Static params — top 50 municipalities by population
 // ---------------------------------------------------------------------------
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   try {
     const municipalities = await prisma.municipality.findMany({
       select: { slug: true },

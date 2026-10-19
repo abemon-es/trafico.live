@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Camera, ArrowLeft, MapPin, ExternalLink } from "lucide-react";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -45,6 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   try {
     const roads = await prisma.road.findMany({
       where: { type: { in: ["AUTOPISTA", "AUTOVIA", "NACIONAL"] } },

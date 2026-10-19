@@ -13,7 +13,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import {
@@ -78,6 +78,7 @@ export const dynamicParams = true;
 export const revalidate = 300;
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return PREGEN_ROADS.map((road) => ({ road }));
 }
 

@@ -13,7 +13,7 @@ import {
   Info,
   Route,
 } from "lucide-react";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { RONDAS, RONDA_SLUGS, getRonda, getRondasByCity } from "./_data";
@@ -27,6 +27,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return RONDA_SLUGS.map((slug) => ({ slug }));
 }
 

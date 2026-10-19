@@ -8,7 +8,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { PROVINCE_NAMES, PROVINCES } from "@/lib/geo/ine-codes";
 import { slugify } from "@/lib/geo/slugify";
 import {
@@ -177,6 +177,7 @@ function getCommunitySlug(provinceCode: string): string {
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const stations = await prisma.airQualityStation.findMany({
     where: { readings: { some: {} } },
     select: { stationId: true },
