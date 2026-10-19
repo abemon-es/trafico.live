@@ -7,6 +7,7 @@ import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { CAMERA_CITY_PROVINCES } from "@/lib/geo/area-routes";
 
 // 5 min, not 1 h: this page renders live DB state (camera availability per
 // province) and the build prerenders it empty (no DB at build). At 3600 a
@@ -17,28 +18,6 @@ export const revalidate = 300;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // City slug → province INE code + display name
-const CITY_PROVINCES: Record<string, { name: string; code: string }> = {
-  madrid: { name: "Madrid", code: "28" },
-  barcelona: { name: "Barcelona", code: "08" },
-  valencia: { name: "Valencia", code: "46" },
-  sevilla: { name: "Sevilla", code: "41" },
-  zaragoza: { name: "Zaragoza", code: "50" },
-  malaga: { name: "Málaga", code: "29" },
-  murcia: { name: "Murcia", code: "30" },
-  bilbao: { name: "Vizcaya", code: "48" },
-  alicante: { name: "Alicante", code: "03" },
-  cordoba: { name: "Córdoba", code: "14" },
-  valladolid: { name: "Valladolid", code: "47" },
-  granada: { name: "Granada", code: "18" },
-  oviedo: { name: "Asturias", code: "33" },
-  santander: { name: "Cantabria", code: "39" },
-  pamplona: { name: "Navarra", code: "31" },
-  "san-sebastian": { name: "Guipúzcoa", code: "20" },
-  vitoria: { name: "Álava", code: "01" },
-  palma: { name: "Baleares", code: "07" },
-  "las-palmas": { name: "Las Palmas", code: "35" },
-  "santa-cruz": { name: "S.C. Tenerife", code: "38" },
-};
 
 // Province INE codes whose cameras are managed by regional bodies (not DGT)
 // Catalonia: SCT (Servei Català de Trànsit) — provinces 08, 17, 25, 43
@@ -95,7 +74,7 @@ const LOCATION_SLUGS = [
 export async function generateStaticParams() {
   if (isBuildWithoutDb()) return [];
   return [
-    ...Object.keys(CITY_PROVINCES).map((city) => ({ city })),
+    ...Object.keys(CAMERA_CITY_PROVINCES).map((city) => ({ city })),
     ...LOCATION_SLUGS.map((slug) => ({ city: slug })),
   ];
 }
@@ -104,7 +83,7 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city } = await params;
-  const cityData = CITY_PROVINCES[city];
+  const cityData = CAMERA_CITY_PROVINCES[city];
 
   // Location slug fallback (e.g. "navacerrada" — searched by camera name)
   if (!cityData) {
@@ -151,7 +130,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CamarasCityPage({ params }: Props) {
   const { city } = await params;
-  const cityData = CITY_PROVINCES[city];
+  const cityData = CAMERA_CITY_PROVINCES[city];
 
   // Location slug path (e.g. /camaras/navacerrada) — resolve by camera name
   if (!cityData) {
@@ -432,7 +411,7 @@ export default async function CamarasCityPage({ params }: Props) {
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
                     {NEARBY_CITIES.filter((c) => c !== city).map((slug) => {
-                      const nearbyData = CITY_PROVINCES[slug];
+                      const nearbyData = CAMERA_CITY_PROVINCES[slug];
                       if (!nearbyData) return null;
                       return (
                         <Link

@@ -806,8 +806,9 @@ export default async function StationDetailPage({ params }: Props) {
       </div>
 
       <RelatedByArea
-        province={station.provinceName ?? undefined}
-        city={station.locality ?? station.municipality ?? undefined}
+        provinceCode={station.province}
+        provinceName={station.provinceName}
+        city={station.locality ?? station.municipality}
         currentPath={`/gasolineras/terrestres/${station.id}`}
       />
     </div>

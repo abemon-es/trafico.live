@@ -75,6 +75,94 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (23) — gas-station pages stop emitting ~70k cross-links to pages that don't exist
+
+**Cycle 22 verified (PR #100 → `0bcddbf5`, DEPLOY SUCCESS 14:55:16 local, 347 s):**
+- Playwright on compute (ephemeral `mcr.microsoft.com/playwright:v1.48.0-jammy`
+  container, MAP to 127.0.0.1, in series), 375 + 1280 px × `/`,
+  `/gasolineras`, `/precio-gasolina-hoy`:
+  - all 200; h1 exo2/700, body dmSans/400, mono jetbrainsMono/400;
+  - 0 requests to Google Fonts;
+  - 9 woff2 each, 200 `public, max-age=31536000, immutable`.
+- The public URL through the edge serves the same Cache-Control (DNS-only,
+  no cf headers).
+- The measured mono element was the footer's "build dev" label (same class
+  as the prices).
+
+**#99 hour comparison closed with the CTO:**
+
+| family | before | after |
+|---|---|---|
+| `/provincias` | 3 | 3, which were my 3 probes, so 0 organic |
+| `/espana` | 1 | 1 |
+| `/municipio` | 7 | 10 |
+
+0 5xx in either hour. The `/municipio` suffix slugs (`llutxent-46`,
+`oviedo-33-33044`) go to follow-up (a), which must handle both `-NN` and
+`-NN-INE5`.
+
+**Process slip, owned:**
+- I ran `next dev` + Playwright on the Mac before the CTO relayed MJ's order
+  "no local CPU, always compute". Saved as a memory.
+- `next dev` wrote an agent-rules block into CLAUDE.md (reverted). It also
+  left `.next/dev/types/validator.ts`, which breaks a plain `tsc -p .` in
+  this worktree; deleting it was not permitted.
+- Typecheck now runs with a scratchpad tsconfig that excludes `.next/dev`
+  (same 11-error baseline). Someone with permission can remove
+  `trafico.live-worktrees/cto-loop/.next/dev`.
+
+**Signal:** Traefik shows 557 404s on `/radares/*` in 3 h (242 → 364 per
+hour), almost all `/radares/provincia/<town>`, from GCP IPs (a crawler).
+- **Cause:** `RelatedByArea` on `/gasolineras/terrestres/[id]` (~12k
+  stations) built `slug = locality || provinceName` and emitted 6 links
+  from it: `/gasolineras/precios/<loc>`, `/radares/provincia/<loc>`,
+  `/estadisticas/accidentes/<loc>`, `/ciudad/<loc>`, `/camaras/<loc>` and
+  `/gasolineras/baratas/<loc>`.
+- Examples: station 11228 → `/camaras/balbases-(los)`…; 13709 →
+  `/radares/provincia/muxia`…
+- Almost all of them 404, roughly 70k broken internal links.
+
+**Fix (with the CTO's conditions):**
+- **One source of truth.** The slug lists that the routes check in
+  `notFound()` move from their `page.tsx` into `src/lib/geo/area-routes.ts`
+  (`PRICE_PROVINCE_SLUGS`, `BARATAS_CITIES`, `TRAFFIC_CITIES`,
+  `CAMERA_CITY_PROVINCES`). Each route now imports its list from there.
+  `/radares/provincia` and `/estadisticas/accidentes` already resolve
+  `provinceSlug(PROVINCES[i].name)`, so they reuse the same function.
+- **`relatedAreaLinks({provinceCode, city})`** (`src/lib/geo/related-area.ts`,
+  pure):
+  - province links come from the INE code only: `/espana` hub, prices,
+    radars, accidents;
+  - a city link (`/trafico`, `/camaras`, `/gasolineras/baratas`; `/ciudad`
+    dropped) is emitted only if the slug is in that route's list AND that
+    city is in the same province (a "Valencia" in Badajoz gets none).
+- `RelatedByArea` takes `provinceCode`; the station page passes
+  `station.province`.
+- **Test** `tests/related-area.test.ts` (tsx script, the repo convention),
+  **run on compute** in the Playwright image: 15/15 pass.
+  - Madrid/Barcelona: 3 city links.
+  - Controls `BALBASES (LOS)`/`MUXIA`: 0 city links, and no href contains
+    locality text.
+  - The homonym and missing/unknown codes behave.
+  - Every link for all 52 provinces exists by the routes' own lists.
+
+eslint clean on the 9 files (base: none); web `tsc` identical to baseline.
+
+**Measure (CTO):**
+- Traefik 404s on `/radares/provincia/*`, `/camaras/*` and
+  `/gasolineras/precios/*`, hour before vs hour after, with the GCP crawler
+  counted separately;
+- plus a prod check that every RelatedByArea link on ~20 real station pages
+  answers 200.
+
+**Queued after this:** follow-up (a) (`/municipio` suffixes), (c) (Tenerife
+"trenes"), and "build dev" → `NEXT_PUBLIC_GIT_SHA`. The CTO picked option
+(2), all repo-side: compose `build.args` `GIT_COMMIT: ${GIT_SHA:-unknown}` +
+builder `ARG GIT_COMMIT` / `ENV NEXT_PUBLIC_GIT_SHA`. Verify the footer
+matches `/api/health`.
+
+---
+
 ## Cycle 2026-10-19 (22) — fonts self-hosted: the build no longer downloads from Google Fonts
 
 **Cycle 21 verified (PR #99 → `a8dcfacb`):**

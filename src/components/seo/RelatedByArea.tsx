@@ -1,43 +1,28 @@
 import Link from "next/link";
+import { relatedAreaLinks } from "@/lib/geo/related-area";
 
 interface RelatedByAreaProps {
-  province?: string;
-  city?: string;
+  /** INE province code ("28"): every province link is built from it. */
+  provinceCode?: string | null;
+  /** Free-text locality: only used to add city links that have a page. */
+  city?: string | null;
+  /** Shown in the heading. */
+  provinceName?: string | null;
   currentPath: string;
 }
 
 /**
- * Cross-links related content by geographic area.
- * Distributes link equity across page types for the same location.
+ * Cross-links related content by geographic area. Only links that exist:
+ * see relatedAreaLinks() in src/lib/geo/related-area.ts.
  */
-export function RelatedByArea({ province, city, currentPath }: RelatedByAreaProps) {
-  if (!province && !city) return null;
-
-  const slug = (city || province || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-");
-
-  const links = [
-    { href: `/gasolineras/precios/${slug}`, label: "Precios combustible" },
-    { href: `/radares/provincia/${slug}`, label: "Radares" },
-    { href: `/estadisticas/accidentes/${slug}`, label: "Accidentalidad" },
-    ...(city
-      ? [
-          { href: `/ciudad/${slug}`, label: `Tráfico en ${city}` },
-          { href: `/camaras/${slug}`, label: "Cámaras DGT" },
-          { href: `/gasolineras/baratas/${slug}`, label: "Gasolineras baratas" },
-        ]
-      : []),
-  ].filter((l) => l.href !== currentPath);
-
+export function RelatedByArea({ provinceCode, city, provinceName, currentPath }: RelatedByAreaProps) {
+  const links = relatedAreaLinks({ provinceCode, city }).filter((l) => l.href !== currentPath);
   if (links.length === 0) return null;
 
   return (
     <nav aria-label="Contenido relacionado en esta zona" className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
       <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-        También en {city || province}
+        También en {provinceName || "esta provincia"}
       </h3>
       <div className="flex flex-wrap gap-2">
         {links.map((link) => (

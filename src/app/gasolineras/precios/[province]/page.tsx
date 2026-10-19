@@ -5,66 +5,13 @@ import { prisma } from "@/lib/db";
 import { MapPin, ArrowLeft, Clock, Map, Tag, Fuel, BarChart3 } from "lucide-react";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { PRICE_PROVINCE_SLUGS } from "@/lib/geo/area-routes";
 
 // force-dynamic: Coolify builds with DATABASE_URL='' which caches empty ISR pages.
 export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-const PROVINCE_SLUGS: Record<string, { code: string; name: string }> = {
-  "alava": { code: "01", name: "Álava" },
-  "albacete": { code: "02", name: "Albacete" },
-  "alicante": { code: "03", name: "Alicante" },
-  "almeria": { code: "04", name: "Almería" },
-  "avila": { code: "05", name: "Ávila" },
-  "badajoz": { code: "06", name: "Badajoz" },
-  "baleares": { code: "07", name: "Baleares" },
-  "barcelona": { code: "08", name: "Barcelona" },
-  "burgos": { code: "09", name: "Burgos" },
-  "caceres": { code: "10", name: "Cáceres" },
-  "cadiz": { code: "11", name: "Cádiz" },
-  "castellon": { code: "12", name: "Castellón" },
-  "ciudad-real": { code: "13", name: "Ciudad Real" },
-  "cordoba": { code: "14", name: "Córdoba" },
-  "a-coruna": { code: "15", name: "A Coruña" },
-  "cuenca": { code: "16", name: "Cuenca" },
-  "girona": { code: "17", name: "Girona" },
-  "granada": { code: "18", name: "Granada" },
-  "guadalajara": { code: "19", name: "Guadalajara" },
-  "gipuzkoa": { code: "20", name: "Gipuzkoa" },
-  "huelva": { code: "21", name: "Huelva" },
-  "huesca": { code: "22", name: "Huesca" },
-  "jaen": { code: "23", name: "Jaén" },
-  "leon": { code: "24", name: "León" },
-  "lleida": { code: "25", name: "Lleida" },
-  "la-rioja": { code: "26", name: "La Rioja" },
-  "lugo": { code: "27", name: "Lugo" },
-  "madrid": { code: "28", name: "Madrid" },
-  "malaga": { code: "29", name: "Málaga" },
-  "murcia": { code: "30", name: "Murcia" },
-  "navarra": { code: "31", name: "Navarra" },
-  "ourense": { code: "32", name: "Ourense" },
-  "asturias": { code: "33", name: "Asturias" },
-  "palencia": { code: "34", name: "Palencia" },
-  "las-palmas": { code: "35", name: "Las Palmas" },
-  "pontevedra": { code: "36", name: "Pontevedra" },
-  "salamanca": { code: "37", name: "Salamanca" },
-  "santa-cruz-de-tenerife": { code: "38", name: "Santa Cruz de Tenerife" },
-  "cantabria": { code: "39", name: "Cantabria" },
-  "segovia": { code: "40", name: "Segovia" },
-  "sevilla": { code: "41", name: "Sevilla" },
-  "soria": { code: "42", name: "Soria" },
-  "tarragona": { code: "43", name: "Tarragona" },
-  "teruel": { code: "44", name: "Teruel" },
-  "toledo": { code: "45", name: "Toledo" },
-  "valencia": { code: "46", name: "Valencia" },
-  "valladolid": { code: "47", name: "Valladolid" },
-  "bizkaia": { code: "48", name: "Bizkaia" },
-  "zamora": { code: "49", name: "Zamora" },
-  "zaragoza": { code: "50", name: "Zaragoza" },
-  "ceuta": { code: "51", name: "Ceuta" },
-  "melilla": { code: "52", name: "Melilla" },
-};
 
 interface Props {
   params: Promise<{ province: string }>;
@@ -72,7 +19,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { province } = await params;
-  const provinceData = PROVINCE_SLUGS[province];
+  const provinceData = PRICE_PROVINCE_SLUGS[province];
 
   if (!provinceData) {
     return { title: "Provincia no encontrada" };
@@ -98,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProvincePricesPage({ params }: Props) {
   const { province } = await params;
-  const provinceData = PROVINCE_SLUGS[province];
+  const provinceData = PRICE_PROVINCE_SLUGS[province];
 
   if (!provinceData) {
     notFound();
