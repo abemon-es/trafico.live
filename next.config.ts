@@ -122,6 +122,10 @@ const nextConfig: NextConfig = {
           destination: "/api/sitemap-index",
         },
         {
+          source: "/sitemap/priority.xml",
+          destination: "/api/sitemap/priority",
+        },
+        {
           source: "/sitemap/:id(\\d+).xml",
           destination: "/api/sitemap/:id",
         },

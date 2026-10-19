@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
+import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "@/lib/geo/province-slugs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -315,6 +316,47 @@ export async function generateSitemapForShard(
   return [];
 }
 
+// ---------------------------------------------------------------------------
+// /sitemap/priority.xml — the canonical hubs worth crawling first
+// ---------------------------------------------------------------------------
+// Google barely crawls the site (855 Googlebot requests in 7 weeks) and has
+// never fetched the shards. This short list (CMO plan 2026-10-19, ≤500 URLs)
+// is submitted on its own so the crawl budget goes to pages with their own
+// data. Every URL also stays in its regular shard.
+
+const PRIORITY_MAX_URLS = 500;
+// /mapa duplicates the homepage map, /ciudad is a bare index, and the
+// 2026 holiday pages are past events.
+const PRIORITY_EXCLUDED = new Set(["/mapa", "/ciudad", "/semana-santa-2026", "/puente-mayo-2026"]);
+
+function isPriorityPath(path: string, priority: number): boolean {
+  if (PRIORITY_EXCLUDED.has(path)) return false;
+  // Rail hubs and the canonical community/province pages go in whole.
+  if (path.startsWith("/espana") || path.startsWith("/trenes")) return true;
+  // Roads: the three road-type hubs, plus state roads' own page and their
+  // /hoy page. Not regional roads, not /estadisticas.
+  const road = path.match(/^\/carreteras\/([^/]+)(?:\/([^/]+))?$/);
+  if (road) {
+    if (["autopistas", "autovias", "nacionales"].includes(road[1])) return !road[2];
+    const isState = NATIONAL_ROAD_RE.test(decodeURIComponent(road[1]));
+    return isState && (!road[2] || road[2] === "hoy") && priority >= 0.8;
+  }
+  return priority >= 0.8;
+}
+
+export async function generatePrioritySitemap(): Promise<SitemapEntry[]> {
+  const seen = new Set<string>();
+  return (await coreSitemap())
+    .filter((e) => {
+      const path = e.url.slice(BASE_URL.length) || "/";
+      if (seen.has(path)) return false;
+      seen.add(path);
+      return isPriorityPath(path, e.priority);
+    })
+    .sort((a, b) => b.priority - a.priority)
+    .slice(0, PRIORITY_MAX_URLS);
+}
+
 /**
  * Converts sitemap entries to XML string.
  */
@@ -608,27 +650,9 @@ const FUEL_TYPE_SLUGS = [
   "adblue",
 ];
 
-const COMMUNITIES = [
-  "andalucia",
-  "aragon",
-  "asturias",
-  "baleares",
-  "canarias",
-  "cantabria",
-  "castilla-la-mancha",
-  "castilla-y-leon",
-  "cataluna",
-  "comunidad-valenciana",
-  "extremadura",
-  "galicia",
-  "madrid",
-  "murcia",
-  "navarra",
-  "pais-vasco",
-  "la-rioja",
-  "ceuta",
-  "melilla",
-];
+// State road network (autopistas AP-, autovías A-1…A-99, nacionales N-).
+// The Road table types regional autovías (A-1000, A-356R1…) as AUTOVIA too.
+const NATIONAL_ROAD_RE = /^(AP-\d+[A-Z]?|A-\d{1,2}|N-[0-9IVX]+)$/;
 
 // ---------------------------------------------------------------------------
 // Core sitemap: static pages, roads, communities, cities, blog
@@ -1078,6 +1102,14 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily" as const,
       priority: 0.75,
     })),
+    // Live service alerts: GA4's #1 landing page (187 sessions in 30 d) and in
+    // no sitemap until 2026-10-19.
+    {
+      url: `${BASE_URL}/trenes/incidencias`,
+      lastModified: now,
+      changeFrequency: "hourly" as const,
+      priority: 0.9,
+    },
     {
       url: `${BASE_URL}/trenes/lineas`,
       lastModified: today,
@@ -1396,6 +1428,14 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "hourly" as const,
       priority: 0.95,
     })),
+    // /atascos/<city> is a live route with GSC impressions (granada: 15 at
+    // position 46) that was in no sitemap until 2026-10-19.
+    ...TRAFFIC_CITY_SLUGS.map((c) => ({
+      url: `${BASE_URL}/atascos/${c}`,
+      lastModified: now,
+      changeFrequency: "hourly" as const,
+      priority: 0.9,
+    })),
     ...ZBE_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/zbe/${c}`,
       lastModified: today,
@@ -1514,6 +1554,17 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
         }
       );
     }
+    // Today's status page (/carreteras/AP-7/hoy) for the national network.
+    // The route serves every road, but it was in no sitemap (CMO 2026-10-18).
+    // Only state roads: the DB types regional roads (A-1000…) as AUTOVIA too.
+    if (NATIONAL_ROAD_RE.test(road.id)) {
+      pages.push({
+        url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/hoy`,
+        lastModified: now,
+        changeFrequency: "hourly",
+        priority,
+      });
+    }
     return pages;
   });
 
@@ -1534,28 +1585,29 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.75,
     }));
 
-  // Province pages
-  const provinces = await prisma.camera.findMany({
-    select: { province: true },
-    distinct: ["province"],
-  });
-
-  const provincePages: SitemapEntry[] = provinces
-    .filter((p) => p.province)
-    .map((p) => ({
-      url: `${BASE_URL}/provincias/${encodeURIComponent(p.province!)}`,
-      lastModified: today,
-      changeFrequency: "daily" as const,
-      priority: 0.75,
-    }));
-
-  // Community pages
-  const communityPages: SitemapEntry[] = COMMUNITIES.map((community) => ({
-    url: `${BASE_URL}/comunidad-autonoma/${community}`,
+  // Community and province pages, in their canonical form. Until 2026-10-19
+  // these were /provincias/<code> (a self-canonical duplicate of the /espana
+  // page) and /comunidad-autonoma/<slug> (308 → /espana/<slug>), and no
+  // /espana/<community>[/<province>] URL was in any sitemap. Single-province
+  // communities (Cantabria, La Rioja, Navarra, Ceuta, Melilla) are the
+  // community page itself.
+  const communityPages: SitemapEntry[] = [
+    ...new Set(Object.values(PROVINCE_SLUG_TO_COMMUNITY_SLUG)),
+  ].map((community) => ({
+    url: `${BASE_URL}/espana/${community}`,
     lastModified: today,
     changeFrequency: "daily" as const,
-    priority: 0.7,
+    priority: 0.8,
   }));
+
+  const provincePages: SitemapEntry[] = Object.entries(PROVINCE_SLUG_TO_COMMUNITY_SLUG)
+    .filter(([province, community]) => province !== community)
+    .map(([province, community]) => ({
+      url: `${BASE_URL}/espana/${community}/${province}`,
+      lastModified: today,
+      changeFrequency: "daily" as const,
+      priority: 0.85,
+    }));
 
   // Maritime port detail pages
   let maritimePortPages: SitemapEntry[] = [];

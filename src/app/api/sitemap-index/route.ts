@@ -22,8 +22,11 @@ export async function GET() {
   // date is both stable and true. W3C Datetime permits date-only.
   const now = new Date().toISOString().slice(0, 10);
 
+  // The priority list goes first; its URLs are also in the shards, which
+  // sitemaps allow.
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>${BASE_URL}/sitemap/priority.xml</loc><lastmod>${now}</lastmod></sitemap>
 ${shards.map((s) => `<sitemap><loc>${BASE_URL}/sitemap/${s.id}.xml</loc><lastmod>${now}</lastmod></sitemap>`).join("\n")}
 </sitemapindex>`;
 
