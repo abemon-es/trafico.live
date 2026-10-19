@@ -733,7 +733,10 @@ async function performSearch(
         if (filters.roadFilter) {
           const roadCollections = new Set(["radars", "cameras", "gas_stations", "incidents", "risk_zones", "variable_panels", "traffic_stations"]);
           if (roadCollections.has(config.collection)) {
-            const field = config.collection === "gas_stations" ? "nearestRoad" : "roadNumber";
+            // risk_zones calls it `road`; filtering it by `roadNumber` failed the
+            // whole collection, so road queries never returned a risk zone.
+            const field = config.collection === "gas_stations" ? "nearestRoad"
+              : config.collection === "risk_zones" ? "road" : "roadNumber";
             const existingFilter = req.filter_by as string | undefined;
             const roadFilterClause = `${field}:=${filters.roadFilter}`;
             req.filter_by = existingFilter ? `${existingFilter} && ${roadFilterClause}` : roadFilterClause;
@@ -749,7 +752,9 @@ async function performSearch(
           ]);
           if (provinceCollections.has(config.collection)) {
             const existingFilter = req.filter_by as string | undefined;
-            const provFilterClause = `provinceName:=${filters.provinceFilter}`;
+            // risk_zones has `province` only (no provinceName).
+            const provField = config.collection === "risk_zones" ? "province" : "provinceName";
+            const provFilterClause = `${provField}:=${filters.provinceFilter}`;
             req.filter_by = existingFilter ? `${existingFilter} && ${provFilterClause}` : provFilterClause;
           }
         }
