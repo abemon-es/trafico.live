@@ -18,6 +18,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -476,7 +477,7 @@ export default async function PuntosNegrosPage() {
                               {idx + 1}
                             </span>
                             <Link
-                              href={`/provincias/${item.province}`}
+                              href={(provincePath(item.province) ?? "/espana")}
                               className="text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline truncate"
                             >
                               {name}

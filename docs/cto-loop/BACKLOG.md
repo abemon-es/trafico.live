@@ -15,7 +15,7 @@ last.
 > | **L0 build / deploy / observability** | **IN PROGRESS** — build DB access fixed (`671001fd`); deploy downtime, Loki gap and env drift still open |
 > | L1 data integrity | Partly done — AIS + GSC/GA4 detection fixed; 6 collectors still `partial`/`error` |
 > | L2 correct rendering | Started — station directory shipped; ~40k pages still orphaned by client-only hubs |
-> | L3 discovery / SEO | **ACTIVE** — crawl paths open: trenes/estaciones 1,506 ✓ · radares 737 ✓ · calidad-aire 817 ✓ (origin-verified) · gasolineras chain 54 province anchors ✓ → ~5,200 station links behind them. **Systemic fix `a3e76eb3`: revalidate normalized to 300 on all 78 DB-backed prerendered pages** (build-blank policy) — this alone un-blanks most previously "senseless" pages after every deploy. carga-ev chain OPEN (hub→20 cities→500 chargers each, verified 500 anchors at origin; two traps found: /electrolineras/:city 308s to /carga-ev/:ciudad so the first edit landed on an unreachable route, and the real page had NO revalidate so the build-blank was cached forever). Municipios chain CLOSED (`eb6fff88`, 140 anchors verified on the Madrid province page — full index per province, ~8,100 pages reachable). Codigo-postal chain CLOSED (`8ecd00b0`+`c980a0e4`): ~4,600 CP pages distributed across municipality pages, verified (Alcalá → 5 CP anchors). Found+fixed en route: **GasStation.municipalityCode stores MINETUR ids without leading zeros while Municipality.code keeps them** — equality filters matched nothing for codes starting with 0, which also blanked gasStationCount on many municipality pages. Same latent bug pending in /ayuntamiento/[slug]:204 and /municipio/[slug]:57. meteo tier CLOSED (`8e963e00`, 949 anchors verified). **L3 CRAWL ROLLOUT COMPLETE** — every major orphaned template now has a server-rendered inbound path: trenes 1,506 · radares 737 · calidad-aire 817 · gasolineras 54→~5,200 · carga-ev 20→500/city · municipios ~8,100 · codigo-postal ~4,600 · meteo 949. Next lever is Google-side (crawl-demand recalibration, days-to-weeks); monitor gscTopPages + child-sitemap downloads in daily snapshots |
+> | L3 discovery / SEO | **ACTIVE** — crawl paths open: trenes/estaciones 1,506 ✓ · radares 737 ✓ · calidad-aire 817 ✓ (origin-verified) · gasolineras chain 54 province anchors ✓ → ~5,200 station links behind them. **Systemic fix `a3e76eb3`: revalidate normalized to 300 on all 78 DB-backed prerendered pages** (build-blank policy) — this alone un-blanks most previously "senseless" pages after every deploy. carga-ev chain OPEN (hub→20 cities→500 chargers each, verified 500 anchors at origin; two traps found: /electrolineras/:city 308s to /carga-ev/:ciudad so the first edit landed on an unreachable route, and the real page had NO revalidate so the build-blank was cached forever). Municipios chain CLOSED (`eb6fff88`, 140 anchors verified on the Madrid province page — full index per province, 3,459 municipality pages reachable (figure corrected 2026-10-19; it was quoted as ~8,100)). Codigo-postal chain CLOSED (`8ecd00b0`+`c980a0e4`): ~4,600 CP pages distributed across municipality pages, verified (Alcalá → 5 CP anchors). Found+fixed en route: **GasStation.municipalityCode stores MINETUR ids without leading zeros while Municipality.code keeps them** — equality filters matched nothing for codes starting with 0, which also blanked gasStationCount on many municipality pages. Same latent bug pending in /ayuntamiento/[slug]:204 and /municipio/[slug]:57. meteo tier CLOSED (`8e963e00`, 949 anchors verified). **L3 CRAWL ROLLOUT COMPLETE** — every major orphaned template now has a server-rendered inbound path: trenes 1,506 · radares 737 · calidad-aire 817 · gasolineras 54→~5,200 · carga-ev 20→500/city · municipios ~8,100 · codigo-postal ~4,600 · meteo 949. Next lever is Google-side (crawl-demand recalibration, days-to-weeks); monitor gscTopPages + child-sitemap downloads in daily snapshots |
 >
 > Do not open L3 work while an L0 item is red.
 
@@ -75,6 +75,71 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (20) — internal links go straight to /espana (23 links + the /ciudad cards)
+
+**Cycle 19 verified (PR #97 → `6fbe8dd0`, container 09:31:29Z):**
+- `/provincias/24` → 301 `/espana/castilla-y-leon/leon` (0.07 s);
+- `/municipio/alcala-de-henares` → 301 to its `/espana` URL (0.12 s);
+- an unknown slug → 404 (unchanged);
+- resolver: GET without headers 200, POST 401;
+- `/sitemap/100.xml`: 3,459 URLs, all `/espana`; a random 30 → 30/30 200,
+  self-canonical, indexable.
+- **Figure corrected:** there are **3,459 municipalities**, not ~8,100 (an
+  old note quoted without checking; fixed in this file, and the CTO and CMO
+  were told).
+
+First hour vs the hour before (Loki service=traefik, access log 400-599,
+host trafico.live):
+
+| | before | after |
+|---|---|---|
+| `/espana` | 404×1, 502×1 | 404×3, 5xx 0 |
+| `/municipio` | 404×34 | 404×20 |
+| `/provincias` | 404×18 | 404×11 |
+
+All 34 404s afterwards were pre-existing patterns. The CTO closed #97 and
+ordered three follow-ups (below).
+
+**Item: internal links to final URLs.** With #97 every `/provincias/<code>`
+link became a 301 hop: 23 of them, incl. the nav's Madrid/Barcelona/
+Valencia/Sevilla.
+- All now use `provincePath(code)` from `src/lib/geo/geo-paths.ts` (the
+  production-generated table), with `/espana` as the fallback.
+- `radares/provincia/[province]` built `/provincias/<name-slug>`, a real 404
+  today; it now uses the province code.
+- `/ciudad` linked `/municipio/<slug>`. Five of its 20 slugs (palma, alicante,
+  vitoria, san-sebastian, pamplona) don't exist in `Municipality`, so those
+  cards were broken. Each card now has its canonical path (resolver output +
+  DB slugs such as `vitoria-gasteiz`, `palma-de-mallorca`), all 20 checked
+  200 + self-canonical in prod.
+- The sitemap now also lists the 5 province pages of single-province
+  communities (`/espana/cantabria/cantabria`…), which are self-canonical and
+  are where `/provincias/39` redirects. priority.xml 490 → 495.
+
+eslint on the 16 files = main (8 warnings, 0 errors); web `tsc` identical to
+baseline after one null guard (`radares` `item.province`).
+
+**Verify after deploy:**
+- nav + one page per edited template carry no `/provincias/` href;
+- `/ciudad` cards → 200 without a hop;
+- `/radares/provincia/madrid` links `/espana/comunidad-de-madrid/madrid`.
+
+**Next, in the CTO's order (2026-10-19, after #97):**
+- **(b)** `/provincias/<code>/<sub>` (combustible, radares, carga-ev,
+  intensidad seen in Traefik 404s) → 301 to `/espana/<c>/<p>/<sub>` **only
+  where that subpage exists and is 200**. Otherwise stay 404: no fallback to
+  the province page (that would be a soft 404).
+- **(a)** `/municipio/<slug>-<NN>` → strip `-NN` **only if** the clean slug
+  exists **and** NN is that municipality's province code. Otherwise 404.
+- **(c)** `/espana/canarias/santa-cruz-de-tenerife/trenes` 404 (×2): if
+  Tenerife has no stations, drop "trenes" from that province's links and
+  sitemap instead of serving an empty page.
+
+For each: test 2-3 real paths from the 404 list plus the 404 path, and
+measure after the deploy in the same format.
+
+---
+
 ## Cycle 2026-10-19 (19) — /provincias and /municipio duplicates now 301 to /espana (the resolver had always been 401'd)
 
 **Cycle 18 verified (PR #96 → `de18eb38`, deploy 10:20 local):**
@@ -107,7 +172,7 @@ succeed.**
 - The same resolver backs `/municipio/<slug>`, which also served 200:
   `/municipio/alcala-de-henares` and
   `/espana/comunidad-de-madrid/madrid/alcala-de-henares` both 200,
-  self-canonical and indexable. That's **~8,100 duplicate pairs**, and the
+  self-canonical and indexable. That's **3,459 duplicate pairs** (first written as ~8,100; corrected after the deploy), and the
   municipality sitemap shards listed the `/municipio/` form, while every
   internal link uses `/espana` (117 anchors on the Madrid province page, 0
   to `/municipio/`).
@@ -131,8 +196,8 @@ succeed.**
   evicted first. 404s aren't cached, so random slugs can't grow it.
 - **Sitemaps:** municipality shards now list
   `/espana/<community>/<province>/<municipality>`, so they don't fill with
-  8,100 redirects.
-- **CMO:** told before the deploy (~8,100 + 43 301s and the sitemap change;
+  3,459 redirects.
+- **CMO:** told before the deploy (3,459 + 43 301s and the sitemap change;
   resubmit + watch indexing).
 
 **Noted, not changed:** `src/lib/chat-tools.ts` sends `x-internal: 1` to
@@ -1244,7 +1309,7 @@ belong to `/provincias`, `/carreteras/*/*` and `/noticias` — never to a
 per-entity page.
 
 **Uncomfortable corollary for this loop's own history:** the L3 "crawl rollout"
-recorded above built inbound paths for municipios (~8,100), codigo-postal
+recorded above built inbound paths for municipios (3,459; corrected 2026-10-19), codigo-postal
 (~4,600), carga-ev (500/city) and meteo (949) — *precisely the templates with
 zero impressions*. Making invisible pages crawlable did not make them visible.
 Crawlability was never the binding constraint; demand was.

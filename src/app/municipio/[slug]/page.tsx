@@ -25,6 +25,7 @@ import {
   NewsSection,
   V16Section,
 } from "@/components/location/sections";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 // Force dynamic SSR (builds run without DATABASE_URL, ISR caches empty results)
 export const dynamic = "force-dynamic";
@@ -116,7 +117,7 @@ export default async function MunicipioPage({ params }: Props) {
     provinceCode,
     municipalityCode: munCode,
     parentName: provinceName,
-    parentHref: `/provincias/${provinceCode}`,
+    parentHref: (provincePath(provinceCode) ?? "/espana"),
     population: population ?? undefined,
     area: area !== null ? Number(area) : undefined,
     center:
@@ -128,7 +129,7 @@ export default async function MunicipioPage({ params }: Props) {
   const breadcrumbs = [
     { label: "Inicio", href: "/" },
     { label: "España", href: "/espana" },
-    { label: provinceName, href: `/provincias/${provinceCode}` },
+    { label: provinceName, href: (provincePath(provinceCode) ?? "/espana") },
     { label: name, href: `/municipio/${slug}` },
   ];
 

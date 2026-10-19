@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { postalCodeTitle, postalCodeDescription } from "@/lib/seo/text-generators";
 import { Fuel, Zap, MapPin, Building2, TrendingDown, ArrowRight, Navigation } from "lucide-react";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -180,7 +181,7 @@ export default async function CodigoPostalPage({ params }: Props) {
         <Breadcrumbs
           items={[
             { name: "Inicio", href: "/" },
-            { name: provinceName, href: `/provincias/${provinceCode}` },
+            { name: provinceName, href: (provincePath(provinceCode) ?? "/espana") },
             { name: municipalityName, href: "/municipio" },
             { name: `CP ${cp}`, href: `/codigo-postal/${cp}` },
           ]}
@@ -435,7 +436,7 @@ export default async function CodigoPostalPage({ params }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {provinceCode && (
                 <Link
-                  href={`/provincias/${provinceCode}`}
+                  href={(provincePath(provinceCode) ?? "/espana")}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                 >
                   <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400" />

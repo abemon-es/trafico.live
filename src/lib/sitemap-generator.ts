@@ -1589,8 +1589,9 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // these were /provincias/<code> (a self-canonical duplicate of the /espana
   // page) and /comunidad-autonoma/<slug> (308 → /espana/<slug>), and no
   // /espana/<community>[/<province>] URL was in any sitemap. Single-province
-  // communities (Cantabria, La Rioja, Navarra, Ceuta, Melilla) are the
-  // community page itself.
+  // communities have both pages (/espana/cantabria and
+  // /espana/cantabria/cantabria, each self-canonical); the province one is
+  // where /provincias/39 redirects, so both are listed.
   const communityPages: SitemapEntry[] = [
     ...new Set(Object.values(PROVINCE_SLUG_TO_COMMUNITY_SLUG)),
   ].map((community) => ({
@@ -1601,7 +1602,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   }));
 
   const provincePages: SitemapEntry[] = Object.entries(PROVINCE_SLUG_TO_COMMUNITY_SLUG)
-    .filter(([province, community]) => province !== community)
     .map(([province, community]) => ({
       url: `${BASE_URL}/espana/${community}/${province}`,
       lastModified: today,

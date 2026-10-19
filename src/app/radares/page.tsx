@@ -8,6 +8,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import LinkDirectory from "@/components/seo/LinkDirectory";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -272,7 +273,7 @@ export default async function RadaresPage() {
                         <div className="flex items-center gap-2">
                           <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                           <Link
-                            href={`/provincias/${item.province}`}
+                            href={((item.province ? provincePath(item.province) : null) ?? "/espana")}
                             className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
                           >
                             {provinceName}
