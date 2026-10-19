@@ -266,7 +266,7 @@ expect_status 200 "/accidentes/madrid"
 expect_status 200 "/accidentes/zaragoza"
 expect_status 200 "/atascos/madrid"
 expect_status 200 "/atascos/barcelona"
-expect_status 200 "/sobre/citaciones-ia"
+expect_status 308 "/sobre/citaciones-ia" no   # removed 2026-10-19 → /sobre
 expect_status 200 "/sobre/posicionamiento"
 
 # -----------------------------------------------------------------------------
@@ -331,8 +331,6 @@ esac
 expect_json_field "/api/health" '["db"]["ok"]' "true"
 expect_json_field "/api/health" '["redis"]["ok"]' "true"
 
-# Public dashboards
-expect_status 200 "/api/sobre/citaciones-ia"
 
 # /api/search — accept 200 (Typesense up) or 503 (degraded, also OK per design)
 expect_status_one_of "200,503" "/api/search?q=madrid"

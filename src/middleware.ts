@@ -189,44 +189,9 @@ export async function middleware(request: NextRequest) {
           ua: userAgent.slice(0, 200),
         })
       );
-
-      // Fire-and-forget to Node-runtime API so Prisma can persist the visit.
-      // We do NOT await — the bot visit log must never delay the actual response.
-      // Skip /api/* paths to avoid noise from internal API calls, and skip
-      // entirely without BOT_VISIT_SECRET (no fallback: the repo is public).
-      const internalSecret = process.env.BOT_VISIT_SECRET;
-      if (!pathname.startsWith("/api/") && internalSecret) {
-        const rawIp =
-          request.headers.get("cf-connecting-ip") ||
-          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-          "";
-        // Store only first two octets (e.g. "1.2") — no PII
-        const ipPrefix = rawIp.includes(".")
-          ? rawIp.split(".").slice(0, 2).join(".")
-          : rawIp.includes(":")
-          ? rawIp.split(":").slice(0, 2).join(":")
-          : null;
-
-        const origin = request.nextUrl.origin;
-
-        fetch(`${origin}/api/internal/bot-visit`, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            "x-internal-secret": internalSecret,
-          },
-          body: JSON.stringify({
-            bot: botName,
-            path: pathname,
-            statusCode: 200,
-            ip: ipPrefix,
-            country: country === "?" ? null : country,
-            userAgent: userAgent.slice(0, 500),
-          }),
-        }).catch(() => {
-          // Swallow all errors — observability must not affect production traffic
-        });
-      }
+      // This Loki line is the only record. The per-visit write to
+      // /api/internal/bot-visit was removed on 2026-10-19: it never stored a
+      // row (our own API auth returned 401 to it) and was attack surface.
     }
   }
 

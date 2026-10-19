@@ -1156,12 +1156,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.5,
     },
     {
-      url: `${BASE_URL}/sobre/citaciones-ia`,
-      lastModified: today,
-      changeFrequency: "daily",
-      priority: 0.6,
-    },
-    {
       url: `${BASE_URL}/sobre/posicionamiento`,
       lastModified: today,
       changeFrequency: "daily",
