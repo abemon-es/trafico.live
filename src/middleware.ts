@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { authenticateRequest } from "./lib/auth";
 import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "./lib/geo/province-slugs";
+import { provincePath } from "./lib/geo/geo-paths";
+import { PROVINCES } from "./lib/geo/ine-codes";
+import { provinceSlug } from "./lib/geo/slugify";
 // S0 launch: T4.1c tier enforcement disabled in middleware — uses
 // rate-limiter-flexible which is not Edge-runtime compatible. Enforcement
 // will move to Node API route handlers in S1. See src/lib/tier-enforcement.ts.
@@ -93,6 +96,46 @@ async function resolveSlugToGeoPath(slug: string): Promise<string | null> {
     return data.path;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Old /provincias/<code>/<sub> URLs still requested (Traefik 404s, 7 d to
+ * 2026-10-19: combustible 11, carga-ev 11, intensidad 8, radares 7, camaras 7,
+ * incidencias 3). Only subs with a same-content page today are mapped. The
+ * rest have no per-province page and stay 404.
+ */
+function legacyProvinceSubpage(code: string, sub: string): string | null {
+  const padded = code.padStart(2, "0");
+  if (sub === "combustible") {
+    const base = provincePath(padded);
+    return base ? `${base}/combustible` : null;
+  }
+  if (sub === "radares") {
+    const province = PROVINCES.find((p) => p.code === padded);
+    return province ? `/radares/provincia/${provinceSlug(province.name)}` : null;
+  }
+  return null;
+}
+
+// Whether a mapped target answers 200, checked once on this server (2 s
+// timeout) and cached. The key space is bounded (52 codes × 2 subs), so a 404
+// is cached too; a timeout or 5xx is not.
+const targetStatusCache = new Map<string, boolean>();
+async function answers200(path: string): Promise<boolean> {
+  const cached = targetStatusCache.get(path);
+  if (cached !== undefined) return cached;
+  try {
+    const res = await fetch(`${INTERNAL_ORIGIN}${path}`, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(2000),
+    });
+    if (res.status === 200 || res.status === 404) {
+      targetStatusCache.set(path, res.status === 200);
+    }
+    return res.status === 200;
+  } catch {
+    return false;
   }
 }
 
@@ -197,6 +240,17 @@ export async function middleware(request: NextRequest) {
     const geoPath = await resolveSlugToGeoPath(`_province:${code}`);
     if (geoPath) {
       return NextResponse.redirect(`${origin}${geoPath}${search}`, 301);
+    }
+  }
+
+  // Legacy /provincias/<code>/<sub> → the page with that same content, but
+  // only when it answers 200. Otherwise the request falls through to today's
+  // 404: no fallback to the province page, which would be a soft 404.
+  const provSubMatch = pathname.match(/^\/provincias\/(\d{1,2})\/([a-z-]+)\/?$/);
+  if (provSubMatch) {
+    const target = legacyProvinceSubpage(provSubMatch[1], provSubMatch[2]);
+    if (target && (await answers200(target))) {
+      return NextResponse.redirect(`${request.nextUrl.origin}${target}${search}`, 301);
     }
   }
 

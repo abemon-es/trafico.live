@@ -75,6 +75,57 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (21) — legacy /provincias/<code>/<sub> 301s where a same-content page exists (CTO follow-up b)
+
+**Cycle 20 verified (PR #98 → `269d9d2f`, 10:42Z):**
+- 0 `/provincias/` hrefs on `/`, a camera, a gas station, `/carreteras/A-7`,
+  `/radares`, `/puntos-negros`, `/radares/provincia/madrid`, `/ciudad`,
+  `/andorra` and `/portugal`.
+- `/radares/provincia/madrid` links `/espana/comunidad-de-madrid/madrid`.
+- `/ciudad`: 72 `/espana` links, all 200; 0 `/municipio` links.
+- priority.xml: 495.
+
+**Signal:** Traefik 404s on `/provincias/<code>/<sub>`, 7 d to 2026-10-19:
+
+| sub | 404s |
+|---|---|
+| combustible | 11 |
+| carga-ev | 11 |
+| intensidad | 8 |
+| radares | 7 |
+| camaras | 7 |
+| incidencias | 3 |
+
+The CTO's rule: 301 only where the destination exists and answers 200,
+otherwise 404. No fallback to the province page (that would be a soft 404).
+
+**Change (middleware):** `legacyProvinceSubpage(code, sub)` maps only the
+subs with a same-content page today:
+- `combustible` → `/espana/<c>/<p>/combustible`;
+- `radares` → `/radares/provincia/<slug>`: the same content (radars in that
+  province) on another route, flagged to the CTO.
+
+`intensidad`, `incidencias`, `camaras` and `carga-ev` have no per-province
+page, so they stay 404.
+
+`answers200(target)` GETs the target on loopback (2 s timeout, `redirect:
+manual`) and only a 200 redirects. 200/404 results are cached; the key space
+is bounded at 52 × 2. Timeouts and 5xx are not cached. Pre-checked in prod:
+huelva / cantabria / zamora `combustible` and ciudad-real / huelva / cantabria
+`radares` are all 200 in < 0.16 s.
+
+eslint clean; web `tsc` identical to baseline.
+
+**Verify after deploy:**
+- `/provincias/21/combustible` → 301 `/espana/andalucia/huelva/combustible`;
+- `/provincias/13/radares` → 301 `/radares/provincia/ciudad-real`;
+- `/provincias/39/combustible` → 301;
+- `/provincias/21/carga-ev` → 404;
+- `/provincias/99/combustible` → 404;
+- the hour after vs the hour before, same Traefik source.
+
+---
+
 ## Cycle 2026-10-19 (20) — internal links go straight to /espana (23 links + the /ciudad cards)
 
 **Cycle 19 verified (PR #97 → `6fbe8dd0`, container 09:31:29Z):**
