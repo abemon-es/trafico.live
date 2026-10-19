@@ -18,7 +18,7 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { TransporteHeroMap } from "./TransporteHeroMap";
+import { TransporteHeroMap } from "../TransporteHeroMap";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy

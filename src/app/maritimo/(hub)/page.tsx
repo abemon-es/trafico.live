@@ -21,7 +21,7 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { MaritimoHeroMap } from "./MaritimoHeroMap";
+import { MaritimoHeroMap } from "../MaritimoHeroMap";
 
 export const revalidate = 300;
 

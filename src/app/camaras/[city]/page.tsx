@@ -92,7 +92,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const count = await prisma.camera.count({
       where: { name: { contains: locationName, mode: "insensitive" }, isActive: true },
     });
-    if (count === 0) return { title: "Cámaras no encontradas" };
+    // No camera matches this slug: the page calls notFound(). noindex here as
+    // well, so a soft-200 copy can never be indexed (until 2026-10-19 the
+    // /camaras loading.tsx made notFound() answer 200 + "index").
+    if (count === 0) return { title: "Cámaras no encontradas", robots: { index: false, follow: true } };
     return {
       title: `Cámaras ${titleLocation} | Tráfico DGT en vivo`,
       description: `${count} cámara${count > 1 ? "s" : ""} de tráfico DGT en ${titleLocation}. Imagen actualizada periódicamente. Estado del tráfico ahora.`,
