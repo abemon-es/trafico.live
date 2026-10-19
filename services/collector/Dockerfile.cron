@@ -19,7 +19,15 @@ RUN npx prisma generate --no-hints
 # Using esbuild (already present via tsx) instead of tsc: we only need type
 # stripping, and esbuild doesn't refuse to emit when unrelated files in the
 # same dir have missing Next.js deps.
-COPY src/lib/ /src/lib/
+# Only the src/lib files the collectors import (static + dynamic, and what
+# those import in turn). Copying all of src/lib meant any web change there
+# (e.g. src/lib/geo) changed this image, so the deploy recreated every
+# collector container and killed in-flight cron jobs (aemet-forecast,
+# 2026-10-19 13:09Z). scripts/check-src-lib.mjs, run below in the runtime
+# stage, fails the build if a collector imports a src/lib file missing here.
+COPY src/lib/alert-matcher.ts src/lib/bluesky.ts src/lib/db.ts src/lib/redis.ts \
+     src/lib/social-broadcast.ts src/lib/telegram.ts src/lib/web-push.ts src/lib/x-api.ts /src/lib/
+COPY src/lib/email/ses.ts /src/lib/email/
 RUN for f in /src/lib/*.ts; do \
       [ -f "$f" ] || continue; \
       out="${f%.ts}.js"; \
@@ -74,6 +82,11 @@ COPY services/collector/ ./
 #      /src/lib → /app/src/lib so the four-up import resolves unchanged.
 COPY --from=builder /src/lib/ /app/src/lib/
 RUN mkdir -p /src && rm -rf /src/lib && ln -s /app/src/lib /src/lib
+
+# Gate: every src/lib import of the collectors must resolve inside the image
+# (the src/lib COPY in the builder stage is an explicit list). Fails the build
+# before the blue/green swap, so a missing file never reaches the containers.
+RUN node scripts/check-src-lib.mjs /app
 
 # Copy ALL crontabs, select at runtime via CRONTAB_TIER env
 COPY services/collector/crontabs/ ./crontabs/
