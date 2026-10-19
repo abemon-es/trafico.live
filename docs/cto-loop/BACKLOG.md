@@ -75,6 +75,118 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (16) — the Loki error count now counts errors (and caught weekly-digest on its first hour)
+
+**Cycle 15 verified (PR #90 → `ebf5ae85`, web serving 06:05:44Z):**
+- nearby Madrid gas_stations: total=20 (was 0);
+- nearby 42.4293,-8.6427 risk_zones: total=3 ("Zona de riesgo N-550");
+- `/api/search?q=N-550`: "Zonas de riesgo" 3, alongside cameras/radars/etc.
+
+**Out of cycle, at the CTO's request (CTO reviewed and merged each one):**
+- **#91 `26c6aba0`**:
+  - a POST to a page returns 405 `Allow: GET, HEAD` in the middleware (not
+    /api/*, not the Sentry tunnel `/monitoring`);
+  - `trustHost: true` in auth-config.
+
+  Trigger: a scanner's POST / → 500 (React2Shell-style Server Action probes,
+  05:50Z). Verified 06:20Z: POST / 405 · GET / 200 · `/api/auth/session` 200
+  `null` · POST /monitoring not 405. The 05:54Z session 500 from 10.0.22.1
+  was our own probe (compute loopback enters through Traefik).
+- **#92 `db9e4e8b`**: the bot-visit secret only from `BOT_VISIT_SECRET`
+  (the CTO put it in the env); missing → 503, wrong → 403, compared with
+  `safeCompare`. It used to fall back to a constant in a PUBLIC repo with the
+  variable unset. Verified 06:30Z: 401/403/403, never 200.
+- **#93 `e870a23a`**, CTO's option (a):
+  - removed `/api/internal/bot-visit` + its middleware fetch, and
+    `/api/sobre/citaciones-ia`;
+  - `/sobre/citaciones-ia` 308 → `/sobre`, removed from the sitemap and from
+    internal links;
+  - the footer's 404 links fixed (`/citaciones-ia` removed, `/posicionamiento`
+    → `/sobre/posicionamiento`).
+
+  Why: `bot_visits` never had a row (our own API auth 401'd the middleware
+  fetch), so the public page published "0 AI-bot visits" while Loki shows
+  ~10.4k/day. Verified 06:42Z: 404 · 404 · 308 · 0/18 sitemap shards ·
+  `/sobre` 200. `BotVisit`/`bot_visits` kept (no migration). The CTO removed
+  `BOT_VISIT_SECRET` from the env afterwards. Rollup or DROP → ESCALATIONS.
+
+**Daily — traffic (SeoSnapshot 04:00Z) + GlitchTip (project 9):**
+- **GSC 30 d:** 10 clicks · 1,198 impressions · avg position **46.0**. It
+  moved 47.6 → 46.0 over 8 days, a slow drift and not a trend change. The top
+  page is `/` (350 impressions, position 51); the rest are long-tail
+  (`/camaras/carretera/A-62` position 20, `/atascos/*` 17-46).
+- **GA4 30 d:** 1,316 sessions (flat; 1,194-1,355 across the week); last 7
+  days 29-54/day with one 98 (13/10).
+  - The Bing index is ~75 % of sessions: bing 619 + yahoo 166 + ddg 99 +
+    ecosia 85 + qwant 11.
+  - Direct 175 · **ChatGPT 104** (the AI assistant is the third channel) ·
+    Google organic 4.
+  - Devices: desktop 809, mobile 505 (38 %).
+
+  Nothing new for the CMO thread: H3 (Google barely crawls) is still the
+  dominant explanation.
+- **GlitchTip:** 100+ unresolved, 5 active in 24 h, 1 new in 24 h.
+  - TRAFICO-LIVE-3 (n=14,310) and HE/HD (panel 404s) are pre-cycle-1 and
+    stale; they need resolving in the UI (the token is read-only).
+  - **IH** "Expected RSC response" (+2 at 05:50Z) was the scanner. #91's 405
+    should end it; watch for a new event.
+  - **II** contact form not delivered: waiting on the CTO's SES.
+  - **IG** ArcGIS 499 (n=423): `transit-rt-valencia`, the known L1.
+  - No new issue caused by our changes.
+
+**Signal:** "top loki error sources" had 76/h for collector-realtime with
+nothing failing there.
+**Item (L0, queued since cycle 12): the Loki error count in
+`bin/cto-signals.sh` is keyed on what an error looks like.**
+- Measured on 6 h of lines (943 candidates): the old `(?i)error` counted
+  764. ~80 % were count summaries:
+  - renfe "skipped (no coords/error): N" ×340;
+  - health-check "Errors: 0";
+  - "(N errors)";
+  - a Node DeprecationWarning "prone to errors".
+- It also *missed* aemet-forecast's JSON `"level":"error"`, Auth.js
+  `[auth][error]` and Next's `⨯ Error [InvariantError]`.
+- **The new matcher counts:** `Error:` (TypeError/ImportError included),
+  `Error [`, `[error]`, failed/failure, fatal, exception, unhandled, rejected,
+  out of memory, killed, and a JSON or supercronic `level=error`.
+- **It ignores:** zero counters (`errors: 0`, `0 failed`, plural only:
+  "ImportError: 0 documents imported" is a real failure and was being dropped
+  by a first draft), backoff/retry notices, and Next's "Read more:" links.
+- It is written without backslashes because it crosses bash → ssh → LogQL.
+- Live result: collector-realtime **76 → 15/h**. The 15 are real: Barcelona
+  sections 12, Renfe `fetch failed`. Also the trafico-postgres
+  `relation "BotVisit" does not exist` from our own probe.
+- The second Loki-ish probe (`docker logs | grep error|failed…`, context
+  lines) is unchanged on purpose: it shows lines, it doesn't count them.
+
+**Caught by the new count within the hour — `weekly-digest` fails every
+Monday:**
+- 07:00Z (09:00 container time) `level=error "error running command: exit
+  status 1"` · "Unknown task: weekly-digest". Same defect as monthly-report
+  (cycle 11): the cron line exists and `tasks/weekly-digest/` exists, but the
+  dispatcher's `VALID_TASKS` doesn't list it.
+- Cron vs dispatcher audit: 50 cron tasks, 62 registered, **weekly-digest is
+  the only unregistered one**.
+- Registering it would email subscribers, and the newsletter is already an
+  ESCALATION (two systems, no sender, no unsubscribe), so not unilaterally.
+  Noted there.
+- Next-cycle default: comment the cron line out with a DISABLED note, as for
+  monthly-report, so it stops failing (and paging TRAFICO-LIVE-3-style) every
+  Monday.
+
+**Next, bottom-up:**
+- L0: the weekly-digest cron line (above).
+- L1:
+  - Barcelona (sections) 502;
+  - `transit-rt-valencia` ArcGIS 499;
+  - dispatcher fallback `ok` → `partial` after per-task heartbeats;
+  - typesense-sync delta loaders (nonexistent fields; Redis key never found);
+  - NAP 404s.
+- L2: segment `loading.tsx` soft 404s; hero LCP; the "Globe View 3D" claim.
+- L3: priority sitemap, real lastmod, IndexNow, dated hub text.
+
+---
+
 ## Cycle 2026-10-19 (15) — "near me" search returned nothing for any collection
 
 **Cycle 14 verified (PR #89 → `051fa4ab`, collector-fuel recreated
@@ -2118,6 +2230,33 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
    Loop default until then: leave it as is (indexing and reach of `/login`
    and `/alertas` not yet measured).
 
+   Update 2026-10-19:
+   - `trustHost` is fixed (#91), so `/api/auth/session` answers 200 `null`
+     instead of 500.
+   - Turning login on also means running the 4-table migration, and
+     migrations don't run at deploy today (ESCALATIONS 00,
+     `MIGRATE_DATABASE_URL` has no DDL rights). (a) therefore needs that
+     credential too, or a one-off migration run by the CTO.
+
+0. **AI-citations page: bring it back on a daily Loki rollup, or drop the
+   table? — OPEN, awaiting MJ (raised 2026-10-19, CTO agreed).** Step 1 of
+   the CTO's option (a) shipped in #93:
+   - `/sobre/citaciones-ia` and its API are gone;
+   - the page published "0 AI-bot visits" from a `bot_visits` table that
+     never got a row.
+
+   The volume argues for a page: Loki `ai_bot_visit` ≈ **10.4k AI-bot visits
+   a day** (7.3k-13.7k, peak 219/min). By bot (24 h): OAI-SearchBot 3.5k ·
+   Bytespider 1.9k · PerplexityBot 1.1k · Applebot 584 · ChatGPT-User 147.
+
+   Decide:
+   - (a′) **yes**: a bot × day table plus a daily collector that queries Loki
+     (~12 rows/day, no per-hit write, nothing exposed), and the page
+     rebuilt on it. It is also brand/SEO content, so the CMO should weigh in.
+   - **no**: DROP `bot_visits` in its own PR.
+
+   Until then the model and the empty table stay.
+
 0. **Municipal offer "desde 499 €/mes" sells a product that does not exist —
    OPEN, awaiting MJ (raised 2026-10-19).** Every `/ayuntamiento/<slug>` page
    (`MunicipalDashboard.tsx` ~L88-100) offers a branded portal "con informes
@@ -2154,6 +2293,12 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
    to provision Resend or take the forms down until there is a sender. The loop
    should not pick this unilaterally — switching the live form to the
    unconfigured system would break signups outright.
+
+   Update 2026-10-19: the Monday `weekly-digest` cron (`0 9 * * 1`) has never
+   run. The dispatcher doesn't register the task ("Unknown task: weekly-digest",
+   exit 1, every Monday). So no digest has ever gone out. That's correct given
+   the above, but it fails loudly each week. The loop will comment the line out
+   with a DISABLED note, as for monthly-report, until this is decided.
 
 
 
