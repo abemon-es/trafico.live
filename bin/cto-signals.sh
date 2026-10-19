@@ -384,7 +384,7 @@ if (( PRETTY )); then
     "",
     "degraded collectors:",
     (.degraded_collectors[]? |
-      "  \(if .silent_failure then "[SILENT] " else "" end)\(.task)  status=\(.status) stale=\(.stale) age=\(.ageSeconds)s  \(.errorMessage // "")"),
+      "  \(if .silent_failure then "[SILENT] " else "" end)\(.task)  status=\(.status) stale=\(.stale) age=\(.ageSeconds)s  \(.errorMessage // "")\(if (.meta | type) == "object" and .meta.runStartedAt then "  run started \(.meta.runStartedAt), not finished (running, or killed mid-run)" else "" end)"),
     "",
     "top loki error sources (1h):",
     (.loki_errors_1h[]? | "  \(.container): \(.errors_1h)"),

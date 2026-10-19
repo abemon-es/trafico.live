@@ -9,9 +9,9 @@
  *      → returns { datos: "https://..." }
  *   2. GET datos URL → returns forecast JSON array
  *
- * Rate limit: AEMET free tier = ~50 req/min (actually 1 req/s sustained is safe).
- * Each municipio = 2 requests (step-1 + step-2), so 200 municipios = ~400 req.
- * At 1 req/s with 1100ms sleep → ~400s ≈ 7 min total (well under 15 min cap).
+ * Rate limit: each municipio = 2 requests (step-1 + step-2), ~394 per run.
+ * Paced at 2 s (~30 req/min, ~13 min per run), slowing down after any quota
+ * hit; see BASE_PACE_MS below.
  *
  * Source: AEMET OpenData — https://opendata.aemet.es/opendata/api
  * Cadence: every 6h (cron managed by team3-3.1)
@@ -26,7 +26,21 @@ import { dirname, join } from "path";
 
 const TASK = "aemet-forecast";
 const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
-const RATE_LIMIT_MS = 1500; // was 1100 — slower pace stays under AEMET's per-minute quota
+// Pause between AEMET requests. 1500 ms (~40 req/min) still hit the quota about
+// every 2 minutes for the whole run (2026-10-19: 25 municipios lost, ~50 min
+// per run because of the 30 s backoffs). That made each run long enough for a
+// collectors deploy to kill it mid-way. Start at 2 s (~30 req/min, ~13 min per
+// run) and slow down 25 % after every quota hit (429, or AEMET's quota-500), up
+// to 4 s.
+const BASE_PACE_MS = 2000;
+const MAX_PACE_MS = 4000;
+let paceMs = BASE_PACE_MS;
+let quotaHits = 0;
+
+function onQuotaHit(): void {
+  quotaHits++;
+  paceMs = Math.min(Math.round(paceMs * 1.25), MAX_PACE_MS);
+}
 // 30 s, not 5 s: AEMET returns 500 (not 429) when its per-minute quota is
 // exhausted, and a 5 s retry lands inside the same quota window — which is why
 // 63 of 77 "failing" municipios were identical across the 15:00 and 21:00 runs
@@ -170,9 +184,11 @@ async function fetchWithRetry(
   if (res && res.status === 404) return res; // definitive, not transient
 
   const status = res?.status ?? "network";
+  if (status === 429 || (typeof status === "number" && status >= 500)) onQuotaHit();
   logJson("warn", `${step} transient failure (${status}), retrying after backoff`, {
     endpoint,
     backoff_ms: backoffMs,
+    pace_ms: paceMs,
   });
   await sleep(backoffMs);
 
@@ -210,7 +226,7 @@ async function aemetFetch<T>(endpoint: string, apiKey: string): Promise<T | null
     return null;
   }
 
-  await sleep(RATE_LIMIT_MS);
+  await sleep(paceMs);
 
   const step2Res = await fetchWithRetry(step1Body.datos, endpoint, "Step2", RETRY_BACKOFF_MS * 2);
   if (!step2Res) return null;
@@ -297,6 +313,8 @@ function parseGust(rachaMax?: Array<{ periodo?: string; value?: number | string 
 // ──────────────────────────────────────────────────────────────────────────────
 
 export async function run(prisma: PrismaClient): Promise<void> {
+  paceMs = BASE_PACE_MS;
+  quotaHits = 0;
   const apiKey = process.env.AEMET_API_KEY;
   if (!apiKey) {
     logError(TASK, "AEMET_API_KEY not set — skipping");
@@ -333,7 +351,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
       errors++;
       failedCodes.push(mun.code);
       logJson("warn", "No data returned", { municipio: mun.code, status: "skip" });
-      await sleep(RATE_LIMIT_MS);
+      await sleep(paceMs);
       continue;
     }
 
@@ -343,7 +361,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     if (!dias.length) {
       skipped++;
       logJson("info", "Empty forecast", { municipio: mun.code, status: "empty" });
-      await sleep(RATE_LIMIT_MS);
+      await sleep(paceMs);
       continue;
     }
 
@@ -472,7 +490,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
       duration_ms,
     });
 
-    await sleep(RATE_LIMIT_MS);
+    await sleep(paceMs);
   }
 
   const totalMs = Date.now() - startMs;
@@ -484,6 +502,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
     skipped,
     errors,
     duration_ms: totalMs,
+    quota_hits: quotaHits,
+    final_pace_ms: paceMs,
     status,
   });
 
@@ -493,6 +513,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
     skipped,
     errors,
     duration_ms: totalMs,
+    quotaHits,
+    finalPaceMs: paceMs,
     failedCodes: failedCodes.slice(0, 120),
   });
 }

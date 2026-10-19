@@ -9,7 +9,7 @@
  */
 import * as Sentry from "@sentry/node";
 import { getPrisma, getPool } from "./shared/prisma.js";
-import { heartbeat } from "./shared/heartbeat.js";
+import { heartbeat, markRunStarted } from "./shared/heartbeat.js";
 
 // Initialize Sentry for collector error tracking
 // GlitchTip uses UUID keys with hyphens; Sentry SDK requires \w+ — strip hyphens
@@ -229,6 +229,9 @@ async function main() {
 
     // Run the primary collector
     const taskModule = await import(`./tasks/${TASK}/collector.js`);
+    // meta.runStartedAt until the task's own heartbeat replaces it: a run that
+    // dies mid-way shows as "started, never finished" instead of a bare stale.
+    await markRunStarted(prisma, TASK!);
     await taskModule.run(prisma);
 
     const collectorElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
