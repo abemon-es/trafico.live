@@ -11,7 +11,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import {
   Thermometer,
   Droplets,
@@ -44,6 +44,7 @@ interface PageProps {
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   try {
     const stations = await prisma.climateStation.findMany({
       where: { isActive: true },

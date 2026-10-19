@@ -25,7 +25,7 @@ import {
   ArrowRight,
   Radio,
 } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import {
@@ -47,6 +47,7 @@ type Props = { params: Promise<{ iata: string }> };
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return PT_AIRPORTS.map((a) => ({ iata: a.iata.toLowerCase() }));
 }
 

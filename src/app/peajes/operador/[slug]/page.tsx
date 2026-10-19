@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { Building2, Route, ArrowRight, ChevronRight } from "lucide-react";
 
@@ -51,6 +51,7 @@ async function getData(slug: string) {
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return Object.keys(OPERATORS).map((slug) => ({ slug }));
 }
 

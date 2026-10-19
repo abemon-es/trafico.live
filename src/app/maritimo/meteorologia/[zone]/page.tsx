@@ -13,7 +13,7 @@ import {
   Wind,
   Eye,
 } from "lucide-react";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { COASTAL_ZONES } from "../page";
@@ -27,6 +27,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // ---------------------------------------------------------------------------
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return COASTAL_ZONES.map((zone) => ({ zone: zone.slug }));
 }
 

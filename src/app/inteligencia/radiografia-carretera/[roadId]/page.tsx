@@ -14,7 +14,7 @@
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import {
   StructuredData,
@@ -342,6 +342,7 @@ async function getRoadProfile(roadId: string) {
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const roads = await prisma.road.findMany({
     where: { totalKm: { not: null } },
     orderBy: { totalKm: "desc" },

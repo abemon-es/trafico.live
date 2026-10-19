@@ -19,7 +19,7 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import {
@@ -40,6 +40,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return OPERATIVO_SLUGS.map((slug) => ({ slug }));
 }
 

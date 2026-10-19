@@ -31,6 +31,7 @@ import {
 } from "@/components/location/sections";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { provinceDescription } from "@/lib/seo/text-generators";
+import { isBuildWithoutDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -72,6 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return PROVINCES.map((p) => ({ code: p.code }));
 }
 

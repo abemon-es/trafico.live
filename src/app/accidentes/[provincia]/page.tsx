@@ -11,7 +11,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { slugify } from "@/lib/geo/slugify";
@@ -143,6 +143,7 @@ export const dynamicParams = true;
 export const revalidate = 300;
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return PROVINCES.map((p) => ({ provincia: p.slug }));
 }
 

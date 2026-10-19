@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import CiudadCargaEVContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import LinkDirectory from "@/components/seo/LinkDirectory";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -76,6 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return Object.keys(CITIES).map((ciudad) => ({ ciudad }));
 }
 

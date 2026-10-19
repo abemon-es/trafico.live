@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import {
   CORRIDORS,
   getCorridorBySlug,
@@ -43,6 +43,7 @@ type Props = {
 };
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return getAllCorridorSlugs().map((slug) => ({ slug }));
 }
 

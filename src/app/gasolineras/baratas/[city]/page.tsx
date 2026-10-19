@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { MapPin, Clock, TrendingDown, Fuel, ChevronRight, AlertCircle } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -41,6 +41,7 @@ interface Props {
 }
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return Object.keys(CITIES).map((city) => ({ city }));
 }
 

@@ -7,10 +7,31 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+function isUsableDatabaseUrl(url: string | undefined): url is string {
+  return !!url && !url.includes("placeholder") && !url.includes("localhost:5432/db");
+}
+
+/**
+ * True when there is no real database: the Docker `next build`, where the
+ * client below is a stub that answers every query with nothing.
+ *
+ * Use it as the first line of every DB-backed page's generateStaticParams
+ * (`if (isBuildWithoutDb()) return [];`). A page prerendered from the stub ships
+ * empty, and where "no rows" means notFound() or noindex it ships as a 404 or
+ * a noindex page. That copy is served from the ISR cache after every deploy
+ * until a visit revalidates it, and the visit that triggers it still gets the
+ * stale copy. Seen 2026-10-19: /camaras/<city> served noindex,
+ * /peajes/operador/* served "Página no encontrada". With [] those paths render
+ * on their first request, with data, and are cached from then on.
+ */
+export function isBuildWithoutDb(): boolean {
+  return !isUsableDatabaseUrl(process.env.DATABASE_URL);
+}
+
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
-  if (!connectionString || connectionString.includes("placeholder") || connectionString.includes("localhost:5432/db")) {
+  if (!isUsableDatabaseUrl(connectionString)) {
     // During build time (Coolify runs `DATABASE_URL='' next build`),
     // return a lazy proxy that re-checks DATABASE_URL on each access.
     // At runtime, DATABASE_URL is set and we create a real client.

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { vesselSlug } from "@/lib/vessel-utils";
 import {
   Ship,
@@ -252,6 +252,7 @@ function portTypeLabel(type: string): string {
 // ---------------------------------------------------------------------------
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return ZONE_SLUGS.map((zone) => ({ zone }));
 }
 

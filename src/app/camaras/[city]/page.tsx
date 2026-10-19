@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Camera, MapPin, Video, ArrowRight, Radio, AlertTriangle, Route } from "lucide-react";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
@@ -93,6 +93,7 @@ const LOCATION_SLUGS = [
 ];
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return [
     ...Object.keys(CITY_PROVINCES).map((city) => ({ city })),
     ...LOCATION_SLUGS.map((slug) => ({ city: slug })),

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import {
   Package,
   Droplets,
@@ -186,6 +186,7 @@ const FLAG_NAMES: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return CATEGORY_SLUGS.map((category) => ({ category }));
 }
 

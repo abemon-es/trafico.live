@@ -15,7 +15,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
@@ -47,6 +47,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const PAST_YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   try {
     // Get top 200 vessels that have voyages (proven active)
     const topVessels = await prisma.voyage.findMany({

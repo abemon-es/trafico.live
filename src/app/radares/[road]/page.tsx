@@ -12,7 +12,7 @@ import {
   ChevronRight,
   Info,
 } from "lucide-react";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
@@ -109,6 +109,7 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return MAJOR_ROADS.map((road) => ({ road }));
 }
 

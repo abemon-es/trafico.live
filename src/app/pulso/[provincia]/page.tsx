@@ -10,7 +10,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { PROVINCES, PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { slugify } from "@/lib/geo/slugify";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -78,6 +78,7 @@ function resolveProvince(slug: string): ProvinceInfo | null {
 // ---------------------------------------------------------------------------
 
 export function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   return PROVINCES.map((p) => ({
     provincia: slugify(p.name),
   }));

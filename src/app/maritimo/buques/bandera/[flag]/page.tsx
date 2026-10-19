@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import {
   Ship,
   ChevronRight,
@@ -152,6 +152,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string; style?: Re
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
+  if (isBuildWithoutDb()) return [];
   const flags = await prisma.vessel.groupBy({
     by: ["flag"],
     where: { flag: { not: null } },
