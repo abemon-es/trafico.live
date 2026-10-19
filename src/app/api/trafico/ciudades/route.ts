@@ -9,7 +9,9 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/trafico/ciudades
  *
- * City-level real-time traffic sensor data (Barcelona, Valencia, Zaragoza).
+ * City-level real-time traffic sensor data (Barcelona, Valencia).
+ * `city=zaragoza` is still accepted but returns no sensors: the city has not
+ * published live traffic since 2025-03 (see services/collector/tasks/city-traffic).
  * Returns latest reading per sensor.
  *
  * Query Parameters:

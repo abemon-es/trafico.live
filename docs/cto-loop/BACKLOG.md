@@ -75,6 +75,42 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (12) — Zaragoza stopped publishing live traffic in March 2025
+
+**Cycle 11 verified (PR #86 → `ab0956fc`, serving 01:50Z):**
+`/ayuntamiento/madrid/informe` 200 + `noindex, follow` + "Todavía no hay
+informes"; `/ayuntamiento/madrid` has 0 links to `/ayuntamiento`. Overall
+healthy, 0 stale.
+
+**Signal:** `city-traffic` `partial` on every run, "Zaragoza API error: 400"
+(12/h in Loki). The August diagnosis was "upstream NPE, left probing".
+**Finding (2026-10-19):** the endpoint still answers 400
+`java.lang.NullPointerException`; the catalogue entries are gone (zaragoza.es
+catálogo 291 and datos.gob.es `l01502973-estado-del-trafico1` both 404). The
+city's own traffic map loads `zaragoza.es/trafico/estado/estado.json` +
+`tramos_UTM30N_ETRS89.json`, and the state file is **frozen at
+`20250327-114001Z`** with every segment `t` (no data) or `-` (retired). No
+Zaragoza row was ever stored in `CityTrafficSensor` (prod: BARCELONA 1,054,
+VALENCIA 410), so nothing stale was ever shown.
+**Fix:** Zaragoza out of the `city-traffic` source list; the fetcher was
+replaced by a note with the revival recipe (format of both files, UTM 30N,
+"check the timestamp first"). `/api/trafico/ciudades` still accepts
+`city=zaragoza` (no breaking change), its comment and CLAUDE.md say why it's
+empty. Side effect: the pre-existing `tsc` error at city-traffic L518 lived
+in that fetcher; the file now typechecks clean.
+**Verify after deploy:** `city-traffic` reason names only "Barcelona
+(sections)" (1/3 sources), no "Zaragoza" lines in Loki.
+**Next in the same collector:** Barcelona (sections) 502 on every run, the
+last source keeping `city-traffic` `partial`; probe it the same way (portal
+dataset still listed? mirror moved?).
+**Signal quality (L0, small):** the "top loki error sources" count in
+`cto-signals.sh` matches `error|fail` anywhere in the line, so ~60 of 88/h for
+collector-realtime were info lines (`skipped (no coords/error)`,
+`Errors: 0`). Tighten the matcher to real error lines (logError prefix /
+`level=error`) so a rise means something.
+
+---
+
 ## Cycle 2026-10-19 (11) — the monthly report that never ran, and the page that kept promising it
 
 **Cycle 10 verified (PR #85 → `dc25deff`):** `health-check` 01:30Z `ok`,
