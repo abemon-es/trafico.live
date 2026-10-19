@@ -29,7 +29,10 @@
 0 8 * * * TASK=aemet-historical npx tsx index.ts 2>&1
 
 # AEMET 7-day forecast per municipio (4x/day, staggered to avoid peaks) — T3.3
-0 3,9,15,21 * * * TASK=aemet-forecast npx tsx index.ts 2>&1
+# At :20, not :00: `weather` hits the same AEMET key every hour at :00 and
+# maritime-forecast at :10, and their bursts ate the quota in this run's first
+# minute (2026-10-19). ~13 min per run at the 2 s pace.
+20 3,9,15,21 * * * TASK=aemet-forecast npx tsx index.ts 2>&1
 
 # CAMS AQ 5-day forecast per gridpoint (2x/day) — T3.4
 30 6,18 * * * TASK=cams-aq npx tsx index.ts 2>&1

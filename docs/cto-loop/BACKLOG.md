@@ -75,6 +75,60 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (26) — aemet-forecast paced to stay under AEMET's quota; a killed run is marked as such
+
+**Cycle 25 verified (PR #103 → `7148c782`, collectors DEPLOY SUCCESS 17:40:16
+local, 10 s):**
+- The build log shows `RUN node scripts/check-src-lib.mjs /app` →
+  `check-src-lib: ok (9 src/lib files resolved)`.
+- All 6 collectors are running/healthy, started 15:40:15Z.
+- This PR changed the image, so the containers were recreated once.
+
+Baseline for the CTO's real test (the next web-only PR must leave these
+unchanged):
+
+| container | image | started |
+|---|---|---|
+| collector-realtime | `e00703c2bc37` | 15:40:15Z |
+| collector-frequent | `debd058299d7` | 15:40:15Z |
+| collector-fuel | `13fa78484f10` | 15:40:15Z |
+| collector-daily | `b0fdb0dd1b8f` | 15:40:15Z |
+| collector-weekly | `67a0b51401d8` | 15:40:15Z |
+| collector-ais | `b037bd500b82` | 15:40:15Z |
+
+**aemet-forecast recovered:** the manual run finished at 15:38:52Z, partial,
+15/197 errors, 1,274 upserted, 2,606 s; stale=false.
+
+**Item (the CTO's "(2) is yours"), AEMET pacing + a "started" marker:**
+- **Pacing.**
+  - Problem: at 1,500 ms between requests (~40/min), AEMET returned a 429 (or
+    its quota-500) about every 2 min for the whole run. With 30/60 s backoffs
+    a run took 45-50 min and lost 15-25 municipios.
+  - New base: 2,000 ms (~30/min, ~13 min for 197 × 2 requests), slowing
+    down 25 % after each quota hit, up to 4 s.
+  - The heartbeat and the completion log carry `quotaHits` / `finalPaceMs`.
+- **Schedule.** `0 3,9,15,21` → `20 3,9,15,21`: `weather` uses the same AEMET
+  key every hour at :00 (14 s) and maritime-forecast at :10. The first 429
+  came 50 s into each run.
+- **`markRunStarted()`** (`shared/heartbeat.ts`), called by the dispatcher
+  before every task. It writes `meta.runStartedAt` and does not touch
+  `lastRunAt` or `status`. The task's own heartbeat replaces meta, so the
+  marker only survives while a run is in flight or after it died. A run
+  killed by a deploy or OOM still goes stale as it should, but now shows
+  "started X, not finished".
+  - `cto-signals --pretty` prints that next to the collector.
+  - `/api/health` already exposes `meta`, so the sentinel can read it too.
+
+collector `tsc`: aemet-forecast and heartbeat are clean; index.ts = main's 9;
+eslint 0 errors.
+
+**Verify:**
+- The first run after the deploy (19:20Z) gets the CTO's numbers: duration
+  (target < 15 min), 429 count (target 0), failedCodes.
+- `meta.runStartedAt` appears during a run and is gone after.
+
+---
+
 ## Cycle 2026-10-19 (25) — a web PR no longer recreates the collectors (image copies only the 9 src/lib files they use)
 
 **Cycle 24 verified (PR #102 → `6c6c301f`, DEPLOY SUCCESS 16:23:17 local).**
