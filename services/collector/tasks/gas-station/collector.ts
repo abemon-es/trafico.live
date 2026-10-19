@@ -112,6 +112,42 @@ function parseAPIDate(dateStr: string): Date {
   return new Date(year, month - 1, day, hour, minute, second);
 }
 
+// MINETUR sometimes answers 200 with an empty station list right when it
+// rebuilds the data (2 of 24 runs between 2026-10-11 and 10-19: 12/10 13:00 and
+// 19/10 06:00). The old code returned quietly: the dispatcher wrote an `ok`
+// heartbeat, the daily-fuel article was published on the previous evening's
+// prices, and GasStation stayed stale until health-check recovered it.
+const RETRY_DELAYS_S = [60, 120, 180];
+
+async function fetchMinetur(): Promise<{ rawBody: string; data: APIResponse }> {
+  let lastProblem = "";
+  for (let attempt = 0; attempt <= RETRY_DELAYS_S.length; attempt++) {
+    if (attempt > 0) {
+      const wait = RETRY_DELAYS_S[attempt - 1];
+      console.log(`[gas-station] ${lastProblem} — retry ${attempt}/${RETRY_DELAYS_S.length} in ${wait}s`);
+      await new Promise((resolve) => setTimeout(resolve, wait * 1000));
+    }
+    console.log(`[gas-station] Fetching from MINETUR API...`);
+    const response = await fetch(MINETUR_API_URL, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "TraficoLive/1.0 (gas-station-collector)",
+      },
+      signal: AbortSignal.timeout(180000),
+    });
+    if (!response.ok) {
+      lastProblem = `MINETUR API error: ${response.status} ${response.statusText}`;
+      if (response.status < 500) throw new Error(lastProblem); // a 4xx will not fix itself in minutes
+      continue;
+    }
+    const rawBody = await response.text();
+    const data: APIResponse = JSON.parse(rawBody);
+    if (data.ListaEESSPrecio?.length > 0) return { rawBody, data };
+    lastProblem = `MINETUR returned 0 stations (Fecha ${data.Fecha})`;
+  }
+  throw new Error(`${lastProblem} after ${RETRY_DELAYS_S.length + 1} attempts`);
+}
+
 export async function run(prisma: PrismaClient) {
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -128,23 +164,18 @@ export async function run(prisma: PrismaClient) {
 
   // ── 1. Fetch from MINETUR API ──────────────────────────────────────────
 
-  console.log(`[gas-station] Fetching from MINETUR API...`);
-  const response = await fetch(MINETUR_API_URL, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "TraficoLive/1.0 (gas-station-collector)",
-    },
-    signal: AbortSignal.timeout(180000),
-  });
-
-  if (!response.ok) {
+  let fetched: { rawBody: string; data: APIResponse };
+  try {
+    fetched = await fetchMinetur();
+  } catch (err) {
     if (redis) await redis.quit().catch(() => {});
-    throw new Error(`MINETUR API error: ${response.status} ${response.statusText}`);
+    throw err;
   }
+  const { rawBody, data } = fetched;
 
   // Hash the raw response body to detect unchanged payloads.
   // MINETUR updates prices at most 3×/day; this skips re-processing on identical responses.
-  const rawBody = await response.text();
+  // Only a non-empty body gets here, so an empty one is never stored as "unchanged".
   const bodyHash = createHash("md5").update(rawBody).digest("hex");
 
   if (redis) {
@@ -159,16 +190,10 @@ export async function run(prisma: PrismaClient) {
     await redis.quit().catch(() => {});
   }
 
-  const data: APIResponse = JSON.parse(rawBody);
   const stations = data.ListaEESSPrecio;
   const priceUpdateTime = parseAPIDate(data.Fecha);
 
   console.log(`[gas-station] Fetched ${stations.length} stations (prices from ${data.Fecha})`);
-
-  if (stations.length === 0) {
-    console.log("[gas-station] No stations found, exiting");
-    return;
-  }
 
   // ── 2. Parse and validate ──────────────────────────────────────────────
 

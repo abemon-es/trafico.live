@@ -75,6 +75,70 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (14) — MINETUR's empty answer at 06:00 published yesterday's fuel prices as today's
+
+**Cycle 13 verified (PR #88 → `3feb2e1d`, collector-daily recreated
+03:55:35Z):** manual `SYNC_COLLECTION=risk_zones` run → "Synced 1331
+risk_zones", no rejected line; Typesense `risk_zones` found=1331 (was 0);
+`typesense-sync` heartbeat `ok`; overall healthy, 0 stale. The documents only
+carry `road` + `location` (description/province are empty at source; type is
+always `INVIVE`).
+
+**Signal:** `health-check` `partial` at 04:31Z: "GasStation: 630min (SLA
+600min) → recovery: gas-station" (the recovery succeeded, 11,427 stations).
+**Finding:** the 06:00 (04:00Z) cron run got **HTTP 200 with 0 stations**
+from MINETUR ("Fetched 0 stations (prices from 19/10/2026 6:00:09)"), logged
+"No stations found, exiting" and returned. Then:
+- the dispatcher saw no heartbeat and wrote its fallback `ok`;
+- it ran the post-ingestion triggers anyway, so **`daily-fuel` published today's
+  article on the previous evening's prices**;
+- it stored the empty body's hash as the dedup key, so a second empty answer
+  would have been skipped as "unchanged", also `ok`.
+
+Loki over 8 days: 2 of 24 runs empty (12/10 13:00, 19/10 06:00), both on the
+hour, when MINETUR rebuilds.
+**Fix:** `fetchMinetur()` retries an empty list or a 5xx after 60/120/180 s
+(4 attempts, ≤6 min); a 4xx throws at once. Still empty → it throws, so the
+dispatcher records `error`, skips the triggers and exits 1. The dedup hash is
+only computed and stored on a non-empty body. `tsc` 0 errors in the file
+(same as main); eslint 0 errors (1 pre-existing warning, `margin` L88).
+**Verify after deploy:** the 11:00Z run logs "Fetched ~11,4xx stations" and
+heartbeat `ok`; any empty answer shows up as a "retry n/3" line, not as an
+early exit. **Today's daily-fuel article** was generated from 18/10 20:00
+prices. Generators are idempotent by slug, so it won't regenerate itself.
+Left as is (one day, prices move by cents), but flag it to CMO if the
+article is promoted.
+**Pattern, still open (L1):** other collectors that return early on an empty
+feed get the same dispatcher fallback `ok` (aena-stats, dgt-extras,
+alert-matcher, renfe-positions; see older entry). Long-term fix: give each its
+own heartbeat, then make the fallback `partial`.
+
+**Next item (L2, search correctness), found while verifying cycle 13:**
+1. `/api/search/nearby` returns `{results: [], total: 0}` for EVERY
+   collection (gas_stations around central Madrid = 0). The cause is
+   `filter_by: location:(lat, lng, ${radiusM} m)`: Typesense answers "Unit
+   must be either `km` or `mi`". Tested directly, the same filter with
+   `10 km` → found=227. The catch only reports it via `reportApiError`. No
+   page calls the route (grep src: only the route itself), so only the
+   public API / MCP are affected.
+2. The same route sends `query_by: "name"` to every collection. radars,
+   traffic_stations and risk_zones have no `name` field, so Typesense answers
+   "Could not find a field named `name`" for those three even after the unit
+   fix. Use one existing field per collection (radars `roadNumber`,
+   traffic_stations `stationCode`, risk_zones `road`) and map name/subtitle
+   per collection.
+3. `/api/search` (Cmd+K) filters risk_zones by `roadNumber` (road) and
+   `provinceName` (province), but its fields are `road`/`province`. A road
+   query ("N-550", "A-7") errors on that collection, so risk zones never
+   appear (q=A-7 → 0 "Zonas de riesgo"). Fix with a field map per
+   collection; check `src/lib/search-filters.ts:159` as well.
+
+Verify, from compute: nearby around Madrid gas_stations > 0; nearby
+42.4293,-8.6427 risk_zones > 0; `/api/search?q=N-550` includes "Zonas de
+riesgo".
+
+---
+
 ## Cycle 2026-10-19 (13) — search had 0 of 1,331 risk zones, behind an `ok` heartbeat
 
 **Cycle 12 verified (PR #87 → `21959693`, collectors recreated 02:49Z):**
