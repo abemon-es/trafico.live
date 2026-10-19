@@ -146,6 +146,22 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const search = request.nextUrl.search;
 
+  // Pages answer GET/HEAD only. The site has no Server Actions, so any other
+  // method on a page is a probe; it used to reach Next's action handler and
+  // come back as a 500 ("Server Reference ID did not match", scanner POSTs to
+  // / on 2026-10-19 05:50Z). /api/* keeps its own methods, and /monitoring is
+  // the Sentry tunnel (browser POSTs).
+  const method = request.method;
+  if (
+    method !== "GET" &&
+    method !== "HEAD" &&
+    method !== "OPTIONS" &&
+    !pathname.startsWith("/api/") &&
+    pathname !== "/monitoring"
+  ) {
+    return new NextResponse(null, { status: 405, headers: { Allow: "GET, HEAD" } });
+  }
+
   // AI/LLM crawler observability — emit one structured line per visit so we
   // can see what bots are reading on the site (Loki dashboards). Skip static
   // asset paths to keep the signal-to-noise high.

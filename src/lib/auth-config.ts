@@ -29,6 +29,13 @@ const authConfig: NextAuthConfig = {
   // Secret for CSRF tokens and encryption
   secret: process.env.NEXTAUTH_SECRET,
 
+  // Self-hosted behind Traefik. Auth.js only infers trustHost from AUTH_URL /
+  // AUTH_TRUST_HOST, and we set NEXTAUTH_URL, so every /api/auth/* request
+  // failed with UntrustedHost → 500 (even an anonymous GET /api/auth/session).
+  // next-auth rewrites the request URL from NEXTAUTH_URL, so the Host header
+  // is not what Auth.js builds callback URLs from.
+  trustHost: true,
+
   // ---------------------------------------------------------------------------
   // Providers
   // ---------------------------------------------------------------------------
