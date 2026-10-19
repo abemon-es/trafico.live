@@ -9,19 +9,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { reportApiError } from "@/lib/api-error";
+import { safeCompare } from "@/lib/auth";
 
-// Simple shared secret — set BOT_VISIT_SECRET in env or fall back to a
-// build-time constant (acceptable for an internal, write-only endpoint).
-const INTERNAL_SECRET =
-  process.env.BOT_VISIT_SECRET || "trafico-internal-bot-visit-v1";
+// Shared secret with the middleware, from BOT_VISIT_SECRET only. There is no
+// fallback: the repo is public, so a default secret would be a public one
+// (until 2026-10-19 prod ran on it, anyone could write fake visits).
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
-  // Validate internal secret
-  const secret = request.headers.get("x-internal-secret");
-  if (!secret || secret !== INTERNAL_SECRET) {
+  // Fail closed: without the variable the endpoint accepts nothing.
+  const expected = process.env.BOT_VISIT_SECRET;
+  if (!expected) {
+    return NextResponse.json({ error: "Not configured" }, { status: 503 });
+  }
+  if (!safeCompare(request.headers.get("x-internal-secret") ?? "", expected)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
