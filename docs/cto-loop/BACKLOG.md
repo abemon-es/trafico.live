@@ -75,6 +75,83 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (25) — a web PR no longer recreates the collectors (image copies only the 9 src/lib files they use)
+
+**Cycle 24 verified (PR #102 → `6c6c301f`, DEPLOY SUCCESS 16:23:17 local).**
+21/21 as expected, closed by the CTO:
+- 7 unknown children → 404 noindex, including `/camaras/balbases-(los)`;
+- 6 hubs → 200;
+- `/camaras/?x=1` → 308 `/camaras?x=1` → 200;
+- 6 valid children → 200 + index.
+
+`/calidad-aire/estacion/<id>` takes the stationId code (e.g. `28079004`), not
+the cuid.
+
+**#101 link check** on 6 real stations (controls Balbases + Muxía): 24 links,
+24 × 200, 0 locality-text hrefs. The first runs hung on my own
+`grep -o '.\{0,4000\}'` over a page flattened to one line; awk with RS fixed
+it.
+
+**Incident (ours): aemet-forecast stale**, sentinel degraded from 16:53 local.
+- The 13:00Z run was killed 9 min in at 13:09:04Z: my #101 merge
+  triggered `trafico-collectors@b2dd533` (49 s rebuild), which recreated
+  collector-daily. No heartbeat was written, and the next scheduled run is
+  19:00Z, so the age passed the 25,200 s threshold.
+- Each run takes ~50 min because of AEMET 429s plus 30 s backoffs; 25
+  failedCodes = unrecovered 429s.
+- A manual run was started at ~14:55Z (`docker exec -d collector-daily …`)
+  and merges are held until its heartbeat refreshes.
+- CTO split:
+  - deployer drain before recreating → CTO;
+  - AEMET pacing (target 0 × 429, < 15 min) + a "started" heartbeat → ours,
+    queued;
+  - the image fix → this cycle.
+
+**Cause of the needless rebuild:** `Dockerfile.cron` copied **all of
+`src/lib/`**. The collectors import only **9** files (static + dynamic, plus
+what those import):
+- alert-matcher, bluesky, db, redis, social-broadcast, telegram, web-push,
+  x-api, email/ses;
+- typesense / vessel-utils / email/templates only appear in comments.
+
+Any web change in src/lib changed the image, so `docker compose up -d`
+recreated every collector container.
+
+**Fix (CTO's option b + gate 3):**
+- **`Dockerfile.cron`:** the src/lib COPY is now that explicit list. The
+  CTO's point: same image ID → compose doesn't touch the containers, with
+  no path list in the deployer that could drift.
+- **`services/collector/scripts/check-src-lib.mjs`:** run as a `RUN` in the
+  runtime stage, after src/lib and the /src/lib symlink are in place.
+  - It resolves every collector import containing `src/lib/` (`from`,
+    side-effect `import "…"`, `import()`, `require()`), then the relative
+    imports inside those files.
+  - Anything missing → exit 1, so the build fails before the blue/green swap.
+- **Not CI:** GitHub Actions is disabled on the repo
+  (`actions/permissions.enabled=false`). Enabling it is MJ's call (part of
+  his pending CI proposal); the CTO declined a deployer status check.
+
+**Proofs on compute** (temp clone of the branch, images removed after):
+- A: build → `sha256:ed0fd4a9…`.
+- B: rebuild after editing `src/lib/geo/geo-paths.ts` → **same ID** (1 s,
+  all cached).
+- C: a deliberate `import "../../../../src/lib/geo/geo-paths.js"` in
+  health-check → **build fails** at `check-src-lib` with the exact missing
+  import.
+
+The first run of C passed wrongly: the regex didn't match side-effect
+imports. The proof is what caught it; the second run is correct.
+
+**Verify after merge (once aemet-forecast has refreshed):**
+- this PR's own collectors deploy recreates the containers once (the image
+  does change);
+- check-src-lib appears in the build log;
+- the collectors come up healthy;
+- the next web-only PR's collectors deploy leaves the image ID and the
+  container StartedAt unchanged.
+
+---
+
 ## Cycle 2026-10-19 (24) — six hubs' loading.tsx turned every unknown child URL into a 200 + index (soft 404)
 
 **Cycle 23 verified (PR #101 → `b2dd533c`, deploy seen 13:14:27Z).** Traefik
