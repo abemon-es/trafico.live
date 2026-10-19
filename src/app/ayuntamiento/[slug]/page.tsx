@@ -287,7 +287,6 @@ export default async function AyuntamientoPage({
         <Breadcrumbs
           items={[
             { name: "Inicio", href: "/" },
-            { name: "Ayuntamientos", href: "/ayuntamiento" },
             { name, href: `/ayuntamiento/${slug}` },
           ]}
         />

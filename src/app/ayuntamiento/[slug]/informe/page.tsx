@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FileText, Download, Calendar, ChevronRight } from "lucide-react";
@@ -36,10 +37,11 @@ export async function generateMetadata({
   } catch {
     // Use humanized fallback
   }
+  const hasReports = (await getReports(slug)).length > 0;
 
   return {
     title: `Informes de movilidad — ${name}`,
-    description: `Informes mensuales automáticos de tráfico, incidencias y calidad del aire para ${name}. Datos DGT, AEMET y MITECO.`,
+    description: `Informes de movilidad de ${name}: tráfico, incidencias y calidad del aire con datos DGT, AEMET y MITECO.`,
     alternates: { canonical: `${BASE_URL}/ayuntamiento/${slug}/informe` },
     openGraph: {
       title: `Informes de movilidad — ${name}`,
@@ -48,7 +50,10 @@ export async function generateMetadata({
       locale: "es_ES",
       type: "website",
     },
-    robots: { index: true, follow: true },
+    // No report has ever been published (the monthly-report task never ran),
+    // so an empty page is a near-duplicate for every municipality: keep it
+    // out of the index until it has a report to show.
+    robots: { index: hasReports, follow: true },
   };
 }
 
@@ -61,7 +66,8 @@ interface ReportArticle {
   publishedAt: Date;
 }
 
-async function getReports(municipioSlug: string): Promise<ReportArticle[]> {
+// cache(): generateMetadata and the page both need the list.
+const getReports = cache(async function getReports(municipioSlug: string): Promise<ReportArticle[]> {
   try {
     return await prisma.article.findMany({
       where: {
@@ -87,7 +93,7 @@ async function getReports(municipioSlug: string): Promise<ReportArticle[]> {
   } catch {
     return [];
   }
-}
+});
 
 function formatMonth(date: Date): string {
   return new Intl.DateTimeFormat("es-ES", {
@@ -125,7 +131,6 @@ export default async function InformePage({
       <Breadcrumbs
         items={[
           { name: "Inicio", href: "/" },
-          { name: "Ayuntamientos", href: "/ayuntamiento" },
           { name, href: `/ayuntamiento/${slug}` },
           { name: "Informes", href: `/ayuntamiento/${slug}/informe` },
         ]}
@@ -136,8 +141,8 @@ export default async function InformePage({
           Informes de movilidad · {name}
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Informes mensuales automáticos con datos de tráfico, incidencias, calidad
-          del aire, combustible y trenes. Generados el 1 de cada mes.
+          Informes de movilidad con datos de tráfico, incidencias, calidad del aire,
+          combustible y trenes.
         </p>
       </header>
 
@@ -183,11 +188,18 @@ export default async function InformePage({
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-8 text-center">
             <FileText className="h-10 w-10 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
             <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-1">
-              Primer informe en preparación
+              Todavía no hay informes publicados
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              El primer informe mensual se publicará el 1 del próximo mes. Los
-              informes se generan automáticamente con datos de DGT, AEMET y MITECO.
+              Los datos de tráfico, incidencias y calidad del aire de {name} están
+              disponibles en tiempo real en{" "}
+              <Link
+                href={`/ayuntamiento/${slug}`}
+                className="text-tl-600 dark:text-tl-400 underline underline-offset-2"
+              >
+                su página de movilidad
+              </Link>
+              .
             </p>
           </div>
         </section>
