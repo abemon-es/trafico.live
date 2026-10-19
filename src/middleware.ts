@@ -12,8 +12,12 @@ const LEGACY_DOMAINS = [
   "trafico.abemon.es",
 ];
 
-// In-memory slug resolution cache (lives for the lifetime of the edge worker)
-const slugCache = new Map<string, string | null>();
+// In-memory slug → /espana path cache (lives for the lifetime of the edge
+// worker). Only resolved paths are stored, and at most SLUG_CACHE_MAX: there
+// are ~8,150 real slugs, and unknown ones are never cached, so random slugs
+// cannot grow it. Insertion order makes the first key the oldest.
+const SLUG_CACHE_MAX = 10_000;
+const slugCache = new Map<string, string>();
 
 // AI / LLM / search-engine crawler fingerprints. Match against the User-Agent
 // string and log to stdout so Loki ingests one structured line per AI crawl.
@@ -71,24 +75,22 @@ async function resolveSlugToGeoPath(slug: string): Promise<string | null> {
   const cached = slugCache.get(slug);
   if (cached !== undefined) return cached;
 
+  // Any failure (unknown slug, timeout, 5xx) means "no redirect": the request
+  // falls through to the page exactly as before, and nothing is cached.
   try {
     const res = await fetch(
       `${INTERNAL_ORIGIN}/api/geo/resolve?slug=${encodeURIComponent(slug)}`,
-      { headers: { "x-internal": "1" }, next: { revalidate: 3600 } }
+      { signal: AbortSignal.timeout(2000) }
     );
-    // Cache only definite answers: a path, or "no such slug" (404). A 401, a
-    // 429 or a 5xx used to be cached as "no redirect" until the next restart.
-    if (res.status === 404) {
-      slugCache.set(slug, null);
-      return null;
-    }
     if (!res.ok) return null;
-    const data = await res.json();
-    if (data?.path) {
-      slugCache.set(slug, data.path);
-      return data.path;
+    const data = (await res.json()) as { path?: unknown };
+    if (typeof data?.path !== "string" || !data.path.startsWith("/espana/")) return null;
+    if (slugCache.size >= SLUG_CACHE_MAX) {
+      const oldest = slugCache.keys().next().value;
+      if (oldest !== undefined) slugCache.delete(oldest);
     }
-    return null;
+    slugCache.set(slug, data.path);
+    return data.path;
   } catch {
     return null;
   }

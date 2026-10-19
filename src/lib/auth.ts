@@ -9,12 +9,15 @@ const ALLOWED_HOSTS = [
 ];
 
 // Endpoints that bypass auth (monitoring, health checks, public datasets)
-// /api/geo/resolve: the middleware's slug → /espana/... lookup for the
-// /provincias/<code> and /municipio/<slug> redirects. Its own fetch carries no
-// Origin or API key, so this gate answered 401 and those redirects never ran
-// (both served duplicate pages until 2026-10-19). Read-only, and the mapping it
-// returns is public (every target URL is in the sitemaps).
-const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/newsletter/subscribe", "/api/geo/resolve"];
+const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/newsletter/subscribe"];
+
+// Exempt for GET only, exact path. /api/geo/resolve is the middleware's
+// slug → /espana/... lookup for the /provincias/<code> and /municipio/<slug>
+// redirects. Its fetch carries no Origin or API key, so this gate answered
+// 401 and those redirects never ran (both served duplicate pages until
+// 2026-10-19). It is read-only and returns only {path} (or 404), a mapping
+// that is already public through the sitemaps.
+const AUTH_EXEMPT_GET = ["/api/geo/resolve"];
 
 /**
  * Check if a request is genuinely same-origin.
@@ -83,8 +86,11 @@ function hasValidApiKey(request: NextRequest): boolean {
 /**
  * Check if endpoint is exempt from auth
  */
-function isExempt(pathname: string): boolean {
-  return AUTH_EXEMPT.some((p) => pathname.startsWith(p));
+function isExempt(pathname: string, method: string): boolean {
+  return (
+    AUTH_EXEMPT.some((p) => pathname.startsWith(p)) ||
+    (method === "GET" && AUTH_EXEMPT_GET.includes(pathname))
+  );
 }
 
 /**
@@ -97,7 +103,7 @@ export function authenticateRequest(
   const pathname = request.nextUrl.pathname;
 
   // Skip auth for exempt endpoints
-  if (isExempt(pathname)) return null;
+  if (isExempt(pathname, request.method)) return null;
 
   // Allow same-origin OR valid API key
   if (isSameOrigin(request) || hasValidApiKey(request)) {

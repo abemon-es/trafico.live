@@ -115,19 +115,35 @@ succeed.**
   everything leaving compute). It cached any non-OK answer (401/429/5xx) as
   "no redirect" until the next restart.
 
-**Fix:**
-- `/api/geo/resolve` added to `AUTH_EXEMPT`: read-only, `findUnique` by
-  code/slug, and the mapping is already public via the sitemaps.
-- The middleware calls it on `INTERNAL_ORIGIN` (default
-  `http://127.0.0.1:$PORT`, PORT=3000 in the Dockerfile), not through the
-  edge. Only definite answers are cached: a path, or 404 = no such slug.
-- Municipality shards now list
-  `/espana/<community>/<province>/<municipality>`, so the sitemaps don't
-  fill with 8,100 redirects.
+**Fix (with the CTO's conditions, 11:4x local):**
+- **Auth:** `/api/geo/resolve` is exempt **for GET only, exact path**
+  (`AUTH_EXEMPT_GET`). It answers only `{path}` or 404, and rejects slugs
+  longer than 100 characters with a 400.
+- **`x-internal`:** no route trusts `x-internal: 1` as auth. `enforce-tier`
+  and `keys/lookup` already require `x-internal-secret` =
+  `INTERNAL_API_SECRET` and fail closed. The middleware no longer sends the
+  header.
+- **Resolver call:** on `INTERNAL_ORIGIN` (default `http://127.0.0.1:$PORT`,
+  PORT=3000 in the Dockerfile), not through the edge, with a **2 s
+  timeout**. Any failure means no redirect: the page is served as before,
+  and nothing is cached.
+- **Cache:** **resolved paths only, at most 10,000 entries**, oldest
+  evicted first. 404s aren't cached, so random slugs can't grow it.
+- **Sitemaps:** municipality shards now list
+  `/espana/<community>/<province>/<municipality>`, so they don't fill with
+  8,100 redirects.
+- **CMO:** told before the deploy (~8,100 + 43 301s and the sitemap change;
+  resubmit + watch indexing).
+
+**Noted, not changed:** `src/lib/chat-tools.ts` sends `x-internal: 1` to
+`/api/*` on `NEXT_PUBLIC_BASE_URL` with no Origin or API key. Those calls
+likely get 401 like the resolver did; check whether the AI chat's tools work
+at all.
 
 eslint 0 errors; web `tsc` identical to baseline.
 
-**Verify after deploy (compute loopback, ≤1 r/s):**
+**Verify after deploy (compute loopback, ≤1 r/s; plus the `/espana/*`
+error rate in the first hour, CTO):**
 - `/provincias/24` → 301 `/espana/castilla-y-leon/leon`;
 - `/municipio/alcala-de-henares` → 301 to its `/espana` URL;
 - `/api/geo/resolve?slug=_province:24` 200 with no headers;
