@@ -75,6 +75,64 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (15) — "near me" search returned nothing for any collection
+
+**Cycle 14 verified (PR #89 → `051fa4ab`, collector-fuel recreated
+04:55:57Z):** a manual `gas-station` run on the new code updated 11,427
+stations in 34.2 s; heartbeat `ok`; overall healthy, 0 stale. The retry path
+only shows when MINETUR next answers empty ("retry n/3" in Loki).
+
+**Fix (the item queued in cycle 14, all three parts):**
+- `/api/search/nearby`:
+  - geo radius in `km`. It was `${m} m`, which Typesense rejects, so every
+    collection failed.
+  - per-collection `query_by` on a field that exists (radars `roadNumber`,
+    traffic_stations `stationCode`, risk_zones `road`, the rest `name`), with
+    per-collection name/subtitle (e.g. "Radar A-7 km 123", "Zona de riesgo
+    N-550").
+  - a `radius` that is not a positive number falls back to 10 km (it was
+    `NaN km`).
+  - per-collection `multi_search` errors are logged instead of silently
+    becoming "no results".
+- `/api/search` (Cmd+K): the road filter uses `road` and the province filter
+  uses `province` for risk_zones.
+
+Checked beforehand, directly in Typesense: `road:=N-550` → 5,
+`roadNumber:=N-550` → "Could not find a filter field", geo 5 km around
+42.4293,-8.6427 → 3. Every other Cmd+K `queryBy` matches the live schemas
+(script check, 28 collections). eslint clean; web `tsc` 11 = baseline, none
+in the changed files.
+
+**Verify after deploy (compute, loopback):** nearby around Madrid
+gas_stations > 0; nearby 42.4293,-8.6427 risk_zones > 0;
+`/api/search?q=N-550` includes "Zonas de riesgo".
+
+**Found during SENSE (new):**
+- **Login has never worked in production → ESCALATIONS.**
+  - `/api/auth/session` answers 500 "server configuration" (Auth.js
+    `UntrustedHost`: no `trustHost`/`AUTH_TRUST_HOST`).
+  - Behind that: the `User`/`Account`/`Session`/`VerificationToken` tables
+    do not exist in the DB, and the container has no Google/GitHub/Resend
+    credentials (only `NEXTAUTH_SECRET`/`NEXTAUTH_URL`).
+  - `/login` renders "Continuar con Google / GitHub / Enviar enlace", and all
+    three would fail.
+  - Entry points: `/alertas` and `/alertas/[id]` ("Iniciar sesión"),
+    `/flotas/onboarding`, plus the `/dashboard`, `/account` and `/flotas/dashboard`
+    redirects.
+  - Not fixable by the loop alone (needs secrets + an additive 4-table
+    migration).
+- **Security note (CSO, informational):** 05:50:20–35Z, a burst of
+  - Server Action requests with ids "r2s"/"cachefn" (React2Shell-style
+    probes),
+  - "Expected RSC response, got text/plain" (TRAFICO-LIVE-IH +2),
+  - `UntrustedHost` on `/api/auth/session`.
+
+  Next 16.3.6 (#72) rejected them ("Server Reference ID did not match the
+  expected format"). This is what lifted trafico-live-next to 22 error lines/h.
+  No action needed; logged in case the CSO correlates it with CrowdSec.
+
+---
+
 ## Cycle 2026-10-19 (14) — MINETUR's empty answer at 06:00 published yesterday's fuel prices as today's
 
 **Cycle 13 verified (PR #88 → `3feb2e1d`, collector-daily recreated
@@ -2032,6 +2090,33 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
    anonymised (cl. 3(i)). Both are product changes → MJ.
    **aisstream.io: MJ decided 2026-10-18 to leave as is** (no published ToS;
    Legal rated legal risk low, operational medium).
+
+0. **User login (accounts, alerts, fleet dashboard) has never worked in prod —
+   OPEN, awaiting MJ (raised 2026-10-19, cycle 15).** NextAuth v5 shipped in
+   April (T4.10a `37f933fa`) as code only:
+   - no auth tables in the DB;
+   - no Google/GitHub OAuth app or Resend key in the web container;
+   - no `trustHost`, so `/api/auth/session` answers 500.
+
+   `/login` offers Google, GitHub and magic link; all fail. Pages that send
+   users there: `/alertas`, `/alertas/[id]`, `/flotas/onboarding`, and the
+   `/dashboard*`, `/account` and `/flotas/dashboard` gates.
+
+   Decide:
+   - (a) **turn it on.** Needs:
+     - credentials: Google + GitHub OAuth apps, a Resend key or the SES path
+       the CTO is setting up;
+     - an additive migration of the 4 tables;
+     - `trustHost: true` (Traefik only routes trafico.live, so the Host
+       header is controlled).
+
+     The loop can do the migration and the code in ≈1 cycle once the
+     secrets are in the env.
+   - (b) **hide it.** Remove the "Iniciar sesión" entry points, `noindex`
+     the auth pages, and keep alerts as a not-yet feature.
+
+   Loop default until then: leave it as is (indexing and reach of `/login`
+   and `/alertas` not yet measured).
 
 0. **Municipal offer "desde 499 €/mes" sells a product that does not exist —
    OPEN, awaiting MJ (raised 2026-10-19).** Every `/ayuntamiento/<slug>` page
