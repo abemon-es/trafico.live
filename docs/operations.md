@@ -58,21 +58,21 @@ ssh compute "crontab -l | grep run-collector"
 ### Run a Collector Manually
 
 ```bash
-ssh compute "/opt/trafico/run-collector.sh incident"
+ssh compute "docker exec collector-realtime sh -c 'TASK=incident npx tsx index.ts'"
 ```
 
 ### Check Collector Logs
 
 ```bash
-ssh compute "tail -50 /opt/trafico/logs/incident.log"
+# Absolute timestamps in Z; collector logs are json-file, not Loki
+ssh compute "docker logs --since 2026-10-20T00:00:00Z collector-realtime"
 ```
 
 ### Collector Env
 
-```bash
-ssh compute "cat /opt/trafico/collector.env"
-# DATABASE_URL, REDIS_URL, AEMET_API_KEY, NODE_ENV, TZ
-```
+Compose loads `/opt/apps/trafico-live/.env.collectors` (DATABASE_URL, REDIS_URL,
+AEMET_API_KEY, NODE_ENV, TZ). Never `cat` it. The old `/opt/trafico/collector.env`
+and `run-collector.sh` were retired on 2026-10-20.
 
 ## Secrets Management
 

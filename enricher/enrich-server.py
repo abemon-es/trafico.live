@@ -4,6 +4,9 @@ Server-side vessel enrichment via Geonode residential proxy.
 Runs directly on Hetzner compute, connects to DB via WireGuard.
 No browser needed — plain HTTP + residential proxy bypasses Cloudflare.
 
+Credentials come from the environment, never from this file:
+  TRAFICO_APP_PASSWORD, GEONODE_PROXY_USER, GEONODE_PROXY_PASS
+
 Usage:
   python3 enrich-server.py                    # all pending
   python3 enrich-server.py --limit 100        # first 100
@@ -11,7 +14,7 @@ Usage:
   python3 enrich-server.py --workers 3        # parallel (max 5)
 """
 
-import sys, time, random, logging, re, json, argparse
+import os, sys, time, random, logging, re, json, argparse
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
@@ -26,11 +29,11 @@ DB_HOST = "10.100.0.3"
 DB_PORT = 6440
 DB_NAME = "le_trafico"
 DB_USER = "trafico_app"
-DB_PASS = open("/opt/trafico/collector.env").read().split("trafico_app:")[1].split("@")[0]
+DB_PASS = os.environ["TRAFICO_APP_PASSWORD"]
 
 # --- Geonode proxy ---
-PROXY_USER = "geonode_ao6aDRc4rB"
-PROXY_PASS = "207e3a24-f152-4d13-a25c-92f65b797df9"
+PROXY_USER = os.environ["GEONODE_PROXY_USER"]
+PROXY_PASS = os.environ["GEONODE_PROXY_PASS"]
 PROXY_URL = f"http://{PROXY_USER}:{PROXY_PASS}@premium-residential.geonode.com:9000"
 PROXIES = {"http": PROXY_URL, "https": PROXY_URL}
 
