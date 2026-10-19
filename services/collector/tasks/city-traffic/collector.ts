@@ -4,7 +4,7 @@
  * Collects real-time traffic sensor data from Spanish cities:
  *   - Barcelona (bcn.cat DAT format ~539 segments + Open Data portal mirror ~527 sections)
  *   - Valencia  (opendatasoft JSON ~100 segments + ArcGIS REST ~road segments)
- *   - Zaragoza  (zaragoza.es JSON, city sensors)
+ *   - Zaragoza: not collected — the city stopped publishing (see below)
  *
  * Updates CityTrafficSensor (upsert) + CityTrafficReading (insert).
  * Cleans up readings older than 48 h after each run.
@@ -461,93 +461,22 @@ async function fetchValenciaArcGIS(_prisma: PrismaClient): Promise<SensorReading
 }
 
 // ---------------------------------------------------------------------------
-// Zaragoza — zaragoza.es JSON
-// ---------------------------------------------------------------------------
-
-const ZGZ_URL =
-  "https://www.zaragoza.es/sede/portal/datos-abiertos/api/recurso/transporte/estado-trafico.json";
-
-/** Zaragoza estado → serviceLevel */
-function zgzEstadoToLevel(estado: string | number | null): number {
-  if (estado === null || estado === undefined) return 0;
-  const s = String(estado).toLowerCase().trim();
-  if (s === "1" || s === "fluido" || s === "muy fluido") return 0;
-  if (s === "2" || s === "denso") return 1;
-  if (s === "3" || s === "congestionado" || s === "muy denso") return 2;
-  if (s === "4" || s === "cortado" || s === "bloqueado") return 3;
-  return 0;
-}
-
-async function fetchZaragoza(_prisma: PrismaClient): Promise<SensorReading[]> {
-  log(TASK, "Fetching Zaragoza traffic data...");
-
-  const resp = await fetch(ZGZ_URL, {
-    headers: { "User-Agent": "trafico.live-collector/1.0" },
-    signal: AbortSignal.timeout(20000),
-  });
-
-  if (!resp.ok) {
-    throw new Error(`Zaragoza API error: ${resp.status}`);
-  }
-
-  const json = await resp.json() as Array<{
-    id?: string | number;
-    title?: string;
-    estado?: string | number;
-    geometry?: {
-      type?: string;
-      coordinates?: number[];
-    };
-  }> | {
-    result?: Array<{
-      id?: string | number;
-      title?: string;
-      estado?: string | number;
-      geometry?: {
-        type?: string;
-        coordinates?: number[];
-      };
-    }>;
-  };
-
-  // Normalize: API may return array directly or wrapped
-  const items = Array.isArray(json) ? json : (json as { result?: typeof json }).result || [];
-
-  const readings: SensorReading[] = [];
-
-  for (const item of items) {
-    if (!item.id) continue;
-
-    const coords = item.geometry?.coordinates;
-    if (!coords || coords.length < 2) continue;
-
-    // GeoJSON: [longitude, latitude]
-    const lon = coords[0];
-    const lat = coords[1];
-
-    if (!lat || !lon) continue;
-
-    // Validate coordinates for Zaragoza area
-    if (lat < 41.5 || lat > 41.8 || lon < -1.1 || lon > -0.7) continue;
-
-    readings.push({
-      sensorId: `ZGZ-${item.id}`,
-      city: "ZARAGOZA",
-      streetName: item.title || null,
-      latitude: lat,
-      longitude: lon,
-      direction: null,
-      intensity: null,
-      occupancy: null,
-      speed: null,
-      serviceLevel: zgzEstadoToLevel(item.estado ?? null),
-      prediction: null,
-    });
-  }
-
-  log(TASK, `Zaragoza: ${readings.length} sensors parsed`);
-  return readings;
-}
+// Zaragoza — removed 2026-10-19: the city stopped publishing live traffic.
+//
+// The API we called (zaragoza.es/sede/portal/datos-abiertos/api/recurso/
+// transporte/estado-trafico.json) has answered 400 `java.lang.NullPointerException`
+// on every run since at least August 2026, and its catalogue entries
+// (zaragoza.es catálogo 291, datos.gob.es l01502973-estado-del-trafico1) are 404.
+// The city's own traffic map still loads two static files, but the state file
+// is frozen: zaragoza.es/trafico/estado/estado.json → timestamp
+// "20250327-114001Z", every segment "t" (no data) or "-" (segment retired).
+// No Zaragoza row was ever stored in CityTrafficSensor.
+//
+// To bring it back if the city revives the feed: estado.json `estados` is one
+// character per segment id (rojo/amarillo/verde/negro/t/-), and the geometry is
+// zaragoza.es/trafico/estado/tramos_UTM30N_ETRS89.json (`tramos[].{id,name,
+// points[{lon,lat}]}` in UTM 30N ETRS89 — convert like the Madrid collector).
+// Check the timestamp first: a frozen file must not be stored as live data.
 
 // ---------------------------------------------------------------------------
 // DB operations
@@ -636,7 +565,7 @@ async function cleanup(prisma: PrismaClient): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  log(TASK, "Starting city traffic collection (Barcelona, Valencia, Zaragoza)");
+  log(TASK, "Starting city traffic collection (Barcelona, Valencia)");
 
   const cities = [
     { name: "Barcelona (trams)",    fetch: fetchBarcelona },
@@ -644,7 +573,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     // Valencia ODS subdomain (valencia.opendatasoft.com) was deprecated and is now offline.
     // Valencia road-state coverage continues via fetchValenciaArcGIS (geoportal layer 192).
     { name: "Valencia (ArcGIS)",    fetch: fetchValenciaArcGIS },
-    { name: "Zaragoza",             fetch: fetchZaragoza },
+    // Zaragoza: no live feed since 2025-03 — see "Zaragoza — removed" above.
   ];
 
   let totalSensors = 0;

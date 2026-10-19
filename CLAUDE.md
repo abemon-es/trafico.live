@@ -93,7 +93,7 @@ npm run db:seed      # Seed database
   - `/api/calidad-aire` — Air quality stations + ICA index (MITECO, 506 stations)
   - `/api/estadisticas` — Transport statistics (INE, CNMC) with groupBy aggregation
   - `/api/estadisticas/modal` — Modal split analysis with period comparison
-  - `/api/trafico/ciudades` — City-level traffic sensors (Barcelona, Valencia, Zaragoza)
+  - `/api/trafico/ciudades` — City-level traffic sensors (Barcelona, Valencia; Zaragoza stopped publishing in 2025-03)
   - `/api/trafico/obras` — Active roadworks zones (DGT connected cones)
 - Billing & API key management:
   - `/api/billing` — Stripe checkout + subscription status
@@ -193,7 +193,7 @@ npm run db:seed      # Seed database
 
 - **Maritime:** AIS vessel tracking (aisstream.io WebSocket, always-on — ~10.9k positions/min, 10M+/day) + ferry GTFS + Puertos del Estado WFS (50 state ports with INSPIRE polygons) + voyage detection (hourly `voyage-detector` groups VesselPosition into PortCalls & Voyages, resolves ports via SpanishPort within 10nm). Tables: `Vessel`, `VesselPosition`, `SpanishPort` (197 ports), `PortCall`, `Voyage`, `FerryRoute/Stop/Trip`. Collectors: `ais-stream`, `ferry-gtfs`, `puertos-estado` (WFS import), `voyage-detector` (hourly). APIs: `/api/maritimo`, `/api/maritimo/ferries`. Page: `/maritimo`
 - **Public Transit:** 15+ GTFS operators via MobilityData (Metro Madrid/Barcelona/Bilbao, FGC, Euskotren, EMT, TUSSAM, Ouigo). Tables: `TransitOperator`, `TransitRoute`, `TransitStop`. Collectors: `transit-gtfs`, `renfe-positions`. APIs: `/api/transporte`, `/api/transporte/[operator]`. Page: `/transporte-publico`
-- **City Sensors:** Madrid (informo.madrid.es, 6K sensors, */5) + Barcelona (transit DAT + road sections, 527 roads) + Valencia (ODS + ArcGIS REST, */3) + Zaragoza. Tables: `CityTrafficSensor`, `CityTrafficReading`. Collectors: `city-traffic` (5min, all cities), `dgt-extras` (weekly). APIs: `/api/trafico/ciudades`, `/api/trafico/obras`
+- **City Sensors:** Madrid (informo.madrid.es, 6K sensors, */5) + Barcelona (transit DAT + road sections, 527 roads) + Valencia (ArcGIS REST, */3). Zaragoza: no live feed since 2025-03 (state file frozen), removed 2026-10-19. Tables: `CityTrafficSensor`, `CityTrafficReading`. Collectors: `city-traffic` (5min, all cities), `dgt-extras` (weekly). APIs: `/api/trafico/ciudades`, `/api/trafico/obras`
 - **Aviation:** OpenSky aircraft (*/15, anonymous rate-limited) + 46 AENA airports + Eurostat annual pax stats (2019-2025) + OurAirports runway geometry (103 runways, 76 airports, `public/data/runways.json`). Tables: `AircraftPosition`, `Airport`, `AirportStatistic`. Collectors: `opensky` (*/15), `aena-stats` (daily, Eurostat AVIA_PAOA CSV), `ourairports-runways` (weekly, runway ends + heading + length). APIs: `/api/aviacion`, `/api/aviacion/aeropuertos`. Page: `/aviacion`
 - **Air Quality:** MITECO ICA via `ica.miteco.es/datos/ica-ultima-hora.csv` (CC-BY 4.0, hourly CSV) + backend API fallback (`backend.ica.miteco.es/sgca/`). 565 stations with ICA 1-6 levels. CCAA extensions: Madrid (20min, `datos.comunidad.madrid`), Cataluña (daily), Euskadi, Andalucía. Tables: `AirQualityStation`, `AirQualityReading` (NO2, PM10, PM2.5, O3, SO2, CO, ICA 1-6). Collectors: `air-quality` (hourly), `air-quality-ccaa` (varies). API: `/api/calidad-aire`. Page: `/calidad-aire`
 - **Historical:** MobilityData GTFS archive (126 feeds) + INE transport stats. Tables: `GTFSArchive`, `TransportStatistic`. Collectors: `mobilitydata-sync`, `ine-stats`. APIs: `/api/estadisticas`, `/api/estadisticas/modal`. Page: `/estadisticas-transporte`
@@ -248,7 +248,7 @@ npm run db:seed      # Seed database
 | `services/collector/tasks/ferry-gtfs/` | MobilityData ferry GTFS collector |
 | `services/collector/tasks/transit-gtfs/` | 15+ transit GTFS feeds collector |
 | `services/collector/tasks/renfe-positions/` | Renfe Cercanías vehicle positions |
-| `services/collector/tasks/city-traffic/` | Barcelona/Valencia/Zaragoza sensors |
+| `services/collector/tasks/city-traffic/` | Barcelona/Valencia sensors |
 | `services/collector/tasks/opensky/` | OpenSky aircraft positions collector |
 | `services/collector/tasks/air-quality/` | MITECO ICA air quality collector |
 | `services/collector/tasks/mobilitydata-sync/` | MobilityData GTFS archive sync |
