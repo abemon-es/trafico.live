@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Exo_2, DM_Sans, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import { Header } from "@/components/layout/Header";
 import { ContextStrip } from "@/components/layout/ContextStrip";
@@ -17,25 +17,41 @@ import "./globals.css";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-const exo2 = Exo_2({
+// Self-hosted (OFL, see src/app/fonts/*/OFL.txt). next/font/google downloaded
+// these from Google Fonts on every build, and a bad response there failed the
+// 2026-10-19 13:46 deploy. Same families, weights, latin subset and CSS
+// variables as before; files from Fontsource 5.3.0 (built from Google Fonts).
+const exo2 = localFont({
   variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
   display: "swap",
+  src: [
+    { path: "./fonts/exo-2/exo-2-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/exo-2/exo-2-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/exo-2/exo-2-latin-700-normal.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/exo-2/exo-2-latin-800-normal.woff2", weight: "800", style: "normal" },
+  ],
 });
 
-const dmSans = DM_Sans({
+const dmSans = localFont({
   variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
   display: "swap",
+  src: [
+    { path: "./fonts/dm-sans/dm-sans-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/dm-sans/dm-sans-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/dm-sans/dm-sans-latin-600-normal.woff2", weight: "600", style: "normal" },
+  ],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+// Monospace: no Arial-metric fallback adjustment (it would distort the grid);
+// globals.css already falls back to ui-monospace, monospace.
+const jetbrainsMono = localFont({
   variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
+  adjustFontFallback: false,
+  src: [
+    { path: "./fonts/jetbrains-mono/jetbrains-mono-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/jetbrains-mono/jetbrains-mono-latin-500-normal.woff2", weight: "500", style: "normal" },
+  ],
 });
 
 export const metadata: Metadata = {
@@ -204,7 +220,6 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://tiles.trafico.live" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
         className={`${exo2.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}

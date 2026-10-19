@@ -75,6 +75,47 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (22) — fonts self-hosted: the build no longer downloads from Google Fonts
+
+**Cycle 21 verified (PR #99 → `a8dcfacb`):**
+- The first deploy FAILED at 13:46:15 local: next/font/google got a bad
+  Google Fonts response ("Cannot read properties of null (reading '1')").
+  Not our diff. Live stayed on 269d9d2; the CTO relaunched it and got
+  DEPLOY SUCCESS at 13:59:46 (291 s).
+- Probed 12:00:14Z:
+  - 301: `/provincias/21/combustible` → `/espana/andalucia/huelva/combustible`;
+    `13/radares` → `/radares/provincia/ciudad-real`; `39/combustible` and
+    `49/combustible` → their `/espana/.../combustible`.
+  - 404: `21/carga-ev`, `21/intensidad`, `99/combustible`.
+  - `/provincias/24` still 301; second request 0.10 s.
+- The hour comparison is still running (Traefik); send it to the CTO when it
+  closes.
+
+**Item (L0 build reliability, CTO-agreed, ahead of SEO follow-ups a/c):**
+two builds died on external services today, one of them on Google Fonts.
+- **`layout.tsx`:** `next/font/google` → `next/font/local`, same families,
+  weights (Exo 2 500-800, DM Sans 400-600, JetBrains Mono 400-500), latin
+  subset, `display: swap` and CSS variables.
+  - Mono uses `adjustFontFallback: false`, since an Arial-metric fallback
+    would distort it; `globals.css` already falls back to `ui-monospace`.
+  - The `preconnect` to `fonts.gstatic.com` is removed.
+- **Files:** 9 woff2 (~150 KB, `wOF2` magic) from Fontsource 5.3.0, which is
+  built from Google Fonts with the same latin unicode-range. Each family's
+  **OFL.txt** sits in `src/app/fonts/<family>/`, as the CTO asked.
+- **Left as is:** the transactional emails (`src/emails/*`) still
+  `@import` Google Fonts. That's for the recipient's mail client, not our
+  build or our pages.
+- **Checks:** eslint clean; web `tsc` identical to baseline.
+
+**Verify (CTO):**
+- the PR preview builds;
+- Playwright on the preview, 2-3 pages at mobile 375 px and desktop: the
+  computed `font-family`/weights for h1, body and a mono price, and no
+  request to `fonts.gstatic.com`/`fonts.googleapis.com`;
+- after merge: prod deploy OK, and the same request check on prod.
+
+---
+
 ## Cycle 2026-10-19 (21) — legacy /provincias/<code>/<sub> 301s where a same-content page exists (CTO follow-up b)
 
 **Cycle 20 verified (PR #98 → `269d9d2f`, 10:42Z):**
