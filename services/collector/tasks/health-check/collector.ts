@@ -47,7 +47,10 @@ const TABLE_SLAS: TableSLA[] = [
   { table: "Camera", query: 'SELECT max("lastUpdated") as ts FROM "Camera"', maxStaleMinutes: 1680, recoveryTask: "camera", tier: "daily" },
   { table: "EVCharger", query: 'SELECT max("lastUpdated") as ts FROM "EVCharger"', maxStaleMinutes: 1680, recoveryTask: "charger", tier: "daily" },
   { table: "DailyStats", query: 'SELECT max("updatedAt") as ts FROM "DailyStats"', maxStaleMinutes: 1680, recoveryTask: "daily-stats", tier: "daily" },
-  { table: "AircraftPosition", query: 'SELECT max("updatedAt") as ts FROM "AircraftPosition"', maxStaleMinutes: 30, recoveryTask: "opensky", tier: "realtime" },
+  // AircraftPosition is append-only: it has createdAt, not updatedAt. The
+  // updatedAt version failed on every run from April to October 2026, so the
+  // opensky SLA and its auto-recovery never ran.
+  { table: "AircraftPosition", query: 'SELECT max("createdAt") as ts FROM "AircraftPosition"', maxStaleMinutes: 30, recoveryTask: "opensky", tier: "realtime" },
 
   // Weekly (alert at 8 days)
   { table: "Radar", query: 'SELECT max("lastUpdated") as ts FROM "Radar"', maxStaleMinutes: 11520, recoveryTask: "radar", tier: "weekly" },
@@ -59,6 +62,19 @@ const TABLE_SLAS: TableSLA[] = [
   { table: "LocationStats", query: 'SELECT max("updatedAt") as ts FROM "LocationStats"', maxStaleMinutes: 1680, recoveryTask: null, tier: "daily" },
   { table: "AccidentMicrodata", query: 'SELECT count(*) as ts FROM "AccidentMicrodata"', maxStaleMinutes: 999999, recoveryTask: null, tier: "manual" },
 ];
+
+/**
+ * Prisma raw-query errors start with a blank line ("\nInvalid `prisma.$queryRawUnsafe()`
+ * invocation: … Raw query failed. Code: `42703`. Message: `column … does not exist`"),
+ * so the first line alone logged "AircraftPosition: " with no cause.
+ */
+function errorLine(err: unknown): string {
+  const lines = String((err as Error)?.message ?? err)
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  return lines.find((l) => /Raw query failed|Message:/.test(l)) ?? lines[0] ?? "unknown error";
+}
 
 export async function run(prisma: PrismaClient): Promise<void> {
   const now = Date.now();
@@ -98,7 +114,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
         healthy.push(sla.table);
       }
     } catch (err) {
-      errors.push(`${sla.table}: ${(err as Error).message.split("\n")[0]}`);
+      errors.push(`${sla.table}: ${errorLine(err)}`);
     }
   }
 

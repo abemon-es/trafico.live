@@ -75,6 +75,39 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (10) — the opensky freshness check never ran (wrong column since April)
+
+**Cycle 9 verified (PR #84 → `6a0cb795`):** smoke **109 pass · 0 fail** on
+compute; `transit-rt-madrid`/`-tmb` in `excludedTasks`; `city-traffic`
+`partial` "2/4 sources failed: Barcelona (sections) 502, Zaragoza 400". The
+collector redeploy recreated the stack at 23:40:26Z mid-`opensky` run → one
+stale reading on `/api/health`, recovered by itself at 23:53:27Z (known
+deploy-fallout pattern, thresholds untouched per PLAYBOOK).
+
+**Signal:** `health-check` `partial`, `errorDetails: ["AircraftPosition: "]`
+— the honest status from cycle 9 exposed it, but with no cause.
+**Cause:** the SLA query read `max("updatedAt")` from `AircraftPosition`, an
+append-only table that only has `createdAt` (checked every schema revision:
+the column never existed). It has failed on every run since it was added on
+2026-04-03 (`63db40b0`), so the opensky SLA and its auto-recovery never
+fired. The cause was invisible because Prisma raw-query errors start with a
+blank line and the code logged only the first line.
+**Fix:** `createdAt` (prod: max 00:53Z, 1,956 rows/h, so the table is fresh) +
+`errorLine()` that keeps the `Raw query failed … Message:` line. The other 17
+SLA queries were checked against the schema: all columns exist.
+**Verify after deploy:** next `health-check` run (*/30) → `ok`, `errors: 0`,
+20 healthy. Auto-recovery can now run `opensky` inline when aircraft are
+>30 min stale; that is the designed behaviour.
+
+**Found en route (next L1, ranked first):** `tasks/monthly-report/render.ts`
+has JSX in a `.ts` file (`<View style=…>` at line 258, react-pdf). `tsc -p
+services/collector` stops on its parse errors (so the collector typecheck
+has been useless as a whole), and `tsx` should fail to load it on the 1st of
+every month at 03:00 (`crontabs/weekly:39`). Also writes to R2, which was
+retired for MinIO. Check the 2026-10-01 run in Loki before fixing.
+
+---
+
 ## Cycle 2026-10-19 (9) — statuses that said "ok" while not doing the job
 
 **Cycle 8 verified (PR #83 → `fdb58a32`):** smoke **110 pass · 6 warn · 0
