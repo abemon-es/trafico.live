@@ -75,6 +75,76 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (19) — /provincias and /municipio duplicates now 301 to /espana (the resolver had always been 401'd)
+
+**Cycle 18 verified (PR #96 → `de18eb38`, deploy 10:20 local):**
+- First request after the deploy:
+  - `/camaras/madrid` 200 0.27 s MISS, `index`, "365 cámaras";
+  - `/peajes/operador/abertis` 200 0.13 s MISS, `index`, "5 Peajes";
+  - second requests HIT in 0.06 s.
+- Build: static pages 8,211 → 7,645; static generation 23.1 → 21.4 s;
+  deploy 361 → 385 s (other steps dominate); RSS isn't in the deploy log.
+- Warm-up 08:21-08:31Z, as the CTO asked (priority.xml, 1 r/s, 5 s
+  timeout):
+  - 490/490 200; p50 0.13 s, p95 0.41 s, max 3.0 s (`/clima`);
+  - DB connections 14 → 20, 0 waiting except the last sample (12 during the
+    :30 cron burst; settled 20 s later);
+  - the per-block p95 stop didn't work (a ternary mawk rejects); fixed in the
+    scratchpad script.
+- The CTO OK'd the change (merge before 13:00; a revert PR if needed, not
+  hot patches). The CMO can now include `/camaras/*` in indexing requests;
+  they re-measure on Monday 26-10.
+
+**Signal (the CMO's ask + cycle 17's finding):** `/provincias/<code>` 200
+and self-canonical, a duplicate of `/espana/<community>/<province>`.
+**Finding: the middleware already tried to redirect it, and could never
+succeed.**
+- `resolveSlugToGeoPath()` fetches `/api/geo/resolve` with `x-internal: 1`,
+  but `authenticateRequest` has no such allowlist, so it gets **401** and
+  the redirect is skipped. Checked: with `x-internal` 401, with the site
+  Referer 200 `{"path":"/espana/castilla-y-leon/leon"}`. Same pattern as
+  bot-visit.
+- The same resolver backs `/municipio/<slug>`, which also served 200:
+  `/municipio/alcala-de-henares` and
+  `/espana/comunidad-de-madrid/madrid/alcala-de-henares` both 200,
+  self-canonical and indexable. That's **~8,100 duplicate pairs**, and the
+  municipality sitemap shards listed the `/municipio/` form, while every
+  internal link uses `/espana` (117 anchors on the Madrid province page, 0
+  to `/municipio/`).
+- The resolver also called the public URL (5 r/s per-IP edge limit for
+  everything leaving compute). It cached any non-OK answer (401/429/5xx) as
+  "no redirect" until the next restart.
+
+**Fix:**
+- `/api/geo/resolve` added to `AUTH_EXEMPT`: read-only, `findUnique` by
+  code/slug, and the mapping is already public via the sitemaps.
+- The middleware calls it on `INTERNAL_ORIGIN` (default
+  `http://127.0.0.1:$PORT`, PORT=3000 in the Dockerfile), not through the
+  edge. Only definite answers are cached: a path, or 404 = no such slug.
+- Municipality shards now list
+  `/espana/<community>/<province>/<municipality>`, so the sitemaps don't
+  fill with 8,100 redirects.
+
+eslint 0 errors; web `tsc` identical to baseline.
+
+**Verify after deploy (compute loopback, ≤1 r/s):**
+- `/provincias/24` → 301 `/espana/castilla-y-leon/leon`;
+- `/municipio/alcala-de-henares` → 301 to its `/espana` URL;
+- `/api/geo/resolve?slug=_province:24` 200 with no headers;
+- a municipality shard lists `/espana/…` URLs, and a sample of 30 is 200 +
+  self-canonical.
+
+**Next (L3 hygiene, internal links to final URLs):**
+- 22 internal links point to `/provincias/<code>`: nav, cameras, roads,
+  postal codes, gasolineras, radares, noticias, andorra, portugal. With this
+  change each is a 301 hop.
+- `/ciudad` links `/municipio/<slug>`.
+- `radares/provincia/[province]` links `/provincias/<province-name-slug>`,
+  which isn't a code, so that link is a real 404 today.
+- Add a `provincePath(code)` helper and replace them.
+
+---
+
 ## Cycle 2026-10-19 (18) — no more build-time prerender from the empty DB stub (54 pages)
 
 **Cycle 17 verified (PR #95 → `55d151bc`, web 07:59:32Z):**

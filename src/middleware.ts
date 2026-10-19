@@ -62,28 +62,32 @@ const PROVINCE_TO_COMMUNITY = PROVINCE_SLUG_TO_COMMUNITY_SLUG;
  * Resolve a municipality or city slug to its full /espana/... path.
  * Uses the internal API to avoid direct Prisma imports in middleware (edge runtime).
  */
-async function resolveSlugToGeoPath(
-  slug: string,
-  origin: string
-): Promise<string | null> {
+// The resolver is called on this same server, not through the public URL: the
+// edge allows 5 r/s per IP and everything leaving compute shares one IP, so a
+// crawl of /municipio/* would have rate-limited its own redirects.
+const INTERNAL_ORIGIN = process.env.INTERNAL_ORIGIN || `http://127.0.0.1:${process.env.PORT || 3000}`;
+
+async function resolveSlugToGeoPath(slug: string): Promise<string | null> {
   const cached = slugCache.get(slug);
   if (cached !== undefined) return cached;
 
   try {
     const res = await fetch(
-      `${origin}/api/geo/resolve?slug=${encodeURIComponent(slug)}`,
+      `${INTERNAL_ORIGIN}/api/geo/resolve?slug=${encodeURIComponent(slug)}`,
       { headers: { "x-internal": "1" }, next: { revalidate: 3600 } }
     );
-    if (!res.ok) {
+    // Cache only definite answers: a path, or "no such slug" (404). A 401, a
+    // 429 or a 5xx used to be cached as "no redirect" until the next restart.
+    if (res.status === 404) {
       slugCache.set(slug, null);
       return null;
     }
+    if (!res.ok) return null;
     const data = await res.json();
     if (data?.path) {
       slugCache.set(slug, data.path);
       return data.path;
     }
-    slugCache.set(slug, null);
     return null;
   } catch {
     return null;
@@ -176,7 +180,7 @@ export async function middleware(request: NextRequest) {
   if (cityMatch) {
     const slug = cityMatch[2];
     const origin = request.nextUrl.origin;
-    const geoPath = await resolveSlugToGeoPath(slug, origin);
+    const geoPath = await resolveSlugToGeoPath(slug);
     if (geoPath) {
       return NextResponse.redirect(`${origin}${geoPath}${search}`, 301);
     }
@@ -188,7 +192,7 @@ export async function middleware(request: NextRequest) {
   if (provMatch) {
     const code = provMatch[1];
     const origin = request.nextUrl.origin;
-    const geoPath = await resolveSlugToGeoPath(`_province:${code}`, origin);
+    const geoPath = await resolveSlugToGeoPath(`_province:${code}`);
     if (geoPath) {
       return NextResponse.redirect(`${origin}${geoPath}${search}`, 301);
     }

@@ -9,7 +9,12 @@ const ALLOWED_HOSTS = [
 ];
 
 // Endpoints that bypass auth (monitoring, health checks, public datasets)
-const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/newsletter/subscribe"];
+// /api/geo/resolve: the middleware's slug → /espana/... lookup for the
+// /provincias/<code> and /municipio/<slug> redirects. Its own fetch carries no
+// Origin or API key, so this gate answered 401 and those redirects never ran
+// (both served duplicate pages until 2026-10-19). Read-only, and the mapping it
+// returns is public (every target URL is in the sitemaps).
+const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/newsletter/subscribe", "/api/geo/resolve"];
 
 /**
  * Check if a request is genuinely same-origin.
