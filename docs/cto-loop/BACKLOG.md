@@ -75,6 +75,111 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (27) — #104 failed its verify; AEMET's quota hits follow the minute clock, not our volume
+
+**Handover.** The CTO session hit its weekly limit at 18:01 on 2026-10-19.
+«CTO ex el pulpo» took CTO+CSO at 20:35, and **«server-28» took over at
+00:00 on 2026-10-20**. Send everything to server-28. Every earlier decision and
+condition stays in force.
+
+**Cycle 26 verified, and it FAILED (PR #104 → `5d0ba9b0`, collectors
+DEPLOY SUCCESS 15:55:20Z, 9 s).** First run at 19:20Z (cron `20 3,9,15,21`
+runs in TZ Europe/Madrid, so 21:20 local):
+
+| | target | 19:20Z run | baseline (15:38Z manual, 1,500 ms) |
+|---|---|---|---|
+| duration | < 15 min | **5,010 s (83.5 min)** | 2,606 s |
+| quotaHits | 0 | **70** (40×429, 30×500 transient; plus 13×401 not counted) | — |
+| failed municipios | — | **26/197** | 15/197 |
+| upserted | — | 1,197 | 1,274 |
+
+- failedCodes: 15030 20069 13034 21041 30030 22125 38028 08101 46190 29051
+  15078 24115 04079 04902 13071 25040 50067 50095 07011 33066 48054 24142
+  03031 18122 06014 13039.
+- `meta.runStartedAt` was gone once the run finished ✓, so the marker works.
+- The run got slower and lost more municipios. Slowing the pace from 2 s to
+  4 s did not reduce the quota hits.
+
+New collector image baseline after #104. The #103 table below is
+superseded. The next web-only PR must leave these unchanged:
+
+| container | image | started |
+|---|---|---|
+| collector-realtime | `b290578a96b4` | 15:55:18Z |
+| collector-frequent | `20fdf62690ca` | 15:55:18Z |
+| collector-fuel | `f5f341d79678` | 15:55:18Z |
+| collector-daily | `47b43958c0d3` | 15:55:18Z |
+| collector-weekly | `047109012efd` | 15:55:18Z |
+| collector-ais | `749cece6ef55` | 15:55:18Z |
+
+**Diagnosis (item of this cycle, no code change).** Method: rebuilt the
+request timeline from the run's JSON log lines.
+
+- **It is not our volume.**
+  - Ours: 5.7 req/min on average; per calendar minute, median 5 and max 14.
+  - AEMET's documented limit is **40/min per user, plus an unquantified
+    global limit**. Source: FAQ v1.4, 28-jul-2025, §3.5 p.21,
+    https://opendata.aemet.es/centrodedescargas/docs/FAQs170621.pdf
+  - Same FAQ, p.27: 429 = «Límite de peticiones o caudal por minuto excedido
+    para este usuario»; 401 = «api_key inválido».
+  - Our request count in the 60/120/180/300 s before each hit does not
+    separate hits from successes (60 s: median 8 vs 7; 300 s: 26 vs 26).
+  - 20+ hits came with ONE request of ours in the previous minute.
+- **It follows the minute clock.** 76 of 83 hits land in second :40-:59
+  (56 in :50-:59). Our successes cluster in :20-:49, and only 16 of 308 fall
+  in :50-:59. That is the shape of a calendar-minute counter that someone
+  else exhausts by ~:45: another holder of the key, or AEMET's global limit.
+- **No other consumer of ours explains it.**
+  - The same key (sha `8b8123d82b8d`, JWT, iat 2026-03-31, no `exp`) is in
+    the 6 collectors and the web container. The web code never calls AEMET.
+  - Our callers are aemet-forecast, weather (:00 hourly, ~12 s),
+    maritime-forecast (:10 every 6 h) and aemet-historical (08:00).
+  - In the 83-min window only weather ran (20:00:05-20:00:17Z), and hits
+    kept coming once a minute throughout.
+  - Nothing else on compute or primary calls AEMET. Workstations and other
+    hosts were not checked; outside use is only visible to AEMET.
+- **The loss mechanism is our retry timing.**
+  - 23 of the 26 lost municipios are **step-2 retries**. Step 2 waits a
+    fixed 60 s, which lands in the same exhausted second of the next
+    minute, so the retry fails 77 % of the time.
+  - Step 1 waits 30 s, which lands in the good part of the minute, so it
+    recovers 94 % of the time (50 of 53).
+- **The 401s are not auth.**
+  - 13 in total, all on step 1, on 13 different municipios.
+  - 10 of 13 recovered on retry.
+  - They land on the same clock (:40 and :00). The key does not expire and
+    is identical everywhere.
+  - Reading: AEMET's gateway answers 401 under the same pressure.
+
+**Phase probe, authorised by server-28 for 2026-10-20 00:30-00:40Z.**
+- What it does: one step-1 request (28079) at :05/:25/:45/:55 of each
+  minute, 40 in total, via a one-off `docker exec` into collector-daily.
+- What it does not touch: no DB, Redis, image, cron or env change; the key
+  is read from the container env and never printed.
+- It stops on 3 consecutive 401s, or if a task of ours that uses AEMET
+  starts.
+- Script and log: `/tmp/aemet-probe/` on compute.
+- How to read it: if :45/:55 fail while :05/:25 pass, the clock reading is
+  confirmed.
+
+**Proposed fix (server-28's spec; PR only once the probe holds).**
+- Requests only in :00-:40 of each minute.
+- After a 429/500 on either step, wait until the start of the next minute
+  instead of a fixed 30 s / 60 s backoff.
+- No faster pace. Ship it with tests.
+
+**Overlap corner case.** If two runs ever overlapped, the first run's final
+heartbeat would erase the second run's `runStartedAt`. supercronic v0.2.33
+runs without `-overlapping`, so the same job does not start twice, and 83 min
+is far from the 6 h period. Note only.
+
+**Next:**
+- Probe table.
+- The 01:20Z run as the night sample (duration, quotaHits, failedCodes).
+- Then the PR above.
+
+---
+
 ## Cycle 2026-10-19 (26) — aemet-forecast paced to stay under AEMET's quota; a killed run is marked as such
 
 **Cycle 25 verified (PR #103 → `7148c782`, collectors DEPLOY SUCCESS 17:40:16
