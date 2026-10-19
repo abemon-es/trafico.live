@@ -31,6 +31,7 @@ import {
   ExternalLink,
   ChevronRight,
 } from "lucide-react";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -291,7 +292,7 @@ export default async function CameraDetailPage({ params }: Props) {
             { name: "Inicio", href: "/" },
             { name: "Cámaras", href: "/camaras" },
             ...(camera.provinceName && camera.province
-              ? [{ name: camera.provinceName, href: `/provincias/${camera.province}` }]
+              ? [{ name: camera.provinceName, href: (provincePath(camera.province) ?? "/espana") }]
               : []),
             { name: camera.name, href: `/camaras/camara/${id}` },
           ]}
@@ -559,7 +560,7 @@ export default async function CameraDetailPage({ params }: Props) {
             )}
             {camera.provinceName && camera.province && (
               <Link
-                href={`/provincias/${camera.province}`}
+                href={(provincePath(camera.province) ?? "/espana")}
                 className="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors text-sm text-gray-700 dark:text-gray-300"
               >
                 <MapPin className="w-4 h-4 text-tl-600 dark:text-tl-400 flex-shrink-0" />

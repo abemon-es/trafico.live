@@ -7,6 +7,7 @@ import { ReportSummary } from "@/components/insights/ReportSummary";
 import { renderMarkdown } from "@/lib/insights/render-markdown";
 import { Calendar, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -140,7 +141,7 @@ La siniestralidad en ${prov.name} ${Number(accidentTrend) < 0 ? `ha disminuido u
 ## Más información
 
 - [Estadísticas de accidentes](/estadisticas/accidentes)
-- [Tráfico en ${prov.name}](/provincias/${prov.code})
+- [Tráfico en ${prov.name}](${provincePath(prov.code) ?? "/espana"})
 - [Radares en ${prov.name}](/radares)
 
 ---

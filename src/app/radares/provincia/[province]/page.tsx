@@ -16,6 +16,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 export const revalidate = 300;
 
@@ -465,7 +466,7 @@ export default async function RadaresProvinciaPage({ params }: Props) {
               {
                 title: `Provincia de ${province.name}`,
                 description: "Tráfico, incidencias y datos de la provincia",
-                href: `/provincias/${provinceSlug(province.name)}`,
+                href: provincePath(province.code) ?? "/espana",
                 icon: <MapPin className="w-5 h-5" />,
               },
             ]}

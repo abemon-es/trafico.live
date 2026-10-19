@@ -31,6 +31,7 @@ export const revalidate = 300;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 import { TraficoMap } from "@/components/map/TraficoMapClient";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 interface PageProps {
   params: Promise<{ roadId: string }>;
@@ -722,7 +723,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                 {road.provinces.slice(0, 4).map((prov) => (
                   <Link
                     key={prov}
-                    href={`/provincias/${prov}`}
+                    href={(provincePath(prov) ?? "/espana")}
                     className="px-3 py-1 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 rounded-full text-sm text-gray-700 dark:text-gray-300"
                   >
                     {PROVINCE_NAMES[prov] || prov}

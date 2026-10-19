@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 export const dynamic = "force-dynamic"; // SSR on every request
 export const revalidate = 0;
@@ -608,7 +609,7 @@ export default async function PortugalPage() {
             {BORDER_PROVINCES.map((p) => (
               <Link
                 key={p.code}
-                href={`/provincias/${p.code}`}
+                href={(provincePath(p.code) ?? "/espana")}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-gray-900 border-tl-200 dark:border-tl-800/50 text-tl-700 dark:text-tl-300 hover:bg-tl-50 dark:hover:bg-tl-950/30 hover:border-tl-400 dark:hover:border-tl-600"
               >
                 <MapPin className="w-3.5 h-3.5" />

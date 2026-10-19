@@ -7,6 +7,7 @@ import { getProvinceBounds, getProvinceName, PROVINCE_NAMES } from "@/lib/provin
 import { provinceSlug } from "@/lib/geo/slugify";
 import { ProvinceGasolinerasMapaClient } from "./MapaClient";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 export const revalidate = 300;
 
@@ -225,7 +226,7 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             </div>
           </Link>
           <Link
-            href={`/provincias/${paddedCode}`}
+            href={(provincePath(paddedCode) ?? "/espana")}
             className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow"
           >
             <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400" />

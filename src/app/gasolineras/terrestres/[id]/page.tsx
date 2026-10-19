@@ -9,6 +9,7 @@ import { PriceComparisonCard, StationRanking, PriceHistoryChart } from "@/compon
 import { TraficoMapCard } from "@/components/map/TraficoMapCard";
 import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
+import { provincePath } from "@/lib/geo/geo-paths";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -459,7 +460,7 @@ export default async function StationDetailPage({ params }: Props) {
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Provincia</span>
               {station.province ? (
-                <Link href={`/provincias/${station.province}`} className="font-medium text-tl-600 dark:text-tl-400 hover:underline">
+                <Link href={(provincePath(station.province) ?? "/espana")} className="font-medium text-tl-600 dark:text-tl-400 hover:underline">
                   {station.provinceName || station.province}
                 </Link>
               ) : (

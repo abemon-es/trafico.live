@@ -45,6 +45,34 @@ const CITIES = [
   { name: "Pamplona", slug: "pamplona", province: "Navarra", population: "200K" },
 ];
 
+// Canonical /espana URL of each city: the municipality slug from the DB
+// (Vitoria is vitoria-gasteiz, Palma is palma-de-mallorca). The cards linked
+// /municipio/<slug>, which now redirects, and for five of these slugs
+// (palma, alicante, vitoria, san-sebastian, pamplona) never resolved at all.
+// Checked against production 2026-10-19: all 200 and self-canonical.
+const CITY_PATH: Record<string, string> = {
+  "madrid": "/espana/comunidad-de-madrid/madrid/madrid",
+  "barcelona": "/espana/cataluna/barcelona/barcelona",
+  "valencia": "/espana/comunidad-valenciana/valencia/valencia",
+  "sevilla": "/espana/andalucia/sevilla/sevilla",
+  "zaragoza": "/espana/aragon/zaragoza/zaragoza",
+  "malaga": "/espana/andalucia/malaga/malaga",
+  "murcia": "/espana/region-de-murcia/murcia/murcia",
+  "palma": "/espana/islas-baleares/baleares/palma-de-mallorca",
+  "bilbao": "/espana/pais-vasco/bizkaia/bilbao",
+  "alicante": "/espana/comunidad-valenciana/alicante/alicantealacant",
+  "cordoba": "/espana/andalucia/cordoba/cordoba",
+  "valladolid": "/espana/castilla-y-leon/valladolid/valladolid",
+  "vigo": "/espana/galicia/pontevedra/vigo",
+  "gijon": "/espana/principado-de-asturias/asturias/gijon",
+  "granada": "/espana/andalucia/granada/granada",
+  "vitoria": "/espana/pais-vasco/alava/vitoria-gasteiz",
+  "oviedo": "/espana/principado-de-asturias/asturias/oviedo",
+  "san-sebastian": "/espana/pais-vasco/gipuzkoa/donostia-san-sebastian",
+  "santander": "/espana/cantabria/cantabria/santander",
+  "pamplona": "/espana/navarra/navarra/pamplonairuna",
+};
+
 export default function CiudadesPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -90,7 +118,7 @@ export default function CiudadesPage() {
           {CITIES.map((city) => (
             <Link
               key={city.slug}
-              href={`/municipio/${city.slug}`}
+              href={CITY_PATH[city.slug] ?? `/municipio/${city.slug}`}
               className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-tl-300 hover:shadow-md transition-all group"
             >
               <div className="flex items-start justify-between">
