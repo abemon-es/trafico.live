@@ -609,12 +609,6 @@ export default async function PosicionamientoPage() {
           >
             ← Sobre trafico.live
           </Link>
-          <Link
-            href="/sobre/citaciones-ia"
-            className="text-tl-600 dark:text-tl-400 hover:underline"
-          >
-            Citaciones IA →
-          </Link>
         </nav>
       </main>
     </>

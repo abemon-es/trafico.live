@@ -2903,7 +2903,7 @@ model FleetPosition {
 // ============================================
 
 /// Logs each visit from a known AI/LLM crawler (GPTBot, ClaudeBot, etc.)
-/// Written from /api/internal/bot-visit (Node runtime, not middleware edge).
+/// No writer: /api/internal/bot-visit was removed on 2026-10-19 (it never stored a row). Kept until MJ decides on a daily Loki rollup; otherwise dropped in its own migration.
 /// No PII: IP is stored as first-two-octet prefix only.
 model BotVisit {
   id         String   @id @default(cuid())

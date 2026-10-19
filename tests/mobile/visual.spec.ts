@@ -52,7 +52,6 @@ const ROUTES: RouteSpec[] = [
   { name: "sobre", path: "/sobre" },
   { name: "sobre-api", path: "/sobre/api" },
   { name: "sobre-contacto", path: "/sobre/contacto" },
-  { name: "sobre-citaciones-ia", path: "/sobre/citaciones-ia" },
   { name: "sobre-posicionamiento", path: "/sobre/posicionamiento" },
 
   // ── /dgt section ──────────────────────────────────────────────────────────

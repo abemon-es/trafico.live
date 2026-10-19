@@ -191,6 +191,14 @@ const nextConfig: NextConfig = {
         destination: "/sobre/contacto",
         permanent: true,
       },
+      // /sobre/citaciones-ia removed 2026-10-19: it published "0 AI bot visits"
+      // from a table that never received a row. AI crawler visits are in Loki
+      // (ai_bot_visit). Whether to bring the page back is MJ's call.
+      {
+        source: "/sobre/citaciones-ia",
+        destination: "/sobre",
+        permanent: true,
+      },
       // -----------------------------------------------------------------------
       // Legacy rewrite-turned-redirects (duplicate content)
       // -----------------------------------------------------------------------
