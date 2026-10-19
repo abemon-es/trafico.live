@@ -36,4 +36,13 @@
 0 9 * * 1 TASK=weekly-digest npx tsx index.ts 2>&1
 
 # Monthly state-of-traffic PDF report (1st of month 03:00) — T4.9e
-0 3 1 * * TASK=monthly-report NODE_OPTIONS=--max-old-space-size=1024 npx tsx index.ts 2>&1
+# DISABLED 2026-10-19: it has never produced a report. The dispatcher does not
+# register the task (2026-10-01 run: "Unknown task: monthly-report", exit 1),
+# render.ts has JSX in a .ts file, @react-pdf/renderer is not in the collector
+# package.json, and upload.ts targets R2 (retired; no R2_* vars, no DNS for
+# reports.trafico.live). Whether to build it is a product decision (it backs the
+# "informes PDF mensuales" in the municipal offer) — see docs/cto-loop/BACKLOG.md.
+# To re-enable: rename render.ts → render.tsx, add the deps to
+# services/collector/package.json, register "monthly-report" in index.ts,
+# move the upload to MinIO with a public URL, then uncomment.
+#0 3 1 * * TASK=monthly-report NODE_OPTIONS=--max-old-space-size=1024 npx tsx index.ts 2>&1

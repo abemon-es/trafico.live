@@ -75,6 +75,45 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (11) — the monthly report that never ran, and the page that kept promising it
+
+**Cycle 10 verified (PR #85 → `dc25deff`):** `health-check` 01:30Z `ok`,
+`errors: 0`, **20 healthy**; opensky `ok` (185 stored, authenticated);
+degraded 4 → 3 (the remaining three are upstream partials: `city-traffic`,
+`aemet-forecast`, `transit-gtfs`).
+**TRAFICO-LIVE-3 (n=14,310, "error running command: exit status 1"):** split
+by `job.command` in Loki over 24 h → all 221 are `panel`, the last one
+2026-10-18 20:00, before the cycle-1 v3.7 fix. Nothing else exits 1. It can be
+resolved in GlitchTip (token is read-only → next time MJ or the CTO is in the
+UI).
+
+**Item (L1 + L2), the finding from cycle 10:** `monthly-report`.
+- Never produced a report: not registered in `services/collector/index.ts`
+  (Loki 2026-10-01 03:00: `Unknown task`), JSX in `render.ts`,
+  `@react-pdf/renderer` and `@aws-sdk/client-s3` absent from the prod
+  collector image (checked in `collector-weekly`), upload to R2 with no `R2_*`
+  vars and no DNS for `reports.trafico.live`.
+- **Cron disabled** (`crontabs/weekly`) with the re-enable steps written next
+  to it. It was a guaranteed exit 1 every month.
+- **`/ayuntamiento/<slug>/informe`** (one per municipality, indexable) said
+  "El primer informe mensual se publicará el 1 del próximo mes" and "Generados
+  el 1 de cada mes", a promise that never came true. Now: `noindex` while
+  there are no reports (`index: hasReports`, list shared with the page through
+  `react` `cache()`), honest empty state that links to the municipality page,
+  neutral header and description.
+- **Breadcrumb "Ayuntamientos" → `/ayuntamiento`** on both pages pointed to a
+  route that does not exist (404 since cycle 7). Removed; there is no hub.
+- The commercial "desde 499 €/mes" offer on the same pages → **MJ**
+  (ESCALATIONS). Not touched.
+**Verify after deploy (on compute):** `/ayuntamiento/<slug>/informe` → 200 +
+`noindex` + new copy; `/ayuntamiento/<slug>` → no `/ayuntamiento"` href.
+**Baseline noted:** `tsc --noEmit -p .` on main has **11 pre-existing errors**
+(recharts formatter types ×4, flotas, maritimo puertos JSON-LD, alertas ×2,
+chat ×2, InvoicesList). Build ignores them; for the loop, "tsc green" means
+*no new errors*. Worth one hygiene cycle later.
+
+---
+
 ## Cycle 2026-10-19 (10) — the opensky freshness check never ran (wrong column since April)
 
 **Cycle 9 verified (PR #84 → `6a0cb795`):** smoke **109 pass · 0 fail** on
@@ -99,12 +138,18 @@ SLA queries were checked against the schema: all columns exist.
 20 healthy. Auto-recovery can now run `opensky` inline when aircraft are
 >30 min stale; that is the designed behaviour.
 
-**Found en route (next L1, ranked first):** `tasks/monthly-report/render.ts`
-has JSX in a `.ts` file (`<View style=…>` at line 258, react-pdf). `tsc -p
-services/collector` stops on its parse errors (so the collector typecheck
-has been useless as a whole), and `tsx` should fail to load it on the 1st of
-every month at 03:00 (`crontabs/weekly:39`). Also writes to R2, which was
-retired for MinIO. Check the 2026-10-01 run in Loki before fixing.
+**Found en route (next L1, ranked first): the monthly press report has never
+run.** Loki, 2026-10-01 03:00 Madrid: `Unknown task: monthly-report` → exit 1
+(`crontabs/weekly:39` schedules it, `services/collector/index.ts` does not
+register it). Behind that: `tasks/monthly-report/render.ts` has JSX in a `.ts`
+file (`<View style=…>` at line 258, react-pdf), so `tsc -p services/collector`
+stops on its parse errors (the collector typecheck has been useless as a
+whole) and `tsx` would fail to load it anyway; and it uploads to R2, which was
+retired for MinIO. It feeds `/prensa` (press kit). Decide: fix (rename to
+`.tsx`, register, MinIO) or unschedule + hide, after checking what `/prensa`
+links to. Also: GlitchTip TRAFICO-LIVE-3 "error running command: exit status
+1" (n=14,310) is supercronic's generic failure for *every* task — split it by
+`job.command` in Loki to see which tasks still exit 1.
 
 ---
 
@@ -1840,6 +1885,20 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
    anonymised (cl. 3(i)). Both are product changes → MJ.
    **aisstream.io: MJ decided 2026-10-18 to leave as is** (no published ToS;
    Legal rated legal risk low, operational medium).
+
+0. **Municipal offer "desde 499 €/mes" sells a product that does not exist —
+   OPEN, awaiting MJ (raised 2026-10-19).** Every `/ayuntamiento/<slug>` page
+   (`MunicipalDashboard.tsx` ~L88-100) offers a branded portal "con informes
+   PDF mensuales automáticos y acceso a la API … Desde 499 €/mes" → `/api-landing`.
+   The PDF generator has never run (cycle 11), and there is no price in the
+   brain (it was scaffolded by the April "team4" agents). Reach today: zero —
+   the section has no inbound links, is not in any sitemap, and no
+   `/ayuntamiento` URL has a single GA4 session or GSC impression in 90 d.
+   Decide: (a) it is a real offer → build the PDF (≈2 cycles: `.tsx`, deps in
+   the collector image, register the task, MinIO bucket + public URL via CTO)
+   and link the section from the municipality pages; or (b) drop the offer copy
+   and keep the pages as plain data pages. Loop default until then: leave the
+   copy, do not link the section.
 
 0. **Newsletter: two parallel systems, and the live one has no exit.** Verified
    end to end on 2026-08-19 by actually subscribing through the public endpoint
