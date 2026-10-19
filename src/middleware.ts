@@ -192,8 +192,10 @@ export async function middleware(request: NextRequest) {
 
       // Fire-and-forget to Node-runtime API so Prisma can persist the visit.
       // We do NOT await — the bot visit log must never delay the actual response.
-      // Skip /api/* paths to avoid noise from internal API calls.
-      if (!pathname.startsWith("/api/")) {
+      // Skip /api/* paths to avoid noise from internal API calls, and skip
+      // entirely without BOT_VISIT_SECRET (no fallback: the repo is public).
+      const internalSecret = process.env.BOT_VISIT_SECRET;
+      if (!pathname.startsWith("/api/") && internalSecret) {
         const rawIp =
           request.headers.get("cf-connecting-ip") ||
           request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -205,8 +207,6 @@ export async function middleware(request: NextRequest) {
           ? rawIp.split(":").slice(0, 2).join(":")
           : null;
 
-        const internalSecret =
-          process.env.BOT_VISIT_SECRET || "trafico-internal-bot-visit-v1";
         const origin = request.nextUrl.origin;
 
         fetch(`${origin}/api/internal/bot-visit`, {
