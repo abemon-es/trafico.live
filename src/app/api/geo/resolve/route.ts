@@ -12,7 +12,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
 
-  if (!slug) {
+  // Public (auth-exempt for GET, see lib/auth.ts): reject junk cheaply. Real
+  // slugs are short ("_province:47", "alcala-de-henares").
+  if (!slug || slug.length > 100) {
     return NextResponse.json({ error: "slug required" }, { status: 400 });
   }
 

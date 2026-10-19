@@ -12,8 +12,12 @@ const LEGACY_DOMAINS = [
   "trafico.abemon.es",
 ];
 
-// In-memory slug resolution cache (lives for the lifetime of the edge worker)
-const slugCache = new Map<string, string | null>();
+// In-memory slug → /espana path cache (lives for the lifetime of the edge
+// worker). Only resolved paths are stored, and at most SLUG_CACHE_MAX: there
+// are ~8,150 real slugs, and unknown ones are never cached, so random slugs
+// cannot grow it. Insertion order makes the first key the oldest.
+const SLUG_CACHE_MAX = 10_000;
+const slugCache = new Map<string, string>();
 
 // AI / LLM / search-engine crawler fingerprints. Match against the User-Agent
 // string and log to stdout so Loki ingests one structured line per AI crawl.
@@ -62,29 +66,31 @@ const PROVINCE_TO_COMMUNITY = PROVINCE_SLUG_TO_COMMUNITY_SLUG;
  * Resolve a municipality or city slug to its full /espana/... path.
  * Uses the internal API to avoid direct Prisma imports in middleware (edge runtime).
  */
-async function resolveSlugToGeoPath(
-  slug: string,
-  origin: string
-): Promise<string | null> {
+// The resolver is called on this same server, not through the public URL: the
+// edge allows 5 r/s per IP and everything leaving compute shares one IP, so a
+// crawl of /municipio/* would have rate-limited its own redirects.
+const INTERNAL_ORIGIN = process.env.INTERNAL_ORIGIN || `http://127.0.0.1:${process.env.PORT || 3000}`;
+
+async function resolveSlugToGeoPath(slug: string): Promise<string | null> {
   const cached = slugCache.get(slug);
   if (cached !== undefined) return cached;
 
+  // Any failure (unknown slug, timeout, 5xx) means "no redirect": the request
+  // falls through to the page exactly as before, and nothing is cached.
   try {
     const res = await fetch(
-      `${origin}/api/geo/resolve?slug=${encodeURIComponent(slug)}`,
-      { headers: { "x-internal": "1" }, next: { revalidate: 3600 } }
+      `${INTERNAL_ORIGIN}/api/geo/resolve?slug=${encodeURIComponent(slug)}`,
+      { signal: AbortSignal.timeout(2000) }
     );
-    if (!res.ok) {
-      slugCache.set(slug, null);
-      return null;
+    if (!res.ok) return null;
+    const data = (await res.json()) as { path?: unknown };
+    if (typeof data?.path !== "string" || !data.path.startsWith("/espana/")) return null;
+    if (slugCache.size >= SLUG_CACHE_MAX) {
+      const oldest = slugCache.keys().next().value;
+      if (oldest !== undefined) slugCache.delete(oldest);
     }
-    const data = await res.json();
-    if (data?.path) {
-      slugCache.set(slug, data.path);
-      return data.path;
-    }
-    slugCache.set(slug, null);
-    return null;
+    slugCache.set(slug, data.path);
+    return data.path;
   } catch {
     return null;
   }
@@ -176,7 +182,7 @@ export async function middleware(request: NextRequest) {
   if (cityMatch) {
     const slug = cityMatch[2];
     const origin = request.nextUrl.origin;
-    const geoPath = await resolveSlugToGeoPath(slug, origin);
+    const geoPath = await resolveSlugToGeoPath(slug);
     if (geoPath) {
       return NextResponse.redirect(`${origin}${geoPath}${search}`, 301);
     }
@@ -188,7 +194,7 @@ export async function middleware(request: NextRequest) {
   if (provMatch) {
     const code = provMatch[1];
     const origin = request.nextUrl.origin;
-    const geoPath = await resolveSlugToGeoPath(`_province:${code}`, origin);
+    const geoPath = await resolveSlugToGeoPath(`_province:${code}`);
     if (geoPath) {
       return NextResponse.redirect(`${origin}${geoPath}${search}`, 301);
     }

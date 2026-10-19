@@ -1734,7 +1734,10 @@ async function municipalitySitemap(
   const municipalities = await prisma.municipality.findMany({
     skip: shardIndex * SHARD_SIZE,
     take: SHARD_SIZE,
-    select: { slug: true },
+    select: {
+      slug: true,
+      province: { select: { slug: true, community: { select: { slug: true } } } },
+    },
     orderBy: { slug: "asc" },
   });
 
@@ -1742,8 +1745,11 @@ async function municipalitySitemap(
   const today = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
   );
+  // The canonical form, the one the province pages link to. /municipio/<slug>
+  // was listed here while both forms answered 200 as their own canonical;
+  // since 2026-10-19 the middleware 301s /municipio/<slug> to this URL.
   return municipalities.map((m) => ({
-    url: `${BASE_URL}/municipio/${m.slug}`,
+    url: `${BASE_URL}/espana/${m.province.community.slug}/${m.province.slug}/${m.slug}`,
     lastModified: today,
     changeFrequency: "weekly" as const,
     priority: 0.5,
