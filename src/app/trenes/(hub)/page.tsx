@@ -20,8 +20,8 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { TrenesHeroMap } from "./TrenesHeroMap";
-import { TrenesAnalytics } from "./TrenesAnalytics";
+import { TrenesHeroMap } from "../TrenesHeroMap";
+import { TrenesAnalytics } from "../TrenesAnalytics";
 
 export const revalidate = 300;
 

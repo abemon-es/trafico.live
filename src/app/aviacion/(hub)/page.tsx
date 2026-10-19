@@ -20,7 +20,7 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { AviationHeroMap } from "./AviationHeroMap";
+import { AviationHeroMap } from "../AviationHeroMap";
 
 export const revalidate = 180;
 

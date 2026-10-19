@@ -75,6 +75,59 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-19 (24) — six hubs' loading.tsx turned every unknown child URL into a 200 + index (soft 404)
+
+**Cycle 23 verified (PR #101 → `b2dd533c`, deploy seen 13:14:27Z).** Traefik
+404s, hour after vs hour before:
+
+| client | before | after |
+|---|---|---|
+| GCP crawler | 744 (precios 377 + radares/provincia 367) | 30 (−96 %) |
+| other crawlers | 21 | 28 |
+
+- "Other" is Anthropic 216.73.216.216, Bing and AWS replaying locality URLs
+  they had already discovered; 0 came from our loopback. They should
+  decay; re-measure tomorrow.
+- The link check on real stations is re-running (the first run was very
+  slow at compute load ~24, and its output was piped through tail).
+
+**Signal:** `/camaras/*` showed 0 404s in both hours. That's because
+`/camaras/<anything>` answers **200 + "index, follow"** with "Cámaras no
+encontradas".
+- Checked one unknown slug in each segment that has a `loading.tsx`, all
+  **200 + index**: `/camaras/no-existe-zzz`, `/trenes/estacion/no-existe-zzz`,
+  `/aviacion/aeropuertos/zzz`, `/calidad-aire/estacion/no-existe-zzz`,
+  `/maritimo/puerto/no-existe-zzz`, `/transporte-publico/no-existe-zzz`.
+- **Cause** (the backlog's L2 "scope the segment loading.tsx" item): a
+  segment-level `loading.tsx` makes Next stream the shell with a 200, so a
+  child page's later `notFound()` can't change the status.
+- After #101 the crawlers already hold thousands of `/camaras/<locality>`
+  URLs, all of them indexable soft 404s.
+
+**Fix:**
+- In `/camaras`, `/trenes`, `/aviacion`, `/calidad-aire`, `/maritimo` and
+  `/transporte-publico`, the hub's `page.tsx` + `loading.tsx` (and `/camaras`'
+  `content.tsx`) move into a `(hub)` route group. The skeleton still covers
+  the hub URL, but no longer wraps the dynamic children, so their
+  `notFound()` returns a real 404.
+- Moved pages import siblings as `../X`. `opengraph-image.tsx`, the maritimo
+  `layout.tsx` and the hero components stay put, so children keep
+  inheriting them.
+- `/camaras/[city]` metadata: no matching cameras → `robots: noindex`, in
+  case the page is ever served as a soft 200 again.
+
+tsc (scratchpad config without `.next`, whose generated types still point
+at the old paths) = main's 11. eslint: the 4 errors are the pre-existing
+React-compiler findings in `camaras/content.tsx`, moved unchanged.
+
+**Verify after deploy:**
+- the 6 unknown URLs above → **404**;
+- the 6 hubs → 200;
+- one valid child per segment → 200 + index (`/camaras/madrid`,
+  `/trenes/estacion/<real>`, `/aviacion/aeropuertos/mad`, …).
+
+---
+
 ## Cycle 2026-10-19 (23) — gas-station pages stop emitting ~70k cross-links to pages that don't exist
 
 **Cycle 22 verified (PR #100 → `0bcddbf5`, DEPLOY SUCCESS 14:55:16 local, 347 s):**

@@ -18,7 +18,7 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { CalidadAireHeroMap } from "./CalidadAireHeroMap";
+import { CalidadAireHeroMap } from "../CalidadAireHeroMap";
 
 // 300: deploy-blank class — the build prerenders this page with no DB, so the
 // window is how long the empty copy (directory included) survives a deploy.
