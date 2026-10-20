@@ -75,6 +75,102 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (28) — #106 failed its verify; the AEMET key is past its renewal deadline
+
+**Night sample, 01:20Z, still on the #104 code.**
+- 01:20:03 → 02:33:20Z: **4,397 s, 50 quotaHits, 21/197 lost**, 1,232
+  upserted.
+- The pattern is the same as at 19:20Z:
+  - 47 of the 60 first failures landed in :40-:59;
+  - 20 of the 21 lost municipios were step-2 retries after a fixed 60 s.
+- The failedCodes rotate: only 20069 and 50095 repeat from 19:20Z.
+
+**#106 → `e5876eda`, merged 02:37:27Z.**
+- `docker top` at 02:37:11Z showed only two realtime tasks, 12 s old.
+- Collectors DEPLOY SUCCESS in 42 s. All 6 were recreated at 02:38:10Z.
+  This is the new image baseline for the #103 test:
+
+  | container | image |
+  |---|---|
+  | realtime | `190897c2d5fb` |
+  | frequent | `435223cbacf8` |
+  | fuel | `87b4c1bdae9e` |
+  | daily | `4e9732af88d1` |
+  | weekly | `ca683633afe0` |
+  | ais | `ecf91b48474e` |
+
+- Web DEPLOY SUCCESS in 333 s. `/api/health`: commit e5876eda, staleCount
+  0/50. Smoke: 113 pass, 5 warn (the same 5 as before), 0 fail.
+
+**Verify FAILED: the 07:20Z run, the first with #106.**
+
+| | prediction (server-28) | 07:20Z |
+|---|---|---|
+| duration | ~25 min | **3,665 s (61 min)**, 07:20:03 → 08:21:08Z |
+| lost | < 5 | **60/197** |
+| quota hits | < 10 | 2 in the heartbeat; **57 more were 401s, not counted** |
+| upserted | — | 959 |
+
+- Not affected by the mesh outage at 07:14-07:16Z: the run started 4 min
+  after it ended, with no DB errors.
+- **Every minute repeated the same pattern:**
+  - a 401 at :05 on the retry, which loses that municipio;
+  - 3 municipios OK in :07-:18 (6 requests);
+  - a 401 at :20, after which the retry waits for the next :05.
+- So AEMET gave this key exactly 6 requests a minute, and the retry at :05
+  always fell in the refused part.
+
+**Root cause, from one step-1 request at 08:24:20Z (authorised by server-28).**
+The 401 says: «Tu apiKey ha superado el plazo establecido hasta el 15/10/2026
+para su renovación. Debes renovar la credencial antes de continuar utilizando
+el servicio».
+- The key (issued 2026-03-31) passed its renewal deadline 5 days ago. AEMET still serves a few requests a minute on it.
+- This also explains the 401s at 19:20Z and 01:20Z. Some of the earlier
+  «quota» reading was the expired key.
+- **Fix: MJ renews the credential.** The renewal mail should be in the
+  mailbox the key is registered to (named to server-28, not here). The new key then goes into `.env.collectors`, and the collectors
+  are recreated. Escalated through server-28. Until then, AEMET can cut the
+  key off completely: forecast, weather alerts, maritime-forecast and
+  aemet-historical share it.
+- **Other AEMET collectors today:**
+  - weather is ok (08:00Z, 1,651 alerts);
+  - maritime-forecast is ok;
+  - aemet-historical is `partial` with 0 inserted, but that is AEMET's own
+    «No hay datos» 404 for 16-19/10, not the key.
+
+**Item of this cycle: a follow-up PR, stopgap until the renewal.** server-28
+specified it, and it is harmless once the key is renewed:
+- **Retry queue:** a failure goes to the back of the queue, with up to 3
+  tries per municipio. A 404 is final.
+- **401 is a quota signal:** counted in the heartbeat (`quotaHitsByStatus`),
+  it slows the pace and teaches the budget.
+- **Learned budget:**
+  - after a hit, at most as many requests per rolling 60 s as succeeded in
+    the last 60 s;
+  - +1 every 5 min without a hit;
+  - a hit with no success of ours is someone else's pressure: wait 10 s.
+- AEMET's `descripcion` is logged; the key and URL never are.
+- **The run aborts after 10 min with no answer.** A cut-off key would
+  otherwise spend ~2 h retrying everything.
+- **Simulated (`tests/aemet-forecast-queue.test.ts`):**
+
+  | case | duration | lost |
+  |---|---|---|
+  | 6/calendar minute | 68.2 min | 0 |
+  | 6/rolling 60 s | 69.4 min | 0 |
+  | unlimited | 24.4 min | 0 |
+  | 6/min + 3 external 401s | 68.2 min | 0 |
+  | always-500 | 3 tries, then lost | — |
+  | 404 | 1 try | — |
+  | everything refused | aborts at 10.0 min | — |
+
+**Next:**
+- server-28 reviews the PR. Merge with `docker top` clear, before 13:20Z.
+- 13:20Z run: duration ~66-70 min, lost ≈ 0, `quotaHitsByStatus`.
+- After MJ renews the key: the first run should show no 401s and ~25 min.
+
+---
+
 ## Cycle 2026-10-20 (27) — #104 failed its verify; AEMET's quota hits follow the minute clock, not our volume
 
 **Handover.** The CTO session hit its weekly limit at 18:01 on 2026-10-19.
