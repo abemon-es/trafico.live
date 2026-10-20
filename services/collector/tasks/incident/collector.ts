@@ -19,7 +19,7 @@ import { PrismaClient, IncidentType, Severity, RoadType, Direction } from "@pris
 import { inferRoadType } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
-import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
+import { fetchEuskadiIncidents, EuskadiIncident, MAX_PAGES_PER_DAY } from "./euskadi-parser.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
 import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
 import { fetchValenciaIncidents, ValenciaIncident } from "./valencia-parser.js";
@@ -205,8 +205,8 @@ export async function run(prisma: PrismaClient) {
 
     // Process Euskadi incidents (País Vasco regional)
     if (euskadiResult.status === "fulfilled") {
-      console.log(`[collector] Euskadi returned ${euskadiResult.value.length} incidents`);
-      for (const incident of euskadiResult.value) {
+      console.log(`[collector] Euskadi returned ${euskadiResult.value.incidents.length} incidents`);
+      for (const incident of euskadiResult.value.incidents) {
         allIncidents.push(normalizeIncident(incident, "EUSKADI", COMMUNITY_PAIS_VASCO));
       }
     } else {
@@ -508,7 +508,30 @@ export async function run(prisma: PrismaClient) {
       console.log(`  ${stat.source} (${stat.isActive ? "active" : "inactive"}): ${stat._count}`);
     }
 
-    await heartbeat(prisma, "incident", "ok", { total: allIncidents.length, created, updated, skipped });
+    // Euskadi's "active" is an estimated window (euskadi-parser.ts); its
+    // counts per type are here to check that estimate against (2026-10-27),
+    // and a day read only in part is `partial`, never `ok`: an implicit page
+    // cap is what made "1,000 active" look normal.
+    const euskadi = euskadiResult.status === "fulfilled" ? euskadiResult.value.stats : null;
+    const euskadiCapped = euskadi !== null && euskadi.cappedDays.length > 0;
+    await heartbeat(prisma, "incident", euskadiCapped ? "partial" : "ok", {
+      total: allIncidents.length,
+      created,
+      updated,
+      skipped,
+      ...(euskadi && {
+        euskadi: {
+          active: euskadi.active,
+          byType: euskadi.activeByType,
+          items: euskadi.items,
+          pages: euskadi.pages,
+          days: euskadi.days,
+          openPassStatuses: euskadi.openPassStatuses,
+          ventana: euskadi.window,
+        },
+      }),
+      ...(euskadiCapped && { reason: `Euskadi: ${euskadi!.cappedDays.join(", ")} has more than ${MAX_PAGES_PER_DAY} pages, read in part` }),
+    });
   } catch (error) {
     console.error("[collector] Fatal error:", error);
     await heartbeat(prisma, "incident", "error", { error: String(error) });
