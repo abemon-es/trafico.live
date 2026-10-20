@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { redis } from "@/lib/redis";
+import { publicMeta } from "@/lib/health-meta";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -197,8 +198,9 @@ async function checkHeartbeats(): Promise<{
         stale,
         ...(row.errorMessage ? { errorMessage: row.errorMessage } : {}),
         // Collectors have always written this; the response dropped it, so
-        // every degraded status arrived unexplained (2026-08-24).
-        ...(row.meta !== null && row.meta !== undefined ? { meta: row.meta } : {}),
+        // every degraded status arrived unexplained (2026-08-24). Private keys
+        // (why a credential fails) stay in the table: see health-meta.ts.
+        ...(row.meta !== null && row.meta !== undefined ? { meta: publicMeta(row.meta) } : {}),
       };
     });
 
