@@ -12,7 +12,8 @@
 --      are live (pg_matviews / pg_get_functiondef, 2026-10-20) — no-ops there;
 --   2. adds refresh_vessel_latest(), SECURITY DEFINER like
 --      refresh_latest_sensors(): REFRESH needs the owner (trafico_admin), and
---      the tiles cron calls it (services/tiles/cron/refresh-matviews.sh vessels);
+--      the collector task refresh-vessel-latest calls it every minute as
+--      trafico_app (services/collector/crontabs/realtime);
 --   3. records that refresh_latest_sensors() is SECURITY DEFINER live (003
 --      created it without).
 --

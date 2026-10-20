@@ -1,6 +1,8 @@
-# /etc/cron.d/trafico-tiles on compute: the copy in the repo (it lived only on
-# the host until 2026-10-20). Install it with the scripts it calls, in
-# /opt/trafico/tiles.
+# /etc/cron.d/trafico-tiles on compute, as it was on 2026-10-20. DOCUMENTATION
+# ONLY: this file is not installed from the repo, and changes to /etc on the
+# hosts need MJ's OK. It is here so the repo says what runs outside it.
+# vessel_latest is refreshed by the collector task refresh-vessel-latest
+# (services/collector/crontabs/realtime), not from here.
 #
 # PMTiles tile regeneration for trafico.live
 # Secrets loaded from env file
@@ -15,9 +17,5 @@
 # Refresh sensor matviews (mv_latest_sensors + mv_sensor_clusters) every 5 min,
 # through refresh_latest_sensors(), SECURITY DEFINER.
 */5 * * * * root /opt/trafico/tiles/refresh-matviews.sh
-# Refresh vessel_latest every minute (the vessels map layers; ~200 ms), through
-# refresh_vessel_latest(), SECURITY DEFINER (migration 006). Nothing refreshed it
-# from 2026-05-08 to 2026-10-20.
-* * * * * root /opt/trafico/tiles/refresh-matviews.sh vessels
 # Weekly: rebuild custom tileset from latest OSM data (Sunday 3am, takes ~30 min)
 0 3 * * 0 root /opt/trafico/tiles/build-custom-tileset.sh >> /opt/trafico/tiles/build.log 2>&1

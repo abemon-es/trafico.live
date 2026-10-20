@@ -35,6 +35,7 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "social-broadcast": 1800,    // */5 but tolerant
   "health-check": 2100,        // */30 + 5 min grace (1800 equalled the period)
   // continuous (collector-ais — always-on WebSocket)
+  "refresh-vessel-latest": 300, // every 1 min (vessel_latest for the vessels map)
   "ais-stream": 600,           // watchdog kicks at 5min idle (post-iter-3),
                                // so 10min covers reconnect cycle
   // frequent (collector-frequent)
