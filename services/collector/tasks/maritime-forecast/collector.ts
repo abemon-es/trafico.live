@@ -16,7 +16,16 @@
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
-import { ALL_ZONES, decodeAemetBody, type ZoneDefinition } from "./zones.js";
+import {
+  AemetKeyExpiredError,
+  decodeAemetBody,
+  fetchWithRetry,
+  isKeyExpired,
+  readAemetJson,
+  readDescripcion,
+  reportKeyExpired,
+} from "../../shared/aemet.js";
+import { ALL_ZONES, type ZoneDefinition } from "./zones.js";
 
 const TASK = "maritime-forecast";
 
@@ -26,15 +35,21 @@ const TASK = "maritime-forecast";
 
 async function fetchAEMETData(endpoint: string, apiKey: string): Promise<string | null> {
   // Step 1: meta request → { estado: 200, datos: "https://..." }
-  const metaRes = await fetch(endpoint, {
-    headers: { api_key: apiKey, Accept: "application/json" },
-  });
+  const metaRes = await fetchWithRetry(
+    TASK,
+    endpoint,
+    { headers: { api_key: apiKey, Accept: "application/json" } },
+    "meta request",
+  );
 
   if (!metaRes.ok) {
+    const descripcion = await readDescripcion(metaRes);
+    if (isKeyExpired(metaRes.status, descripcion)) throw new AemetKeyExpiredError(TASK);
     throw new Error(`AEMET meta request failed: ${metaRes.status} ${metaRes.statusText}`);
   }
 
-  const meta = await metaRes.json() as { estado: number; datos?: string; descripcion?: string };
+  const meta = await readAemetJson<{ estado: number; datos?: string; descripcion?: string }>(metaRes);
+  if (isKeyExpired(meta.estado, meta.descripcion)) throw new AemetKeyExpiredError(TASK);
 
   if (meta.estado !== 200 || !meta.datos) {
     // 404 or "no hay datos" — not an error, just nothing available
@@ -42,7 +57,7 @@ async function fetchAEMETData(endpoint: string, apiKey: string): Promise<string 
   }
 
   // Step 2: fetch the actual forecast data
-  const dataRes = await fetch(meta.datos);
+  const dataRes = await fetchWithRetry(TASK, meta.datos, {}, "datos request");
 
   if (!dataRes.ok) {
     throw new Error(`AEMET data fetch failed: ${dataRes.status} for datos URL`);
@@ -259,10 +274,12 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let coastalUpdated = 0;
   let highSeasUpdated = 0;
   let failed = 0;
+  let keyRefused = 0;
 
   for (const result of results) {
     if (result.status === "rejected") {
-      logError(TASK, "Zone fetch error (unhandled rejection):", result.reason);
+      if (result.reason instanceof AemetKeyExpiredError) keyRefused++;
+      else logError(TASK, "Zone fetch error (unhandled rejection):", result.reason);
       failed++;
       continue;
     }
@@ -332,7 +349,19 @@ export async function run(prisma: PrismaClient): Promise<void> {
     log(TASK, `Purged ${purged.count} forecasts older than 7 days`);
   }
 
+  // An expired key still gets a few zones through, so this can be "partial":
+  // GlitchTip hears about the key either way, once per run.
+  if (keyRefused > 0) {
+    logError(TASK, `AEMET refused the key for ${keyRefused} of ${ALL_ZONES.length} zones: API key past its renewal deadline`);
+    reportKeyExpired(TASK);
+  }
+
   log(TASK, `Maritime forecast: ${coastalUpdated} coastal, ${highSeasUpdated} high seas zones updated${failed > 0 ? `, ${failed} failed` : ""}`);
   log(TASK, `Finished at ${new Date().toISOString()}`);
-  await heartbeat(prisma, TASK, failed === 0 ? "ok" : (coastalUpdated + highSeasUpdated > 0 ? "partial" : "error"), { coastal: coastalUpdated, highSeas: highSeasUpdated, failed });
+  await heartbeat(prisma, TASK, failed === 0 ? "ok" : (coastalUpdated + highSeasUpdated > 0 ? "partial" : "error"), {
+    coastal: coastalUpdated,
+    highSeas: highSeasUpdated,
+    failed,
+    keyRenewalRequired: keyRefused > 0,
+  });
 }

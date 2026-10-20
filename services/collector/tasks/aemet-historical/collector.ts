@@ -15,6 +15,13 @@ import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 import { normalizeProvince } from "../../shared/provinces.js";
+import {
+  AemetKeyExpiredError,
+  fetchWithRetry,
+  isKeyExpired,
+  readAemetJson,
+  readDescripcion,
+} from "../../shared/aemet.js";
 
 const TASK = "aemet-historical";
 const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
@@ -103,56 +110,36 @@ interface AEMETStep1Response {
 }
 
 /**
- * fetch with retries for transient transport failures.
- *
- * AEMET drops connections mid-handshake ("SocketError: other side closed").
- * An unretried throw here killed the whole daily run — on 2026-08-21 the very
- * first call (station inventory) failed 4 s in and the task exited 1, leaving
- * the day with no climate data at all.
+ * One AEMET two-step request: the data, or null when AEMET has none or fails.
+ * An expired key throws AemetKeyExpiredError instead: every later request of
+ * the run would get the same 401, and the next run resumes from the latest
+ * stored day.
  */
-async function fetchWithRetry(
-  url: string,
-  init: RequestInit,
-  label: string,
-  attempts = 3,
-): Promise<Response> {
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    try {
-      return await fetch(url, init);
-    } catch (error) {
-      lastError = error;
-      const cause = error instanceof Error && error.cause ? ` (${String(error.cause)})` : "";
-      if (attempt < attempts) {
-        const backoffMs = 2000 * attempt;
-        logError(
-          TASK,
-          `${label} transport error on attempt ${attempt}/${attempts}${cause} — retrying in ${backoffMs}ms`,
-        );
-        await sleep(backoffMs);
-      }
-    }
-  }
-  throw lastError;
-}
-
-async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
+export async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
   // Sanitize URL for logging — never log the API key
   const safeUrl = url.replace(/api_key=[^&]+/, "api_key=***");
 
   // Step 1: get datos URL (pass key via header, not query string)
   const step1Res = await fetchWithRetry(
+    TASK,
     url,
     { headers: { Accept: "application/json", api_key: apiKey } },
     `Step-1 ${safeUrl}`,
   );
 
   if (!step1Res.ok) {
-    logError(TASK, `Step-1 HTTP ${step1Res.status} for ${safeUrl}`);
+    const descripcion = await readDescripcion(step1Res);
+    logError(TASK, `Step-1 HTTP ${step1Res.status} for ${safeUrl}: ${descripcion ?? ""}`);
+    if (isKeyExpired(step1Res.status, descripcion)) throw new AemetKeyExpiredError(TASK);
     return null;
   }
 
-  const step1: AEMETStep1Response = await step1Res.json();
+  const step1 = await readAemetJson<AEMETStep1Response>(step1Res);
+
+  if (isKeyExpired(step1.estado, step1.descripcion)) {
+    logError(TASK, `Step-1 estado=${step1.estado} desc="${step1.descripcion}"`);
+    throw new AemetKeyExpiredError(TASK);
+  }
 
   if (step1.estado !== 200 || !step1.datos) {
     logError(TASK, `Step-1 non-200 estado=${step1.estado} desc="${step1.descripcion}"`);
@@ -162,13 +149,10 @@ async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
   await sleep(RATE_LIMIT_SLEEP_MS);
 
   // Step 2: fetch actual data from datos URL (no key needed — it's a pre-signed URL).
-  // AEMET's datos endpoint serves Latin-1 / ISO-8859-15 encoded JSON but the
-  // Content-Type header declares only `application/json` with no charset, so
-  // the default fetch().json() parser decodes as UTF-8 and replaces every
-  // accented char with U+FFFD (e.g. TORREJÓN → TORREJ�N). Fix: read raw
-  // bytes, try UTF-8 first (in case AEMET ever fixes their header), fall
-  // back to Latin-1 when we detect the replacement character.
+  // Latin-1 without a charset (TORREJÓN → TORREJ�N under .json()): see
+  // decodeAemetBody.
   const step2Res = await fetchWithRetry(
+    TASK,
     step1.datos,
     { headers: { Accept: "application/json" } },
     "Step-2 datos URL",
@@ -179,18 +163,8 @@ async function aemetFetch<T>(url: string, apiKey: string): Promise<T | null> {
     return null;
   }
 
-  const buf = await step2Res.arrayBuffer();
-  const bytes = new Uint8Array(buf);
-  let text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
-  if (text.includes("\uFFFD")) {
-    // Re-decode as Latin-1 (a.k.a. windows-1252) which never produces U+FFFD
-    // and maps every single byte to a printable code-point. Works because
-    // AEMET's JSON only contains ASCII control chars + Latin-1 accented
-    // letters — no multi-byte sequences.
-    text = new TextDecoder("windows-1252").decode(bytes);
-  }
   try {
-    return JSON.parse(text) as T;
+    return await readAemetJson<T>(step2Res);
   } catch (err) {
     logError(TASK, `Step-2 JSON parse failed: ${(err as Error).message}`);
     return null;

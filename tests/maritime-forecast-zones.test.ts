@@ -12,12 +12,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  ALL_ZONES,
-  COASTAL_ZONES,
-  HIGH_SEAS_AREAS,
-  decodeAemetBody,
-} from "../services/collector/tasks/maritime-forecast/zones";
+import { ALL_ZONES, COASTAL_ZONES, HIGH_SEAS_AREAS } from "../services/collector/tasks/maritime-forecast/zones";
+import { decodeAemetBody } from "../services/collector/shared/aemet";
 
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
 const spec = JSON.parse(readFileSync(join(HERE, "fixtures/aemet-maritime-zones.json"), "utf-8")) as {

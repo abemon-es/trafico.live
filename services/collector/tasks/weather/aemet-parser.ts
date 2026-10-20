@@ -9,6 +9,15 @@
  */
 
 import { Severity } from "@prisma/client";
+import {
+  AemetKeyExpiredError,
+  fetchWithRetry,
+  isKeyExpired,
+  readAemetJson,
+  readDescripcion,
+} from "../../shared/aemet.js";
+
+const TASK = "weather";
 
 // AEMET API endpoints
 const AEMET_BASE_URL = "https://opendata.aemet.es/opendata/api";
@@ -483,18 +492,33 @@ export async function fetchAEMETAlerts(apiKey: string): Promise<AEMETAlert[]> {
   console.log("[AEMET] Fetching weather alerts...");
 
   // Step 1: Get the data URL from AEMET
-  const metaResponse = await fetch(AEMET_ALERTS_URL, {
-    headers: {
-      api_key: apiKey,
-      Accept: "application/json",
+  const metaResponse = await fetchWithRetry(
+    TASK,
+    AEMET_ALERTS_URL,
+    {
+      headers: {
+        api_key: apiKey,
+        Accept: "application/json",
+      },
     },
-  });
+    "avisos_cap step 1",
+  );
 
   if (!metaResponse.ok) {
+    const descripcion = await readDescripcion(metaResponse);
+    if (isKeyExpired(metaResponse.status, descripcion)) {
+      console.error(`[AEMET] ${metaResponse.status}: ${descripcion}`);
+      throw new AemetKeyExpiredError(TASK);
+    }
     throw new Error(`AEMET API error: ${metaResponse.status} ${metaResponse.statusText}`);
   }
 
-  const meta = await metaResponse.json();
+  const meta = await readAemetJson<{ estado?: number; datos?: string; descripcion?: string }>(metaResponse);
+
+  if (isKeyExpired(meta.estado, meta.descripcion)) {
+    console.error(`[AEMET] estado ${meta.estado}: ${meta.descripcion}`);
+    throw new AemetKeyExpiredError(TASK);
+  }
 
   if (meta.estado !== 200 || !meta.datos) {
     console.log("[AEMET] No alerts data available:", meta.descripcion || "Unknown error");
@@ -502,7 +526,7 @@ export async function fetchAEMETAlerts(apiKey: string): Promise<AEMETAlert[]> {
   }
 
   // Step 2: Fetch the actual data (tar archive with XML files)
-  const dataResponse = await fetch(meta.datos);
+  const dataResponse = await fetchWithRetry(TASK, meta.datos, {}, "avisos_cap step 2");
 
   if (!dataResponse.ok) {
     throw new Error(`AEMET data fetch error: ${dataResponse.status}`);

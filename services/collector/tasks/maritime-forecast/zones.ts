@@ -56,14 +56,3 @@ export const HIGH_SEAS_AREAS: ZoneDefinition[] = [
 ];
 
 export const ALL_ZONES: ZoneDefinition[] = [...COASTAL_ZONES, ...HIGH_SEAS_AREAS];
-
-/**
- * Body of an AEMET datos URL as text. The datos server sends Latin-1 bytes
- * (ISO-8859-15) without declaring it, and fetch's .json()/.text() always decode
- * UTF-8, so every accented letter was stored as U+FFFD ("Andaluc�a").
- * Same approach as aemet-historical: UTF-8 if it decodes cleanly, else Latin-1.
- */
-export function decodeAemetBody(bytes: Uint8Array): string {
-  const utf8 = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
-  return utf8.includes("�") ? new TextDecoder("windows-1252").decode(bytes) : utf8;
-}

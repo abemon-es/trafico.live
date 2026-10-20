@@ -17,8 +17,10 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import * as Sentry from "@sentry/node";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { reportKeyExpired } from "../../shared/aemet.js";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -415,4 +417,18 @@ export async function run(prisma: PrismaClient): Promise<void> {
     lastQuotaDescripcion: stats.lastQuotaDescripcion,
     ...(errorText ? { aborted: true, abortReason: stats.abortReason, error: errorText, abortDetail } : {}),
   });
+
+  // One GlitchTip event per run, grouped by a fixed fingerprint. On 2026-10-20
+  // the 13:20Z run lost all 197 municipios to the expired key, and the only
+  // trace was this heartbeat's private meta.
+  if (stats.keyRenewalRequired) {
+    reportKeyExpired(TASK);
+  } else if (stats.aborted) {
+    Sentry.captureMessage(`aemet-forecast run aborted (${stats.abortReason})`, {
+      level: "error",
+      fingerprint: ["aemet-forecast-aborted", String(stats.abortReason)],
+      tags: { task: TASK, layer: "collector" },
+      extra: { quotaHitsByStatus: stats.quotaHitsByStatus, lastQuotaDescripcion: stats.lastQuotaDescripcion },
+    });
+  }
 }
