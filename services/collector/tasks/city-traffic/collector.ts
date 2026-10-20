@@ -2,7 +2,7 @@
  * City Traffic Sensor Collector
  *
  * Collects real-time traffic sensor data from Spanish cities:
- *   - Barcelona (bcn.cat DAT format ~539 segments + Open Data portal mirror ~527 sections)
+ *   - Barcelona (bcn.cat DAT format, ~530 sections; the Open Data portal mirror as fallback)
  *   - Valencia  (opendatasoft JSON ~100 segments + ArcGIS REST ~road segments)
  *   - Zaragoza: not collected — the city stopped publishing (see below)
  *
@@ -33,15 +33,20 @@ const BCN_STATUS_LABEL: Record<number, string> = {
   6: "Cortado",
 };
 
-const BCN_STATUS_LEVEL: Record<number, number> = {
-  0: 0, // no data → fluid
-  1: 0,
-  2: 0,
-  3: 1, // dense → slow
-  4: 2, // very dense → holdups
-  5: 3, // congestion
-  6: 3, // blocked
-};
+/**
+ * Barcelona DAT estat → serviceLevel (0-3), or null when unknown.
+ *
+ * estat 0 is "Sin datos". Until 2026-10-20 it was mapped to level 0, which
+ * painted ~200 of the city's ~530 sections fluid with nothing behind them —
+ * the same bug Valencia's estado 0 had until August. Unknown stays null.
+ */
+export function bcnEstatToLevel(estat: number): number | null {
+  if (estat === 1 || estat === 2) return 0;
+  if (estat === 3) return 1; // dense → slow
+  if (estat === 4) return 2; // very dense → holdups
+  if (estat === 5 || estat === 6) return 3; // congestion, blocked
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Interfaces
@@ -67,8 +72,9 @@ interface SensorReading {
 
 const BCN_TRAMS_URL = "https://www.bcn.cat/transit/dades/dadestrams.dat";
 
-// Open Data portal mirror of the DAT feed (same pipe-delimited format, ~527 road sections)
-const BCN_SECTIONS_URL =
+// Open Data portal copy of the same file (dataset "trams", resource TRAMS_TRAMS.dat).
+// Fallback only: see "Barcelona (sections) — removed" below.
+const BCN_TRAMS_MIRROR_URL =
   "https://opendata-ajuntament.barcelona.cat/data/dataset/8319c2b1-4c21-4962-9acd-6db4c5ff1148/resource/2d456eb5-4ea6-4f68-9794-2f3f1a58a933/download";
 
 // Primary: long-format CSV from Barcelona Open Data portal (Tram, Tram_Components, Descripció, Longitud, Latitud)
@@ -197,26 +203,39 @@ function parseCSVLine(line: string, delim: string): string[] {
   return fields;
 }
 
+/** The live tram states: bcn.cat first, the portal mirror if bcn.cat fails. */
+async function fetchBcnTramStates(): Promise<string> {
+  let lastError = "";
+  for (const url of [BCN_TRAMS_URL, BCN_TRAMS_MIRROR_URL]) {
+    const source = url === BCN_TRAMS_URL ? "bcn.cat" : "portal mirror";
+    try {
+      const resp = await fetch(url, {
+        headers: { "User-Agent": "trafico.live-collector/1.0" },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (resp.ok) return await resp.text();
+      lastError = String(resp.status);
+      log(TASK, `Barcelona trams ${source} returned ${resp.status}`);
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : String(err);
+      log(TASK, `Barcelona trams ${source} fetch error: ${lastError}`);
+    }
+  }
+  throw new Error(`Barcelona API error: ${lastError}`);
+}
+
 async function fetchBarcelona(prisma: PrismaClient): Promise<SensorReading[]> {
   log(TASK, "Fetching Barcelona tram data...");
 
-  const [tramsResp, coordMap] = await Promise.all([
-    fetch(BCN_TRAMS_URL, {
-      headers: { "User-Agent": "trafico.live-collector/1.0" },
-      signal: AbortSignal.timeout(15000),
-    }),
+  const [dat, coordMap] = await Promise.all([
+    fetchBcnTramStates(),
     fetchBcnCoordinates(prisma),
   ]);
-
-  if (!tramsResp.ok) {
-    throw new Error(`Barcelona API error: ${tramsResp.status}`);
-  }
 
   if (coordMap.size === 0) {
     throw new Error("Barcelona: no coordinates loaded — both primary and fallback geo sources failed");
   }
 
-  const dat = await tramsResp.text();
   const lines = dat.trim().split(/\r?\n/);
 
   // DAT format: idTram#timestamp#estatActual#estatPrevist
@@ -254,8 +273,8 @@ async function fetchBarcelona(prisma: PrismaClient): Promise<SensorReading[]> {
       intensity: null,
       occupancy: null,
       speed: null,
-      serviceLevel: BCN_STATUS_LEVEL[estatActual] ?? 0,
-      prediction: isNaN(estatPrevist) ? null : BCN_STATUS_LEVEL[estatPrevist] ?? 0,
+      serviceLevel: bcnEstatToLevel(estatActual),
+      prediction: isNaN(estatPrevist) ? null : bcnEstatToLevel(estatPrevist),
     });
   }
 
@@ -267,81 +286,16 @@ async function fetchBarcelona(prisma: PrismaClient): Promise<SensorReading[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Barcelona — Open Data portal road sections (tram_id#timestamp#status#forecast)
+// Barcelona (sections) — removed 2026-10-20: it was the same feed twice.
 // ---------------------------------------------------------------------------
-
-/**
- * Fetches Barcelona road-section traffic state from the Open Data portal mirror.
- * Format is identical to dadestrams.dat but uses a separate dataset (~527 sections).
- * Coordinates are resolved using the same geo CSV used by fetchBarcelona().
- */
-async function fetchBarcelonaSections(prisma: PrismaClient): Promise<SensorReading[]> {
-  log(TASK, "Fetching Barcelona Open Data road sections...");
-
-  const [sectionsResp, coordMap] = await Promise.all([
-    fetch(BCN_SECTIONS_URL, {
-      headers: { "User-Agent": "trafico.live-collector/1.0" },
-      signal: AbortSignal.timeout(15000),
-    }),
-    fetchBcnCoordinates(prisma),
-  ]);
-
-  if (!sectionsResp.ok) {
-    throw new Error(`Barcelona sections API error: ${sectionsResp.status}`);
-  }
-
-  if (coordMap.size === 0) {
-    throw new Error("Barcelona sections: no coordinates loaded — geo sources failed");
-  }
-
-  const dat = await sectionsResp.text();
-  const lines = dat.trim().split(/\r?\n/);
-
-  // DAT format: tram_id#timestamp#current_status#15min_forecast
-  const readings: SensorReading[] = [];
-  let skippedNoCoords = 0;
-
-  for (const line of lines) {
-    const parts = line.split("#");
-    if (parts.length < 4) continue;
-
-    const idTram = parts[0].trim();
-    const estatActual = parseInt(parts[2].trim(), 10);
-    const estatPrevist = parseInt(parts[3].trim(), 10);
-
-    if (!idTram || isNaN(estatActual)) continue;
-
-    const coords = coordMap.get(idTram);
-    if (!coords) {
-      skippedNoCoords++;
-      continue;
-    }
-
-    const lat = coords.lat;
-    const lon = coords.lon;
-    if (lat < 41.2 || lat > 41.6 || lon < 1.9 || lon > 2.4) continue;
-
-    readings.push({
-      sensorId: `BCN-SEC-${idTram}`,
-      city: "BARCELONA",
-      streetName: coords.desc || `Secció ${idTram}`,
-      latitude: lat,
-      longitude: lon,
-      direction: null,
-      intensity: null,
-      occupancy: null,
-      speed: null,
-      serviceLevel: BCN_STATUS_LEVEL[estatActual] ?? 0,
-      prediction: isNaN(estatPrevist) ? null : BCN_STATUS_LEVEL[estatPrevist] ?? 0,
-    });
-  }
-
-  if (skippedNoCoords > 0) {
-    log(TASK, `Barcelona sections: ${skippedNoCoords} sections skipped (no coordinates)`);
-  }
-  log(TASK, `Barcelona sections: ${readings.length} road sections parsed`);
-  return readings;
-}
+//
+// BCN_TRAMS_MIRROR_URL is resource TRAMS_TRAMS.dat of the portal's "trams"
+// dataset ("Traffic state information by sections of the city of Barcelona"):
+// the portal's copy of dadestrams.dat, same tram ids and states. Read as a
+// second source it stored every section twice, as BCN-SEC-<id> next to
+// BCN-<id>, until it began answering 502 in August; from then on it kept the
+// task `partial` on every run. It stays as the trams fallback only, and
+// cleanup() drops the BCN-SEC- sensors it left behind.
 
 // ---------------------------------------------------------------------------
 // Valencia — ArcGIS REST traffic state
@@ -558,6 +512,15 @@ async function cleanup(prisma: PrismaClient): Promise<void> {
   if (Number(deleted) > 0) {
     log(TASK, `Cleaned up ${deleted} old readings`);
   }
+
+  // Sensors of the retired Barcelona (sections) source: duplicates of the
+  // BCN- trams, with no reading since August. A no-op once they are gone.
+  const retired = await prisma.cityTrafficSensor.deleteMany({
+    where: { city: "BARCELONA", sensorId: { startsWith: "BCN-SEC-" } },
+  });
+  if (retired.count > 0) {
+    log(TASK, `Removed ${retired.count} sensors of the retired Barcelona (sections) source`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -569,7 +532,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   const cities = [
     { name: "Barcelona (trams)",    fetch: fetchBarcelona },
-    { name: "Barcelona (sections)", fetch: fetchBarcelonaSections },
     // Valencia ODS subdomain (valencia.opendatasoft.com) was deprecated and is now offline.
     // Valencia road-state coverage continues via fetchValenciaArcGIS (geoportal layer 192).
     { name: "Valencia (ArcGIS)",    fetch: fetchValenciaArcGIS },
