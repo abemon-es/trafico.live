@@ -75,6 +75,210 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (33) — an expired AEMET key made no noise anywhere: the cron said «job succeeded»
+
+**#111 deployed** (squash `2e636309`, merged 13:49:50Z by server-28 with 0
+`TASK=` at 13:49:40Z):
+- Collectors DEPLOY SUCCESS in 42 s; all 6 recreated at 13:50:33Z and
+  healthy. New baseline:
+
+  | container | image |
+  |---|---|
+  | realtime | `dc32f94410fc` |
+  | frequent | `49965684904f` |
+  | fuel | `ff17aee34e93` |
+  | daily | `aa09e767778e` |
+  | weekly | `f5e1b543cb41` |
+  | ais | `702eb7ae2692` |
+
+- frequent, daily, weekly and fuel had nothing in flight: Loki has no job
+  lines for them from 13:40Z to 13:50:40Z.
+- realtime lost the 14 jobs started at 13:50:00Z.
+  - The recreation came 50 s after the check, because the build took 37 s,
+    and it landed on :50, realtime's busiest minute.
+  - Tolerated class, but it's why the deployer guard checks after the build.
+- **`docker top <c> -eo args` fails without the PID column**, and with
+  `2>/dev/null` it reads as another blind zero (server-28). The correct form
+  is `docker top <c> -eo pid,args`.
+- The relabel and the 11 requests show up at 16:10Z, the first run of the
+  new code.
+
+**#107 verified on the 13:20Z aemet-forecast run.** It works as designed with
+the key still expired:
+- 13:20:03Z → 13:30:05Z, 602.4 s (the 07:20Z run took 3,664 s). 0 upserted,
+  197/197 municipios lost.
+- 41 attempts, all 401 with the renewal text, 40 requeued.
+  `key_renewal_required: true`; `abort_reason: no-answer` after 10 min with
+  nothing served. Without #107 it would have kept trying for up to 5 h and
+  ~600 calls.
+- Public `/api/health`: status `error`, errorMessage «run aborted
+  (no-answer)». keyRenewalRequired, lastQuotaDescripcion, abortDetail and
+  quotaHitsByStatus are filtered out, and the body has no «renov», «apikey» or
+  «api_key».
+- **The key is NOT renewed** (still on MJ's list). What AEMET lets it do
+  varies:
+  - maritime 12:30Z: 9 of 14. That run was off schedule; it didn't come from
+    the cron, the loop or server-28, and server-28 is finding out who ran it;
+  - weather 13:00Z: its 1-2 calls;
+  - forecast 13:20Z: 0 of 41.
+
+**Signal: an expired key is silent.**
+- The dispatcher exits 0 after a run that records status `error`. So
+  supercronic logged «job succeeded» over 197/197 lost, and GlitchTip has 0
+  issues ever tagged `task:aemet-forecast`.
+- None of the other tasks says «key expired»:
+  - weather crashes on the 401 with a generic «AEMET API error: 401»;
+  - maritime counts the zone as failed;
+  - aemet-historical writes `partial` with 0 inserted.
+- The 401 descripcion was logged as «renovaci�n»: the same Latin-1 problem as
+  maritime's bodies.
+
+**Fix (PR below), approved by server-28:**
+- **`services/collector/shared/aemet.ts`:**
+  - `decodeAemetBody`, moved from maritime's `zones.ts`;
+  - `readAemetJson`, and `readDescripcion`, which now decodes Latin-1;
+  - `isKeyExpired`: a 401, as HTTP status or as `estado`, whose text says
+    «renovaci»;
+  - `AemetKeyExpiredError`: a generic message, because the crash heartbeat is
+    public, and `fingerprint: ["aemet-key-expired", task]`;
+  - `reportKeyExpired(task)`, the same issue without throwing;
+  - `fetchWithRetry`, moved from aemet-historical.
+- **weather and aemet-historical** throw `AemetKeyExpiredError`. That means a
+  crash heartbeat, exit 1, and one GlitchTip issue per task. historical
+  resumes from the latest stored day on the next run.
+- **maritime-forecast** counts the zones refused for the key, reports once
+  per run (an expired key can still let some zones through, so the run may be
+  `partial`), and stores `keyRenewalRequired` in the private meta.
+- **aemet-forecast** reports the key once per run. Without a key problem, an
+  aborted run reports «aemet-forecast run aborted (<reason>)» under its own
+  fingerprint.
+- **Dispatcher:**
+  - a task that records status `error` exits 1, so supercronic reports it;
+  - a thrown error's `fingerprint` reaches GlitchTip;
+  - Sentry is flushed after a successful run as well.
+
+  Today only aemet-forecast is `error` in health, so exit 1 adds no noise
+  elsewhere.
+- **weather and maritime retry a dropped connection** (`fetchWithRetry`, 3
+  attempts), which was the cause of the 11:00Z weather crash.
+- **Test:** `npm run test:aemet-shared` checks:
+  - Latin-1 bodies and the 401 descripcion;
+  - `isKeyExpired` cases;
+  - the generic message and the fingerprint;
+  - the retry: a socket close is retried, an HTTP 500 isn't, and it gives up
+    after 3;
+  - weather: expired key, `estado` 401 in a 200 body, 503, and a socket close
+    on step 1;
+  - historical: an expired key throws, any other 401 returns null.
+- **Other checks, all on compute in throwaway containers:**
+  - test:maritime, the 4 test:aemet-forecast scripts and test:cron still pass;
+  - a mutant (`isKeyExpired` → false) fails;
+  - collector `tsc`: 626 errors, all in `monthly-report/render.ts`;
+  - eslint: 0 errors, plus 1 warning that was already there (unused `log` in
+    `aemet-forecast/collector.ts`).
+- **Recreates all 6 collectors.** Verify on the 19:20Z aemet-forecast run:
+  - supercronic logs «error running command: exit status 1»;
+  - GlitchTip shows one issue «AEMET API key past its renewal deadline» tagged
+    `aemet-forecast`;
+  - weather's next 401 falls under `["aemet-key-expired","weather"]`.
+
+**Correction to cycle 31: voyage-detector 09:00Z was killed by #108's
+deploy.**
+- **The cause:** #108 changed `src/lib/redis.ts`, one of the 9 src/lib files
+  that `Dockerfile.cron` copies (l.28). The trafico-collectors deploy that
+  every push to main fires rebuilt the image and recreated the collectors at
+  09:04:38Z.
+- **Loki:** voyage-detector logged «starting» at 09:00:00Z in the frequent
+  container created at 08:43:25Z. supercronic never logged its end, which it
+  always does unless supercronic itself stops. The next frequent instance was
+  created at 09:04:39Z.
+- **Cycle 31's «0 `TASK=` at 09:04:09Z» was a blind check:** it ran `ps`
+  inside the containers, and the image has no `ps` (server-28).
+- **The other recreations today:**
+  - #110 at 10:25:32Z only cut realtime jobs started at 10:25:00Z
+    (transit-realtime, transit-rt-valencia, intensity). They ran again at
+    10:26Z.
+  - #107 at 08:43:25Z cut realtime opensky and transit, the same class.
+  - #109 recreated nothing (2 s, cache hit).
+
+**Merge rule, widened (agreed with server-28):**
+- **Which PRs:** any PR that changes the collector image:
+  `services/collector/**`, `prisma/schema.prisma`, `prisma.config.ts`, or the
+  src/lib files `Dockerfile.cron` lists.
+- **When to merge:**
+  - 0 `TASK=` in frequent/daily/weekly/fuel, read with
+    `docker top <c> -eo pid,args` from the host;
+  - realtime is tolerated: its 1-minute jobs run 33-40 s and rerun the next
+    minute;
+  - an odd minute, at second ≥ 40.
+- **The PR template** now has that checkbox.
+- **Durable fix (server-28, server repo):** before `compose up -d`, the
+  deployer waits until those 4 containers are idle.
+  - It checks after the build, and skips the wait if the image digest doesn't
+    change.
+  - The cap is 75 min (aemet-forecast takes 61 min with a working key). At
+    the cap it doesn't go ahead: it stays queued and notifies.
+  - Not built yet; it comes to the loop for review.
+
+**Daily — traffic (SeoSnapshot 04:00Z) + GlitchTip (project 9):**
+- **GSC 30 d:** 11 clicks · 1,230 impressions · position 46.3 (yesterday 10 /
+  1,198 / 46.0).
+  - Impressions doubled from ~20/day to ~40/day on 10-13 → 10-17. Over the
+    same days the daily position slid 47 → 57.9.
+  - CMO, by page and by query: pages with impressions per day are flat. What
+    doubled is new queries on the same pages (home and /camaras) at positions
+    40-67. Like for like, the 25 (page, query) pairs present in both weeks are
+    flat (62.2 → 62.3). **H3 is not confirmed at URL level.**
+- **GA4 30 d:** 1,338 sessions · 1,205 users. By source: bing 632, direct 177,
+  yahoo 168, **chatgpt.com 106**, duckduckgo 98. Google organic isn't in the
+  top 10.
+- **GlitchTip:** 35 new in 24 h, all from this morning's incidents:
+  - Redis «Connection is closed», 16 issues / 1,019 events, the last at
+    08:40Z. Nothing since #108.
+  - pg timeouts at 07:16Z: the same mesh blip, already in server-28's notes.
+  - The weather socket close at 11:00Z.
+- **Sitemaps:**
+  - Google reads only priority.xml (495 URLs); the 18 numbered children are
+    «pending» with 0 URLs.
+  - Nothing blocks Googlebot: origin 200 in ~0.07 s, `Allow: /`, no CDN or
+    WAF, and CrowdSec has 0 alerts from Google's ranges out of 4,941.
+  - The CMO resubmitted the index and its 19 children through the API at
+    11:24 (the gap: 43,050 URLs vs ~510 known). The CMO re-measures on 23-10
+    around 11:30.
+  - The CMO's manual-indexing list was reviewed, /camaras/bilbao and
+    /camaras/vitoria (both noindex) were swapped for /carreteras/AP-7 and
+    /rondas/m-40, and the list went to MJ.
+
+**Open, in order:**
+1. **L1:** verify #111 at 16:10Z (the «Relabelled N…» line, zone 42 named
+   «Costa de Andalucía Occidental y Ceuta», 11 requests). Then this PR, and
+   its 19:20Z verification.
+2. **L3, sitemap hygiene:**
+   - `CAMARAS_CITY_SLUGS` (`sitemap-generator.ts:1458`) is a fixed list that
+     includes noindex cities with 0 DGT cameras (Catalonia, Bizkaia, Álava,
+     Las Palmas, Santa Cruz);
+   - check the other templates with a conditional noindex;
+   - **real lastmod** (l.662 onward stamps `now`: 1,555 of the 1,718 URLs in
+     /sitemap/0.xml say «today»).
+   - Send the CMO the date.
+3. **L3, the CMO's 2 pilots:** `/camaras/carretera/A-5` (control A-6) and
+   `/radares/A-3` (control /radares/A-6).
+   - Blocks in the CMO's order, only our own data; a block with no data is
+     hidden; no FAQs.
+   - Radar «changes» and «most-fining» need a history or an official source;
+     otherwise they're hidden and I tell the CMO before publishing.
+   - The CMO measures at +7/+14/+28 days.
+4. **Proposal (data source):** SCT, Basque Traffic and cabildo cameras would
+   make Barcelona, Bilbao, Vitoria and Las Palmas indexable.
+5. **maritime-forecast purges forecasts older than 7 days.** While the key is
+   refused, /maritimo/meteorologia empties zone by zone around 10-27. The
+   renewal fixes it; there's nothing to change in code before then.
+6. **After MJ renews the key (CSO):** the new key goes ONLY into
+   `.env.collectors`, and the AEMET variable comes out of the web container's
+   env in the same change.
+
+---
+
 ## Cycle 2026-10-20 (32) — maritime-forecast asked for 5 zones that don't exist and labelled the rest wrongly
 
 **#110 deployed** (squash `4697a42d`, merged 10:25:08Z by server-28's
@@ -172,6 +376,10 @@ watcher at 0 `TASK=`):
   StartedAt match cycle 30's baseline. #103 passes against #108.
 - Web: `healthy`, `redis.ok=true`, commit d5420893. The smoke test on compute
   gave 113 pass, 5 warn (the usual ones) and 0 fail.
+
+> **Corrected in cycle 33:** it was not a one-off. #108's deploy recreated the
+> collectors at 09:04:38Z and killed the run; the «0 `TASK=`» below was a
+> blind `ps` check.
 
 **voyage-detector 09:00Z (cycle 30's open item), closed as a one-off:**
 - The 10:00:05Z run completed in 469.6 s (4,512 vessels, 289 port calls,
