@@ -56,6 +56,7 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "portugal-fuel": 39600,      // 3x/day at 08/15/22 — max gap 10h + 1h grace
   // daily (collector-daily)
   "daily-stats": 90000,        // 00:30 daily
+  "content-fingerprints": 90000, // 04:50 daily (sitemap lastmod)
   "ine-stats": 691200,         // weekly Sunday 03:30 (post-iter-2)
   "camera": 96000,             // 04:00 daily
   "aena-stats": 2764800,       // monthly 1st 04:30 (post-iter-2) → 32d

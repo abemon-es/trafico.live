@@ -83,6 +83,8 @@ const VALID_TASKS = [
   "social-broadcast",
   // SEO transparency dashboard (daily GSC + GA4 snapshot)
   "gsc-ga4-snapshot",
+  // Sitemap lastmod: when each page's content last changed (daily)
+  "content-fingerprints",
 ];
 
 if (!TASK) {
