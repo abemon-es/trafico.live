@@ -510,7 +510,7 @@ export function IncidenciasAnalyticsClient() {
                           <td className="py-2.5 px-3">
                             <div className="h-2 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-tl-50 dark:bg-tl-900/200 rounded-full transition-all duration-500"
+                                className="h-full bg-tl-500 rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>

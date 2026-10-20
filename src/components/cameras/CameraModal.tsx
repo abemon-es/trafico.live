@@ -100,7 +100,7 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
 
           {/* Auto-refresh indicator */}
           {autoRefresh && (
-            <div className="absolute top-3 left-3 bg-green-50 dark:bg-green-900/200 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+            <div className="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
               <div className="w-2 h-2 bg-white dark:bg-gray-900 rounded-full animate-pulse" />
               Auto-refresh activo
             </div>

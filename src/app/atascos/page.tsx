@@ -198,7 +198,7 @@ export default async function AtascosPage() {
                   </h1>
                   {/* Live count badge */}
                   <span className="live-count inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200">
-                    <span className="w-2 h-2 rounded-full bg-red-50 dark:bg-red-900/200 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                     {jams.length} activos
                   </span>
                 </div>

@@ -57,7 +57,7 @@ function ComparisonBar({
   // Color based on percentile (lower = better/cheaper)
   const getBarColor = () => {
     if (percentile === null) return "bg-gray-200";
-    if (percentile <= 25) return "bg-green-50 dark:bg-green-900/200";
+    if (percentile <= 25) return "bg-green-500";
     if (percentile <= 50) return "bg-green-300";
     if (percentile <= 75) return "bg-yellow-400";
     return "bg-red-400";

@@ -205,7 +205,7 @@ export default async function PreciosPage() {
         {cheapestDiesel && (
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-green-50 dark:bg-green-900/200 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
@@ -228,7 +228,7 @@ export default async function PreciosPage() {
         {cheapestGas95 && (
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-green-50 dark:bg-green-900/200 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
@@ -288,7 +288,7 @@ export default async function PreciosPage() {
                     <div className="flex items-center gap-2">
                       {idx < 3 && (
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                          idx === 0 ? "bg-green-50 dark:bg-green-900/200 text-white" :
+                          idx === 0 ? "bg-green-500 text-white" :
                           idx === 1 ? "bg-green-400 text-white" :
                           "bg-green-300 text-white"
                         }`}>

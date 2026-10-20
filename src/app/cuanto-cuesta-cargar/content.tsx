@@ -587,7 +587,7 @@ export default function CuantoCuestaCargarContent() {
                     </div>
                     <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden">
                       <div
-                        className="h-3 bg-green-50 dark:bg-green-900/200 rounded-full"
+                        className="h-3 bg-green-500 rounded-full"
                         style={{ width: "100%" }}
                       />
                     </div>

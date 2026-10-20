@@ -145,7 +145,7 @@ function DailyTrendChart({
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div
-                className="w-full bg-red-50 dark:bg-red-900/200 rounded-t hover:bg-red-600 transition-colors"
+                className="w-full bg-red-500 rounded-t hover:bg-red-600 transition-colors"
                 style={{ height: `${height}%`, minHeight: day.count > 0 ? "4px" : "0" }}
                 title={`${day.date}: ${day.count} incidencias`}
               />
@@ -300,12 +300,12 @@ function IncidentTypeChart({
 
   // Colors for different incident types
   const typeColors: Record<string, string> = {
-    ACCIDENT: "bg-red-50 dark:bg-red-900/200",
-    ROADWORK: "bg-orange-50 dark:bg-orange-900/200",
-    CONGESTION: "bg-yellow-50 dark:bg-yellow-900/200",
-    HAZARD: "bg-purple-50 dark:bg-purple-900/200",
-    VEHICLE_BREAKDOWN: "bg-tl-50 dark:bg-tl-900/200",
-    WEATHER: "bg-cyan-50 dark:bg-cyan-900/200",
+    ACCIDENT: "bg-red-500",
+    ROADWORK: "bg-orange-500",
+    CONGESTION: "bg-yellow-500",
+    HAZARD: "bg-purple-500",
+    VEHICLE_BREAKDOWN: "bg-tl-500",
+    WEATHER: "bg-cyan-500",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
     OTHER: "bg-gray-400",
@@ -376,9 +376,9 @@ function SeverityChart({
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
   const severityColors: Record<string, string> = {
-    LOW: "bg-green-50 dark:bg-green-900/200",
-    MEDIUM: "bg-yellow-50 dark:bg-yellow-900/200",
-    HIGH: "bg-orange-50 dark:bg-orange-900/200",
+    LOW: "bg-green-500",
+    MEDIUM: "bg-yellow-500",
+    HIGH: "bg-orange-500",
     VERY_HIGH: "bg-red-600",
   };
 
@@ -465,7 +465,7 @@ function SourceChart({
                 <div className="w-20 text-sm font-medium text-gray-900 dark:text-gray-100">{source}</div>
                 <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                   <div
-                    className="h-full bg-tl-50 dark:bg-tl-900/200 rounded"
+                    className="h-full bg-tl-500 rounded"
                     style={{ width: `${barWidth}%` }}
                   />
                 </div>

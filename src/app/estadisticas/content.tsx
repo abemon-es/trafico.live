@@ -543,7 +543,7 @@ function DailyTrendMini({
   }
 
   const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const bgColor = color === "orange" ? "bg-orange-50 dark:bg-orange-900/200" : color === "blue" ? "bg-tl-50 dark:bg-tl-900/200" : "bg-red-50 dark:bg-red-900/200";
+  const bgColor = color === "orange" ? "bg-orange-500" : color === "blue" ? "bg-tl-500" : "bg-red-500";
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
@@ -617,7 +617,7 @@ function V16DailyTrendChart({
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div
-                className="w-full bg-orange-50 dark:bg-orange-900/200 rounded-t hover:bg-orange-600 transition-colors"
+                className="w-full bg-orange-500 rounded-t hover:bg-orange-600 transition-colors"
                 style={{ height: `${height}%`, minHeight: day.v16Count > 0 ? "4px" : "0" }}
                 title={`${day.date}: ${day.v16Count} balizas`}
               />
@@ -778,7 +778,7 @@ function V16DurationDistribution({
             <div className="w-24 text-sm text-gray-600 dark:text-gray-400">{bucket.label}</div>
             <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
               <div
-                className="h-full bg-green-50 dark:bg-green-900/200 rounded"
+                className="h-full bg-green-500 rounded"
                 style={{ width: `${(bucket.percentage / maxPercentage) * 100}%` }}
               />
             </div>
@@ -938,12 +938,12 @@ function IncidenciasSection({
   const stats = data?.data;
 
   const typeColors: Record<string, string> = {
-    ACCIDENT: "bg-red-50 dark:bg-red-900/200",
-    ROADWORK: "bg-orange-50 dark:bg-orange-900/200",
-    CONGESTION: "bg-yellow-50 dark:bg-yellow-900/200",
-    HAZARD: "bg-purple-50 dark:bg-purple-900/200",
-    VEHICLE_BREAKDOWN: "bg-tl-50 dark:bg-tl-900/200",
-    WEATHER: "bg-cyan-50 dark:bg-cyan-900/200",
+    ACCIDENT: "bg-red-500",
+    ROADWORK: "bg-orange-500",
+    CONGESTION: "bg-yellow-500",
+    HAZARD: "bg-purple-500",
+    VEHICLE_BREAKDOWN: "bg-tl-500",
+    WEATHER: "bg-cyan-500",
     EVENT: "bg-pink-500",
     CLOSURE: "bg-gray-700",
     OTHER: "bg-gray-400",
@@ -1231,7 +1231,7 @@ function V16Section() {
         <div className="flex items-center gap-2 text-sm">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-50 dark:bg-green-900/200"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
           </span>
           <span className="text-green-700 dark:text-green-400 font-medium">
             Tiempo real - <span className="font-data">{realtimeData?.count || 0}</span> balizas activas
@@ -1423,9 +1423,9 @@ function V16Section() {
                     const total = severityChartData.reduce((sum, i) => sum + i.value, 0);
                     const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
                     const colors: Record<string, string> = {
-                      Baja: "bg-green-50 dark:bg-green-900/200",
-                      Media: "bg-orange-50 dark:bg-orange-900/200",
-                      Alta: "bg-red-50 dark:bg-red-900/200",
+                      Baja: "bg-green-500",
+                      Media: "bg-orange-500",
+                      Alta: "bg-red-500",
                       "Muy Alta": "bg-red-900",
                     };
                     const bgColor = colors[item.name] || "bg-gray-50 dark:bg-gray-9500";
@@ -1484,7 +1484,7 @@ function V16Section() {
                         <div className="w-16 text-sm font-medium text-gray-900 dark:text-gray-100">{road.name}</div>
                         <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                           <div
-                            className="h-full bg-tl-50 dark:bg-tl-900/200 rounded"
+                            className="h-full bg-tl-500 rounded"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
@@ -1650,9 +1650,9 @@ function CarreterasSection({
 
   const riskColors: Record<string, { bg: string; text: string; label: string }> = {
     CRITICAL: { bg: "bg-red-600", text: "text-red-600 dark:text-red-400", label: "Crítico" },
-    HIGH: { bg: "bg-orange-50 dark:bg-orange-900/200", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
-    MEDIUM: { bg: "bg-yellow-50 dark:bg-yellow-900/200", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
-    LOW: { bg: "bg-green-50 dark:bg-green-900/200", text: "text-green-600 dark:text-green-400", label: "Bajo" },
+    HIGH: { bg: "bg-orange-500", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
+    MEDIUM: { bg: "bg-yellow-500", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
+    LOW: { bg: "bg-green-500", text: "text-green-600 dark:text-green-400", label: "Bajo" },
   };
 
   return (
@@ -1832,7 +1832,7 @@ function ClimaSection({
                     {alertTypeLabels[alert.type] || alert.type}
                   </div>
                   <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                    <div className="h-full bg-tl-50 dark:bg-tl-900/200 rounded" style={{ width: `${width}%` }} />
+                    <div className="h-full bg-tl-500 rounded" style={{ width: `${width}%` }} />
                   </div>
                   <div className="w-24 text-sm text-gray-600 dark:text-gray-400 text-right font-data">
                     {alert.avgIncidents.toFixed(1)} inc/día
@@ -1923,10 +1923,10 @@ function CorrelacionSection({
             </h3>
             <div className="space-y-3">
               {[
-                { label: "< 500m", value: data.data.byDistance.under500m, color: "bg-red-50 dark:bg-red-900/200" },
-                { label: "500m - 1km", value: data.data.byDistance.under1km, color: "bg-orange-50 dark:bg-orange-900/200" },
-                { label: "1km - 2km", value: data.data.byDistance.under2km, color: "bg-yellow-50 dark:bg-yellow-900/200" },
-                { label: "> 2km", value: data.data.byDistance.over2km, color: "bg-green-50 dark:bg-green-900/200" },
+                { label: "< 500m", value: data.data.byDistance.under500m, color: "bg-red-500" },
+                { label: "500m - 1km", value: data.data.byDistance.under1km, color: "bg-orange-500" },
+                { label: "1km - 2km", value: data.data.byDistance.under2km, color: "bg-yellow-500" },
+                { label: "> 2km", value: data.data.byDistance.over2km, color: "bg-green-500" },
               ].map((item) => {
                 const total = data.data.summary.totalCorrelations || 1;
                 const percentage = Math.round((item.value / total) * 100);
@@ -1954,10 +1954,10 @@ function CorrelacionSection({
             </h3>
             <div className="space-y-3">
               {[
-                { label: "Durante", value: data.data.byTimeDiff.during, color: "bg-red-50 dark:bg-red-900/200" },
-                { label: "< 15 min", value: data.data.byTimeDiff.within15min, color: "bg-orange-50 dark:bg-orange-900/200" },
-                { label: "15-30 min", value: data.data.byTimeDiff.within30min, color: "bg-yellow-50 dark:bg-yellow-900/200" },
-                { label: "30-60 min", value: data.data.byTimeDiff.within60min, color: "bg-green-50 dark:bg-green-900/200" },
+                { label: "Durante", value: data.data.byTimeDiff.during, color: "bg-red-500" },
+                { label: "< 15 min", value: data.data.byTimeDiff.within15min, color: "bg-orange-500" },
+                { label: "15-30 min", value: data.data.byTimeDiff.within30min, color: "bg-yellow-500" },
+                { label: "30-60 min", value: data.data.byTimeDiff.within60min, color: "bg-green-500" },
               ].map((item) => {
                 const total = data.data.summary.totalCorrelations || 1;
                 const percentage = Math.round((item.value / total) * 100);
@@ -2190,7 +2190,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-red-50 dark:bg-red-900/200 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.totalIncidents}</span>
                     </div>
@@ -2216,7 +2216,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-purple-50 dark:bg-purple-900/200 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-purple-500 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.incidentsPer100k.toFixed(1)}</span>
                     </div>
@@ -2243,7 +2243,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-orange-50 dark:bg-orange-900/200 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.totalV16}</span>
                     </div>
@@ -2339,7 +2339,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-20 text-sm font-bold text-tl-600 dark:text-tl-400">{r.roadName}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-red-50 dark:bg-red-900/200 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-12 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{r.totalIncidents}</span>
                     </div>
@@ -2365,7 +2365,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-20 text-sm font-bold text-tl-600 dark:text-tl-400">{r.roadName}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-orange-50 dark:bg-orange-900/200 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-orange-500 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-12 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{r.riskScore.toFixed(1)}</span>
                     </div>
@@ -2391,7 +2391,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-20 text-sm font-bold text-tl-600 dark:text-tl-400">{r.roadName}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-green-50 dark:bg-green-900/200 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-green-500 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{(r.avgIMD / 1000).toFixed(0)}k</span>
                     </div>

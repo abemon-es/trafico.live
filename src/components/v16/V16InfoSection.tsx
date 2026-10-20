@@ -172,35 +172,35 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
             <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Homologación DGT con marcado V-16
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Luz amarilla intermitente (flash)
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Batería mínima de 30 minutos
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Temperatura operativa: -10°C a +50°C
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   GPS para geolocalización automática
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Transmisión a plataforma NAP de la DGT
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Base magnética para fijar al techo
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-900/200 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                   Resistente a lluvia y condiciones adversas
                 </li>
               </ul>

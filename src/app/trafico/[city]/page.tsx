@@ -353,7 +353,7 @@ export default async function TraficoCityPage({ params }: Props) {
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   {/* Live badge */}
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-50 dark:bg-green-900/200 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                     Actualizado en tiempo real
                   </span>
                   {/* Timestamp */}
