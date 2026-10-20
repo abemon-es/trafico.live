@@ -16,6 +16,7 @@
     "test:aemet-shared": "tsx tests/aemet-shared.test.ts",
     "test:vessel-latest": "tsx tests/refresh-vessel-latest.test.ts",
     "test:indexability": "tsx tests/seo-indexability.test.ts",
+    "test:alert-urls": "tsx tests/alert-urls.test.ts",
     "test:lastmod": "tsx tests/sitemap-lastmod.test.ts",
     "test:city-traffic": "tsx tests/city-traffic-bcn.test.ts",
     "test:sasemar": "tsx tests/sasemar-source.test.ts",

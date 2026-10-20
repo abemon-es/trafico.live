@@ -118,12 +118,19 @@ export async function GET(request: NextRequest) {
     // Bbox filter (optional, for route-overlay corridor scoping)
     const bbox = parseBbox(searchParams.get("bbox"));
 
+    // One incident (an alert's link opens /incidencias?id=<situationId>)
+    const idFilter = searchParams.get("id")?.trim().slice(0, 128) || null;
+
     // Query all active incidents from database (DGT + SCT + EUSKADI + MADRID)
     const whereClause: Record<string, unknown> = { isActive: true };
 
     // Source filter (optional)
     if (sourceFilter && sourceFilter.length > 0) {
       whereClause.source = { in: sourceFilter };
+    }
+
+    if (idFilter) {
+      whereClause.situationId = idFilter;
     }
 
     if (bbox) {

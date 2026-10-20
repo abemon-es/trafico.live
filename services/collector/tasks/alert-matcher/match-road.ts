@@ -10,6 +10,7 @@ import {
   AlertTarget,
   MatchContext,
   MatchResult,
+  incidentAlertUrl,
   matchesRoad,
 } from "../../../../src/lib/alert-matcher.js";
 
@@ -78,7 +79,7 @@ export async function matchRoadAlerts(
           body: incident.description
             ? incident.description.slice(0, 200)
             : `Nueva incidencia activa en ${road}${km}. Revisa las condiciones antes de salir.`,
-          url: `${BASE_URL}/incidencias/${incident.situationId}`,
+          url: incidentAlertUrl(BASE_URL, incident.situationId),
           eventRef: incident.id,
         });
         break; // One notification per alert per run (first/most relevant match)
