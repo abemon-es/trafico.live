@@ -80,6 +80,75 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (53) — white on white: what the dark-mode sweep did to 14 translucent badges
+
+**#132 merged** (`3e208b61`, collectors 22:37Z).
+- `weather`'s first run after it (23:00Z) **got through the key**: 207 CAP,
+  1,590 alerts, `ok`.
+- The check keeps going until a run hits the key. Then server-28 resolves
+  TRAFICO-LIVE-JL (lastSeen 20-10 22:00Z) and I8 (old upstream 503), with the
+  #132 reference. The loop's GlitchTip token is read-only, and no other
+  credential was looked for.
+
+**GlitchTip hygiene:**
+- 18 «Error: Connection is closed» issues topped the signals as unresolved:
+  IB 2,093 · J6 644 · IT 252 · JK 72 · J0 12 and 13 smaller ones.
+- All came from release `e5876eda` between 06:32Z and **08:40Z on 20-10**,
+  with 0 events after that: the morning Redis outage, fixed by **#108**
+  (`08ba3399`).
+- **server-28 resolved them** with that reference, after checking all 18
+  were last seen before 09:04Z.
+
+**Signal (L2, from #131's Chromium screenshot):** the incident modal's header
+icon was an empty white square.
+- **Cause:** the dark-mode sweep `dc3f166c` rewrote 17 lines with
+  `bg-white/NN`.
+  - The 3 `/95` ones are real white map panels: fine.
+  - The other **14** were translucent white on a coloured background with
+    white text, and became `bg-white dark:bg-gray-900/10|20`: **solid white in
+    light mode**.
+- **What drew white on white:**
+  - the incident modal's icon;
+  - the modal's close button, whose dark-mode hover was fixed instead of on
+    hover;
+  - the count badge on active filter chips in /incidencias;
+  - the API icon on /profesional;
+  - the savings icon on /cuanto-cuesta-cargar;
+  - the 4 badges in the price heroes of /precio-diesel-hoy and
+    /precio-gasolina-hoy.
+
+**Fix (PR below):**
+- **The 14 back to `bg-white/10|20`** (`hover:bg-white/20` on the button).
+  Translucent white on colour works in both themes.
+- **`tests/translucent-white.test.ts`** (`npm run test:translucent-white`):
+  no `bg-white dark:bg-gray-N/10|20` anywhere in `src`. `/40` and `/50` are
+  light cards and allowed.
+  - **Mutant:** with the modal's line reverted, it fails at
+    `IncidentModal.tsx:136`.
+- **Other checks:** web `tsc` 11, eslint 0 errors (3 old warnings).
+
+**Verify after deploy** (headless Chromium on compute): the computed
+background of the modal's icon box is `rgba(255, 255, 255, 0.2)`, not
+`rgb(255, 255, 255)`, and the same for a /precio-diesel-hoy badge.
+
+**Open, in order:**
+1. **L1:** #132, a `weather` run that hits the key → expired-key heartbeat;
+   server-28 resolves JL and I8.
+2. **L2:** merge and verify this fix.
+3. **L3:** the first `content-fingerprints` run (04:50) and 22-10's; numbers
+   to server-28, the share to the CMO; then the pilots.
+4. **L3, the next lastmod item:** gas stations by price (4,474 of 5,000
+   «today» in shard 1).
+5. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+6. **Daily (21-10):** GSC/GA4 + GlitchTip digest, once the day's data is in.
+7. **L3:** the index lastmod after the CMO's 23-10 reading.
+8. **L1, low:** Euskadi id collisions (1 of 271).
+9. **Hygiene:** scrub the pre-October backlog entries, in their own PR.
+10. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+11. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (52) — weather called the expired AEMET key a crash
 
 **#130 verified** (collectors `4fa2d9d`, 21:29Z; measured at +33 min):

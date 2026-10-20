@@ -41,7 +41,7 @@ function FilterChip({ label, count, active, onClick, icon, color }: FilterChipPr
         <span
           className={`
             text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center
-            ${active ? "bg-white dark:bg-gray-900/20" : "bg-gray-100 dark:bg-gray-900"}
+            ${active ? "bg-white/20" : "bg-gray-100 dark:bg-gray-900"}
           `}
         >
           {count}

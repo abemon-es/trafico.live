@@ -339,18 +339,18 @@ export default async function PrecioGasolinaHoyPage() {
               </div>
               <div className="text-tl-100 text-sm mb-4">por litro · Península y Baleares</div>
               <div className="flex flex-wrap items-center gap-3">
-                <div className="bg-white dark:bg-gray-900/10 rounded-lg px-3 py-1.5 text-sm">
+                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
                   Mín: <span className="font-bold font-data">{formatPrice(nationalToday.minGasolina95)}</span>
                 </div>
-                <div className="bg-white dark:bg-gray-900/10 rounded-lg px-3 py-1.5 text-sm">
+                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm">
                   Máx: <span className="font-bold font-data">{formatPrice(nationalToday.maxGasolina95)}</span>
                 </div>
-                <div className="bg-white dark:bg-gray-900/10 rounded-lg px-3 py-1.5 text-sm font-data">
+                <div className="bg-white/10 rounded-lg px-3 py-1.5 text-sm font-data">
                   {nationalToday.stationCount.toLocaleString("es-ES")} gasolineras
                 </div>
               </div>
               {avg95 !== null && avg95Yesterday !== null && (
-                <div className="mt-4 bg-white dark:bg-gray-900/10 rounded-lg px-3 py-2 inline-flex">
+                <div className="mt-4 bg-white/10 rounded-lg px-3 py-2 inline-flex">
                   <TrendArrow current={avg95} previous={avg95Yesterday} />
                 </div>
               )}

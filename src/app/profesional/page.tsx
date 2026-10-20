@@ -186,7 +186,7 @@ export default function ProfesionalPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-white dark:bg-gray-900/10 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
                   <Code2 className="w-5 h-5 text-white" />
                 </div>
                 <h2 id="api-heading" className="text-xl font-bold text-white">
@@ -203,7 +203,7 @@ export default function ProfesionalPage() {
                   (tag) => (
                     <span
                       key={tag}
-                      className="text-xs bg-white dark:bg-gray-900/10 text-gray-200 px-3 py-1 rounded-full"
+                      className="text-xs bg-white/10 text-gray-200 px-3 py-1 rounded-full"
                     >
                       {tag}
                     </span>
