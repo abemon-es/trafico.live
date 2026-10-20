@@ -231,7 +231,7 @@ export default async function RestriccionesPage() {
                 <ul className="space-y-1">
                   {HEAVY_VEHICLE_RESTRICTIONS.exceptions.map((exc) => (
                     <li key={exc} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full flex-shrink-0" />
+                      <span className="w-1.5 h-1.5 bg-tl-500 rounded-full flex-shrink-0" />
                       {exc}
                     </li>
                   ))}

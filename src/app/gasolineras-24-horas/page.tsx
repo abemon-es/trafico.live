@@ -282,7 +282,7 @@ export default async function Gasolineras24hPage() {
                           </div>
                           <div className="h-1.5 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${isTop ? "bg-orange-50 dark:bg-orange-900/200" : "bg-gray-300"}`}
+                              className={`h-full rounded-full ${isTop ? "bg-orange-500" : "bg-gray-300"}`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -326,7 +326,7 @@ export default async function Gasolineras24hPage() {
                       <span
                         className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                           idx === 0
-                            ? "bg-orange-50 dark:bg-orange-900/200 text-white"
+                            ? "bg-orange-500 text-white"
                             : idx === 1
                             ? "bg-orange-400 text-white"
                             : idx === 2

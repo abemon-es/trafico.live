@@ -153,7 +153,7 @@ export function PriceHistoryChart({
             }
           `}
         >
-          <span className="w-2 h-2 rounded-full bg-tl-50 dark:bg-tl-900/200" />
+          <span className="w-2 h-2 rounded-full bg-tl-500" />
           Gasolina 95
           {trends.gasolina95 && <TrendIcon direction={trends.gasolina95.direction} />}
         </button>
@@ -167,7 +167,7 @@ export function PriceHistoryChart({
             }
           `}
         >
-          <span className="w-2 h-2 rounded-full bg-purple-50 dark:bg-purple-900/200" />
+          <span className="w-2 h-2 rounded-full bg-purple-500" />
           Gasolina 98
           {trends.gasolina98 && <TrendIcon direction={trends.gasolina98.direction} />}
         </button>

@@ -62,7 +62,7 @@ const POWER_BANDS = [
     sublabel: "hasta 22 kW",
     maxKw: 22,
     color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
-    dot: "bg-tl-50 dark:bg-tl-900/200",
+    dot: "bg-tl-500",
   },
   {
     id: "fast",
@@ -71,7 +71,7 @@ const POWER_BANDS = [
     minKw: 22,
     maxKw: 150,
     color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
-    dot: "bg-orange-50 dark:bg-orange-900/200",
+    dot: "bg-orange-500",
   },
   {
     id: "ultra",
@@ -79,7 +79,7 @@ const POWER_BANDS = [
     sublabel: "más de 150 kW",
     minKw: 150,
     color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
-    dot: "bg-green-50 dark:bg-green-900/200",
+    dot: "bg-green-500",
   },
 ];
 

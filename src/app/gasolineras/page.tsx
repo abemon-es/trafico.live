@@ -487,7 +487,7 @@ export default async function GasolinerasPage() {
 
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-tl-50 dark:bg-tl-900/200"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-500"></span>
             Gasolina 95 Más Barata
             <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(Península)</span>
           </h2>

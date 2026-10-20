@@ -269,7 +269,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-red-50 dark:bg-red-900/200 h-2 rounded-full"
+                        className="bg-red-500 h-2 rounded-full"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>

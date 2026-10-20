@@ -416,7 +416,7 @@ export default async function SemanaSanta2026Page() {
               {/* Salida */}
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-200 dark:border-tl-800 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-tl-50 dark:bg-tl-900/200" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-tl-500" />
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                     Operación Salida
                   </h3>
@@ -435,7 +435,7 @@ export default async function SemanaSanta2026Page() {
               {/* Retorno */}
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-orange-200 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-orange-50 dark:bg-orange-900/200" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                     Operación Retorno
                   </h3>

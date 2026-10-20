@@ -317,7 +317,7 @@ export default async function PrecioGasolinaHoyPage() {
           <div className="flex items-center gap-2 text-tl-600 dark:text-tl-400 text-sm font-medium mb-2">
             <Fuel className="w-4 h-4" />
             <span>Datos oficiales MITERD</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-green-50 dark:bg-green-900/200 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             <span className="text-green-600 dark:text-green-400">Actualizado hoy</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">

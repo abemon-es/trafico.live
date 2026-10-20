@@ -286,7 +286,7 @@ export default async function MarcasPage() {
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                           isFirst
-                            ? "bg-green-50 dark:bg-green-900/200 text-white"
+                            ? "bg-green-500 text-white"
                             : isLast
                             ? "bg-red-400 text-white"
                             : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"

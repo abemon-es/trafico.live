@@ -488,19 +488,19 @@ export default function AreasPage() {
           </h2>
           <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               El reglamento CE 561/2006 exige una pausa de 45 min tras 4,5 h de conducción continua.
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               El descanso diario mínimo es de 11 horas consecutivas (o reducido a 9 h máximo 3 veces por semana).
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               Planifica las paradas con antelación en rutas con alto tráfico pesado (AP-7 en verano, A-2 permanente).
             </li>
             <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-tl-50 dark:bg-tl-900/200 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-tl-500 rounded-full mt-2 flex-shrink-0" />
               Los datos de plazas son orientativos. Confirma disponibilidad contactando con el área o usando apps de parking.
             </li>
           </ul>

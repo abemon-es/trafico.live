@@ -93,7 +93,7 @@ function FuelDot({ available, label }: FuelDotProps) {
       }`}
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full ${available ? "bg-green-50 dark:bg-green-900/200" : "bg-gray-300"}`}
+        className={`w-1.5 h-1.5 rounded-full ${available ? "bg-green-500" : "bg-gray-300"}`}
       />
       {label}
     </span>

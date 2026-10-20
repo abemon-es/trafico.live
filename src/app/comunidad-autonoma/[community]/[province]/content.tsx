@@ -333,7 +333,7 @@ export default function ProvinceContent() {
                       return (
                         <div
                           key={idx}
-                          className="flex-1 bg-orange-50 dark:bg-orange-900/200 rounded-t hover:bg-orange-600"
+                          className="flex-1 bg-orange-500 rounded-t hover:bg-orange-600"
                           style={{ height: `${height}%`, minHeight: day.count > 0 ? "2px" : "0" }}
                           title={`${day.date}: ${day.count} balizas`}
                         />
@@ -359,7 +359,7 @@ export default function ProvinceContent() {
                         <div key={item.type} className="flex items-center gap-2">
                           <div className="w-24 text-sm text-gray-600 dark:text-gray-400 truncate">{item.label}</div>
                           <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                            <div className="h-full bg-red-50 dark:bg-red-900/200 rounded" style={{ width: `${width}%` }} />
+                            <div className="h-full bg-red-500 rounded" style={{ width: `${width}%` }} />
                           </div>
                           <div className="w-10 text-sm text-gray-600 dark:text-gray-400 text-right">{item.count}</div>
                         </div>

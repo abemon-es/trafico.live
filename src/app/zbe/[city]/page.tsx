@@ -467,7 +467,7 @@ function statusBadge(status: ZBEStatus) {
   if (status === "activa") {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 rounded-full text-sm font-semibold">
-        <span className="w-2 h-2 bg-green-50 dark:bg-green-900/200 rounded-full animate-pulse" />
+        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
         Activa
       </span>
     );
@@ -482,7 +482,7 @@ function statusBadge(status: ZBEStatus) {
   }
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800 rounded-full text-sm font-semibold">
-      <span className="w-2 h-2 bg-tl-50 dark:bg-tl-900/200 rounded-full" />
+      <span className="w-2 h-2 bg-tl-500 rounded-full" />
       En desarrollo
     </span>
   );
@@ -760,7 +760,7 @@ export default async function ZBECityPage({ params }: Props) {
                     {
                       label: "C",
                       sub: "Gasolina Euro 4+ / Diésel Euro 6",
-                      labelColor: "bg-green-50 dark:bg-green-900/200 text-white",
+                      labelColor: "bg-green-500 text-white",
                       value: cfg.access.labelC,
                     },
                     {
