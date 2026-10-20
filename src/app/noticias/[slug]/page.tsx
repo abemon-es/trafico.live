@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { isStaleArticle } from "@/lib/seo/indexability";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
@@ -34,10 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const keywords = article.tags.map((at) => at.tag.name);
 
-  // Noindex stale daily/ephemeral reports (>90 days old) per SEO expert recommendation
-  const ageMs = Date.now() - article.publishedAt.getTime();
-  const isEphemeral = ["DAILY_REPORT", "PRICE_ALERT", "INCIDENT_DIGEST", "WEATHER_ALERT"].includes(article.category);
-  const isStale = isEphemeral && ageMs > 90 * 24 * 60 * 60 * 1000;
+  // Noindex stale daily/ephemeral reports (>90 days old); the sitemap leaves them out too.
+  const isStale = isStaleArticle(article.category, article.publishedAt);
 
   return {
     title: article.title,

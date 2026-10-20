@@ -75,6 +75,69 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (47) — the sitemap listed 3,508 URLs that their own pages mark noindex
+
+**#126 merged** (squash `9309a2b7`). server-28 applied 006 at 22:34 Madrid
+time:
+- 006 from head `8393fa26` (sha256 `f7903fc7…`, the same as the repo);
+- backup of the 4 definitions, attributes and ACLs in
+  `database-primary:/root/trafico-ddl-backups/006-20261020-223429/`;
+- the view and `tile_vessel_headings` are byte-identical to before;
+- `refresh_vessel_latest`: SECURITY DEFINER, `search_path=public, pg_temp`,
+  EXECUTE only for trafico_admin and trafico_app;
+- **vessel_latest at 4 s with 3,636 vessels** (it was at 165 days).
+- The 15-minute verification of the `refresh-vessel-latest` task is running.
+- **server-28's follow-ups, for the next migration:**
+  - `REVOKE ALL ON FUNCTION refresh_latest_sensors() FROM PUBLIC` (live it has
+    `=X`);
+  - write `vessel_latest_position` (an unused VIEW: 0 readers in the repo and
+    in pg_depend) into a migration as it is live. The DROP is decided another
+    day.
+
+**Signal: the CMO's plan, item 1** (cycle 33: «noindex out of every sitemap»).
+
+**Finding: each template decided its noindex on its own, and the sitemap
+listed everything.** Measured against the DB with each page's own rule:
+
+| template | noindex rule | in the sitemap | noindex |
+|---|---|---|---|
+| `/codigo-postal/<cp>` | < 3 gas stations | 4,626 | **3,146** (68 %) |
+| `/noticias/<slug>` | DAILY_REPORT / PRICE_ALERT / INCIDENT_DIGEST / WEATHER_ALERT > 90 days | 1,017 | **357** |
+| `/camaras/<city>` | 0 active cameras in the province | 20 | **5** (Barcelona, Bilbao, Vitoria, Las Palmas, Santa Cruz: their cameras aren't DGT's) |
+| `/espana/…/<municipality>` | < 2,000 inhabitants and 0 gas stations | 3,459 | 0 |
+| `/transporte-publico/<op>` | 0 routes | (already filtered) | 0 |
+| `/aviacion/avion/<icao>/vuelo/<date>` | always | aircraft shards not in the index since June | — |
+
+**Fix (PR below):**
+- **`src/lib/seo/indexability.ts`:** `POSTAL_CODE_MIN_GAS_STATIONS`,
+  `EPHEMERAL_ARTICLE_CATEGORIES`, `EPHEMERAL_ARTICLE_MAX_AGE_MS`,
+  `isStaleArticle()`. The page and the sitemap read the same thing, so they
+  can't drift apart again.
+- **The pages:** `/codigo-postal` and `/noticias` use the shared module.
+- **Sitemap:**
+  - postcodes with ≥ 3 gas stations (parameterised `GROUP BY … HAVING`, count
+    and shards from the same query): **1,480**;
+  - news without the expired ephemeral reports: **660**;
+  - camera cities whose province has an active camera: **15**.
+- **Checked against production (read-only):** the same SQL returns 1,480
+  with LIMIT NULL and 480 on shard 2; 660 news.
+- **Test:** `npm run test:indexability`.
+- **Other checks:** web `tsc` 11, eslint 0 errors.
+- **The CMO** gets the date (it's their item 1); they measure the effect in
+  GSC.
+
+**Open, in order:**
+1. **L2:** verify `refresh-vessel-latest` for 15 min (vessel_latest < 2 min).
+2. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+3. **Migration 007:** `REVOKE PUBLIC` on `refresh_latest_sensors`, and
+   `vessel_latest_position` for parity.
+4. **L3:** real lastmod (item 3 of the CMO's plan); the CMO's pilots (cycle
+   33).
+5. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+6. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-20 (46) — the vessels map layer showed positions from 8 May
 
 **MJ, 20:10Z: «you are the CTO for trafico.live, push on».**

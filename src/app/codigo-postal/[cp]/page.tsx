@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { POSTAL_CODE_MIN_GAS_STATIONS } from "@/lib/seo/indexability";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
@@ -107,7 +108,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     chargerCount: data.evChargerCount,
   });
 
-  const hasData = data.gasStations.length >= 3;
+  // Same rule as the sitemap (postalCodeSitemap).
+  const hasData = data.gasStations.length >= POSTAL_CODE_MIN_GAS_STATIONS;
 
   return {
     title,
