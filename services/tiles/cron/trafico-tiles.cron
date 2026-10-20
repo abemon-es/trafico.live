@@ -1,0 +1,23 @@
+# /etc/cron.d/trafico-tiles on compute: the copy in the repo (it lived only on
+# the host until 2026-10-20). Install it with the scripts it calls, in
+# /opt/trafico/tiles.
+#
+# PMTiles tile regeneration for trafico.live
+# Secrets loaded from env file
+# Monthly: regenerate ALL static layers (1st of month, 5:00 AM Madrid)
+0 5 1 * * root /opt/trafico/tiles/run-tiles-gen.sh --all >> /opt/trafico/tiles/generate.log 2>&1
+# Gas station prices: regenerate after each MINETUR price update (06:30, 13:30, 20:30 Madrid)
+30 6,13,20 * * * root /opt/trafico/tiles/run-tiles-gen.sh --layer=gas-stations >> /opt/trafico/tiles/generate.log 2>&1
+# Daily: cameras + chargers (new locations added daily at 04:00/06:00)
+0 7 * * * root /opt/trafico/tiles/run-tiles-gen.sh --layer=cameras --layer=chargers >> /opt/trafico/tiles/generate.log 2>&1
+# Weekly: radars + railway (updated Sundays by collectors)
+0 8 * * 0 root /opt/trafico/tiles/run-tiles-gen.sh --layer=radars --layer=railway-stations --layer=railway-routes >> /opt/trafico/tiles/generate.log 2>&1
+# Refresh sensor matviews (mv_latest_sensors + mv_sensor_clusters) every 5 min,
+# through refresh_latest_sensors(), SECURITY DEFINER.
+*/5 * * * * root /opt/trafico/tiles/refresh-matviews.sh
+# Refresh vessel_latest every minute (the vessels map layers; ~200 ms), through
+# refresh_vessel_latest(), SECURITY DEFINER (migration 006). Nothing refreshed it
+# from 2026-05-08 to 2026-10-20.
+* * * * * root /opt/trafico/tiles/refresh-matviews.sh vessels
+# Weekly: rebuild custom tileset from latest OSM data (Sunday 3am, takes ~30 min)
+0 3 * * 0 root /opt/trafico/tiles/build-custom-tileset.sh >> /opt/trafico/tiles/build.log 2>&1
