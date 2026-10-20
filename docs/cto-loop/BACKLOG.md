@@ -75,6 +75,151 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (36) — the «SASEMAR» stats page published other organisations' layers as official figures
+
+**#114 deployed, and 005 applied:**
+- server-28 merged #114 (squash `edf5b3b2`) at 16:48:13Z, an even minute, with
+  0 `TASK=`. It didn't change the collector image.
+- **Martin** rebuilt and restarted at 16:48:43Z, with no «main cache» line.
+  `incidents/5/15/12` straight from Martin is 320,538 B, the same as the
+  function (before: 58,770 cached).
+- **005 applied by server-28 at ~16:58Z**, through the PLAYBOOK path:
+  - copied from git, with the md5 checked against `/opt/trafico`;
+  - `docker exec trafico-postgres psql -w -U trafico_admin -d le_trafico -1 -f`:
+    5 CREATE FUNCTION, rc 0, no password asked;
+  - the functions belong to `trafico_admin`, which is why server-28 couldn't
+    apply it as `trafico_app`.
+- **Rollback:** `/root/trafico-backup-005-20261020-184832/tile_functions_pre005.sql`
+  on compute, with `psql -1`.
+- **Verified from compute through nginx** (`--resolve`):
+
+  | tile | bytes |
+  |---|---|
+  | city_sensors/10/518/382 | 50,627 |
+  | city_sensors/12/2043/1558 (Valencia) | 32,808 |
+  | aircraft/10/501/386 | 449 |
+  | roadworks/10/501/386 | 572 |
+
+  `pg_get_functiondef`: all 5 project to 3857, owner `trafico_admin`.
+- **Why 002 was missed:** 002 was committed on 04-03 at 02:56 (`e7515f7a`). The
+  «add ST_Transform to 3857» fix at 04:11 (`0e6b94f4`) only touched 001.
+
+**Signal (cycle 35, Finding 3):** `MaritimeEmergency` coordinates in Mexico,
+Peru, Ecuador and Mountain View.
+
+**Finding: none of the 2,140 rows came from SASEMAR, and a public page
+presented them as SASEMAR.**
+- `/maritimo/seguridad/estadisticas` (in the sitemap, linked from the home page
+  and the nav) said:
+  - «SASEMAR — 2140 emergencias entre 2019 y 2026», with 2,014 of them in 2026;
+  - «Personas rescatadas 0», and «Otra 100 %» as the only type;
+  - «Fuente: SASEMAR».
+  - The meta description and OG said «30.000+ emergencias 2019-2024», and the
+    Dataset JSON-LD claimed a datos.gob.es licence. None of it was true.
+- **The cause is in the collector.** It «discovered» datasets with
+  `opendata-sasemar.hub.arcgis.com/api/v3/datasets?q=emergencias+maritimas`,
+  which is a **global ArcGIS Online search**.
+  - Today it returns «Emergencias Cuernavaca» (Mexico, which explains
+    18.9/−99.2), DIMAR Colombia, «Emergencias Viales», a Costa Rican ministry
+    and Harvard WorldMap.
+  - The 3 hard-coded endpoints answer «Invalid URL»: they never existed.
+  - A record with no year was given the current year, hence the 2,000 rows in
+    2026.
+  - The task isn't in cron («one-shot»), so it was one manual run.
+- **The rows:** every field null except `sourceId` and `year`. 140 had
+  coordinates, all outside Spain.
+
+**The real source exists, and it's in SASEMAR's own organisation.**
+- The Hub domain resolves to orgId `z9EodtVMNDMSeW4E` («Salvamento Marítimo»).
+- `EMERGENCIAS_2019` … `EMERGENCIAS_2025`, owner `OpenDataSASEMAR`, at
+  `services5.arcgis.com/z9EodtVMNDMSeW4E`. That's **43,475 records**
+  (5,562 · 5,807 · 6,746 · 6,183 · 6,356 · 6,614 · 6,207).
+- The same 12 fields every year: `FID, fecha_ejec (dd/mm/yyyy), centro,
+  latitud, longitud, tipo, subtipo, numbuqmer, numbuqpes, numbuqrec,
+  numbuqotr, numperres`.
+- `tipo` has 4 values. 2024: SALVAMENTO-MARITIMO 5,305, SEGURIDAD-MARITIMA
+  522, MEDIO-AMBIENTE 418, SERVICIO-COMPLEMENTARIO 369.
+- 110-258 points a year (2-4 %) fall outside Spain (lat 25-46, lon −22-6).
+  These are cases SASEMAR coordinates abroad.
+- **Not verified yet:** what `numperres` counts (24,892 in 2024 SALVAMENTO),
+  and the licence (`licenseInfo` and `description` are empty on the items).
+
+**Done in prod (OK from server-28):**
+- **Backup:** `compute:/root/backups/trafico-cto-loop/MaritimeEmergency-2026-10-20.json`
+  (0600). All 21 columns, 2,140 objects, sha256
+  `e388cfef7332819fffaea6879163ff80f7648fc1d28e8a2365c60c38fa92e0d3` in
+  `.sha256` next to it.
+- **Delete in one transaction**, at 16:55:07Z:
+  - checked that the table had 2,140 rows and all of them matched
+    `sourceId LIKE 'sasemar-%'`;
+  - `DELETE` rowCount 2,140 → COMMIT. The table is now 0.
+- **Restore:** that JSON → INSERT as `trafico_app`.
+- **After the caches expired** (17:06:48Z, from compute):
+  - `/api/maritimo/emergencies` with the default key: `count 0`;
+  - tile `emergencies` at 10/229/457, 0/0/0 and 3/3/3: 204, 0 B;
+  - the page shows its current empty state («Sin datos disponibles»), and the
+    «2140 emergencias» line is gone.
+
+**Fix (PR below):**
+- **The collector only reads SASEMAR.**
+  - Search scoped to `orgid:z9EodtVMNDMSeW4E AND owner:OpenDataSASEMAR`.
+  - Each item must be titled `EMERGENCIAS_<year>`, be a Feature Service, be
+    owned by OpenDataSASEMAR and be hosted under
+    `services5.arcgis.com/z9EodtVMNDMSeW4E/` (`sasemarLayer`).
+  - A layer with more than half its points outside Spain's SAR area is
+    rejected whole. Real ones have 2-4 % outside; the junk had 100 %.
+  - The global search, the invented endpoints and the never-existing local
+    file are gone.
+- **The real schema is parsed:**
+  - `sourceId` is `sasemar-<year>-<FID>`, because FID restarts every year;
+  - the year comes from the layer, never the current one;
+  - `fecha_ejec` is read day-first;
+  - `tipo` maps to RESCUE / POLLUTION / OTHER, with `subtipo` kept as is;
+  - `zone` is the `centro` (CCS);
+  - vessels by class;
+  - `numperres` goes to `personsInvolved`, **not** `personsSaved`, until its
+    meaning is known;
+  - query ordered by FID for stable paging.
+- **The page while it's empty:**
+  - says it has no data, is `noindex`, and drops the Dataset JSON-LD, the
+    «Fuente» line and the claimed licence;
+  - the meta no longer says «30.000+».
+- **Sitemap:** the URL is listed only if `MaritimeEmergency` has rows.
+- **Home and nav:** the home page line is removed. The nav goes to
+  `/maritimo/seguridad` (the guide), «Seguridad marítima».
+- **PR template:** the new merge rule (even minute, second 05-15).
+- **Test:** `npm run test:sasemar`:
+  - accepts the real item; rejects Cuernavaca, a right title from another
+    owner, the right owner on another host, another SASEMAR owner, and a
+    non-Feature Service;
+  - day-first date;
+  - the real Tarifa feature;
+  - `run()` with the real layer, Cuernavaca and a fake EMERGENCIAS_2023 in the
+    search: only SASEMAR's layer is requested, the case abroad is kept without
+    a province, and a layer with 3 of 4 points in the Americas is rejected
+    whole.
+- **Other checks, all on compute in throwaway containers:**
+  - two mutants (no owner check; no host check) fail;
+  - collector `tsc` 626 (`render.ts`); web `tsc` 11, already there and none
+    in these files;
+  - eslint 0 errors (3 warnings that were already there).
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed).
+2. **L1, after this PR:** the SASEMAR import.
+   - Verify the licence (the portal's terms) and what `numperres` is.
+   - Then `TASK=sasemar` once (43,475 rows), with server-28's OK.
+   - Labels on the page: «personas» per `numperres`. Hide the missing and
+     deceased tiles, since the source doesn't have them, and stop showing 0.
+   - Put the home page link back.
+3. **L1:** Valencia ArcGIS `estado` 0 on 400 of 414 segments.
+4. **L1:** `transit-gtfs` `partial`, 3 feeds.
+5. **L2, small:** `/trafico` says «Valencia (ODS) y Zaragoza».
+6. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+7. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+
+---
+
 ## Cycle 2026-10-20 (35) — four map layers drew their points at null island, and Martin served 10-day-old tiles
 
 **#113 deployed** (squash `a8b68391`, merged 16:33:44Z by server-28 with 0
