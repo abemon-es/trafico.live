@@ -123,10 +123,23 @@ vessels from 8 May for 5½ months.**
     fixed, `REVOKE` from PUBLIC, `GRANT EXECUTE` to `trafico_app`.
   - **`ALTER FUNCTION refresh_latest_sensors() SECURITY DEFINER`:** writes down
     what's live.
-- **`refresh-matviews.sh [sensors|vessels]`.**
-- **`services/tiles/cron/trafico-tiles.cron`:** the versioned copy of
-  `/etc/cron.d/trafico-tiles`, which until now only existed on the host,
-  plus `* * * * * … refresh-matviews.sh vessels`.
+- **Scheduling: the collector task `refresh-vessel-latest`**, at `* * * * *`
+  on `services/collector/crontabs/realtime`, not a cron on the host
+  (server-28: changes to `/etc` need MJ's OK, and it would be another file
+  outside the repo).
+  - It calls `refresh_vessel_latest()` with the collector's connection
+    (`trafico_app`, EXECUTE).
+  - Its heartbeat records vessels, the newest position's age and the
+    duration.
+  - It's `partial` if the newest is > 10 min old: then AIS is behind, not the
+    refresh.
+  - 300 s staleness threshold in `/api/health`.
+- **`docs/ops/compute-cron-trafico-tiles.txt`:** a copy of the host's
+  `/etc/cron.d/trafico-tiles`, as documentation (not installed from the repo).
+- **Test:** `npm run test:vessel-latest` (fresh → ok; AIS behind or empty →
+  partial with the reason; a failing refresh propagates to the dispatcher).
+  The mutant without the staleness check fails. `test:cron` and
+  `supercronic -test` on the realtime crontab pass.
 - **Tested** in a throwaway `postgres:16.13` (`--network none`, roles
   trafico_admin / trafico_app / someone_else):
   - 006 applied **twice** (idempotent);
@@ -137,12 +150,12 @@ vessels from 8 May for 5½ months.**
   - another role → «permission denied for function»;
   - `refresh_latest_sensors` secdef = true;
   - `bash -n` on the script.
-- **Applying it is server-28's:**
-  1. 006 through the PLAYBOOK path, as 005;
-  2. copy `refresh-matviews.sh` to `/opt/trafico/tiles/`;
-  3. the cron line.
-- **Verify:** the newest in `vessel_latest` < 2 min old, and a public
-  `vessels` tile updating.
+- **Order:** server-28 applies 006 as `trafico_admin` (backing up the
+  definitions first), THEN merges. The task calls a function that has to
+  exist.
+- **Verify:** the `refresh-vessel-latest` heartbeat `ok`, the newest in
+  `vessel_latest` < 2 min old, and a public `vessels` tile changing from one
+  minute to the next.
 
 **Open, in order:**
 1. **L2:** apply and verify 006 (server-28).
