@@ -37,4 +37,12 @@ assert.deepEqual(sourceProblems([], { CyL: { items: 148, skipped: 148, parsed: 0
 assert.deepEqual(sourceProblems([], { CyL: { items: 148, skipped: 0, parsed: 148 } }), []);
 assert.deepEqual(sourceProblems([], { CyL: { items: 0, skipped: 0, parsed: 0 } }), [], "an empty feed is not a parse failure");
 
+// The database refusing incidents is a problem, named with its reason: 14
+// Euskadi items failed on every run of 2026-10-20 with the heartbeat at ok.
+assert.deepEqual(
+  sourceProblems([], {}, { EUSKADI: { count: 14, firstError: "Value out of range for the type: numeric field overflow" } }),
+  ["EUSKADI: 14 not stored (Value out of range for the type: numeric field overflow)"],
+);
+assert.deepEqual(sourceProblems([], {}, {}), []);
+
 console.log("incident run status: all checks passed");

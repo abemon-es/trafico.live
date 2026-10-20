@@ -20,7 +20,7 @@ import { inferRoadType } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
-import { sourceProblems } from "./run-status.js";
+import { sourceProblems, type StoreFailure } from "./run-status.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
 import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
 import { fetchValenciaIncidents, ValenciaIncident } from "./valencia-parser.js";
@@ -347,6 +347,7 @@ export async function run(prisma: PrismaClient) {
     let updated = 0;
     let skipped = 0;
     let processed = 0;
+    const storeFailures: Record<string, StoreFailure> = {};
 
     // Pre-filter valid incidents
     const validIncidents = allIncidents.filter(incident => {
@@ -438,6 +439,11 @@ export async function run(prisma: PrismaClient) {
         } else {
           console.error(`[collector] Error processing incident ${chunk[j].situationId}:`, result.reason);
           skipped++;
+          // Prisma's message ends with the database's reason ("numeric field overflow").
+          const reason = (result.reason instanceof Error ? result.reason.message : String(result.reason))
+            .trim().split("\n").pop() ?? "";
+          const failure = (storeFailures[chunk[j].source] ??= { count: 0, firstError: reason.trim() });
+          failure.count++;
         }
       }
 
@@ -527,12 +533,14 @@ export async function run(prisma: PrismaClient) {
           ? { items: cylResult.value.stats.records, skipped: cylResult.value.stats.skipped, parsed: cylResult.value.stats.parsed }
           : null,
       },
+      storeFailures,
     );
     await heartbeat(prisma, "incident", problems.length > 0 ? "partial" : "ok", {
       total: allIncidents.length,
       created,
       updated,
       skipped,
+      ...(Object.keys(storeFailures).length > 0 && { storeFailures }),
       ...(euskadi && {
         euskadi: {
           active: euskadi.active,

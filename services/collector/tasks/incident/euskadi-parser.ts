@@ -209,6 +209,14 @@ export function parseMadridLocal(value: string): Date {
   return new Date(asUtc - madridOffsetMinutes(guess) * 60_000);
 }
 
+/**
+ * Above this a pkStart is not a kilometre point. San Sebastián's items
+ * (sourceId 7) carry what look like times of day in milliseconds there
+ * (2.52E7 = 07:00, -3600000.0): read as km they overflowed kmPoint
+ * (numeric 7,2), and 14 incidents failed to store on every run (2026-10-20).
+ */
+export const MAX_KM_POINT = 1500;
+
 export function parseEuskadiIncidence(inc: EuskadiIncidence): EuskadiIncident | null {
   const startDate = parseMadridLocal(inc.startDate);
   if (isNaN(startDate.getTime())) return null;
@@ -218,12 +226,9 @@ export function parseEuskadiIncidence(inc: EuskadiIncidence): EuskadiIncident | 
 
   const province = mapProvince(inc.province);
 
-  // Parse km point
-  let kmPoint: number | undefined;
-  if (inc.pkStart && inc.pkStart !== "0.0") {
-    kmPoint = parseFloat(inc.pkStart);
-    if (isNaN(kmPoint)) kmPoint = undefined;
-  }
+  // Km point: "0.0" means none, and anything implausible is not one.
+  const pk = parseFloat(inc.pkStart ?? "");
+  const kmPoint = Number.isFinite(pk) && pk > 0 && pk <= MAX_KM_POINT ? pk : undefined;
 
   return {
     situationId: `EUSKADI-${inc.incidenceId}`,
