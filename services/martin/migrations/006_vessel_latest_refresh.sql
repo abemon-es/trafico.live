@@ -85,10 +85,12 @@ $function$;
 CREATE OR REPLACE FUNCTION public.refresh_vessel_latest() RETURNS void
   LANGUAGE plpgsql
   SECURITY DEFINER
-  SET search_path = public
+  -- pg_temp last: unlisted, it is searched first, and a caller's temp object
+  -- could stand in for the view.
+  SET search_path = public, pg_temp
 AS $$
 BEGIN
-  REFRESH MATERIALIZED VIEW CONCURRENTLY vessel_latest;
+  REFRESH MATERIALIZED VIEW CONCURRENTLY public.vessel_latest;
 END;
 $$;
 REVOKE ALL ON FUNCTION public.refresh_vessel_latest() FROM PUBLIC;
