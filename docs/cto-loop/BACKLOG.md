@@ -75,6 +75,115 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (39) — GTFS ZIPs from an anonymous host went into `unzip -d` with no checks
+
+**#117 deployed (squash `99302bee`, merged 17:37:00Z): the guard's first live
+run.**
+- **The deployer log:**
+  - `17:37:12 Guard: will recreate` the 6, then «waiting for a safe minute»
+    (minute x7 but second 12);
+  - `17:39:00 Guard: safe at 17:39:00Z — recreating`;
+  - DEPLOY SUCCESS in 121 s.
+- All 6 recreated at 17:39:00Z, healthy:
+
+  | container | image |
+  |---|---|
+  | realtime | `d386246413f6` |
+  | frequent | `6bf33e05065b` |
+  | fuel | `c69a63d6faaf` |
+  | daily | `105a9dfa9df0` |
+  | weekly | `7eafe8d311f5` |
+  | ais | `e4fbfa2513b4` |
+
+- **Cut (Loki 17:30-17:41Z):** only transit-realtime and
+  transit-rt-valencia (17:39:00Z, tolerated). The other 53 runs have an end,
+  and frequent/daily/weekly/fuel have 0 cut. **Guard closed** (server-28).
+- `fetchFeedZip` from the new `collector-weekly`: 3454 → 8,749 B and 3455 →
+  11,835 B, both from `files.catbox.moe`.
+
+**CSO note on #117:** the producer URL for 3454/3455 is **files.catbox.moe**,
+an anonymous file host. A third-party ZIP of unknown origin was going into
+`execFileSync("unzip", ["-o", "-q", zip, "-d", tmpDir])`. Asked for before
+Sunday's run (05:00Z):
+1. zip-slip;
+2. zip bomb;
+3. provenance.
+
+**What there was:** nothing beyond Info-ZIP's defaults.
+- Debian's UnZip 6.00 strips `../` and the leading `/`, but **restores
+  symlinks**. A `stops.txt` → `/proc/self/environ` would have been parsed as
+  stops (env and secrets into the DB, then onto the site).
+- **No cap on expansion.** The container's tmp is the host's disk:
+  `/var/lib/docker` has 74 GB free out of 393.
+
+**Measured first (real feeds, throwaway container):**
+
+| feed | zip | uncompressed | ratio | entries |
+|---|---|---|---|---|
+| Lisboa TML | 105.8 MB | 1,263.9 MB | 11.9× | 9 |
+| Xunta de Galicia | 142.5 MB | 603.0 MB | 4.2× | 7 |
+| CRTM Madrid | 76.3 MB | 318.4 MB | 4.2× | 12 |
+| Zaratán | 8.7 KB | — | 2.7× | 8 |
+| RíoBUS | 11.8 KB | — | 5.0× | 8 |
+
+**Fix (PR below): `services/collector/shared/safe-unzip.ts`, no new
+dependencies (Info-ZIP is already in the image).**
+- **List first:** `unzip -Z -l -T` (zipinfo).
+- **Reject the whole archive if any entry:**
+  - is a symlink;
+  - has an absolute path, a backslash, a `..` segment or a control character;
+  - or if there are more than 100 entries, or the sizes it declares add up
+    past the limit.
+- **Extract only root-level `*.txt` files** (all a GTFS parser reads), with
+  `unzip -p` into a path we choose, so zip-slip is impossible by
+  construction.
+  - Each byte is counted as it arrives, and the process is killed once the
+    total passes the limit. That catches headers that lie about the size.
+- **Limit:** `min(4 GB, max(50 MB, 50 × the ZIP))`. That's 4× headroom over
+  the worst real ratio; a bomb is 1000×.
+- **transit-gtfs** uses it, and deletes `tmpDir` if extraction fails.
+- **Provenance:** `TransitOperator.feedUrl` now stores the URL that **served**
+  the ZIP, not the catalogue's (also on unchanged feeds).
+  - `/transporte-publico/<op>` shows it as «Feed GTFS». For 3454/3455 it will
+    be the `files.catbox.moe` link, the producer's own source.
+  - For the rest it's usually the canonical MobilityData URL, which is better
+    than the legacy `mdb-latest` links that 404.
+- **Test:** `npm run test:safe-unzip` builds real ZIPs in the test, with no
+  dependencies:
+  - a normal feed (only the root `.txt` files come out, intact);
+  - `../evil.txt`, `/tmp/abs-evil.txt` and `..\evil.txt` → rejected,
+    nothing written;
+  - a symlink `stops.txt` → rejected;
+  - 6 entries with a limit of 5;
+  - a 2 MB bomb that declares its size → rejected before writing;
+  - a 5 MB bomb that declares 100 bytes → cut at 1 MB by the count;
+  - the limit formula.
+- **Other checks, all on compute:**
+  - two mutants (no symlink check; no byte count) fail;
+  - test:transit-gtfs still passes;
+  - collector `tsc` 626 (`render.ts`);
+  - eslint clean.
+  - **Real feeds, compared against `unzip -d`:** Zaratán, RíoBUS and CRTM
+    Madrid (76 MB → 318 MB in 2.3 s) give the same files with identical
+    content (sha1).
+
+**Found on the way (L1, not acted on):** **EUSKADI has exactly 1,000 active
+incidents** (DGT 1,962 · MADRID 1,940 · SCT 192 · BARCELONA 154 · DT-GV 83 ·
+NAVARRA 25 · VALENCIA 4). A round 1,000 looks like the API's page cap
+truncating the feed.
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed). Verify
+   this PR before Sunday 05:00Z (the next transit-gtfs run).
+2. **L2:** `/trafico` text («Valencia (ODS) y Zaragoza»). It's ready on
+   `fix/trafico-city-sources` (`21730f90`) and goes next cycle.
+3. **L1:** EUSKADI capped at 1,000.
+4. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+5. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+6. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (38) — transit-gtfs never tried the producer's own URL; collector merges no longer need a rule
 
 **#116 deployed** (squash `b2c30e3b`, merged 17:27:06Z by server-28):
