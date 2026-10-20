@@ -52,7 +52,8 @@ export default function IncidenciasPage() {
           <p className="mt-1 mb-4 text-gray-600 dark:text-gray-400 max-w-3xl">
             Mapa en tiempo real de incidencias en las carreteras españolas. Consulta cortes
             de carretera, retenciones, obras, accidentes y alertas meteorológicas reportadas
-            por la DGT, SCT, Euskadi, Madrid y Valencia.
+            por la DGT, SCT, Euskadi, la Junta de Castilla y León (situadas con sus puntos
+            kilométricos, IDECyL), Madrid y Valencia.
           </p>
           <h2 className="sr-only">Mapa y listado de incidencias activas en carreteras de España</h2>
         </div>

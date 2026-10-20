@@ -132,12 +132,17 @@ async function main() {
     incidenceName: "Ocupación de carril derecho en Bulevar de Salburua", latitude: "42.8518", longitude: "-2.6435",
   };
   const parsed = parseEuskadiIncidence(vitoria)!;
-  assert.equal(parsed.type, "OTHER");
+  assert.equal(parsed.type, "ROADWORK", "«Ocupación de carril…»: works occupying a lane");
   assert.equal(parsed.startedAt.toISOString(), "2026-10-20T06:00:00.000Z");
   assert.ok(parsed.endedAt, "its endDate is kept");
   assert.equal(isActiveAt(parsed, NOW), true, "active by its endDate, not the window");
   assert.match(parsed.description!, /^Ocupación de carril derecho en Bulevar de Salburua/);
   assert.equal(windowNote(parsed, NOW), "", "it has an end time: no estimate note");
+
+  const named = (incidenceName: string) => parseEuskadiIncidence({ ...vitoria, incidenceName })!.type;
+  assert.equal(named("Corte total de la calle Dato"), "CLOSURE");
+  assert.equal(named("Corte de carril derecho"), "ROADWORK");
+  assert.equal(named("Ocupación alternativa de carriles de circulación"), "ROADWORK");
 
   // An unreadable item and one without a date are counted and skipped, never fatal.
   const broken = { ...item("Accidente", 1), incidenceLevel: 5 as unknown as string };

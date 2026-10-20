@@ -287,8 +287,8 @@ export async function run(prisma: PrismaClient) {
 
     // Process Castilla y León incidents
     if (cylResult.status === "fulfilled") {
-      console.log(`[collector] CyL returned ${cylResult.value.length} incidents`);
-      for (const incident of cylResult.value) {
+      console.log(`[collector] CyL returned ${cylResult.value.incidents.length} incidents`);
+      for (const incident of cylResult.value.incidents) {
         allIncidents.push({
           situationId: incident.situationId,
           type: incident.type,
@@ -298,6 +298,7 @@ export async function run(prisma: PrismaClient) {
           longitude: incident.longitude,
           roadNumber: incident.roadNumber,
           roadType: inferRoadType(incident.roadNumber),
+          kmPoint: incident.kmPoint,
           province: incident.province,
           provinceName: incident.provinceName,
           community: COMMUNITY_CYL,
@@ -520,7 +521,12 @@ export async function run(prisma: PrismaClient) {
         ["Valencia", valenciaResult], ["DT-GV", dtgvResult], ["Navarra", navarraResult], ["CyL", cylResult],
         ["Barcelona", barcelonaResult],
       ],
-      { Euskadi: euskadi },
+      {
+        Euskadi: euskadi,
+        CyL: cylResult.status === "fulfilled"
+          ? { items: cylResult.value.stats.records, skipped: cylResult.value.stats.skipped, parsed: cylResult.value.stats.parsed }
+          : null,
+      },
     );
     await heartbeat(prisma, "incident", problems.length > 0 ? "partial" : "ok", {
       total: allIncidents.length,

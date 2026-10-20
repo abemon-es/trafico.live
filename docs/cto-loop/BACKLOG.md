@@ -75,6 +75,90 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (44) — Castilla y León's incidents have no coordinates; we place them by road and km
+
+**#123 deployed** (squash `d302a974`, server-28). It's a contract change in
+`/api/transporte/<op>`: `feed` replaces `feedUrl`. Nothing in the repo reads
+`feedUrl` from that API; the web and components use the list, stop and
+vehicle endpoints, and the operator page reads the DB.
+
+**Signal (cycle 43):** `[CYL] API returned 148 incident records` →
+`Found 0 road incidents`; 0 `CYL` rows ever in the DB.
+
+**Finding: the dataset has no coordinates.**
+- **A real record:** `{provincia, via: "CL-629", pkinicio: 0, pkfin: 23.6,
+  tramo, tipo: "Precaución", causa: "Obras", observaciones, fechaalta,
+  numincidencia, …}`.
+- **The parser** looked for `geo_point_2d`/`latitud`/`lat`… All 148 were dropped
+  in `extractCoordinates`, and the source «succeeded».
+- **We had no geometry for those roads:** `Road` CL-629 has no shape, and
+  there's 0 `SpeedLimit`/`TrafficFlow` on `CL-`.
+- **The Junta's viewer** (`InviPublica`) is a WaveMaker app with an internal
+  JSON-RPC. That's not open data, so no.
+- **IDECyL publishes the kilometre points:** layer
+  `viascomunicacion:carr_cyl_pks`, WFS at
+  `idecyl.jcyl.es/geoserver/viascomunicacion/wfs`.
+  - 37,397 markers, GPS-captured, revised yearly.
+  - Licence: free use citing the Junta (metadata SPAGOBCYLCITDTSTNCPK).
+  - The WFS gives at most 5,000 per request, and reports `numberMatched` as
+    the page size.
+- **Coverage:** the 148 current records all fall on a road and km in that
+  layer.
+  - `tipo`: Precaución 132 · Cortada 8 · Circulación alternativa 6 · Cerrada
+    1 · Otros 1.
+  - `causa`: Obras 79 · Otras 64 · Desprendimientos 3 · Incendio 1 ·
+    Inundación 1.
+
+**Fix (PR below), approved by server-28:**
+- **`services/collector/data/cyl-pks.json`** (752 KB, 3,454 roads), generated
+  with `bin/build-cyl-pks.mjs` (pages of 5,000, km averaged per road).
+  - **Static on purpose:** no task that runs every 2 min should depend on a
+    remote fetch of data that changes once a year (the city-traffic
+    lesson).
+  - Regenerate it yearly.
+- **`cyl-parser.ts`** rewritten against the real fields:
+  - `locatePk` interpolates between markers (up to 1 km past the ends; past
+    that, `null`);
+  - each record is placed or counted in `skipReasons` (via, pkinicio,
+    road/km not in kilometre points, fechaalta, numincidencia);
+  - classification: Cortada → CLOSURE HIGH, Cerrada → VERY_HIGH, Obras →
+    ROADWORK (MEDIUM if alternating traffic), Desprendimientos / Incendio /
+    Inundación → HAZARD;
+  - `kmPoint` is stored;
+  - the dataset is the list of incidents in force, so everything is active
+    and there's no time window.
+- **`run-status`:** a source that gets records and parses 0 → `partial`
+  («CyL: 148 records, 0 parsed»).
+- **Euskadi:** the Vitoria items are classified by `incidenceName`: «Corte de
+  carril» and «Ocupación…» → ROADWORK; «Corte total» and «Corte» → CLOSURE.
+  That's the «OTHER 140» from cycle 43.
+- **Tests:**
+  - `test:cyl`: interpolation, ends, off the road; the real file; the real
+    CL-629 record placed on km 0; the meaning of tipo/causa; skip reasons;
+    fetch counts;
+  - `test:incident-status`: 148 records → 0 parsed is partial, an empty feed
+    isn't;
+  - `test:euskadi`: Vitoria → ROADWORK, «Corte total» → CLOSURE.
+- **Other checks, all on compute:**
+  - 3 mutants (PK lookup that ignores the road, no 0-parsed rule, no
+    «Ocupación» mapping) fail;
+  - collector `tsc` 626; web `tsc` 11;
+  - eslint clean.
+- **Expected:** the first run with ~148 CYL incidents on the map. Licence
+  credit «Junta de Castilla y León» on the incidents page (to check).
+
+**Open, in order:**
+1. **L1:** EUSKADI's real count and aemet-forecast (#112) at 19:23Z. Then this
+   PR (~148 CYL).
+2. **Credit:** check whether `/incidencias` names its sources, and add
+   «Junta de Castilla y León (IDECyL PK)».
+3. **Recheck:** EUSKADI windows 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+4. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+5. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+6. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (43) — the transit API handed out the raw feed URL; CyL has never stored an incident
 
 **#122 deployed** (squash `c901ef31`, merged 18:28:39Z, well before the
