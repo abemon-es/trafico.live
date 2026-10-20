@@ -75,6 +75,58 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (30) — rate limiters failed open for every Redis outage
+
+**#108 deployed** (squash `08ba3399`, merged 09:04:17Z by server-28):
+- `docker top` showed 0 `TASK=` across the 6 at 09:04:09Z.
+- Collectors DEPLOY SUCCESS in 23 s, all 6 recreated at 09:04:41Z. New #103
+  baseline:
+
+  | container | image |
+  |---|---|
+  | realtime | `988ec5d8086b` |
+  | frequent | `cc44b56eebd1` |
+  | fuel | `a2bc84cd08f7` |
+  | daily | `76dac7f2cb42` |
+  | weekly | `345b021f3b4a` |
+  | ais | `68c5320a0149` |
+
+- Web DEPLOY SUCCESS in 319 s. `/api/health`: `healthy`, `redis.ok=true`,
+  staleCount 0, commit 08ba3399, and «[Redis] Connected successfully».
+- **Open:** voyage-detector's 09:00:07Z run left `runStartedAt` with no final
+  heartbeat (lastRunAt still 08:08:01Z).
+  - Per server-28's watcher it ended at 09:03:59Z, before the recreate, so
+    the deploy did not kill it.
+  - Its log went with the old container.
+  - The 10:00Z run will say whether it is recurring.
+
+**Signal (server-28's review of #108):** with `enableOfflineQueue: false`,
+every limiter fails at once while Redis is down.
+- None of the 9 `RateLimiterRedis` had an insurance limiter, and every caller
+  fails open on a non-`RateLimiterRes` error.
+- So each mesh blip lifted every limit: chat (model cost), contact,
+  newsletter, billing portal, and the API IP and tier limits.
+
+**Fix (PR below):**
+- `src/lib/limiter.ts` `createLimiter()` builds a `RateLimiterRedis` with an
+  `insuranceLimiter: RateLimiterMemory` of the same points and duration.
+- All 9 limiters use it. Their parameters are unchanged.
+- **Test:** `npm run test:rate-limit`, on compute, with a real ioredis client
+  pointed at a dead port:
+
+  | limiter | 7 requests in a row |
+  |---|---|
+  | with insurance, 5 points | `ok`×5, `limited`, `limited` |
+  | without insurance | `error`×7 (all let through) |
+  | chat shape (daily, no block) | 6th `limited` |
+  | no Redis configured | 6th `limited` |
+
+- tsc on compute: 0 new errors. eslint: 0 errors.
+- **Web-only:** none of these files is in Dockerfile.cron, so it doubles as a
+  #103 test against the baseline above.
+
+---
+
 ## Cycle 2026-10-20 (29) — the web's Redis client gave up after a mesh blip and never came back
 
 **Signal (server-28, 10:40 Madrid):** `/api/health` was `degraded` with
