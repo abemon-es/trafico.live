@@ -53,6 +53,16 @@ export interface MatchResult {
   eventRef: string;
 }
 
+/**
+ * Where a road alert takes the user: /incidencias, which opens the incident
+ * (or says it has ended). Until 2026-10-20 it was /incidencias/<situationId>,
+ * a route that doesn't exist (404), and /carreteras/<road> 404s for regional
+ * and city roads (BI-30, GI-636, M-30), which alerts accept as free text.
+ */
+export function incidentAlertUrl(baseUrl: string, situationId: string): string {
+  return `${baseUrl}/incidencias?id=${encodeURIComponent(situationId)}`;
+}
+
 // ---------------------------------------------------------------------------
 // Parsed target key types
 // ---------------------------------------------------------------------------

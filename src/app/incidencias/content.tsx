@@ -87,6 +87,19 @@ export function IncidenciasContent() {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [selectedIncident, setSelectedIncident] = useState<IncidentFeature | null>(null);
 
+  // An alert links here with ?id=<situationId>: show that incident until it is
+  // closed, or say it is no longer active.
+  const focusId = searchParams.get("id");
+  const [focusClosed, setFocusClosed] = useState(false);
+  const { data: focusData } = useSWR<IncidentsResponse>(
+    focusId && !focusClosed ? `/api/incidents?id=${encodeURIComponent(focusId)}` : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
+  const focusIncident = focusClosed ? null : focusData?.geojson?.features[0] ?? null;
+  const focusEnded = Boolean(focusId && focusData && focusData.geojson?.features.length === 0);
+  const shownIncident = selectedIncident ?? focusIncident;
+
   // Build API URL with filters
   const apiUrl = useMemo(() => {
     const params = new URLSearchParams();
@@ -141,6 +154,12 @@ export function IncidenciasContent() {
         {/* "Ver análisis histórico" removed (2026-06-10 audit): it duplicated
             the SSR "Análisis de incidencias" link above — three stacked CTAs
             with near-identical labels on mobile. */}
+
+        {focusEnded && (
+          <div className="mb-4 rounded-lg p-4 bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 text-sm text-tl-amber-800 dark:text-tl-amber-200">
+            La incidencia de tu alerta ya no está activa. Estas son las incidencias activas ahora.
+          </div>
+        )}
 
         {/* Stats bar */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 mb-4">
@@ -327,10 +346,13 @@ export function IncidenciasContent() {
       </main>
 
       {/* Incident Modal */}
-      {selectedIncident && (
+      {shownIncident && (
         <IncidentModal
-          incident={featureToIncidentData(selectedIncident)}
-          onClose={() => setSelectedIncident(null)}
+          incident={featureToIncidentData(shownIncident)}
+          onClose={() => {
+            setSelectedIncident(null);
+            setFocusClosed(true);
+          }}
         />
       )}
     </div>
