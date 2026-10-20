@@ -362,13 +362,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   const totalMs = Date.now() - startMs;
   const status = stats.aborted || errors > municipios.length * 0.5 ? "error" : errors > 0 ? "partial" : "ok";
-  // Saved as the heartbeat's errorMessage (only on "error"), so /api/health
-  // says why without reading logs.
-  const errorText = stats.aborted
-    ? `run aborted (${stats.abortReason}); ` +
-      (stats.keyRenewalRequired
-        ? "AEMET: API key past its renewal deadline"
-        : `quota signals ${JSON.stringify(stats.quotaHitsByStatus)}; last: ${stats.lastQuotaDescripcion ?? "none"}`)
+  // errorMessage is public through /api/health, so it says only that the run
+  // was cut and why in one word. The detail (renewal deadline, quota signals
+  // by status, AEMET's text) goes in meta keys that /api/health filters out
+  // (src/lib/health-meta.ts) and in the log.
+  const errorText = stats.aborted ? `run aborted (${stats.abortReason})` : null;
+  const abortDetail = stats.aborted
+    ? stats.keyRenewalRequired
+      ? "AEMET: API key past its renewal deadline"
+      : `quota signals ${JSON.stringify(stats.quotaHitsByStatus)}; last: ${stats.lastQuotaDescripcion ?? "none"}`
     : null;
 
   logJson("info", "Collection complete", {
@@ -389,6 +391,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     abort_reason: stats.abortReason,
     key_renewal_required: stats.keyRenewalRequired,
     last_quota_descripcion: stats.lastQuotaDescripcion,
+    abort_detail: abortDetail,
     status,
   });
 
@@ -409,6 +412,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     budgetWaitMs: stats.budgetWaitMs,
     failedCodes: failedCodes.slice(0, 120),
     keyRenewalRequired: stats.keyRenewalRequired,
-    ...(errorText ? { aborted: true, abortReason: stats.abortReason, error: errorText } : {}),
+    lastQuotaDescripcion: stats.lastQuotaDescripcion,
+    ...(errorText ? { aborted: true, abortReason: stats.abortReason, error: errorText, abortDetail } : {}),
   });
 }
