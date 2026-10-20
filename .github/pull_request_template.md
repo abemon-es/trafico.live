@@ -19,12 +19,10 @@ Brief description of changes.
 ## Deploy
 - [ ] Changes the collector image (`services/collector/**`, `prisma/schema.prisma`,
       `prisma.config.ts`, `src/lib/{alert-matcher,bluesky,db,redis,social-broadcast,telegram,web-push,x-api}.ts`,
-      `src/lib/email/ses.ts`; the list is `services/collector/Dockerfile.cron`). The deploy
-      recreates all 6 collectors and kills any job in flight: merge with 0 `TASK=` in
-      frequent/daily/weekly/fuel (`docker top <c> -eo pid,args` from the host; without the
-      pid column it fails), on an odd minute that is not a multiple of 5 (x1, x3, x7, x9),
-      second 00-10, and not 19:20-19:31Z (aemet-forecast). Builds take 4-50 s, so the
-      recreation stays in that minute, where only the `*` realtime jobs run.
+      `src/lib/email/ses.ts`; the list is `services/collector/Dockerfile.cron`). No merge
+      rule: since server#614 the deployer waits after the build until no job would be cut
+      and a safe minute comes (75 min cap, then it fails and pages). If in doubt, run
+      `docker exec deployer /scripts/deploy-trafico-collectors.sh --guard-check`.
 
 ## Related Issues
 Closes #
