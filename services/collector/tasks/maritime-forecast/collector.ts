@@ -8,49 +8,17 @@
  * API: https://opendata.aemet.es/
  * Pattern: 2-step (meta request → datos URL → actual text)
  *
- * Coastal zones (8):  /prediccion/maritima/costera/costa/{id}
- * High seas areas (6): /prediccion/maritima/altamar/area/{id}
+ * Coastal zones (8):  /prediccion/maritima/costera/costa/{40-47}
+ * High seas areas (3): /prediccion/maritima/altamar/area/{0-2}
+ * The list and its names come from AEMET's spec: see zones.ts.
  */
 
-import { PrismaClient, MaritimeZoneType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { ALL_ZONES, decodeAemetBody, type ZoneDefinition } from "./zones.js";
 
 const TASK = "maritime-forecast";
-const AEMET_BASE_URL = "https://opendata.aemet.es/opendata/api";
-
-// ---------------------------------------------------------------------------
-// Zone definitions
-// ---------------------------------------------------------------------------
-
-interface ZoneDefinition {
-  id: string;
-  name: string;
-  zoneType: MaritimeZoneType;
-  endpoint: string;
-}
-
-const COASTAL_ZONES: ZoneDefinition[] = [
-  { id: "42", name: "Galicia", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/42` },
-  { id: "43", name: "Cantábrico occidental", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/43` },
-  { id: "44", name: "Cantábrico oriental", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/44` },
-  { id: "45", name: "Catalano-balear", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/45` },
-  { id: "46", name: "Valencia", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/46` },
-  { id: "47", name: "Alborán", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/47` },
-  { id: "48", name: "Estrecho", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/48` },
-  { id: "49", name: "Canarias", zoneType: "COASTAL", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/costera/costa/49` },
-];
-
-const HIGH_SEAS_AREAS: ZoneDefinition[] = [
-  { id: "hs0", name: "Atlántico norte", zoneType: "HIGH_SEAS", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/altamar/area/0` },
-  { id: "hs1", name: "Atlántico sur", zoneType: "HIGH_SEAS", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/altamar/area/1` },
-  { id: "hs2", name: "Mediterráneo norte", zoneType: "HIGH_SEAS", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/altamar/area/2` },
-  { id: "hs3", name: "Mediterráneo sur", zoneType: "HIGH_SEAS", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/altamar/area/3` },
-  { id: "hs4", name: "Canarias alta mar", zoneType: "HIGH_SEAS", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/altamar/area/4` },
-  { id: "hs5", name: "Estrecho alta mar", zoneType: "HIGH_SEAS", endpoint: `${AEMET_BASE_URL}/prediccion/maritima/altamar/area/5` },
-];
-
-const ALL_ZONES: ZoneDefinition[] = [...COASTAL_ZONES, ...HIGH_SEAS_AREAS];
 
 // ---------------------------------------------------------------------------
 // AEMET 2-step fetch
@@ -81,14 +49,14 @@ async function fetchAEMETData(endpoint: string, apiKey: string): Promise<string 
   }
 
   const contentType = dataRes.headers.get("content-type") || "";
+  const body = decodeAemetBody(new Uint8Array(await dataRes.arrayBuffer()));
 
   // Response is usually text/plain (Spanish prose) or application/json
   if (contentType.includes("application/json")) {
-    const json = await dataRes.json();
-    return JSON.stringify(json);
+    return JSON.stringify(JSON.parse(body));
   }
 
-  return await dataRes.text();
+  return body;
 }
 
 // ---------------------------------------------------------------------------
@@ -268,6 +236,21 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const now = new Date();
   log(TASK, `Starting at ${now.toISOString()}`);
 
+  // Rows stored before 2026-10-20 carry the old hand-written names (zone 42 as
+  // "Galicia"…). Relabel them from zones.ts; this needs no AEMET call, so it
+  // also runs while AEMET refuses the key.
+  let relabelled = 0;
+  for (const zone of ALL_ZONES) {
+    const { count } = await prisma.maritimeWeatherForecast.updateMany({
+      where: { zoneId: zone.id, zoneName: { not: zone.name } },
+      data: { zoneName: zone.name },
+    });
+    relabelled += count;
+  }
+  if (relabelled > 0) {
+    log(TASK, `Relabelled ${relabelled} stored forecasts with AEMET's zone names`);
+  }
+
   // Fetch all zones in parallel — individual failures don't abort the run
   const results = await Promise.allSettled(
     ALL_ZONES.map((zone) => processZone(zone, apiKey))
@@ -315,6 +298,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
           forecast: { text: forecastText },
         },
         update: {
+          zoneName: zone.name,
           fetchedAt: now,
           waveHeightMin: metrics.waveHeightMin,
           waveHeightMax: metrics.waveHeightMax,
