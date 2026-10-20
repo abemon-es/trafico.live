@@ -45,11 +45,17 @@ export async function readDescripcion(res: Response): Promise<string | null> {
 }
 
 /** AEMET's 401 text when the key is past its renewal deadline. */
-const KEY_RENEWAL_RE = /renovaci/i;
+const KEY_RENEWAL_RE = /renovaci|apiKey ha superado el plazo/i;
 
-/** A 401 (HTTP status or the body's `estado`) that says the key needs renewing. */
+/**
+ * A 401 (HTTP status or the body's `estado`) that says the key needs renewing.
+ * AEMET's data server (step 2) sends the same refusal as an HTTP 500 whose HTML
+ * body wraps it: "HTTP Status 500 - 401 Unauthorized: {descripcion: Tu apiKey
+ * ha superado el plazo…}" (2026-10-20 19:51Z); that is the expired key too.
+ */
 export function isKeyExpired(status: number | undefined, descripcion: string | null | undefined): boolean {
-  return status === 401 && !!descripcion && KEY_RENEWAL_RE.test(descripcion);
+  if (!descripcion || !KEY_RENEWAL_RE.test(descripcion)) return false;
+  return status === 401 || (status !== undefined && status >= 500 && /401 Unauthorized/i.test(descripcion));
 }
 
 /** One GlitchTip issue per task, however many runs hit it. */
