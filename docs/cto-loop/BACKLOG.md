@@ -75,6 +75,97 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (37) — Valencia's traffic was mapped with Barcelona's codes, and «no data» was really «fluid»
+
+**#115 deployed** (squash `afe36fab`, merged 17:10:13Z by server-28 with 0
+`TASK=` at 17:10:07):
+- Collectors DEPLOY SUCCESS in **12 s** (cache). All 6 recreated at
+  **17:10:23Z**, healthy:
+
+  | container | image |
+  |---|---|
+  | realtime | `21cc5178c6cd` |
+  | frequent | `6ea56d535a9c` |
+  | fuel | `2d007f699904` |
+  | daily | `0e1725e669af` |
+  | weekly | `8b54dc212334` |
+  | ais | `400b759f677e` |
+
+- **Cut: 14 realtime jobs started at 17:10:00Z** (incident, panel, v16,
+  detector, intensity, city-traffic, andorra, opensky, alert-matcher, the 3
+  renfe, transit-realtime, transit-rt-valencia). frequent/daily/weekly/fuel: 0.
+- **The «even minute» rule fails the other way.** A cached build kept the
+  recreation in the merge's own even minute, which is also a `*/5` minute.
+  - Builds seen today: 4, 9, 12, 37, 42, 45, 49 s.
+  - **Rule agreed with server-28 until the guard:** an odd minute that isn't a
+    multiple of 5 (x1, x3, x7, x9), second 00-10, outside 19:20-19:31Z.
+  - Every crontab's minute field was checked: no `*/3` or `*/4`, and every
+    fixed minute is a multiple of 5. In those minutes only the 2 realtime `*`
+    lines run.
+  - It's in the PR template. server-28 moved the deployer guard up: «the third
+    time today».
+- **Web DEPLOY SUCCESS** `afe36fa` at 17:16:06Z (352 s).
+  - `/maritimo/seguridad/estadisticas` has robots `noindex, follow`, no
+    Dataset JSON-LD, no «Fuente», and the new empty state.
+  - It's in no sitemap (`sitemap.xml`, `0.xml`, `priority.xml`);
+    `/maritimo/seguridad` is in `0.xml`.
+
+**SASEMAR import blocked → ESCALATIONS** (licence and field dictionary, see
+there).
+- These sources were checked:
+  - the ArcGIS items and site: every licence field is empty;
+  - `salvamentomaritimo.es/aviso-legal`: restrictive, and written for the
+    website;
+  - datos.gob.es: no SASEMAR dataset;
+  - press figures for 2024 (72,438 people / 7,842 actions / 23,928 migrants)
+    against the layer (6,614 records, Σ`numperres` 24,913): they don't
+    reconcile.
+
+**Signal (cycle 35's open list):** Valencia had `estado` 0 on 400 of 414
+segments, so only 14 had a level.
+
+**Finding: the layer documents its own codes, and we had them wrong since
+August.**
+- `MapServer/192?f=json`, field `estado`, coded-value domain «WS2_Estado
+  Trafico»: **0 Fluido · 1 Denso · 2 Congestionado · 3 Cortado · 4 Sin datos**,
+  and 5-9 the same for underground sections.
+- Right now: 0 → 404, null → 49, 1 → 5, 3 → 4.
+- The August «honesty fix» read 0 as «no data» and used Barcelona's scale for
+  the rest:
+  - **404 fluid segments had no level**, and since #113 the map paints them
+    grey «Sin datos»;
+  - Denso and Congestionado showed as fluid, Cortado as slow, and Sin datos as
+    holdups.
+- The cycle 34-35 notes («estado 0 = no data») inherited the error. There's a
+  correction pointer on the August note.
+
+**Fix (PR below):**
+- `vlcArcGisEstadoToLevel` is a table taken from the domain: 0/5 → 0, 1/6 → 1,
+  2/7 → 3, 3/8 → 3, 4/9 → null, and anything else null.
+- Same word, same level as Barcelona: Denso 1, Congestión/Congestionado 3,
+  Cortado 3.
+- **Test** (`test:city-traffic`): the whole table, plus the run with Valencia
+  0 → fluid and 4 → no level. The #113 test asserted the wrong mapping
+  (0 → null, 4 → 2) and is corrected.
+- **Other checks, all on compute:**
+  - a mutant (0 → null again) fails;
+  - collector `tsc` 626 (`render.ts`);
+  - eslint 0 errors (2 warnings that were already there).
+- **Expected after the deploy:** Valencia readings at level 0 ≈ 404, null ≈ 49
+  (the ones with no `estado`). `/api/trafico/ciudades?city=valencia`
+  `withData` ≈ 410, not 14.
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed). Then verify
+   this PR.
+2. **L1:** `transit-gtfs` `partial`, 3 feeds.
+3. **L2, small:** `/trafico` says «Valencia (ODS) y Zaragoza».
+4. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+5. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+6. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (36) — the «SASEMAR» stats page published other organisations' layers as official figures
 
 **#114 deployed, and 005 applied:**
@@ -3516,6 +3607,8 @@ Valencia's feeds both answer **200 with real data**. Only Zaragoza is upstream.
   WGS84 bounds check, so a healthy 252 KB response logged "0 road segments
   parsed". Now requests `outSR=4326`. *Lesson: "0 parsed" on a 200 response is
   a parser bug until proven otherwise — it was read as an upstream change.*
+- *(Corrected in cycle 37: this was wrong. The layer's own domain says
+  estado 0 is «Fluido» and 4 is «Sin datos».)*
 - **Valencia honesty fix:** `estado 0` means "no data", not "fluid"; it was
   mapped to serviceLevel 0, painting 406 of 446 segments green. Unknown is now
   `null`. Same family as the GA4 zeros.
@@ -3972,6 +4065,26 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
    single latest row; `/api/estadisticas/modal` is fully orphaned.
 
 ## ESCALATIONS — need MJ, loop cannot self-serve
+
+0. **SASEMAR emergencies: may we republish them? OPEN, awaiting MJ (raised
+   2026-10-20, cycle 36/37).** SASEMAR publishes `EMERGENCIAS_2019…2025`
+   (43,475 records) in its own ArcGIS organisation, but:
+   - **No licence anywhere.** The items, the Hub site («Catálogo de Datos
+     Abiertos 2025») and datos.gob.es say nothing.
+   - **The website's legal notice is restrictive.**
+     salvamentomaritimo.es/aviso-legal: «no sean objeto de ningún tipo de
+     explotación», written for the website.
+   - **No field dictionary.** `numperres` doesn't reconcile with SASEMAR's
+     2024 press figures.
+
+   Options:
+   - ask SASEMAR for the reuse conditions and the field dictionary;
+   - have the Legal session read Ley 37/2007 / RD 1495/2011 for an AGE
+     public business entity, as it did for OpenSky;
+   - or drop `/maritimo/seguridad/estadisticas`.
+
+   Meanwhile the page is empty and noindex, out of the sitemap, and
+   `TASK=sasemar` doesn't run. server-28 has it on MJ's list too.
 
 0. **OpenSky licence — OPEN, awaiting MJ (raised 2026-10-18).** Legal session
    read the terms: for-profit entity + "operational use … in any live product
