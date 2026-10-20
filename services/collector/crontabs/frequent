@@ -22,7 +22,14 @@
 # Voyage detector — groups VesselPosition rows into PortCalls & Voyages (hourly)
 # Idempotent upsert; requires AIS positions to be flowing (ais-stream container)
 # Lockfile guard: skip if a previous run is still in progress (takes 2-4h for 55k vessels)
-0 * * * * flock -n /tmp/voyage-detector.lock -c 'TASK=voyage-detector npx tsx index.ts 2>&1' || echo "[voyage-detector] skipped — previous run still in progress"
+# Solo el cerrojo ocupado es "skipped" (20-10-2026). `flock -n` devuelve 1 tanto si
+# el cerrojo esta cogido como si la tarea falla, y con `|| echo` a secas cualquier
+# caida -- un oom-kill, un exit 1 del despachador -- salia como "skipped — previous
+# run still in progress" y "job succeeded": sin evento en GlitchTip y con el motivo
+# equivocado en el log (asi salio voyage-detector en los oom-kill de septiembre,
+# ver arriba). Con `-E 75` el
+# cerrojo ocupado devuelve 75 y el resto sale con el codigo de la tarea.
+0 * * * * flock -n -E 75 /tmp/voyage-detector.lock -c 'TASK=voyage-detector npx tsx index.ts 2>&1' || { rc=$?; [ $rc -eq 75 ] || exit $rc; echo "[voyage-detector] skipped — previous run still in progress"; }
 
 # SASEMAR: historical archive (2019-2024), one-shot only — do NOT re-enable on cron
 # SASEMAR maritime emergencies — historical ArcGIS upsert (every 15 min)
@@ -31,7 +38,7 @@
 #*/15 * * * * TASK=sasemar npx tsx index.ts 2>&1
 
 # Derive permanent per-airframe flight history from 7-day raw positions
-20 * * * * flock -n /tmp/flight-detector.lock -c 'TASK=flight-detector npx tsx index.ts 2>&1' || echo "[flight-detector] skipped — previous run still in progress"
+20 * * * * flock -n -E 75 /tmp/flight-detector.lock -c 'TASK=flight-detector npx tsx index.ts 2>&1' || { rc=$?; [ $rc -eq 75 ] || exit $rc; echo "[flight-detector] skipped — previous run still in progress"; }
 
 # Derive permanent per-train service history from the 48h position window
-35 * * * * flock -n /tmp/train-service-detector.lock -c 'TASK=train-service-detector npx tsx index.ts 2>&1' || echo "[train-service-detector] skipped — previous run still in progress"
+35 * * * * flock -n -E 75 /tmp/train-service-detector.lock -c 'TASK=train-service-detector npx tsx index.ts 2>&1' || { rc=$?; [ $rc -eq 75 ] || exit $rc; echo "[train-service-detector] skipped — previous run still in progress"; }
