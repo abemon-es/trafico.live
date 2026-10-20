@@ -10,8 +10,9 @@
  *   2. GET datos URL → returns forecast JSON array
  *
  * Rate limit: each municipio = 2 requests (step-1 + step-2), ~394 per run.
- * Paced at 2 s (~30 req/min, ~13 min per run), slowing down after any quota
- * hit; see BASE_PACE_MS below.
+ * Paced at 2 s, slowing down after any quota hit; see BASE_PACE_MS below.
+ * Requests go out only in :05-:40 of each minute and a quota hit waits for the
+ * next minute; see quota-window.ts.
  *
  * Source: AEMET OpenData — https://opendata.aemet.es/opendata/api
  * Cadence: every 6h (cron managed by team3-3.1)
@@ -23,6 +24,7 @@ import { heartbeat } from "../../shared/heartbeat.js";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { msUntilNextMinute, msUntilSendWindow } from "./quota-window.js";
 
 const TASK = "aemet-forecast";
 const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
@@ -36,18 +38,16 @@ const BASE_PACE_MS = 2000;
 const MAX_PACE_MS = 4000;
 let paceMs = BASE_PACE_MS;
 let quotaHits = 0;
+let windowWaitMs = 0;
 
 function onQuotaHit(): void {
   quotaHits++;
   paceMs = Math.min(Math.round(paceMs * 1.25), MAX_PACE_MS);
 }
-// 30 s, not 5 s: AEMET returns 500 (not 429) when its per-minute quota is
-// exhausted, and a 5 s retry lands inside the same quota window — which is why
-// 63 of 77 "failing" municipios were identical across the 15:00 and 21:00 runs
-// (stable request order → quota exhausts at the same positions → deterministic-
-// looking failures). Verified: a "failing" code returns estado:200 when
-// queried alone. A retry must wait out the window.
-const RETRY_BACKOFF_MS = 30000;
+// A retry waits for the start of the next minute, not a fixed backoff. AEMET
+// returns 500 (not 429) when its per-minute quota is exhausted; a 5 s retry
+// landed inside the same window, and a fixed 60 s one in the same exhausted
+// second of the next minute (77 % of step-2 retries failed on 2026-10-19).
 const REQUEST_TIMEOUT_MS = 30_000; // 30s abort signal per request
 
 const __filename = fileURLToPath(import.meta.url);
@@ -134,6 +134,15 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** Hold a request until the send window (:05-:40) of the minute is open. */
+async function waitForSendWindow(): Promise<void> {
+  const waitMs = msUntilSendWindow(Date.now());
+  if (waitMs > 0) {
+    windowWaitMs += waitMs;
+    await sleep(waitMs);
+  }
+}
+
 function logJson(level: "info" | "error" | "warn", msg: string, extra: Record<string, unknown> = {}): void {
   const line = JSON.stringify({ level, task: TASK, ...extra, msg, ts: new Date().toISOString() });
   if (level === "error") {
@@ -158,7 +167,7 @@ async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Respon
 
 /**
  * AEMET two-step fetch: step1 → datos URL → JSON data.
- * Retries once on 429, 5xx or network failure with backoff, then skips.
+ * Retries once on 429, 5xx or network failure at the next minute, then skips.
  */
 
 /**
@@ -167,13 +176,9 @@ async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Respon
  * the original code only retried the 429s, so every run reported partial with
  * ~90 endpoint errors that a second attempt would have absorbed.
  */
-async function fetchWithRetry(
-  url: string,
-  endpoint: string,
-  step: string,
-  backoffMs: number
-): Promise<Response | null> {
+async function fetchWithRetry(url: string, endpoint: string, step: string): Promise<Response | null> {
   let res: Response | null = null;
+  await waitForSendWindow();
   try {
     res = await fetchWithTimeout(url);
   } catch (err) {
@@ -185,6 +190,7 @@ async function fetchWithRetry(
 
   const status = res?.status ?? "network";
   if (status === 429 || (typeof status === "number" && status >= 500)) onQuotaHit();
+  const backoffMs = msUntilNextMinute(Date.now());
   logJson("warn", `${step} transient failure (${status}), retrying after backoff`, {
     endpoint,
     backoff_ms: backoffMs,
@@ -193,6 +199,7 @@ async function fetchWithRetry(
   await sleep(backoffMs);
 
   try {
+    await waitForSendWindow();
     return await fetchWithTimeout(url);
   } catch (err) {
     logJson("error", `${step} retry fetch failed`, { endpoint, error: String(err) });
@@ -203,7 +210,7 @@ async function fetchWithRetry(
 async function aemetFetch<T>(endpoint: string, apiKey: string): Promise<T | null> {
   const step1Url = `${AEMET_BASE}${endpoint}?api_key=${apiKey}`;
 
-  const step1Res = await fetchWithRetry(step1Url, endpoint, "Step1", RETRY_BACKOFF_MS);
+  const step1Res = await fetchWithRetry(step1Url, endpoint, "Step1");
   if (!step1Res) return null;
 
   if (!step1Res.ok) {
@@ -228,7 +235,7 @@ async function aemetFetch<T>(endpoint: string, apiKey: string): Promise<T | null
 
   await sleep(paceMs);
 
-  const step2Res = await fetchWithRetry(step1Body.datos, endpoint, "Step2", RETRY_BACKOFF_MS * 2);
+  const step2Res = await fetchWithRetry(step1Body.datos, endpoint, "Step2");
   if (!step2Res) return null;
 
   if (!step2Res.ok) {
@@ -315,6 +322,7 @@ function parseGust(rachaMax?: Array<{ periodo?: string; value?: number | string 
 export async function run(prisma: PrismaClient): Promise<void> {
   paceMs = BASE_PACE_MS;
   quotaHits = 0;
+  windowWaitMs = 0;
   const apiKey = process.env.AEMET_API_KEY;
   if (!apiKey) {
     logError(TASK, "AEMET_API_KEY not set — skipping");
@@ -504,6 +512,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     duration_ms: totalMs,
     quota_hits: quotaHits,
     final_pace_ms: paceMs,
+    window_wait_ms: windowWaitMs,
     status,
   });
 
@@ -515,6 +524,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     duration_ms: totalMs,
     quotaHits,
     finalPaceMs: paceMs,
+    windowWaitMs,
     failedCodes: failedCodes.slice(0, 120),
   });
 }
