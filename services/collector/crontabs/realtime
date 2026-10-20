@@ -90,3 +90,8 @@
 
 # Health check failsafe — checks all tables against SLAs, triggers recovery for stale data
 */30 * * * * TASK=health-check npx tsx index.ts 2>&1
+
+# vessel_latest, the materialized view the vessels map layers read: nothing
+# refreshed it from 2026-05-08 to 2026-10-20. ~200 ms, through
+# refresh_vessel_latest() (SECURITY DEFINER, migration 006).
+* * * * * TASK=refresh-vessel-latest npx tsx index.ts 2>&1; touch /tmp/last-run

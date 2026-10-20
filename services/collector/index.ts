@@ -72,6 +72,8 @@ const VALID_TASKS = [
   "health-check",
   // Voyage analytics
   "voyage-detector",
+  // The vessels map layers' materialized view (every minute)
+  "refresh-vessel-latest",
   "flight-detector",
   "train-service-detector",
   // Weather radar
