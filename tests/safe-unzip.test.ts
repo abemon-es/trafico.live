@@ -1,7 +1,8 @@
 /**
  * services/collector/shared/safe-unzip.ts against archives built to attack it:
  * `..` and absolute paths (zip-slip), a symlink named stops.txt, too many
- * entries, a declared bomb, and a bomb whose headers lie about its size.
+ * entries, a declared bomb, a bomb whose headers lie about its size, names
+ * that unzip would read as options, and zipinfo lines we cannot parse.
  * Runs the real Info-ZIP unzip, so it needs the collector image.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
@@ -13,7 +14,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
-import { UnsafeZipError, extractionLimits, safeExtract } from "../services/collector/shared/safe-unzip";
+import { UnsafeZipError, extractionLimits, parseZipinfo, safeExtract } from "../services/collector/shared/safe-unzip";
 
 // ── A minimal ZIP writer (stored or deflated entries, unix attributes) ───────
 
@@ -128,7 +129,29 @@ async function main() {
   const written = existsSync(join(liar.dir, "stop_times.txt")) ? readFileSync(join(liar.dir, "stop_times.txt")).length : 0;
   assert.ok(written <= 2 * 1024 * 1024, `stopped near the limit (${written} bytes written)`);
 
-  // 9. The limits: a 50 MB floor, 50× the archive, never past 4 GB.
+  // 9. Names unzip would read as options (`unzip -p zip -x.txt`) are never passed to it.
+  const opt = await extract([
+    { name: "stops.txt", data: stops },
+    { name: "-x.txt", data: Buffer.from("x") },
+    { name: "-d.txt", data: Buffer.from("x") },
+  ]);
+  assert.deepEqual(await opt.run(), ["stops.txt"]);
+  assert.deepEqual(readdirSync(opt.dir), ["stops.txt"]);
+
+  // 10. A zipinfo entry line we cannot parse rejects the archive instead of being skipped.
+  const line = (perm: string, size: number, name: string) => `${perm}  3.0 unx ${String(size).padStart(8)} tx ${String(size).padStart(8)} stor 19800101.000000 ${name}`;
+  const header = "Archive:  f.zip\nZip file size: 999 bytes, number of entries: 3";
+  const listing = (lines: string[], total: number) => [header, ...lines, `${total} files, 30 bytes uncompressed, 30 bytes compressed:  0.0%`].join("\n");
+  assert.equal(parseZipinfo(listing([line("-rw-r--r--", 10, "stops.txt"), line("lrwxrwxrwx", 18, "routes.txt")], 2)).length, 2);
+  assert.equal(parseZipinfo(listing([line("lrwxrwxrwx", 18, "routes.txt")], 1))[0].symlink, true);
+  assert.throws(
+    () => parseZipinfo(listing([line("-rw-r--r--", 10, "stops.txt"), "?rw-r--r--  3.0 unx  mangled entry line", line("-rw-r--r--", 10, "trips.txt")], 3)),
+    (e: Error) => e instanceof UnsafeZipError && /unparsed entries: zipinfo lists 3, 2 understood/.test(e.message),
+  );
+  assert.throws(() => parseZipinfo([header, line("-rw-r--r--", 10, "stops.txt")].join("\n")), /no summary line/);
+  assert.equal(parseZipinfo([header, line("-rw-r--r--", 10, "stops.txt"), "1 file, 10 bytes uncompressed, 10 bytes compressed:  0.0%"].join("\n")).length, 1);
+
+  // 11. The limits: a 50 MB floor, 50× the archive, never past 4 GB.
   const MB = 1024 * 1024;
   assert.equal(extractionLimits(10 * 1024).maxTotalBytes, 50 * MB);
   assert.equal(extractionLimits(2 * MB).maxTotalBytes, 100 * MB);

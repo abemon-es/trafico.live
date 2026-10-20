@@ -141,6 +141,12 @@ dependencies (Info-ZIP is already in the image).**
     total passes the limit. That catches headers that lie about the size.
 - **Limit:** `min(4 GB, max(50 MB, 50 × the ZIP))`. That's 4× headroom over
   the worst real ratio; a bomb is 1000×.
+- **CSO review, fail-closed (2 fixes):**
+  - names starting with `-` are never extracted (`unzip -p zip -x.txt` would
+    read the name as an option);
+  - if zipinfo lists more entries than the parser understood (its own «N
+    files» line), the archive is rejected, not skipped;
+  - both have tests, and their mutants fail.
 - **transit-gtfs** uses it, and deletes `tmpDir` if extraction fails.
 - **Provenance:** `TransitOperator.feedUrl` now stores the URL that **served**
   the ZIP, not the catalogue's (also on unchanged feeds).

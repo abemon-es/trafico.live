@@ -51,14 +51,29 @@ export function extractionLimits(zipBytes: number): ExtractLimits {
 
 // zipinfo -l -T: perms, version, os, size, flags, compressed size, method, yyyymmdd.hhmmss, name
 const ZIPINFO_LINE = /^(\S+)\s+\S+\s+\S+\s+(\d+)\s+\S+\s+\d+\s+\S+\s+\d{8}\.\d{6}\s(.*)$/;
+// zipinfo's own last line: "N file(s), X bytes uncompressed, Y bytes compressed: Z%"
+const ZIPINFO_SUMMARY = /^(\d+) files?, \d+ bytes? uncompressed/m;
 
 /** The archive's entries, as Info-ZIP's zipinfo reads its central directory. */
 export function listZip(zipPath: string): ZipEntry[] {
-  const out = execFileSync("unzip", ["-Z", "-l", "-T", zipPath], { timeout: 60_000, maxBuffer: 16 * MB }).toString();
+  return parseZipinfo(execFileSync("unzip", ["-Z", "-l", "-T", zipPath], { timeout: 60_000, maxBuffer: 16 * MB }).toString());
+}
+
+/**
+ * zipinfo's listing, entry by entry. An entry line we cannot parse would
+ * never reach unsafeEntry(), so the count must match zipinfo's own total:
+ * what is not understood is rejected, not skipped.
+ */
+export function parseZipinfo(out: string): ZipEntry[] {
   const entries: ZipEntry[] = [];
   for (const line of out.split("\n")) {
     const m = ZIPINFO_LINE.exec(line);
     if (m) entries.push({ name: m[3], size: Number(m[2]), symlink: m[1].startsWith("l") });
+  }
+  const summary = ZIPINFO_SUMMARY.exec(out);
+  if (!summary) throw new UnsafeZipError("zipinfo printed no summary line");
+  if (Number(summary[1]) !== entries.length) {
+    throw new UnsafeZipError(`unparsed entries: zipinfo lists ${summary[1]}, ${entries.length} understood`);
   }
   return entries;
 }
@@ -73,8 +88,12 @@ export function unsafeEntry(entry: ZipEntry): string | null {
   return null;
 }
 
-/** Root-level text files only: what a GTFS parser reads, and no unzip wildcard characters. */
-const WANTED = /^[A-Za-z0-9_-]+\.txt$/;
+/**
+ * Root-level text files only: what a GTFS parser reads. No unzip wildcard
+ * characters, and no leading `-`: `unzip -p zip -x.txt` would read the name
+ * as an option.
+ */
+const WANTED = /^[A-Za-z0-9][A-Za-z0-9_-]*\.txt$/;
 
 /**
  * Extracts the root-level `*.txt` files of `zipPath` into `destDir`.
