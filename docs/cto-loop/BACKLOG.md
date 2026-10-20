@@ -75,6 +75,122 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (35) — four map layers drew their points at null island, and Martin served 10-day-old tiles
+
+**#113 deployed** (squash `a8b68391`, merged 16:33:44Z by server-28 with 0
+`TASK=` at 16:33:40Z):
+- Collectors DEPLOY SUCCESS in 49 s (~45 s build). All 6 recreated at
+  16:34:32Z, healthy:
+
+  | container | image |
+  |---|---|
+  | realtime | `05bcaeb5d01c` |
+  | frequent | `4d45c6b29f23` |
+  | fuel | `389ac645fc2f` |
+  | daily | `5cd20b797ee6` |
+  | weekly | `457ed230bab6` |
+  | ais | `08f2e924369d` |
+
+- **Cut** (Loki, supercronic «starting» with no end): realtime transit-realtime,
+  transit-rt-valencia and **incident**, all started 16:34:00Z. incident (`*/2`)
+  re-ran at 16:36:00Z and succeeded. frequent/daily/weekly/fuel: 0.
+- **The merge rule was wrong by construction** (server-28). An odd minute at
+  second ≥ 40 plus a ~45 s build lands the recreation in the next, even
+  minute, exactly when the `*/2` jobs start. #111 did the same.
+  - **Until the deployer guard lands:** merge at an even minute, second
+    05-15, so the recreation falls in an odd minute.
+- Web DEPLOY SUCCESS `a8b6839` at 16:39:49Z (362 s).
+- **Verified, first run 16:35:13Z → 16:35:31Z:**
+  - «Removed 527 sensors of the retired Barcelona (sections) source»;
+  - heartbeat `city-traffic` **`ok`** `{sensors: 941, readings: 941}`, no
+    reason. Degraded 4 → 3 (aemet-forecast, aemet-historical, transit-gtfs);
+  - DB: BARCELONA 527 sensors, 0 `BCN-SEC-`;
+  - Barcelona levels in that run: 0: 221 · 1: 50 · 2: 33 · 3: 19 · null: 204
+    (before: 424 at level 0).
+
+**Signal:** cycle 34 found `tile_aircraft`, `tile_city_sensors`,
+`tile_emergencies` and `tile_roadworks` returning 0 bytes over Spain.
+
+**Finding 1, the projection.** The live definitions (`pg_get_functiondef`)
+are identical to `002_tile_functions.sql`.
+- They pass `ST_SetSRID(…, 4326)` points to `ST_AsMVTGeom`, whose bounds
+  (`ST_TileEnvelope`) are 3857. Lon/lat read as metres sit next to (0, 0), so
+  only the z0 tile had data.
+- `tile_vessels`, from the same migration, was fixed in the DB with no
+  migration (it reads `vessel_latest`, a materialized view refreshed every
+  30 s that isn't in the repo either; author unknown, server-28).
+
+**Finding 2, the cache. Martin served tiles as they were when first
+requested.**
+- Martin 0.15 without `cache_size_mb` keeps a 512 MB tile cache with no expiry
+  («Initializing main cache with maximum size 536870912B»).
+- `incidents/5/15/12` straight from Martin: **58,770 bytes**. The same tile
+  with a query string (another cache key): **319,360**, exactly what
+  `tile_incidents(5,15,12)` returns. The container has been up for 10 days.
+- So every real-time layer on the map (incidents, sensors, fleet, vessels…)
+  may be days old. nginx in front already caches 60 s.
+
+**Fix (PR below):**
+- **`services/martin/migrations/005_tile_projection.sql`:**
+  - the four functions as live, with `ST_Transform(…, 3857)` on the geometry
+    `ST_AsMVTGeom` gets. The bbox predicate stays in 4326;
+  - `tile_vessels` verbatim from `pg_get_functiondef`, so the repo matches
+    what's live;
+  - `CREATE OR REPLACE`, idempotent.
+- **`services/martin/config.yaml`:** `cache_size_mb: 0`.
+  - Checked in the 0.15 image (throwaway, `--network none`, a PMTiles
+    source): with the key no cache is initialised; with a misspelt key it
+    logs the 512 MB cache.
+- **Tested against prod without changing it:** the 5 created as `pg_temp`
+  functions in one transaction, sized, then `ROLLBACK`.
+
+  | layer | tile | live → fixed (bytes) |
+  |---|---|---|
+  | aircraft | Madrid 10/501/386 | 0 → 361 |
+  | aircraft | 5/15/12 | 0 → 18,012 |
+  | city_sensors | Barcelona 10/518/382 | 0 → 50,621 |
+  | city_sensors | Valencia 12/2043/1558 | 0 → 32,816 |
+  | roadworks | Madrid 10/501/386 | 0 → 572 |
+  | roadworks | 5/15/12 | 0 → 10,461 |
+  | emergencies | Mexico City 10/229/457 | 0 → 709 (see Finding 3) |
+  | vessels | 5/16/11 | 71,327 → 71,327, md5 identical |
+
+- **Applying it is server-28's** (`trafico_app` has no DDL):
+  1. back up the 5 live definitions;
+  2. `psql -1 -f 005_tile_projection.sql`;
+  3. rebuild Martin (the config is baked into the image), which also empties
+     its cache;
+  4. wait for nginx's 60 s;
+  5. check the public tiles above for > 0 bytes, and `incidents/5/15/12`
+     against the function.
+- The PR doesn't change the collector image, so nothing is recreated. The
+  web redeploys as on every push, with no code change.
+
+**Finding 3 (L1, not acted on): `MaritimeEmergency` coordinates are junk.**
+- 2,140 rows, 140 with coordinates, and none in Spain: lat −122 … 20, lon
+  −99 … 37.
+- Samples: Mexico City (19.5, −99.2) and (−99.3, 19.5) swapped; Peru; Ecuador;
+  and (−122.084, 37.422), which is Mountain View, the Android emulator's
+  default location, with lat and lon swapped. All `type OTHER`, `zone` null.
+- With 005 the layer draws them where they are (outside Spain, minZoom 4).
+  The fix belongs in the source (sasemar), not in the tile.
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed).
+2. **L2:** server-28 applies 005 and rebuilds Martin. Then check the public
+   tiles, and that the map's «Sensores urbanos» grey «Sin datos» shows in
+   Barcelona.
+3. **L1:** `MaritimeEmergency` coordinates (above): find where they come from
+   in the collector and null or drop what isn't on the Spanish coast.
+4. **L1:** Valencia ArcGIS answers `estado` 0 (= no data) on **400 of 414**
+   segments; only 14 carry a level. Look for another field or layer.
+5. **L1:** `transit-gtfs` `partial`, 3 failed feeds.
+6. **L2, small:** `/trafico`'s text still says «Valencia (ODS) y Zaragoza».
+7. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+8. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+
+---
+
 ## Cycle 2026-10-20 (34) — Barcelona painted «no data» as fluid, and read the same feed twice
 
 **#111 verified on the 16:10Z maritime-forecast run**, the first one with the
