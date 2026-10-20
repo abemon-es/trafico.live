@@ -75,6 +75,77 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (29) — the web's Redis client gave up after a mesh blip and never came back
+
+**Signal (server-28, 10:40 Madrid):** `/api/health` was `degraded` with
+`redis.ok=false` from 07:15Z on.
+- trafico-live had started at 07:15:20Z, inside the 07:14-07:16Z mesh
+  outage.
+- ioredis logged `connect ETIMEDOUT` ×8, then `[Redis] Max retries reached,
+  giving up`. The old `retryStrategy` returned `null` after 3 attempts
+  (~1.2 s), so the client was dead for good.
+- Since then, `[trenes/tren] redis read … failed: Connection is closed`.
+- Redis itself was fine the whole time: trafico-redis had been up 7 d, and
+  TCP from the container answered.
+
+**Immediate fix, 08:41Z:** `docker restart trafico-live` plus `docker exec
+edge-cache nginx -s reload` (PLAYBOOK).
+- Healthy in 10 s, IP unchanged.
+- `/api/health` back to `healthy`, `redis.ok=true`.
+
+**Durable fix (item of this cycle, PR below), `src/lib/redis.ts`:**
+- **`retryStrategy` never returns null:** `min(attempt × 500 ms, 30 s)`.
+  Attempts 1-3 and every 10th are logged.
+- **`enableOfflineQueue: false`:** while disconnected, a command fails at
+  once instead of hanging, so a cache miss falls through to the DB. Every rate
+  limiter (api-utils, rate-limit, tier-rate-limit, chat, contact,
+  newsletter) already fails open on non-`RateLimiterRes` errors.
+- **Bounded per request:** `maxRetriesPerRequest: 1` and `commandTimeout:
+  2000`.
+- **One Sentry event per outage**, not one per attempt, and a «Reconnected
+  after N s» line.
+- **`getOrCompute` no longer throws when Redis is down.** Its lock `SET` was
+  unguarded; now it computes directly.
+
+**Test:** `npm run test:redis`, run on compute in a throwaway web-image
+container. It uses the real ioredis client against an in-process RESP server,
+with the timing scaled 1/60:
+- 3 s with no Redis at startup («3 min»): 42 reconnects, and a command fails
+  in < 100 ms;
+- Redis comes back: ready in 167 ms;
+- a mid-life blip: the same client reconnects by itself;
+- the old strategy's client stays `end` and never reconnects;
+- the production schedule: ≥ 20 attempts in 3 min, never more than 30 s
+  apart.
+
+On compute, `tsc` shows 0 errors in the changed files and eslint is clean.
+
+**Merge rule (from #107's deploy):** any merge that touches collectors needs
+**no `TASK=` running in any of the 6 containers**, or a merge at :x4/:x9 if
+opensky is the only one running.
+- #107's merge at 08:42:44Z recreated the collectors during an opensky run
+  (started 08:40:24Z, ~3.5 min long). Health was `degraded` until opensky's
+  08:50 run finished at 08:53:24Z.
+- `src/lib/redis.ts` is in Dockerfile.cron's copy list, so this PR recreates
+  the collectors too.
+
+**#107 deployed (squash `8a037d5c`, 08:42:44Z by server-28):**
+- collectors DEPLOY SUCCESS in 43 s; web in 336 s.
+- New #103 baseline:
+
+  | container | image |
+  |---|---|
+  | realtime | `730c61f78fbc` |
+  | frequent | `aff904b6d764` |
+  | fuel | `96e60c5926c8` |
+  | daily | `87aa0996495a` |
+  | weekly | `3dc0616303dc` |
+  | ais | `b856e926fa7a` |
+
+- The 13:20Z run is its verification.
+
+---
+
 ## Cycle 2026-10-20 (28) — #106 failed its verify; the AEMET key is past its renewal deadline
 
 **Night sample, 01:20Z, still on the #104 code.**
