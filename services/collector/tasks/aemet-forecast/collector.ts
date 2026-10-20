@@ -4,15 +4,13 @@
  * Fetches daily 7-day forecasts for ~200 representative Spanish municipios
  * from the AEMET OpenData API and upserts into WeatherForecast table.
  *
- * Two-step AEMET pattern:
- *   1. GET /prediccion/especifica/municipio/diaria/{municipio_code}
- *      → returns { datos: "https://..." }
- *   2. GET datos URL → returns forecast JSON array
+ * The AEMET side (two-step request, send window, learned request budget, retry
+ * queue) lives in forecast-fetch.ts; this file parses and stores.
  *
  * Rate limit: each municipio = 2 requests (step-1 + step-2), ~394 per run.
- * Paced at 2 s, slowing down after any quota hit; see BASE_PACE_MS below.
- * Requests go out only in :05-:40 of each minute and a quota hit waits for the
- * next minute; see quota-window.ts.
+ * Requests go out only in :05-:40 of each minute (quota-window.ts), and no
+ * faster than the share AEMET is giving us (request-budget.ts): ~25 min with
+ * no quota pressure, ~66-70 min at the 6 requests/min of a weekday morning.
  *
  * Source: AEMET OpenData — https://opendata.aemet.es/opendata/api
  * Cadence: every 6h (cron managed by team3-3.1)
@@ -24,30 +22,9 @@ import { heartbeat } from "../../shared/heartbeat.js";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { msUntilNextMinute, msUntilSendWindow } from "./quota-window.js";
+import { ForecastFetcher, type Municipio } from "./forecast-fetch.js";
 
 const TASK = "aemet-forecast";
-const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
-// Pause between AEMET requests. 1500 ms (~40 req/min) still hit the quota about
-// every 2 minutes for the whole run (2026-10-19: 25 municipios lost, ~50 min
-// per run because of the 30 s backoffs). That made each run long enough for a
-// collectors deploy to kill it mid-way. Start at 2 s (~30 req/min, ~13 min per
-// run) and slow down 25 % after every quota hit (429, or AEMET's quota-500), up
-// to 4 s.
-const BASE_PACE_MS = 2000;
-const MAX_PACE_MS = 4000;
-let paceMs = BASE_PACE_MS;
-let quotaHits = 0;
-let windowWaitMs = 0;
-
-function onQuotaHit(): void {
-  quotaHits++;
-  paceMs = Math.min(Math.round(paceMs * 1.25), MAX_PACE_MS);
-}
-// A retry waits for the start of the next minute, not a fixed backoff. AEMET
-// returns 500 (not 429) when its per-minute quota is exhausted; a 5 s retry
-// landed inside the same window, and a fixed 60 s one in the same exhausted
-// second of the next minute (77 % of step-2 retries failed on 2026-10-19).
 const REQUEST_TIMEOUT_MS = 30_000; // 30s abort signal per request
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,19 +33,6 @@ const __dirname = dirname(__filename);
 // ──────────────────────────────────────────────────────────────────────────────
 // Types
 // ──────────────────────────────────────────────────────────────────────────────
-
-interface Municipio {
-  code: string;
-  name: string;
-  province: string;
-}
-
-interface AEMETStep1 {
-  estado: number;
-  datos?: string;
-  descripcion?: string;
-  metadatos?: string;
-}
 
 interface AEMETDailyPeriod {
   periodo?: string;
@@ -134,15 +98,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Hold a request until the send window (:05-:40) of the minute is open. */
-async function waitForSendWindow(): Promise<void> {
-  const waitMs = msUntilSendWindow(Date.now());
-  if (waitMs > 0) {
-    windowWaitMs += waitMs;
-    await sleep(waitMs);
-  }
-}
-
 function logJson(level: "info" | "error" | "warn", msg: string, extra: Record<string, unknown> = {}): void {
   const line = JSON.stringify({ level, task: TASK, ...extra, msg, ts: new Date().toISOString() });
   if (level === "error") {
@@ -162,92 +117,6 @@ async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Respon
     return await fetch(url, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timer);
-  }
-}
-
-/**
- * AEMET two-step fetch: step1 → datos URL → JSON data.
- * Retries once on 429, 5xx or network failure at the next minute, then skips.
- */
-
-/**
- * One fetch with a single retry. AEMET's OpenData API fails transiently in
- * three ways — 429 rate limits, sporadic 500s, and dropped connections — and
- * the original code only retried the 429s, so every run reported partial with
- * ~90 endpoint errors that a second attempt would have absorbed.
- */
-async function fetchWithRetry(url: string, endpoint: string, step: string): Promise<Response | null> {
-  let res: Response | null = null;
-  await waitForSendWindow();
-  try {
-    res = await fetchWithTimeout(url);
-  } catch (err) {
-    logJson("warn", `${step} fetch failed, retrying`, { endpoint, error: String(err) });
-  }
-
-  if (res && res.ok) return res;
-  if (res && res.status === 404) return res; // definitive, not transient
-
-  const status = res?.status ?? "network";
-  if (status === 429 || (typeof status === "number" && status >= 500)) onQuotaHit();
-  const backoffMs = msUntilNextMinute(Date.now());
-  logJson("warn", `${step} transient failure (${status}), retrying after backoff`, {
-    endpoint,
-    backoff_ms: backoffMs,
-    pace_ms: paceMs,
-  });
-  await sleep(backoffMs);
-
-  try {
-    await waitForSendWindow();
-    return await fetchWithTimeout(url);
-  } catch (err) {
-    logJson("error", `${step} retry fetch failed`, { endpoint, error: String(err) });
-    return null;
-  }
-}
-
-async function aemetFetch<T>(endpoint: string, apiKey: string): Promise<T | null> {
-  const step1Url = `${AEMET_BASE}${endpoint}?api_key=${apiKey}`;
-
-  const step1Res = await fetchWithRetry(step1Url, endpoint, "Step1");
-  if (!step1Res) return null;
-
-  if (!step1Res.ok) {
-    if (step1Res.status !== 404) {
-      logJson("warn", "Step1 non-OK after retry", { endpoint, status: step1Res.status });
-    }
-    return null;
-  }
-
-  let step1Body: AEMETStep1;
-  try {
-    step1Body = await step1Res.json() as AEMETStep1;
-  } catch {
-    logJson("error", "Step1 JSON parse failed", { endpoint });
-    return null;
-  }
-
-  if (!step1Body.datos) {
-    logJson("warn", "No datos URL in step1 response", { endpoint, estado: step1Body.estado });
-    return null;
-  }
-
-  await sleep(paceMs);
-
-  const step2Res = await fetchWithRetry(step1Body.datos, endpoint, "Step2");
-  if (!step2Res) return null;
-
-  if (!step2Res.ok) {
-    logJson("error", "Step2 non-OK after retry", { endpoint, status: step2Res.status });
-    return null;
-  }
-
-  try {
-    return await step2Res.json() as T;
-  } catch {
-    logJson("error", "Step2 JSON parse failed", { endpoint });
-    return null;
   }
 }
 
@@ -320,9 +189,6 @@ function parseGust(rachaMax?: Array<{ periodo?: string; value?: number | string 
 // ──────────────────────────────────────────────────────────────────────────────
 
 export async function run(prisma: PrismaClient): Promise<void> {
-  paceMs = BASE_PACE_MS;
-  quotaHits = 0;
-  windowWaitMs = 0;
   const apiKey = process.env.AEMET_API_KEY;
   if (!apiKey) {
     logError(TASK, "AEMET_API_KEY not set — skipping");
@@ -349,28 +215,19 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const failedCodes: string[] = [];
   const forecastAt = new Date();
 
-  for (const mun of municipios) {
-    const t0 = Date.now();
+  const fetcher = new ForecastFetcher(
+    { now: Date.now, sleep, fetch: (url) => fetchWithTimeout(url), log: logJson },
+    apiKey
+  );
 
-    const endpoint = `/prediccion/especifica/municipio/diaria/${mun.code}`;
-    const data = await aemetFetch<AEMETForecastEntry[]>(endpoint, apiKey);
-
-    if (!data) {
-      errors++;
-      failedCodes.push(mun.code);
-      logJson("warn", "No data returned", { municipio: mun.code, status: "skip" });
-      await sleep(paceMs);
-      continue;
-    }
-
+  const lost = await fetcher.collect<AEMETForecastEntry[]>(municipios, async (mun, data, attempt) => {
     const entry = Array.isArray(data) ? data[0] : data;
     const dias = entry?.prediccion?.dia ?? [];
 
     if (!dias.length) {
       skipped++;
       logJson("info", "Empty forecast", { municipio: mun.code, status: "empty" });
-      await sleep(paceMs);
-      continue;
+      return;
     }
 
     const elaborado = entry.elaborado ? new Date(entry.elaborado) : forecastAt;
@@ -489,17 +346,19 @@ export async function run(prisma: PrismaClient): Promise<void> {
       }
     }
 
-    const duration_ms = Date.now() - t0;
     logJson("info", "Municipio done", {
       municipio: mun.code,
       name: mun.name,
       status: "ok",
       rows: rows.length,
-      duration_ms,
+      attempts: attempt.attempts,
+      duration_ms: attempt.durationMs,
     });
+  });
 
-    await sleep(paceMs);
-  }
+  errors += lost.length;
+  failedCodes.push(...lost);
+  const stats = fetcher.stats;
 
   const totalMs = Date.now() - startMs;
   const status = errors > municipios.length * 0.5 ? "error" : errors > 0 ? "partial" : "ok";
@@ -510,9 +369,14 @@ export async function run(prisma: PrismaClient): Promise<void> {
     skipped,
     errors,
     duration_ms: totalMs,
-    quota_hits: quotaHits,
-    final_pace_ms: paceMs,
-    window_wait_ms: windowWaitMs,
+    quota_hits: stats.quotaHits,
+    quota_hits_by_status: stats.quotaHitsByStatus,
+    attempts: stats.attempts,
+    requeued: stats.requeued,
+    budget_per_min: stats.budgetPerMinute,
+    final_pace_ms: stats.paceMs,
+    window_wait_ms: stats.windowWaitMs,
+    budget_wait_ms: stats.budgetWaitMs,
     status,
   });
 
@@ -522,9 +386,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
     skipped,
     errors,
     duration_ms: totalMs,
-    quotaHits,
-    finalPaceMs: paceMs,
-    windowWaitMs,
+    // Every quota signal, 401 included; by status so a shift (429 → 401) shows.
+    quotaHits: stats.quotaHits,
+    quotaHitsByStatus: stats.quotaHitsByStatus,
+    attempts: stats.attempts,
+    requeued: stats.requeued,
+    budgetPerMinute: stats.budgetPerMinute,
+    finalPaceMs: stats.paceMs,
+    windowWaitMs: stats.windowWaitMs,
+    budgetWaitMs: stats.budgetWaitMs,
     failedCodes: failedCodes.slice(0, 120),
   });
 }
