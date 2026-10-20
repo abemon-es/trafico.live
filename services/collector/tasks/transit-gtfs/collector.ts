@@ -17,7 +17,7 @@
  * Attribution: © respective operators via MobilityData Mobility Database
  */
 
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { createHash } from "crypto";
 import { heartbeat } from "../../shared/heartbeat.js";
 import { writeFile, mkdtemp, rm, stat } from "fs/promises";
@@ -475,7 +475,8 @@ async function processFeed(
             longName: row.route_long_name?.trim() || null,
             routeType,
             routeColor: row.route_color?.replace(/^#/, "").trim() || null,
-            geometry: geometry as unknown as Record<string, unknown> | null,
+            // A Json? column takes undefined (left NULL), not a bare null.
+            geometry: geometry ? (geometry as unknown as Prisma.InputJsonValue) : undefined,
           },
         });
         routeCount++;
