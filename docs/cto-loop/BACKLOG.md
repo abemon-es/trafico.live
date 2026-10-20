@@ -75,6 +75,96 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (32) — maritime-forecast asked for 5 zones that don't exist and labelled the rest wrongly
+
+**#110 deployed** (squash `4697a42d`, merged 10:25:08Z by server-28's
+watcher at 0 `TASK=`):
+- Collectors DEPLOY SUCCESS in 24 s; all 6 recreated at 10:25:34Z. New
+  baseline:
+
+  | container | image |
+  |---|---|
+  | realtime | `c19b95054377` |
+  | frequent | `a9e98920c04e` |
+  | fuel | `99eb4906627c` |
+  | daily | `fb9e82dcec52` |
+  | weekly | `1d10963509ad` |
+  | ais | `e42e36fb7149` |
+
+- 3 active `-E 75` lines; a raw `grep -c` gives 4 because the comment
+  matches too.
+- train-service 10:35Z: «job succeeded».
+- Web DEPLOY SUCCESS in 387 s; health shows commit 4697a42d.
+- voyage-detector 11:00Z: 445.1 s, 205 port calls, 60 voyages, «job
+  succeeded».
+
+**Signal (server-28):** maritime-forecast went `error` at 10:10:05Z with
+`{failed: 9, coastal: 0, highSeas: 0}`; it had been `ok` that morning.
+- **AEMET probe** from collector-frequent (HTTP code, `estado` and redacted
+  `descripcion` only):
+
+  | time | requests | answer |
+  |---|---|---|
+  | 10:31:19Z | 1 | 200 «exito» |
+  | 10:31:44Z | the collector's 14 at once | 9 × «exito», 5 × estado 404 |
+  | 10:32:00Z | 9 | **401** with the renewal text |
+
+  So the expired key gets a budget of ~15 calls, then is refused with the
+  renewal text, not with a 429. server-28 escalated to MJ again. **No more
+  AEMET probes until the key is renewed:** each one spends budget the
+  collectors need.
+- **weather 11:00Z crashed** with «fetch failed», `SocketError: other side
+  closed` from opendata.aemet.es, bytesRead 0, inside `fetchAEMETAlerts`.
+  - My probe may have caused it; I didn't retry by hand.
+  - A single socket close kills the whole run because there is no retry.
+    That goes in the PR that adds expiry detection to weather, maritime and
+    historical, together with a retry on `UND_ERR_SOCKET`.
+- **The 5 estado 404s are a bug of their own.** The hand-written zone list
+  disagrees with AEMET's spec (`AEMET_OpenData_specification.json`, the
+  `costa` and `area` parameters):
+  - costa 48/49 and altamar 3-5 don't exist;
+  - 40 (Galicia) and 41 (Asturias, Cantabria y País Vasco) were never
+    requested;
+  - the names were wrong. Checked against the `nombre` fields stored in the
+    DB:
+
+    | zone | stored as | AEMET's text |
+    |---|---|---|
+    | 42 | «Galicia» | Andalucía Occidental y Ceuta |
+    | 43 | «Cantábrico occidental» | Islas Canarias |
+    | 44 | «Cantábrico oriental» | Illes Balears |
+    | hs0 | «Atlántico norte» | Atlántico al sur de 35º N |
+    | hs1 | «Atlántico sur» | Atlántico al norte de 30º N |
+
+  - So /maritimo/meteorologia and the MCP tool showed the Andalucía forecast
+    under «Galicia».
+  - Every accent was also stored as U+FFFD («Andaluc�a»): the datos body is
+    Latin-1, and `.json()` decodes it as UTF-8.
+
+**Fix (PR below):**
+- `zones.ts` holds the 8 + 3 zones and names exactly as AEMET's spec lists
+  them.
+- At the start of each run, `updateMany` relabels stored rows. It makes no
+  AEMET call, so it works while the key is refused. The upsert now also
+  updates `zoneName`.
+- `decodeAemetBody` decodes the body as UTF-8, or as windows-1252 if U+FFFD
+  appears; that's aemet-historical's approach.
+- The crontab now notes the `-E 75` limitation server-28 raised.
+- **Test:** `npm run test:maritime` against
+  `tests/fixtures/aemet-maritime-zones.json` (the spec's tables, verbatim).
+  - It checks codes, names, ids and uniqueness, the old list's regression
+    (48/49 and 3-5 extra, 40/41 missing), and the Latin-1 decoding.
+  - A mutant that changes 40 to 48 fails. Run on compute in a throwaway
+    collector container.
+- Collector `tsc`: 0 errors in maritime-forecast; all 626 are in
+  `tasks/monthly-report/render.ts`. eslint: clean.
+- **Recreates all 6.** It is not merged before the 13:20Z aemet-forecast
+  verification (server-28's order). The first run after it is 16:10Z
+  (`10 */6`, Madrid time). The relabel shows up even if AEMET refuses the
+  key; full data needs the renewal.
+
+---
+
 ## Cycle 2026-10-20 (31) — a detector crash under flock printed «skipped» and supercronic called it a success
 
 **#109 deployed** (squash `d5420893`, merged 09:11:15Z by server-28):
@@ -122,8 +212,10 @@ progress"`.
   Against main's crontab it fails («exit 1 → 0»).
 - eslint is clean on compute. `tsc`: 0 errors in the new file; the total of 11
   is all pre-existing (recharts types and others).
-- **It recreates collector-frequent** (the crontab is in the image). Merge
-  rule: 0 `TASK=` in the 6 containers. This tier runs weather and voyage at
+- **It recreates all 6 collectors.** Corrected after the PR, which said only
+  frequent: `Dockerfile.cron` is one image for all 6, and it copies
+  `services/collector/` and every crontab. Merge rule: 0 `TASK=` in the 6
+  containers. This tier runs weather and voyage at
   :00 (voyage takes ~8 min), flight at :20 and train-service at :35.
 
 ---
