@@ -7,13 +7,16 @@
  *   so it is only the fallback, never a second source (it stored every section
  *   twice as BCN-SEC-<id>, then 502'd and kept the task `partial`).
  *
+ * - Valencia's estado follows the layer's own domain: 0 Fluido … 4 Sin datos
+ *   (until 2026-10-20 0 was read as no data, and 4 as holdups).
+ *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:city-traffic
  */
 
 import assert from "node:assert/strict";
 import type { PrismaClient } from "@prisma/client";
-import { bcnEstatToLevel, run } from "../services/collector/tasks/city-traffic/collector";
+import { bcnEstatToLevel, run, vlcArcGisEstadoToLevel } from "../services/collector/tasks/city-traffic/collector";
 
 const BCN = "https://www.bcn.cat/transit/dades/dadestrams.dat";
 const MIRROR = "2d456eb5-4ea6-4f68-9794-2f3f1a58a933";
@@ -111,6 +114,11 @@ async function main() {
   assert.equal(bcnEstatToLevel(7), null);
   assert.equal(bcnEstatToLevel(NaN), null);
 
+  // 1b. Valencia: the coded-value domain of MapServer/192 (5-9 are the same, underground).
+  const vlc = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1].map((e) => vlcArcGisEstadoToLevel(e));
+  assert.deepEqual(vlc, [0, 1, 3, 3, null, 0, 1, 3, 3, null, null, null]);
+  assert.equal(vlcArcGisEstadoToLevel(null), null);
+
   // 2. bcn.cat answers: one Barcelona source, the mirror is never asked, the run is `ok`.
   const ok = await runWith(() => new Response(DAT), () => new Response("Bad Gateway", { status: 502 }));
   assert.equal(ok.mirrorCalls, 0);
@@ -125,8 +133,8 @@ async function main() {
   assert.equal(ok.level("BCN-3")!.prediction, 2);
   assert.equal(ok.level("BCN-4")!.serviceLevel, 3);
   assert.equal(ok.level("BCN-5")!.prediction, null);
-  assert.equal(ok.level("VLC-ARC-10")!.serviceLevel, null);
-  assert.equal(ok.level("VLC-ARC-11")!.serviceLevel, 2);
+  assert.equal(ok.level("VLC-ARC-10")!.serviceLevel, 0, "Valencia estado 0 is Fluido");
+  assert.equal(ok.level("VLC-ARC-11")!.serviceLevel, null, "Valencia estado 4 is Sin datos");
   // The retired source's sensors are pruned, and only those.
   assert.deepEqual(ok.deleted, [{ city: "BARCELONA", sensorId: { startsWith: "BCN-SEC-" } }]);
 
