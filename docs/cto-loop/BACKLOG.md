@@ -75,6 +75,59 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (31) — a detector crash under flock printed «skipped» and supercronic called it a success
+
+**#109 deployed** (squash `d5420893`, merged 09:11:15Z by server-28):
+- Collectors DEPLOY SUCCESS in 2 s, nothing recreated: the 6 images and
+  StartedAt match cycle 30's baseline. #103 passes against #108.
+- Web: `healthy`, `redis.ok=true`, commit d5420893. The smoke test on compute
+  gave 113 pass, 5 warn (the usual ones) and 0 fail.
+
+**voyage-detector 09:00Z (cycle 30's open item), closed as a one-off:**
+- The 10:00:05Z run completed in 469.6 s (4,512 vessels, 289 port calls,
+  83 voyages), and health is `ok`.
+- The 09:00:07Z run died at ~09:03:59Z. It hit neither the dispatcher's
+  catch, which would have written an `error` heartbeat, nor Sentry:
+  GlitchTip has 0 issues ever with `task:voyage-detector` (the same search
+  gives 5 for `task:weather`).
+- It wasn't an OOM kill (0 in the kernel log today), and the deploy didn't
+  kill it either: `docker top` showed 0 `TASK=` at 09:04:09Z.
+- The log went with the container, so the cause can't be known.
+- No data was lost: the next run re-reads the last 2 h, and every write is
+  `findFirst` before `create`.
+
+**Signal found on the way:** the three flock-guarded detectors (voyage,
+flight, train-service) ended in `|| echo "[x] skipped — previous run still in
+progress"`.
+- `flock -n` returns 1 both when the lock is held and when the task fails. So
+  any crash (an oom-kill, the dispatcher's `exit 1`, a signal) printed
+  «skipped», the job exited 0, and supercronic logged «job succeeded» and sent
+  nothing to GlitchTip.
+- This is the same symptom as the September oom-kills, which the crontab
+  comment records as voyage-detector «previous run still in progress».
+
+**Fix (PR below):**
+- Use `flock -n -E 75 … || { rc=$?; [ $rc -eq 75 ] || exit $rc; echo "…skipped…"; }`.
+  Only a held lock is «skipped»; anything else exits with the task's code.
+  The collector image has util-linux 2.38.1 flock: `-E 75` works, and a task
+  that exits 3 comes back as 3.
+- **Test:** `npm run test:cron`, on compute, in a throwaway collector
+  container. It runs every flock line from `services/collector/crontabs/*`
+  through `/bin/sh` with a stub `npx`, and checks:
+  - success → 0;
+  - exit 1 → 1;
+  - SIGKILL → 137;
+  - lock held → 0 + «skipped», and the task never starts.
+
+  Against main's crontab it fails («exit 1 → 0»).
+- eslint is clean on compute. `tsc`: 0 errors in the new file; the total of 11
+  is all pre-existing (recharts types and others).
+- **It recreates collector-frequent** (the crontab is in the image). Merge
+  rule: 0 `TASK=` in the 6 containers. This tier runs weather and voyage at
+  :00 (voyage takes ~8 min), flight at :20 and train-service at :35.
+
+---
+
 ## Cycle 2026-10-20 (30) — rate limiters failed open for every Redis outage
 
 **#108 deployed** (squash `08ba3399`, merged 09:04:17Z by server-28):
@@ -98,7 +151,8 @@ own text on hubs).
   - Per server-28's watcher it ended at 09:03:59Z, before the recreate, so
     the deploy did not kill it.
   - Its log went with the old container.
-  - The 10:00Z run will say whether it is recurring.
+  - The 10:00Z run will say whether it is recurring. → It did not recur;
+    closed as a one-off in cycle 31.
 
 **Signal (server-28's review of #108):** with `enableOfflineQueue: false`,
 every limiter fails at once while Redis is down.
