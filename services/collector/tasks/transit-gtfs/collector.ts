@@ -36,6 +36,10 @@ const CATALOG_URL = "https://bit.ly/catalogs-csv";
 /** Known empty/broken feeds to skip */
 const SKIP_FEEDS = new Set([
   "2785", // Ouigo — headers only, zero data rows
+  // Albarracín Movilidad — only on the NAP, whose download API answers 401
+  // without an API key, and MobilityData holds no copy (files.mobilitydatabase.org
+  // 403, mdb-latest 404). Checked 2026-10-20; recheck if a NAP key is set up.
+  "2807",
 ]);
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -47,12 +51,14 @@ interface DiscoveredFeed {
   city: string;
   region: string;
   downloadUrl: string;
+  /** The producer's own URL (urls.direct_download), when it differs from downloadUrl. */
+  directUrl: string | null;
   country: "ES" | "PT";
 }
 
 // ── Discover feeds from MobilityData catalog ─────────────────────────────────
 
-async function discoverFeeds(): Promise<DiscoveredFeed[]> {
+export async function discoverFeeds(): Promise<DiscoveredFeed[]> {
   log(TASK, `Fetching MobilityData catalog from ${CATALOG_URL}...`);
 
   const response = await fetch(CATALOG_URL, {
@@ -108,7 +114,8 @@ async function discoverFeeds(): Promise<DiscoveredFeed[]> {
     if (status === "deprecated") continue;
     if (!mdbId || SKIP_FEEDS.has(mdbId)) continue;
 
-    const downloadUrl = values[iLatest]?.trim() || values[iDirect]?.trim();
+    const directUrl = values[iDirect]?.trim() || null;
+    const downloadUrl = values[iLatest]?.trim() || directUrl;
     if (!downloadUrl) continue;
 
     // The catalog's `name` column is not always a name: NAP-sourced feeds put
@@ -128,6 +135,7 @@ async function discoverFeeds(): Promise<DiscoveredFeed[]> {
       city: values[iCity]?.trim() || "",
       region: values[iRegion]?.trim() || "",
       downloadUrl,
+      directUrl: directUrl !== downloadUrl ? directUrl : null,
       country: country as "ES" | "PT",
     });
   }
@@ -225,23 +233,25 @@ function buildShapeGeoJSON(points: Record<string, string>[]): object | null {
 
 // ── Download GTFS ZIP and extract to temp dir ────────────────────────────────
 
-async function downloadAndExtract(
-  feed: DiscoveredFeed
-): Promise<{ tmpDir: string; hash: string; sizeKB: number }> {
-  log(TASK, `Downloading ${feed.name} (mdb-${feed.mdbId})...`);
-
-  // URL resolution: the MobilityData catalog CSV sometimes stores legacy
-  // storage.googleapis.com URLs in urls.latest that now 404. The canonical
-  // files.mobilitydatabase.org/mdb-{id}/latest.zip endpoint serves the same
-  // feed and is stable. Try canonical first, fall back to the CSV value,
-  // fall back to a direct provider URL stored in feed.downloadUrl.
+/**
+ * The feed's ZIP, from the first URL that serves it.
+ *
+ * The MobilityData catalog CSV sometimes stores legacy storage.googleapis.com
+ * URLs in urls.latest that now 404. The canonical
+ * files.mobilitydatabase.org/mdb-{id}/latest.zip endpoint serves the same feed
+ * and is stable, so it goes first, then the CSV value. Last comes the
+ * producer's own URL (urls.direct_download): for feeds MobilityData holds no
+ * copy of, it is the only source. Until 2026-10-20 it was never tried when
+ * urls.latest was set, and Zaratán and RíoBUS failed every week although their
+ * producer URLs answered 200.
+ */
+export async function fetchFeedZip(
+  feed: Pick<DiscoveredFeed, "mdbId" | "name" | "downloadUrl" | "directUrl">
+): Promise<{ buffer: Buffer; url: string }> {
   const canonical = `https://files.mobilitydatabase.org/mdb-${feed.mdbId}/latest.zip`;
-  const urlsToTry = canonical === feed.downloadUrl
-    ? [feed.downloadUrl]
-    : [canonical, feed.downloadUrl];
+  const urlsToTry = [...new Set([canonical, feed.downloadUrl, feed.directUrl].filter((u): u is string => !!u))];
 
-  let response: Response | null = null;
-  let lastError: string = "";
+  const attempts: string[] = [];
   for (const url of urlsToTry) {
     try {
       const r = await fetch(url, {
@@ -250,23 +260,22 @@ async function downloadAndExtract(
         redirect: "follow",
       });
       if (r.ok) {
-        response = r;
-        if (url !== feed.downloadUrl) {
-          log(TASK, `${feed.name}: fallback to canonical URL`);
-        }
-        break;
+        if (url !== canonical) log(TASK, `${feed.name}: served by ${url === feed.directUrl ? "the producer URL" : "the catalog URL"}`);
+        return { buffer: Buffer.from(await r.arrayBuffer()), url };
       }
-      lastError = `HTTP ${r.status} for ${url}`;
+      attempts.push(`HTTP ${r.status} for ${url}`);
     } catch (err) {
-      lastError = `${(err as Error).message} for ${url}`;
+      attempts.push(`${(err as Error).message} for ${url}`);
     }
   }
+  throw new Error(attempts.join("; ") || `All URLs failed for mdb-${feed.mdbId}`);
+}
 
-  if (!response) {
-    throw new Error(lastError || `All URLs failed for mdb-${feed.mdbId}`);
-  }
-
-  const buffer = Buffer.from(await response.arrayBuffer());
+async function downloadAndExtract(
+  feed: DiscoveredFeed
+): Promise<{ tmpDir: string; hash: string; sizeKB: number }> {
+  log(TASK, `Downloading ${feed.name} (mdb-${feed.mdbId})...`);
+  const { buffer } = await fetchFeedZip(feed);
   const sizeKB = Math.round(buffer.length / 1024);
   log(TASK, `${feed.name}: downloaded ${sizeKB} KB`);
 
@@ -563,6 +572,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let processed = 0;
   let skipped = 0;
   let failed = 0;
+  const failedFeeds: { feed: string; error: string }[] = [];
 
   for (const feed of feeds) {
     try {
@@ -577,6 +587,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     } catch (err) {
       logError(TASK, `Failed: ${feed.name} (mdb-${feed.mdbId}):`, err);
       failed++;
+      failedFeeds.push({ feed: `mdb-${feed.mdbId} ${feed.name}`.slice(0, 80), error: String(err).slice(0, 160) });
     }
 
     // Rate limit — be polite to CDN
@@ -598,5 +609,16 @@ export async function run(prisma: PrismaClient): Promise<void> {
   }
 
   await triggerPmtilesRegen(layersForTask("transit-gtfs"));
-  await heartbeat(prisma, TASK, failed === 0 ? "ok" : "partial", { processed, skipped, failed, routes: totalRoutes, stops: totalStops });
+  // A partial run names what failed (it said only `failed: 3` for weeks).
+  await heartbeat(prisma, TASK, failed === 0 ? "ok" : "partial", {
+    processed,
+    skipped,
+    failed,
+    routes: totalRoutes,
+    stops: totalStops,
+    ...(failed > 0 && {
+      reason: `${failed}/${feeds.length} feeds failed: ${failedFeeds.map((f) => f.feed.split(" ")[0]).join(", ")}`,
+      failedFeeds,
+    }),
+  });
 }

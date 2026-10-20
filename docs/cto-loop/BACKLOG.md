@@ -75,6 +75,117 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (38) — transit-gtfs never tried the producer's own URL; collector merges no longer need a rule
+
+**#116 deployed** (squash `b2c30e3b`, merged 17:27:06Z by server-28):
+- Collectors DEPLOY SUCCESS in 9 s. All 6 recreated at 17:27:12Z, in minute
+  x7, healthy:
+
+  | container | image |
+  |---|---|
+  | realtime | `12c87cb4d392` |
+  | frequent | `77ddd347aadb` |
+  | fuel | `3e92f7907206` |
+  | daily | `0237a97c405c` |
+  | weekly | `2432f95efa77` |
+  | ais | `d224d8edfbea` |
+
+- **Cut:** only transit-realtime and transit-rt-valencia (17:27:00Z,
+  tolerated).
+- **Verified on the 17:30Z run:**
+  - Valencia levels 0: 407 · 1: 2 · 3: 4 · null: 1 (before, ~400 had no
+    level);
+  - `/api/trafico/ciudades?city=valencia` total 410, **withData 409** (it was
+    14), congested 4.
+
+**Deployer guard installed (server#614, `dd44d760`).**
+- `/opt/deployer/scripts/deploy-trafico-collectors.sh` md5 `5eb2a59e`, the
+  same as the repo.
+- **What it does, after the build:**
+  - a compose dry run decides what gets recreated;
+  - it waits until nothing would be cut: frequent/daily/weekly/fuel, and
+    realtime except its two `*` lines. opensky at :x0 runs 3.5 min;
+  - then a safe minute (odd, not a multiple of 5, second 00-10);
+  - 75 min cap, then it doesn't recreate, fails and pages;
+  - a per-app lock with a queue;
+  - `--guard-check`.
+- **The loop's review, all applied:**
+  - the hard-coded 19:20-19:31 UTC window was redundant (blocking_jobs
+    already waits for aemet-forecast), inconsistent (1 of its 4 runs), and
+    would go wrong on 25-10: supercronic runs on Europe/Madrid, so the 21:20
+    run moves to 20:20Z;
+  - minute and second from a single `date` call (rollover race);
+  - the EXIT trap goes back right after the libs;
+  - polls every 5 s.
+- **Collector PRs no longer need a merge rule.** The PR template now says so.
+- **History of the manual rules, all wrong for some build time (4-50 s):**
+  - «odd minute, second ≥ 40»: #111 and #113 recreated in the next even
+    minute;
+  - «even minute, second 05-15»: #115, with a 12 s build, recreated in the
+    same even minute and cut 14 realtime jobs;
+  - «odd, not a multiple of 5, second 00-10»: correct, but by hand.
+
+**Signal:** `transit-gtfs` `partial` `{failed: 3}` since at least 18-10, and
+the heartbeat didn't say which feeds.
+- **Loki, 18-10 run:** all three
+  `HTTP 404 for https://storage.googleapis.com/…/mdb-latest/…`:
+  - `mdb-2807` Albarracín Movilidad;
+  - `mdb-3454` Zaratán;
+  - `mdb-3455` RíoBUS.
+
+**Finding: MobilityData holds no copy of them, and we never asked the
+producer.**
+- One request per URL (catalog `feeds_v2`):
+
+  | feed | `files.mobilitydatabase.org/mdb-<id>/latest.zip` | `urls.latest` (mdb-latest) | `urls.direct_download` |
+  |---|---|---|---|
+  | 3454 Zaratán | 403 | 404 | **200**, ZIP 8.7 KB (`files.catbox.moe/giiq3a.zip`) |
+  | 3455 RíoBUS | 403 | 404 | **200**, ZIP 11.8 KB (`files.catbox.moe/mk9df1.zip`) |
+  | 2807 Albarracín | 403 | 404 | **401** (`nap.transportes.gob.es/api/Fichero/download/2807`, the NAP needs an API key) |
+
+- `discoverFeeds` used `urls.latest || urls.direct_download`, so with
+  `latest` set the producer URL never got in.
+
+**Fix (PR below):**
+- `DiscoveredFeed.directUrl`, and `fetchFeedZip` tries, in order:
+  1. canonical;
+  2. `urls.latest`;
+  3. `urls.direct_download`.
+
+  The URLs are de-duplicated, and the error lists every attempt, not just the
+  last.
+- **2807 goes to `SKIP_FEEDS`** with a dated reason: only on the NAP, 401
+  without a key. Recheck if a NAP key is set up (a secret → MJ, low
+  priority: a rural line).
+- **The heartbeat names what failed:** `reason` («N/M feeds failed: mdb-…»)
+  and `failedFeeds` [{feed, error}].
+- **Test:** `npm run test:transit-gtfs`:
+  - the producer serves it when MobilityData doesn't;
+  - canonical answers first and nothing else is asked;
+  - a socket cut moves on to the next URL;
+  - everything fails: the message names the 3 attempts;
+  - de-duplication;
+  - catalog: `directUrl`, and 2807 and deprecated feeds skipped.
+- **Other checks, all on compute:**
+  - a mutant (without `directUrl`) fails;
+  - collector `tsc` 626 (`render.ts`);
+  - eslint clean.
+- **Verify:**
+  - after the deploy, `fetchFeedZip` for 3454/3455 from the new container
+    (network only, no DB);
+  - the next weekly run (Sunday 25-10, 06:00 Madrid = 05:00Z after the DST
+    change) should show `ok`, or `partial` with names.
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed). Then this
+   PR.
+2. **L2, small:** `/trafico` says «Valencia (ODS) y Zaragoza».
+3. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+4. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+5. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (37) — Valencia's traffic was mapped with Barcelona's codes, and «no data» was really «fluid»
 
 **#115 deployed** (squash `afe36fab`, merged 17:10:13Z by server-28 with 0
