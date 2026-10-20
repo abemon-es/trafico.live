@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { feedLink } from "@/lib/transit/feed-link";
 
 export const revalidate = 3600;
 
@@ -73,6 +74,11 @@ export async function GET(
       routeTypeBreakdown[r.routeType] = (routeTypeBreakdown[r.routeType] || 0) + 1;
     }
 
+    // The ZIP only on MobilityData's own server, the catalog page otherwise:
+    // the stored feedUrl can be an anonymous file host (feed-link.ts), and a
+    // public API should not hand that out as a link any more than the page.
+    const feed = feedLink(operator.mdbId, operator.feedUrl);
+
     const response = {
       success: true,
       operator: {
@@ -81,7 +87,7 @@ export async function GET(
         city: operator.city,
         province: operator.province,
         mode: operator.mode,
-        feedUrl: operator.feedUrl,
+        feed: feed ? { href: feed.href, direct: feed.direct, mdbId: operator.mdbId } : null,
         hasRealtime: operator.hasRealtime,
         isOfficial: operator.isOfficial,
         updatedAt: operator.updatedAt,
