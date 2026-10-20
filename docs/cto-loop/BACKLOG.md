@@ -195,10 +195,40 @@ is far from the 6 h period. Note only.
   - Web: DEPLOY SUCCESS 317 s.
   - Smoke after deploy: 113 pass, 5 warn, 0 fail.
 
+**Phase probe result (00:29:43-00:39:56Z, 40 requests, no stop).** The
+preflight found no AEMET task of ours running, and none started during the
+probe.
+
+| second | 200 | 429 | 401 |
+|---|---|---|---|
+| :05 | 10 | 0 | 0 |
+| :25 | 10 | 0 | 0 |
+| :45 | 5 | 5 | 0 |
+| :55 | 0 | 10 | 0 |
+
+- **The clock reading is confirmed.** At 4 requests of ours per minute, at
+  02:30 Madrid, :55 fails every minute and :45 fails half of them. Every 429
+  said «Se ha alcanzado uno de los límites de uso. Vuelva a intentarlo el
+  próximo minuto».
+- The probe cannot tell AEMET's global limit apart from another holder of our
+  key outside compute and primary. The fix is the same either way. The key
+  does not appear in the git history (no AEMET-style JWT in `git log --all
+  -p`), so a leak through this public repo is ruled out.
+- **One change to the fix:** the post-hit resume moves from :02 to **:05**,
+  the earliest second the probe measured as good. The 19:20Z run got 401s at
+  :00.2-:00.7, and nothing showed :02 as safe. The window end stays at :40:
+  the probe gives :25 10/10, and the 19:20Z run had 2 hits in :30-:39 against
+  ~40 in :45-:59.
+- **Expected duration:** about 25 min. That is 197 municipios at ~4.5 s each,
+  with 35 s usable per minute. The #104 target of < 15 min cannot hold at a
+  2 s pace with this window, and a faster pace is excluded. That target is
+  server-28's call.
+
 **Next:**
-- Probe table.
-- The 01:20Z run as the night sample (duration, quotaHits, failedCodes).
-- Then the PR above.
+- The 01:20Z run, on #104 code, as the night sample (duration, quotaHits,
+  failedCodes).
+- Merge the fix PR only once that run is over, with no task in flight
+  (`docker top`). Its first run is 07:20Z.
 
 ---
 
