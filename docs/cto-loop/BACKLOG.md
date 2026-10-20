@@ -80,6 +80,88 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (51) — road alerts linked users to a page that doesn't exist
+
+**#129 deployed** (web `0d34d5a` 21:29Z, then `4fa2d9d` 21:35Z; collectors
+21:29Z). Checked from compute (`--resolve`):
+
+| sitemap | URLs | lastmod | «today» |
+|---|---|---|---|
+| 0.xml | 1,712 | **0** (before: 1,549 «today») | 0 |
+| 500 radars | 737 | 0 | 0 |
+| 600 cameras | 1,972 | 0 | 0 |
+| priority | 490 | 0 | 0 |
+| 300 news | 838 | 660 (articles, real) | 4 |
+| 1 gas stations | 5,000 | 5,000 | 4,474 (next item) |
+
+- `content-fingerprints` is in collector-daily's crontab (04:50), and the web
+  logs no fingerprint read errors.
+- First run at 04:50 local time. From the 22-10 run on, only real changes get
+  a date.
+
+**#130 merged** (`4fa2d9d1`, collectors 21:29Z): the 30-min numbers are
+pending; they go into the next entry.
+
+**Euskadi collisions measured** (byDate today + yesterday):
+- 409 items, 271 distinct `incidenceId`, **only 1 in two sources** (1683:
+  Bilbao + San Sebastián). Ids per source: 1→126 · 5→108 · 6→23 · 7→15.
+- Low priority. If it's done, `EUSKADI-<src>-<id>` only for the municipal
+  sources (~146 ids change once), and the PR has to cover (server-28):
+  - social-broadcast dedupes by `social:bc:incident:<situationId>`
+    (HIGH/VERY_HIGH since the last run), so it would re-broadcast unless the
+    keys are pre-seeded;
+  - alert-matcher dedupes by the row's `eventRef`: a new row re-alerts;
+  - `/api/incidents` exposes `id` = `situationId` to API-key consumers;
+  - the old ids deactivate after 1 h, with no end event;
+  - no SEO URL uses `situationId`.
+
+**Signal (found while measuring that):** `match-road.ts` built the alert's
+link as `${BASE_URL}/incidencias/${situationId}`. That route doesn't exist:
+**`/incidencias/EUSKADI-1694` → 404** from compute. `UserAlert` is empty
+today (nobody has received one), but the first subscriber would land on a 404.
+
+**Fix (PR below):**
+- **The link:** `incidentAlertUrl()` in `src/lib/alert-matcher.ts` →
+  `/incidencias?id=<situationId>`.
+  - Not `/carreteras/<road>`: it 404s for BI-30, GI-636 and M-30 (checked),
+    and the alert accepts the code as free text.
+- **`/api/incidents`** accepts `id`. It's parameterised by Prisma, capped at
+  128 characters, and keeps `isActive`.
+- **`/incidencias`** with `?id=`:
+  - opens that incident in the modal (derived state, no `setState` in an
+    effect: the eslint rule);
+  - if it's no longer active, a notice says so.
+- **`tests/alert-urls.test.ts`** (`npm run test:alert-urls`, server-28's
+  requirement):
+  - runs each matcher (road, train ×2, flight) on an event that matches;
+  - every URL has to reach a **static** page in `src/app`, since a dynamic one
+    can still 404 for the value;
+  - the root catch-all (redirect-or-404) doesn't count;
+  - it also checks the `${BASE_URL}/…` paths written in the alert and email
+    code (`/alertas` for unsubscribing included).
+  - **Mutant:** with the old link it fails with «ROAD alert links
+    /incidencias/EUSKADI-1694».
+- **Other checks:** collector `tsc` 626, web `tsc` 11, eslint 0 errors (3 old
+  warnings).
+
+**Verify after deploy:** `/incidencias?id=<a real active incident>` → 200 and
+the API returns it with `?id=`, from compute.
+
+**Open, in order:**
+1. **L1:** #130's 30-min numbers (0 overflows, the 14 with `kmPoint` null,
+   `incident` ok).
+2. **L2:** merge and verify this fix.
+3. **L3:** the first `content-fingerprints` run (04:50) and 22-10's; numbers
+   to server-28, the share to the CMO; then the pilots.
+4. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+5. **L3:** gas stations by price; the index lastmod after 23-10.
+6. **L1, low:** Euskadi id collisions (above).
+7. **Hygiene:** scrub the pre-October backlog entries, in their own PR.
+8. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+9. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-20 (50) — 14 San Sebastián incidents failed to store on every run, with the heartbeat at ok
 
 **Signal (SENSE 21:17Z):** Loki errors in the last hour: `trafico-postgres`
