@@ -7,7 +7,7 @@
  * the previous minute, at 5.7 req/min against a documented limit of 40/min per
  * user. So two rules:
  *
- *   - send only in :00-:40 of each minute;
+ *   - send only in :05-:40 of each minute;
  *   - after a quota hit, wait for the start of the next minute. A fixed 60 s
  *     backoff lands in the same exhausted second of the next minute: 23 of the
  *     26 municipios lost on that run were step-2 retries that did exactly that.
@@ -17,22 +17,28 @@
  * failed 10 of 10, all with 4 requests of ours per minute.
  */
 
+/**
+ * Requests go out only from this second of the minute. :05 is the earliest
+ * second the probe measured as good; the 19:20Z run got 401s at :00.2-:00.7,
+ * and the cron fires each run at second :00.
+ */
+export const SEND_WINDOW_START_S = 5;
 /** Requests go out only before this second of the minute. */
 export const SEND_WINDOW_END_S = 40;
-/**
- * Margin after the minute boundary. :05 is the earliest second the probe
- * measured as good; the 19:20Z run got 401s at :00.2-:00.7.
- */
-export const MINUTE_START_MARGIN_MS = 5000;
 
 const MINUTE_MS = 60_000;
+const START_MS = SEND_WINDOW_START_S * 1000;
+const END_MS = SEND_WINDOW_END_S * 1000;
 
-/** Milliseconds from `nowMs` until the next minute boundary plus the margin. */
+/** Milliseconds from `nowMs` until the window opens in the next minute. */
 export function msUntilNextMinute(nowMs: number): number {
-  return MINUTE_MS - (nowMs % MINUTE_MS) + MINUTE_START_MARGIN_MS;
+  return MINUTE_MS - (nowMs % MINUTE_MS) + START_MS;
 }
 
-/** 0 inside the send window, else the wait until the next minute starts. */
+/** 0 inside the send window, else the wait until it next opens. */
 export function msUntilSendWindow(nowMs: number): number {
-  return nowMs % MINUTE_MS < SEND_WINDOW_END_S * 1000 ? 0 : msUntilNextMinute(nowMs);
+  const msInMinute = nowMs % MINUTE_MS;
+  if (msInMinute < START_MS) return START_MS - msInMinute;
+  if (msInMinute >= END_MS) return msUntilNextMinute(nowMs);
+  return 0;
 }

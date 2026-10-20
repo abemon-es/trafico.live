@@ -11,7 +11,7 @@
  *
  * Rate limit: each municipio = 2 requests (step-1 + step-2), ~394 per run.
  * Paced at 2 s, slowing down after any quota hit; see BASE_PACE_MS below.
- * Requests go out only in :00-:40 of each minute and a quota hit waits for the
+ * Requests go out only in :05-:40 of each minute and a quota hit waits for the
  * next minute; see quota-window.ts.
  *
  * Source: AEMET OpenData — https://opendata.aemet.es/opendata/api
@@ -134,7 +134,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Hold a request until the send window (:00-:40) of the minute is open. */
+/** Hold a request until the send window (:05-:40) of the minute is open. */
 async function waitForSendWindow(): Promise<void> {
   const waitMs = msUntilSendWindow(Date.now());
   if (waitMs > 0) {
