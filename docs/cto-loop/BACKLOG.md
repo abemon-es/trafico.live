@@ -75,6 +75,86 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (46) — the vessels map layer showed positions from 8 May
+
+**MJ, 20:10Z: «you are the CTO for trafico.live, push on».**
+
+**#125 merged** (squash `9aeb57e5`). server-28 stopped the 19:20Z
+aemet-forecast run, which had been going 1 h 00 m (SIGTERM to the worker).
+- supercronic logged «error running command: exit status 143»; GlitchTip has
+  TRAFICO-LIVE-JO (1 event).
+- **Being killed, the run wrote no heartbeat and raised no GlitchTip
+  issue.** #112's verification moves to the 01:20Z run, the first with #125:
+  it should stop as `key-refused` around 01:35Z, with exit 1 and the
+  «AEMET API key past its renewal deadline» issue tagged `aemet-forecast`.
+- The guard is waiting for an `opensky` run before it recreates the
+  collectors.
+
+**Signal: drift in the open list.** `vessel_latest` and `tile_vessel_headings`
+exist only in the DB.
+
+**Finding: nothing refreshed `vessel_latest`. The map has been showing
+vessels from 8 May for 5½ months.**
+- **Newest position in `vessel_latest`:** 2026-05-08T20:44Z, **165 days**.
+  `VesselPosition` was 4 s old.
+- **Who reads it:** `tile_vessels` and `tile_vessel_headings` (Martin). In
+  `registry.ts` the layer is called «Barcos en tiempo real» with the
+  description «Posiciones AIS (aisstream.io, actualización continua)».
+- **There's no refresh anywhere:**
+  - `pg_cron` isn't installed;
+  - `/etc/cron.d/trafico-tiles` only calls `refresh-matviews.sh`, which only
+    does `refresh_latest_sensors()`. That one is fresh (6 min).
+  - The «refreshed every 30 s» note in 005 was wrong.
+- **Cost:** `EXPLAIN ANALYZE` of its query is 200 ms (3,628 vessels in the last
+  hour).
+- **Permissions:** REFRESH needs the owner (`trafico_admin`). The live
+  `refresh_latest_sensors()` is `SECURITY DEFINER` (003 created it without)
+  with EXECUTE for `trafico_app`.
+
+**Fix (PR below):**
+- **`services/martin/migrations/006_vessel_latest_refresh.sql`:**
+  - **Captured as it is live** (`pg_matviews`, `pg_indexes`,
+    `pg_get_functiondef`): `vessel_latest` (`IF NOT EXISTS`), its 3 indexes
+    (the unique one on `mmsi` is what CONCURRENTLY needs), and
+    `tile_vessel_headings`.
+  - **`GRANT SELECT` to `trafico_app`:** a no-op live, where it already has
+    more.
+  - **`refresh_vessel_latest()`:** `SECURITY DEFINER` with `search_path`
+    fixed, `REVOKE` from PUBLIC, `GRANT EXECUTE` to `trafico_app`.
+  - **`ALTER FUNCTION refresh_latest_sensors() SECURITY DEFINER`:** writes down
+    what's live.
+- **`refresh-matviews.sh [sensors|vessels]`.**
+- **`services/tiles/cron/trafico-tiles.cron`:** the versioned copy of
+  `/etc/cron.d/trafico-tiles`, which until now only existed on the host,
+  plus `* * * * * … refresh-matviews.sh vessels`.
+- **Tested** in a throwaway `postgres:16.13` (`--network none`, roles
+  trafico_admin / trafico_app / someone_else):
+  - 006 applied **twice** (idempotent);
+  - the view keeps the latest position per mmsi;
+  - `trafico_app` refreshes through the function (2 → 3 after a new
+    position);
+  - `REFRESH` straight from `trafico_app` → «must be owner»;
+  - another role → «permission denied for function»;
+  - `refresh_latest_sensors` secdef = true;
+  - `bash -n` on the script.
+- **Applying it is server-28's:**
+  1. 006 through the PLAYBOOK path, as 005;
+  2. copy `refresh-matviews.sh` to `/opt/trafico/tiles/`;
+  3. the cron line.
+- **Verify:** the newest in `vessel_latest` < 2 min old, and a public
+  `vessels` tile updating.
+
+**Open, in order:**
+1. **L2:** apply and verify 006 (server-28).
+2. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+3. **Recheck:** EUSKADI windows 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+4. **Drift:** check whether other views or functions only exist in the DB
+   (`mv_sensor_clusters` and 003 vs live).
+5. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+6. **Waiting on MJ:** the AEMET key (renewal) and SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (45) — an expired AEMET key that lets the odd request through kept aemet-forecast running for hours
 
 **#124 deployed** (squash `7cb072d`; the guard «safe at 18:47:02Z», 184 s):
