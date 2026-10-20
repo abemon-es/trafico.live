@@ -36,6 +36,17 @@ export const NO_ANSWER_ABORT_MS = 10 * 60_000;
  * 6 h). At a share of 1-2 requests a minute the queue alone would take ~6.5 h.
  */
 export const MAX_RUN_MS = 5 * 60 * 60_000;
+/**
+ * An expired key that AEMET still lets through now and then: on 2026-10-20 the
+ * 19:20Z run got 2 municipios in 50 min and refused the rest, and every one of
+ * those answers reset the no-answer clock, so it would have gone on for 5 h.
+ * With at least KEY_REFUSALS_TO_ABORT key refusals and no more than
+ * MAX_DONE_WHEN_REFUSED municipios done in the last KEY_REFUSAL_WINDOW_MS, the
+ * run stops. A key under a tight quota still completes several in that time.
+ */
+export const KEY_REFUSAL_WINDOW_MS = 15 * 60_000;
+export const KEY_REFUSALS_TO_ABORT = 20;
+export const MAX_DONE_WHEN_REFUSED = 1;
 // Pause between AEMET requests: 2 s, 25 % slower after every quota signal, up
 // to 4 s. A faster pace is ruled out; the budget, not the pace, is what keeps
 // us under AEMET's share.
@@ -77,6 +88,8 @@ type Outcome<T> = { kind: "ok"; data: T } | { kind: "retry" } | { kind: "final" 
  * serving ~6 requests a minute on that key and refusing the rest. Backing off
  * is the right answer to that too; renewing the key is the fix.
  */
+export type AbortReason = "no-answer" | "run-cap" | "key-refused";
+
 export function isQuotaStatus(status: number): boolean {
   return status === 401 || status === 429 || status >= 500;
 }
@@ -92,7 +105,7 @@ export class ForecastFetcher {
     paceMs: BASE_PACE_MS,
     budgetPerMinute: null as number | null,
     aborted: false,
-    abortReason: null as "no-answer" | "run-cap" | null,
+    abortReason: null as AbortReason | null,
     /** A 401 said the key is past its renewal deadline. */
     keyRenewalRequired: false,
     /** AEMET's last description on a quota signal, redacted. */
@@ -100,6 +113,9 @@ export class ForecastFetcher {
   };
   private readonly budget = new RequestBudget();
   private lastServedAt = 0;
+  private keyRefusedAt: number[] = [];
+  private doneAt: number[] = [];
+  private runStartedAt = 0;
 
   constructor(
     private readonly deps: FetchDeps,
@@ -118,6 +134,7 @@ export class ForecastFetcher {
     const lost: string[] = [];
     const startedAt = this.deps.now();
     this.lastServedAt = startedAt;
+    this.runStartedAt = startedAt;
 
     while (queue.length) {
       if (this.deps.now() - startedAt >= MAX_RUN_MS) {
@@ -132,6 +149,11 @@ export class ForecastFetcher {
 
       if (out.kind === "retry" && this.deps.now() - this.lastServedAt >= NO_ANSWER_ABORT_MS) {
         lost.push(...this.abort("no-answer", [item, ...queue]));
+        break;
+      }
+      if (out.kind === "ok") this.doneAt.push(this.deps.now());
+      if (out.kind === "retry" && this.keyRefusedForGood()) {
+        lost.push(...this.abort("key-refused", [item, ...queue]));
         break;
       }
 
@@ -157,8 +179,21 @@ export class ForecastFetcher {
     return lost;
   }
 
+  /**
+   * The key keeps being refused and almost nothing gets through, judged over a
+   * whole KEY_REFUSAL_WINDOW_MS: in the first minutes of a run under a tight
+   * quota, one municipio done is normal.
+   */
+  private keyRefusedForGood(): boolean {
+    if (this.deps.now() - this.runStartedAt < KEY_REFUSAL_WINDOW_MS) return false;
+    const since = this.deps.now() - KEY_REFUSAL_WINDOW_MS;
+    this.keyRefusedAt = this.keyRefusedAt.filter((t) => t > since);
+    this.doneAt = this.doneAt.filter((t) => t > since);
+    return this.keyRefusedAt.length >= KEY_REFUSALS_TO_ABORT && this.doneAt.length <= MAX_DONE_WHEN_REFUSED;
+  }
+
   /** Stop the run: every municipio still queued is lost. */
-  private abort(reason: "no-answer" | "run-cap", left: Array<{ mun: Municipio }>): string[] {
+  private abort(reason: AbortReason, left: Array<{ mun: Municipio }>): string[] {
     const codes = left.map((q) => q.mun.code);
     left.length = 0;
     this.stats.aborted = true;
@@ -257,7 +292,9 @@ export class ForecastFetcher {
   private async onFailure(res: Response, endpoint: string, step: string): Promise<void> {
     const raw = await readDescripcion(res);
     const descripcion = raw === null ? null : this.redact(raw);
-    if (isQuotaStatus(res.status)) this.onQuotaSignal(res.status, descripcion);
+    // Checked on the whole text: the 500 that wraps the refusal is HTML, and
+    // the redacted copy is cut at 200 characters.
+    if (isQuotaStatus(res.status)) this.onQuotaSignal(res.status, descripcion, isKeyExpired(res.status, raw));
     else if (res.status === 404) this.served(); // an answer, and it used up a request
     this.deps.log("warn", `${step} failed (${res.status})`, {
       endpoint,
@@ -269,9 +306,12 @@ export class ForecastFetcher {
   }
 
   /** Counted, slows the pace and teaches the budget: all three, every time. */
-  private onQuotaSignal(status: number, descripcion: string | null): void {
+  private onQuotaSignal(status: number, descripcion: string | null, keyRefused = isKeyExpired(status, descripcion)): void {
     if (descripcion) this.stats.lastQuotaDescripcion = descripcion;
-    if (isKeyExpired(status, descripcion)) this.stats.keyRenewalRequired = true;
+    if (keyRefused) {
+      this.stats.keyRenewalRequired = true;
+      this.keyRefusedAt.push(this.deps.now());
+    }
     this.stats.quotaHits++;
     this.stats.quotaHitsByStatus[status] = (this.stats.quotaHitsByStatus[status] ?? 0) + 1;
     this.stats.paceMs = Math.min(Math.round(this.stats.paceMs * 1.25), MAX_PACE_MS);

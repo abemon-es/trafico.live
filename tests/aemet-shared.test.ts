@@ -65,6 +65,13 @@ async function main() {
   assert.equal(isKeyExpired(429, RENEWAL_TEXT), false);
   assert.equal(isKeyExpired(401, null), false);
   assert.equal(isKeyExpired(undefined, RENEWAL_TEXT), false);
+  // AEMET's data server wraps the same refusal in an HTML 500 (2026-10-20 19:51Z).
+  const wrapped = `<html><body><h1>HTTP Status 500 - 401 Unauthorized: &quot;{ &quot;descripcion&quot; : &quot;${RENEWAL_TEXT}&quot;}</h1></body></html>`;
+  assert.equal(isKeyExpired(500, wrapped), true);
+  assert.equal(isKeyExpired(502, wrapped), true);
+  assert.equal(isKeyExpired(500, "<html>Internal Server Error</html>"), false);
+  assert.equal(isKeyExpired(500, RENEWAL_TEXT), false, "a 500 without the wrapped 401 is not the key");
+  assert.equal(isKeyExpired(429, wrapped), false);
 
   // 4. The error: generic message (public through /api/health), fixed fingerprint per task.
   const err = new AemetKeyExpiredError("weather");

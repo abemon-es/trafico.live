@@ -75,6 +75,79 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (45) — an expired AEMET key that lets the odd request through kept aemet-forecast running for hours
+
+**#124 deployed** (squash `7cb072d`; the guard «safe at 18:47:02Z», 184 s):
+- **First run:** `[CYL] 148 records, 148 placed on their road, 0 skipped`.
+  - CYL active: ROADWORK 72 · OTHER 59 · CLOSURE 10 · HAZARD 7. **The first CYL
+    incidents ever.**
+  - `incident` `ok`.
+  - EUSKADI OTHER 140 → 119: the Vitoria items are now ROADWORK/CLOSURE.
+- **OSM check** (Nominatim reverse, 1 req/s, identifying UA) on 20 CYL points
+  in md5 order:
+  - **18/20 = 90 %** with the first rule (road equal or renumbered, or a
+    locality in the stretch);
+  - the 2 misses were the rule's: the town was in the OSM road's name
+    («Carretera Burón - Puerto de Tarna» = CL-635);
+  - with rule (c), «a stretch locality in the road name»: **20/20**.
+  - `bin/check-cyl-points.py` (threshold 90 %) is the method for the yearly
+    PK refresh, referenced from `build-cyl-pks.mjs`.
+- **EUSKADI's real count once the 1,000 old ones aged out (19:23Z): 131
+  active** (OTHER 105 · ROADWORK 23 · CLOSURE 3). The description carries «…
+  se oculta a las 12 h».
+
+**#112's verification on the 19:20Z aemet-forecast run: it didn't end.**
+- At 20:10Z it had been running 51 min. AEMET let through a stray municipio
+  (Lugo 19:55, Alcañiz 20:08) and refused the rest, ~3 requests/min.
+  - **Each stray answer reset #107's «no answer for 10 min» clock**, so only
+    the 5 h cap would stop it (~00:20Z).
+  - **While it runs, the deployer guard holds every collector deploy**
+    (`collector-daily`), and after 75 min it fails.
+- **The step-2 refusals came as `HTTP 500` with HTML wrapping the 401:**
+  «HTTP Status 500 - 401 Unauthorized: {descripcion: Tu apiKey ha superado el
+  plazo…}». `isKeyExpired` only accepted 401, so they counted as an ordinary
+  500.
+- So the «exit status 1» and the GlitchTip issue that #112 expected will show
+  up when the run ends, not at 19:31Z.
+
+**Fix (PR below):**
+- **New `key-refused` abort.** Once the run is 15 min old, if the last 15 min
+  have ≥ 20 key refusals and ≤ 1 municipio done, it stops.
+  - It's judged over a full window: a key under a tight quota completes
+    several in that time, and in the first minutes one done is normal.
+- **`isKeyExpired`** also recognises a ≥ 500 whose body wraps «401
+  Unauthorized» with the renewal text. That applies to weather, maritime and
+  historical as well.
+  - The check uses the whole response text, not the redacted copy cut at
+    200 characters.
+- **`test:aemet-forecast` scenarios:**
+  - **10, new:** the real trickle (a step 1 every 5 min, a full municipio
+    every 20, step 2 refused as a wrapped 500) → `key-refused` at 15.0 min.
+  - **8, now `key-refused` at 15.1 min:** 1/min with the renewal text, where
+    nothing ever completes. That is tonight's expired key; before, it used up
+    every try without saying why.
+  - **5** (everything refused) still aborts as `no-answer` at 10 min.
+  - The quota scenarios (6/min, rolling, external 401s, broken municipios,
+    throwing fetches) are unchanged: 0 lost, no abort.
+- **`test:aemet-shared`:** the wrapped 500 (500 and 502) is the key; a plain
+  500, a bare renewal text in a 500, and a 429 aren't.
+- **Other checks, all on compute:**
+  - 2 mutants (no `key-refused`, an `isKeyExpired` that only takes 401) fail;
+  - `test:maritime` passes;
+  - collector `tsc` 626; web `tsc` 11;
+  - eslint 0 errors.
+
+**Open, in order:**
+1. **Deploy:** while the 19:20Z run is alive, the guard defers this PR. The
+   options are to stop that run (server-28, production) or wait until
+   ~00:20Z.
+2. **Recheck:** EUSKADI windows 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+3. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+4. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+5. **Waiting on MJ:** the AEMET key (renewal) and SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (44) — Castilla y León's incidents have no coordinates; we place them by road and km
 
 **#123 deployed** (squash `d302a974`, server-28). It's a contract change in

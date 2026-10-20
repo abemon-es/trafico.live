@@ -70,6 +70,40 @@ interface SimOptions {
   throwFirst?: number;
   /** Per-request latency; LATENCY_MS by default. */
   latencyMs?: number;
+  /** A refused step 2 answers like AEMET's data server: an HTML 500 wrapping the 401. */
+  step2RefusalAs500?: boolean;
+}
+
+// AEMET's data server on 2026-10-20 19:51Z: the expired-key 401 inside an HTML 500.
+const WRAPPED_500 =
+  "<!DOCTYPE html><html><head><title>Error report</title></head><body><h1>HTTP Status 500 - 401 Unauthorized: " +
+  `&quot;{&lt;EOL&gt;  &quot;descripcion&quot; : &quot;${RENEWAL_TEXT}&quot;}</h1></body></html>`;
+
+/**
+ * An expired key AEMET still lets through now and then, as on 2026-10-20
+ * 19:20Z: a single request every `singleMs` (a step 1 answered, its step 2
+ * refused: the no-answer clock keeps resetting) and two in a row every
+ * `pairMs` (a municipio done).
+ */
+function trickle(singleMs: number, pairMs: number): Quota {
+  let lastSingle = -Infinity;
+  let lastPair = -Infinity;
+  let pairLeft = 0;
+  return (now) => {
+    if (now - lastPair >= pairMs) {
+      lastPair = now;
+      pairLeft = 2;
+    }
+    if (pairLeft > 0) {
+      pairLeft--;
+      return true;
+    }
+    if (now - lastSingle >= singleMs) {
+      lastSingle = now;
+      return true;
+    }
+    return false;
+  };
 }
 
 async function simulate(opts: SimOptions) {
@@ -104,7 +138,10 @@ async function simulate(opts: SimOptions) {
         if (!step1 && t - START < (opts.step2FailMinutes ?? 0) * 60_000) {
           return respond(429, { descripcion: "Límite de peticiones", estado: 429 });
         }
-        if (!opts.quota(t)) return respond(401, { descripcion: RENEWAL_TEXT, estado: 401 });
+        if (!opts.quota(t)) {
+          if (!step1 && opts.step2RefusalAs500) return new Response(WRAPPED_500, { status: 500 });
+          return respond(401, { descripcion: RENEWAL_TEXT, estado: 401 });
+        }
         if (step1) return respond(200, { estado: 200, datos: `https://opendata.aemet.es/opendata/sh/${code}` });
         return respond(200, [{ prediccion: { dia: [{ fecha: "2026-10-20T00:00:00" }] } }]);
       },
@@ -233,13 +270,17 @@ async function main() {
     assert.ok(r.minutes >= 300 && r.minutes <= 303, `${r.minutes.toFixed(1)} min`);
   }
 
-  // 8. A share below the budget floor (1 request a minute): most municipios
-  // use up their tries and the run ends early, without hanging or aborting.
+  // 8. A share below the budget floor (1 request a minute), refused with the
+  // renewal text: a municipio needs two requests in a row, so none gets done.
+  // That is the expired key of 2026-10-20 19:20Z, and since then the run stops
+  // as key-refused once it is 15 min old instead of using up every municipio's
+  // tries without saying why.
   {
     const r = await simulate({ quota: perCalendarMinute(1) });
     console.log(`  1/min: ${fmt(r)}`);
-    assert.equal(r.stats.aborted, false);
-    assert.ok(r.minutes < 300, `${r.minutes.toFixed(1)} min`);
+    assert.equal(r.stats.abortReason, "key-refused");
+    assert.equal(r.stats.keyRenewalRequired, true);
+    assert.ok(r.minutes >= 15 && r.minutes <= 17, `${r.minutes.toFixed(1)} min`);
   }
 
   // 9. Network errors whose text carries the URL and the key: retried, and the
@@ -250,6 +291,22 @@ async function main() {
     assert.deepEqual(r.lost, []);
     assert.ok(r.logs.some((l) => l.includes("ECONNRESET")), "error logged");
     assertKeyContained(r, "throwing fetches");
+  }
+
+  // 10. An expired key AEMET still lets through now and then (2026-10-20 19:20Z:
+  // 2 municipios in 50 min), with the data server refusing as an HTML 500. Each
+  // answer reset the no-answer clock, so only the run cap would have stopped
+  // it, 5 h later. Now: once the run is 15 min old, many key refusals and at
+  // most 1 municipio done in the last 15 min stop it as key-refused.
+  {
+    const r = await simulate({ quota: trickle(5 * 60_000, 20 * 60_000), step2RefusalAs500: true });
+    console.log(`  expired key, a trickle through: ${fmt(r)}`);
+    assert.equal(r.stats.abortReason, "key-refused");
+    assert.equal(r.stats.keyRenewalRequired, true);
+    assert.ok(r.done.length >= 1, "the trickle did get through");
+    assert.ok(r.lost.length > MUNICIPIOS.length - 5);
+    assert.ok(r.minutes >= 15 && r.minutes <= 17, `${r.minutes.toFixed(1)} min`);
+    assert.ok(r.stats.quotaHitsByStatus["500"] > 0, "the wrapped 500s were seen");
   }
 
   console.log("aemet-forecast-queue: ok");

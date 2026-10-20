@@ -11,6 +11,8 @@
  * de Castilla y León.
  *
  * Run once a year:  node bin/build-cyl-pks.mjs > services/collector/data/cyl-pks.json
+ * Then, once deployed, check 20 live CyL incidents against OpenStreetMap:
+ *   python3 bin/check-cyl-points.py incidents.json   (must give >= 90 % hits)
  */
 
 const WFS = "https://idecyl.jcyl.es/geoserver/viascomunicacion/wfs";
