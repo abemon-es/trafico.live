@@ -75,6 +75,63 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (41) — an operator page linked a GTFS ZIP on an anonymous file host
+
+**#119 deployed** (squash `e8cc3d1d`, merged 17:59:29Z):
+- web DEPLOY SUCCESS in 326 s (18:05:05Z);
+- `/trafico` (from compute) has 0 «Valencia y Zaragoza» / «Valencia (ODS)»,
+  and «geoportal del Ayuntamiento» is there;
+- **the guard handled a web-only push:** «no collector changes in the compose
+  dry run — nothing to recreate», 6 s.
+
+**Signal (CSO on #118):** `TransitOperator.feedUrl` now stores the URL that
+served the ZIP, and `/transporte-publico/<op>` links it publicly as «Feed
+GTFS» (plus `contentUrl` in the JSON-LD). For Zaratán and RíoBUS that will be
+`files.catbox.moe`, an anonymous file host.
+- **Today's hosts:** 166 at `storage.googleapis.com` (the legacy mdb-latest
+  bucket, which often 404s) and 1 at `files.mobilitydatabase.org`.
+- After Sunday's run, almost all will be canonical.
+
+**Fix (PR below):**
+- **`src/lib/transit/feed-link.ts`:** `feedLink(mdbId, feedUrl)` links the ZIP
+  only if it's at `https://files.mobilitydatabase.org`.
+  - **For anything else:** the feed's catalog page
+    (`https://mobilitydatabase.org/feeds/gtfs/<mdb-N>`, checked 200: «Zaratán
+    GTFS Schedule Feed - Mobility Database»), labelled «fuente: catálogo
+    MobilityData (mdb-N)». That covers catbox, the legacy bucket, look-alike
+    hosts, http and junk.
+  - Without an mdb-N there's no link.
+- **The operator page** uses it for the link and the JSON-LD: `DataDownload`
+  only for direct links, `url` to the catalog page otherwise.
+- **Not changed:** `/api/transporte/<op>` still returns the raw `feedUrl`
+  (provenance for API clients). The CSO decides.
+- **Test:** `npm run test:feed-link`. A mutant that trusts any https host
+  fails it.
+- **Found on the way:** web `tsc` went from 11 to 12 errors with #117. Its
+  test (`tests/transit-gtfs-fetch.test.ts`, which `tsconfig` includes) brings
+  the collector into the web project, and there an old cast from April
+  (`geometry as … | null` on a `Json?` column) doesn't type-check.
+  - Fix: `undefined` when there's no geometry (same effect, the column stays
+    NULL). Web `tsc` is back to 11, collector at 626.
+  - It doesn't break the build (`ignoreBuildErrors: true`), but it was noise
+    in the signal.
+- **Recreates the collectors** (the tsc fix touches `services/collector`).
+  The guard handles it.
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed).
+2. **L1: EUSKADI** (plan approved by server-28):
+   - a server-side filter, or a date cut-off with an explicit limit;
+   - «Puertos de montaña … Abierto» out;
+   - a test that fails if we end at maxPages×pageSize;
+   - stopping at the page cap without reaching the cut-off → `partial` with
+     the reason, never `ok`.
+3. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+4. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+5. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (40) — /trafico named Valencia (ODS) and Zaragoza as live sources
 
 **#118 deployed** (squash `9bcb96e5`, merged 17:52:15Z by server-28 after its
