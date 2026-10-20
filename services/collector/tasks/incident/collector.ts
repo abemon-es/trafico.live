@@ -19,7 +19,8 @@ import { PrismaClient, IncidentType, Severity, RoadType, Direction } from "@pris
 import { inferRoadType } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
-import { fetchEuskadiIncidents, EuskadiIncident, MAX_PAGES_PER_DAY } from "./euskadi-parser.js";
+import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
+import { sourceProblems } from "./run-status.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
 import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
 import { fetchValenciaIncidents, ValenciaIncident } from "./valencia-parser.js";
@@ -509,12 +510,19 @@ export async function run(prisma: PrismaClient) {
     }
 
     // Euskadi's "active" is an estimated window (euskadi-parser.ts); its
-    // counts per type are here to check that estimate against (2026-10-27),
-    // and a day read only in part is `partial`, never `ok`: an implicit page
-    // cap is what made "1,000 active" look normal.
+    // counts per type are here to check that estimate against (2026-10-27).
+    // A source that failed, a day read only in part or a source skipping
+    // items wholesale makes the run `partial`, named (run-status.ts).
     const euskadi = euskadiResult.status === "fulfilled" ? euskadiResult.value.stats : null;
-    const euskadiCapped = euskadi !== null && euskadi.cappedDays.length > 0;
-    await heartbeat(prisma, "incident", euskadiCapped ? "partial" : "ok", {
+    const problems = sourceProblems(
+      [
+        ["DGT", dgtResult], ["SCT", sctResult], ["Euskadi", euskadiResult], ["Madrid", madridResult],
+        ["Valencia", valenciaResult], ["DT-GV", dtgvResult], ["Navarra", navarraResult], ["CyL", cylResult],
+        ["Barcelona", barcelonaResult],
+      ],
+      { Euskadi: euskadi },
+    );
+    await heartbeat(prisma, "incident", problems.length > 0 ? "partial" : "ok", {
       total: allIncidents.length,
       created,
       updated,
@@ -527,10 +535,12 @@ export async function run(prisma: PrismaClient) {
           pages: euskadi.pages,
           days: euskadi.days,
           openPassStatuses: euskadi.openPassStatuses,
+          skipped: euskadi.skipped,
+          skipReasons: euskadi.skipReasons,
           ventana: euskadi.window,
         },
       }),
-      ...(euskadiCapped && { reason: `Euskadi: ${euskadi!.cappedDays.join(", ")} has more than ${MAX_PAGES_PER_DAY} pages, read in part` }),
+      ...(problems.length > 0 && { reason: problems.join("; ") }),
     });
   } catch (error) {
     console.error("[collector] Fatal error:", error);
