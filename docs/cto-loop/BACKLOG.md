@@ -8,6 +8,13 @@ last.
 > the CTO's change-log». A security gap is described once it is fixed, not
 > before.
 
+> **Bulk refactors** (server-28, 2026-10-21). A mechanical find-and-replace
+> across many lines ships in the same PR as a visual diff (light and dark
+> screenshots of the pages it touches) or a test of the pattern it must not
+> leave behind. The dark-mode sweep `dc3f166c` touched 138 files with neither,
+> and left white on white (#133) and 112 near-white bars and dots (cycle 54)
+> for months.
+
 > 🎯 **MILESTONE 2026-08-18 00:26 — degraded = 0/51.** Every collector healthy
 > simultaneously for the first time. Saturday's baseline: 9 degraded including
 > an 11-day silent AIS blackout and a never-once-successful SEO pipeline.
@@ -77,6 +84,77 @@ own text on hubs).
   (manual actions, indexing report trend, crawl stats, links, CWV mobile,
   request indexing top 20). Leading metric, re-measured every Monday by CMO:
   Googlebot requests/day, then "unknown" → "crawled".
+
+---
+
+## Cycle 2026-10-21 (54) — the same sweep turned 112 coloured bars and dots almost white
+
+**#133 verified** (web `24f6c6d`, 23:11Z). Headless Chromium on compute, with
+`colorScheme` light and dark plus `theme=dark` (`html.dark` confirmed):
+- the modal's icon box is white at 20 % in **both** themes (`oklab(1 0 0 /
+  0.2)`);
+- the icon is white on the header's colour, and the ⊘ shows.
+
+**/precio-diesel-hoy without a hero (seen in that check):**
+- **Cause:** the post-deploy window. The check ran < 5 min after the deploy,
+  when the page still served its build-time copy (no DB). The first request
+  after `revalidate=300` regenerates it. Three later fetches: hero OK
+  (`x-nextjs-cache: HIT`).
+- **server-28's hypothesis** (no price after midnight):
+  - the page's «today» and the date `gas-station` writes are both **UTC**, and
+    the first fuel run is at 06:00 Madrid (04:00Z);
+  - so between 00:00Z and ~04:02Z there'd be no row for the day.
+  - A check at 00:10Z and 00:20Z confirms it or rules it out. If it's
+    confirmed, the fix is falling back to the last day with its date, not
+    hiding the hero.
+
+**Signal:** the `/200` artifact.
+- `bg-green-50 dark:bg-green-900/200` on the «Actualizado hoy» dot pointed to a
+  second artifact of the sweep `dc3f166c`: it looked for `bg-X-50`, found it
+  inside `bg-X-500`, and the trailing «0» became an opacity.
+- **112 lines in 33 files** (82 straight from the sweep, the rest copied from
+  broken code).
+- **Before**, measured on /estadisticas in production:
+  - 60 visible elements;
+  - in light mode `oklch(0.971 …)` (the palest red, nearly white);
+  - in dark mode `rgba(0, 0, 0, 0)` (transparent).
+  - The 30-day bars of «Tendencia Incidencias» and «Tendencia Balizas V16»
+    were barely visible.
+
+**Fix (PR below):**
+- **All of them back to `bg-X-500`.** `/200` can only come from `bg-X-500`;
+  both sides are the same colour on every line, with no variant prefixes.
+  - Restored: green 33 · orange 28 · tl 23 · red 14 · yellow 7 · purple 4 ·
+    teal 3 · cyan 2.
+  - **0** `bg-X-50 dark:bg-X-900/200` left in `src`, and 0 `/20/NN`.
+- **`tests/dark-mode-sweep.test.ts`** (replaces `translucent-white`;
+  `npm run test:dark-sweep`): also no opacity ≥ 100 on a colour utility
+  (paths, maths and dates excluded).
+  - **Mutant:** with one line of `historico` reverted, it fails at
+    `historico/content.tsx:467`.
+- **Other checks:**
+  - web `tsc` 11;
+  - eslint on the 33 files: **11 errors / 12 warnings, the same on `main`
+    and on the branch** (old ones; this change adds none).
+
+**Verify after deploy:** the same 60 elements on /estadisticas in light and
+dark with the full colour (`bg-red-500` etc.), plus before/after screenshots.
+
+**Open, in order:**
+1. **L2:** merge and verify this fix.
+2. **L2:** the 00:00–04:00Z hole on the price pages (pending confirmation).
+3. **L1:** #132, a `weather` run that hits the key (so far 23:00Z went
+   through) → server-28 resolves JL and I8.
+4. **L3:** the first `content-fingerprints` run (04:50) and 22-10's; then
+   the pilots.
+5. **L3, the next lastmod item:** gas stations by price.
+6. **L1:** aemet-forecast 01:20Z → `key-refused`.
+7. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+8. **L3:** the index lastmod after 23-10.
+9. **L1, low:** Euskadi id collisions.
+10. **Hygiene:** scrub the pre-October backlog entries.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
 
 ---
 
