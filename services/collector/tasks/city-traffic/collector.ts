@@ -311,18 +311,23 @@ const VLC_ARCGIS_URL =
 /**
  * Valencia ArcGIS estado code → serviceLevel (0-3), or null when unknown.
  *
- * estado 0 means "no data", not "fluid". Mapping it to level 0 painted 406 of
- * 446 segments green — an answer where we have none, which is the failure mode
- * that made the GA4 zeros look like real traffic. Unknown stays null.
+ * The codes are the layer's own coded-value domain ("WS2_Estado Trafico",
+ * MapServer/192?f=json): 0 Fluido · 1 Denso · 2 Congestionado · 3 Cortado ·
+ * 4 Sin datos, and 5-9 the same five for underground sections. Until
+ * 2026-10-20 this read 0 as "no data" and used Barcelona's scale for the rest,
+ * so ~400 fluid segments had no level, Denso and Congestionado showed as
+ * fluid, Cortado as slow and Sin datos as holdups. Same word, same level as
+ * Barcelona:
+ * Denso → 1, Congestionado and Cortado → 3.
  */
-function vlcArcGisEstadoToLevel(estado: number | null): number | null {
-  if (estado === null || estado === undefined || estado === 0) return null;
-  // 1=very fluid, 2=fluid, 3=dense, 4=very dense, 5=congestion, 6=blocked
-  if (estado <= 2) return 0;
-  if (estado === 3) return 1;
-  if (estado === 4) return 2;
-  if (estado >= 5) return 3;
-  return null;
+const VLC_ESTADO_LEVEL: Record<number, number | null> = {
+  0: 0, 1: 1, 2: 3, 3: 3, 4: null, // fluido, denso, congestionado, cortado, sin datos
+  5: 0, 6: 1, 7: 3, 8: 3, 9: null, // the same, underground
+};
+
+export function vlcArcGisEstadoToLevel(estado: number | null): number | null {
+  if (estado === null || estado === undefined) return null;
+  return VLC_ESTADO_LEVEL[estado] ?? null;
 }
 
 interface VlcArcGisFeature {
