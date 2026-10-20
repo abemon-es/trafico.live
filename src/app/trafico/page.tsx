@@ -105,7 +105,7 @@ const FAQ_ITEMS = [
   {
     question: "¿Qué datos de tráfico muestra trafico.live?",
     answer:
-      "Agregamos los datos oficiales de la DGT (DATEX II — incidencias, obras, cámaras, radares, paneles), las redes municipales de Madrid (informo.madrid.es), Barcelona (bcn.cat/transit), Valencia (ODS) y Zaragoza, además de los mapas de tráfico del SCT y del Gobierno Vasco. Todo en tiempo real con ciclos de 2 a 5 minutos.",
+      "Agregamos los datos oficiales de la DGT (DATEX II — incidencias, obras, cámaras, radares, paneles), los sensores municipales de Madrid (informo.madrid.es), Barcelona (bcn.cat/transit) y Valencia (geoportal del Ayuntamiento), y las incidencias del SCT (Cataluña) y del Gobierno Vasco. Todo en tiempo real con ciclos de 2 a 5 minutos.",
   },
   {
     question: "¿Con qué frecuencia se actualizan las incidencias?",
@@ -179,7 +179,7 @@ export default async function TraficoHubPage() {
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
           Incidencias DGT, cámaras en directo, radares, obras y sensores de tráfico urbano en
-          Madrid, Barcelona, Valencia y Zaragoza. Actualización cada 2–5 minutos.
+          Madrid, Barcelona y Valencia. Actualización cada 2–5 minutos.
         </p>
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink href="/trafico/mapa" variant="primary" icon={<MapIcon className="w-4 h-4" />}>
@@ -304,7 +304,7 @@ export default async function TraficoHubPage() {
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-6">
           Fuentes: DGT (DATEX II), SCT Cataluña, Gobierno Vasco, Ayuntamientos de Madrid,
-          Barcelona, Valencia y Zaragoza.
+          Barcelona y Valencia.
         </p>
       </div>
     </>
