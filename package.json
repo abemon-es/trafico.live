@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:aemet-forecast": "tsx tests/aemet-quota-window.test.ts && tsx tests/aemet-request-budget.test.ts && tsx tests/aemet-forecast-queue.test.ts && tsx tests/health-public-meta.test.ts",
+    "test:redis": "tsx tests/redis-reconnect.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
