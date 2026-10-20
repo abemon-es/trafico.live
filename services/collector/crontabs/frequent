@@ -28,7 +28,9 @@
 # run still in progress" y "job succeeded": sin evento en GlitchTip y con el motivo
 # equivocado en el log (asi salio voyage-detector en los oom-kill de septiembre,
 # ver arriba). Con `-E 75` el
-# cerrojo ocupado devuelve 75 y el resto sale con el codigo de la tarea.
+# cerrojo ocupado devuelve 75 y el resto sale con el codigo de la tarea. Limite: una
+# tarea que saliera ella misma con 75 se leeria como "skipped"; el despachador sale
+# con 0 o 1 y una senal da 128+n, asi que hoy no ocurre.
 0 * * * * flock -n -E 75 /tmp/voyage-detector.lock -c 'TASK=voyage-detector npx tsx index.ts 2>&1' || { rc=$?; [ $rc -eq 75 ] || exit $rc; echo "[voyage-detector] skipped — previous run still in progress"; }
 
 # SASEMAR: historical archive (2019-2024), one-shot only — do NOT re-enable on cron

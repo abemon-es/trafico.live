@@ -12,6 +12,7 @@
     "test:redis": "tsx tests/redis-reconnect.test.ts",
     "test:rate-limit": "tsx tests/rate-limit-insurance.test.ts",
     "test:cron": "tsx tests/cron-flock-exit.test.ts",
+    "test:maritime": "tsx tests/maritime-forecast-zones.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
