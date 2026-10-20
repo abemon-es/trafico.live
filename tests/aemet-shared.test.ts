@@ -16,6 +16,7 @@ import {
   isKeyExpired,
   readAemetJson,
   readDescripcion,
+  step2Refusal,
 } from "../services/collector/shared/aemet";
 import { fetchAEMETAlerts } from "../services/collector/tasks/weather/aemet-parser";
 import { aemetFetch } from "../services/collector/tasks/aemet-historical/collector";
@@ -149,6 +150,36 @@ async function main() {
     () => aemetFetch("https://x/inventario", "k"),
   );
   assert.equal(other401.result, null);
+
+  // 8. Step 2 (the datos URL) refuses an expired key as an HTML 500 that wraps
+  // the 401: weather took it for a crash at 2026-10-20 22:00Z. Every task that
+  // reads a datos URL now says «expired key»; another 500 stays a plain error.
+  const wrapped500 = () =>
+    new Response(
+      latin1(`<html><body><h1>HTTP Status 500 - 401 Unauthorized: &quot;{ &quot;descripcion&quot; : &quot;${RENEWAL_TEXT}&quot;}</h1></body></html>`),
+      { status: 500 },
+    );
+  await assert.rejects(step2Refusal("weather", wrapped500()), AemetKeyExpiredError);
+  assert.equal(await step2Refusal("weather", new Response("<html>\n Internal  Server Error </html>", { status: 500 })), "<html> Internal Server Error </html>");
+  const twoSteps = (step2: () => Response) => (url: string) =>
+    url.startsWith("https://datos/") ? step2() : new Response(JSON.stringify({ estado: 200, datos: "https://datos/x" }));
+  await assert.rejects(
+    withFetch(twoSteps(wrapped500), () => fetchAEMETAlerts("k")),
+    (e: unknown) => e instanceof AemetKeyExpiredError && e.fingerprint[1] === "weather",
+  );
+  await assert.rejects(
+    withFetch(twoSteps(() => new Response("<html>Internal Server Error</html>", { status: 500 })), () => fetchAEMETAlerts("k")),
+    (e: unknown) => !(e instanceof AemetKeyExpiredError) && /AEMET data fetch error: 500/.test(String(e)),
+  );
+  await assert.rejects(
+    withFetch(twoSteps(wrapped500), () => aemetFetch("https://x/inventario", "k")),
+    (e: unknown) => e instanceof AemetKeyExpiredError && e.fingerprint[1] === "aemet-historical",
+  );
+  const historical500 = await withFetch(
+    twoSteps(() => new Response("<html>Internal Server Error</html>", { status: 500 })),
+    () => aemetFetch("https://x/inventario", "k"),
+  );
+  assert.equal(historical500.result, null);
 
   console.log("aemet-shared: ok");
 }

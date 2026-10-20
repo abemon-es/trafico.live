@@ -24,6 +24,7 @@ import {
   readAemetJson,
   readDescripcion,
   reportKeyExpired,
+  step2Refusal,
 } from "../../shared/aemet.js";
 import { ALL_ZONES, type ZoneDefinition } from "./zones.js";
 
@@ -60,6 +61,7 @@ async function fetchAEMETData(endpoint: string, apiKey: string): Promise<string 
   const dataRes = await fetchWithRetry(TASK, meta.datos, {}, "datos request");
 
   if (!dataRes.ok) {
+    logError(TASK, `datos request ${dataRes.status}: ${await step2Refusal(TASK, dataRes)}`);
     throw new Error(`AEMET data fetch failed: ${dataRes.status} for datos URL`);
   }
 

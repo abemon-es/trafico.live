@@ -80,6 +80,79 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (52) — weather called the expired AEMET key a crash
+
+**#130 verified** (collectors `4fa2d9d`, 21:29Z; measured at +33 min):
+- 0 × «numeric field overflow» in Postgres (Loki, 30 min);
+- 0 × «Error processing incident»;
+- the 14 San Sebastián incidents present: 14 with `kmPoint` null, 14 active,
+  14 seen in the last 10 min;
+- `incident` `ok`, no `storeFailures`.
+- Loki errors per hour dropped: realtime 840 → 30, postgres 437 → 14.
+
+**#131 merged** (`c400660a`, web 22:02Z). Verified from compute (curl
+`--resolve` + headless Chromium in the `playwright:v1.48.0` image,
+`--host-resolver-rules` to the bridge gateway):
+- `/incidencias?id=DGT-24889235` (active, picked from the DB): 200 and the
+  **modal opens by itself** («Circulación restringida · A-395 km 4»);
+- `?id=DGT-NO-EXISTE-0000`: 200 and the notice «La incidencia de tu alerta ya
+  no está activa»;
+- API `?id=`: 1 feature for the real one, 0 for the missing one.
+- Noted for later (low): the modal header's icon box renders as an empty white
+  square in Chromium; check the icon's colour before calling it a bug.
+
+**Signal (SENSE 22:27Z):**
+- `weather` `error` («crashed: AEMET data fetch error: 500»);
+- new GlitchTip issue TRAFICO-LIVE-JL.
+- Step 1 (with the key) answered; **step 2 (the `datos` URL) gave a 500**,
+  and the code threw without reading the body.
+- In cycle 45, the expired key's step-2 refusals came as an HTML 500 wrapping
+  «401 Unauthorized … renovación». `aemet-forecast` has recognised that since
+  #125; `weather`, `maritime-forecast` and `aemet-historical` only looked at
+  step 1. So the expired key showed up as a crash, with its own issue.
+- No AEMET probe (the expired key gets a few calls and then 401).
+
+**Fix (PR below):**
+- **`step2Refusal()` in `shared/aemet.ts`:**
+  - reads the body of a failed step 2;
+  - if it's the expired key it throws `AemetKeyExpiredError` (fixed
+    fingerprint: one GlitchTip issue per task);
+  - otherwise it returns the start of the body for the log (never for the
+    error message: `/api/health` is public).
+- **Used by** `weather`, `maritime-forecast` and `aemet-historical`. Each task
+  already handled that error at step 1; nothing else changes.
+- **Tests:**
+  - `test:aemet-shared` 8:
+    - wrapped 500 → expired key;
+    - another 500 → the body comes back;
+    - weather with step 2 wrapped → `AemetKeyExpiredError("weather")`;
+    - weather with another 500 → the generic error;
+    - aemet-historical: the same, with `null` for the other 500.
+  - **Mutant:** without the check in `step2Refusal`, the test fails.
+  - **Other checks:** the AEMET and maritime suites OK, collector `tsc` 626,
+    web `tsc` 11, eslint 0 errors.
+
+**Verify after deploy:** the next `weather` run that hits the key → heartbeat
+with the expired key (not `crashed`), and the shared «AEMET key» issue instead
+of a new one. The renewal is still MJ's.
+
+**Open, in order:**
+1. **L1:** merge and verify this fix.
+2. **L3:** the first `content-fingerprints` run (04:50) and 22-10's; numbers
+   to server-28, the share to the CMO; then the pilots.
+3. **L3, the next lastmod item (server-28):** gas stations by price. Shard 1
+   gives 4,474 of 5,000 «today» from `lastPriceUpdate`, which is when the feed
+   was read, not when the price changed. Fingerprint by price, like the
+   cameras.
+4. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+5. **L3:** the index lastmod after the CMO's 23-10 reading.
+6. **L1, low:** Euskadi id collisions (1 of 271; cycle 51).
+7. **Hygiene:** scrub the pre-October backlog entries, in their own PR.
+8. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+9. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-20 (51) — road alerts linked users to a page that doesn't exist
 
 **#129 deployed** (web `0d34d5a` 21:29Z, then `4fa2d9d` 21:35Z; collectors

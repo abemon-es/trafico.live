@@ -15,6 +15,7 @@ import {
   isKeyExpired,
   readAemetJson,
   readDescripcion,
+  step2Refusal,
 } from "../../shared/aemet.js";
 
 const TASK = "weather";
@@ -529,6 +530,8 @@ export async function fetchAEMETAlerts(apiKey: string): Promise<AEMETAlert[]> {
   const dataResponse = await fetchWithRetry(TASK, meta.datos, {}, "avisos_cap step 2");
 
   if (!dataResponse.ok) {
+    const detail = await step2Refusal(TASK, dataResponse);
+    console.error(`[AEMET] step 2 ${dataResponse.status}: ${detail}`);
     throw new Error(`AEMET data fetch error: ${dataResponse.status}`);
   }
 
