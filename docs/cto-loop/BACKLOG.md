@@ -145,24 +145,36 @@ specified it, and it is harmless once the key is renewed:
 - **401 is a quota signal:** counted in the heartbeat (`quotaHitsByStatus`),
   it slows the pace and teaches the budget.
 - **Learned budget:**
-  - after a hit, at most as many requests per rolling 60 s as succeeded in
-    the last 60 s;
+  - after a hit, at most `max(3, min(budget, our successes in the last
+    60 s))` requests per rolling 60 s. It only ratchets down, and never
+    below 3;
   - +1 every 5 min without a hit;
   - a hit with no success of ours is someone else's pressure: wait 10 s.
-- AEMET's `descripcion` is logged; the key and URL never are.
-- **The run aborts after 10 min with no answer.** A cut-off key would
-  otherwise spend ~2 h retrying everything.
-- **Simulated (`tests/aemet-forecast-queue.test.ts`):**
+- **The key goes in the `api_key` header**, as in the other three AEMET
+  collectors. It never sits in a URL, so it cannot reach error text, logs or
+  Sentry fetch spans. AEMET's `descripcion` and error strings are logged
+  redacted.
+- **Aborts, as status `error`:**
+  - no request served by AEMET in 10 min; any OK response, step 1 included,
+    counts as served;
+  - a 5 h cap on the run, so it never overlaps the next one.
+- **Heartbeat:**
+  - `keyRenewalRequired` when a 401 carries the renewal text;
+  - `errorMessage` says why the run aborted;
+  - a 403 is no longer counted as served.
+- **server-28's review (REQUEST CHANGES) is addressed** in the commits on
+  top. Tests: `npm run test:aemet-forecast` (3 files, also run under ESM).
 
-  | case | duration | lost |
-  |---|---|---|
-  | 6/calendar minute | 68.2 min | 0 |
-  | 6/rolling 60 s | 69.4 min | 0 |
-  | unlimited | 24.4 min | 0 |
-  | 6/min + 3 external 401s | 68.2 min | 0 |
-  | always-500 | 3 tries, then lost | — |
-  | 404 | 1 try | — |
-  | everything refused | aborts at 10.0 min | — |
+  | case | duration | lost | aborted |
+  |---|---|---|---|
+  | 6/calendar minute | 68.2 min | 0 | no |
+  | 6/rolling 60 s | 69.4 min | 0 | no |
+  | unlimited | 24.4 min | 0 | no |
+  | 6/min + 3 external 401s | 68.2 min | 0 | no |
+  | everything refused | 10.0 min | — | no-answer |
+  | step 2 refused for 15 min | 87.4 min | 1 | no |
+  | 50 s per answer | 301.9 min | — | run-cap |
+  | 1/min share (below the floor of 3) | 73.5 min | all | no |
 
 **Next:**
 - server-28 reviews the PR. Merge with `docker top` clear, before 13:20Z.
