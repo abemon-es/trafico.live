@@ -2,6 +2,13 @@
 # Serves real-time PostGIS layers as vector tiles (MVT)
 # Tables use lat/lng decimals — geometry constructed via SQL functions
 
+# No tile cache in Martin. Without this key it keeps 512 MB of tiles with no
+# expiry, so every layer here is served as it was when first requested: on
+# 2026-10-20 incidents/5/15/12 came back at 58,770 bytes while the function
+# returned 319,360 (container up 10 days). nginx in front already caches each
+# tile for 60 s (services/tiles/nginx.conf).
+cache_size_mb: 0
+
 # Prometheus metrics at /_/metrics (same port as tile API)
 observability:
   metrics:
