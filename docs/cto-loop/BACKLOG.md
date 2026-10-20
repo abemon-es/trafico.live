@@ -75,6 +75,77 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (40) — /trafico named Valencia (ODS) and Zaragoza as live sources
+
+**#118 deployed** (squash `9bcb96e5`, merged 17:52:15Z by server-28 after its
+CSO review). **The guard waited for real jobs:**
+- `17:52:21 Guard: waiting (0s) for: collector-realtime … opensky;
+  collector-realtime … incident`;
+- `17:57:02 Guard: safe at 17:57:02Z — recreating`;
+- SUCCESS in 289 s.
+
+It waited for opensky (`*/10`, ~3.5 min) instead of cutting it. All 6
+recreated at 17:57:02Z, healthy:
+
+| container | image |
+|---|---|
+| realtime | `9e32a5a22734` |
+| frequent | `8ebc3ba1b5e4` |
+| fuel | `b9676f11bbfd` |
+| daily | `02b342c76dcf` |
+| weekly | `bd04be0cf3ae` |
+| ais | `27cfdd2f0d84` |
+
+- **Cut (Loki 17:48-17:59Z):** only the tolerated pair (17:57:00Z).
+- **Inside the real container** (`collector-weekly`, new image):
+  - `fetchFeedZip` + `safeExtract` of 3454 and 3455 from `files.catbox.moe`:
+    8 `.txt` each;
+  - **the malicious-zip test run once inside the container**, against
+    `/app/shared/safe-unzip.ts` and its Info-ZIP: EXIT 0, and no
+    `/tmp/abs-evil.txt` afterwards.
+
+**Signal (cycle 35's list):** `/trafico` named city sources that don't
+exist:
+- the FAQ said «Valencia (ODS) y Zaragoza»: ODS has been offline since August,
+  and Zaragoza hasn't published since 2025-03;
+- the hero said «sensores … en Madrid, Barcelona, Valencia y Zaragoza»;
+- the sources footer said «Ayuntamientos de … Valencia y Zaragoza».
+
+**Checked against the data before rewriting:**
+- city sensors: BARCELONA 527 · VALENCIA 410 · Madrid (`TrafficIntensity`);
+- active incidents by `source`: DGT 1,962 · MADRID 1,940 · EUSKADI 1,000 ·
+  SCT 192 · BARCELONA 154 · DT-GV 83 · NAVARRA 25 · VALENCIA 4.
+
+So SCT and the Basque Government stay, as incidents (the old text said
+«mapas de tráfico»).
+
+**Fix (PR below), text only (`src/app/trafico/page.tsx`):**
+- **FAQ:** «los sensores municipales de Madrid (informo.madrid.es),
+  Barcelona (bcn.cat/transit) y Valencia (geoportal del Ayuntamiento), y las
+  incidencias del SCT (Cataluña) y del Gobierno Vasco».
+- **Hero and footer:** Madrid, Barcelona y Valencia.
+- **Checks:** eslint clean. It doesn't touch the collector image (the guard:
+  nothing to recreate).
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed).
+2. **L2/CSO:** `/transporte-publico/<op>` doesn't link «Feed GTFS» to hosts
+   outside an allowlist (operators/administrations + mobilitydatabase.org).
+   For the rest, «fuente: catálogo MobilityData (mdb-N)».
+3. **L1: EUSKADI.**
+   - The 1,000 is ours: 20 per page (the API ignores `_pageSize`) ×
+     `maxPages` 50.
+   - «Puertos de montaña: Abierto» counts as active because it has no
+     `endDate`.
+   - Reading all 19,161 pages every 2 min isn't viable. Stop by date or
+     state, with a test that fails if we stop exactly at
+     maxPages×pageSize.
+4. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+5. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+6. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (39) — GTFS ZIPs from an anonymous host went into `unzip -d` with no checks
 
 **#117 deployed (squash `99302bee`, merged 17:37:00Z): the guard's first live
