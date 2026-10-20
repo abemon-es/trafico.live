@@ -599,7 +599,7 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     id: "city-sensors",
     group: "road.live",
     label: "Sensores urbanos",
-    description: "Sensores de tráfico en Barcelona, Valencia y Zaragoza",
+    description: "Sensores de tráfico en Barcelona y Valencia",
     source: { type: "martin", ref: `${TILES_BASE}/dynamic/city_sensors` },
     interactive: true,
     minZoom: 8,
@@ -609,12 +609,19 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
       source: "city-sensors",
       "source-layer": "city_sensors",
       paint: {
+        // No level means the city reported no data for that section; painting
+        // it as level 0 showed it as fluid.
         "circle-color": [
-          "interpolate", ["linear"], ["coalesce", ["get", "serviceLevel"], 0],
-          0, "#059669",
-          1, "#eab308",
-          2, "#f97316",
-          3, "#dc2626",
+          "case",
+          ["==", ["typeof", ["get", "serviceLevel"]], "number"],
+          [
+            "interpolate", ["linear"], ["get", "serviceLevel"],
+            0, "#059669",
+            1, "#eab308",
+            2, "#f97316",
+            3, "#dc2626",
+          ],
+          "#94a3b8",
         ],
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 3, 12, 6, 15, 10],
         "circle-stroke-width": 1,
@@ -625,6 +632,7 @@ export const LAYER_REGISTRY: LayerDefinition[] = [
     legend: [
       { color: "#059669", label: "Fluido" },
       { color: "#dc2626", label: "Congestionado" },
+      { color: "#94a3b8", label: "Sin datos" },
     ],
   },
 
