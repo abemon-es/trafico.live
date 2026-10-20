@@ -304,7 +304,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
           { name: "Mapa AIS de buques", href: "/barcos/mapa", icon: Ship, description: "Tráfico marítimo en vivo" },
           { name: "Puertos", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
           { name: "Ferries", href: "/maritimo/ferries", icon: Ship, description: "Rutas y horarios" },
-          { name: "Seguridad SASEMAR", href: "/maritimo/seguridad/estadisticas", icon: ShieldAlert, description: "Emergencias marítimas" },
+          { name: "Seguridad marítima", href: "/maritimo/seguridad", icon: ShieldAlert, description: "Canal 16 y 900 202 202" },
           { name: "Meteorología marina", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas y previsiones" },
         ],
       },

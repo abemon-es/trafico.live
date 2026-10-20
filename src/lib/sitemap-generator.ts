@@ -660,6 +660,8 @@ const NATIONAL_ROAD_RE = /^(AP-\d+[A-Z]?|A-\d{1,2}|N-[0-9IVX]+)$/;
 
 async function coreSitemap(): Promise<SitemapEntry[]> {
   const now = new Date();
+  // The SASEMAR stats page is noindex while MaritimeEmergency is empty.
+  const hasSasemarData = (await prisma.maritimeEmergency.count().catch(() => 0)) > 0;
   const today = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
   );
@@ -1261,14 +1263,17 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
-    // SASEMAR rescue statistics (iter-4 dark-data unlock — 30K events
-    // 2019-2024 that were previously only reachable via the API).
-    {
-      url: `${BASE_URL}/maritimo/seguridad/estadisticas`,
-      lastModified: today,
-      changeFrequency: "weekly",
-      priority: 0.75,
-    },
+    // SASEMAR emergency statistics: only once there is SASEMAR data to show.
+    // The 2,140 rows it showed until 2026-10-20 were other organisations'
+    // layers (services/collector/tasks/sasemar).
+    ...(hasSasemarData
+      ? [{
+          url: `${BASE_URL}/maritimo/seguridad/estadisticas`,
+          lastModified: today,
+          changeFrequency: "weekly" as const,
+          priority: 0.75,
+        }]
+      : []),
     {
       url: `${BASE_URL}/maritimo/mapa`,
       lastModified: today,

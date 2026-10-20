@@ -1,11 +1,12 @@
 /**
- * /maritimo/seguridad/estadisticas — SASEMAR rescue statistics
+ * /maritimo/seguridad/estadisticas — SASEMAR emergency statistics
  *
- * Surfaces the MaritimeEmergency table (sasemar-arcgis collector,
- * ~30K events 2019-2024 with lat/lng/zone/province/persons-saved).
- * The parent /maritimo/seguridad page is the static safety guide;
- * this sub-page is the data view that page should have been from
- * the start.
+ * Surfaces the MaritimeEmergency table (services/collector/tasks/sasemar).
+ * Until 2026-10-20 that table held 2,140 rows from other organisations'
+ * ArcGIS layers, and this page published them as SASEMAR figures; they were
+ * deleted. While the table is empty the page says so, is noindex and stays
+ * out of the sitemap. The parent /maritimo/seguridad page is the static
+ * safety guide.
  */
 
 import type { Metadata } from "next";
@@ -159,23 +160,28 @@ async function getStats() {
 // Metadata
 // ---------------------------------------------------------------------------
 
-export const metadata: Metadata = {
-  title: "Estadísticas SASEMAR — Rescates marítimos en España 2019-2024",
-  description:
-    "Análisis de rescates marítimos de SASEMAR (Salvamento Marítimo) en España: 30.000+ emergencias 2019-2024 por zona, tipo, provincia costera, personas rescatadas, fallecidas y desaparecidas.",
-  alternates: {
-    canonical: `${BASE_URL}/maritimo/seguridad/estadisticas`,
-  },
-  openGraph: {
-    title: "Estadísticas SASEMAR — Rescates marítimos en España",
+export async function generateMetadata(): Promise<Metadata> {
+  // Without SASEMAR data there is nothing to index (the build has no DB either).
+  const hasData = (await prisma.maritimeEmergency.count().catch(() => 0)) > 0;
+  return {
+    title: "Estadísticas SASEMAR — Emergencias marítimas en España",
     description:
-      "30.000+ operaciones de salvamento marítimo en aguas españolas 2019-2024. Datos por zona (Estrecho, Cantábrico, Mediterráneo, Canarias), tipo de emergencia y persona involucradas.",
-    url: `${BASE_URL}/maritimo/seguridad/estadisticas`,
-    siteName: "trafico.live",
-    locale: "es_ES",
-    type: "website",
-  },
-};
+      "Emergencias marítimas atendidas por Salvamento Marítimo (SASEMAR) en España, por año, tipo y centro de coordinación.",
+    alternates: {
+      canonical: `${BASE_URL}/maritimo/seguridad/estadisticas`,
+    },
+    ...(hasData ? {} : { robots: { index: false, follow: true } }),
+    openGraph: {
+      title: "Estadísticas SASEMAR — Emergencias marítimas en España",
+      description:
+        "Emergencias marítimas atendidas por Salvamento Marítimo (SASEMAR) en España, por año, tipo y centro de coordinación.",
+      url: `${BASE_URL}/maritimo/seguridad/estadisticas`,
+      siteName: "trafico.live",
+      locale: "es_ES",
+      type: "website",
+    },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -202,7 +208,6 @@ export default async function MaritimoSeguridadEstadisticasPage() {
       name: "Sociedad de Salvamento y Seguridad Marítima (SASEMAR)",
       url: "https://www.salvamentomaritimo.es",
     },
-    license: "https://datos.gob.es/es/licencias",
   };
 
   const breadcrumbSchema = {
@@ -223,7 +228,7 @@ export default async function MaritimoSeguridadEstadisticasPage() {
 
   return (
     <>
-      <StructuredData data={[datasetSchema, breadcrumbSchema]} />
+      <StructuredData data={isEmpty ? [breadcrumbSchema] : [datasetSchema, breadcrumbSchema]} />
 
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <Breadcrumbs
@@ -275,11 +280,12 @@ export default async function MaritimoSeguridadEstadisticasPage() {
           >
             <AlertTriangle className="w-10 h-10 mx-auto text-[var(--tl-warning)] mb-3" />
             <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Sin datos disponibles
+              Todavía no hay estadísticas
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              El colector SASEMAR ArcGIS aún no ha completado la carga. Las estadísticas
-              estarán disponibles tras la primera ingesta.
+              Aún no tenemos cargados los datos de emergencias de Salvamento Marítimo.
+              Cuando lo estén, aquí verás las emergencias por año, tipo y centro de
+              coordinación.
             </p>
           </section>
         ) : (
@@ -464,8 +470,8 @@ export default async function MaritimoSeguridadEstadisticasPage() {
               irregular.
             </p>
             <p>
-              Los datos de esta página proceden del visor abierto de SASEMAR. Para más
-              información sobre cómo solicitar ayuda en el mar (canal 16 VHF, 900 202 202),
+              {!isEmpty && "Los datos de esta página proceden de los datos abiertos de Salvamento Marítimo. "}
+              Para saber cómo solicitar ayuda en el mar (canal 16 VHF, 900 202 202),
               consulta la{" "}
               <Link href="/maritimo/seguridad" className="underline">guía de seguridad marítima</Link>.
             </p>
@@ -473,21 +479,23 @@ export default async function MaritimoSeguridadEstadisticasPage() {
         </section>
 
         {/* Attribution */}
-        <footer className="flex flex-wrap items-center gap-2 text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-800 pt-6">
-          <BarChart3 className="w-4 h-4 flex-shrink-0" />
-          <span>
-            Fuente:{" "}
-            <a
-              href="https://www.salvamentomaritimo.es"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              SASEMAR
-            </a>
-            {" "}· Visor ArcGIS de emergencias atendidas, {stats.yearMin}–{stats.yearMax}
-          </span>
-        </footer>
+        {!isEmpty && (
+          <footer className="flex flex-wrap items-center gap-2 text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-800 pt-6">
+            <BarChart3 className="w-4 h-4 flex-shrink-0" />
+            <span>
+              Fuente:{" "}
+              <a
+                href="https://www.salvamentomaritimo.es"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                SASEMAR
+              </a>
+              {" "}· Datos abiertos de emergencias atendidas, {stats.yearMin}–{stats.yearMax}
+            </span>
+          </footer>
+        )}
       </div>
     </>
   );

@@ -22,7 +22,8 @@ Brief description of changes.
       `src/lib/email/ses.ts`; the list is `services/collector/Dockerfile.cron`). The deploy
       recreates all 6 collectors and kills any job in flight: merge with 0 `TASK=` in
       frequent/daily/weekly/fuel (`docker top <c> -eo pid,args` from the host; without the
-      pid column it fails), on an odd minute, second ≥ 40.
+      pid column it fails), on an even minute, second 05-15. The build takes ~45 s, so the
+      recreation lands in the odd minute, clear of the `*/2` jobs.
 
 ## Related Issues
 Closes #

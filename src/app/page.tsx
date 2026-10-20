@@ -321,7 +321,6 @@ export default async function HomePage() {
             <li><Link href="/transporte-publico">Transporte público</Link> 15 operadores con páginas por ruta y por parada</li>
             <li><Link href="/accidentes">Siniestralidad DGT</Link> con análisis por carretera (ej. <Link href="/accidentes/carretera/AP-7">AP-7</Link>, <Link href="/accidentes/carretera/A-7">A-7</Link>, <Link href="/accidentes/carretera/N-340">N-340</Link>)</li>
             <li><Link href="/calidad-aire">Calidad del aire</Link> en vivo + <Link href="/calidad-aire/prevision">previsión CAMS 5 días</Link></li>
-            <li><Link href="/maritimo/seguridad/estadisticas">Estadísticas SASEMAR</Link> de rescates marítimos</li>
           </ul>
         </nav>
         <StructuredData

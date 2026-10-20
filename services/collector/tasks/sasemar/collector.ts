@@ -1,69 +1,63 @@
 /**
  * SASEMAR Historical Maritime Emergency Collector
  *
- * Imports historical maritime emergency records from the SASEMAR Open Data Hub
- * into the MaritimeEmergency table.
+ * Imports the emergencies Salvamento Marítimo publishes as open data into the
+ * MaritimeEmergency table: one ArcGIS Feature Service per year
+ * (EMERGENCIAS_2019 … EMERGENCIAS_2025, ~6,000 records each), owned by
+ * OpenDataSASEMAR in SASEMAR's own ArcGIS organisation.
  *
- * Data source: https://opendata-sasemar.hub.arcgis.com/
- * Published as ArcGIS Feature Layers — GeoJSON export capability
- * Coverage: 2019–2024 (years vary by dataset published)
+ * Until 2026-10-20 the task "discovered" its datasets with the Hub API's
+ * search (opendata-sasemar.hub.arcgis.com/api/v3/datasets?q=emergencias+maritimas),
+ * which searches all of ArcGIS Online, not SASEMAR. It imported "Emergencias
+ * Cuernavaca", Colombian and Costa Rican layers and the like as SASEMAR
+ * records, gave every undated one the current year, and the stats page
+ * published them as SASEMAR figures. Its three hardcoded endpoints never
+ * existed ("Invalid URL"). The 2,140 rows were deleted the same day (backup in
+ * compute:/root/backups/trafico-cto-loop/MaritimeEmergency-2026-10-20.json).
  *
- * Strategy (in order):
- *   1. Discover datasets via SASEMAR Hub API v3
- *   2. Fetch GeoJSON features from each discovered FeatureServer layer
- *   3. If discovery fails, attempt known/hardcoded service URLs
- *   4. If all remote fetches fail, fall back to local file: data/sasemar-emergencies.json
+ * Now a layer is used only if it is SASEMAR's: the search is scoped to the
+ * organisation, and each item must be owned by OpenDataSASEMAR, be titled
+ * EMERGENCIAS_<year> and be hosted under the organisation's services
+ * (sasemarLayer). A layer whose points fall mostly outside Spain's search and
+ * rescue area is rejected as a whole; SASEMAR also coordinates some cases
+ * abroad (2-4 % of each year), which are kept without a province.
  *
  * Run: TASK=sasemar npm run collect
  * This is a ONE-SHOT / MANUAL task — not scheduled in cron.
  */
 
 import { PrismaClient, MaritimeEmergencyType } from "@prisma/client";
-import * as fs from "fs";
 import { heartbeat } from "../../shared/heartbeat.js";
-import * as path from "path";
-import { fileURLToPath } from "url";
 import { log, logError } from "../../shared/utils.js";
 
 const TASK = "sasemar";
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = path.resolve(__dirname, "../../../../data/sasemar-emergencies.json");
 
 // ---------------------------------------------------------------------------
-// ArcGIS / Hub constants
+// Source: SASEMAR's own ArcGIS organisation
 // ---------------------------------------------------------------------------
 
-const HUB_API_BASE = "https://opendata-sasemar.hub.arcgis.com/api/v3";
+// opendata-sasemar.hub.arcgis.com → hub.arcgis.com/api/v3/domains:
+// orgId z9EodtVMNDMSeW4E, orgTitle "Salvamento Marítimo".
+const SASEMAR_ORG_ID = "z9EodtVMNDMSeW4E";
+const SASEMAR_OWNER = "OpenDataSASEMAR";
+const SASEMAR_SERVICES = `https://services5.arcgis.com/${SASEMAR_ORG_ID}/arcgis/rest/services/`;
+const ARCGIS_SEARCH_URL = "https://www.arcgis.com/sharing/rest/search";
+
 const ARCGIS_QUERY_PARAMS = new URLSearchParams({
   where: "1=1",
   outFields: "*",
+  orderByFields: "FID", // stable order for offset paging
   f: "geojson",
-  resultRecordCount: "2000",
 });
-
-/**
- * Candidate service endpoints to try when Hub discovery does not yield a usable URL.
- * Filled based on known SASEMAR ArcGIS org patterns — they may or may not be live.
- * Each entry is an array of [label, featureServerUrl].
- */
-const KNOWN_ENDPOINTS: Array<[string, string]> = [
-  [
-    "emergencias-2019-2022",
-    "https://services.arcgis.com/OBzEKEg6F5pXwXDL/arcgis/rest/services/Emergencias_maritimas/FeatureServer/0",
-  ],
-  [
-    "emergencias-hub-v2",
-    "https://services-eu1.arcgis.com/OBzEKEg6F5pXwXDL/arcgis/rest/services/Emergencias_maritimas/FeatureServer/0",
-  ],
-  [
-    "sasemar-open-data",
-    "https://services7.arcgis.com/OBzEKEg6F5pXwXDL/arcgis/rest/services/Emergencias_maritimas/FeatureServer/0",
-  ],
-];
 
 const FETCH_TIMEOUT_MS = 20_000;
 const PAGE_SIZE = 2000;
 const PAGE_DELAY_MS = 400;
+
+/** Spain's search and rescue area, generously: Canarias to the Bay of Biscay. */
+const SPAIN_SAR = { minLat: 25, maxLat: 46, minLon: -22, maxLon: 6 };
+/** A layer with more than this share of its points outside SPAIN_SAR is not SASEMAR's data. */
+const MAX_OUTSIDE_SHARE = 0.5;
 
 // ---------------------------------------------------------------------------
 // Coastal province bounding boxes (approximate, WGS84)
@@ -129,27 +123,42 @@ function inferProvince(lat: number | null, lon: number | null): { code: string; 
 // Type classification
 // ---------------------------------------------------------------------------
 
-const TYPE_KEYWORDS: Array<[MaritimeEmergencyType, string[]]> = [
-  ["RESCUE",     ["rescate", "salvamento", "búsqueda", "busqueda", "náufrago", "naufragio", "persona caída", "man overboard"]],
-  ["POLLUTION",  ["contaminación", "contaminacion", "vertido", "fuel", "hidrocarburo", "derrame"]],
-  ["MEDICAL",    ["evacuación médica", "evacuacion medica", "medico", "médico", "sanitario", "enfermo", "herido"]],
-  ["ASSISTANCE", ["auxilio", "remolque", "asistencia", "avería", "averia", "varado", "varamento", "colisión", "colision"]],
-];
+/** SASEMAR's `tipo` (the four values in every year's layer) → our enum. The raw subtipo is kept. */
+const TIPO_TO_TYPE: Record<string, MaritimeEmergencyType> = {
+  "SALVAMENTO-MARITIMO": "RESCUE",
+  "MEDIO-AMBIENTE": "POLLUTION",
+  "SEGURIDAD-MARITIMA": "OTHER",
+  "SERVICIO-COMPLEMENTARIO": "OTHER",
+};
 
-function classifyType(raw: string | null | undefined): MaritimeEmergencyType {
-  if (!raw) return "OTHER";
-  const normalized = raw.toLowerCase();
-  for (const [type, keywords] of TYPE_KEYWORDS) {
-    if (keywords.some((kw) => normalized.includes(kw))) return type;
-  }
-  return "OTHER";
+// ---------------------------------------------------------------------------
+// Layers and features
+// ---------------------------------------------------------------------------
+
+export interface ArcGisItem {
+  id?: string;
+  title: string;
+  owner: string;
+  type: string;
+  url: string | null;
 }
 
-// ---------------------------------------------------------------------------
-// GeoJSON feature parsing
-// ---------------------------------------------------------------------------
+export interface SasemarLayer {
+  title: string;
+  year: number;
+  url: string;
+}
 
-interface GeoJSONFeature {
+/** The item as one of SASEMAR's yearly emergency layers, or null if it is anything else. */
+export function sasemarLayer(item: ArcGisItem): SasemarLayer | null {
+  const m = /^EMERGENCIAS_(\d{4})$/.exec(item.title);
+  if (!m) return null;
+  if (item.owner !== SASEMAR_OWNER || item.type !== "Feature Service") return null;
+  if (!item.url || !item.url.startsWith(SASEMAR_SERVICES)) return null;
+  return { title: item.title, year: Number(m[1]), url: `${item.url.replace(/\/+$/, "")}/0` };
+}
+
+export interface GeoJSONFeature {
   type: "Feature";
   geometry?: {
     type: string;
@@ -180,7 +189,7 @@ interface ParsedRecord {
 }
 
 function parseNumber(v: unknown): number | null {
-  if (v == null) return null;
+  if (v == null || v === "") return null;
   const n = Number(v);
   return isNaN(n) ? null : n;
 }
@@ -190,95 +199,79 @@ function parseIntOrNull(v: unknown): number | null {
   return n == null ? null : Math.round(n);
 }
 
-function parseDate(v: unknown): Date | null {
-  if (v == null) return null;
-  // Handle Unix epoch milliseconds (ArcGIS standard)
-  if (typeof v === "number") {
-    const d = new Date(v);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  if (typeof v === "string" && v.trim()) {
-    const d = new Date(v);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  return null;
+function text(v: unknown): string | null {
+  const t = v == null ? "" : String(v).trim();
+  return t || null;
 }
 
+/** fecha_ejec is "dd/mm/yyyy"; new Date() would read it month first. */
+export function parseFechaEjec(v: unknown): Date | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(v ?? "").trim());
+  if (!m) return null;
+  const [day, month, year] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const d = new Date(Date.UTC(year, month - 1, day));
+  return d.getUTCMonth() === month - 1 && d.getUTCDate() === day ? d : null;
+}
+
+export function inSpainSar(lat: number, lon: number): boolean {
+  return lat >= SPAIN_SAR.minLat && lat <= SPAIN_SAR.maxLat && lon >= SPAIN_SAR.minLon && lon <= SPAIN_SAR.maxLon;
+}
+
+const VESSEL_FIELDS: Array<[string, string]> = [
+  ["numbuqmer", "mercante"],
+  ["numbuqpes", "pesquero"],
+  ["numbuqrec", "recreo"],
+  ["numbuqotr", "otro"],
+];
+
 /**
- * Parse a single GeoJSON Feature into a normalized record.
- * Field names from SASEMAR ArcGIS layers vary slightly between years.
- * We attempt multiple common field name patterns.
+ * One feature of an EMERGENCIAS_<year> layer. Fields (identical 2019-2025):
+ * FID, fecha_ejec, centro, latitud, longitud, tipo, subtipo, numbuqmer,
+ * numbuqpes, numbuqrec, numbuqotr, numperres.
  */
-function parseFeature(feature: GeoJSONFeature, dataSource: string): ParsedRecord | null {
+export function parseFeature(feature: GeoJSONFeature, layer: SasemarLayer): ParsedRecord | null {
   const p = feature.properties ?? {};
+  const fid = p["FID"];
+  if (fid == null) return null;
 
-  // Source ID: prefer OBJECTID, then FID, then a composite
-  const objectId = p["OBJECTID"] ?? p["FID"] ?? p["objectid"] ?? p["fid"];
-  if (objectId == null) return null;
-
-  // Coordinates: from Point geometry (most SASEMAR layers are point features)
   let lat: number | null = null;
   let lon: number | null = null;
   if (feature.geometry?.type === "Point" && Array.isArray(feature.geometry.coordinates)) {
     [lon, lat] = feature.geometry.coordinates as [number, number];
-    if (isNaN(lat) || isNaN(lon)) { lat = null; lon = null; }
   }
-  // Fall back to attribute columns (some layers store coords in properties)
-  if (lat == null) {
-    lat = parseNumber(p["LATITUD"] ?? p["LAT"] ?? p["latitud"] ?? p["lat"]);
-    lon = parseNumber(p["LONGITUD"] ?? p["LON"] ?? p["longitud"] ?? p["lon"] ?? p["LONGIT"]);
+  if (lat == null || lon == null || isNaN(lat) || isNaN(lon)) {
+    lat = parseNumber(p["latitud"]);
+    lon = parseNumber(p["longitud"]);
   }
+  if (lat == null || lon == null) { lat = null; lon = null; }
 
-  // Date — various field names seen in SASEMAR datasets
-  const rawDate = p["FECHA"] ?? p["FECHA_SUCESO"] ?? p["FECHA_INICIO"] ?? p["DATE"] ?? p["fecha"];
-  const occurredAt = parseDate(rawDate);
-
-  // Year — prefer explicit field, then derive from date, then from data
-  const rawYear =
-    p["AÑO"] ?? p["ANO"] ?? p["YEAR"] ?? p["año"] ?? p["anio"];
-  let year =
-    rawYear != null
-      ? parseIntOrNull(rawYear)
-      : occurredAt != null
-      ? occurredAt.getFullYear()
-      : null;
-  if (!year || year < 2000 || year > 2030) year = new Date().getFullYear();
-
-  // Type classification
-  const rawType = String(
-    p["TIPO_SERVICIO"] ??
-    p["TIPO"] ??
-    p["SERVICIO"] ??
-    p["tipo_servicio"] ??
-    p["tipo"] ??
-    ""
-  );
-  const type = classifyType(rawType || null);
-
-  // Province inference
+  const tipo = text(p["tipo"]);
+  const vessels = VESSEL_FIELDS.filter(([field]) => (parseNumber(p[field]) ?? 0) > 0).map(([, label]) => label);
   const prov = inferProvince(lat, lon);
 
-  const sourceId = `sasemar-${objectId}`;
-
   return {
-    sourceId,
-    year,
-    occurredAt,
-    type,
-    subtype: rawType || null,
-    severity: String(p["GRAVEDAD"] ?? p["gravedad"] ?? "") || null,
+    // FID restarts at 1 in every yearly layer.
+    sourceId: `sasemar-${layer.year}-${fid}`,
+    year: layer.year,
+    occurredAt: parseFechaEjec(p["fecha_ejec"]),
+    type: (tipo && TIPO_TO_TYPE[tipo]) || "OTHER",
+    subtype: text(p["subtipo"]),
+    severity: null,
     latitude: lat,
     longitude: lon,
-    zone: String(p["ZONA"] ?? p["ZONA_MARITIMA"] ?? p["zona"] ?? "") || null,
-    description: String(p["DESCRIPCION"] ?? p["DESCRIPCION_SUCESO"] ?? p["descripcion"] ?? "") || null,
+    // The SASEMAR coordination centre that handled it ("CCS Tarifa").
+    zone: text(p["centro"]),
+    description: null,
     province: prov?.code ?? null,
     provinceName: prov?.name ?? null,
-    vesselType: String(p["TIPO_EMBARCACION"] ?? p["EMBARCACION"] ?? p["tipo_embarcacion"] ?? "") || null,
-    personsInvolved: parseIntOrNull(p["PERSONAS_IMPLICADAS"] ?? p["NUM_PERSONAS"] ?? p["personas_implicadas"]),
-    personsSaved: parseIntOrNull(p["PERSONAS_RESCATADAS"] ?? p["ILESOS"] ?? p["personas_rescatadas"]),
-    personsMissing: parseIntOrNull(p["PERSONAS_DESAPARECIDAS"] ?? p["DESAPARECIDOS"] ?? p["personas_desaparecidas"]),
-    personsDeceased: parseIntOrNull(p["PERSONAS_FALLECIDAS"] ?? p["FALLECIDOS"] ?? p["personas_fallecidas"]),
-    dataSource,
+    vesselType: vessels.length > 0 ? vessels.join(", ") : null,
+    // numperres: people in the case. Whether SASEMAR counts them as rescued
+    // is not stated in the layer's metadata, so it is not stored as personsSaved.
+    personsInvolved: parseIntOrNull(p["numperres"]),
+    personsSaved: null,
+    personsMissing: null,
+    personsDeceased: null,
+    dataSource: `sasemar-arcgis:${layer.title}`,
   };
 }
 
@@ -341,72 +334,26 @@ async function fetchAllFromEndpoint(
 }
 
 // ---------------------------------------------------------------------------
-// Hub dataset discovery
+// Layer discovery, scoped to SASEMAR's organisation
 // ---------------------------------------------------------------------------
 
-interface HubDataset {
-  id: string;
-  attributes?: {
-    name?: string;
-    url?: string;
-    access?: string;
-    type?: string;
-  };
-  links?: { self?: string };
-}
+async function discoverLayers(): Promise<SasemarLayer[]> {
+  const q = `orgid:${SASEMAR_ORG_ID} AND owner:${SASEMAR_OWNER} AND title:EMERGENCIAS`;
+  const res = await fetch(`${ARCGIS_SEARCH_URL}?q=${encodeURIComponent(q)}&num=50&f=json`, {
+    headers: { "User-Agent": "trafico.live-collector/1.0 (sasemar)" },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!res.ok) throw new Error(`ArcGIS search HTTP ${res.status}`);
+  const body = await res.json() as { results?: ArcGisItem[]; error?: unknown };
+  if (body.error) throw new Error(`ArcGIS search error: ${JSON.stringify(body.error)}`);
 
-async function discoverEndpoints(): Promise<string[]> {
-  // Try the Hub API v3 datasets endpoint with a keyword filter
-  const url = `${HUB_API_BASE}/datasets?q=emergencias+maritimas&fields[datasets]=url,name,access,type&page[size]=10`;
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "trafico.live-collector/1.0 (sasemar-discovery)" },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!res.ok) throw new Error(`Hub API ${res.status}`);
-
-    const body = await res.json() as { data?: HubDataset[] };
-    const datasets: HubDataset[] = body.data ?? [];
-
-    const endpoints: string[] = [];
-    for (const ds of datasets) {
-      const serviceUrl = ds.attributes?.url;
-      if (serviceUrl && serviceUrl.includes("FeatureServer")) {
-        // Normalise to layer 0 if no layer is specified
-        const cleaned = serviceUrl.replace(/\/FeatureServer\/?$/, "/FeatureServer/0");
-        endpoints.push(cleaned);
-        log(TASK, `  Discovered endpoint: ${cleaned}`);
-      }
-    }
-    return endpoints;
-  } catch (err) {
-    logError(TASK, "Hub API discovery failed", err);
-    return [];
+  const layers: SasemarLayer[] = [];
+  for (const item of body.results ?? []) {
+    const layer = sasemarLayer(item);
+    if (layer) layers.push(layer);
+    else log(TASK, `  Not a SASEMAR emergencies layer, ignored: "${item.title}" (${item.owner}, ${item.url ?? "no url"})`);
   }
-}
-
-// ---------------------------------------------------------------------------
-// Local file fallback
-// ---------------------------------------------------------------------------
-
-function loadLocalFile(): GeoJSONFeature[] {
-  if (!fs.existsSync(DATA_FILE)) {
-    throw new Error(
-      `Local fallback file not found: ${DATA_FILE}\n` +
-      "Download from https://opendata-sasemar.hub.arcgis.com/ and save as data/sasemar-emergencies.json\n" +
-      "Expected format: GeoJSON FeatureCollection with Point features."
-    );
-  }
-
-  log(TASK, `Loading local fallback file: ${DATA_FILE}`);
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  const parsed = JSON.parse(raw) as { type?: string; features?: GeoJSONFeature[] } | GeoJSONFeature[];
-
-  // Accept either a raw array of features or a FeatureCollection
-  if (Array.isArray(parsed)) return parsed;
-  if (parsed.type === "FeatureCollection" && Array.isArray(parsed.features)) return parsed.features;
-
-  throw new Error("Unexpected JSON format in sasemar-emergencies.json — expected GeoJSON FeatureCollection or array of features");
+  return layers.sort((a, b) => a.year - b.year);
 }
 
 // ---------------------------------------------------------------------------
@@ -486,95 +433,47 @@ async function upsertRecords(prisma: PrismaClient, records: ParsedRecord[]): Pro
 
 export async function run(prisma: PrismaClient): Promise<void> {
   const startTime = Date.now();
-  log(TASK, `Starting SASEMAR historical emergency import at ${new Date().toISOString()}`);
+  log(TASK, `Starting SASEMAR emergency import at ${new Date().toISOString()}`);
 
-  let features: GeoJSONFeature[] = [];
-  let dataSource = "sasemar-arcgis";
-
-  // ── 1. Try Hub discovery ──────────────────────────────────────────────────
-  log(TASK, "Attempting SASEMAR Hub API dataset discovery...");
-  const discovered = await discoverEndpoints();
-
-  // ── 2. Merge discovered + known endpoints and try each ───────────────────
-  const endpointsToTry = [
-    ...discovered,
-    ...KNOWN_ENDPOINTS.map(([, url]) => url),
-  ];
-
-  for (const endpoint of endpointsToTry) {
-    log(TASK, `Trying endpoint: ${endpoint}`);
-    try {
-      const fetched = await fetchAllFromEndpoint(endpoint);
-      if (fetched.length > 0) {
-        log(TASK, `Fetched ${fetched.length} features from ${endpoint}`);
-        features = [...features, ...fetched];
-        // De-duplicate by OBJECTID across multiple endpoint pages
-      }
-    } catch (err) {
-      logError(TASK, `Endpoint failed: ${endpoint}`, err);
-    }
-  }
-
-  // ── 3. Fall back to local file if remote yielded nothing ─────────────────
-  if (features.length === 0) {
-    log(TASK, "All remote endpoints failed or returned no data — trying local fallback file");
-    dataSource = "sasemar-local-file";
-    features = loadLocalFile(); // throws if file missing (caller handles)
-  }
-
-  log(TASK, `Total raw features to process: ${features.length}`);
-
-  // ── 4. Parse features ─────────────────────────────────────────────────────
-  const records: ParsedRecord[] = [];
-  const seenSourceIds = new Set<string>();
-  let parseErrors = 0;
-
-  for (const feature of features) {
-    try {
-      const rec = parseFeature(feature, dataSource);
-      if (!rec) { parseErrors++; continue; }
-      if (seenSourceIds.has(rec.sourceId)) continue; // de-duplicate across endpoints
-      seenSourceIds.add(rec.sourceId);
-      records.push(rec);
-    } catch (err) {
-      logError(TASK, "Failed to parse feature", err);
-      parseErrors++;
-    }
-  }
-
-  log(TASK, `Parsed ${records.length} valid records (${parseErrors} skipped)`);
-
-  if (records.length === 0) {
-    log(TASK, "No valid records to import — exiting");
+  const layers = await discoverLayers();
+  log(TASK, `SASEMAR layers: ${layers.map((l) => l.title).join(", ") || "none"}`);
+  if (layers.length === 0) {
+    await heartbeat(prisma, TASK, "error", { error: "No SASEMAR emergencies layer found" });
     return;
   }
 
-  // ── 5. Upsert into DB ─────────────────────────────────────────────────────
+  const records: ParsedRecord[] = [];
+  const failed: { layer: string; error: string }[] = [];
+
+  for (const layer of layers) {
+    try {
+      const features = await fetchAllFromEndpoint(layer.url);
+      const parsed = features.map((f) => parseFeature(f, layer)).filter((r): r is ParsedRecord => r !== null);
+      const located = parsed.filter((r) => r.latitude != null && r.longitude != null);
+      const outside = located.filter((r) => !inSpainSar(r.latitude!, r.longitude!)).length;
+      if (located.length > 0 && outside / located.length > MAX_OUTSIDE_SHARE) {
+        throw new Error(`${outside} of ${located.length} points outside Spain's SAR area — not SASEMAR data`);
+      }
+      log(TASK, `${layer.title}: ${parsed.length} records (${features.length - parsed.length} without FID, ${outside} outside Spain's SAR area)`);
+      records.push(...parsed);
+    } catch (err) {
+      logError(TASK, `${layer.title} rejected:`, err);
+      failed.push({ layer: layer.title, error: String(err).slice(0, 160) });
+    }
+  }
+
   log(TASK, "Upserting into database...");
   const { upserted, errors } = await upsertRecords(prisma, records);
 
-  // ── 6. Summary ────────────────────────────────────────────────────────────
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  const yearCounts = new Map<number, number>();
-  for (const r of records) {
-    yearCounts.set(r.year, (yearCounts.get(r.year) ?? 0) + 1);
-  }
-  const years = [...yearCounts.keys()].sort();
+  log(TASK, `Done in ${elapsed}s — ${upserted} emergencies imported from ${layers.length - failed.length}/${layers.length} layers, ${errors} errors`);
 
-  const typeCounts = new Map<string, number>();
-  for (const r of records) {
-    typeCounts.set(r.type, (typeCounts.get(r.type) ?? 0) + 1);
-  }
-
-  log(TASK, `Done in ${elapsed}s — ${upserted} emergencies imported, ${errors} errors`);
-  log(TASK, `SASEMAR: ${upserted} emergencies imported across ${years.length} years (${years.join(", ")})`);
-
-  for (const [type, count] of [...typeCounts.entries()].sort((a, b) => b[1] - a[1])) {
-    log(TASK, `  ${type}: ${count}`);
-  }
-
-  if (errors > 0) {
-    logError(TASK, `${errors} records failed to upsert — check logs above for details`);
-  }
-  await heartbeat(prisma, TASK, errors === 0 ? "ok" : "partial", { upserted, errors });
+  const status = upserted === 0 ? "error" : failed.length > 0 || errors > 0 ? "partial" : "ok";
+  await heartbeat(prisma, TASK, status, {
+    upserted,
+    errors,
+    layers: layers.map((l) => l.title),
+    ...(failed.length > 0 && { failedLayers: failed }),
+    ...(upserted === 0 && { error: "No SASEMAR records stored" }),
+  });
 }
