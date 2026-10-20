@@ -28,7 +28,7 @@ assert.equal(msUntilSendWindow(at(SEND_WINDOW_END_S) - 1), 0);
 assert.equal(msUntilSendWindow(at(40)), 20_000 + MINUTE_START_MARGIN_MS);
 assert.equal(msUntilSendWindow(at(55)), 5_000 + MINUTE_START_MARGIN_MS);
 
-// A wait for the next minute always ends at :02 of the following minute.
+// A wait for the next minute always ends at :05 of the following minute.
 assert.equal(msUntilNextMinute(at(45.3)), 14_700 + MINUTE_START_MARGIN_MS);
 for (let ms = 0; ms < 60_000; ms += 250) {
   const t = MIN + ms;
@@ -46,7 +46,7 @@ for (let ms = 0; ms < 60_000; ms += 100) {
 
 // The 2026-10-19 19:20Z failure: a step-2 hit at :52 retried after a fixed
 // 60 s landed at :52 again, outside the window, and 23 of 26 such retries
-// failed. The new retry lands at :02.
+// failed. The new retry lands at :05.
 const hit = at(52);
 assert.ok(msUntilSendWindow(hit + 60_000) > 0, "old fixed 60 s retry lands outside the window");
 assert.equal(msUntilSendWindow(hit + msUntilNextMinute(hit)), 0, "new retry lands inside the window");
