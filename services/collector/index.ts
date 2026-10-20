@@ -243,13 +243,21 @@ async function main() {
     // doesn't fire on healthy-but-quiet runs. If the collector did write
     // its own heartbeat (with possibly more specific status="error"/"partial"
     // and richer meta), we leave it untouched.
-    const afterHeartbeat = await prisma.collectorHeartbeat
-      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true } })
-      .then((r) => r?.lastRunAt ?? null)
+    const after = await prisma.collectorHeartbeat
+      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true, status: true } })
       .catch(() => null);
+    const afterHeartbeat = after?.lastRunAt ?? null;
     const collectorWroteHeartbeat =
       afterHeartbeat !== null &&
       afterHeartbeat.getTime() !== (beforeHeartbeat?.getTime() ?? -1);
+    // A run that recorded status "error" exits 1, so supercronic reports it to
+    // GlitchTip instead of logging "job succeeded". (2026-10-20: aemet-forecast
+    // lost all 197 municipios to an expired AEMET key and the cron said
+    // "job succeeded"; the failure lived only in the heartbeat.)
+    if (collectorWroteHeartbeat && after?.status === "error") {
+      console.error(`[dispatcher] Task ${TASK} recorded status "error" — exiting 1`);
+      process.exitCode = 1;
+    }
     if (!collectorWroteHeartbeat) {
       await heartbeat(prisma, TASK!, "ok", {
         dispatcherFallback: true,
@@ -294,6 +302,8 @@ async function main() {
     if (triggers.length > 0 || tsCollections) {
       console.log(`[dispatcher] Total (collector + triggers): ${totalElapsed}s`);
     }
+    // Events a task captured without throwing (e.g. reportKeyExpired).
+    await Sentry.flush(2000);
   } catch (error) {
     console.error(`[dispatcher] Task ${TASK} failed:`, error);
 
@@ -313,8 +323,12 @@ async function main() {
       console.error(`[dispatcher] Could not write failure heartbeat:`, hbError);
     }
 
+    // An error may carry its own GlitchTip grouping (e.g. AemetKeyExpiredError:
+    // one issue per task however many runs hit it).
+    const fingerprint = (error as { fingerprint?: unknown } | null)?.fingerprint;
     Sentry.captureException(error, {
       tags: { task: TASK!, layer: "collector" },
+      ...(Array.isArray(fingerprint) ? { fingerprint: fingerprint.map(String) } : {}),
     });
     await Sentry.flush(2000);
     process.exit(1);

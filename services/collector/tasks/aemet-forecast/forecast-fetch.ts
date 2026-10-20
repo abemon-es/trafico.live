@@ -21,6 +21,7 @@
 
 import { msUntilSendWindow } from "./quota-window.js";
 import { RequestBudget } from "./request-budget.js";
+import { isKeyExpired, readDescripcion } from "../../shared/aemet.js";
 
 export const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
 export const MAX_ATTEMPTS = 3;
@@ -78,25 +79,6 @@ type Outcome<T> = { kind: "ok"; data: T } | { kind: "retry" } | { kind: "final" 
  */
 export function isQuotaStatus(status: number): boolean {
   return status === 401 || status === 429 || status >= 500;
-}
-
-/** AEMET's 401 text when the key is past its renewal deadline (2026-10-20). */
-const KEY_RENEWAL_RE = /renovaci/i;
-
-/** AEMET's own description of a failure. */
-async function readDescripcion(res: Response): Promise<string | null> {
-  try {
-    const text = await res.text();
-    try {
-      const body = JSON.parse(text) as { descripcion?: unknown };
-      if (typeof body.descripcion === "string") return body.descripcion;
-    } catch {
-      // not JSON: keep the raw text
-    }
-    return text;
-  } catch {
-    return null;
-  }
 }
 
 export class ForecastFetcher {
@@ -289,7 +271,7 @@ export class ForecastFetcher {
   /** Counted, slows the pace and teaches the budget: all three, every time. */
   private onQuotaSignal(status: number, descripcion: string | null): void {
     if (descripcion) this.stats.lastQuotaDescripcion = descripcion;
-    if (status === 401 && descripcion && KEY_RENEWAL_RE.test(descripcion)) this.stats.keyRenewalRequired = true;
+    if (isKeyExpired(status, descripcion)) this.stats.keyRenewalRequired = true;
     this.stats.quotaHits++;
     this.stats.quotaHitsByStatus[status] = (this.stats.quotaHitsByStatus[status] ?? 0) + 1;
     this.stats.paceMs = Math.min(Math.round(this.stats.paceMs * 1.25), MAX_PACE_MS);
