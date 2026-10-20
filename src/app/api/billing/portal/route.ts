@@ -19,10 +19,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from "rate-limiter-flexible";
+import { RateLimiterRes } from "rate-limiter-flexible";
 import { auth } from "@/lib/auth-config";
 import { prisma } from "@/lib/db";
-import { redis } from "@/lib/redis";
+import { createLimiter } from "@/lib/limiter";
 import { createPortalSession } from "@/lib/stripe";
 import { getClientIP } from "@/lib/api-utils";
 import { reportApiError } from "@/lib/api-error";
@@ -34,20 +34,12 @@ export const dynamic = "force-dynamic";
 // Rate limiter — 10 peticiones por hora por IP
 // ---------------------------------------------------------------------------
 
-const limiter: RateLimiterRedis | RateLimiterMemory = redis
-  ? new RateLimiterRedis({
-      storeClient: redis,
-      keyPrefix: "ratelimit:billing-portal",
-      points: 10,
-      duration: 3600,
-      blockDuration: 3600,
-    })
-  : new RateLimiterMemory({
-      keyPrefix: "ratelimit:billing-portal",
-      points: 10,
-      duration: 3600,
-      blockDuration: 3600,
-    });
+const limiter = createLimiter({
+  keyPrefix: "ratelimit:billing-portal",
+  points: 10,
+  duration: 3600,
+  blockDuration: 3600,
+});
 
 // ---------------------------------------------------------------------------
 // POST handler

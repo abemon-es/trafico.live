@@ -1,5 +1,5 @@
-import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
-import { redis } from "./redis";
+import { RateLimiterRes } from "rate-limiter-flexible";
+import { createLimiter, type Limiter } from "./limiter";
 import * as Sentry from "@sentry/nextjs";
 
 // Rate limit configurations
@@ -26,28 +26,13 @@ const RATE_LIMITS = {
 
 type RateLimitType = keyof typeof RATE_LIMITS;
 
-// Create rate limiters - use Redis if available, fallback to memory
-const rateLimiters: Record<RateLimitType, RateLimiterRedis | RateLimiterMemory> = {} as Record<
-  RateLimitType,
-  RateLimiterRedis | RateLimiterMemory
->;
+// Redis-backed, with in-memory insurance while Redis is down (see limiter.ts)
+const rateLimiters: Record<RateLimitType, Limiter> = {} as Record<RateLimitType, Limiter>;
 
-function createRateLimiter(type: RateLimitType): RateLimiterRedis | RateLimiterMemory {
+function createRateLimiter(type: RateLimitType): Limiter {
   const config = RATE_LIMITS[type];
 
-  if (redis) {
-    return new RateLimiterRedis({
-      storeClient: redis,
-      keyPrefix: `ratelimit:${type}`,
-      points: config.points,
-      duration: config.duration,
-      blockDuration: config.blockDuration,
-    });
-  }
-
-  // Fallback to in-memory rate limiter (less reliable but works without Redis)
-  console.warn(`[RateLimit] Using in-memory rate limiter for ${type} (Redis unavailable)`);
-  return new RateLimiterMemory({
+  return createLimiter({
     keyPrefix: `ratelimit:${type}`,
     points: config.points,
     duration: config.duration,

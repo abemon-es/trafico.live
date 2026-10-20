@@ -12,8 +12,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from "rate-limiter-flexible";
-import { redis } from "@/lib/redis";
+import { RateLimiterRes } from "rate-limiter-flexible";
+import { createLimiter } from "@/lib/limiter";
 import { reportApiError } from "@/lib/api-error";
 import { getClientIP } from "@/lib/api-utils";
 import { isSESConfigured, sendEmail } from "@/lib/email/ses";
@@ -46,20 +46,12 @@ interface ContactPayload {
 // porque es el contacto general, no una solicitud de acceso)
 // ---------------------------------------------------------------------------
 
-const limiter: RateLimiterRedis | RateLimiterMemory = redis
-  ? new RateLimiterRedis({
-      storeClient: redis,
-      keyPrefix: "ratelimit:contacto-general",
-      points: 5,
-      duration: 3600,
-      blockDuration: 3600,
-    })
-  : new RateLimiterMemory({
-      keyPrefix: "ratelimit:contacto-general",
-      points: 5,
-      duration: 3600,
-      blockDuration: 3600,
-    });
+const limiter = createLimiter({
+  keyPrefix: "ratelimit:contacto-general",
+  points: 5,
+  duration: 3600,
+  blockDuration: 3600,
+});
 
 // ---------------------------------------------------------------------------
 // Validación
