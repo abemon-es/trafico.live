@@ -377,6 +377,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     final_pace_ms: stats.paceMs,
     window_wait_ms: stats.windowWaitMs,
     budget_wait_ms: stats.budgetWaitMs,
+    aborted: stats.aborted,
     status,
   });
 
@@ -396,5 +397,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
     windowWaitMs: stats.windowWaitMs,
     budgetWaitMs: stats.budgetWaitMs,
     failedCodes: failedCodes.slice(0, 120),
+    ...(stats.aborted ? { aborted: true, error: "No answer from AEMET in 10 min; run aborted" } : {}),
   });
 }

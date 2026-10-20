@@ -20,6 +20,12 @@ import { RequestBudget } from "./request-budget.js";
 
 export const AEMET_BASE = "https://opendata.aemet.es/opendata/api";
 export const MAX_ATTEMPTS = 3;
+/**
+ * With no answer from AEMET for this long, the run stops instead of burning
+ * every municipio's attempts: a key AEMET has cut off fails every request, and
+ * the queue would keep at it for ~2 h.
+ */
+export const NO_ANSWER_ABORT_MS = 10 * 60_000;
 // Pause between AEMET requests: 2 s, 25 % slower after every quota signal, up
 // to 4 s. A faster pace is ruled out; the budget, not the pace, is what keeps
 // us under AEMET's share.
@@ -56,8 +62,10 @@ type Outcome<T> = { kind: "ok"; data: T } | { kind: "retry" } | { kind: "final" 
 
 /**
  * Quota signals: 429, AEMET's quota-500, and 401. FAQ p.27 calls 401 «api_key
- * inválido», but ours land on the same clock as the 429s, on a key that does
- * not expire, and recover on retry: they are the quota answering.
+ * inválido». On 2026-10-20 its descripcion read «Tu apiKey ha superado el
+ * plazo establecido hasta el 15/10/2026 para su renovación», yet AEMET kept
+ * serving ~6 requests a minute on that key and refusing the rest. Backing off
+ * is the right answer to that too; renewing the key is the fix.
  */
 export function isQuotaStatus(status: number): boolean {
   return status === 401 || status === 429 || status >= 500;
@@ -91,6 +99,7 @@ export class ForecastFetcher {
     budgetWaitMs: 0,
     paceMs: BASE_PACE_MS,
     budgetPerMinute: null as number | null,
+    aborted: false,
   };
   private readonly budget = new RequestBudget();
 
@@ -109,6 +118,7 @@ export class ForecastFetcher {
   ): Promise<string[]> {
     const queue = municipios.map((mun) => ({ mun, attempts: 0 }));
     const lost: string[] = [];
+    let lastAnswerAt = this.deps.now();
 
     while (queue.length) {
       const item = queue.shift()!;
@@ -116,6 +126,16 @@ export class ForecastFetcher {
       this.stats.attempts++;
       const t0 = this.deps.now();
       const out = await this.fetchForecast<T>(item.mun.code);
+      if (out.kind !== "retry") lastAnswerAt = this.deps.now();
+
+      if (out.kind === "retry" && this.deps.now() - lastAnswerAt >= NO_ANSWER_ABORT_MS) {
+        const left = [item, ...queue].map((q) => q.mun.code);
+        lost.push(...left);
+        queue.length = 0;
+        this.stats.aborted = true;
+        this.deps.log("error", "No answer from AEMET in 10 min; run aborted", { municipios_left: left.length });
+        break;
+      }
 
       if (out.kind === "ok") {
         await onData(item.mun, out.data, { attempts: item.attempts, durationMs: this.deps.now() - t0 });

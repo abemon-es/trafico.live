@@ -162,6 +162,17 @@ async function main() {
     assert.equal(firstTries.size, MUNICIPIOS.length);
   }
 
+  // 5. A key AEMET has cut off: every request is refused. The run stops after
+  // 10 min with no answer instead of spending ~2 h on every municipio's tries.
+  {
+    const r = await simulate({ quota: () => false });
+    console.log(`  every request refused: ${fmt(r)}, aborted ${r.stats.aborted}`);
+    assert.equal(r.stats.aborted, true);
+    assert.equal(r.lost.length, MUNICIPIOS.length);
+    assert.deepEqual(r.done, []);
+    assert.ok(r.minutes >= 10 && r.minutes <= 11, `${r.minutes.toFixed(1)} min`);
+  }
+
   console.log("aemet-forecast-queue: ok");
 }
 

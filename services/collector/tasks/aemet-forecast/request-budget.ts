@@ -4,8 +4,10 @@
  * On 2026-10-20 07:20Z (09:20 Madrid) AEMET took exactly 6 requests of ours
  * per minute, far below its documented 40/min per user. Every minute went: a
  * 401 at :05, 6 successes in :07-:18, a 401 at :20, then a 45 s wait for the
- * next minute. That run lost 1 of every 4 municipios. At night the share is
- * larger, so the budget is learned, not fixed:
+ * next minute. That run lost 60 of 197 municipios. The 401s said the key had
+ * passed its renewal deadline (15/10/2026); AEMET was still serving a few
+ * requests a minute on it. At night the share was larger, and after a renewal
+ * it should be the documented one, so the budget is learned, not fixed:
  *
  *   - unlimited until the first quota hit;
  *   - a hit sets it to our successes of the last 60 s, which is the share we
