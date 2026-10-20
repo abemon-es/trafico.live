@@ -214,15 +214,22 @@ probe.
   key outside compute and primary. The fix is the same either way. The key
   does not appear in the git history (no AEMET-style JWT in `git log --all
   -p`), so a leak through this public repo is ruled out.
-- **One change to the fix:** the post-hit resume moves from :02 to **:05**,
-  the earliest second the probe measured as good. The 19:20Z run got 401s at
-  :00.2-:00.7, and nothing showed :02 as safe. The window end stays at :40:
-  the probe gives :25 10/10, and the 19:20Z run had 2 hits in :30-:39 against
-  ~40 in :45-:59.
+- **Two changes to the fix:**
+  - The post-hit resume moves from :02 to **:05**, the earliest second the
+    probe measured as good. The 19:20Z run got 401s at :00.2-:00.7, and
+    nothing showed :02 as safe.
+  - On server-28's review, the window itself becomes **[:05, :40)**. The cron
+    fires each run at :00, so the first request of every run would otherwise
+    go out at second ~0.
+  - The window end stays at :40: the probe gives :25 10/10, and the 19:20Z run
+    had 2 hits in :30-:39 against ~40 in :45-:59.
 - **Expected duration:** about 25 min. That is 197 municipios at ~4.5 s each,
-  with 35 s usable per minute. The #104 target of < 15 min cannot hold at a
-  2 s pace with this window, and a faster pace is excluded. That target is
-  server-28's call.
+  with 35 s usable per minute. **server-28 accepted it and dropped the
+  < 15 min target from #104.** The pace does not go up.
+- **Verify on the first run with the fix:**
+  - quota hits (70 before);
+  - lost municipios (26/197 before) and failedCodes;
+  - duration, ~25 min.
 
 **Next:**
 - The 01:20Z run, on #104 code, as the night sample (duration, quotaHits,
