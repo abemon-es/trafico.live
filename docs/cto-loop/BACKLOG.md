@@ -75,6 +75,64 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (43) — the transit API handed out the raw feed URL; CyL has never stored an incident
+
+**#122 deployed** (squash `c901ef31`, merged 18:28:39Z, well before the
+19:10Z deadline):
+- The guard recreated at 18:29:02Z (a safe minute); SUCCESS in 27 s.
+- **First run (18:30Z):** `[EUSKADI] 145 active (window: estimated) from 409
+  items, 21 pages of 2026/10/20 + 2026/10/19`.
+  - `incident` heartbeat **`ok`**, no reason;
+    `euskadi = {active 145, byType {OTHER 140, ROADWORK 5}, skipped 0,
+    openPassStatuses 0, ventana "estimada"}`.
+  - From 1,000 «active» to 145. The old 1,000 drop out when their 1 h runs
+    out (~19:19Z).
+- **Sources:** all 9 fulfilled.
+
+  | source | incidents |
+  |---|---|
+  | DGT | 1,029 |
+  | SCT | 177 |
+  | Euskadi | 145 |
+  | Madrid | 406 |
+  | Valencia | 4 |
+  | DT-GV | 79 |
+  | Navarra | 25 |
+  | **CyL** | **0** |
+  | Barcelona | 49 |
+
+**Finding (L1, next): CyL has never stored an incident.**
+- `[CYL] API returned 148 incident records` → `Found 0 road incidents`.
+- In the DB: 0 `CYL` rows ever.
+- It «succeeds» empty-handed, so `run-status` doesn't see it.
+- Look at why the parser discards the 148. Possibly also a «>0 records, 0
+  parsed» rule in `run-status`.
+
+**Finding (small): EUSKADI OTHER 140.**
+- These are mostly Vitoria-Gasteiz municipal items (`incidenceName`
+  «Ocupación de carril…», real `endDate`). They're active by their `endDate`.
+- `mapIncidentType` doesn't look at `incidenceName`. Map «Ocupación de
+  carril/Obras/Corte» → ROADWORK/CLOSURE, with the CyL fix or at the 27-10
+  recheck.
+
+**Fix (PR below), CSO request:** `/api/transporte/<op>` returns
+`feed: {href, direct, mdbId}` through `feedLink`, the same rule as the page,
+instead of the raw `feedUrl`.
+- The exact provenance stays in `TransitOperator.feedUrl`.
+- Web only (it doesn't touch the collector image).
+- **Checks:** eslint clean; web `tsc` 11.
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed); EUSKADI's
+   real count at 19:23Z.
+2. **L1: CyL** (above).
+3. **Recheck:** EUSKADI windows 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+4. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+5. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+6. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (42) — «1,000 active incidents» in Euskadi were the last 1,000 events of a log
 
 **#120 deployed** (squash `5cbcd337`, merged 18:07:08Z):
