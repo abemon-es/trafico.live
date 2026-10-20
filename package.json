@@ -17,6 +17,7 @@
     "test:city-traffic": "tsx tests/city-traffic-bcn.test.ts",
     "test:sasemar": "tsx tests/sasemar-source.test.ts",
     "test:transit-gtfs": "tsx tests/transit-gtfs-fetch.test.ts",
+    "test:safe-unzip": "tsx tests/safe-unzip.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

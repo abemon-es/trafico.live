@@ -26,6 +26,7 @@ import { createInterface } from "readline";
 import { join } from "path";
 import { tmpdir } from "os";
 import { log, logError } from "../../shared/utils.js";
+import { extractionLimits, safeExtract } from "../../shared/safe-unzip.js";
 import { triggerPmtilesRegen, layersForTask } from "./post-hook.js";
 import { shouldIngestSchedule, parseAndIngestSchedule } from "./stop-times.js";
 
@@ -273,9 +274,9 @@ export async function fetchFeedZip(
 
 async function downloadAndExtract(
   feed: DiscoveredFeed
-): Promise<{ tmpDir: string; hash: string; sizeKB: number }> {
+): Promise<{ tmpDir: string; hash: string; sizeKB: number; url: string }> {
   log(TASK, `Downloading ${feed.name} (mdb-${feed.mdbId})...`);
-  const { buffer } = await fetchFeedZip(feed);
+  const { buffer, url } = await fetchFeedZip(feed);
   const sizeKB = Math.round(buffer.length / 1024);
   log(TASK, `${feed.name}: downloaded ${sizeKB} KB`);
 
@@ -285,10 +286,16 @@ async function downloadAndExtract(
   const zipPath = join(tmpDir, "gtfs.zip");
   await writeFile(zipPath, buffer);
 
-  const { execFileSync } = await import("child_process");
-  execFileSync("unzip", ["-o", "-q", zipPath, "-d", tmpDir], { timeout: 60000 });
+  // Some feeds come from anonymous file hosts: no symlinks, no paths out of
+  // tmpDir, and a cap on how far the archive may expand (shared/safe-unzip.ts).
+  try {
+    await safeExtract(zipPath, tmpDir, extractionLimits(buffer.length));
+  } catch (err) {
+    await rm(tmpDir, { recursive: true, force: true });
+    throw err;
+  }
 
-  return { tmpDir, hash, sizeKB };
+  return { tmpDir, hash, sizeKB, url };
 }
 
 // ── Process a single GTFS feed ───────────────────────────────────────────────
@@ -300,7 +307,7 @@ async function processFeed(
   let tmpDir: string | null = null;
 
   try {
-    const { tmpDir: dir, hash, sizeKB } = await downloadAndExtract(feed);
+    const { tmpDir: dir, hash, sizeKB, url: servedUrl } = await downloadAndExtract(feed);
     tmpDir = dir;
 
     // Check feed hash — skip if unchanged
@@ -326,7 +333,7 @@ async function processFeed(
         // run precisely because their feeds had not changed.
         await prisma.transitOperator.updateMany({
           where: { mdbId: mdbIdKey },
-          data: { name: feed.name, city: feed.city || undefined },
+          data: { name: feed.name, city: feed.city || undefined, feedUrl: servedUrl },
         });
         log(TASK, `${feed.name}: unchanged (hash match, ${existingRouteCount} routes), skipping`);
         return { routes: 0, stops: 0 };
@@ -434,7 +441,7 @@ async function processFeed(
         province: feed.region || null,
         country: feed.country,
         mode,
-        feedUrl: feed.downloadUrl,
+        feedUrl: servedUrl, // where the ZIP really came from
       },
       update: {
         name: feed.name,
@@ -442,7 +449,7 @@ async function processFeed(
         province: feed.region || null,
         country: feed.country,
         mode,
-        feedUrl: feed.downloadUrl,
+        feedUrl: servedUrl, // where the ZIP really came from
       },
     });
 
