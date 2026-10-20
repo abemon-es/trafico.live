@@ -32,4 +32,9 @@ assert.deepEqual(sourceProblems([], { Euskadi: { items: 200, skipped: 40 } }), [
 assert.deepEqual(sourceProblems([], { Euskadi: { items: 200, skipped: 41 } }), ["Euskadi: 41/200 items skipped"]);
 assert.deepEqual(sourceProblems([], { Euskadi: null }), []);
 
+// A source that gets records and parses none "succeeds" empty-handed: CyL, 148 → 0, for months.
+assert.deepEqual(sourceProblems([], { CyL: { items: 148, skipped: 148, parsed: 0 } }), ["CyL: 148 records, 0 parsed"]);
+assert.deepEqual(sourceProblems([], { CyL: { items: 148, skipped: 0, parsed: 148 } }), []);
+assert.deepEqual(sourceProblems([], { CyL: { items: 0, skipped: 0, parsed: 0 } }), [], "an empty feed is not a parse failure");
+
 console.log("incident run status: all checks passed");

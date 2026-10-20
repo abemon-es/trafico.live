@@ -67,6 +67,14 @@ const TYPE_MAP: Record<string, IncidentType> = {
   "Evento": "EVENT",
   "Peligro": "HAZARD",
   "Obstáculo": "HAZARD",
+  // Vitoria-Gasteiz's municipal items have no incidenceType, only an
+  // incidenceName (2026-10-20: «Ocupación de carril…», «Corte total»…).
+  // Order matters: a lane closure before a closure.
+  "Corte de carril": "ROADWORK",
+  "Corte total": "CLOSURE",
+  "Corte": "CLOSURE",
+  "Ocupación": "ROADWORK",
+  "Ocupacion": "ROADWORK",
 };
 
 // API response types
