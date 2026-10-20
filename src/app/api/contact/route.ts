@@ -7,8 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
-import { redis } from "@/lib/redis";
+import { RateLimiterRes } from "rate-limiter-flexible";
+import { createLimiter } from "@/lib/limiter";
 import { reportApiError } from "@/lib/api-error";
 import { getClientIP } from "@/lib/api-utils";
 import { sendEmail, isSESConfigured } from "@/lib/email/ses";
@@ -17,20 +17,12 @@ import { sendEmail, isSESConfigured } from "@/lib/email/ses";
 // Rate limiter — 3 peticiones por hora por IP
 // ---------------------------------------------------------------------------
 
-const contactLimiter: RateLimiterRedis | RateLimiterMemory = redis
-  ? new RateLimiterRedis({
-      storeClient: redis,
-      keyPrefix: "ratelimit:contact",
-      points: 3,
-      duration: 3600,
-      blockDuration: 3600,
-    })
-  : new RateLimiterMemory({
-      keyPrefix: "ratelimit:contact",
-      points: 3,
-      duration: 3600,
-      blockDuration: 3600,
-    });
+const contactLimiter = createLimiter({
+  keyPrefix: "ratelimit:contact",
+  points: 3,
+  duration: 3600,
+  blockDuration: 3600,
+});
 
 // ---------------------------------------------------------------------------
 // Email helpers

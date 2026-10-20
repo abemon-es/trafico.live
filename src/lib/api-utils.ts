@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
+import { RateLimiterRes } from "rate-limiter-flexible";
+import { createLimiter, type Limiter } from "./limiter";
 import { checkRateLimit, getRateLimitHeaders, getRateLimitType } from "./rate-limit";
-import { redis, getFromCache, setInCache } from "./redis";
+import { getFromCache, setInCache } from "./redis";
 import { prisma } from "./db";
 import { API_TIERS, type ApiTierName } from "./api-tiers";
 
@@ -18,27 +19,19 @@ interface ApiKeyTierCache {
 /**
  * Per-tier rate limiter instances (keyed by tier name + limit type)
  */
-const tierLimiters: Map<string, RateLimiterRedis | RateLimiterMemory> = new Map();
+const tierLimiters: Map<string, Limiter> = new Map();
 
-function getTierLimiter(tier: ApiTierName): RateLimiterRedis | RateLimiterMemory {
+function getTierLimiter(tier: ApiTierName): Limiter {
   const key = `tier:${tier}`;
   if (tierLimiters.has(key)) return tierLimiters.get(key)!;
 
   const config = API_TIERS[tier];
-  const limiter = redis
-    ? new RateLimiterRedis({
-        storeClient: redis,
-        keyPrefix: `ratelimit:tier:${tier}`,
-        points: config.rateLimitPerMinute,
-        duration: 60,
-        blockDuration: 60,
-      })
-    : new RateLimiterMemory({
-        keyPrefix: `ratelimit:tier:${tier}`,
-        points: config.rateLimitPerMinute,
-        duration: 60,
-        blockDuration: 60,
-      });
+  const limiter = createLimiter({
+    keyPrefix: `ratelimit:tier:${tier}`,
+    points: config.rateLimitPerMinute,
+    duration: 60,
+    blockDuration: 60,
+  });
 
   tierLimiters.set(key, limiter);
   return limiter;

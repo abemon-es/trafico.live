@@ -9,9 +9,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
+import { RateLimiterRes } from "rate-limiter-flexible";
 import { prisma } from "@/lib/db";
-import { redis } from "@/lib/redis";
+import { createLimiter } from "@/lib/limiter";
 import { sendTransactional } from "@/lib/resend";
 import { ConfirmEmailTemplate } from "@/emails/newsletter-confirm";
 import { createElement } from "react";
@@ -20,20 +20,12 @@ import { createElement } from "react";
 // Rate limiter: 3 newsletter signups per IP per hour
 // ---------------------------------------------------------------------------
 
-const newsletterLimiter: RateLimiterRedis | RateLimiterMemory = redis
-  ? new RateLimiterRedis({
-      storeClient: redis,
-      keyPrefix: "ratelimit:newsletter:signup",
-      points: 3,
-      duration: 3600, // 1 hour
-      blockDuration: 3600,
-    })
-  : new RateLimiterMemory({
-      keyPrefix: "ratelimit:newsletter:signup",
-      points: 3,
-      duration: 3600,
-      blockDuration: 3600,
-    });
+const newsletterLimiter = createLimiter({
+  keyPrefix: "ratelimit:newsletter:signup",
+  points: 3,
+  duration: 3600, // 1 hour
+  blockDuration: 3600,
+});
 
 // ---------------------------------------------------------------------------
 // Helpers

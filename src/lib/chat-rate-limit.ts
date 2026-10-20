@@ -9,8 +9,8 @@
  * Uses Redis with in-memory fallback.
  */
 
-import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
-import { redis } from "./redis";
+import { RateLimiterRes } from "rate-limiter-flexible";
+import { createLimiter, type Limiter } from "./limiter";
 import type { ApiTierName } from "./api-tiers";
 
 // ─── Tier limits ──────────────────────────────────────────────────────────────
@@ -26,27 +26,19 @@ const DURATION_SECONDS = 24 * 60 * 60;
 
 // ─── Rate limiter instances (lazy, per-tier) ───────────────────────────────────
 
-const limiters = new Map<ApiTierName, RateLimiterRedis | RateLimiterMemory>();
+const limiters = new Map<ApiTierName, Limiter>();
 
-function getLimiter(tier: ApiTierName): RateLimiterRedis | RateLimiterMemory {
+function getLimiter(tier: ApiTierName): Limiter {
   if (limiters.has(tier)) return limiters.get(tier)!;
 
   const points = CHAT_LIMITS[tier];
 
-  const limiter = redis
-    ? new RateLimiterRedis({
-        storeClient: redis,
-        keyPrefix: `chat:rl:${tier}`,
-        points,
-        duration: DURATION_SECONDS,
-        blockDuration: 0, // Don't block, just reject
-      })
-    : new RateLimiterMemory({
-        keyPrefix: `chat:rl:${tier}`,
-        points,
-        duration: DURATION_SECONDS,
-        blockDuration: 0,
-      });
+  const limiter = createLimiter({
+    keyPrefix: `chat:rl:${tier}`,
+    points,
+    duration: DURATION_SECONDS,
+    blockDuration: 0, // Don't block, just reject
+  });
 
   limiters.set(tier, limiter);
   return limiter;

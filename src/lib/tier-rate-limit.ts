@@ -10,13 +10,13 @@
  *  - identifierHash : SHA-256 hex of the API key (never plaintext)
  *
  * Fail-open policy:
- *  - Redis unavailable → falls back to RateLimiterMemory
+ *  - Redis unset or down → in-memory insurance limiter (src/lib/limiter.ts)
  *  - Any unexpected error → allows the request and returns remaining: -1
  *    (better to serve than 500 the entire API)
  */
 
-import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
-import { redis } from "@/lib/redis";
+import { RateLimiterRes } from "rate-limiter-flexible";
+import { createLimiter, type Limiter } from "@/lib/limiter";
 import { API_TIERS, type ApiTierName } from "@/lib/api-tiers";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ export interface TierRateLimitResult {
 
 // ── Limiter cache ─────────────────────────────────────────────────────────────
 
-const LIMITER_CACHE = new Map<string, RateLimiterRedis | RateLimiterMemory>();
+const LIMITER_CACHE = new Map<string, Limiter>();
 
 function getLimiterCacheKey(tier: ApiTierName, bucket: RateLimitBucket): string {
   return `${tier}:${bucket}`;
@@ -44,7 +44,7 @@ function getLimiterCacheKey(tier: ApiTierName, bucket: RateLimitBucket): string 
 function getLimiter(
   tier: ApiTierName,
   bucket: RateLimitBucket,
-): RateLimiterRedis | RateLimiterMemory {
+): Limiter {
   const cacheKey = getLimiterCacheKey(tier, bucket);
   const cached = LIMITER_CACHE.get(cacheKey);
   if (cached) return cached;
@@ -61,26 +61,13 @@ function getLimiter(
 
   const keyPrefix = `rl:${tier}:${bucket}`;
 
-  let limiter: RateLimiterRedis | RateLimiterMemory;
-
-  if (redis) {
-    limiter = new RateLimiterRedis({
-      storeClient: redis,
-      keyPrefix,
-      points: effectivePoints,
-      duration,
-      // No blockDuration — we respond with 429 and Retry-After ourselves.
-      blockDuration: 0,
-    });
-  } else {
-    console.warn(`[tier-rate-limit] Redis unavailable — using in-memory limiter for ${tier}:${bucket}`);
-    limiter = new RateLimiterMemory({
-      keyPrefix,
-      points: effectivePoints,
-      duration,
-      blockDuration: 0,
-    });
-  }
+  const limiter: Limiter = createLimiter({
+    keyPrefix,
+    points: effectivePoints,
+    duration,
+    // No blockDuration — we respond with 429 and Retry-After ourselves.
+    blockDuration: 0,
+  });
 
   LIMITER_CACHE.set(cacheKey, limiter);
   return limiter;
