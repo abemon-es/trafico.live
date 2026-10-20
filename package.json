@@ -19,6 +19,7 @@
     "test:transit-gtfs": "tsx tests/transit-gtfs-fetch.test.ts",
     "test:safe-unzip": "tsx tests/safe-unzip.test.ts",
     "test:feed-link": "tsx tests/transit-feed-link.test.ts",
+    "test:euskadi": "tsx tests/euskadi-active.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

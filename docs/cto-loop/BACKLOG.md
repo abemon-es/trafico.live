@@ -75,6 +75,98 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (42) — «1,000 active incidents» in Euskadi were the last 1,000 events of a log
+
+**#120 deployed** (squash `5cbcd337`, merged 18:07:08Z):
+- **The guard waited for 3 `voyage-detector` processes** (frequent, started
+  18:00) and recreated at 18:09:04Z: a safe minute, 117 s.
+  - `voyage-detector` finished (frequent: 0 cut). That's the same job #108's
+    deploy killed this morning.
+- **Cut:** only the tolerated pair.
+- **Web SUCCESS** at 18:14:15Z.
+  - `/transporte-publico/mdb-791`: link to
+    `mobilitydatabase.org/feeds/gtfs/mdb-791` with «fuente: catálogo
+    MobilityData», no `storage.googleapis.com`.
+  - `mdb-3454` is a 404: Zaratán isn't imported until Sunday.
+- **CSO decision on the API:** `/api/transporte/<op>` also goes through
+  `feedLink` (`feed: {href, direct, mdbId}`), without the raw URL. A small PR
+  after this one.
+
+**Signal (cycle 39):** EUSKADI with exactly 1,000 active incidents.
+
+**Finding: the API is an event log, and «active» was everything.**
+- **The official spec** (`api.euskadi.eus/traffic/api-docs?group=Version_1.0`)
+  only has historical endpoints: `/incidences`, `byDate/{y}/{m}/{d}`,
+  `byMonth`, `byYear`, `bySource`, `byLocation`. There's no «current» one,
+  and `_status` is ignored. 383,214 items.
+- **`endDate` is in the schema but never filled:** 0 of the 1,200 newest
+  items. `isActiveIncident` («no endDate = active») let everything through.
+- **The API ignores `_pageSize=100`** and returns 20 per page. 50 pages × 20 =
+  **1,000**, and the early stop («<5 active per page») never fired.
+- **Among those 1,200:** 170 «Puertos de montaña» with «T: Abierto C: Abierto
+  A: Abierto» (a status, not an incident), and accidents from 5 days ago.
+- **The real-time XML** (trafikoa.eus) times out from compute and from the
+  office: it's dead.
+
+**Window measured with our own data (p75 duration, last 30 days):**
+ACCIDENT DGT 3.5 h / SCT 1.9 h; ROADWORK 10.9 h / 19.6 h; OTHER 0.7 h /
+6.8 h. Proposed to server-28 and approved, with p75 rather than p90 (49 h of
+roadworks would bring back the problem).
+
+**Fix (PR below):**
+- **`byDate` for today and yesterday** (Madrid date), every page up to
+  `totalPages`: ~20 requests per run, against 50 before.
+  - More than 100 pages in a day → the `incident` heartbeat goes **`partial`**
+    with the reason. An implicit cap is what made «1,000» look normal.
+- **Active within an ESTIMATED window per type**
+  (`ACTIVE_WINDOW_HOURS`): ACCIDENT 4 h, ROADWORK 12 h, WEATHER 12 h, the
+  rest 4 h.
+  - Named constants, with their origin in the comment.
+  - **If an `endDate` ever comes, it wins.**
+- **«Puertos de montaña» all «Abierto»** → out.
+- **Description:** «Iniciada hace X h · Euskadi no publica la hora de fin; se
+  oculta a las N h». The upsert refreshes it every 2 min.
+- **Dates read as Madrid time** whatever the process TZ is
+  (`parseMadridLocal`, DST-aware). The window depends on them.
+- **`incident` heartbeat:**
+  `euskadi: {active, byType, items, pages, days, openPassStatuses, ventana:
+  "estimada"}`.
+- **Test:** `npm run test:euskadi`:
+  - Madrid/CET/CEST parsing;
+  - days at 00:30 Madrid;
+  - each window at its edge;
+  - endDate in the future or past beats the window;
+  - open passes out;
+  - the exact text;
+  - 13 + 2 pages read in full;
+  - 120 pages → `cappedDays`;
+  - no `_pageSize`.
+
+  It passes with TZ=Europe/Madrid and with TZ=UTC.
+- **Other checks, all on compute:**
+  - 4 mutants (window per type, endDate wins, page cap below 13, passes
+    counted) fail;
+  - collector `tsc` 626; web `tsc` 11;
+  - eslint 0 errors (4 warnings that were already there in
+    `incident/collector.ts`).
+- **Expected:** EUSKADI from 1,000 active to ~50-150.
+
+**Recheck 2026-10-27 (server-28):** read `incident.meta.euskadi.byType` across
+the week. If it's well off ~50-150, adjust the windows with data, not by eye.
+
+**Open, in order:**
+1. **L1:** #112 on the 19:20Z aemet-forecast run (watcher armed). Then verify
+   this PR (EUSKADI count after the first run).
+2. **CSO:** `/api/transporte/<op>` with `feed: {href, direct, mdbId}`, without
+   the raw URL.
+3. **Recheck:** EUSKADI windows 2026-10-27; transit-gtfs Sunday 25-10 05:00Z
+   (safe-unzip + producer URL for 164 feeds).
+4. **Drift:** `vessel_latest` and `tile_vessel_headings` exist only in the DB.
+5. **L3:** sitemap hygiene and the CMO's 2 pilots (cycle 33).
+6. **Waiting on MJ:** SASEMAR (ESCALATIONS).
+
+---
+
 ## Cycle 2026-10-20 (41) — an operator page linked a GTFS ZIP on an anonymous file host
 
 **#119 deployed** (squash `e8cc3d1d`, merged 17:59:29Z):
