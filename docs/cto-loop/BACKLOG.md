@@ -151,6 +151,29 @@ roadworks would bring back the problem).
     `incident/collector.ts`).
 - **Expected:** EUSKADI from 1,000 active to ~50-150.
 
+**#121 broke in production (18:20Z) → fix forward, the same cycle.**
+- **The error:** every Euskadi fetch failed with «Cannot read properties of
+  undefined (reading 'toLowerCase')».
+- **Cause:** Vitoria-Gasteiz's municipal items (sourceId 6, 22 of 200)
+  arrive without `incidenceType`, `cause` or `road`. They carry
+  `incidenceName` and an **`endDate`** (works until 30-11), and `startDate`
+  without seconds. My fixtures always had every field.
+- **It went unnoticed** because a failing source never made the `incident`
+  heartbeat `partial`. That was already the case before #121.
+- server-28 set 19:10Z as the deadline to merge the fix or revert #121
+  (EUSKADI would have dropped to 0 at 19:19Z, when the 1 h staleness ran out).
+- **The fix (PR below):**
+  - every field but the ids and `startDate` is optional and guarded;
+  - `incidenceName` is the fallback;
+  - each item is read on its own (`skipped`, `skipReasons`);
+  - `run-status.ts`: **any source that fails**, a capped day, or more than
+    20 % of items skipped → `incident` `partial` with `reason`;
+  - tests with the real Vitoria item and with run-status; 3 mutants (the
+    `toLowerCase` guard, per-item try/catch, sources that fail) fail them.
+- **Lesson:** the fixtures came from the newest-first listing, not from
+  `byDate`. Before switching endpoints, profile the item SHAPE of the new one,
+  not just its counts.
+
 **Recheck 2026-10-27 (server-28):** read `incident.meta.euskadi.byType` across
 the week. If it's well off ~50-150, adjust the windows with data, not by eye.
 
