@@ -8,6 +8,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { CAMERA_CITY_PROVINCES } from "@/lib/geo/area-routes";
+import { cameraCityIndexable } from "@/lib/seo/indexability";
 
 // 5 min, not 1 h: this page renders live DB state (camera availability per
 // province) and the build prerenders it empty (no DB at build). At 3600 a
@@ -127,7 +128,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: `${BASE_URL}/camaras/${city}`,
     },
     // Sin cámaras activas: no indexar la página para evitar contenido vacío
-    ...(cameraCount === 0 ? { robots: { index: false, follow: true } } : {}),
+    ...(!cameraCityIndexable(cameraCount) ? { robots: { index: false, follow: true } } : {}),
   };
 }
 

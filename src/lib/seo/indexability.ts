@@ -20,3 +20,8 @@ export const EPHEMERAL_ARTICLE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 export function isStaleArticle(category: ArticleCategory, publishedAt: Date, now: number = Date.now()): boolean {
   return EPHEMERAL_ARTICLE_CATEGORIES.includes(category) && now - publishedAt.getTime() > EPHEMERAL_ARTICLE_MAX_AGE_MS;
 }
+
+/** /camaras/<city>: noindex while the city's province has no active camera. */
+export function cameraCityIndexable(activeCamerasInProvince: number): boolean {
+  return activeCamerasInProvince > 0;
+}

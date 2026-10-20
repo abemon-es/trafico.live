@@ -1,6 +1,7 @@
 import prisma from "@/lib/db";
 import { CAMERA_CITY_PROVINCES } from "@/lib/geo/area-routes";
-import { EPHEMERAL_ARTICLE_CATEGORIES, EPHEMERAL_ARTICLE_MAX_AGE_MS, POSTAL_CODE_MIN_GAS_STATIONS } from "@/lib/seo/indexability";
+import { EPHEMERAL_ARTICLE_CATEGORIES, EPHEMERAL_ARTICLE_MAX_AGE_MS, POSTAL_CODE_MIN_GAS_STATIONS, cameraCityIndexable } from "@/lib/seo/indexability";
+import { fingerprintKey, loadChangedAt, type FingerprintFamily } from "@/lib/seo/lastmod";
 import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
@@ -50,7 +51,8 @@ const FALLBACK_SPANISH_PORT_SHARDS = 1; // 197 Spanish ports
 
 export interface SitemapEntry {
   url: string;
-  lastModified: Date;
+  /** When the page's main content last changed; absent when we don't know (src/lib/seo/lastmod.ts). */
+  lastModified?: Date;
   changeFrequency:
     | "always"
     | "hourly"
@@ -359,7 +361,7 @@ export function entriesToXml(entries: SitemapEntry[]): string {
   const urls = entries
     .map(
       (e) =>
-        `<url><loc>${escapeXml(e.url)}</loc><lastmod>${e.lastModified.toISOString()}</lastmod><changefreq>${e.changeFrequency}</changefreq><priority>${e.priority}</priority></url>`
+        `<url><loc>${escapeXml(e.url)}</loc>${e.lastModified ? `<lastmod>${e.lastModified.toISOString()}</lastmod>` : ""}<changefreq>${e.changeFrequency}</changefreq><priority>${e.priority}</priority></url>`
     )
     .join("\n");
 
@@ -649,103 +651,102 @@ const FUEL_TYPE_SLUGS = [
 // The Road table types regional autovías (A-1000, A-356R1…) as AUTOVIA too.
 const NATIONAL_ROAD_RE = /^(AP-\d+[A-Z]?|A-\d{1,2}|N-[0-9IVX]+)$/;
 
+/**
+ * Real lastmod dates for these families (src/lib/seo/lastmod.ts). If they can't
+ * be read, the URLs go without lastmod: never back to a made-up date.
+ */
+async function contentChangedAt(families: FingerprintFamily[]): Promise<Map<string, Date>> {
+  return loadChangedAt(prisma, families).catch((err) => {
+    reportApiError(err, "sitemap content fingerprints");
+    return new Map<string, Date>();
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Core sitemap: static pages, roads, communities, cities, blog
 // ---------------------------------------------------------------------------
 
 async function coreSitemap(): Promise<SitemapEntry[]> {
-  const now = new Date();
   // The SASEMAR stats page is noindex while MaritimeEmergency is empty.
   const hasSasemarData = (await prisma.maritimeEmergency.count().catch(() => 0)) > 0;
   // /camaras/<city> is noindex while its province has no active camera
   // (Barcelona, Bilbao, Vitoria, Las Palmas and Santa Cruz on 2026-10-20: their
-  // cameras are not DGT's).
-  const provincesWithCameras = new Set(
+  // cameras are not DGT's). A failed count leaves the cities out.
+  const camerasByProvince = new Map<string | null, number>(
     (await prisma.camera
-      .groupBy({ by: ["province"], where: { isActive: true } })
-      .catch(() => [] as Array<{ province: string | null }>)
-    ).map((r) => r.province),
+      .groupBy({ by: ["province"], where: { isActive: true }, _count: true })
+      .catch((err) => {
+        reportApiError(err, "sitemap cameras by province");
+        return [] as Array<{ province: string | null; _count: number }>;
+      })
+    ).map((r) => [r.province, r._count]),
   );
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
+  const cityProvince = (city: string) => CAMERA_CITY_PROVINCES[city]?.code ?? "";
+  const changedAt = await contentChangedAt(["camera-road", "camera-province", "radar-road", "radar-province"]);
 
   const staticPages: SitemapEntry[] = [
     {
       url: BASE_URL,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 1.0,
     },
     {
       url: `${BASE_URL}/mapa`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.95,
     },
     {
       url: `${BASE_URL}/carreteras`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/carreteras/autopistas`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/carreteras/autovias`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/carreteras/nacionales`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/carreteras/regionales`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/incidencias`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/incidencias/analytics`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/camaras`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/paneles`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/trafico`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/radares`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.9,
     },
@@ -782,231 +783,194 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       "N-340",
     ].map((road) => ({
       url: `${BASE_URL}/radares/${encodeURIComponent(road)}`,
-      lastModified: today,
+      lastModified: changedAt.get(fingerprintKey("radar-road", road)),
       changeFrequency: "weekly" as const,
       priority: 0.85,
     })),
     {
       url: `${BASE_URL}/estadisticas`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/estadisticas/accidentes`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/espana`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/ciudad`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/precio-gasolina-hoy`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.95,
     },
     {
       url: `${BASE_URL}/precio-diesel-hoy`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.95,
     },
     {
       url: `${BASE_URL}/gasolineras`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/gasolineras/terrestres`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/gasolineras/cerca`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/gasolineras/precios`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/gasolineras/mapa`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/gasolineras/marcas`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/zbe`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.9,
     },
     // NOTE: /electrolineras is 301-redirected to /carga-ev — excluded from sitemap.
     {
       url: `${BASE_URL}/carga-ev`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/carga-ev/cerca`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/profesional`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/profesional/diesel`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/profesional/areas`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.6,
     },
     {
       url: `${BASE_URL}/profesional/restricciones`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/profesional/noticias`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/calculadora`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/peajes`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/peajes/gratis-2026`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/peajes/radiales-madrid`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.85,
     },
     ...["abertis", "seitt", "itinere", "acega"].map((op) => ({
       url: `${BASE_URL}/peajes/operador/${op}`,
-      lastModified: today,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
     {
       url: `${BASE_URL}/peajes/comparativa`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/cuanto-cuesta-cargar`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/mejor-hora`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/puntos-negros`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/informe-diario`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/ciclistas`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/media`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.4,
     },
     {
       url: `${BASE_URL}/alertas-meteo`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/semana-santa-2026`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/puente-mayo-2026`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.95,
     },
     {
       url: `${BASE_URL}/operaciones`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     // Operativos DGT family (/operativos hub + 6 seasonal slugs)
     {
       url: `${BASE_URL}/operativos`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.9,
     },
@@ -1019,14 +983,12 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       "navidad",
     ].map((slug) => ({
       url: `${BASE_URL}/operativos/${slug}`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.85,
     })),
     // Rondas urbanas family (/rondas hub + 5 ring road slugs)
     {
       url: `${BASE_URL}/rondas`,
-      lastModified: now,
       changeFrequency: "hourly" as const,
       priority: 0.85,
     },
@@ -1038,73 +1000,61 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       "bypass-valencia",
     ].map((slug) => ({
       url: `${BASE_URL}/rondas/${slug}`,
-      lastModified: now,
       changeFrequency: "hourly" as const,
       priority: 0.8,
     })),
     {
       url: `${BASE_URL}/restricciones`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/gasolineras-24-horas`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/atascos`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.95,
     },
     {
       url: `${BASE_URL}/cortes-trafico`,
-      lastModified: now,
       changeFrequency: "hourly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/etiqueta-ambiental`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.95,
     },
     {
       url: `${BASE_URL}/estaciones-aforo`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/intensidad`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/prediccion-trafico`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/trenes`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/trenes/cercanias`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.8,
     },
     ...CERCANIAS_NETWORK_SLUGS.map((network) => ({
       url: `${BASE_URL}/trenes/cercanias/${network}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.75,
     })),
@@ -1112,49 +1062,41 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     // no sitemap until 2026-10-19.
     {
       url: `${BASE_URL}/trenes/incidencias`,
-      lastModified: now,
       changeFrequency: "hourly" as const,
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/trenes/lineas`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.75,
     },
     {
       url: `${BASE_URL}/trenes/estaciones`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.75,
     },
     {
       url: `${BASE_URL}/aviacion`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/aviacion/aeropuertos`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/accidentes`,
-      lastModified: today,
       changeFrequency: "monthly" as const,
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/transporte-publico`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/calidad-aire`,
-      lastModified: today,
       changeFrequency: "hourly" as const,
       priority: 0.85,
     },
@@ -1163,13 +1105,11 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     // pronóstico at provincial granularity).
     {
       url: `${BASE_URL}/calidad-aire/prevision`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/estadisticas-transporte`,
-      lastModified: today,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     },
@@ -1177,93 +1117,78 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     //       to /comunidad-autonoma and /carreteras — excluded from sitemap.
     {
       url: `${BASE_URL}/explorar/infraestructura`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/api-docs`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/sobre`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${BASE_URL}/sobre/posicionamiento`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.6,
     },
     {
       url: `${BASE_URL}/sobre/api`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/sobre/contacto`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/aviso-legal`,
-      lastModified: today,
       changeFrequency: "yearly",
       priority: 0.3,
     },
     {
       url: `${BASE_URL}/politica-privacidad`,
-      lastModified: today,
       changeFrequency: "yearly",
       priority: 0.3,
     },
     {
       url: `${BASE_URL}/politica-cookies`,
-      lastModified: today,
       changeFrequency: "yearly",
       priority: 0.3,
     },
     // NOTE: /informes is 301-redirected to /noticias — excluded from sitemap.
     {
       url: `${BASE_URL}/gasolineras/baratas`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.9,
     },
     // Maritime section
     {
       url: `${BASE_URL}/maritimo`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/maritimo/combustible`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/maritimo/meteorologia`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/maritimo/puertos`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/maritimo/seguridad`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.7,
     },
@@ -1273,153 +1198,129 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     ...(hasSasemarData
       ? [{
           url: `${BASE_URL}/maritimo/seguridad/estadisticas`,
-          lastModified: today,
           changeFrequency: "weekly" as const,
           priority: 0.75,
         }]
       : []),
     {
       url: `${BASE_URL}/maritimo/mapa`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/maritimo/noticias`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     ...MARITIME_ZONE_SLUGS.map((zone) => ({
       url: `${BASE_URL}/maritimo/meteorologia/${zone}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.7,
     })),
     // Maritime: buques and zonas
     {
       url: `${BASE_URL}/maritimo/buques`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/maritimo/zonas`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.7,
     },
     // Corredores, Pulso, Guías
     {
       url: `${BASE_URL}/corredores`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/pulso`,
-      lastModified: today,
       changeFrequency: "hourly",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/guias`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.85,
     },
     // Individual guides
     ...["cercanias-madrid", "etiqueta-ambiental", "gasolina-vs-diesel-vs-electrico", "limites-velocidad-espana", "peajes-espana", "puntos-recarga-electrico", "radares-espana", "zonas-bajas-emisiones"].map((slug) => ({
       url: `${BASE_URL}/guias/${slug}`,
-      lastModified: today,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
     // Intelligence pages
     {
       url: `${BASE_URL}/inteligencia/lluvia-y-accidentes`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/inteligencia/hora-punta-y-accidentes`,
-      lastModified: today,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/inteligencia/coste-desplazamiento`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.75,
     },
     {
       url: `${BASE_URL}/inteligencia/motociclistas`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.75,
     },
     {
       url: `${BASE_URL}/inteligencia/camiones`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.75,
     },
     {
       url: `${BASE_URL}/inteligencia/ciclistas-y-peatones`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.75,
     },
     // Prediction pages
     {
       url: `${BASE_URL}/prediccion/precio-combustible`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.85,
     },
     {
       url: `${BASE_URL}/prediccion/retrasos-trenes`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.85,
     },
     // Clima
     {
       url: `${BASE_URL}/clima`,
-      lastModified: today,
       changeFrequency: "daily",
       priority: 0.8,
     },
     // DGT bureaucracy content cluster (iter-8) — 400K+/mo Spain search volume
     {
       url: `${BASE_URL}/dgt`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/dgt/itv`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/dgt/multas`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/dgt/carnet-puntos`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/dgt/permisos`,
-      lastModified: today,
       changeFrequency: "monthly",
       priority: 0.9,
     },
@@ -1433,7 +1334,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   const cityPages: SitemapEntry[] = [
     ...TRAFFIC_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/trafico/${c}`,
-      lastModified: now,
       changeFrequency: "hourly" as const,
       priority: 0.95,
     })),
@@ -1441,45 +1341,39 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     // position 46) that was in no sitemap until 2026-10-19.
     ...TRAFFIC_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/atascos/${c}`,
-      lastModified: now,
       changeFrequency: "hourly" as const,
       priority: 0.9,
     })),
     ...ZBE_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/zbe/${c}`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.88,
     })),
     ...CITIES.slice(0, 10).map((c) => ({
       url: `${BASE_URL}/carga-ev/${c}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.7,
     })),
     // NOTE: /electrolineras/:city is 301-redirected to /carga-ev/:city — excluded from sitemap.
     ...BARATOS_CITY_SLUGS.map((c) => ({
       url: `${BASE_URL}/gasolineras/baratas/${c}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.9,
     })),
-    ...CAMARAS_CITY_SLUGS.filter((c) => provincesWithCameras.has(CAMERA_CITY_PROVINCES[c]?.code)).map((c) => ({
+    ...CAMARAS_CITY_SLUGS.filter((c) => cameraCityIndexable(camerasByProvince.get(cityProvince(c)) ?? 0)).map((c) => ({
       url: `${BASE_URL}/camaras/${c}`,
-      lastModified: today,
+      lastModified: changedAt.get(fingerprintKey("camera-province", cityProvince(c))),
       changeFrequency: "daily" as const,
       priority: 0.8,
     })),
     ...PRICE_PROVINCE_SLUGS.map((slug) => ({
       url: `${BASE_URL}/gasolineras/precios/${slug}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.8,
     })),
     // NOTE: /gasolineras/mapa/provincia/:code is 301-redirected to /gasolineras/mapa — excluded from sitemap.
     ...ACCIDENTES_PROVINCE_SLUGS.map((slug) => ({
       url: `${BASE_URL}/estadisticas/accidentes/${slug}`,
-      lastModified: today,
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),
@@ -1505,19 +1399,17 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       "Ma-13","Ma-19","Ma-20","GI-636",
     ].map((road) => ({
       url: `${BASE_URL}/accidentes/carretera/${encodeURIComponent(road)}`,
-      lastModified: today,
       changeFrequency: "monthly" as const,
       priority: 0.75,
     })),
     ...FUEL_TYPE_SLUGS.map((slug) => ({
       url: `${BASE_URL}/gasolineras/tipo/${slug}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.85,
     })),
     ...PROVINCES.map((p) => ({
       url: `${BASE_URL}/radares/provincia/${provinceSlug(p.name)}`,
-      lastModified: today,
+      lastModified: changedAt.get(fingerprintKey("radar-province", p.code)),
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
@@ -1543,7 +1435,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     const pages: SitemapEntry[] = [
       {
         url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}`,
-        lastModified: today,
         changeFrequency: isMainRoad ? "daily" : "weekly",
         priority,
       },
@@ -1557,7 +1448,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       pages.push(
         {
           url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/estadisticas`,
-          lastModified: today,
           changeFrequency: "daily",
           priority: subPriority,
         }
@@ -1569,7 +1459,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     if (NATIONAL_ROAD_RE.test(road.id)) {
       pages.push({
         url: `${BASE_URL}/carreteras/${encodeURIComponent(road.id)}/hoy`,
-        lastModified: now,
         changeFrequency: "hourly",
         priority,
       });
@@ -1589,7 +1478,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     .filter((r) => r.roadNumber && r._count >= 2)
     .map((r) => ({
       url: `${BASE_URL}/camaras/carretera/${encodeURIComponent(r.roadNumber!)}`,
-      lastModified: today,
+      lastModified: changedAt.get(fingerprintKey("camera-road", r.roadNumber!)),
       changeFrequency: "daily" as const,
       priority: 0.75,
     }));
@@ -1605,7 +1494,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     ...new Set(Object.values(PROVINCE_SLUG_TO_COMMUNITY_SLUG)),
   ].map((community) => ({
     url: `${BASE_URL}/espana/${community}`,
-    lastModified: today,
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));
@@ -1613,7 +1501,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   const provincePages: SitemapEntry[] = Object.entries(PROVINCE_SLUG_TO_COMMUNITY_SLUG)
     .map(([province, community]) => ({
       url: `${BASE_URL}/espana/${community}/${province}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.85,
     }));
@@ -1638,7 +1525,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
             .replace(/\s+/g, "-")
             .replace(/[^a-z0-9-]/g, "")
         )}`,
-        lastModified: today,
         changeFrequency: "weekly" as const,
         priority: 0.6,
       }));
@@ -1657,7 +1543,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // weren't processed yet — those are thin landing pages.
   const transitOperators = await prisma.transitOperator.findMany({
     where: { routes: { some: {} } },
-    select: { name: true, updatedAt: true },
+    select: { name: true },
     orderBy: { name: "asc" },
   });
   const seenOperatorSlugs = new Set<string>();
@@ -1668,7 +1554,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     return [
       {
         url: `${BASE_URL}/transporte-publico/${slug}`,
-        lastModified: op.updatedAt ?? today,
         changeFrequency: "weekly" as const,
         priority: 0.7,
       },
@@ -1685,7 +1570,6 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
     .filter((a) => a.iata)
     .map((a) => ({
       url: `${BASE_URL}/aviacion/aeropuertos/${a.iata!.toLowerCase()}`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));
@@ -1727,7 +1611,9 @@ async function gasStationSitemap(
 
   return stations.map((station) => ({
     url: `${BASE_URL}/gasolineras/terrestres/${station.id}`,
-    lastModified: station.lastPriceUpdate ?? new Date(),
+    // When the price feed was last read (3×/day), not when this station's prices
+    // changed; still to be fingerprinted like the cameras (src/lib/seo/lastmod.ts).
+    lastModified: station.lastPriceUpdate ?? undefined,
     changeFrequency: "daily" as const,
     priority: 0.6,
   }));
@@ -1750,16 +1636,11 @@ async function municipalitySitemap(
     orderBy: { slug: "asc" },
   });
 
-  const now = new Date();
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
   // The canonical form, the one the province pages link to. /municipio/<slug>
   // was listed here while both forms answered 200 as their own canonical;
   // since 2026-10-19 the middleware 301s /municipio/<slug> to this URL.
   return municipalities.map((m) => ({
     url: `${BASE_URL}/espana/${m.province.community.slug}/${m.province.slug}/${m.slug}`,
-    lastModified: today,
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
@@ -1790,15 +1671,10 @@ async function postalCodeSitemap(
 ): Promise<SitemapEntry[]> {
   const postalCodes = await indexablePostalCodes(shardIndex * SHARD_SIZE, SHARD_SIZE);
 
-  const now = new Date();
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
   return postalCodes
     .filter((p) => p.postalCode)
     .map((p) => ({
       url: `${BASE_URL}/codigo-postal/${p.postalCode}`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.45,
     }));
@@ -1818,13 +1694,8 @@ async function maritimeStationSitemap(
     orderBy: { id: "asc" },
   });
 
-  const now = new Date();
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
   return stations.map((station) => ({
     url: `${BASE_URL}/maritimo/combustible/${station.id}`,
-    lastModified: today,
     changeFrequency: "daily" as const,
     priority: 0.5,
   }));
@@ -1869,7 +1740,6 @@ async function insightsSitemap(): Promise<SitemapEntry[]> {
   return [
     {
       url: `${BASE_URL}/noticias`,
-      lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 0.8,
     },
@@ -1889,7 +1759,6 @@ async function insightsSitemap(): Promise<SitemapEntry[]> {
     })),
     ...tags.map((t: { slug: string }) => ({
       url: `${BASE_URL}/noticias/tag/${t.slug}`,
-      lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 0.5,
     })),
@@ -1908,13 +1777,14 @@ async function radarSitemap(shardIndex: number): Promise<SitemapEntry[]> {
     skip: shardIndex * SHARD_SIZE,
     take: SHARD_SIZE,
     where: { isActive: true },
-    select: { id: true, lastUpdated: true },
+    select: { id: true },
     orderBy: { id: "asc" },
   });
 
+  const changedAt = await contentChangedAt(["radar"]);
   return radars.map((r) => ({
     url: `${BASE_URL}/radares/radar/${r.id}`,
-    lastModified: r.lastUpdated ?? new Date(),
+    lastModified: changedAt.get(fingerprintKey("radar", r.id)),
     changeFrequency: "weekly" as const,
     priority: 0.55,
   }));
@@ -1929,13 +1799,14 @@ async function cameraSitemap(shardIndex: number): Promise<SitemapEntry[]> {
     skip: shardIndex * SHARD_SIZE,
     take: SHARD_SIZE,
     where: { isActive: true },
-    select: { id: true, lastUpdated: true },
+    select: { id: true },
     orderBy: { id: "asc" },
   });
 
+  const changedAt = await contentChangedAt(["camera"]);
   return cameras.map((c) => ({
     url: `${BASE_URL}/camaras/camara/${c.id}`,
-    lastModified: c.lastUpdated ?? new Date(),
+    lastModified: changedAt.get(fingerprintKey("camera", c.id)),
     changeFrequency: "daily" as const,
     priority: 0.5,
   }));
@@ -1950,13 +1821,12 @@ async function chargerSitemap(shardIndex: number): Promise<SitemapEntry[]> {
     skip: shardIndex * SHARD_SIZE,
     take: SHARD_SIZE,
     where: { isPublic: true },
-    select: { id: true, lastUpdated: true },
+    select: { id: true },
     orderBy: { id: "asc" },
   });
 
   return chargers.map((c) => ({
     url: `${BASE_URL}/carga-ev/punto/${c.id}`,
-    lastModified: c.lastUpdated ?? new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
@@ -1977,12 +1847,10 @@ async function railwayStationSitemap(
       where: { slug: { not: null } },
       orderBy: { slug: "asc" },
     });
-    const today = startOfUtcDay();
     return stations
       .filter((s) => !!s.slug)
       .map((s) => ({
         url: `${BASE_URL}/trenes/estacion/${s.slug}`,
-        lastModified: today,
         changeFrequency: "weekly" as const,
         priority: 0.65,
       }));
@@ -2007,7 +1875,6 @@ async function railwayLineSitemap(
       where: { slug: { not: null } },
       orderBy: { slug: "asc" },
     });
-    const today = startOfUtcDay();
     const seen = new Set<string>();
     return routes.flatMap((r) => {
       if (!r.slug || seen.has(r.slug)) return [];
@@ -2015,7 +1882,6 @@ async function railwayLineSitemap(
       return [
         {
           url: `${BASE_URL}/trenes/linea/${r.slug}`,
-          lastModified: today,
           changeFrequency: "weekly" as const,
           priority: 0.65,
         },
@@ -2038,13 +1904,11 @@ async function airQualityStationSitemap(
     const stations = await prisma.airQualityStation.findMany({
       skip: shardIndex * SHARD_SIZE,
       take: SHARD_SIZE,
-      select: { stationId: true, updatedAt: true },
+      select: { stationId: true },
       orderBy: { stationId: "asc" },
     });
-    const today = startOfUtcDay();
     return stations.map((s) => ({
       url: `${BASE_URL}/calidad-aire/estacion/${encodeURIComponent(s.stationId)}`,
-      lastModified: s.updatedAt ?? today,
       changeFrequency: "daily" as const,
       priority: 0.55,
     }));
@@ -2068,10 +1932,8 @@ async function climateStationSitemap(
       select: { stationCode: true },
       orderBy: { stationCode: "asc" },
     });
-    const today = startOfUtcDay();
     return stations.map((s) => ({
       url: `${BASE_URL}/clima/estacion/${encodeURIComponent(s.stationCode)}`,
-      lastModified: today,
       changeFrequency: "weekly" as const,
       priority: 0.55,
     }));
@@ -2099,12 +1961,10 @@ async function aircraftSitemap(shardIndex: number): Promise<SitemapEntry[]> {
       take: SHARD_SIZE,
       orderBy: { icao24: "asc" },
     });
-    const today = startOfUtcDay();
 
     // Base aircraft pages
     const aircraftEntries: SitemapEntry[] = rows.map((r) => ({
       url: `${BASE_URL}/aviacion/avion/${r.icao24.toLowerCase()}`,
-      lastModified: today,
       changeFrequency: "daily" as const,
       priority: 0.45,
     }));
@@ -2132,7 +1992,6 @@ async function aircraftSitemap(shardIndex: number): Promise<SitemapEntry[]> {
           for (const date of dates) {
             flightEntries.push({
               url: `${BASE_URL}/aviacion/avion/${r.icao24.toLowerCase()}/vuelo/${date}`,
-              lastModified: today,
               changeFrequency: "yearly" as const,
               priority: 0.2,
             });
@@ -2159,12 +2018,11 @@ async function spanishPortSitemap(shardIndex: number): Promise<SitemapEntry[]> {
     const ports = await prisma.spanishPort.findMany({
       skip: shardIndex * SHARD_SIZE,
       take: SHARD_SIZE,
-      select: { slug: true, updatedAt: true },
+      select: { slug: true },
       orderBy: { slug: "asc" },
     });
     return ports.map((p) => ({
       url: `${BASE_URL}/maritimo/puerto/${p.slug}`,
-      lastModified: p.updatedAt ?? startOfUtcDay(),
       changeFrequency: "daily" as const,
       priority: 0.6,
     }));
@@ -2172,11 +2030,4 @@ async function spanishPortSitemap(shardIndex: number): Promise<SitemapEntry[]> {
     reportApiError(err, "sitemap spanish ports");
     return [];
   }
-}
-
-function startOfUtcDay(): Date {
-  const now = new Date();
-  return new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
 }

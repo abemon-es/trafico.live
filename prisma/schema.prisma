@@ -2692,6 +2692,18 @@ model CollectorHeartbeat {
   @@map("collector_heartbeats")
 }
 
+// What a sitemap page shows, hashed once a day by the content-fingerprints
+// task, and when that hash last moved: the page's real lastmod
+// (src/lib/seo/lastmod.ts). changedAt is null until a change is seen.
+model ContentFingerprint {
+  key       String    @id // "<family>:<id>", e.g. "camera-road:A-5"
+  hash      String
+  changedAt DateTime? @db.Timestamptz
+  checkedAt DateTime  @db.Timestamptz
+
+  @@map("content_fingerprints")
+}
+
 // ============================================
 // FORECAST DATA (HS2 producer)
 // ============================================

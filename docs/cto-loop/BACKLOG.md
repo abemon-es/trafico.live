@@ -80,6 +80,124 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (49) — every sitemap lastmod was the time we generated it; now it's when the page changed, or nothing
+
+**#128 merged** (squash `4668edc1`). server-28 applied 007 first (backup taken,
+path in the CTO's change-log): the function keeps working for the tiles cron,
+and the view's definition is identical before and after.
+
+**Signal: the CMO's plan, item 3.** `/sitemap/0.xml`: **1,549 of 1,712 URLs
+with lastmod «today»** (after #127). Google uses lastmod only while it is
+consistently true. The CMO's rules:
+1. the date the page's main content changed, from its data;
+2. «today» only if the content really changed;
+3. no reliable date → no lastmod;
+4. done = the «today» share is what really changed.
+Plus their two conditions: hash only the stable content, and a URL seen for
+the first time gets no date.
+
+**Finding: no table could give that date.** Measured (read-only):
+
+| source | rows | distinct minutes | verdict |
+|---|---|---|---|
+| `Camera.lastUpdated` | 1,972 | 1 | camera collector's run time |
+| `Radar.lastUpdated` | 737 | 1 | radar collector's run time |
+| `EVCharger.lastUpdated` | 12,074 | 1 | run time |
+| `AirQualityStation.updatedAt` | 817 | 3 | run time |
+| `TransitOperator.updatedAt` | 165 | 10 | weekly run time |
+| `SpanishPort.updatedAt` | 181 | 2 | import (April) |
+| `GasStation.lastPriceUpdate` | 12,470 | 149 (92 % in 24 h) | feed reads, 3×/day |
+| `Article.updatedAt` | 1,017 | — | 0 edited after publishing: **real** |
+
+**Fix (PR below):**
+- **Table `content_fingerprints`** (`key`, `hash`, `changedAt`, `checkedAt`),
+  migration `20261021000000_add_content_fingerprints`.
+- **Task `content-fingerprints`** (daily 04:50, after `camera`; one
+  statement):
+  - hashes what each page lists;
+  - `changedAt` moves only when the hash changes;
+  - a new key is left undated;
+  - keys unseen for 30 days are forgotten;
+  - heartbeat with seen/new/changed per family.
+- **The families, each with what its page renders:**
+  - `camera` / `radar` (detail pages);
+  - `camera-road` / `radar-road`: the road's list, plus the first 50 speed
+    limits for radars, plus the year the title prints;
+  - `camera-province` (`/camaras/<city>`) / `radar-province`.
+  - Never `lastUpdated`, images, feed URLs or live counts (the test checks
+    it).
+- **Sitemap:**
+  - `lastModified` is optional; without a date there's no `<lastmod>`;
+  - camera/radar pages read their date;
+  - every other made-up date is gone (149 lines: `today`, `now`,
+    `new Date()`, and the run-time row dates in the table);
+  - `Article.updatedAt` stays (real);
+  - `GasStation.lastPriceUpdate` stays with a comment: next to fingerprint,
+    by price.
+- **From the #127 review:**
+  - `cameraCityIndexable()` lives in `indexability.ts`, and the page and the
+    sitemap use it;
+  - a failed camera count or fingerprint read goes to `reportApiError` and
+    falls back to listing without a date, never to a made-up one.
+- **The index** (`/sitemap.xml`) keeps its per-day lastmod. Changing it would
+  touch what the CMO measures on 23-10 (child sitemap downloads); I'll agree
+  it with them.
+
+**Tests:**
+- **`npm run test:lastmod`:**
+  - the web's families equal the task's, and the SQL writes each one;
+  - nothing volatile is hashed;
+  - new key → no date;
+  - heartbeat;
+  - partial when there's nothing to hash;
+  - errors aren't swallowed;
+  - the sitemap only reads dated keys.
+- **Throwaway `postgres:16.13`** (`--network none`; migration twice; run as
+  the app role):
+  - first run: all new, **0 dated**;
+  - same data: 0 changed;
+  - run times, images and feeds changed: **0 changed**;
+  - one A-5 camera renamed: dates `camera:c1`, `camera-road:A-5`,
+    `camera-province:28`, and **A-6 nothing**;
+  - a speed limit on A-3: only `radar-road:A-3`;
+  - an A-6 camera deactivated: `camera-road:A-6` and its province;
+  - forgetting after 30 days: OK.
+  - **It caught a bug:** the changed count compared `changedAt = now()`, and
+    the column stores milliseconds against now()'s microseconds, so it always
+    gave 0. It now compares `changedAt = checkedAt`.
+- **Read-only against production:** 3,266 keys (camera 1,972 · camera-road
+  202 · camera-province 43 · radar 737 · radar-road 269 · radar-province 43),
+  all unique, **78 ms**.
+- **Other checks:** web `tsc` 11 (Prisma client regenerated offline), eslint 0
+  errors, collector `tsc` 626, `supercronic -test` daily OK, `test:cron` and
+  `test:indexability` OK.
+
+**Order:** server-28 applies the migration as the owner role → `migrate
+resolve --applied` → no pending migrations → merge. Without the table the task
+fails (heartbeat error), and the web goes without lastmod and reports it.
+
+**What to expect:**
+- after deploy: «today» in 0.xml **1,549 → 0**;
+- from 22-10 04:50 local time: only what changed.
+- I watch the first 3 runs. If A-6 or many keys change every day, a hash field
+  is unstable; that gets fixed before the pilots.
+
+**Open, in order:**
+1. **L3:** apply the migration and merge this PR (server-28); verify 0.xml and
+   the 21-10 and 22-10 runs; send the CMO the share.
+2. **L3, the pilots** (A-5 cameras, A-3 radars; cycle 33): their blocks
+   change the page without changing the fingerprint, so they carry a revision
+   date per key in `lastmod.ts`. Send the CMO the date.
+3. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+4. **L3:** fingerprint gas stations by price; agree the index lastmod with the
+   CMO.
+5. **Hygiene:** scrub the pre-October backlog entries, in their own PR
+   (server-28: no rush).
+6. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+7. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-20 (48) — refresh_latest_sensors() like refresh_vessel_latest(); the backlog stops naming internals
 
 **#127 merged by server-28** (squash `009f9d89`); web deployed 20:51Z (340 s).

@@ -17,6 +17,10 @@
 
 0 4 * * * TASK=camera npx tsx index.ts 2>&1; touch /tmp/last-run
 
+# Sitemap lastmod: hashes what each camera/radar page lists and dates the
+# changes (services/collector/tasks/content-fingerprints). After `camera`.
+50 4 * * * TASK=content-fingerprints npx tsx index.ts 2>&1
+
 # AENA airport passenger stats — Eurostat AVIA_PAOA publishes annually with
 # a ~12-month lag. Daily polling was pure noise. Now monthly on the 1st at
 # 04:30 (overkill for annual data but a useful low-bound liveness signal).
