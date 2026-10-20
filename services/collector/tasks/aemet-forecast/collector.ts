@@ -216,7 +216,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const forecastAt = new Date();
 
   const fetcher = new ForecastFetcher(
-    { now: Date.now, sleep, fetch: (url) => fetchWithTimeout(url), log: logJson },
+    { now: Date.now, sleep, fetch: (url, init) => fetchWithTimeout(url, init), log: logJson },
     apiKey
   );
 
@@ -361,7 +361,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const stats = fetcher.stats;
 
   const totalMs = Date.now() - startMs;
-  const status = errors > municipios.length * 0.5 ? "error" : errors > 0 ? "partial" : "ok";
+  const status = stats.aborted || errors > municipios.length * 0.5 ? "error" : errors > 0 ? "partial" : "ok";
+  // Saved as the heartbeat's errorMessage (only on "error"), so /api/health
+  // says why without reading logs.
+  const errorText = stats.aborted
+    ? `run aborted (${stats.abortReason}); ` +
+      (stats.keyRenewalRequired
+        ? "AEMET: API key past its renewal deadline"
+        : `quota signals ${JSON.stringify(stats.quotaHitsByStatus)}; last: ${stats.lastQuotaDescripcion ?? "none"}`)
+    : null;
 
   logJson("info", "Collection complete", {
     municipio_count: municipios.length,
@@ -378,6 +386,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
     window_wait_ms: stats.windowWaitMs,
     budget_wait_ms: stats.budgetWaitMs,
     aborted: stats.aborted,
+    abort_reason: stats.abortReason,
+    key_renewal_required: stats.keyRenewalRequired,
+    last_quota_descripcion: stats.lastQuotaDescripcion,
     status,
   });
 
@@ -397,6 +408,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     windowWaitMs: stats.windowWaitMs,
     budgetWaitMs: stats.budgetWaitMs,
     failedCodes: failedCodes.slice(0, 120),
-    ...(stats.aborted ? { aborted: true, error: "No answer from AEMET in 10 min; run aborted" } : {}),
+    keyRenewalRequired: stats.keyRenewalRequired,
+    ...(errorText ? { aborted: true, abortReason: stats.abortReason, error: errorText } : {}),
   });
 }

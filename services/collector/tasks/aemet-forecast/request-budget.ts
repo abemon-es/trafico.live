@@ -10,8 +10,9 @@
  * it should be the documented one, so the budget is learned, not fixed:
  *
  *   - unlimited until the first quota hit;
- *   - a hit sets it to our successes of the last 60 s, which is the share we
- *     were actually given;
+ *   - a hit sets it to our successes of the last 60 s, the share we were
+ *     actually given. It only ratchets down, and never below 3: one hit right
+ *     after our first success cannot pin it at 1;
  *   - a hit with no success of ours in the last 60 s is someone else's
  *     pressure: the budget stays, and we wait a short step;
  *   - every 5 min without a hit, it grows by one, to follow the share back up.
@@ -29,6 +30,8 @@ export const EXTERNAL_HIT_WAIT_MS = 10_000;
 export const PROBE_EVERY_MS = 5 * MINUTE_MS;
 /** AEMET's documented limit per user. */
 export const MAX_BUDGET = 40;
+/** A hit never takes the budget below this. */
+export const MIN_BUDGET = 3;
 
 export class RequestBudget {
   private successes: number[] = [];
@@ -61,8 +64,8 @@ export class RequestBudget {
   onHit(nowMs: number): void {
     this.prune(nowMs);
     this.lastHitAt = nowMs;
-    if (this.successes.length > 0) this.limit = this.successes.length;
-    else this.blockedUntil = nowMs + EXTERNAL_HIT_WAIT_MS;
+    if (this.successes.length === 0) this.blockedUntil = nowMs + EXTERNAL_HIT_WAIT_MS;
+    else this.limit = Math.max(MIN_BUDGET, Math.min(this.limit ?? MAX_BUDGET, this.successes.length));
   }
 
   private prune(nowMs: number): void {

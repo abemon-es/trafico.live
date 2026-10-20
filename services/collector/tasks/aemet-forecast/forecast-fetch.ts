@@ -4,9 +4,13 @@
  * drive it end to end on a fake clock.
  *
  * Two-step AEMET pattern:
- *   1. GET /prediccion/especifica/municipio/diaria/{code}?api_key=…
- *      → { estado, datos: "https://…" }
+ *   1. GET /prediccion/especifica/municipio/diaria/{code}, key in the api_key
+ *      header → { estado, datos: "https://…" }
  *   2. GET the datos URL → forecast JSON array (the URL expires in ~5 min)
+ *
+ * The key goes in the header, as in weather, maritime-forecast and
+ * aemet-historical, never in the URL: a URL ends up in error messages, logs
+ * and Sentry's fetch spans.
  *
  * A municipio that fails goes to the back of the queue and gets up to
  * MAX_ATTEMPTS tries in the run; a 404 is final. Before, a failure got one
@@ -26,6 +30,11 @@ export const MAX_ATTEMPTS = 3;
  * the queue would keep at it for ~2 h.
  */
 export const NO_ANSWER_ABORT_MS = 10 * 60_000;
+/**
+ * A run never goes past 5 h, so it cannot overlap the next one (cron every
+ * 6 h). At a share of 1-2 requests a minute the queue alone would take ~6.5 h.
+ */
+export const MAX_RUN_MS = 5 * 60 * 60_000;
 // Pause between AEMET requests: 2 s, 25 % slower after every quota signal, up
 // to 4 s. A faster pace is ruled out; the budget, not the pace, is what keeps
 // us under AEMET's share.
@@ -37,7 +46,7 @@ export type LogFn = (level: "info" | "warn" | "error", msg: string, extra?: Reco
 export interface FetchDeps {
   now(): number;
   sleep(ms: number): Promise<void>;
-  fetch(url: string): Promise<Response>;
+  fetch(url: string, init?: RequestInit): Promise<Response>;
   log: LogFn;
 }
 
@@ -71,19 +80,20 @@ export function isQuotaStatus(status: number): boolean {
   return status === 401 || status === 429 || status >= 500;
 }
 
-/** AEMET's own description of a failure, with the key cut out just in case. */
-async function readDescripcion(res: Response, apiKey: string): Promise<string | null> {
+/** AEMET's 401 text when the key is past its renewal deadline (2026-10-20). */
+const KEY_RENEWAL_RE = /renovaci/i;
+
+/** AEMET's own description of a failure. */
+async function readDescripcion(res: Response): Promise<string | null> {
   try {
     const text = await res.text();
-    let descripcion = text;
     try {
       const body = JSON.parse(text) as { descripcion?: unknown };
-      if (typeof body.descripcion === "string") descripcion = body.descripcion;
+      if (typeof body.descripcion === "string") return body.descripcion;
     } catch {
       // not JSON: keep the raw text
     }
-    if (apiKey) descripcion = descripcion.split(apiKey).join("[redacted]");
-    return descripcion.slice(0, 200);
+    return text;
   } catch {
     return null;
   }
@@ -100,8 +110,14 @@ export class ForecastFetcher {
     paceMs: BASE_PACE_MS,
     budgetPerMinute: null as number | null,
     aborted: false,
+    abortReason: null as "no-answer" | "run-cap" | null,
+    /** A 401 said the key is past its renewal deadline. */
+    keyRenewalRequired: false,
+    /** AEMET's last description on a quota signal, redacted. */
+    lastQuotaDescripcion: null as string | null,
   };
   private readonly budget = new RequestBudget();
+  private lastServedAt = 0;
 
   constructor(
     private readonly deps: FetchDeps,
@@ -118,22 +134,22 @@ export class ForecastFetcher {
   ): Promise<string[]> {
     const queue = municipios.map((mun) => ({ mun, attempts: 0 }));
     const lost: string[] = [];
-    let lastAnswerAt = this.deps.now();
+    const startedAt = this.deps.now();
+    this.lastServedAt = startedAt;
 
     while (queue.length) {
+      if (this.deps.now() - startedAt >= MAX_RUN_MS) {
+        lost.push(...this.abort("run-cap", queue));
+        break;
+      }
       const item = queue.shift()!;
       item.attempts++;
       this.stats.attempts++;
       const t0 = this.deps.now();
       const out = await this.fetchForecast<T>(item.mun.code);
-      if (out.kind !== "retry") lastAnswerAt = this.deps.now();
 
-      if (out.kind === "retry" && this.deps.now() - lastAnswerAt >= NO_ANSWER_ABORT_MS) {
-        const left = [item, ...queue].map((q) => q.mun.code);
-        lost.push(...left);
-        queue.length = 0;
-        this.stats.aborted = true;
-        this.deps.log("error", "No answer from AEMET in 10 min; run aborted", { municipios_left: left.length });
+      if (out.kind === "retry" && this.deps.now() - this.lastServedAt >= NO_ANSWER_ABORT_MS) {
+        lost.push(...this.abort("no-answer", [item, ...queue]));
         break;
       }
 
@@ -159,10 +175,22 @@ export class ForecastFetcher {
     return lost;
   }
 
+  /** Stop the run: every municipio still queued is lost. */
+  private abort(reason: "no-answer" | "run-cap", left: Array<{ mun: Municipio }>): string[] {
+    const codes = left.map((q) => q.mun.code);
+    left.length = 0;
+    this.stats.aborted = true;
+    this.stats.abortReason = reason;
+    this.deps.log("error", "aemet-forecast run aborted", { reason, municipios_left: codes.length });
+    return codes;
+  }
+
   private async fetchForecast<T>(code: string): Promise<Outcome<T>> {
     const endpoint = `/prediccion/especifica/municipio/diaria/${code}`;
 
-    const res1 = await this.send(`${AEMET_BASE}${endpoint}?api_key=${this.apiKey}`, endpoint, "Step1");
+    const res1 = await this.send(`${AEMET_BASE}${endpoint}`, endpoint, "Step1", {
+      headers: { api_key: this.apiKey, Accept: "application/json" },
+    });
     if (!res1) return { kind: "retry" };
     if (!res1.ok) {
       await this.onFailure(res1, endpoint, "Step1");
@@ -173,33 +201,30 @@ export class ForecastFetcher {
     try {
       step1 = (await res1.json()) as AEMETStep1;
     } catch {
-      this.budget.onSuccess(this.deps.now());
+      this.served();
       this.deps.log("warn", "Step1 JSON parse failed", { endpoint });
       return { kind: "retry" };
     }
     if (!step1.datos) {
       const estado = step1.estado ?? 0;
-      if (isQuotaStatus(estado)) this.onQuotaSignal(estado);
-      else this.budget.onSuccess(this.deps.now());
-      this.deps.log("warn", "No datos URL in step1 response", {
-        endpoint,
-        estado,
-        descripcion: (step1.descripcion ?? "").slice(0, 200),
-      });
+      const descripcion = this.redact(step1.descripcion ?? "");
+      if (isQuotaStatus(estado)) this.onQuotaSignal(estado, descripcion);
+      else this.served();
+      this.deps.log("warn", "No datos URL in step1 response", { endpoint, estado, descripcion });
       return isQuotaStatus(estado) ? { kind: "retry" } : { kind: "final" };
     }
-    this.budget.onSuccess(this.deps.now());
+    this.served();
 
     await this.deps.sleep(this.stats.paceMs);
 
-    const res2 = await this.send(step1.datos, endpoint, "Step2");
+    const res2 = await this.send(step1.datos, endpoint, "Step2", { headers: { Accept: "application/json" } });
     if (!res2) return { kind: "retry" };
     if (!res2.ok) {
       // A step-2 404 means the datos URL expired: the retry starts at step 1.
       await this.onFailure(res2, endpoint, "Step2");
       return { kind: "retry" };
     }
-    this.budget.onSuccess(this.deps.now());
+    this.served();
 
     try {
       return { kind: "ok", data: (await res2.json()) as T };
@@ -210,7 +235,7 @@ export class ForecastFetcher {
   }
 
   /** One request, held until the send window is open and the budget allows it. */
-  private async send(url: string, endpoint: string, step: string): Promise<Response | null> {
+  private async send(url: string, endpoint: string, step: string, init: RequestInit): Promise<Response | null> {
     for (;;) {
       const now = this.deps.now();
       const windowMs = msUntilSendWindow(now);
@@ -228,18 +253,30 @@ export class ForecastFetcher {
       break;
     }
     try {
-      return await this.deps.fetch(url);
+      return await this.deps.fetch(url, init);
     } catch (err) {
-      this.deps.log("warn", `${step} fetch failed`, { endpoint, error: String(err) });
+      this.deps.log("warn", `${step} fetch failed`, { endpoint, error: this.redact(String(err)) });
       return null;
     }
   }
 
-  /** A non-OK response. Logs AEMET's description, never the URL: it carries the key. */
+  /** AEMET answered: the request counts against the budget and the run is alive. */
+  private served(): void {
+    this.lastServedAt = this.deps.now();
+    this.budget.onSuccess(this.lastServedAt);
+  }
+
+  /** Anything logged from AEMET or an error object: the key cut out, 200 chars. */
+  private redact(text: string): string {
+    return (this.apiKey ? text.split(this.apiKey).join("[redacted]") : text).slice(0, 200);
+  }
+
+  /** A non-OK response. Logs AEMET's description and the endpoint, never a URL. */
   private async onFailure(res: Response, endpoint: string, step: string): Promise<void> {
-    const descripcion = await readDescripcion(res, this.apiKey);
-    if (isQuotaStatus(res.status)) this.onQuotaSignal(res.status);
-    else this.budget.onSuccess(this.deps.now()); // a 404 still used up a request
+    const raw = await readDescripcion(res);
+    const descripcion = raw === null ? null : this.redact(raw);
+    if (isQuotaStatus(res.status)) this.onQuotaSignal(res.status, descripcion);
+    else if (res.status === 404) this.served(); // an answer, and it used up a request
     this.deps.log("warn", `${step} failed (${res.status})`, {
       endpoint,
       status: res.status,
@@ -250,7 +287,9 @@ export class ForecastFetcher {
   }
 
   /** Counted, slows the pace and teaches the budget: all three, every time. */
-  private onQuotaSignal(status: number): void {
+  private onQuotaSignal(status: number, descripcion: string | null): void {
+    if (descripcion) this.stats.lastQuotaDescripcion = descripcion;
+    if (status === 401 && descripcion && KEY_RENEWAL_RE.test(descripcion)) this.stats.keyRenewalRequired = true;
     this.stats.quotaHits++;
     this.stats.quotaHitsByStatus[status] = (this.stats.quotaHitsByStatus[status] ?? 0) + 1;
     this.stats.paceMs = Math.min(Math.round(this.stats.paceMs * 1.25), MAX_PACE_MS);
