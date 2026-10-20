@@ -3,6 +3,11 @@
 Persistent state across loop cycles. Every cycle reads this first and updates it
 last.
 
+> **This repo is public** (server-28, 2026-10-20). No internal hostnames, IPs,
+> backup paths, DB role names or grants here: a backup is «taken first, path in
+> the CTO's change-log». A security gap is described once it is fixed, not
+> before.
+
 > 🎯 **MILESTONE 2026-08-18 00:26 — degraded = 0/51.** Every collector healthy
 > simultaneously for the first time. Saturday's baseline: 9 degraded including
 > an 11-day silent AIS blackout and a never-once-successful SEO pipeline.
@@ -75,21 +80,78 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (48) — refresh_latest_sensors() like refresh_vessel_latest(); the backlog stops naming internals
+
+**#127 merged by server-28** (squash `009f9d89`); web deployed 20:51Z (340 s).
+Checked from compute (`--resolve`, 127.0.0.1):
+- `/sitemap.xml`: 19 shards. **Postcodes: one shard, `/sitemap/200.xml`, 1,480
+  URLs** (the index sizes it from the count: 1,480 < 5,000; 201 and 202 are no
+  longer listed).
+- `/sitemap/0.xml`: 1,712 URLs, **15 camera cities**; Barcelona, Bilbao,
+  Vitoria, Las Palmas and Santa Cruz are gone, Madrid stays.
+- `/sitemap/300.xml`: **660 news** + 177 `/noticias/tag/…` pages.
+- **lastmod «today» in 0.xml: 1,549 of 1,712** (before: 1,555 of 1,718). The
+  CMO's item 3 starts from that number.
+
+**#126's 15-minute verification: passed.**
+- `refresh-vessel-latest` starts every minute at :00 and finishes in ≤ 15 s;
+  11 «job succeeded» in the first 11 min, no errors.
+- Heartbeat `ok`: 3,633 vessels, refresh 142 ms, newest 7 s.
+- Sampled every minute 20:38–20:47Z: **newest in `vessel_latest` 17–47 s old**,
+  3,627–3,633 vessels. It had been 165 days.
+
+**Migration 007 (server-28's two follow-ups to 006):**
+- **`refresh_latest_sensors()`** gets the same grants and `search_path`
+  (`public, pg_temp`) as `refresh_vessel_latest()`. Its only caller is the
+  tiles cron (`refresh-matviews.sh`), which keeps its access; nothing in the
+  repo or the database calls it otherwise.
+- **`vessel_latest_position`**, the last object only in the database (cycle 46
+  drift scan), captured with `pg_get_viewdef`: the text in 007 is the live
+  definition. No readers; dropping it is decided another day.
+- **Tested** in a throwaway `postgres:16.13` (`--network none`): applied
+  **twice** (idempotent); afterwards the app role still calls the function, an
+  unrelated role gets «permission denied», and the view's definition is
+  unchanged.
+- **Order:** server-28 applies 007 (backup first, path in the CTO's
+  change-log), then merges. Nothing in the collectors or the web depends on it.
+
+**Hygiene, server-28's note on #127: the repo is public.** This session's
+entries (cycles 34–47) no longer carry hostnames, backup paths, role names or
+the grant detail; the rule is now at the top of this file.
+
+**Found on the way for item 3 (real lastmod):** `Camera.lastUpdated` and
+`Radar.lastUpdated` are the collector's run time, the same for every row
+(cameras 00:00:03Z today, all 1,972; radars 18-10 01:00:03Z, all 737). They
+can't date a page. It needs a fingerprint of what each page shows, kept with
+the date it last changed.
+
+**Open, in order:**
+1. **L2:** server-28 applies and merges 007.
+2. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+3. **L3:** real lastmod (CMO: before the pilots; done when the «today» share in
+   0.xml is what really changed); then the A-5 / A-3 pilots.
+4. **From the #127 review:** move `cameraCityIndexable()` into
+   `indexability.ts`; the camera `groupBy` failure goes to `reportApiError`.
+5. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+6. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-20 (47) — the sitemap listed 3,508 URLs that their own pages mark noindex
 
 **#126 merged** (squash `9309a2b7`). server-28 applied 006 at 22:34 Madrid
 time:
 - 006 from head `8393fa26` (sha256 `f7903fc7…`, the same as the repo);
-- backup of the 4 definitions, attributes and ACLs in
-  `database-primary:/root/trafico-ddl-backups/006-20261020-223429/`;
+- backup of the 4 definitions, attributes and grants taken first (path in
+  the CTO's change-log);
 - the view and `tile_vessel_headings` are byte-identical to before;
 - `refresh_vessel_latest`: SECURITY DEFINER, `search_path=public, pg_temp`,
-  EXECUTE only for trafico_admin and trafico_app;
+  EXECUTE only for the owner and app roles;
 - **vessel_latest at 4 s with 3,636 vessels** (it was at 165 days).
 - The 15-minute verification of the `refresh-vessel-latest` task is running.
 - **server-28's follow-ups, for the next migration:**
-  - `REVOKE ALL ON FUNCTION refresh_latest_sensors() FROM PUBLIC` (live it has
-    `=X`);
+  - give `refresh_latest_sensors()` the same grants and `search_path` as
+    `refresh_vessel_latest()`;
   - write `vessel_latest_position` (an unused VIEW: 0 readers in the repo and
     in pg_depend) into a migration as it is live. The DROP is decided another
     day.
@@ -129,8 +191,8 @@ listed everything.** Measured against the DB with each page's own rule:
 **Open, in order:**
 1. **L2:** verify `refresh-vessel-latest` for 15 min (vessel_latest < 2 min).
 2. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
-3. **Migration 007:** `REVOKE PUBLIC` on `refresh_latest_sensors`, and
-   `vessel_latest_position` for parity.
+3. **Migration 007:** `refresh_latest_sensors()` like
+   `refresh_vessel_latest()`, and `vessel_latest_position` for parity.
 4. **L3:** real lastmod (item 3 of the CMO's plan); the CMO's pilots (cycle
    33).
 5. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
@@ -170,9 +232,9 @@ vessels from 8 May for 5½ months.**
   - The «refreshed every 30 s» note in 005 was wrong.
 - **Cost:** `EXPLAIN ANALYZE` of its query is 200 ms (3,628 vessels in the last
   hour).
-- **Permissions:** REFRESH needs the owner (`trafico_admin`). The live
+- **Permissions:** REFRESH needs the owner role. The live
   `refresh_latest_sensors()` is `SECURITY DEFINER` (003 created it without)
-  with EXECUTE for `trafico_app`.
+  with EXECUTE for the app role.
 
 **Fix (PR below):**
 - **`services/martin/migrations/006_vessel_latest_refresh.sql`:**
@@ -180,10 +242,10 @@ vessels from 8 May for 5½ months.**
     `pg_get_functiondef`): `vessel_latest` (`IF NOT EXISTS`), its 3 indexes
     (the unique one on `mmsi` is what CONCURRENTLY needs), and
     `tile_vessel_headings`.
-  - **`GRANT SELECT` to `trafico_app`:** a no-op live, where it already has
+  - **`GRANT SELECT` to the app role:** a no-op live, where it already has
     more.
   - **`refresh_vessel_latest()`:** `SECURITY DEFINER` with `search_path`
-    fixed, `REVOKE` from PUBLIC, `GRANT EXECUTE` to `trafico_app`.
+    fixed, `REVOKE` from PUBLIC, `GRANT EXECUTE` to the app role.
   - **`ALTER FUNCTION refresh_latest_sensors() SECURITY DEFINER`:** writes down
     what's live.
 - **Scheduling: the collector task `refresh-vessel-latest`**, at `* * * * *`
@@ -191,7 +253,7 @@ vessels from 8 May for 5½ months.**
   (server-28: changes to `/etc` need MJ's OK, and it would be another file
   outside the repo).
   - It calls `refresh_vessel_latest()` with the collector's connection
-    (`trafico_app`, EXECUTE).
+    (the app role, EXECUTE).
   - Its heartbeat records vessels, the newest position's age and the
     duration.
   - It's `partial` if the newest is > 10 min old: then AIS is behind, not the
@@ -204,16 +266,16 @@ vessels from 8 May for 5½ months.**
   The mutant without the staleness check fails. `test:cron` and
   `supercronic -test` on the realtime crontab pass.
 - **Tested** in a throwaway `postgres:16.13` (`--network none`, roles
-  trafico_admin / trafico_app / someone_else):
+  an owner role, the app role and an unrelated role):
   - 006 applied **twice** (idempotent);
   - the view keeps the latest position per mmsi;
-  - `trafico_app` refreshes through the function (2 → 3 after a new
+  - the app role refreshes through the function (2 → 3 after a new
     position);
-  - `REFRESH` straight from `trafico_app` → «must be owner»;
+  - `REFRESH` straight from the app role → «must be owner»;
   - another role → «permission denied for function»;
   - `refresh_latest_sensors` secdef = true;
   - `bash -n` on the script.
-- **Order:** server-28 applies 006 as `trafico_admin` (backing up the
+- **Order:** server-28 applies 006 as the owner role (backing up the
   definitions first), THEN merges. The task calls a function that has to
   exist.
 - **Verify:** the `refresh-vessel-latest` heartbeat `ok`, the newest in
@@ -1016,12 +1078,11 @@ August.**
   function (before: 58,770 cached).
 - **005 applied by server-28 at ~16:58Z**, through the PLAYBOOK path:
   - copied from git, with the md5 checked against `/opt/trafico`;
-  - `docker exec trafico-postgres psql -w -U trafico_admin -d le_trafico -1 -f`:
-    5 CREATE FUNCTION, rc 0, no password asked;
-  - the functions belong to `trafico_admin`, which is why server-28 couldn't
-    apply it as `trafico_app`.
-- **Rollback:** `/root/trafico-backup-005-20261020-184832/tile_functions_pre005.sql`
-  on compute, with `psql -1`.
+  - as the owner role, in one transaction: 5 CREATE FUNCTION, rc 0;
+  - the functions belong to the owner role, which is why the app role can't
+    apply it.
+- **Rollback:** the pre-005 definitions, backed up first (path in the CTO's
+  change-log).
 - **Verified from compute through nginx** (`--resolve`):
 
   | tile | bytes |
@@ -1031,7 +1092,7 @@ August.**
   | aircraft/10/501/386 | 449 |
   | roadworks/10/501/386 | 572 |
 
-  `pg_get_functiondef`: all 5 project to 3857, owner `trafico_admin`.
+  `pg_get_functiondef`: all 5 project to 3857, owned by the owner role.
 - **Why 002 was missed:** 002 was committed on 04-03 at 02:56 (`e7515f7a`). The
   «add ST_Transform to 3857» fix at 04:11 (`0e6b94f4`) only touched 001.
 
@@ -1076,15 +1137,13 @@ presented them as SASEMAR.**
   and the licence (`licenseInfo` and `description` are empty on the items).
 
 **Done in prod (OK from server-28):**
-- **Backup:** `compute:/root/backups/trafico-cto-loop/MaritimeEmergency-2026-10-20.json`
-  (0600). All 21 columns, 2,140 objects, sha256
-  `e388cfef7332819fffaea6879163ff80f7648fc1d28e8a2365c60c38fa92e0d3` in
-  `.sha256` next to it.
+- **Backup taken first:** all 21 columns, 2,140 objects, with its sha256 (path
+  in the CTO's change-log).
 - **Delete in one transaction**, at 16:55:07Z:
   - checked that the table had 2,140 rows and all of them matched
     `sourceId LIKE 'sasemar-%'`;
   - `DELETE` rowCount 2,140 → COMMIT. The table is now 0.
-- **Restore:** that JSON → INSERT as `trafico_app`.
+- **Restore:** that JSON → INSERT as the app role.
 - **After the caches expired** (17:06:48Z, from compute):
   - `/api/maritimo/emergencies` with the default key: `count 0`;
   - tile `emergencies` at 10/229/457, 0/0/0 and 3/3/3: 204, 0 B;
@@ -1231,7 +1290,7 @@ requested.**
   | emergencies | Mexico City 10/229/457 | 0 → 709 (see Finding 3) |
   | vessels | 5/16/11 | 71,327 → 71,327, md5 identical |
 
-- **Applying it is server-28's** (`trafico_app` has no DDL):
+- **Applying it is server-28's** (the app role has no DDL):
   1. back up the 5 live definitions;
   2. `psql -1 -f 005_tile_projection.sql`;
   3. rebuild Martin (the config is baked into the image), which also empties
@@ -1336,8 +1395,8 @@ August («probe it the same way»).
   as the geometry).
 - `cleanup()` deletes `BCN-SEC-` sensors (city BARCELONA). That's the 527, a
   no-op after that.
-  - **Backup taken first:** `/root/backups/trafico-cto-loop/CityTrafficSensor-BCN-SEC-2026-10-20.json`
-    on compute (527 rows, 0 readings).
+  - **Backup taken first** (527 rows, 0 readings; path in the CTO's
+    change-log).
 - «Sensores urbanos» map layer: a missing level paints grey «Sin datos»
   (before, it was `coalesce(…, 0)`, which is green). The description no longer
   says Zaragoza.
@@ -1374,7 +1433,7 @@ over Spain.**
 - `tile_vessels` from the same migration works live (28 KB / 71 KB): it was
   fixed in the DB and the fix never reached the repo.
 - The fix is a migration 005 that recreates the four with
-  `ST_Transform(…, 3857)`. Applying it needs DDL (`trafico_app` has none),
+  `ST_Transform(…, 3857)`. Applying it needs DDL (the app role has none),
   which is server-28's. The «Sensores urbanos» grey above only shows once
   this lands.
 
