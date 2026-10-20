@@ -75,6 +75,131 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (34) — Barcelona painted «no data» as fluid, and read the same feed twice
+
+**#111 verified on the 16:10Z maritime-forecast run**, the first one with the
+relabel:
+- «Relabelled 126 stored forecasts with AEMET's zone names», then «8 coastal,
+  3 high seas zones updated»: all 11 requests, 1.9 s, «job succeeded».
+- `/maritimo/meteorologia` (from compute with `--resolve`) shows «Costa de
+  Andalucía Occidental y Ceuta», with no mojibake.
+- AEMET answered all 11 with the expired key, so #112's expired-key path didn't
+  run.
+
+**#112 deployed** (squash `57ad711e`, merged 14:47:03Z with 0 `TASK=` from
+`docker top -eo pid,args` at 14:46:50Z):
+- Collectors DEPLOY SUCCESS in 9 s (4 s build, cache). All 6 recreated at
+  14:47:14Z, healthy:
+
+  | container | image |
+  |---|---|
+  | realtime | `39d4b8d1c734` |
+  | frequent | `f4691cb06834` |
+  | fuel | `5ef73f64ec8e` |
+  | daily | `30f187c91088` |
+  | weekly | `1d1ef2dcc4cb` |
+  | ais | `afab6b2549a8` |
+
+- Cut: only transit-realtime and transit-rt-valencia (started 14:47:00Z),
+  which is tolerated.
+- Web DEPLOY SUCCESS `57ad711` at 14:52:12Z (304 s). #111's web deploy took
+  337 s.
+- **The build takes 4 s to 37 s**, so the recreation can't be timed from the
+  merge. That's why server-28's deployer guard checks after the build.
+- 15:00Z weather on #112's code: 1,594 alerts, 12.7 s, «job succeeded». The
+  success path with the Sentry flush works. AEMET served the call, so the
+  expired-key path didn't run.
+
+**Signal:** `city-traffic` was `partial` on every 5-minute run with «1/3
+sources failed: Barcelona (sections)», 502. It had been on the L1 list since
+August («probe it the same way»).
+
+**Finding: both Barcelona sources were the same file.**
+- The «sections» URL is resource `TRAMS_TRAMS.dat` of the portal's `trams`
+  dataset (CKAN `package_show`: «Traffic state information by sections of the
+  city of Barcelona»). That's the portal's copy of bcn.cat's `dadestrams.dat`:
+  same tram ids, same states.
+- While it answered, it stored every section twice, as `BCN-SEC-<id>` next to
+  `BCN-<id>`.
+  - The DB still had **527 `BCN-SEC-` sensors**, last updated 2026-08-05,
+    with no readings.
+  - `/api/trafico/ciudades` counted them in `total`, so Barcelona showed 1,054
+    sensors for 527 sections.
+- Since August it answered 502 from the portal's nginx, and kept the task
+  `partial`.
+
+**Finding: estat 0 «Sin datos» was stored as fluid.**
+- `BCN_STATUS_LEVEL[0] = 0 // no data → fluid`. At 16:05Z, **201 of 532
+  sections** (38 %) said 0.
+- So the 16:15Z run stored 424 of 527 Barcelona readings at level 0 when only
+  ~225 were fluid.
+- Valencia had the same bug with its estado 0, fixed in August
+  (`vlcArcGisEstadoToLevel`). Barcelona never got the fix.
+
+**Fix (PR below):**
+- `bcnEstatToLevel`: estat 0 or unknown → `null`. 1-2 → 0, 3 → 1, 4 → 2, 5-6 →
+  3. It applies to the current state and to the forecast.
+- The «sections» source is removed. The portal copy stays only as the
+  fallback for bcn.cat (`fetchBcnTramStates`, the same primary/fallback loop
+  as the geometry).
+- `cleanup()` deletes `BCN-SEC-` sensors (city BARCELONA). That's the 527, a
+  no-op after that.
+  - **Backup taken first:** `/root/backups/trafico-cto-loop/CityTrafficSensor-BCN-SEC-2026-10-20.json`
+    on compute (527 rows, 0 readings).
+- «Sensores urbanos» map layer: a missing level paints grey «Sin datos»
+  (before, it was `coalesce(…, 0)`, which is green). The description no longer
+  says Zaragoza.
+- **Test:** `npm run test:city-traffic`. It drives `run()` with stubbed fetch
+  and an in-memory prisma:
+  - the estat table;
+  - bcn.cat answers: one Barcelona source, the mirror is never asked, `ok`;
+  - bcn.cat fails (503 or socket close): the mirror serves the same file, and
+    the run is still `ok`;
+  - both fail: `partial`, «1/2 sources failed: Barcelona (trams)», and
+    Valencia is still stored;
+  - the cleanup deletes only `BCN-SEC-`.
+- **Other checks, all on compute in throwaway containers:**
+  - a mutant (`estat <= 2 → 0`) fails;
+  - collector `tsc`: 626 errors, all in `monthly-report/render.ts`;
+  - web `tsc`: 11 errors, all already there in unrelated files, none in
+    `registry.ts`;
+  - eslint: 0 errors, plus 2 warnings that were already there (the unused
+    `BCN_STATUS_LABEL` and `_prisma`).
+- **Recreates all 6 collectors**, so the merge rule applies. Verify after the
+  deploy:
+  - `city-traffic` heartbeat `ok` with no reason, ~939 sensors;
+  - one «Removed 527 sensors of the retired Barcelona (sections) source»;
+  - `/api/trafico/ciudades?city=barcelona`: `total` 527, and `withData` close
+    to the non-zero estats (~330), not 527.
+
+**Found on the way (L2, not acted on): 4 of the dynamic map layers are empty
+over Spain.**
+- `tile_aircraft`, `tile_city_sensors`, `tile_emergencies` and
+  `tile_roadworks` (migration `002_tile_functions.sql`) pass 4326 points to
+  `ST_AsMVTGeom` against `ST_TileEnvelope`, which is 3857.
+- Live, tiles (5,15,12) and (5,16,11) are **0 bytes** for all four. The z0
+  world tile has data, because the points land near null island.
+- `tile_vessels` from the same migration works live (28 KB / 71 KB): it was
+  fixed in the DB and the fix never reached the repo.
+- The fix is a migration 005 that recreates the four with
+  `ST_Transform(…, 3857)`. Applying it needs DDL (`trafico_app` has none),
+  which is server-28's. The «Sensores urbanos» grey above only shows once
+  this lands.
+
+**Open, in order:**
+1. **L1:** verify this PR after the deploy (above), and #112 on the 19:20Z
+   aemet-forecast run (watcher armed): «exit status 1», one GlitchTip issue,
+   and whether weather groups under a single issue.
+2. **L2:** the 4 empty tile functions: migration 005, plus server-28 to apply
+   it. Then check which pages load those layers (`registry.ts`: aviation,
+   roadworks, emergencies, city sensors).
+3. **L1:** `transit-gtfs` `partial`, 3 failed feeds (`processed 73, failed 3`).
+4. **L2, small:** `/trafico`'s source text still names «Valencia (ODS) y
+   Zaragoza». ODS is offline and Zaragoza stopped publishing.
+5. **L3:** sitemap hygiene and the CMO's two pilots, as in cycle 33.
+
+---
+
 ## Cycle 2026-10-20 (33) — an expired AEMET key made no noise anywhere: the cron said «job succeeded»
 
 **#111 deployed** (squash `2e636309`, merged 13:49:50Z by server-28 with 0
