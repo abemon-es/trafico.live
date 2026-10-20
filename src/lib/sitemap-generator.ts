@@ -1,4 +1,6 @@
 import prisma from "@/lib/db";
+import { CAMERA_CITY_PROVINCES } from "@/lib/geo/area-routes";
+import { EPHEMERAL_ARTICLE_CATEGORIES, EPHEMERAL_ARTICLE_MAX_AGE_MS, POSTAL_CODE_MIN_GAS_STATIONS } from "@/lib/seo/indexability";
 import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
@@ -91,14 +93,7 @@ export async function getActiveShardIds(): Promise<{ id: number }[]> {
     {
       offset: POSTAL_CODE_OFFSET,
       fallback: FALLBACK_POSTAL_CODE_SHARDS,
-      count: async () => {
-        const rows = await prisma.gasStation.findMany({
-          select: { postalCode: true },
-          distinct: ["postalCode"],
-          where: { postalCode: { not: null } },
-        });
-        return rows.length;
-      },
+      count: async () => (await indexablePostalCodes()).length,
     },
     {
       offset: MARITIME_OFFSET,
@@ -662,6 +657,15 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   const now = new Date();
   // The SASEMAR stats page is noindex while MaritimeEmergency is empty.
   const hasSasemarData = (await prisma.maritimeEmergency.count().catch(() => 0)) > 0;
+  // /camaras/<city> is noindex while its province has no active camera
+  // (Barcelona, Bilbao, Vitoria, Las Palmas and Santa Cruz on 2026-10-20: their
+  // cameras are not DGT's).
+  const provincesWithCameras = new Set(
+    (await prisma.camera
+      .groupBy({ by: ["province"], where: { isActive: true } })
+      .catch(() => [] as Array<{ province: string | null }>)
+    ).map((r) => r.province),
+  );
   const today = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
   );
@@ -1460,7 +1464,7 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "daily" as const,
       priority: 0.9,
     })),
-    ...CAMARAS_CITY_SLUGS.map((c) => ({
+    ...CAMARAS_CITY_SLUGS.filter((c) => provincesWithCameras.has(CAMERA_CITY_PROVINCES[c]?.code)).map((c) => ({
       url: `${BASE_URL}/camaras/${c}`,
       lastModified: today,
       changeFrequency: "daily" as const,
@@ -1765,17 +1769,26 @@ async function municipalitySitemap(
 // Postal code sitemap shards
 // ---------------------------------------------------------------------------
 
+/**
+ * Postcodes whose page is indexable: at least POSTAL_CODE_MIN_GAS_STATIONS
+ * gas stations, the page's own rule. Until 2026-10-20 every postcode with one
+ * station was listed, and 3,146 of the 4,626 answered noindex.
+ */
+async function indexablePostalCodes(skip?: number, take?: number): Promise<Array<{ postalCode: string }>> {
+  // LIMIT NULL is no limit in Postgres.
+  return prisma.$queryRaw<Array<{ postalCode: string }>>`
+    SELECT "postalCode" FROM "GasStation"
+    WHERE "postalCode" IS NOT NULL
+    GROUP BY "postalCode"
+    HAVING count(*) >= ${POSTAL_CODE_MIN_GAS_STATIONS}
+    ORDER BY "postalCode"
+    LIMIT ${take ?? null} OFFSET ${skip ?? 0}`;
+}
+
 async function postalCodeSitemap(
   shardIndex: number
 ): Promise<SitemapEntry[]> {
-  const postalCodes = await prisma.gasStation.findMany({
-    select: { postalCode: true },
-    distinct: ["postalCode"],
-    where: { postalCode: { not: null } },
-    skip: shardIndex * SHARD_SIZE,
-    take: SHARD_SIZE,
-    orderBy: { postalCode: "asc" },
-  });
+  const postalCodes = await indexablePostalCodes(shardIndex * SHARD_SIZE, SHARD_SIZE);
 
   const now = new Date();
   const today = new Date(
@@ -1824,7 +1837,14 @@ async function maritimeStationSitemap(
 async function insightsSitemap(): Promise<SitemapEntry[]> {
   const [articles, tags] = await Promise.all([
     prisma.article.findMany({
-      where: { status: "PUBLISHED" },
+      // Stale ephemeral reports are noindex (isStaleArticle): not listed.
+      where: {
+        status: "PUBLISHED",
+        NOT: {
+          category: { in: EPHEMERAL_ARTICLE_CATEGORIES },
+          publishedAt: { lt: new Date(Date.now() - EPHEMERAL_ARTICLE_MAX_AGE_MS) },
+        },
+      },
       select: {
         slug: true,
         updatedAt: true,
