@@ -70,23 +70,31 @@ const TYPE_MAP: Record<string, IncidentType> = {
 };
 
 // API response types
+/**
+ * Every field but the ids and startDate can be missing: Vitoria-Gasteiz's
+ * municipal items (sourceId 6) come without incidenceType, cause or road and
+ * with incidenceName instead (22 of the 200 items on 2026-10-20, and the
+ * first .toLowerCase() on them took the whole source down).
+ */
 export interface EuskadiIncidence {
   incidenceId: string;
   sourceId: string;
-  incidenceType: string;
-  autonomousRegion: string;
-  province: string;
-  carRegistration: string;
-  cause: string;
+  incidenceType?: string;
+  incidenceName?: string;
+  autonomousRegion?: string;
+  province?: string;
+  cityTown?: string;
+  carRegistration?: string;
+  cause?: string;
   startDate: string;
   endDate?: string;
   incidenceLevel?: string;
-  road: string;
-  pkStart: string;
-  pkEnd: string;
-  direction: string;
-  latitude: string;
-  longitude: string;
+  road?: string;
+  pkStart?: string;
+  pkEnd?: string;
+  direction?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 interface EuskadiApiResponse {
@@ -112,16 +120,18 @@ export interface EuskadiIncident {
   severity: Severity;
 }
 
-function mapIncidentType(incidenceType: string): IncidentType {
+function mapIncidentType(incidenceType: string | undefined): IncidentType {
+  const text = (incidenceType ?? "").toLowerCase();
   for (const [key, value] of Object.entries(TYPE_MAP)) {
-    if (incidenceType.toLowerCase().includes(key.toLowerCase())) {
+    if (text && text.includes(key.toLowerCase())) {
       return value;
     }
   }
   return "OTHER";
 }
 
-function mapProvince(provinceName: string): { code: string; name: string } | undefined {
+function mapProvince(provinceName: string | undefined): { code: string; name: string } | undefined {
+  if (!provinceName) return undefined;
   for (const [key, value] of Object.entries(EUSKADI_PROVINCES)) {
     if (provinceName.toLowerCase().includes(key.toLowerCase()) ||
         key.toLowerCase().includes(provinceName.toLowerCase())) {
@@ -132,7 +142,7 @@ function mapProvince(provinceName: string): { code: string; name: string } | und
 }
 
 function estimateSeverity(incident: EuskadiIncidence): Severity {
-  const type = incident.incidenceType.toLowerCase();
+  const type = (incident.incidenceType ?? incident.incidenceName ?? "").toLowerCase();
   const level = (incident.incidenceLevel || "").toLowerCase();
 
   // Accidents are high severity
@@ -157,7 +167,8 @@ function estimateSeverity(incident: EuskadiIncidence): Severity {
 function buildDescription(incident: EuskadiIncidence): string {
   const parts: string[] = [];
 
-  if (incident.incidenceType) parts.push(incident.incidenceType);
+  const what = incident.incidenceType ?? incident.incidenceName;
+  if (what) parts.push(what);
   if (incident.cause && incident.cause !== "Desconocida") parts.push(`Causa: ${incident.cause}`);
   if (incident.incidenceLevel) parts.push(incident.incidenceLevel);
   if (incident.direction && incident.direction !== "NO DISPONIBLE") {
@@ -194,8 +205,8 @@ export function parseEuskadiIncidence(inc: EuskadiIncidence): EuskadiIncident | 
   const startDate = parseMadridLocal(inc.startDate);
   if (isNaN(startDate.getTime())) return null;
 
-  const lat = parseFloat(inc.latitude);
-  const lng = parseFloat(inc.longitude);
+  const lat = parseFloat(inc.latitude ?? "");
+  const lng = parseFloat(inc.longitude ?? "");
 
   const province = mapProvince(inc.province);
 
@@ -208,14 +219,14 @@ export function parseEuskadiIncidence(inc: EuskadiIncidence): EuskadiIncident | 
 
   return {
     situationId: `EUSKADI-${inc.incidenceId}`,
-    type: mapIncidentType(inc.incidenceType),
+    type: mapIncidentType(inc.incidenceType ?? inc.incidenceName),
     startedAt: startDate,
     endedAt: inc.endDate ? parseMadridLocal(inc.endDate) : undefined,
     latitude: lat || 0,
     longitude: lng || 0,
     roadNumber: inc.road?.trim() || undefined,
     kmPoint,
-    direction: inc.direction !== "NO DISPONIBLE" ? inc.direction : undefined,
+    direction: inc.direction && inc.direction !== "NO DISPONIBLE" ? inc.direction : undefined,
     province: province?.code,
     provinceName: province?.name,
     description: buildDescription(inc),
@@ -230,7 +241,7 @@ export function activeWindowHours(type: IncidentType): number {
 
 /** "Puertos de montaña" whose every road state is Abierto ("T: Abierto C: Abierto A: Abierto"): a status, not an incident. */
 export function isOpenPassStatus(inc: Pick<EuskadiIncidence, "incidenceType" | "incidenceLevel">): boolean {
-  if (!/puertos de monta/i.test(inc.incidenceType)) return false;
+  if (!/puertos de monta/i.test(inc.incidenceType ?? "")) return false;
   const level = (inc.incidenceLevel || "").trim();
   return level !== "" && /^(\s*[A-Z]:\s*Abierto\s*)+$/i.test(level);
 }
@@ -262,6 +273,9 @@ export interface EuskadiFetchStats {
   active: number;
   activeByType: Record<string, number>;
   openPassStatuses: number;
+  /** Items that could not be read, and why: never fatal for the source. */
+  skipped: number;
+  skipReasons: Record<string, number>;
   /** Days with more than MAX_PAGES_PER_DAY pages: read only in part. */
   cappedDays: string[];
   window: "estimada";
@@ -274,7 +288,7 @@ export async function fetchEuskadiIncidents(
   const days = madridDays(now);
   const byId = new Map<string, EuskadiIncident>();
   const stats: EuskadiFetchStats = {
-    days, pages: 0, items: 0, active: 0, activeByType: {}, openPassStatuses: 0, cappedDays: [], window: "estimada",
+    days, pages: 0, items: 0, active: 0, activeByType: {}, openPassStatuses: 0, skipped: 0, skipReasons: {}, cappedDays: [], window: "estimada",
   };
 
   for (const day of days) {
@@ -296,8 +310,22 @@ export async function fetchEuskadiIncidents(
       for (const inc of data.incidences ?? []) {
         stats.items++;
         if (isOpenPassStatus(inc)) { stats.openPassStatuses++; continue; }
-        const incident = parseEuskadiIncidence(inc);
-        if (!incident || !isActiveAt(incident, now)) continue;
+        // One unreadable item is counted and skipped; it never takes the source down.
+        let incident: EuskadiIncident | null;
+        try {
+          incident = parseEuskadiIncidence(inc);
+        } catch (err) {
+          stats.skipped++;
+          const reason = `error: ${err instanceof Error ? err.message.slice(0, 60) : String(err).slice(0, 60)}`;
+          stats.skipReasons[reason] = (stats.skipReasons[reason] ?? 0) + 1;
+          continue;
+        }
+        if (!incident) {
+          stats.skipped++;
+          stats.skipReasons.startDate = (stats.skipReasons.startDate ?? 0) + 1;
+          continue;
+        }
+        if (!isActiveAt(incident, now)) continue;
         const note = windowNote(incident, now);
         if (note) incident.description = incident.description ? `${incident.description} | ${note}` : note;
         byId.set(incident.situationId, incident);

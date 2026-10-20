@@ -19,6 +19,7 @@ import {
   isActiveAt,
   isOpenPassStatus,
   madridDays,
+  parseEuskadiIncidence,
   parseMadridLocal,
   windowNote,
   type EuskadiIncidence,
@@ -121,6 +122,32 @@ async function main() {
   const accident = incidents.find((i) => i.type === "ACCIDENT" && !i.endedAt)!;
   assert.match(accident.description!, /Iniciada hace 1 h · Euskadi no publica la hora de fin; se oculta a las 4 h$/);
   assert.ok(!run.requested.some((r) => /_pageSize/.test(r)), "no _pageSize: the API ignores it");
+
+  // 6b. The real item that took the source down on 2026-10-20 (Vitoria-Gasteiz's
+  // municipal works, sourceId 6): no incidenceType, cause or road; incidenceName
+  // instead; an endDate; startDate without seconds.
+  const vitoria: EuskadiIncidence = {
+    incidenceId: "2844", sourceId: "6", autonomousRegion: "Euskadi", province: "Araba/Álava", cityTown: "Vitoria-Gasteiz",
+    startDate: "2026-10-20T08:00", endDate: "2026-11-30T20:00", pkStart: "0.0", pkEnd: "0.0", direction: "BULEVAR DE SALBURUA",
+    incidenceName: "Ocupación de carril derecho en Bulevar de Salburua", latitude: "42.8518", longitude: "-2.6435",
+  };
+  const parsed = parseEuskadiIncidence(vitoria)!;
+  assert.equal(parsed.type, "OTHER");
+  assert.equal(parsed.startedAt.toISOString(), "2026-10-20T06:00:00.000Z");
+  assert.ok(parsed.endedAt, "its endDate is kept");
+  assert.equal(isActiveAt(parsed, NOW), true, "active by its endDate, not the window");
+  assert.match(parsed.description!, /^Ocupación de carril derecho en Bulevar de Salburua/);
+  assert.equal(windowNote(parsed, NOW), "", "it has an end time: no estimate note");
+
+  // An unreadable item and one without a date are counted and skipped, never fatal.
+  const broken = { ...item("Accidente", 1), incidenceLevel: 5 as unknown as string };
+  const undated = { ...item("Accidente", 1), startDate: "ayer" };
+  const mixed = await withPages({ "2026/10/20": [[vitoria, broken, undated, item("Accidente", 1)]], "2026/10/19": [[]] }, () => fetchEuskadiIncidents(NOW));
+  assert.equal(mixed.result.stats.skipped, 2);
+  assert.equal(mixed.result.stats.skipReasons.startDate, 1);
+  assert.equal(Object.keys(mixed.result.stats.skipReasons).filter((k) => k.startsWith("error:")).length, 1);
+  assert.equal(mixed.result.incidents.length, 2, "Vitoria and the good accident");
+  assert.ok(mixed.result.incidents.some((i) => i.situationId === "EUSKADI-2844"));
 
   // 7. A day with more pages than the cap is reported, not hidden.
   const many = Array.from({ length: 120 }, () => [item("Obras", 1)]);
