@@ -80,6 +80,76 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-20 (50) — 14 San Sebastián incidents failed to store on every run, with the heartbeat at ok
+
+**Signal (SENSE 21:17Z):** Loki errors in the last hour: `trafico-postgres`
+437, `collector-realtime` 840. Grouped by message:
+- **420 × `numeric field overflow`** (Postgres), the same 420 as
+  `[collector] Error processing incident EUSKADI-…` in the incident task: 14
+  ids per run, 30 runs an hour;
+- 16 × `relation "CollectorHeartbeat" does not exist`: my one-off sampler from
+  cycle 48 (wrong table name; no longer running);
+- 1 × `timestamp with time zone - text`: a single stray query, no repeat.
+
+**Finding:**
+- The 14 are all from **San Sebastián (sourceId 7)**, at lat 43.29–43.32 /
+  lon −1.95…−2.07.
+- Their `pkStart`/`pkEnd` aren't kilometres: `2.52E7`, `6.12E7`, `8.274E7`,
+  `-3600000.0`. As milliseconds those are 07:00, 17:00, 22:59 and −1 h, so
+  they look like times of day.
+- The parser took them as km and `kmPoint` (numeric 7,2) overflowed, so the
+  upsert failed. Those incidents never reached the map.
+- They arrive since #121 switched to `byDate`.
+- **Nothing showed it:** the write loop counted a refused upsert as `skipped`,
+  and `run-status` only looked at parse skips. The heartbeat said `ok`.
+
+**Fix (PR below):**
+- **`euskadi-parser.ts`:** `kmPoint` only if it's a plausible km (0 < km ≤
+  `MAX_KM_POINT` = 1,500). The incident is kept, just without a km.
+  - **`0.0` stays «none»** (server-28 asked whether `>= 0` was better).
+    Euskadi writes `0.0` where there's no PK: Vitoria's urban items (street
+    names in `direction`) and the 2 non-San Sebastián items of the 14 have
+    `0.0`/`0.0`. Before this change `0.0` was already excluded.
+- **`run-status.ts` + `collector.ts`:**
+  - an incident the database refuses is counted per source with its first
+    error (the last line of Prisma's message: «Value out of range for the
+    type: numeric field overflow»);
+  - any refusal → `partial`, with `EUSKADI: N not stored (…)` in the reason;
+  - `storeFailures` goes in the heartbeat meta.
+- **Tests:**
+  - `test:euskadi` (12.5 → 12.5; 1,500 → 1,500; `2.52E7`, `-3600000.0`,
+    `0.0`, «km 4» and missing → none; the incident keeps its coordinates);
+  - `test:incident-status` (refusals named; none → nothing);
+  - `test:cyl` OK.
+  - **Mutants:** without the bound, `test:euskadi` fails; with the threshold
+    at > 1000, `test:incident-status` fails.
+- **Other checks:** collector `tsc` 626, web `tsc` 11, eslint 0 errors (4 old
+  warnings in `collector.ts`).
+
+**Verify after deploy:**
+- 0 × `numeric field overflow` in Postgres;
+- the 14 `EUSKADI-…` in `TrafficIncident` with `kmPoint` null;
+- `incident` heartbeat `ok`, with no `storeFailures`.
+
+**Agreed with the CMO (2026-10-20):** the sitemap index keeps its per-day
+lastmod until their 23-10 ~11:30 reading (18 children have never been
+downloaded; changing it now would mix up their measurement). After that, each
+shard's lastmod = the later of its URLs' newest lastmod and the last change to
+its URL list (a fingerprint in `content_fingerprints`, family `shard`); a
+shard with neither gets no lastmod.
+
+**Open, in order:**
+1. **L1:** merge and verify this fix.
+2. **L3:** #129 merged (`0d34d5a1`); server-28 applied the migration and the
+   resolve (0 pending). Verify 0.xml after deploy, the first run at 04:50
+   (seen/new/changed, ms) and the 22-10 run; numbers to server-28 and the
+   share to the CMO.
+3. **L3, the pilots** (A-5 cameras, A-3 radars), with a revision date per key.
+4. **L1:** aemet-forecast 01:20Z → `key-refused` and #112's issue.
+5. **L3:** the index lastmod after 23-10 (above); gas stations by price.
+6. **Hygiene:** scrub the pre-October backlog entries, in their own PR.
+7. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10 05:00Z.
+8. **Waiting on MJ:** the AEMET key, SASEMAR.
 ## Cycle 2026-10-20 (49) — every sitemap lastmod was the time we generated it; now it's when the page changed, or nothing
 
 **#128 merged** (squash `4668edc1`). server-28 applied 007 first (backup taken,

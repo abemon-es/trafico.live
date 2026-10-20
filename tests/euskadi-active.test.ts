@@ -15,6 +15,7 @@
 import assert from "node:assert/strict";
 import {
   ACTIVE_WINDOW_HOURS,
+  MAX_KM_POINT,
   fetchEuskadiIncidents,
   isActiveAt,
   isOpenPassStatus,
@@ -153,6 +154,18 @@ async function main() {
   assert.equal(Object.keys(mixed.result.stats.skipReasons).filter((k) => k.startsWith("error:")).length, 1);
   assert.equal(mixed.result.incidents.length, 2, "Vitoria and the good accident");
   assert.ok(mixed.result.incidents.some((i) => i.situationId === "EUSKADI-2844"));
+
+  // 8. A km point is a km point: San Sebastián (sourceId 7) puts what look like
+  //    times of day in ms in pkStart, which overflowed kmPoint (numeric 7,2).
+  const pkOf = (pkStart: string | undefined) => parseEuskadiIncidence(item("Obras", 1, { sourceId: "7", pkStart }))!.kmPoint;
+  assert.equal(pkOf("12.5"), 12.5);
+  assert.equal(pkOf(String(MAX_KM_POINT)), MAX_KM_POINT);
+  assert.equal(pkOf("2.52E7"), undefined);
+  assert.equal(pkOf("-3600000.0"), undefined);
+  assert.equal(pkOf("0.0"), undefined, "0.0 means none");
+  assert.equal(pkOf("km 4"), undefined);
+  assert.equal(pkOf(undefined), undefined);
+  assert.equal(parseEuskadiIncidence(item("Obras", 1, { sourceId: "7", pkStart: "2.52E7" }))!.latitude, 43.26, "the incident itself is kept");
 
   // 7. A day with more pages than the cap is reported, not hidden.
   const many = Array.from({ length: 120 }, () => [item("Obras", 1)]);
