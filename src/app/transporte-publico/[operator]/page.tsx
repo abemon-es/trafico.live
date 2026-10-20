@@ -5,6 +5,7 @@ import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { slugify } from "@/lib/geo/slugify";
+import { feedLink } from "@/lib/transit/feed-link";
 import {
   Bus,
   TrainFront,
@@ -339,6 +340,7 @@ export default async function OperatorDetailPage({ params }: Props) {
 
   // ── JSON-LD ───────────────────────────────────────────────────────────────
   const canonicalUrl = `${BASE_URL}/transporte-publico/${slugify(operator.name)}`;
+  const feed = feedLink(operator.mdbId, operator.feedUrl);
 
   const datasetSchema = {
     "@context": "https://schema.org",
@@ -384,15 +386,19 @@ export default async function OperatorDetailPage({ params }: Props) {
           url: canonicalUrl,
           additionalType: "https://schema.org/TransportService",
           ...(areaServed && { areaServed }),
-          ...(operator.feedUrl && {
+          ...(feed && {
             dataset: {
               "@type": "Dataset",
               name: `GTFS feed for ${operator.name}`,
-              distribution: {
-                "@type": "DataDownload",
-                encodingFormat: "application/zip",
-                contentUrl: operator.feedUrl,
-              },
+              ...(feed.direct
+                ? {
+                    distribution: {
+                      "@type": "DataDownload",
+                      encodingFormat: "application/zip",
+                      contentUrl: feed.href,
+                    },
+                  }
+                : { url: feed.href }),
             },
           }),
         }
@@ -611,21 +617,19 @@ export default async function OperatorDetailPage({ params }: Props) {
               year: "numeric",
             })}
           />
-          {operator.feedUrl && (
+          {feed && (
             <div className="flex items-start gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
               <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0 w-32">
                 Feed GTFS
               </span>
               <a
-                href={operator.feedUrl}
+                href={feed.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-[var(--tl-primary)] hover:underline flex items-center gap-1 break-all"
               >
                 <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                {operator.feedUrl.length > 60
-                  ? `${operator.feedUrl.slice(0, 60)}...`
-                  : operator.feedUrl}
+                {feed.direct ? feed.label : `fuente: ${feed.label}`}
               </a>
             </div>
           )}
