@@ -133,7 +133,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
         >
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white dark:bg-gray-900/20 rounded-lg">
+              <div className="p-2 bg-white/20 rounded-lg">
                 {EFFECT_ICONS[incident.effect]}
               </div>
               <div>
@@ -151,7 +151,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white dark:bg-gray-900/20 rounded-full transition-colors"
+              className="p-2 hover:bg-white/20 rounded-full transition-colors"
               title="Cerrar"
             >
               <X className="w-5 h-5" />
