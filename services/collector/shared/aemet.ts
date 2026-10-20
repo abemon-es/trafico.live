@@ -58,6 +58,20 @@ export function isKeyExpired(status: number | undefined, descripcion: string | n
   return status === 401 || (status !== undefined && status >= 500 && /401 Unauthorized/i.test(descripcion));
 }
 
+/**
+ * A failed step 2 (the pre-signed `datos` URL). An expired key comes back there
+ * as an HTTP 500 that wraps AEMET's 401 (isKeyExpired), and only aemet-forecast
+ * looked: weather called it a crash on 2026-10-20 22:00Z («AEMET data fetch
+ * error: 500», a new GlitchTip issue). Throws AemetKeyExpiredError for that;
+ * otherwise returns the start of the body for the caller's log, never for an
+ * error message (the crash heartbeat is public on /api/health).
+ */
+export async function step2Refusal(task: string, res: Response): Promise<string> {
+  const descripcion = await readDescripcion(res);
+  if (isKeyExpired(res.status, descripcion)) throw new AemetKeyExpiredError(task);
+  return (descripcion ?? "").replace(/\s+/g, " ").trim().slice(0, 160);
+}
+
 /** One GlitchTip issue per task, however many runs hit it. */
 export function keyExpiredFingerprint(task: string): string[] {
   return ["aemet-key-expired", task];

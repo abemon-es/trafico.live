@@ -21,6 +21,7 @@ import {
   isKeyExpired,
   readAemetJson,
   readDescripcion,
+  step2Refusal,
 } from "../../shared/aemet.js";
 
 const TASK = "aemet-historical";
@@ -159,7 +160,7 @@ export async function aemetFetch<T>(url: string, apiKey: string): Promise<T | nu
   );
 
   if (!step2Res.ok) {
-    logError(TASK, `Step-2 HTTP ${step2Res.status} for datos URL`);
+    logError(TASK, `Step-2 HTTP ${step2Res.status} for datos URL: ${await step2Refusal(TASK, step2Res)}`);
     return null;
   }
 
