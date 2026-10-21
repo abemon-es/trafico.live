@@ -90,6 +90,89 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (62) — the city camera pages showed 54 broken thumbnails
+
+**#141 merged** (`5572c348`; server-28: 121 exact pairs). Gate after the deploy
+(04:27Z):
+- **dark-scan:** /incidencias, /alertas-meteo and /radares/A-3 give 0 islands
+  and 0 dark-on-dark.
+- **Hover on an /radares/A-3 row in dark mode** (23 rows): before
+  `rgba(0,0,0,0)`, during gray-950 (pixel 3,7,18). The hover is back.
+- **For the page-by-page pass:**
+  - /carga-ev, 5 «42 kW» badges `bg-tl-amber-100`;
+  - /calculadora, «Suscribir» `bg-white`;
+  - /profesional, where the dark hover now equals the dark base (server-28:
+    restore what was there before the sweep).
+
+**dark-scan's «NOT DARK» was the edge's 429** (the new diagnostic gave it on
+its first run):
+- `/camaras/madrid — HTTP 429, prePaint false`, a response that isn't ours.
+- **server-28, edge config:**
+  - `edge_html` 5 r/s, burst 60;
+  - `edge_dyn` 10 r/s, burst 30/80;
+  - keyed on the client's real IP (`real_ip` from XFF set by Traefik, which
+    doesn't trust external XFF), so **every visitor has their own bucket**.
+  - Everything leaving compute arrives as one single IP, which is why the
+    scanner with 3–4 browsers got 429. Not a production problem.
+  - server-28 will exempt internal traffic at the edge; it also affects the
+    BurnRate alerts on blue-mountain/abemon.
+- **The scanner** goes to 2 browsers and retries on a 429 (next bin PR).
+
+**Signal (found while answering server-28 about which path the camera images
+use):**
+- One single page load of /camaras/madrid makes 72 non-static requests: 17 RSC
+  prefetches, 1 HTML and **54 `/_next/image?url=https://etraffic.dgt.es/…`
+  that return HTTP 400**.
+- The **city camera grid thumbnails are broken**.
+- **Cause:**
+  - every active camera (1,972) has its thumbnail on `etraffic.dgt.es`;
+  - `next.config.ts images.remotePatterns` allows `nap`, `infocar` and
+    `informacion.trafico`, but not `etraffic`;
+  - the only camera `<Image>` without `unoptimized` was the city grid (the
+    detail page, the road page, `carreteras/[roadId]/hoy` and the first block
+    of the same page already had it).
+- Camera pages are among the ones that rank best (cycle 33: cámaras 60 % of
+  impressions).
+
+**Fix (PR below):**
+- `unoptimized` on that `<Image>`, like the rest.
+  - Not the host in `remotePatterns`: the snapshot changes every few minutes,
+    and the optimizer would cache it and add load.
+  - `quality` goes, because it's meaningless without the optimizer.
+- **`tests/camera-images.test.ts`** (`npm run test:camera-images`): every
+  `<Image>` with a `thumbnailUrl` src has to be `unoptimized`.
+  - **Mutant:** the grid without it → fails at `camaras/[city]/page.tsx:328`.
+- **Other checks:** web `tsc` 11 (the `s` regex flag took it to 12 under the
+  project's target; removed, since `[^>]` already spans lines).
+- **Side effect:** each visit to /camaras/<city> makes 54 fewer requests to
+  the edge (72 → ~18 non-static), so it's no longer the busiest page against
+  the burst.
+
+**Verify after deploy:** headless Chromium on /camaras/madrid → 0
+`/_next/image` 400s, and the thumbnails loaded (`naturalWidth > 0`) from
+etraffic.dgt.es.
+
+**Open, in order:**
+1. **L2:** merge and verify the thumbnails.
+2. **bin:** dark-scan at 2 browsers, retrying on 429.
+3. **L2:** location cards, bg + border + text (dark-scan as the gate).
+4. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, the remaining tints.
+5. **L1:** #132, a `weather` run that hits the key.
+6. **L3:** `content-fingerprints` 04:50 and 22-10; then the pilots.
+7. **L3:** gas stations by price.
+8. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+9. **Security (server-28):** a strict Report-Only CSP; exempting internal
+   traffic at the edge.
+10. **Accessibility:** grey on white under 3:1.
+11. **L3:** the index lastmod after 23-10.
+12. **L1, low:** Euskadi id collisions.
+13. **Hygiene:** scrub the pre-October backlog entries.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (61) — «lost hover»: 121 hovers that were a permanent background in dark mode
 
 **#140 verified** (web `5d3bd05`, 04:10Z). dark-scan: **0 dark-on-dark** on
