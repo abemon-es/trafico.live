@@ -90,6 +90,86 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (77) — /mapa showed a broken camera as an empty strip; the tiles never carried the daily check
+
+**#156 merged** (`WHITE_OVER_INTERPOLATED` empty); its gate is running (the
+active chips, the /clima circles at their new shade, 6 pages).
+
+**Signal** (server-28 approved the item; /mapa is the most-visited page, 384
+sessions in 30 days):
+- **The map's cameras** come from `cameras.pmtiles` (`generate-pmtiles.sh`,
+  daily at 07:00). Its query keeps only active cameras but didn't carry
+  `snapshotFailDays`: a camera whose snapshot fails kept its thumbnail in the
+  tile for its 1–2 days before deactivation, and forever on the A-5/A-6 pilot
+  roads, which never deactivate.
+- **The popup** (`map-layers/popup.ts`) hid the `<img>` on error and left an
+  empty strip, with no «sin imagen».
+- **`/api/cameras`** returned `imageUrl = feedUrl || thumbnailUrl` without
+  #143's rule.
+- **The /camaras/<city> grid's placeholder** was an icon with no text.
+
+**Fix:**
+1. The tile query adds `snapshotFailDays`. The popup shows a visible «Sin
+   imagen» when it's ≥1, and when the image fails to load: the error swaps the
+   `<img>` for the text, which inherits the popup's colour (it follows the
+   map's theme). The field is hidden from the popup's property rows.
+2. `/api/cameras`: `imageUrl` through `cameraImage()` (null when failing) and
+   `hasImage`. The fallback to the live DGT feed has no daily check, so it
+   passes the URL through. Every consumer already handled null.
+3. The two grid placeholders get a visible «Sin imagen».
+4. **The tile image is rebuilt when its source changes.** `run-tiles-gen.sh`
+   only rebuilt `trafico-tiles-gen` if the image was missing, so a change to
+   `generate-pmtiles.sh` never reached the image. It's now in the repo
+   (`services/tiles/cron/run-tiles-gen.sh`, like `refresh-matviews.sh`): a hash
+   of `Dockerfile.generate` + `generate-pmtiles.sh` as an image label, and a
+   different hash rebuilds it. `TILES_GEN_DRY_RUN=1` prints the decision.
+   - Dry run on compute: the current image has no label, so the first run
+     rebuilds it.
+   - **server-28 installs it** in place of `/opt/trafico/tiles/run-tiles-gen.sh`
+     and launches `--layer=cameras` after the deploy.
+
+**Evidence:**
+- `tests/camera-snapshots.test.ts` checks:
+  - the popup with snapshotFailDays ≥1: «Sin imagen», no `<img>`;
+  - without it: the `<img>` plus the load-error fallback; no URL: «Sin
+    imagen»; the URL escaped;
+  - the tile query carries the field;
+  - every file `Dockerfile.generate` copies is in the runner's hash;
+  - the API uses `cameraImage()`.
+- Mutants (the popup ignores the field; the query drops it) → both caught.
+- camera-snapshots, camera-images, dark-mode-sweep and service-worker pass.
+  Web tsc 11; eslint 0 = 0.
+
+**Gate after deploy and after server-28 runs `--layer=cameras`** (server-28):
+- a camera with `snapshotFailDays ≥ 1` shows «Sin imagen» in the /mapa popup,
+  read from the new tile;
+- `/api/cameras` gives `imageUrl: null`, `hasImage: false` for it;
+- the image's label equals the source hash.
+
+**Open, in order:**
+1. **L2:** merge this; server-28 installs the runner and regenerates the
+   cameras; gate.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers.
+7. **L2, low:** the eslint errors on main.
+8. **Perf, low:** `prefetch={false}` on long link directories.
+9. **Hygiene:** `GasStationPopup` and other dead exports; scrub the
+   pre-October backlog entries.
+10. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+11. **L3:** the index lastmod after 23-10.
+12. **L1, low:** Euskadi id collisions.
+13. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+14. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (76) — white text travels with its background: WHITE_OVER_INTERPOLATED is empty
 
 **#154 and #155 merged and gated.**
