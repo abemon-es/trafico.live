@@ -272,7 +272,7 @@ export default async function HomePage() {
     .filter((c) => c.slug)
     .map((c) => ({
       name: c.name,
-      url: `${BASE_URL}/comunidad-autonoma/${c.slug}`,
+      url: `${BASE_URL}/espana/${c.slug}`,
     }));
 
   const ccaaItemList = generateItemListSchema({

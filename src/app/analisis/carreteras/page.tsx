@@ -34,6 +34,9 @@ export const metadata: Metadata = {
 };
 
 // Major Spanish state roads grouped by type
+// Only roads with a /carreteras/<id> page. Twenty more (A-10, AP-36, N-3…)
+// were listed and linked to /analisis/carreteras/<id>, which 308s to a
+// /carreteras page that doesn't exist: 404 (checked 2026-10-22).
 const AUTOPISTAS = [
   { id: "AP-1", desc: "Burgos — País Vasco" },
   { id: "AP-2", desc: "Zaragoza — Barcelona" },
@@ -42,13 +45,9 @@ const AUTOPISTAS = [
   { id: "AP-7", desc: "Mediterráneo (Girona — Algeciras)" },
   { id: "AP-8", desc: "Bilbao — Behobia" },
   { id: "AP-9", desc: "Ferrol — Vigo" },
-  { id: "AP-36", desc: "Ocaña — La Roda" },
-  { id: "AP-41", desc: "Madrid — Toledo" },
-  { id: "AP-46", desc: "Málaga — Estepona" },
   { id: "AP-51", desc: "Ávila — Villacastín" },
   { id: "AP-61", desc: "San Rafael — Segovia" },
   { id: "AP-68", desc: "Bilbao — Zaragoza" },
-  { id: "AP-71", desc: "León — Campomanes" },
 ];
 
 const AUTOVIAS_A = [
@@ -60,46 +59,30 @@ const AUTOVIAS_A = [
   { id: "A-6", desc: "Madrid — A Coruña" },
   { id: "A-7", desc: "Algeciras — Barcelona" },
   { id: "A-8", desc: "Cantabria — Galicia" },
-  { id: "A-10", desc: "Extremadura (Plasencia — Coria)" },
-  { id: "A-11", desc: "Soria — Valladolid — Burgos" },
   { id: "A-12", desc: "Logroño — Pamplona" },
   { id: "A-13", desc: "Badajoz — Cáceres" },
-  { id: "A-14", desc: "Lleida — Montgarri" },
   { id: "A-15", desc: "Pamplona — Logroño" },
-  { id: "A-21", desc: "Pamplona — Huesca — Jaca" },
   { id: "A-23", desc: "Zaragoza — Huesca — Jaca" },
-  { id: "A-26", desc: "Lugo — Pontevedra" },
   { id: "A-30", desc: "Cartagena — Albacete" },
   { id: "A-31", desc: "Albacete — Alicante" },
   { id: "A-42", desc: "Madrid — Toledo" },
-  { id: "A-43", desc: "Ocaña — Ciudad Real" },
   { id: "A-44", desc: "Jaén — Motril" },
   { id: "A-45", desc: "Córdoba — Málaga" },
-  { id: "A-48", desc: "Algeciras — Huelva" },
   { id: "A-49", desc: "Sevilla — Portugal" },
   { id: "A-52", desc: "Ourense — Benavente" },
   { id: "A-55", desc: "A Coruña — Pontevedra" },
-  { id: "A-57", desc: "Pontevedra — Cañiza" },
   { id: "A-62", desc: "Valladolid — Portugal" },
-  { id: "A-63", desc: "Burgos — Aguilar de Campoo" },
-  { id: "A-65", desc: "Palencia — León" },
   { id: "A-66", desc: "Gijón — Sevilla (Ruta de la Plata)" },
   { id: "A-67", desc: "Palencia — Cantabria" },
   { id: "A-68", desc: "Zaragoza — Bilbao" },
-  { id: "A-71", desc: "Sahagún — Mayorga" },
-  { id: "A-72", desc: "Zamora — Tordesillas" },
   { id: "A-73", desc: "Burgos — Aguilar de Campoo" },
-  { id: "A-76", desc: "Ponferrada — Ourense" },
-  { id: "A-77", desc: "Tui — frontera Portugal" },
   { id: "A-92", desc: "Granada — Sevilla" },
 ];
 
 const NACIONALES = [
   { id: "N-1", desc: "Madrid — Irún" },
   { id: "N-2", desc: "Madrid — Barcelona" },
-  { id: "N-3", desc: "Madrid — Valencia" },
   { id: "N-4", desc: "Madrid — Cádiz" },
-  { id: "N-5", desc: "Madrid — Badajoz" },
   { id: "N-6", desc: "Madrid — A Coruña" },
   { id: "N-120", desc: "Logroño — Vigo" },
   { id: "N-122", desc: "Tordesillas — Zaragoza" },
@@ -150,15 +133,15 @@ const collectionSchema = {
     "@type": "ListItem",
     position: i + 1,
     name: r.id,
-    url: `${BASE_URL}/analisis/carreteras/${r.id.toLowerCase().replace("/", "-")}`,
+    url: `${BASE_URL}/carreteras/${r.id.replace("/", "-")}`,
   })),
 };
 
 function RoadCard({ id, desc }: { id: string; desc: string }) {
-  const slug = id.toLowerCase().replace("/", "-");
+  const slug = id.replace("/", "-");
   return (
     <Link
-      href={`/analisis/carreteras/${slug}`}
+      href={`/carreteras/${slug}`}
       className="group flex flex-col gap-0.5 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-tl-400 dark:hover:border-tl-500 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600"
     >
       <span className="text-sm font-bold text-tl-700 dark:text-tl-300 font-data group-hover:text-tl-800 dark:group-hover:text-tl-200">

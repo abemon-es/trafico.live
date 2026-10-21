@@ -17,7 +17,6 @@ export default function TerritoriosPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <Breadcrumbs items={[
           { name: "Inicio", href: "/" },
-          { name: "Explorar", href: "/explorar" },
           { name: "Territorios", href: "/explorar/territorios" },
         ]} />
 
@@ -26,10 +25,8 @@ export default function TerritoriosPage() {
           <Link href="/explorar/territorios" className="text-tl-600 dark:text-tl-400 hover:underline">Territorios</Link>
           <Link href="/explorar/carreteras" className="text-tl-600 dark:text-tl-400 hover:underline">Carreteras</Link>
           <Link href="/explorar/infraestructura" className="text-tl-600 dark:text-tl-400 hover:underline">Infraestructura</Link>
-          <Link href="/comunidad-autonoma" className="text-tl-600 dark:text-tl-400 hover:underline">Comunidades autónomas</Link>
           <Link href="/espana" className="text-tl-600 dark:text-tl-400 hover:underline">España</Link>
           <Link href="/ciudad" className="text-tl-600 dark:text-tl-400 hover:underline">Ciudades</Link>
-          <Link href="/municipio" className="text-tl-600 dark:text-tl-400 hover:underline">Municipios</Link>
         </nav>
       </div>
       <TerritoriosContent />

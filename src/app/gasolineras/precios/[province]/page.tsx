@@ -228,7 +228,7 @@ export default async function ProvincePricesPage({ params }: Props) {
           {
             title: `Mapa de gasolineras en ${provinceData.name}`,
             description: "Ver todas las estaciones en el mapa interactivo",
-            href: `/gasolineras/mapa/provincia/${provinceData.code}`,
+            href: "/gasolineras/mapa",
             icon: <Map className="w-5 h-5" />,
           },
           {

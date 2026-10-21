@@ -16,7 +16,6 @@ export default function CarreterasPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <Breadcrumbs items={[
           { name: "Inicio", href: "/" },
-          { name: "Explorar", href: "/explorar" },
           { name: "Carreteras", href: "/explorar/carreteras" },
         ]} />
       </div>
