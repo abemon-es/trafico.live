@@ -110,14 +110,15 @@ function verifyResendSignature(
 
 async function handleDelivered(event: ResendWebhookEvent): Promise<void> {
   // Just log — no subscriber state change needed
-  console.log(`[newsletter:events] Delivered: ${event.data.to[0]} email_id=${event.data.email_id}`);
+  // Logs carry the email_id, never the address (newsletter_events holds the row).
+  console.log(`[newsletter:events] Delivered email_id=${event.data.email_id}`);
 
   await logEvent(event.data.email_id, event.data.to[0], "delivered", null);
 }
 
 async function handleOpened(event: ResendWebhookEvent): Promise<void> {
   const email = event.data.to[0];
-  console.log(`[newsletter:events] Opened: ${email}`);
+  console.log(`[newsletter:events] Opened email_id=${event.data.email_id}`);
 
   await logEvent(event.data.email_id, email, "opened", null);
 }
@@ -125,7 +126,7 @@ async function handleOpened(event: ResendWebhookEvent): Promise<void> {
 async function handleClicked(event: ResendWebhookEvent): Promise<void> {
   const email = event.data.to[0];
   const link = event.data.click?.link ?? "";
-  console.log(`[newsletter:events] Clicked: ${email} → ${link}`);
+  console.log(`[newsletter:events] Clicked email_id=${event.data.email_id}`);
 
   await logEvent(event.data.email_id, email, "clicked", { link });
 }
@@ -133,7 +134,7 @@ async function handleClicked(event: ResendWebhookEvent): Promise<void> {
 async function handleBounced(event: ResendWebhookEvent): Promise<void> {
   const email = event.data.to[0];
   const bounceType = event.data.bounce?.type ?? "hard";
-  console.warn(`[newsletter:events] Bounced (${bounceType}): ${email}`);
+  console.warn(`[newsletter:events] Bounced (${bounceType}) email_id=${event.data.email_id}`);
 
   await logEvent(event.data.email_id, email, "bounced", { type: bounceType });
 
@@ -143,13 +144,13 @@ async function handleBounced(event: ResendWebhookEvent): Promise<void> {
       where: { email, isActive: true },
       data: { isActive: false },
     });
-    console.log(`[newsletter:events] Marked ${email} as inactive (hard bounce)`);
+    console.log(`[newsletter:events] Subscriber marked inactive (hard bounce) email_id=${event.data.email_id}`);
   }
 }
 
 async function handleComplained(event: ResendWebhookEvent): Promise<void> {
   const email = event.data.to[0];
-  console.warn(`[newsletter:events] Complaint: ${email} — marking UNSUBSCRIBED immediately (LSSI)`);
+  console.warn(`[newsletter:events] Complaint email_id=${event.data.email_id}: marking UNSUBSCRIBED immediately (LSSI)`);
 
   await logEvent(event.data.email_id, email, "complained", null);
 
@@ -199,7 +200,7 @@ async function logEvent(
     } else {
       // Fallback: log to console until migration is applied
       console.log(
-        `[newsletter:events] LOG emailId=${emailId} email=${email} type=${eventType}`,
+        `[newsletter:events] LOG emailId=${emailId} type=${eventType}`,
         metadata ?? ""
       );
     }
