@@ -53,6 +53,15 @@ export async function generateStaticParams() {
   return [];
 }
 
+function TrendIcon({ diff }: { diff: number | null }) {
+  if (diff === null) return <Minus className="w-3 h-3 text-gray-400 dark:text-gray-500" />;
+  if (diff < -0.005)
+    return <TrendingDown className="w-3 h-3 text-green-600 dark:text-green-400" />;
+  if (diff > 0.005)
+    return <TrendingUp className="w-3 h-3 text-red-600 dark:text-red-400" />;
+  return <Minus className="w-3 h-3 text-gray-400 dark:text-gray-500" />;
+}
+
 export default async function ProvinceCombustiblePage({ params }: Props) {
   const { community, province: provSlug } = await params;
   const prov = await getProvince(community, provSlug);
@@ -198,15 +207,6 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
     currentDiesel && yearAgoPrice?.priceGasoleoA
       ? currentDiesel - Number(yearAgoPrice.priceGasoleoA)
       : null;
-
-  function TrendIcon({ diff }: { diff: number | null }) {
-    if (diff === null) return <Minus className="w-3 h-3 text-gray-400 dark:text-gray-500" />;
-    if (diff < -0.005)
-      return <TrendingDown className="w-3 h-3 text-green-600 dark:text-green-400" />;
-    if (diff > 0.005)
-      return <TrendingUp className="w-3 h-3 text-red-600 dark:text-red-400" />;
-    return <Minus className="w-3 h-3 text-gray-400 dark:text-gray-500" />;
-  }
 
   function diffColor(diff: number | null): string {
     if (diff === null) return "text-gray-500 dark:text-gray-400";

@@ -99,7 +99,8 @@ export function FuelPriceTable({
     }
   };
 
-  const SortIcon = ({ field }: { field: SortField }) => {
+  // A render function, not a component (a component defined here remounts on every render).
+  const sortIcon = (field: SortField) => {
     if (sortField !== field) return null;
     return sortDirection === "asc" ? (
       <ChevronUp className="w-4 h-4" />
@@ -119,7 +120,7 @@ export function FuelPriceTable({
             >
               <div className="flex items-center gap-1">
                 Gasolinera
-                <SortIcon field="name" />
+                {sortIcon("name")}
               </div>
             </th>
             {showRoad && (
@@ -131,7 +132,7 @@ export function FuelPriceTable({
             >
               <div className="flex items-center gap-1">
                 Localidad
-                <SortIcon field="locality" />
+                {sortIcon("locality")}
               </div>
             </th>
             <th
@@ -140,7 +141,7 @@ export function FuelPriceTable({
             >
               <div className="flex items-center justify-end gap-1">
                 Gasóleo A
-                <SortIcon field="priceGasoleoA" />
+                {sortIcon("priceGasoleoA")}
               </div>
             </th>
             <th
@@ -149,7 +150,7 @@ export function FuelPriceTable({
             >
               <div className="flex items-center justify-end gap-1">
                 Gasolina 95
-                <SortIcon field="priceGasolina95E5" />
+                {sortIcon("priceGasolina95E5")}
               </div>
             </th>
             <th
@@ -158,7 +159,7 @@ export function FuelPriceTable({
             >
               <div className="flex items-center justify-end gap-1">
                 Gasolina 98
-                <SortIcon field="priceGasolina98E5" />
+                {sortIcon("priceGasolina98E5")}
               </div>
             </th>
             <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-400">24h</th>

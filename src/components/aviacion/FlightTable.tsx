@@ -92,7 +92,9 @@ export function FlightTable({ flights, icao24 }: Props) {
     return sortDir === "desc" ? bv - av : av - bv;
   });
 
-  const SortIcon = ({ k }: { k: SortKey }) =>
+  // A render function, not a component: defined in here, a component would be a
+  // new type on every render and remount.
+  const sortIcon = (k: SortKey) =>
     sortKey === k ? (
       sortDir === "desc" ? (
         <ChevronDown className="w-3 h-3 inline ml-0.5" />
@@ -110,18 +112,18 @@ export function FlightTable({ flights, icao24 }: Props) {
         <thead>
           <tr className="border-b border-gray-100 dark:border-gray-800">
             <th className={`${th} text-left pr-4`} onClick={() => handleSort("date")}>
-              Fecha <SortIcon k="date" />
+              Fecha {sortIcon("date")}
             </th>
             <th className={`${th} text-left pr-4`}>Salida</th>
             <th className={`${th} text-left pr-4`}>Llegada</th>
             <th className={`${th} text-right pr-4`} onClick={() => handleSort("duration")}>
-              Duración <SortIcon k="duration" />
+              Duración {sortIcon("duration")}
             </th>
             <th className={`${th} text-right pr-4`} onClick={() => handleSort("altitude")}>
-              Alt. máx. <SortIcon k="altitude" />
+              Alt. máx. {sortIcon("altitude")}
             </th>
             <th className={`${th} text-right pr-4`} onClick={() => handleSort("distance")}>
-              Dist. <SortIcon k="distance" />
+              Dist. {sortIcon("distance")}
             </th>
             <th className={`${th} text-left`}>Detalle</th>
           </tr>

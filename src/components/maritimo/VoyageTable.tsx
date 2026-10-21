@@ -127,15 +127,9 @@ export function VoyageTable({ voyages }: VoyageTableProps) {
     }
   }
 
-  const ThSort = ({
-    col,
-    label,
-    className = "",
-  }: {
-    col: SortKey;
-    label: string;
-    className?: string;
-  }) => (
+  // A render function, not a component: as a component defined in here, each
+  // render made a new type and React rebuilt the header cells.
+  const thSort = (col: SortKey, label: string, className = "") => (
     <th
       className={`px-4 py-3 text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors select-none ${className}`}
       onClick={() => handleSort(col)}
@@ -156,10 +150,10 @@ export function VoyageTable({ voyages }: VoyageTableProps) {
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 Ruta
               </th>
-              <ThSort col="departedAt" label="Salida" />
-              <ThSort col="durationH" label="Duracion" className="hidden sm:table-cell" />
-              <ThSort col="distanceNm" label="Distancia" className="hidden md:table-cell" />
-              <ThSort col="avgSpeedKn" label="Vel. media" className="hidden lg:table-cell" />
+              {thSort("departedAt", "Salida")}
+              {thSort("durationH", "Duracion", "hidden sm:table-cell")}
+              {thSort("distanceNm", "Distancia", "hidden md:table-cell")}
+              {thSort("avgSpeedKn", "Vel. media", "hidden lg:table-cell")}
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 Estado
               </th>
