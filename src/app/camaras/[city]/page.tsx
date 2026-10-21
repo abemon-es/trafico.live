@@ -166,8 +166,9 @@ export default async function CamarasCityPage({ params }: Props) {
                     </div>
                   </div>
                 ) : (
-                  <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <Camera className="w-8 h-8 text-gray-300 dark:text-gray-700" />
+                  <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center gap-1">
+                    <Camera className="w-8 h-8 text-gray-300 dark:text-gray-700" aria-hidden="true" />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Sin imagen</span>
                   </div>
                 )}
                 <div className="p-3">
@@ -338,8 +339,9 @@ export default async function CamarasCityPage({ params }: Props) {
                               />
                             </div>
                           ) : (
-                            <div className="aspect-video bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-                              <Camera className="w-8 h-8 text-gray-300" />
+                            <div className="aspect-video bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center gap-1">
+                              <Camera className="w-8 h-8 text-gray-300 dark:text-gray-700" aria-hidden="true" />
+                              <span className="text-xs text-gray-500 dark:text-gray-400">Sin imagen</span>
                             </div>
                           )}
                           <div className="p-3">

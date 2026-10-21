@@ -1,4 +1,5 @@
 import { reportApiError } from "@/lib/api-error";
+import { cameraImage } from "@/lib/cameras/snapshot";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
@@ -27,7 +28,9 @@ interface CameraResponseItem {
   kmPoint: number | null;
   province: string;
   community: string;
-  imageUrl: string;
+  /** null when the daily check found the snapshot isn't an image («sin imagen»). */
+  imageUrl: string | null;
+  hasImage: boolean;
 }
 
 interface PaginationInfo {
@@ -103,6 +106,8 @@ export async function GET(request: NextRequest) {
       if (dbCameras.length > 0) {
         cameras = dbCameras.map((cam) => {
           const provinceName = cam.provinceName || "";
+          // The pages' rule: null («sin imagen») from the first day the snapshot isn't an image.
+          const imageUrl = cameraImage({ thumbnailUrl: cam.feedUrl || cam.thumbnailUrl, snapshotFailDays: cam.snapshotFailDays });
           return {
             id: cam.id,
             name: cam.name,
@@ -113,7 +118,8 @@ export async function GET(request: NextRequest) {
             kmPoint: cam.kmPoint ? Number(cam.kmPoint) : null,
             province: provinceName,
             community: PROVINCE_TO_COMMUNITY[provinceName] || "",
-            imageUrl: cam.feedUrl || cam.thumbnailUrl || "",
+            imageUrl,
+            hasImage: imageUrl !== null,
           };
         });
       }
@@ -140,7 +146,9 @@ export async function GET(request: NextRequest) {
           kmPoint: cam.kmPoint,
           province: normalizedProvince,
           community,
-          imageUrl: cam.imageUrl,
+          // The live DGT feed (the database is down): no daily check to go by.
+          imageUrl: cam.imageUrl || null,
+          hasImage: Boolean(cam.imageUrl),
         };
       });
 

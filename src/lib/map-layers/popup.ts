@@ -322,15 +322,23 @@ function detailUrl(layerId: string, props: FeatureProps): string | null {
   return route.pattern.replace("{id}", encodeURIComponent(String(raw)));
 }
 
-/** Camera live-feed thumbnail strip. DGT feeds are static JPGs refreshed ~5 min. */
-function thumbnailHTML(props: FeatureProps): string {
+const NO_IMAGE = `<div style="padding:18px 0;text-align:center;font-size:12px;opacity:0.7;">Sin imagen</div>`;
+
+/**
+ * Camera live-feed thumbnail strip. DGT feeds are static JPGs refreshed ~5 min.
+ * «Sin imagen», visible, when the daily check found the snapshot isn't an image
+ * (snapshotFailDays ≥ 1 in the tile, the pages' rule: src/lib/cameras/snapshot.ts)
+ * or when it fails to load; until 2026-10-21 the strip was just left empty.
+ * The text inherits the popup's colour, which follows the map's theme.
+ */
+export function thumbnailHTML(props: FeatureProps): string {
   const url = typeof props.thumbnailUrl === "string" ? props.thumbnailUrl
             : typeof props.feedUrl === "string" ? props.feedUrl : null;
-  if (!url) return "";
+  const failing = typeof props.snapshotFailDays === "number" && props.snapshotFailDays > 0;
+  const frame = (inner: string) => `<div style="margin:6px 0;border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.08);">${inner}</div>`;
+  if (!url || failing) return frame(NO_IMAGE);
   const safe = escapeHtml(url);
-  return `<div style="margin:6px 0;border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.08);">
-    <img src="${safe}" alt="Cámara en directo" loading="lazy" style="display:block;width:100%;max-height:130px;object-fit:cover;" onerror="this.style.display='none'"/>
-  </div>`;
+  return frame(`<img src="${safe}" alt="Cámara en directo" loading="lazy" style="display:block;width:100%;max-height:130px;object-fit:cover;" onerror="this.outerHTML=this.nextElementSibling.innerHTML"/><template>${NO_IMAGE}</template>`);
 }
 
 /** Price grid for gas stations. Accepts both newer (priceGasolina95,
@@ -458,7 +466,7 @@ export function buildPopupHTML(
     if (TITLE_KEYS.includes(key) && key === "name") continue;
     if (hasProvinceName && key === "province") continue;
     // Skip properties already displayed via the type-specific blocks
-    if (layerId === "cameras" && (key === "thumbnailUrl" || key === "feedUrl")) continue;
+    if (layerId === "cameras" && (key === "thumbnailUrl" || key === "feedUrl" || key === "snapshotFailDays")) continue;
     if ((layerId === "gas-stations" || layerId === "maritime-fuel" || layerId === "portugal-gas")
         && /^price/.test(key)) continue;
     if ((layerId === "incidents" || layerId === "accidents" || layerId === "emergencies")
