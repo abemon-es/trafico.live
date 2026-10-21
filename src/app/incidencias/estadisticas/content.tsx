@@ -689,7 +689,7 @@ export function IncidentStatsContent() {
         <div className="mt-4">
           <Link
             href="/incidencias"
-            className="inline-flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-400 font-medium"
+            className="inline-flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Ver mapa de incidencias en tiempo real

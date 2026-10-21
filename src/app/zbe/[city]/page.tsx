@@ -892,7 +892,7 @@ export default async function ZBECityPage({ params }: Props) {
                     <Zap className="w-5 h-5 text-tl-600 dark:text-tl-400" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400 transition-colors text-sm">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors text-sm">
                       Puntos de carga eléctrica en {cfg.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -925,7 +925,7 @@ export default async function ZBECityPage({ params }: Props) {
                   <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:text-purple-400 transition-colors text-sm">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors text-sm">
                     Gasolineras cerca de la ZBE
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">

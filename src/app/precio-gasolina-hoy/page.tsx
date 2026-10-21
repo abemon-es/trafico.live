@@ -469,7 +469,7 @@ export default async function PrecioGasolinaHoyPage() {
                       {idx + 1}
                     </span>
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:text-tl-300 transition-colors">
+                      <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:group-hover:text-tl-300 transition-colors">
                         {station.name}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-300 flex items-center gap-1">

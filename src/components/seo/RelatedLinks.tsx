@@ -31,12 +31,12 @@ export function RelatedLinks({ title = "Te puede interesar", links }: RelatedLin
             className="flex items-start gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:shadow-md hover:border-tl-300 transition-all group"
           >
             {link.icon && (
-              <div className="flex-shrink-0 mt-0.5 text-tl-600 dark:text-tl-400 group-hover:text-tl-700 dark:text-tl-300 transition-colors">
+              <div className="flex-shrink-0 mt-0.5 text-tl-600 dark:text-tl-400 group-hover:text-tl-700 dark:group-hover:text-tl-300 transition-colors">
                 {link.icon}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:text-tl-300 transition-colors leading-snug">
+              <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:group-hover:text-tl-300 transition-colors leading-snug">
                 {link.title}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{link.description}</p>

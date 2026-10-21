@@ -304,7 +304,7 @@ export default async function RestriccionesPage() {
                     className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:border-tl-300 hover:shadow-md transition-all group block"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400 transition-colors line-clamp-1">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors line-clamp-1">
                         {zone.name}
                       </h3>
                       <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-tl-500 transition-colors flex-shrink-0 mt-0.5" />

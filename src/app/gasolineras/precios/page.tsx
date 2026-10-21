@@ -142,7 +142,7 @@ export default async function PreciosPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-          <Link href="/gasolineras" className="hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300">Gasolineras</Link>
+          <Link href="/gasolineras" className="hover:text-gray-700 dark:hover:text-gray-200 dark:text-gray-300">Gasolineras</Link>
           <span>/</span>
           <span className="text-gray-900 dark:text-gray-100">Precios</span>
         </div>
@@ -310,7 +310,7 @@ export default async function PreciosPage() {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/gasolineras/precios/${province.slug}`}
-                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 text-sm"
+                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 text-sm"
                     >
                       <MapPin className="w-4 h-4 inline" />
                     </Link>
@@ -386,7 +386,7 @@ export default async function PreciosPage() {
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/gasolineras/precios/${province.slug}`}
-                        className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 text-sm"
+                        className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 text-sm"
                       >
                         <MapPin className="w-4 h-4 inline" />
                       </Link>

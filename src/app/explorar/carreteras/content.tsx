@@ -341,7 +341,7 @@ export default function CarreterasContent() {
                       className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all group"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                           {road.roadName}
                         </h3>
                         <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-tl-500" />

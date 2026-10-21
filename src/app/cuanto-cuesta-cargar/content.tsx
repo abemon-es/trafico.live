@@ -495,7 +495,7 @@ export default function CuantoCuestaCargarContent() {
                 <button
                   type="button"
                   onClick={() => setCustomPrice(null)}
-                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-400 dark:text-gray-400 underline"
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-400 underline"
                 >
                   Restablecer
                 </button>

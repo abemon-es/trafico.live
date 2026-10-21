@@ -133,7 +133,7 @@ export default function ProvinciasPage() {
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-red-600 dark:text-red-400 transition-colors">
+                          <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
                             {province.name}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">Código INE: {province.code}</p>

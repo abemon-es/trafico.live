@@ -636,7 +636,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
               className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:shadow-sm transition-all group text-sm"
             >
               <Anchor className="w-4 h-4 text-tl-500 flex-shrink-0" />
-              <span className="text-gray-700 dark:text-gray-300 group-hover:text-tl-700 dark:text-tl-300 transition-colors line-clamp-1">
+              <span className="text-gray-700 dark:text-gray-300 group-hover:text-tl-700 dark:group-hover:text-tl-300 transition-colors line-clamp-1">
                 {link.label}
               </span>
             </Link>
