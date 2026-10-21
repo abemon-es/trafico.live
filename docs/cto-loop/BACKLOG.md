@@ -90,6 +90,68 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (68) — dark mode, batch 2: /espana and the province sub-pages
+
+**#147 merged and gated** (`7937e4c2`, deployed 08:48Z). dark-scan on the same
+8 location pages: **islands 70 → 0, dark on dark 0, low contrast 211 → 0**.
+**#146 closed:** the proxy's 499s were 7 in the hour before the deploy (all
+internal, my own runs that hung) and 0 in the hour after (internal or
+external), with the same two-browser run in both. IH is resolved by server-28.
+
+**AEMET:** `weather` was `ok` at 08:00Z and 09:00Z, after failing on the
+key at 06:00Z and 07:00Z. That suggests the key was renewed, but an expired
+key also lets a few calls through. No probe: the next `aemet-forecast` and
+`aemet-historical` runs will tell.
+
+**Signal:** dark-scan on /espana, a community, a province and the six
+province sub-pages (accidents, trains, fuel, air quality, aviation; maritime
+on Cádiz):
+- **51 light islands**: /espana 23, accidents 10, trains 5, maritime 4,
+  fuel 4, air quality 3, aviation 2;
+- **4 dark on dark**: the «Volver a …» back link, `text-tl-600` with no dark
+  colour, at 2.89:1.
+
+**Fix:** the same transformer and pairs as batch 1, on `src/app/espana/**`:
+- 363 class strings in 10 files.
+- Light mode is byte-identical with every `dark:` removed (10/10).
+- Data bars, swatches and the air-quality level colours stay light.
+- Rule 7's `DARK_DONE` adds `src/app/espana/`. Mutant: a card in the
+  accidents page without its pairs → the test names `accidentes/page.tsx:281`.
+
+**Evidence:** dark-mode-sweep (1–7), theme-pre-paint, camera-images and
+service-worker pass. Web tsc 11. eslint: the same 3 errors as main at the same
+lines (`react-hooks/static-components` in `combustible/page.tsx`, a component
+created during render), not from this change.
+
+**Gate after deploy:** dark-scan on the same 9 pages: islands 51 → ~0, dark
+on dark 4 → 0.
+
+**Open, in order:**
+1. **L2:** merge this; gate after the deploy. Next batch: the city pages
+   (`/trafico/[ciudad]` family) after a scan picks the worst.
+2. **L3:** #145 after 2 gas-station runs (11:00Z and 18:00Z).
+3. **L1:** AEMET: confirm the key from the next scheduled runs (no probe).
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen», the remaining tints.
+7. **L2, low:** eslint errors on main: 3 internal `<a>` links in the location
+   sections; 3 components created during render in the province fuel page.
+8. **L3:** dead cameras in the map popups (`tile_cameras`).
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+11. **Accessibility:** grey on white under 3:1.
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Hygiene:** scrub the pre-October backlog entries.
+15. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+16. **Waiting on MJ:** SASEMAR (and the AEMET key unless point 3 confirms
+    it).
+
+---
+
 ## Cycle 2026-10-21 (67) — the location pages' cards were white in dark mode
 
 **#146 merged and verified** (`3a3a5ed8`, deployed 08:05Z):
