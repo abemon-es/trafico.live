@@ -226,6 +226,24 @@ provisions a DDL role (BACKLOG ESCALATIONS #00), a new migration needs:
 Step 4 is not optional. Skipping it on 2026-08-18 left a migration blocking the
 queue for nine hours; the infra session found it, not this loop.
 
+### Read-only DB checks: `BEGIN READ ONLY`, never a session `SET`
+`DATABASE_URL` goes through PgBouncer in **transaction pooling**. A
+session-level `SET` (`default_transaction_read_only`, `statement_timeout`,
+`search_path`…) sticks to the pooled server connection and leaks into the next
+client's transactions. On 2026-10-20 at 16:16Z this loop's own check script
+ran `SET default_transaction_read_only=on`. For ~9 minutes city-traffic's
+inserts that landed on that backend failed with «cannot execute INSERT in a
+read-only transaction» (GlitchTip TRAFICO-LIVE-JM/JN). Scope read-only checks
+with `BEGIN READ ONLY` … `ROLLBACK`, and give the pg client a `query_timeout`
+instead of a server-side timeout (PgBouncer rejects `statement_timeout` as a
+startup parameter anyway).
+
+server-28 (2026-10-21) is adding a read-only role with its own PgBouncer
+entry, and so its own pool, which can't contaminate the app's and can't write.
+Once its `DATABASE_URL_RO` exists, every read-only check goes through it, and
+`DATABASE_URL` is only for the app. The CTO's change-log says where the URL
+lives; it's never printed.
+
 ### Ask a detector WHAT it acts on, not whether it runs
 The hardest failure of the week left no hole to look into. On the infra side a
 whitelist guard ran every 2 minutes **for four months** with `ADMIN_IPS` set to
