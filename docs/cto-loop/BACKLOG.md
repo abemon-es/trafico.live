@@ -90,6 +90,83 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (79) — eslint on main: a conditional hook and 19 components created during render
+
+**#158 merged and gated** (`cdd16ec6`, deployed 13:45Z), with a real hover in
+dark:
+- /carga-ev's title is gray-100 at rest, green-400 on hover (9.98:1).
+  `dark:group-hover:` wins over the light `group-hover:` in dark, as Tailwind
+  v4 emits it later.
+- /profesional gray-900 → gray-800 (text 13.33:1).
+- /gasolineras/precios gray-300 → gray-200 (15.46:1).
+- dark-scan 0/0/0 on 4 pages.
+
+**AEMET:** the 13:20Z `aemet-forecast` run is still going 50 min later, by
+design. It's paced (about 1 request every 4–10 s), the queue requeues, and
+some municipalities answer ok while the rest get 401/500. It isn't hammering
+AEMET. The key is still expired (MJ).
+
+**Euskadi id collisions:** I'm leaving them. Cycle 51 measured 1 in 271, and
+the fix changes ids, with re-broadcasts, re-alerts, API consumers and old ids
+lingering for 1 h (server-28). Not worth it unless it grows.
+
+**Signal:** eslint on main, all of `src/`: **202 errors in 71 files** (118
+`no-html-link-for-pages`, 23 `set-state-in-effect`, 19 `static-components`, 13
+`purity`, 1 `rules-of-hooks`, …). This cycle takes the two that can make the
+app wrong:
+- **`rules-of-hooks`** in `inteligencia/hora-punta-y-accidentes/heatmap.tsx`
+  (`VehicleByHourChart`): `useState` after an early `return null`. If `data`
+  goes from rows to none, the hook count changes and React throws.
+- **19 `static-components`**: components defined inside another's render. Each
+  render makes a new type, and React unmounts and remounts it. `VoyageTable`'s
+  `ThSort` rebuilt the table's header cells on every render; `SortIcon` in
+  `FlightTable` and `FuelPriceTable`, and `TrendIcon` in `PriceHistoryChart`
+  and the province fuel page.
+
+**Fix (6 files):**
+- the hook before the early return;
+- the `TrendIcon`s, which close over nothing, to module scope;
+- `SortIcon` and `ThSort`, which close over the sort state, as render
+  functions (`{sortIcon("date")}`), so no component type is created.
+  Behaviour unchanged.
+
+**Evidence:**
+- eslint on the 6 files: **20 errors on main → 0 on the branch** (exactly
+  those 20);
+- web tsc 11;
+- dark-mode-sweep, camera-snapshots and theme-pre-paint pass.
+
+**Gate after deploy:** load each page that renders these in a browser (an
+aircraft, a gas station, a vessel,
+/inteligencia/hora-punta-y-accidentes, a province's fuel page). No
+page or console error, and a sort header still sorts.
+
+**What's left of eslint (182):** 118 internal links as `<a>` (a full reload
+instead of client navigation; their own batch), 23 `set-state-in-effect`, 13
+`purity`, and the rest. A lint ratchet in the deploy gate is server-28's call
+(there's no PR CI).
+
+**Open, in order:**
+1. **L2:** merge this; gate.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+4. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+5. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+6. **L2:** the 118 internal `<a>` → `<Link>` (its own batch).
+7. **L2, low:** `set-state-in-effect` / `purity`.
+8. **Perf, low:** `prefetch={false}` on long link directories.
+9. **Hygiene:** `GasStationPopup`, `FuelPriceTable` (no page imports it) and
+   other dead exports; scrub the pre-October backlog entries.
+10. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+11. **L3:** the index lastmod after 23-10.
+12. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+13. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (78) — dark-mode hovers: 40 card titles always in the hover colour, 21 hovers that didn't change
 
 **#156 gated:** the 10 active chips give the same numbers before and after
