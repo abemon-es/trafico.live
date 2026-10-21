@@ -195,7 +195,8 @@ SELECT json_build_object(
       'provinceName', "provinceName",
       'isActive', "isActive",
       'feedUrl', "feedUrl",
-      'thumbnailUrl', "thumbnailUrl"
+      'thumbnailUrl', "thumbnailUrl",
+      'snapshotFailDays', "snapshotFailDays"
     )
   )), '[]'::json)
 ) FROM "Camera" WHERE "isActive" = true;

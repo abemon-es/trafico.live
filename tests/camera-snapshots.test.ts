@@ -21,6 +21,7 @@ import {
   type SnapshotResult,
 } from "../services/collector/tasks/camera/snapshots";
 import { cameraImage } from "../src/lib/cameras/snapshot";
+import { thumbnailHTML } from "../src/lib/map-layers/popup";
 
 async function main() {
   // checkSnapshots: image vs not, errors apart, never more than CHECK_CONCURRENCY at once.
@@ -126,6 +127,37 @@ async function main() {
   };
   walk(join(process.cwd(), "src"));
   assert.deepEqual(direct, [], `thumbnails rendered without cameraImage():\n${direct.join("\n")}`);
+
+  // The map popup (/mapa): the same rule, from the camera tile's snapshotFailDays,
+  // and a visible «Sin imagen» instead of the empty strip it left until 2026-10-21.
+  const failing = thumbnailHTML({ thumbnailUrl: "https://e/1.jpg", snapshotFailDays: 2 });
+  assert.match(failing, /Sin imagen/);
+  assert.doesNotMatch(failing, /<img/, "no broken image for a failing camera");
+  const ok = thumbnailHTML({ thumbnailUrl: "https://e/1.jpg", snapshotFailDays: 0 });
+  assert.match(ok, /<img src="https:\/\/e\/1.jpg"/);
+  assert.match(ok, /onerror="this\.outerHTML=this\.nextElementSibling\.innerHTML"/, "a load error shows the text, not nothing");
+  assert.match(ok, /<template>[^]*Sin imagen[^]*<\/template>/);
+  assert.match(thumbnailHTML({}), /Sin imagen/, "no URL at all");
+  assert.doesNotMatch(thumbnailHTML({ thumbnailUrl: 'x" onload="alert(1)' }), /onload="alert/, "the URL is escaped");
+
+  // The tile carries the field the popup reads.
+  const gen = readFileSync(join(process.cwd(), "services/tiles/generate-pmtiles.sh"), "utf8");
+  const cameraSql = gen.slice(gen.indexOf("generate_cameras()"), gen.indexOf("run_query \"cameras\""));
+  assert.match(cameraSql, /'snapshotFailDays', "snapshotFailDays"/);
+
+  // The tile image is rebuilt when what it's built from changes: every file
+  // Dockerfile.generate copies is in the runner's hash.
+  const dockerfile = readFileSync(join(process.cwd(), "services/tiles/Dockerfile.generate"), "utf8");
+  const runner = readFileSync(join(process.cwd(), "services/tiles/cron/run-tiles-gen.sh"), "utf8");
+  const copied = [...dockerfile.matchAll(/^COPY (?!--from)(\S+)/gm)].map((m) => m[1]);
+  assert.ok(copied.length > 0);
+  const hashLine = runner.split("\n").find((l) => l.startsWith("HASH=")) ?? "";
+  for (const f of ["Dockerfile.generate", ...copied]) assert.ok(hashLine.includes(f), `the runner's hash covers ${f}`);
+
+  // The cameras API: the pages' rule, not the raw URL.
+  const api = readFileSync(join(process.cwd(), "src/app/api/cameras/route.ts"), "utf8");
+  assert.match(api, /cameraImage\(\{ thumbnailUrl: cam\.feedUrl \|\| cam\.thumbnailUrl, snapshotFailDays: cam\.snapshotFailDays \}\)/);
+  assert.match(api, /hasImage: imageUrl !== null/);
 
   console.log("camera snapshots: all checks passed");
 }
