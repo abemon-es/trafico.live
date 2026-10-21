@@ -2002,7 +2002,7 @@ function CorrelacionSection({
       {/* Interpretation */}
       {hasData && (
         <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4">
-          <h3 className="font-medium text-tl-900 mb-2">Interpretación</h3>
+          <h3 className="font-medium text-tl-900 dark:text-tl-100 mb-2">Interpretación</h3>
           <ul className="text-sm text-tl-800 dark:text-tl-200 space-y-1">
             <li>
               • <strong className="font-data">{data.data.summary.v16CorrelationRate}%</strong> de las balizas V16 se activaron cerca
@@ -2283,14 +2283,14 @@ function RankingsSection({
           {/* Most Improved */}
           {data.provinces.mostImproved.length > 0 && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-green-900 dark:text-green-100 mb-4 flex items-center gap-2">
                 <TrendingDown className="w-5 h-5 text-green-600 dark:text-green-400" />
                 Mayor Mejora
               </h3>
               <div className="space-y-2">
                 {data.provinces.mostImproved.slice(0, 5).map((p, idx) => (
                   <div key={p.province} className="flex items-center justify-between">
-                    <span className="font-medium text-green-800">{p.province}</span>
+                    <span className="font-medium text-green-800 dark:text-green-200">{p.province}</span>
                     <span className="text-green-600 dark:text-green-400 font-bold font-data">{p.changePercent.toFixed(1)}%</span>
                   </div>
                 ))}
@@ -2302,14 +2302,14 @@ function RankingsSection({
           {/* Most Worsened */}
           {data.provinces.mostWorsened.length > 0 && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-400" />
                 Mayor Empeoramiento
               </h3>
               <div className="space-y-2">
                 {data.provinces.mostWorsened.slice(0, 5).map((p, idx) => (
                   <div key={p.province} className="flex items-center justify-between">
-                    <span className="font-medium text-red-800">{p.province}</span>
+                    <span className="font-medium text-red-800 dark:text-red-200">{p.province}</span>
                     <span className="text-red-600 dark:text-red-400 font-bold font-data">+{p.changePercent.toFixed(1)}%</span>
                   </div>
                 ))}
@@ -2405,7 +2405,7 @@ function RankingsSection({
           {/* Most Dangerous */}
           {data.roads.mostDangerous.length > 0 && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 Más Peligrosas
               </h3>
@@ -2413,7 +2413,7 @@ function RankingsSection({
                 {data.roads.mostDangerous.slice(0, 5).map((r, idx) => (
                   <div key={r.roadName} className="flex items-center justify-between bg-white dark:bg-gray-900 rounded px-3 py-2">
                     <div>
-                      <span className="font-bold text-red-800">{r.roadName}</span>
+                      <span className="font-bold text-red-800 dark:text-red-200">{r.roadName}</span>
                       <p className="text-xs text-red-600 dark:text-red-400 font-data">{r.incidentsPerKm.toFixed(2)} inc/km</p>
                     </div>
                     <span className="text-lg font-bold text-red-700 dark:text-red-400 font-data">{r.riskScore.toFixed(1)}</span>

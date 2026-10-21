@@ -121,7 +121,7 @@ export function TrenesAnalytics() {
                       : i === 1
                         ? "text-gray-400"
                         : i === 2
-                          ? "text-tl-amber-700"
+                          ? "text-tl-amber-700 dark:text-tl-amber-300"
                           : "text-gray-500"
                   }`}
                 >

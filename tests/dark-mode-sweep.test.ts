@@ -37,7 +37,11 @@
  *    islands and 107 dark-on-dark texts on 23 pages); since then DARK_DONE
  *    is all of src/. Something white on purpose in dark mode too (a toggle
  *    knob, a dot on a coloured badge, a white button on a brand banner) says
- *    so with `dark:bg-white`.
+ *    so with `dark:bg-white`. Coloured dark text too (700–900, not grey) on an
+ *    element with no background of its own: it sits on its parent's, which is
+ *    dark in dark mode (40 texts until 2026-10-21, e.g. the cheapest-brand
+ *    card on /gasolineras/marcas). An element that sets its own background
+ *    (`bg-yellow-400 text-yellow-900`) is a pair the contrast rules check.
  * 8. A `--tl-primary` background under white text. In dark mode --tl-primary
  *    is a light link colour (#6393ff) and white on it is 2.94:1, so 21 buttons
  *    and badges of the API pages read poorly until 2026-10-21. Under white text
@@ -139,11 +143,14 @@ const DARK_DONE = ["src/"];
 const LIGHT_BG = new RegExp(`(?<![:\\w/!-])bg-(?:white|${COLOUR}-(?:50|100))(?![\\w/-])`);
 const ANY_LIGHT_BG = new RegExp(`(?<![:\\w/!-])bg-(?:white|${COLOUR}-[1-3]?\\d0)(?![\\w-])`);
 const DARK_GREY_TEXT = /(?<![:\w!-])text-gray-[6-9]00(?![\w/-])/;
+const COLOURED_DARK_TEXT = new RegExp(`(?<![:\\w!-])text-(?!gray-|slate-|zinc-|neutral-|stone-)${COLOUR}-[789]00(?![\\w/-])`);
+const OWN_BG = new RegExp(`(?<![:\\w!-])bg-(?:white|black|${COLOUR}-\\d+|\\[[^\\]]+\\])(?:\\/\\d+)?(?![\\w-])`);
 const unpaired = (line: string) =>
   classStrings(line).some(
     (s) =>
       ((LIGHT_BG.test(s) || ARB_LIGHT_BG.test(s)) && !/\bdark:bg-/.test(s)) ||
-      ((DARK_GREY_TEXT.test(s) || ARB_DARK_TEXT.test(s)) && !/\bdark:text-/.test(s) && !ANY_LIGHT_BG.test(s) && !ARB_ANY_LIGHT_BG.test(s)),
+      ((DARK_GREY_TEXT.test(s) || ARB_DARK_TEXT.test(s)) && !/\bdark:text-/.test(s) && !ANY_LIGHT_BG.test(s) && !ARB_ANY_LIGHT_BG.test(s)) ||
+      (COLOURED_DARK_TEXT.test(s) && !/\bdark:text-/.test(s) && !OWN_BG.test(s)),
   );
 assert.ok(unpaired('className="bg-white rounded-2xl border border-gray-200 p-6"'));
 assert.ok(!unpaired('className="bg-white dark:bg-gray-900 rounded-2xl"'));
@@ -158,6 +165,10 @@ assert.ok(unpaired('"font-bold text-[var(--color-tl-sea-700)]"'), "an arbitrary 
 assert.ok(!unpaired('"font-bold text-[var(--color-tl-sea-700)] dark:text-[var(--color-tl-sea-300)]"'));
 assert.ok(unpaired('"rounded-lg bg-[var(--color-tl-sea-50)] p-4"'), "an arbitrary light background with no dark pair");
 assert.ok(!unpaired('"bg-[var(--color-tl-sea-600)] text-white"'), "a solid accent reads in both themes");
+assert.ok(unpaired('<p className="text-2xl font-bold text-green-800">'), "coloured dark text on its parent's background");
+assert.ok(!unpaired('<p className="text-2xl font-bold text-green-800 dark:text-green-200">'));
+assert.ok(!unpaired('badge: "bg-yellow-400 text-yellow-900",'), "its own solid background: a pair, not this rule");
+assert.ok(!unpaired('"text-gray-500 text-tl-600"'), "600 is a mid tone");
 
 /** 6, text and borders: the same lost hover, only where the string has a light base and its own dark base. */
 const lostHoverTextBorder = (line: string) =>

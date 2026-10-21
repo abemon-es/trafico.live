@@ -315,7 +315,7 @@ export default async function OperacionesPage() {
           <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-8 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-tl-amber-800">Franjas horarias punta</h3>
+              <h3 className="font-semibold text-tl-amber-800 dark:text-tl-amber-200">Franjas horarias punta</h3>
               <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-0.5">
                 En operaciones de salida, los viernes de{" "}
                 <strong>15:00 a 21:00</strong> concentran el mayor volumen de tráfico.

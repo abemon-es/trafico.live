@@ -32,7 +32,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
         {station.priceGasoleoA != null && (
           <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded p-2 text-center">
             <div className="text-xs text-tl-amber-700 dark:text-tl-amber-300 font-medium">Gasóleo A</div>
-            <div className="text-base font-bold text-tl-amber-900">
+            <div className="text-base font-bold text-tl-amber-900 dark:text-tl-amber-100">
               {station.priceGasoleoA.toFixed(3)}€
             </div>
           </div>
@@ -40,7 +40,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
         {station.priceGasolina95E5 != null && (
           <div className="bg-tl-50 dark:bg-tl-900/20 rounded p-2 text-center">
             <div className="text-xs text-tl-700 dark:text-tl-300 font-medium">Gasolina 95</div>
-            <div className="text-base font-bold text-tl-900">
+            <div className="text-base font-bold text-tl-900 dark:text-tl-100">
               {station.priceGasolina95E5.toFixed(3)}€
             </div>
           </div>
@@ -48,7 +48,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
         {station.priceGasolina98E5 != null && (
           <div className="bg-purple-50 dark:bg-purple-900/20 rounded p-2 text-center">
             <div className="text-xs text-purple-700 dark:text-purple-400 font-medium">Gasolina 98</div>
-            <div className="text-base font-bold text-purple-900">
+            <div className="text-base font-bold text-purple-900 dark:text-purple-100">
               {station.priceGasolina98E5.toFixed(3)}€
             </div>
           </div>
@@ -56,7 +56,7 @@ export function GasStationPopup({ station }: GasStationPopupProps) {
         {station.priceGLP != null && (
           <div className="bg-green-50 dark:bg-green-900/20 rounded p-2 text-center">
             <div className="text-xs text-green-700 dark:text-green-400 font-medium">GLP</div>
-            <div className="text-base font-bold text-green-900">
+            <div className="text-base font-bold text-green-900 dark:text-green-100">
               {station.priceGLP.toFixed(3)}€
             </div>
           </div>

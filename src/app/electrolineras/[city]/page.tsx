@@ -499,7 +499,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
           {/* RELATED LINKS                                                    */}
           {/* ---------------------------------------------------------------- */}
           <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-5 mb-8">
-            <h2 className="font-semibold text-tl-900 mb-3 text-sm">
+            <h2 className="font-semibold text-tl-900 dark:text-tl-100 mb-3 text-sm">
               Más información sobre carga eléctrica
             </h2>
             <div className="flex flex-wrap gap-3">

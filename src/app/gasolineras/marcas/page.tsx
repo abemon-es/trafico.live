@@ -205,7 +205,7 @@ export default async function MarcasPage() {
               <TrendingDown className="w-5 h-5 text-green-600 dark:text-green-400" />
               <span className="text-sm font-medium text-green-700 dark:text-green-400">Marca más barata (diesel)</span>
             </div>
-            <p className="text-2xl font-bold text-green-800">{cheapestDieselBrand.brand}</p>
+            <p className="text-2xl font-bold text-green-800 dark:text-green-200">{cheapestDieselBrand.brand}</p>
             <p className="text-lg font-semibold text-green-700 dark:text-green-400 mt-1">
               {cheapestDieselBrand.avgDiesel?.toFixed(3)}€/L <span className="text-sm font-normal text-green-600 dark:text-green-400">de media</span>
             </p>
@@ -231,7 +231,7 @@ export default async function MarcasPage() {
               <Fuel className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
               <span className="text-sm font-medium text-tl-amber-700 dark:text-tl-amber-300">Ahorro repostando 50 L</span>
             </div>
-            <p className="text-2xl font-bold text-tl-amber-800">{savings50L}€</p>
+            <p className="text-2xl font-bold text-tl-amber-800 dark:text-tl-amber-200">{savings50L}€</p>
             <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-1">
               eligiendo {cheapestDieselBrand.brand} en vez de {mostExpensiveDieselBrand.brand}
             </p>

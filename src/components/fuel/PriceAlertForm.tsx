@@ -177,7 +177,7 @@ export function PriceAlertForm({
       {status === "success" ? (
         <div className="flex items-start gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-xl p-4">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 text-sm text-green-800">{message}</div>
+          <div className="flex-1 text-sm text-green-800 dark:text-green-200">{message}</div>
           <button
             onClick={handleDismiss}
             className="text-green-600 dark:text-green-400 hover:text-green-800 flex-shrink-0"

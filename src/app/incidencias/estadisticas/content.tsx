@@ -676,7 +676,7 @@ export function IncidentStatsContent() {
 
         {/* Data Source Note */}
         <div className="mt-8 bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4">
-          <h3 className="font-semibold text-tl-900 mb-2">Sobre estos datos</h3>
+          <h3 className="font-semibold text-tl-900 dark:text-tl-100 mb-2">Sobre estos datos</h3>
           <p className="text-sm text-tl-800 dark:text-tl-200">
             Los datos de incidencias se obtienen en tiempo real de múltiples fuentes oficiales: DGT
             (Dirección General de Tráfico), SCT (Servei Català de Trànsit), Tráfico País Vasco, y

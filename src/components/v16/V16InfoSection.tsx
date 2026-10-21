@@ -145,7 +145,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
             <div className="flex items-start gap-3">
               <Scale className="w-6 h-6 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="font-bold text-red-800 mb-1">
+                <h3 className="font-bold text-red-800 dark:text-red-200 mb-1">
                   OBLIGATORIA DESDE EL 1 DE JULIO DE 2021
                 </h3>
                 <p className="text-sm text-red-700 dark:text-red-400 mb-2">
@@ -254,7 +254,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
 
       {/* Data Source Info */}
       <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4">
-        <h3 className="font-semibold text-tl-900 mb-2">Sobre los datos mostrados</h3>
+        <h3 className="font-semibold text-tl-900 dark:text-tl-100 mb-2">Sobre los datos mostrados</h3>
         <p className="text-sm text-tl-800 dark:text-tl-200 mb-2">
           Los datos de balizas V16 se obtienen en tiempo real de la plataforma{" "}
           <strong>NAP DATEX II</strong> de la DGT (Dirección General de Tráfico). El sistema

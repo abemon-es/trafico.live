@@ -292,7 +292,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                   {incidents.map((incident) => (
                     <div key={incident.id} className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium text-red-800">
+                        <span className="text-sm font-medium text-red-800 dark:text-red-200">
                           {labelForEnum(incident.type)}
                         </span>
                         {incident.kmPoint && (
@@ -701,7 +701,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                 <div className="space-y-2">
                   {riskZones.map((zone) => (
                     <div key={zone.id} className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded text-sm">
-                      <span className="font-medium text-orange-800">{zone.type}</span>
+                      <span className="font-medium text-orange-800 dark:text-orange-200">{zone.type}</span>
                       {zone.kmStart && zone.kmEnd && (
                         <span className="text-orange-600 dark:text-orange-400 ml-2 font-data">
                           km {Number(zone.kmStart).toFixed(0)} - {Number(zone.kmEnd).toFixed(0)}

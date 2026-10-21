@@ -189,7 +189,7 @@ export default function SobrePage() {
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Limitaciones</h2>
           <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-6">
-            <ul className="space-y-3 text-tl-amber-800">
+            <ul className="space-y-3 text-tl-amber-800 dark:text-tl-amber-200">
               <li className="flex items-start gap-2">
                 <span className="font-bold">•</span>
                 <span>Puede haber un retraso de hasta 2 minutos entre que ocurre un evento y su publicación en el sistema.</span>

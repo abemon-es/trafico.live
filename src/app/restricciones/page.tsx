@@ -208,7 +208,7 @@ export default async function RestriccionesPage() {
                 <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-100">
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="w-4 h-4 text-red-600 dark:text-red-400" />
-                    <span className="text-sm font-semibold text-red-800">
+                    <span className="text-sm font-semibold text-red-800 dark:text-red-200">
                       Domingos y festivos
                     </span>
                   </div>
@@ -217,7 +217,7 @@ export default async function RestriccionesPage() {
                 <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg p-3 border border-tl-amber-100">
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="w-4 h-4 text-tl-amber-600 dark:text-tl-amber-400" />
-                    <span className="text-sm font-semibold text-tl-amber-800">
+                    <span className="text-sm font-semibold text-tl-amber-800 dark:text-tl-amber-200">
                       Vísperas de festivo
                     </span>
                   </div>

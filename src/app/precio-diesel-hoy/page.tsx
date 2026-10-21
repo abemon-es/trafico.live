@@ -675,7 +675,7 @@ export default async function PrecioDieselHoyPage() {
                         }
                         className="flex items-center gap-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg px-3 py-2 hover:bg-tl-amber-100 transition-colors"
                       >
-                        <span className="text-xs font-medium text-tl-amber-800">
+                        <span className="text-xs font-medium text-tl-amber-800 dark:text-tl-amber-200">
                           {province?.name ?? code}
                         </span>
                         <span className="text-xs font-bold text-tl-amber-600 dark:text-tl-amber-400 font-data">
