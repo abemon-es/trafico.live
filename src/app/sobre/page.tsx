@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { CONTACT_FORMS_ENABLED } from "@/lib/email/contact-forms";
 import { AlertTriangle, Database, Clock, Shield, ExternalLink } from "lucide-react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -259,13 +260,15 @@ export default function SobrePage() {
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
             <p className="text-gray-600 dark:text-gray-400 mb-5">
               Para consultas, soporte API, colaboraciones, prensa, legal o protección de datos,
-              utiliza nuestro formulario de contacto. Respondemos en menos de 24 horas hábiles.
+              {CONTACT_FORMS_ENABLED
+                ? " utiliza nuestro formulario de contacto. Respondemos en menos de 24 horas hábiles."
+                : " escríbenos por correo; la página de contacto tiene los buzones por categoría."}
             </p>
             <Link
               href="/sobre/contacto"
               className="inline-flex items-center gap-2 rounded-lg bg-tl-600 hover:bg-tl-700 text-white font-semibold px-5 py-2.5 text-sm transition-colors"
             >
-              Ir al formulario de contacto
+              {CONTACT_FORMS_ENABLED ? "Ir al formulario de contacto" : "Ir a la página de contacto"}
               <ExternalLink className="w-4 h-4" />
             </Link>
             <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">

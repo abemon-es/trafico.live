@@ -15,6 +15,8 @@ import {
 import { TierCard } from "@/components/api-landing/TierCard";
 import { CurlExample } from "@/components/api-landing/CurlExample";
 import RequestAccessForm from "@/components/api-landing/RequestAccessForm";
+import { ContactByEmail } from "@/components/contact/ContactByEmail";
+import { CONTACT_FORMS_ENABLED } from "@/lib/email/contact-forms";
 import { HeroReveal, SectionReveal } from "./Reveals";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -539,9 +541,13 @@ export default function ApiLandingPage() {
           </SectionReveal>
 
           <SectionReveal delay={0.1}>
-            <div className="bg-background rounded-2xl border border-tl-200 dark:border-tl-800 p-8 shadow-sm">
-              <RequestAccessForm />
-            </div>
+            {CONTACT_FORMS_ENABLED ? (
+              <div className="bg-background rounded-2xl border border-tl-200 dark:border-tl-800 p-8 shadow-sm">
+                <RequestAccessForm />
+              </div>
+            ) : (
+              <ContactByEmail subject="Acceso a la API de trafico.live" />
+            )}
           </SectionReveal>
         </div>
       </section>

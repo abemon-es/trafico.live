@@ -229,20 +229,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const userAgent = request.headers.get("user-agent");
 
   if (!isSESConfigured()) {
-    console.warn("[contacto-general] SES not configured. Logging payload only.");
-    console.log("[contacto-general]", v.data);
-    // Accepted but NOT delivered: the visitor is told the message was sent and
-    // nobody receives it. Until 2026-10-18 this branch was silent while SES was
-    // unconfigured in production. The payload logged above stays in Loki (90 d)
-    // so it can be recovered; this event carries no personal data and exists so
-    // that someone goes and looks. Fix the sender, never this alert.
+    // No sender: refuse, and say where to write. Until 2026-10-22 this branch
+    // answered «recibido», sent nothing and wrote the whole message to the log.
+    // Nothing from the request is logged; the event carries no personal data.
     reportApiError(
-      new Error("Contact form accepted but NOT delivered — no email sender configured"),
+      new Error("Contact form refused: no email sender configured"),
       "contacto-general",
       { form: "contacto-general", topic: v.data.topic }
     );
-    // `delivered: false` lets the form say "received", not "sent".
-    return NextResponse.json({ ok: true, delivered: false });
+    return NextResponse.json(
+      { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
+      { status: 503 }
+    );
   }
 
   try {

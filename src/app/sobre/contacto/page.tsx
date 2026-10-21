@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Shield, Scale, Newspaper, Database, Bug, Handshake, MessageCircle } from "lucide-react";
 import ContactForm from "./ContactForm";
+import { ContactByEmail } from "@/components/contact/ContactByEmail";
+import { CONTACT_FORMS_ENABLED } from "@/lib/email/contact-forms";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -118,11 +120,15 @@ export default function ContactoPage() {
           {/* Form */}
           <section className="lg:col-span-3">
             <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-50 mb-6">
-              Formulario de contacto
+              {CONTACT_FORMS_ENABLED ? "Formulario de contacto" : "Escríbenos"}
             </h2>
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 md:p-8 shadow-sm">
-              <ContactForm turnstileSiteKey={turnstileSiteKey} />
-            </div>
+            {CONTACT_FORMS_ENABLED ? (
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 md:p-8 shadow-sm">
+                <ContactForm turnstileSiteKey={turnstileSiteKey} />
+              </div>
+            ) : (
+              <ContactByEmail />
+            )}
           </section>
 
           {/* Direct addresses sidebar */}

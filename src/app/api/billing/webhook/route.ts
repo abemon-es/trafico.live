@@ -146,7 +146,7 @@ async function handleCheckoutCompleted(
         isActive: true,
       },
     });
-    console.log(`[webhook] Upgraded existing key ${existing.id} to ${tier} for ${email}`);
+    console.log(`[webhook] Upgraded existing key ${existing.id} to ${tier}`, { eventId });
   } else {
     await prisma.apiKey.create({
       data: {
@@ -160,7 +160,7 @@ async function handleCheckoutCompleted(
         rateLimitPerDay: clampInt(tierConfig.rateLimitPerDay),
       },
     });
-    console.log(`[webhook] Created ${tier} key for ${email}`, { eventId });
+    console.log(`[webhook] Created ${tier} key`, { eventId });
   }
 
   // GA4 server-side purchase event. Stitches to the originating GA4 session
