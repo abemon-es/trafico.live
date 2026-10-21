@@ -22,6 +22,15 @@ export const metadata: Metadata = {
   },
 };
 
+// Three province pages, linked visibly here; all 52 are on
+// /estadisticas/accidentes. Slugs as the route resolves them, from the official
+// name («Valencia/València»).
+const PROVINCE_ACCIDENT_LINKS = [
+  { href: "/estadisticas/accidentes/madrid", name: "Accidentes en Madrid" },
+  { href: "/estadisticas/accidentes/barcelona", name: "Accidentes en Barcelona" },
+  { href: "/estadisticas/accidentes/valenciavalencia", name: "Accidentes en Valencia" },
+];
+
 function EstadisticasPageContent({
   searchParams,
 }: {
@@ -51,23 +60,29 @@ export default function EstadisticasPage({
         ]} />
       </div>
 
-      {/* Server-rendered subpage links for SEO — visually hidden, fully crawlable */}
       <h2 className="sr-only">Estadísticas de accidentes y siniestralidad vial en España</h2>
-      <nav aria-label="Estadísticas de tráfico" className="sr-only">
-        <ul>
-          <li><Link href="/estadisticas/accidentes">Accidentes de tráfico en España</Link></li>
-          <li><Link href="/estadisticas/accidentes/madrid">Accidentes de tráfico en Madrid</Link></li>
-          <li><Link href="/estadisticas/accidentes/barcelona">Accidentes de tráfico en Barcelona</Link></li>
-          <li><Link href="/estadisticas/accidentes/valenciavalencia">Accidentes de tráfico en Valencia</Link></li>
-          <li><Link href="/intensidad">Intensidad de tráfico</Link></li>
-          <li><Link href="/estaciones-aforo">Estaciones de aforo</Link></li>
-        </ul>
-      </nav>
 
       <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">Cargando...</div>}>
         <EstadisticasPageContent searchParams={searchParams} />
       </Suspense>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <section aria-labelledby="province-accidents-heading" className="mt-8">
+          <h2 id="province-accidents-heading" className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Accidentes por provincia
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {PROVINCE_ACCIDENT_LINKS.map(({ href, name }) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className="inline-block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                >
+                  {name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
         <RelatedLinks links={[
           { title: "Estadísticas de accidentes", description: "Histórico de siniestralidad vial por año y comunidad", href: "/estadisticas/accidentes", icon: <ShieldAlert className="w-5 h-5" /> },
           { title: "Incidencias en tiempo real", description: "Cortes, obras y accidentes activos en España", href: "/incidencias", icon: <AlertTriangle className="w-5 h-5" /> },

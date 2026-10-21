@@ -25,6 +25,21 @@ export const metadata: Metadata = {
   },
 };
 
+// The ten city pages, linked visibly in the server HTML: the content above
+// loads its data in the browser.
+const TRAFFIC_CITY_LINKS = [
+  { city: "madrid", name: "Madrid" },
+  { city: "barcelona", name: "Barcelona" },
+  { city: "valencia", name: "Valencia" },
+  { city: "sevilla", name: "Sevilla" },
+  { city: "malaga", name: "Málaga" },
+  { city: "zaragoza", name: "Zaragoza" },
+  { city: "bilbao", name: "Bilbao" },
+  { city: "alicante", name: "Alicante" },
+  { city: "murcia", name: "Murcia" },
+  { city: "granada", name: "Granada" },
+];
+
 function IncidenciasLoading() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
@@ -79,34 +94,29 @@ export default function IncidenciasPage() {
         </div>
       </div>
 
-      {/* Server-rendered city traffic links for SEO — visually hidden, fully crawlable */}
-      <nav aria-label="Tráfico por ciudad" className="sr-only">
-        <ul>
-          {[
-            { city: "madrid", label: "Tráfico en Madrid" },
-            { city: "barcelona", label: "Tráfico en Barcelona" },
-            { city: "valencia", label: "Tráfico en Valencia" },
-            { city: "sevilla", label: "Tráfico en Sevilla" },
-            { city: "malaga", label: "Tráfico en Málaga" },
-            { city: "zaragoza", label: "Tráfico en Zaragoza" },
-            { city: "bilbao", label: "Tráfico en Bilbao" },
-            { city: "alicante", label: "Tráfico en Alicante" },
-            { city: "murcia", label: "Tráfico en Murcia" },
-            { city: "granada", label: "Tráfico en Granada" },
-          ].map(({ city, label }) => (
-            <li key={city}>
-              <Link href={`/trafico/${city}`}>{label}</Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
       {/* Client component with interactive map, filters, and live SWR data */}
       <Suspense fallback={<IncidenciasLoading />}>
         <IncidenciasContent />
       </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <section aria-labelledby="city-traffic-heading" className="mt-8">
+          <h2 id="city-traffic-heading" className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Tráfico por ciudad
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {TRAFFIC_CITY_LINKS.map(({ city, name }) => (
+              <li key={city}>
+                <Link
+                  href={`/trafico/${city}`}
+                  className="inline-block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                >
+                  {name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
         <RelatedLinks links={[
           { title: "Estado del tráfico en tiempo real", description: "Mapa interactivo con todas las capas de datos", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
           { title: "Cámaras DGT", description: "Imágenes en vivo de las principales carreteras", href: "/camaras", icon: <Video className="w-5 h-5" /> },

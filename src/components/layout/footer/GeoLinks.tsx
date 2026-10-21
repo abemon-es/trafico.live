@@ -140,6 +140,7 @@ const GEO_PROVINCES: { name: string; slug: string; code: string }[] =
 // the server HTML except a hidden copy of the menu, removed on 2026-10-21.
 const GEO_SECTIONS: { name: string; slug: string }[] = [
   { name: "España por provincias", slug: "/espana" },
+  { name: "Noticias de tráfico", slug: "/noticias" },
   { name: "Paneles DGT", slug: "/paneles" },
   { name: "Cercanías", slug: "/trenes/cercanias" },
   { name: "Puntualidad de trenes", slug: "/trenes/live" },

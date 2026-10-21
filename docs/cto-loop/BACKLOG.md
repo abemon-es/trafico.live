@@ -90,6 +90,71 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (87) — the four sr-only link lists: shown on their page, or gone
+
+**#165 merged and gated** (`52859c60`, deployed 19:58:34Z). Server HTML:
+- /estadisticas/accidentes: 52 distinct province links, all 200 (was 56, 7
+  of them 404);
+- /estadisticas: 3, all 200.
+
+**CMO decisions (21-10):**
+- **Rule from now on:** a hidden link is removed only if already visible
+  **on the same page**; otherwise it is shown there. #164 stands (DesktopNav
+  was a site-wide copy).
+- **The home's sr-only paragraph:** shown as a visible sources line, and
+  speakable points at it.
+- **The 7 short province aliases:** 308, one hop, to the canonical slug.
+  Approved; its own PR, next.
+- **Prettier canonical slugs:** not before the +28 pilot reading (~18-11),
+  and then the whole scheme at once.
+
+**This PR:**
+- **Home:**
+  - the sr-only block (34 links + the paragraph) is reduced to its heading
+    and the structured data;
+  - a visible «Más en trafico.live» block holds the 14 destinations the
+    home didn't show (9 linked only elsewhere + 5 linked nowhere);
+  - a visible `#home-fuentes` sources line, with the live counts only when
+    the database answered;
+  - the 20 destinations already visible on the home are dropped.
+- **Footer «Más secciones»:** + /noticias. No page linked the news hub
+  visibly.
+- **/incidencias:** a visible «Tráfico por ciudad» row (10 cities) replaces
+  the sr-only nav.
+- **/camaras:** the sr-only nav is removed; its 8 cities are in the footer
+  of the same page. A-5/A-6 are untouched.
+- **/estadisticas:**
+  - 3 of the 6 were already visible on the page, so they are removed;
+  - Madrid, Barcelona and Valencia were not, so they get a visible
+    «Accidentes por provincia» row. That follows the same-page rule; the
+    CMO's note said «remove», on a misread premise. Flagged.
+- **Guard `no-hidden-links`, extended:**
+  - no link inside an sr-only element;
+  - an sr-only link only if it shows on focus (the skip link);
+  - control: main's four pages fail it, one line each.
+
+**Open, in order:**
+1. **L3:** gate this PR: per page, distinct visible SSR destinations before →
+   after, and every former sr-only destination still visible on the same
+   page. Then the deploy time to the CMO, as a site-wide event.
+2. **L3 (CMO-approved):** 308 for the 7 short province aliases.
+3. **L3:** #145, the full-day share after 22-10's runs (PR comment).
+4. **L2:** territorios' two redirecting links; `/status` → `/alertas` full
+   reload; /incidencias' two SSR cards that both link /incidencias/analytics.
+5. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+6. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+7. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+8. **L2, low:** `set-state-in-effect` / `purity`; `prefetch={false}` on long
+   link directories; dead exports.
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (waiting on MJ's OK).
+10. **L3:** the index lastmod after 23-10.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (86) — seven province links on /estadisticas/accidentes led to a 404
 
 **aemet-forecast gate (L0, #161), on the 19:20Z run, the first with progress
