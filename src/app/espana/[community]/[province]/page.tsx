@@ -274,23 +274,23 @@ export default async function ProvincePage({ params }: Props) {
 
         {/* Municipalities list */}
         {prov.municipalities.length > 0 && (
-          <section id="municipios" className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section id="municipios" className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Municipios de {prov.name}
             </h2>
             {/* Capital (first by population) */}
             {prov.municipalities[0] && (
               <a
                 href={`/espana/${community}/${provSlug}/${prov.municipalities[0].slug}`}
-                className="block mb-4 p-4 rounded-xl bg-tl-50 border-2 border-tl-200 hover:border-tl-400 transition-colors group"
+                className="block mb-4 p-4 rounded-xl bg-tl-50 dark:bg-tl-900/20 border-2 border-tl-200 dark:border-tl-800 hover:border-tl-400 transition-colors group"
               >
                 <div className="flex items-center gap-3">
                   <span className="px-2 py-0.5 rounded bg-tl-600 text-white text-[10px] font-semibold uppercase tracking-wide">Capital</span>
                   <div>
-                    <p className="font-heading font-bold text-gray-900 group-hover:text-tl-600 transition-colors">
+                    <p className="font-heading font-bold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 transition-colors">
                       {prov.municipalities[0].name}
                     </p>
-                    <p className="text-xs text-gray-500 font-data">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-data">
                       {prov.municipalities[0].population?.toLocaleString("es-ES")} hab.
                     </p>
                   </div>
@@ -303,69 +303,69 @@ export default async function ProvincePage({ params }: Props) {
                 <a
                   key={mun.slug}
                   href={`/espana/${community}/${provSlug}/${mun.slug}`}
-                  className="group px-3 py-2 rounded-lg border border-gray-100 hover:border-tl-300 hover:bg-tl-50 transition-all"
+                  className="group px-3 py-2 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all"
                 >
-                  <p className="font-medium text-sm text-gray-900 group-hover:text-tl-600">{mun.name}</p>
-                  <p className="text-[10px] text-gray-400 font-data">{mun.population?.toLocaleString("es-ES")} hab.</p>
+                  <p className="font-medium text-sm text-gray-900 dark:text-gray-100 group-hover:text-tl-600">{mun.name}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-data">{mun.population?.toLocaleString("es-ES")} hab.</p>
                 </a>
               ))}
             </div>
             {prov.municipalities.length > 25 && (
-              <p className="mt-3 text-sm text-tl-600 font-semibold">
+              <p className="mt-3 text-sm text-tl-600 dark:text-tl-400 font-semibold">
                 +{prov.municipalities.length - 25} municipios más
               </p>
             )}
           </section>
         )}
         {/* Sub-page links */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
             Ver más sobre {prov.name}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Link
               href={`/espana/${community}/${provSlug}/trenes`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all group"
             >
               <Train className="w-5 h-5 text-tl-500 shrink-0" />
-              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-600">Trenes</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600">Trenes</span>
             </Link>
             <Link
               href={`/espana/${community}/${provSlug}/aviacion`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all group"
             >
               <Plane className="w-5 h-5 text-tl-500 shrink-0" />
-              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-600">Aviación</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600">Aviación</span>
             </Link>
             {COASTAL_PROVINCE_CODES.has(prov.code) && (
               <Link
                 href={`/espana/${community}/${provSlug}/maritimo`}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-sea-300 hover:bg-tl-sea-50 transition-all group"
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-tl-sea-300 dark:hover:border-tl-sea-700 hover:bg-tl-sea-50 dark:hover:bg-tl-sea-900/20 transition-all group"
               >
                 <Ship className="w-5 h-5 text-tl-sea-500 shrink-0" />
-                <span className="text-sm font-medium text-gray-900 group-hover:text-tl-sea-600">Marítimo</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-sea-600">Marítimo</span>
               </Link>
             )}
             <Link
               href={`/espana/${community}/${provSlug}/calidad-aire`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all group"
             >
               <WindIcon className="w-5 h-5 text-tl-500 shrink-0" />
-              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-600">Calidad del aire</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600">Calidad del aire</span>
             </Link>
             <Link
               href={`/espana/${community}/${provSlug}/combustible`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-tl-amber-300 hover:bg-tl-amber-50 transition-all group"
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-tl-amber-300 dark:hover:border-tl-amber-700 hover:bg-tl-amber-50 dark:hover:bg-tl-amber-900/20 transition-all group"
             >
               <Fuel className="w-5 h-5 text-tl-amber-500 shrink-0" />
-              <span className="text-sm font-medium text-gray-900 group-hover:text-tl-amber-600">Combustible</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-amber-600">Combustible</span>
             </Link>
             <Link
               href={`/espana/${community}/${provSlug}/accidentes`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-red-300 hover:bg-red-50 transition-all group"
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group"
             >
               <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-              <span className="text-sm font-medium text-gray-900 group-hover:text-red-600">Accidentes</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-red-600">Accidentes</span>
             </Link>
           </div>
         </section>

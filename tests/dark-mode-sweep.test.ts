@@ -110,7 +110,7 @@ assert.ok(lostHover("      className={`w-full hover:bg-gray-50 dark:bg-gray-950 
 assert.ok(lostHover("                  border-b border-gray-100 hover:bg-gray-50 dark:bg-gray-950"), "a line inside a template literal");
 
 /** 7: in a finished batch, a light background or dark grey text with no dark pair. */
-const DARK_DONE = ["src/components/location/"];
+const DARK_DONE = ["src/components/location/", "src/app/espana/"];
 const LIGHT_BG = new RegExp(`(?<![:\\w/-])bg-(?:white|${COLOUR}-(?:50|100))(?![\\w/-])`);
 const ANY_LIGHT_BG = new RegExp(`(?<![:\\w/-])bg-(?:white|${COLOUR}-[1-3]?\\d0)(?![\\w-])`);
 const DARK_GREY_TEXT = /(?<![:\w-])text-gray-[6-9]00(?![\w/-])/;
