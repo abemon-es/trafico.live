@@ -8,7 +8,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { weekSlug, fmtPrice, getProvinceNameMap } from "./shared";
+import { weekSlug, fmtPrice, getProvinceNameMap, nationalFuel, num } from "./shared";
 
 export async function sendWeeklyDigest(prisma: PrismaClient): Promise<number> {
   const now = new Date();
@@ -55,9 +55,7 @@ export async function sendWeeklyDigest(prisma: PrismaClient): Promise<number> {
   const [
     thisWeekIncidents,
     lastWeekIncidents,
-    avgDiesel,
-    avgGas95,
-    weekAgoFuel,
+    fuel,
     weatherAlerts,
     thisWeekStats,
     cheapestProvince,
@@ -65,12 +63,7 @@ export async function sendWeeklyDigest(prisma: PrismaClient): Promise<number> {
   ] = await Promise.all([
     prisma.trafficIncident.count({ where: { startedAt: { gte: weekAgo } } }),
     prisma.trafficIncident.count({ where: { startedAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
-    prisma.gasStation.aggregate({ _avg: { priceGasoleoA: true }, where: { priceGasoleoA: { not: null } } }),
-    prisma.gasStation.aggregate({ _avg: { priceGasolina95E5: true }, where: { priceGasolina95E5: { not: null } } }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: { gte: twoWeeksAgo, lt: weekAgo } },
-      orderBy: { date: "desc" },
-    }),
+    nationalFuel(prisma, now),
     prisma.weatherAlert.count({ where: { isActive: true } }),
     prisma.dailyStats.findMany({
       where: { dateStart: { gte: weekAgo } },
@@ -86,9 +79,10 @@ export async function sendWeeklyDigest(prisma: PrismaClient): Promise<number> {
     }),
   ]);
 
-  const dieselPrice = avgDiesel._avg.priceGasoleoA ? Number(avgDiesel._avg.priceGasoleoA) : null;
-  const gas95Price = avgGas95._avg.priceGasolina95E5 ? Number(avgGas95._avg.priceGasolina95E5) : null;
-  const lastWeekDiesel = weekAgoFuel?.avgGasoleoA ? Number(weekAgoFuel.avgGasoleoA) : null;
+  // «Now» and «a week ago» from the same stored average (see nationalFuel).
+  const dieselPrice = num(fuel.latest?.avgGasoleoA);
+  const gas95Price = num(fuel.latest?.avgGasolina95);
+  const lastWeekDiesel = num(fuel.before(7)?.avgGasoleoA);
   const dieselChange = dieselPrice && lastWeekDiesel
     ? ((dieselPrice - lastWeekDiesel) / lastWeekDiesel) * 100
     : null;

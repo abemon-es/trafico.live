@@ -90,6 +90,92 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (89) — every fuel article since April announced a ~1 % fall that didn't happen
+
+**MJ (22-10):** I'm the project's CTO and PM: I drive the plan, ask the CTO
+session when in doubt, keep the CMO on SEO/content. Merges stay with the CTO
+(merge = production deploy) unless MJ says otherwise.
+
+**#167 merged and gated** (`fe66db41`, deployed 22:04:11Z):
+- the home's 4 cards are PUBLISHED articles;
+- 0 non-200 /noticias links;
+- none of the old figures left in the HTML.
+
+The CMO logged it as event #3, along with the figures left on the home and
+their sources (PR comment).
+
+**Root cause** (L1, found from the home's diesel card):
+- Five generators took «now» from `GasStation` over every station (1.875):
+  the price alert, daily-report, daily-fuel, weekly-report and weekly-digest.
+- They compared it with `FuelPriceDailyStats` «national» (1.893), which the
+  gas-station collector stores for public stations in the Peninsula and
+  Balearics only, without 35/38/51/52.
+- Result: 105 of 123 diesel alerts since 2026-04-02 claim a fall
+  («-1.0 % respecto a ayer»). The stored series moved ~0.05 % a day.
+- The same false delta sits in every daily report («vs ayer»), every daily
+  fuel report («vs ayer», «vs hace 7d») and every weekly report.
+
+**Fix (this PR):**
+- `nationalFuel()` in `generators/shared.ts`: «now» is the latest stored
+  national day, and `before(n)` the stored day exactly n days earlier, never
+  a nearby one.
+- All five generators use it. The alert publishes only when today's stored
+  day exists, and its summary names the scope (Península y Baleares).
+- The two unused legacy reports in `collector.ts` are deleted; they had the
+  same bug.
+- `fmtCount()`: «1 provincia», «1 aviso». 127 titles read «en 1 provincias».
+- Guard `tests/insights-fuel-same-average.test.ts`. On main's generators it
+  fails on exactly the 5 files.
+
+**Decided for the published articles** (the clean-up PR, after the redirects
+PR):
+- **CMO:**
+  - the 123 diesel alerts go ARCHIVED, with a 301 to /precio-diesel-hoy, out
+    of the sitemap and the lists (check GSC 90 d before applying);
+  - in the reports, recompute the delta from the stored series, or remove
+    it, with a dated correction note; no URL, date or lastmod change.
+- **CTO:**
+  - `scripts/archive-fuel-alerts.ts`, `--dry-run` by default,
+    `--apply --expect 123` in one transaction, status not DELETE;
+  - state on the PR what an ARCHIVED article returns, and that the lists
+    filter PUBLISHED.
+
+**Googlebot, edge log 1-Sep → 21-Oct (CMO):**
+- ~36 requests a day (1,815 in 51 d): 200 1,644 · 308 99 · 301 65 · 404 7;
+- redirects crawled: /analisis/carreteras 34, /comunidad-autonoma/* ~37,
+  /wp-content 23.
+
+**Open, in order:**
+1. **L1:** gate this PR (the generators run at 20:30Z). Check that the 22-10
+   daily report's «vs ayer» equals the stored series, and that there's no
+   alert unless the move is ≥ 0.5 %.
+2. **L3 (CMO):** the redirects out of internal links and the sitemap, then
+   check /accidentes/valencia.
+3. **L1/L3 (CMO+CTO):** the fuel articles' clean-up: the archive script, the
+   301s, and the report corrections.
+4. **L3 (CMO):** the rest of the home: «Próximo» out, a date-driven seasonal
+   module, computed or bare figures, «Última actualización».
+5. **L2:** the province accident pages' «2011-2024» (data 2021–2023).
+6. **L3 (CMO-approved):** 308 for the 7 short province aliases, plus «Todas
+   las provincias».
+7. **L3:** #145, the full-day share after 22-10's runs (PR comment).
+8. **L2:** territorios' two redirecting links; `/status` → `/alertas` full
+   reload; /incidencias' two SSR cards that both link /incidencias/analytics.
+9. **L2:** #157 part 2 and #143 (2) today after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+10. **L3:** `content-fingerprints` today (changed per family, to server-28).
+11. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+12. **L2, low:** `set-state-in-effect` / `purity`; `prefetch={false}` on long
+    link directories; dead exports (`detectIncidentSpikes`,
+    `aggregateWeatherAlerts`).
+13. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key, SASEMAR; whether low-risk web PRs may
+    merge themselves.
+
+---
+
 ## Cycle 2026-10-21 (88) — the home showed made-up figures as live data, and four articles that 404
 
 **#166 merged and gated** (`c560a215`, deployed 20:54:42Z). Server HTML with

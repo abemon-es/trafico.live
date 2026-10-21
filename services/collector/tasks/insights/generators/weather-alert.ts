@@ -20,6 +20,7 @@ import {
   attachTags,
   todaySlug,
   fmtInt,
+  fmtCount,
   getEditorialWeight,
   estimateReadTime,
   mdTable,
@@ -173,8 +174,8 @@ export async function generateEnhancedWeatherAlert(prisma: PrismaClient): Promis
   // Lead
   sections.push(
     `## Alertas meteorológicas de nivel ${levelLabel} activas\n\n` +
-      `La AEMET mantiene avisos de nivel ${levelLabel} que afectan a **${fmtInt(seriousAlerts.length)} avisos activos** ` +
-      `en **${fmtInt(affectedProvinces.length)} provincias**. ` +
+      `La AEMET mantiene avisos de nivel ${levelLabel} que afectan a **${fmtCount(seriousAlerts.length, "aviso activo", "avisos activos")}** ` +
+      `en **${fmtCount(affectedProvinces.length, "provincia", "provincias")}**. ` +
       `Extrema la precaución si tienes previsto desplazarte por las zonas afectadas.`
   );
 
@@ -227,7 +228,7 @@ export async function generateEnhancedWeatherAlert(prisma: PrismaClient): Promis
 
   // ── Metadata ─────────────────────────────────────────────────────────────
   const levelWord = isVeryHigh ? "rojo" : "naranja";
-  const title = `Alerta meteorológica nivel ${levelWord}: ${fmtInt(seriousAlerts.length)} avisos en ${fmtInt(affectedProvinces.length)} provincias`;
+  const title = `Alerta meteorológica nivel ${levelWord}: ${fmtCount(seriousAlerts.length, "aviso", "avisos")} en ${fmtCount(affectedProvinces.length, "provincia", "provincias")}`;
   const summary =
     `La AEMET mantiene ${fmtInt(seriousAlerts.length)} avisos de nivel ${SEVERITY_NAMES[highestSeverity] ?? highestSeverity} ` +
     `que afectan a ${affectedProvinceNames.slice(0, 5).join(", ")}${affectedProvinceNames.length > 5 ? ` y ${affectedProvinceNames.length - 5} más` : ""}. ` +

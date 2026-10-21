@@ -36,6 +36,7 @@
     "test:cyl": "tsx tests/cyl-incidents.test.ts",
     "test:accident-links": "tsx tests/accident-province-links.test.ts",
     "test:home-figures": "tsx tests/home-no-invented-figures.test.ts",
+    "test:insights-fuel": "tsx tests/insights-fuel-same-average.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

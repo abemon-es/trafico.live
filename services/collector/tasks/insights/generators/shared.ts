@@ -1,4 +1,4 @@
-import { PrismaClient, ArticleCategory } from "@prisma/client";
+import { PrismaClient, ArticleCategory, FuelPriceDailyStats } from "@prisma/client";
 
 const tagCache = new Map<string, string>();
 
@@ -50,6 +50,47 @@ export function fmtPct(n: number): string {
 
 export function fmtInt(n: number): string {
   return Math.round(n).toLocaleString("es-ES");
+}
+
+/** «1 provincia», «13 provincias». */
+export function fmtCount(n: number, one: string, many: string): string {
+  return `${fmtInt(n)} ${Math.round(n) === 1 ? one : many}`;
+}
+
+export interface NationalFuel {
+  /** The latest stored national day on or before the date asked: «now». */
+  latest: FuelPriceDailyStats | null;
+  /** The stored national day exactly `days` before `latest`, or null. */
+  before: (days: number) => FuelPriceDailyStats | null;
+}
+
+/**
+ * National fuel averages for «now» and for any earlier day, all from one
+ * source: the rows the gas-station collector stores in FuelPriceDailyStats
+ * (scope «national»: public stations in the Peninsula and the Balearics).
+ * Averaging GasStation directly for «now» took in the Canaries, Ceuta and
+ * Melilla, about 0,018 €/L cheaper, so every report from April to October
+ * 2026 compared two different averages and announced a ~1 % fall that never
+ * happened.
+ */
+export async function nationalFuel(prisma: PrismaClient, onOrBefore: Date): Promise<NationalFuel> {
+  const rows = await prisma.fuelPriceDailyStats.findMany({
+    where: { scope: "national", date: { lte: onOrBefore } },
+    orderBy: { date: "desc" },
+    take: 15,
+  });
+  const latest = rows[0] ?? null;
+  const before = (days: number) => {
+    if (!latest) return null;
+    const at = latest.date.getTime() - days * 86_400_000;
+    return rows.find((r) => r.date.getTime() === at) ?? null;
+  };
+  return { latest, before };
+}
+
+/** A stored average as a number, or null. */
+export function num(v: unknown): number | null {
+  return v == null ? null : Number(v);
 }
 
 export function getEditorialWeight(category: ArticleCategory): number {

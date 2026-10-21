@@ -21,6 +21,8 @@ import {
   estimateReadTime,
   getProvinceNameMap,
   mdTable,
+  nationalFuel,
+  num,
 } from "./shared";
 
 export async function generateDailyFuelReport(prisma: PrismaClient): Promise<number> {
@@ -40,33 +42,12 @@ export async function generateDailyFuelReport(prisma: PrismaClient): Promise<num
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const [
-    avgDiesel,
-    avgGas95,
-    avgGas98,
-    yesterdayNational,
-    weekAgoNational,
+    fuel,
     yesterdayProvinceStats,
     weekAgoProvinceStats,
     provinceNameMap,
   ] = await Promise.all([
-    prisma.gasStation.aggregate({
-      _avg: { priceGasoleoA: true },
-      where: { priceGasoleoA: { not: null } },
-    }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasolina95E5: true },
-      where: { priceGasolina95E5: { not: null } },
-    }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasolina98E5: true },
-      where: { priceGasolina98E5: { not: null } },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { date: yesterdayUTC, scope: "national" },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { date: weekAgoUTC, scope: "national" },
-    }),
+    nationalFuel(prisma, todayUTC),
     prisma.fuelPriceDailyStats.findMany({
       where: {
         date: yesterdayUTC,
@@ -84,13 +65,11 @@ export async function generateDailyFuelReport(prisma: PrismaClient): Promise<num
   ]);
 
   // ── Current national averages ─────────────────────────────────────────
-  const dieselNow = avgDiesel._avg.priceGasoleoA ? Number(avgDiesel._avg.priceGasoleoA) : null;
-  const gas95Now = avgGas95._avg.priceGasolina95E5
-    ? Number(avgGas95._avg.priceGasolina95E5)
-    : null;
-  const gas98Now = avgGas98._avg.priceGasolina98E5
-    ? Number(avgGas98._avg.priceGasolina98E5)
-    : null;
+  // «Now», «yesterday» and «a week ago» from the same stored average (see
+  // nationalFuel).
+  const dieselNow = num(fuel.latest?.avgGasoleoA);
+  const gas95Now = num(fuel.latest?.avgGasolina95);
+  const gas98Now = num(fuel.latest?.avgGasolina98);
 
   if (dieselNow == null && gas95Now == null) return 0;
 
@@ -100,19 +79,13 @@ export async function generateDailyFuelReport(prisma: PrismaClient): Promise<num
     return fmtPct(((current - reference) / reference) * 100);
   }
 
-  const dieselYest = yesterdayNational?.avgGasoleoA
-    ? Number(yesterdayNational.avgGasoleoA)
-    : null;
-  const gas95Yest = yesterdayNational?.avgGasolina95
-    ? Number(yesterdayNational.avgGasolina95)
-    : null;
-  const gas98Yest = yesterdayNational?.avgGasolina98
-    ? Number(yesterdayNational.avgGasolina98)
-    : null;
+  const dieselYest = num(fuel.before(1)?.avgGasoleoA);
+  const gas95Yest = num(fuel.before(1)?.avgGasolina95);
+  const gas98Yest = num(fuel.before(1)?.avgGasolina98);
 
-  const diesel7d = weekAgoNational?.avgGasoleoA ? Number(weekAgoNational.avgGasoleoA) : null;
-  const gas957d = weekAgoNational?.avgGasolina95 ? Number(weekAgoNational.avgGasolina95) : null;
-  const gas987d = weekAgoNational?.avgGasolina98 ? Number(weekAgoNational.avgGasolina98) : null;
+  const diesel7d = num(fuel.before(7)?.avgGasoleoA);
+  const gas957d = num(fuel.before(7)?.avgGasolina95);
+  const gas987d = num(fuel.before(7)?.avgGasolina98);
 
   // ── Province stats ───────────────────────────────────────────────────────
   // Build week-ago lookup by scope
