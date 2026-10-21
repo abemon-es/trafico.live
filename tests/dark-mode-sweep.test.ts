@@ -10,6 +10,11 @@
  *    opacity: `bg-X-50 dark:bg-X-900/200`. Status dots, legend swatches and
  *    bars showed the palest tint in light mode and an invalid class in dark
  *    (112 lines in 33 files until 2026-10-21). No opacity is ever ≥ 100.
+ * 3. `bg-X-50/NN` became `bg-X-50 dark:bg-X-900/20/NN`: two opacities, an
+ *    invalid class, so the top fuel-ranking rows stayed light in dark mode.
+ * 4. A page wrapper `min-h-screen bg-gray-50` with no dark background: every
+ *    location page (LocationShell) sat on light grey in dark mode. The rest
+ *    of the site uses `bg-gray-50 dark:bg-gray-950`.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -20,7 +25,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const BROKEN =
-  /bg-white dark:bg-gray-\d+\/(10|20)\b|\b(?:bg|text|border|ring|from|via|to|fill|stroke|divide|outline|shadow|placeholder|decoration|accent|caret)-[a-z]+-\d{2,3}\/\d{3,}\b/;
+  /bg-white dark:bg-gray-\d+\/(10|20)\b|\b(?:bg|text|border|ring|from|via|to|fill|stroke|divide|outline|shadow|placeholder|decoration|accent|caret)-[a-z]+-\d{2,3}\/(?:\d{3,}|\d+\/\d+)\b|min-h-screen bg-gray-50"/;
 
 function* sources(dir: string): Generator<string> {
   for (const name of readdirSync(dir)) {
@@ -37,6 +42,10 @@ assert.ok(BROKEN.test('className="w-2 h-2 rounded-full bg-green-50 dark:bg-green
 assert.ok(!BROKEN.test('className="w-2 h-2 rounded-full bg-green-500"'));
 assert.ok(!BROKEN.test('className="bg-tl-50 dark:bg-tl-900/20"'));
 assert.ok(!BROKEN.test('fetch(`/sitemap/200.xml`); const pct = n/100; "2026/10/21"'), "paths, maths and dates are not classes");
+assert.ok(BROKEN.test('className="bg-green-50 dark:bg-green-900/20/50"'));
+assert.ok(!BROKEN.test('className="bg-green-50/50 dark:bg-green-900/20"'));
+assert.ok(BROKEN.test('<div className="min-h-screen bg-gray-50">'));
+assert.ok(!BROKEN.test('<div className="min-h-screen bg-gray-50 dark:bg-gray-950">'));
 
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {

@@ -85,12 +85,12 @@ const REGION_META: Record<
 const FUEL_TYPES = [
   {
     name: "Gasóleo A",
-    badge: "bg-tl-amber-100 text-tl-amber-800",
+    badge: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200",
     desc: "Para motores diésel en embarcaciones de recreo y uso general. Es el combustible más utilizado en náutica por la mayoría de cruceros, veleros auxiliares y barcos de pesca artesanal.",
   },
   {
     name: "Gasóleo B",
-    badge: "bg-cyan-100 text-cyan-800",
+    badge: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-200",
     desc: "Gasóleo bonificado para pesca profesional y usos agrícolas. Su tipo impositivo reducido lo hace más económico, pero su uso está limitado por ley a flotas pesqueras con autorización. Se tiñe de azul para distinción.",
   },
   {

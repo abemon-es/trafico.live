@@ -34,7 +34,7 @@ interface AyudaLayoutProps {
 
 export default function AyudaLayout({ children }: AyudaLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Breadcrumb bar */}
       <nav
         aria-label="Migas de pan"

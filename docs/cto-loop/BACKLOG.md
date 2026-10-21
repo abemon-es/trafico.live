@@ -87,6 +87,94 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (56) — dark mode: location pages sat on light grey, and the first batch with a scanner as evidence
+
+**#135 verified within the same night** (web `c59e65c`, 00:21Z; measured
+00:27Z and 00:49Z):
+- /precio-diesel-hoy and /precio-gasolina-hoy show the hero, «Datos del 20 de
+  octubre» and a title with the price («Precio Diésel Hoy 20 de octubre de
+  2026 — 1.893€/L»);
+- /gasolineras/precios shows the 1.893 national average, «Datos del 20 de
+  octubre» and its 53 provinces;
+- 0 «aún no están disponibles».
+- Before, 00:10 and 00:20Z: no hero on either page.
+- 04:07Z → «Actualizado hoy» still to check.
+- **Freshness (server-28):** if `gas-station` dies, the page honestly says
+  «Datos del X», and `/api/health` marks it stale at 11 h (`gas-station`:
+  39,600 s). Covered.
+
+**aemet-forecast 01:20Z (verifies #112/#125):**
+- aborted at 01:30:05Z (602 s), `no-answer` (41 × 401, 0 of 197 answered),
+  `key_renewal_required`, exit 1;
+- GlitchTip **TRAFICO-LIVE-JP** «AEMET API key past its renewal deadline»,
+  tagged aemet-forecast.
+- When nothing at all answers, `no-answer` fires before `key-refused`, which
+  is for the trickle.
+- server-28 has raised the renewal to urgent with MJ.
+- **GlitchTip fingerprint (agreed with server-28):** one issue per task. When
+  weather hits the key it goes to its own issue, and the second run must
+  land in the same one.
+
+**Signal: dark mode, measured instead of guessed.**
+- **Scanner:** headless Chromium on compute, `colorScheme: dark` plus
+  `theme=dark`, waits for `html.dark`. It looks for elements ≥ 16 px whose
+  background reads light (pixel luminance > 0.85) on a dark parent.
+  - The first version parsed the CSS colour text, which is oklch in Tailwind
+    v4, and gave false positives; it now **paints the colour on a canvas and
+    reads the pixel**.
+- **On 16 pages it found:**
+  - `LocationShell` and 8 more pages wrap the page in `min-h-screen
+    bg-gray-50` **with no dark variant**. On /espana/comunidad-de-madrid/madrid
+    it's one light block 11,908 px tall, behind dark cards. Every
+    province/community/municipality page has it. The rest of the site (146
+    wrappers) uses `bg-gray-50 dark:bg-gray-950`.
+  - **4 `bg-X-50 dark:bg-X-900/20/NN`:** a third artifact of the sweep, from
+    `bg-X-50/NN` (two opacities, invalid). The top 3 rows of the fuel rankings
+    (/gasolineras/precios, /precios/[province], /marcas) stay light in dark
+    mode.
+  - the indigo icon on «Días con Datos» (/estadisticas and /historico);
+  - the diesel ranking badges;
+  - 2 badges on /gasolineras/maritimas, in both copies of the component.
+
+**Fix (PR below):**
+- the 9 wrappers → `bg-gray-50 dark:bg-gray-950`;
+- the 4 artifacts → `bg-X-50/NN dark:bg-X-900/20`;
+- indigo, ranking badges and maritime badges get their dark variant (the
+  pattern the neighbouring badges already used; the `--color-tl-sea` one as a
+  `tl-sea` utility).
+- **`tests/dark-mode-sweep.test.ts`** also rejects `/NN/NN` and `min-h-screen
+  bg-gray-50"` with no dark variant.
+  - **Mutant:** with `LocationShell` reverted, it fails at
+    `LocationShell.tsx:24`.
+- **Other checks:**
+  - web `tsc` 11 (the 2 extra in the run were main's copies I used for the
+    comparison, outside `src`);
+  - eslint on the 16 files: 8 errors / 10 warnings, **the same on `main` and
+    on the branch**.
+
+**Verify after deploy:** the same scanner on the 16 pages plus a municipality
+page. /espana/…/madrid with no light wrapper, and 0 islands in the rankings,
+badges and icon.
+
+**Open, in order:**
+1. **L2:** merge and verify this batch with the scanner.
+2. **L2:** #135 at 04:07Z (`Actualizado hoy`).
+3. **L1:** #132, a `weather` run that hits the key → its own issue, and the
+   second run in the same one; server-28 resolves JL/I8.
+4. **L3:** `content-fingerprints` at 04:50 and 22-10's; then the pilots.
+5. **L3:** gas stations by price (the next lastmod item).
+6. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+7. **L2, dark mode batch 2:** scanner over more templates (municipality,
+   community, carreteras/*, cámaras/*, etc.); /radares/A-3 is still pending
+   (its batch crashed).
+8. **L3:** the index lastmod after 23-10.
+9. **L1, low:** Euskadi id collisions.
+10. **Hygiene:** scrub the pre-October backlog entries.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (55) — about four hours a day with no price on the price pages
 
 **#134 verified** (web `7971e10`, 23:43Z; measured after the post-deploy

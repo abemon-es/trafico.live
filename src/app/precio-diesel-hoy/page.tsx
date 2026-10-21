@@ -494,7 +494,7 @@ export default async function PrecioDieselHoyPage() {
                           ? "bg-gray-300 text-gray-700 dark:text-gray-300"
                           : idx === 2
                           ? "bg-orange-300 text-orange-800"
-                          : "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
+                          : "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300"
                       }`}
                     >
                       {idx + 1}
