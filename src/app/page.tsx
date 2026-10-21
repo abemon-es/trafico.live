@@ -56,7 +56,7 @@ const MORE_SECTIONS = [
 
 async function getHomeStats() {
   try {
-    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount] =
+    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount, lastIncident] =
       await Promise.all([
         prisma.trafficIncident.count({ where: { isActive: true } }),
         prisma.camera.count(),
@@ -66,10 +66,13 @@ async function getHomeStats() {
         prisma.eVCharger.count(),
         prisma.trafficDetector.count({ where: { isActive: true } }),
         prisma.portugalGasStation.count(),
+        // The incident collector stamps fetchedAt on every row it reads.
+        prisma.trafficIncident.aggregate({ _max: { fetchedAt: true }, where: { isActive: true } }),
       ]);
-    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount };
+    const lastIncidentAt = lastIncident._max.fetchedAt?.toISOString() ?? null;
+    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount, lastIncidentAt };
   } catch {
-    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0, detectorCount: 0, portugalStationCount: 0 };
+    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0, detectorCount: 0, portugalStationCount: 0, lastIncidentAt: null };
   }
 }
 

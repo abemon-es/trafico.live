@@ -72,7 +72,7 @@ const CARDS: EntityCard[] = [
     title: "Cada línea, cada parada",
     example: "Ej: Metro de Madrid →",
     description:
-      "15+ operadores GTFS con páginas por operador, por línea (con horarios completos) y por parada.",
+      "Operadores GTFS con páginas por operador, por línea (con horarios completos) y por parada.",
   },
   {
     href: "/accidentes/carretera/AP-7",

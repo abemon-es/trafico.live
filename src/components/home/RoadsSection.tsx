@@ -45,7 +45,7 @@ const ROAD_TYPES: RoadTypeCard[] = [
 const EXTRA_TAGS = [
   { label: "Límites de velocidad", href: "/carreteras/limites-velocidad" },
   { label: "Puntos negros", href: "/carreteras/puntos-negros" },
-  { label: "Zonas ZBE (13+)", href: "/zbe" },
+  { label: "Zonas ZBE", href: "/zbe" },
   { label: "14.400+ estaciones aforo", href: "/estaciones-aforo" },
   { label: "IMD 2017-2022", href: "/intensidad" },
   { label: "Distribución horaria", href: "/carreteras/distribucion-horaria" },
