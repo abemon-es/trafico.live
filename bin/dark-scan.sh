@@ -14,24 +14,26 @@
 #   bash bin/dark-scan.sh PATH [PATH...]
 #
 # Environment:
-#   DARK_SCAN_PARALLEL   browsers in parallel (default 4)
+#   DARK_SCAN_PARALLEL   browsers in parallel (default 2: the edge limits
+#                        compute as one client; see dark-scan.mjs)
 #   PLAYWRIGHT_IMAGE     default mcr.microsoft.com/playwright:v1.48.0-jammy
 #
 # Exit codes:
 #   0  No light islands on any page
 #   1  Light islands found
-#   2  A page could not be scanned (never turned dark, or failed to load)
+#   2  A page could not be scanned (an HTTP error, still 429 after the
+#      retries, never turned dark, or failed to load)
 
 set -uo pipefail
 
 if [[ $# -eq 0 || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-  sed -n '2,24p' "$0" | sed 's/^# \?//'
+  sed -n '2,26p' "$0" | sed 's/^# \?//'
   exit 0
 fi
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.48.0-jammy}"
-PARALLEL="${DARK_SCAN_PARALLEL:-4}"
+PARALLEL="${DARK_SCAN_PARALLEL:-2}"
 # Traefik answers on the host; the browser reaches it through the bridge gateway.
 HOST_IP="$(docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}')"
 OUT="$(mktemp -d)"
