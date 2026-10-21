@@ -90,6 +90,119 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (63) — cameras with no image: «sin imagen» from day 1, inactive after 3
+
+**#142 verified** (web `056a4cd`, 04:50Z). Chromium scrolling the whole page:
+- `/_next/image` **0** (it was 54 × 400) on madrid, valencia and sevilla;
+- thumbnails loaded: madrid **362/365**, valencia **125/125**, sevilla
+  **20/25**.
+- The 8 that fail are `net::ERR_BLOCKED_BY_ORB`: DGT answers them **`404
+  text/html`** (e.g. camarasEtraffic/186295.jpg, checked with HEAD).
+- The CMO knows. Their pilots (/camaras/carretera/A-5 and A-6) weren't
+  affected, and /camaras/<city> is recorded as «changed 21-10 04:50Z».
+
+**Signal: active cameras with a dead snapshot.**
+- HEAD sweep of every active camera (4 connections, 46 s, 05:10Z): **1,972 →
+  1,938 images, 34 `404 text/html`**, 0 network errors.
+- **No province reaches 0**: Ourense 35/49, Asturias 66/72, Sevilla 20/25.
+  **0 of the 15 indexable camera cities change** (the tightest, Córdoba and
+  Pamplona, 3/3).
+- **Pilot roads:** A-5 74/74; A-6 119/120 (174432).
+
+**Conditions (server-28 + CMO):**
+- check on the daily run, not per request;
+- inactive after **3 consecutive days**;
+- back on the first good response;
+- few connections;
+- a DGT outage must never take a city out of the sitemap;
+- the noindex rule stays in `indexability.ts` (`cameraCityIndexable`, which
+  reads «active»);
+- **A-5 and A-6 frozen** (never inactive) until the pilot's +28 reading, with
+  a daily log of their active cameras;
+- «sin imagen» from the first day (CMO: a broken image on a templated page
+  adds to the «low value» judgment).
+
+**Fix (PR below):**
+- **Migration `20261021060000_camera_snapshot_fail_days`:**
+  `Camera.snapshotFailDays INT NOT NULL DEFAULT 0`. Catalogue-only (constant
+  default, no rewrite).
+- **`services/collector/tasks/camera/snapshots.ts`**, run inside the daily
+  `camera` run after the upsert, because the upsert reactivates the whole
+  feed:
+  - a HEAD per snapshot, 4 at a time, 15 s, identifying UA;
+  - image → 0;
+  - not an image → +1;
+  - network error → nothing;
+  - **> 50 % not images = DGT down: no counter changes and the run is
+    `partial` with the reason**;
+  - inactive at ≥ 3, except A-5/A-6 (`DEACTIVATION_EXEMPT_ROADS`);
+  - the heartbeat carries `snapshots` with the active cameras on A-5/A-6
+    every day.
+- **`src/lib/cameras/snapshot.ts` `cameraImage()`:** every server-rendered
+  thumbnail goes through it (city grid ×2, detail + og:image + VideoObject,
+  /camaras/carretera, /carreteras/*/hoy, location CamerasSection). With
+  `snapshotFailDays ≥ 1`, the existing «sin imagen» branch shows, and the
+  image isn't offered as og:image/VideoObject.
+- **`tests/camera-snapshots.test.ts`:**
+  - concurrency ≤ 4;
+  - image / 404 html / 200 html / network error;
+  - outage threshold;
+  - counters and deactivation with exempt roads;
+  - outage = no changes;
+  - the helper;
+  - no `src={…thumbnailUrl}` in `src`.
+  - **Mutant:** without the outage guard → fails on «a DGT outage changes no
+    counter».
+- **Other checks:** web `tsc` 11 (Prisma client regenerated); collector `tsc`
+  626; eslint 0 errors.
+- **Pending (not in this PR):** the map popups read the thumbnail from
+  Martin's tile; dead cameras still show there until `tile_cameras` filters
+  them (it needs DDL).
+
+**Order:** the migration **before** the merge. The web selects
+`snapshotFailDays`, and without the column the camera pages would fail.
+server-28 applied it (07:07 local, `lock_timeout` 5 s, resolve done, checksum =
+the repo's).
+
+**server-28's review, fixed before the merge:**
+- **The deactivation step was inside `if (!plan.outage)`.** On a DGT outage
+  day the upsert would reactivate the dead cameras and they'd count as active
+  for 24 h, so cameraCityIndexable would flap. It's now outside: it moves no
+  counter, so it's safe on an outage day.
+  - **Test:** outage + a camera at 3 days → it ends inactive.
+  - **Mutant:** with the outage skipping deactivation, it fails.
+- **The sweep's budget (its suggestion):** 5 min in total. What's left counts
+  as an error (neither way), so a hung DGT can't hold `camera` for ~2 h. With
+  a test.
+
+**Verify after deploy:**
+- the `camera` run (04:00 local, tomorrow) with `snapshots` in the heartbeat
+  (~1,938/34, 0 deactivated on day 1, A-5 74 / A-6 120);
+- right after deploy, /camaras/sevilla with «sin imagen» on the cameras that
+  get counted (from the first run on).
+
+**Open, in order:**
+1. **L1/L2:** migration → merge → verify (and log A-5/A-6 daily for the CMO).
+2. **bin:** dark-scan at 2 browsers, retrying on 429.
+3. **L2:** location cards, bg + border + text (dark-scan as the gate).
+4. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, the remaining tints.
+5. **L3:** dead cameras in the map popups (`tile_cameras`).
+6. **L1:** #132, a `weather` run that hits the key.
+7. **L3:** `content-fingerprints` 04:50 and 22-10; then the pilots.
+8. **L3:** gas stations by price.
+9. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+10. **Security (server-28):** a strict Report-Only CSP; exempting internal
+    traffic at the edge.
+11. **Accessibility:** grey on white under 3:1.
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Hygiene:** scrub the pre-October backlog entries.
+15. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+16. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (62) — the city camera pages showed 54 broken thumbnails
 
 **#141 merged** (`5572c348`; server-28: 121 exact pairs). Gate after the deploy

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Camera, MapPin, Video, ArrowRight, Radio, AlertTriangle, Route } from "lucide-react";
 import prisma, { isBuildWithoutDb } from "@/lib/db";
+import { cameraImage } from "@/lib/cameras/snapshot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateWebPageSchema } from "@/components/seo/StructuredData";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
@@ -143,7 +144,7 @@ export default async function CamarasCityPage({ params }: Props) {
       where: { name: { contains: locationName, mode: "insensitive" }, isActive: true },
       orderBy: [{ roadNumber: "asc" }, { kmPoint: "asc" }],
       take: 20,
-      select: { id: true, name: true, roadNumber: true, kmPoint: true, provinceName: true, thumbnailUrl: true },
+      select: { id: true, name: true, roadNumber: true, kmPoint: true, provinceName: true, thumbnailUrl: true, snapshotFailDays: true },
     });
     if (locationCameras.length === 0) notFound();
     const titleLocation = locationName.charAt(0).toUpperCase() + locationName.slice(1);
@@ -157,9 +158,9 @@ export default async function CamarasCityPage({ params }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {locationCameras.map((cam) => (
               <Link key={cam.id} href={`/camaras/camara/${cam.id}`} className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-tl-300 transition-colors">
-                {cam.thumbnailUrl ? (
+                {cameraImage(cam) ? (
                   <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
-                    <Image src={cam.thumbnailUrl} alt={`Cámara ${cam.name}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" unoptimized />
+                    <Image src={cameraImage(cam)!} alt={`Cámara ${cam.name}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" unoptimized />
                     <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />EN VIVO
                     </div>
@@ -203,6 +204,7 @@ export default async function CamarasCityPage({ params }: Props) {
       province: true,
       provinceName: true,
       thumbnailUrl: true,
+      snapshotFailDays: true,
     },
   });
 
@@ -319,14 +321,14 @@ export default async function CamarasCityPage({ params }: Props) {
                           key={cam.id}
                           className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden"
                         >
-                          {cam.thumbnailUrl ? (
+                          {cameraImage(cam) ? (
                             <div className="aspect-video bg-gray-100 dark:bg-gray-900 relative overflow-hidden">
                               {/* unoptimized, like every camera image: the thumbnails are
                                   live DGT snapshots on etraffic.dgt.es, which the image
                                   optimizer doesn't allow (it answered 400 for all 54 on
                                   /camaras/madrid until 2026-10-21), and it would cache them. */}
                               <Image
-                                src={cam.thumbnailUrl}
+                                src={cameraImage(cam)!}
                                 alt={`Cámara DGT ${cam.roadNumber ?? ""} km ${cam.kmPoint ?? ""} — ${cityData.name}`}
                                 width={640}
                                 height={480}

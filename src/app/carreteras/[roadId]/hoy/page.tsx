@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import prisma, { isBuildWithoutDb } from "@/lib/db";
+import { cameraImage } from "@/lib/cameras/snapshot";
 import {
   AlertTriangle,
   Camera,
@@ -429,10 +430,10 @@ export default async function RoadTodayPage({ params }: PageProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {cameras.slice(0, 6).map((cam) => (
                 <Link key={cam.id} href={`/camaras/camara/${cam.id}`} className="group block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-tl-300 transition-colors">
-                  {cam.thumbnailUrl ? (
+                  {cameraImage(cam) ? (
                     <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
                       <Image
-                        src={cam.thumbnailUrl}
+                        src={cameraImage(cam)!}
                         alt={`Cámara ${cam.name}`}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

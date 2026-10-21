@@ -14,6 +14,7 @@ import {
   Info,
 } from "lucide-react";
 import prisma from "@/lib/db";
+import { cameraImage } from "@/lib/cameras/snapshot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 
@@ -68,6 +69,7 @@ export default async function CamarasCarreteraPage({ params }: Props) {
         province: true,
         provinceName: true,
         thumbnailUrl: true,
+        snapshotFailDays: true,
       },
     }),
     prisma.radar.count({ where: { roadNumber: roadId, isActive: true } }),
@@ -290,10 +292,10 @@ export default async function CamarasCarreteraPage({ params }: Props) {
                         key={cam.id}
                         className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all"
                       >
-                        {cam.thumbnailUrl ? (
+                        {cameraImage(cam) ? (
                           <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">
                             <Image
-                              src={cam.thumbnailUrl}
+                              src={cameraImage(cam)!}
                               alt={`Cámara DGT ${roadId} PK ${cam.kmPoint ?? "—"} — ${cam.name}`}
                               fill
                               className="object-cover"

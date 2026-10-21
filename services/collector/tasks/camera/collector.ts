@@ -12,6 +12,7 @@ import { PROVINCES, PROVINCE_NAME_TO_CODE, normalizeProvince } from "../../share
 import { ensureArray } from "../../shared/utils.js";
 import { createXMLParser } from "../../shared/xml.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { applySnapshotChecks } from "./snapshots.js";
 
 const DGT_CAMERAS_URL =
   "https://nap.dgt.es/datex2/v3/dgt/DevicePublication/camaras_datex2_v37.xml";
@@ -214,7 +215,20 @@ export async function run(prisma: PrismaClient) {
       console.log(`[camera-collector] Marked ${missingIds.length} cameras as inactive`);
     }
 
-    // 5. Summary statistics
+    // 5. Snapshots that aren't images (snapshots.ts): «sin imagen» on the pages
+    // from the first day, inactive after 3 in a row.
+    const snapshots = await applySnapshotChecks(
+      prisma,
+      cameras.filter((c) => c.imageUrl).map((c) => ({ id: c.id, url: c.imageUrl })),
+    );
+    console.log(
+      `[camera-collector] Snapshots: ${snapshots.images} images, ${snapshots.notImages} not images, ` +
+        `${snapshots.errors} errors, ${snapshots.deactivated} deactivated; ` +
+        `active on ${Object.entries(snapshots.exemptRoads).map(([r, n]) => `${r} ${n}`).join(", ")}` +
+        (snapshots.outage ? " — more than half not images: DGT looks down, the day doesn't count" : ""),
+    );
+
+    // 6. Summary statistics
     const stats = await prisma.camera.groupBy({
       by: ["province"],
       where: { isActive: true },
@@ -234,7 +248,15 @@ export async function run(prisma: PrismaClient) {
     console.log(`[camera-collector] Total active cameras: ${totalActive}`);
 
     console.log("[camera-collector] Collection completed successfully");
-    await heartbeat(prisma, "camera", "ok", { total: cameras.length, created, updated });
+    await heartbeat(prisma, "camera", snapshots.outage ? "partial" : "ok", {
+      total: cameras.length,
+      created,
+      updated,
+      snapshots,
+      ...(snapshots.outage && {
+        reason: `${snapshots.notImages} of ${snapshots.images + snapshots.notImages} snapshots weren't images: DGT looks down, the day doesn't count`,
+      }),
+    });
 
   } catch (error) {
     console.error("[camera-collector] Fatal error:", error);
