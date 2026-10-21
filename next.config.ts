@@ -243,6 +243,16 @@ const nextConfig: NextConfig = {
       { source: "/blog", destination: "/noticias", permanent: true },
       { source: "/blog/:slug*", destination: "/noticias/:slug*", permanent: true },
       { source: "/insights", destination: "/noticias", permanent: true },
+      // Footer links that 404'd on every page until 2026-10-22, so Googlebot
+      // has them: one hop to the page they meant. (A-9, M-45 and M-50 have no
+      // page and stay 404.)
+      { source: "/terminos", destination: "/aviso-legal", permanent: true },
+      { source: "/contacto", destination: "/sobre/contacto", permanent: true },
+      { source: "/atascos/donostia-san-sebastian", destination: "/atascos/donostia", permanent: true },
+      { source: "/atascos/castellon-de-la-plana", destination: "/atascos/castellon", permanent: true },
+      { source: "/atascos/torrejon-de-ardoz", destination: "/atascos/torrejon", permanent: true },
+      { source: "/accidentes/bilbao", destination: "/accidentes/bizkaia", permanent: true },
+      { source: "/gasolineras/tipo/gasoleo-a", destination: "/gasolineras/tipo/diesel", permanent: true },
       { source: "/insights/:slug*", destination: "/noticias/:slug*", permanent: true },
       { source: "/informes", destination: "/noticias", permanent: true },
       { source: "/informes/:slug*", destination: "/noticias/:slug*", permanent: true },

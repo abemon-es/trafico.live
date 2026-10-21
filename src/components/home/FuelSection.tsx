@@ -41,7 +41,7 @@ const FUEL_CARDS: FuelCard[] = [
   },
   {
     key: "ga",
-    slug: "tipo/gasoleo-a",
+    slug: "tipo/diesel",
     label: "Gasóleo A",
     getPrice: (d) => d.national?.avgGasoleoA,
     getDelta: (d) => d.national?.deltaGasoleoA,

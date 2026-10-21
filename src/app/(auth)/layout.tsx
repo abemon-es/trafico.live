@@ -77,7 +77,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       >
         Al continuar aceptas los{" "}
         <Link
-          href="/terminos"
+          href="/aviso-legal#condiciones-uso"
           className="underline hover:no-underline"
           style={{ color: "var(--tl-primary)" }}
         >

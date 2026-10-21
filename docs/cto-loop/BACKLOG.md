@@ -90,6 +90,87 @@ own text on hubs).
 
 ---
 
+## Cycles 2026-10-22 (92–94) — reports on closed days, a home that claims only what's live, 10 dead footer links
+
+**#170 applied and verified.**
+- Web `f3c64ba1` deployed 22:55:47Z. The CTO took a backup of the 413 rows,
+  then archived 123 at 22:57:34Z and corrected 274 at 22:57:57Z.
+- Live:
+  - 123/123 archived URLs 308 to /precio-diesel-hoy (200);
+  - 0 pre-fix alerts still published;
+  - 274 reports with the note (daily 191, fuel 57, weekly 26), 0 with delta
+    text;
+  - `updatedAt` unchanged in every family, so lastmod is untouched;
+  - 0 archived URLs in the news sitemap.
+- The CMO logged these as events #5 and #6.
+
+**#169 gated** (`375a10b4`, 22:46:06Z):
+- 8 pages, 501 internal links, 0 redirects (the CMO's event #4; the +7 d
+  measurement reads 404s too);
+- the crawl found 10 links that 404 → (94).
+
+**(92) #171 merged** (`b908ffd9`, collectors recreated before 00:00Z):
+- the daily report covers the closed day against the 7 closed days before
+  it; the weekly report counts distinct incidents and V16 activations, not
+  DailyStats incident-hours;
+- `incidentCounts()`, guard `reports-closed-days`.
+- **CMO decision (b):** the headline «incidencias» excludes DGT vehicle
+  obstructions, which get their own line «vehículos detenidos (balizas V16 y
+  averías)». The same rule everywhere: reports, the home card, the
+  counter/ticker, «activas».
+- **CTO decision:** one pure predicate in `src/lib/incidents/vehicle-stops.ts`,
+  in the collector image's copied set, with no view and no DDL.
+- **Measured:** on 20-10, causeType `vehicleObstruction` was 17,726 of 20,184
+  incidents started (88 %), plus type `VEHICLE_BREAKDOWN` 15. Of ~1,380 active
+  ones, 181.
+
+**(93) #172** (the rest of the home, the CMO's rule «only what's live and
+measurable»):
+- «Próximo» features (AI prediction, YOLO) off;
+- the seasonal links are date-driven: from 21 days before an operation's
+  start to its end, Madrid date; none today;
+- figures nobody computes become bare labels;
+- the hero shows «Incidencias actualizadas a las HH:MM» (Madrid), only while
+  the last read is under 30 min old;
+- the home guard rejects «Próximo» and dated pages without dates.
+
+**(94) This PR — the 10 links that 404:**
+
+| Link | Where | Fix |
+|---|---|---|
+| /terminos | footer legal strip (every page), sign-up screen | /aviso-legal#condiciones-uso (section 5) |
+| /contacto | footer (every page) | /sobre/contacto (form + hola@) |
+| /atascos/donostia-san-sebastian, …castellon-de-la-plana, …torrejon-de-ardoz | footer GeoLinks | the route's keys: donostia, castellon, torrejon |
+| /accidentes/bilbao | footer GeoLinks | /accidentes/bizkaia (the route is per province; label «Bizkaia») |
+| /gasolineras/tipo/gasoleo-a | home FuelSection | /gasolineras/tipo/diesel |
+| /carreteras/a-9, /rondas/m-45, /rondas/m-50 | footer GeoLinks | removed: no such pages |
+
+- Old URLs Googlebot has from the footer get one hop in next.config
+  (/terminos, /contacto, the three /atascos, /accidentes/bilbao, the
+  gasóleo-a type). A-9, M-45 and M-50 stay 404.
+- **Found:** the contact form's sender (SES) isn't configured in prod, so
+  every message is «recibido» but not delivered. The form says so and points
+  to hola@trafico.live. **→ MJ** (needs credentials). Also, aviso-legal
+  §3.2 says paid API plans are governed by «condiciones de contratación
+  publicadas en /api-docs». Whether those exist is **→ Legal/CMO**.
+
+**Open, in order:**
+1. **L2:** gate this PR (footer + home links 200, old URLs one hop). The
+   timestamp to the CMO.
+2. **L1:** the vehicle-stop predicate everywhere (CMO b / CTO a), then the
+   history correction of the daily and weekly reports.
+3. **L1:** check the 22-10 daily report, the first under #168 and #171.
+4. **L2:** the province accident pages' «2011-2024»; the report pages'
+   missing status check.
+5. **L3 (CMO-approved):** 308 for the 7 short province aliases, plus «Todas
+   las provincias».
+6. **Ops (CTO):** archiving the untracked prod files (in progress).
+7. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+8. **Waiting on MJ:** the AEMET key, the contact form sender (SES), SASEMAR,
+   self-merge for low-risk PRs.
+
+---
+
 ## Cycle 2026-10-22 (91) — the published fuel articles: 123 archived behind a 308, 274 reports corrected
 
 **#169 merged** (`375a10b4`). Its post-deploy crawl (8 pages, every internal

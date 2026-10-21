@@ -83,7 +83,7 @@ const GRID_COLUMNS: GridColumn[] = [
       { name: "Sobre nosotros", href: "/sobre" },
       { name: "API", href: "/api-docs" },
       { name: "Posicionamiento", href: "/sobre/posicionamiento" },
-      { name: "Contacto", href: "/contacto" },
+      { name: "Contacto", href: "/sobre/contacto" },
       { name: "API docs", href: "/api-docs#referencia" },
     ],
   },
