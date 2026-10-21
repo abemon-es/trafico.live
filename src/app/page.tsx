@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Activity, AlertTriangle, Anchor, Ban, BarChart3, Bus, Camera, Cloud, Fuel, Map, MapPin, Newspaper, Plane, Radar, Route, Train, Wind, Zap } from "lucide-react";
 import prisma from "@/lib/db";
 import { HomeClient } from "./HomeClient";
 import {
@@ -35,35 +34,23 @@ export const metadata: Metadata = {
   },
 };
 
-const SECTION_LINKS = [
-  { href: "/trafico", label: "Tráfico por ciudad", Icon: Activity },
-  { href: "/incidencias", label: "Incidencias activas", Icon: AlertTriangle },
-  { href: "/camaras", label: "Cámaras DGT", Icon: Camera },
-  { href: "/radares", label: "Radares de velocidad", Icon: Radar },
-  { href: "/gasolineras", label: "Gasolineras", Icon: Fuel },
-  { href: "/carreteras", label: "Carreteras", Icon: Route },
-  { href: "/carga-ev", label: "Cargadores EV", Icon: Zap },
-  { href: "/noticias", label: "Noticias", Icon: Newspaper },
-  { href: "/zbe", label: "Zonas de Bajas Emisiones", Icon: Ban },
-  { href: "/carga-ev", label: "Electrolineras", Icon: Zap },
-  { href: "/maritimo", label: "Marítimo", Icon: Anchor },
-  { href: "/estadisticas", label: "Estadísticas", Icon: BarChart3 },
-  { href: "/mapa", label: "Mapa en vivo", Icon: Map },
-  { href: "/alertas-meteo", label: "Alertas meteorológicas", Icon: Cloud },
-  { href: "/intensidad", label: "Intensidad de tráfico", Icon: BarChart3 },
-  { href: "/estaciones-aforo", label: "Estaciones de aforo", Icon: MapPin },
-  { href: "/puntos-negros", label: "Puntos negros", Icon: AlertTriangle },
-  { href: "/andorra", label: "Andorra", Icon: Map },
-  { href: "/portugal", label: "Portugal", Icon: Map },
-  { href: "/trenes", label: "Trenes Renfe en vivo", Icon: Train },
-  { href: "/aviacion", label: "Vuelos en tiempo real", Icon: Plane },
-  { href: "/calidad-aire", label: "Calidad del aire", Icon: Wind },
-  { href: "/transporte-publico", label: "Transporte público", Icon: Bus },
-  { href: "/estadisticas-transporte", label: "Estadísticas multimodales", Icon: BarChart3 },
-  { href: "/accidentes", label: "Puntos negros y accidentes", Icon: AlertTriangle },
-  { href: "/clima", label: "Clima histórico", Icon: Cloud },
-  { href: "/corredores", label: "Corredores de transporte", Icon: Route },
-  { href: "/noticias", label: "Insights de movilidad", Icon: Newspaper },
+// Sections nothing else on the home links visibly (header and footer
+// included). They used to sit in a screen-reader-only list.
+const MORE_SECTIONS = [
+  { href: "/trafico", label: "Tráfico por ciudad" },
+  { href: "/noticias", label: "Noticias de tráfico" },
+  { href: "/estadisticas", label: "Estadísticas de tráfico" },
+  { href: "/intensidad", label: "Intensidad de tráfico (IMD)" },
+  { href: "/estaciones-aforo", label: "Estaciones de aforo" },
+  { href: "/accidentes", label: "Siniestralidad vial" },
+  { href: "/accidentes/carretera/A-7", label: "Accidentes en la A-7" },
+  { href: "/accidentes/carretera/N-340", label: "Accidentes en la N-340" },
+  { href: "/puntos-negros", label: "Puntos negros" },
+  { href: "/zbe", label: "Zonas de Bajas Emisiones" },
+  { href: "/corredores", label: "Corredores de transporte" },
+  { href: "/calidad-aire/prevision", label: "Previsión de calidad del aire" },
+  { href: "/portugal", label: "Tráfico en Portugal" },
+  { href: "/andorra", label: "Tráfico en Andorra" },
 ];
 
 async function getHomeStats() {
@@ -152,7 +139,7 @@ export default async function HomePage() {
 
   const speakableSchema = generateSpeakableSchema({
     url: BASE_URL,
-    cssSelector: ["h1", ".sr-only p", ".hero-headline"],
+    cssSelector: ["h1", "#home-fuentes", ".hero-headline"],
   });
 
   const datasets = [
@@ -280,49 +267,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      {/* SSR content — hidden visually, crawlable by search engines */}
       <div className="sr-only">
         <h2>Plataforma de inteligencia multimodal para España, Portugal y Andorra</h2>
-        <p>
-          trafico.live es la plataforma de inteligencia multimodal más completa de la Península Ibérica.
-          Agrega datos oficiales en tiempo real de 18+ fuentes: DGT, AEMET, Renfe, AENA, MITECO,
-          Ministerio de Transportes y Movilidad Sostenible, MINETUR, CNMC, INE, SCT Catalunya, Euskadi,
-          Madrid Informo, SCT Valencia, Barcelona Transit, Zaragoza, IPMA Portugal, DGEG Portugal,
-          Mobilitat Andorra, MobilityData, OpenSky, aisstream.io y Puertos del Estado.
-          Cobertura: {stats.incidentCount.toLocaleString("es-ES")} incidencias, {stats.cameraCount.toLocaleString("es-ES")} cámaras,{" "}
-          {stats.radarCount.toLocaleString("es-ES")} radares, {stats.stationCount.toLocaleString("es-ES")} gasolineras,{" "}
-          {stats.chargerCount.toLocaleString("es-ES")} puntos de carga, 2.154 estaciones de tren, 46 aeropuertos AENA,
-          565 estaciones de calidad del aire, 197 puertos y 15+ operadores de transporte público.
-        </p>
-        <nav aria-label="Secciones principales">
-          {SECTION_LINKS.map(({ href, label }) => (
-            <Link key={href} href={href}>{label}</Link>
-          ))}
-        </nav>
-        {/* Per-entity discovery surface — every train, vessel, charger,
-         *  fuel station, transit route and accident-road has its own
-         *  landing page. These links anchor the entity URL pattern for
-         *  crawlers and seed internal link equity into the deep pages
-         *  shipped in this PR. */}
-        <nav aria-label="Páginas individuales">
-          <h2>Páginas por entidad</h2>
-          <p>
-            Cada tren en circulación, cada buque AIS, cada cargador EV, cada gasolinera y cada
-            línea de transporte público tiene su propia página de aterrizaje con datos en vivo,
-            historial y mapa.
-          </p>
-          <ul>
-            <li><Link href="/trenes">Mapa de trenes en vivo</Link> → cada tren tiene página individual (ej. <Link href="/trenes/tren/03241">tren 03241</Link>) con posición, próxima parada y recorrido</li>
-            <li><Link href="/trenes/estaciones">Estaciones de tren</Link> con próximas llegadas en vivo</li>
-            <li><Link href="/maritimo/buques">Directorio AIS de buques</Link> + ficha por MMSI + recorrido histórico</li>
-            <li><Link href="/aviacion/aeropuertos">Aeropuertos AENA</Link> con aviones cercanos en vivo</li>
-            <li><Link href="/gasolineras">Gasolineras</Link> con precios + cargadores cerca + misma marca</li>
-            <li><Link href="/carga-ev">Cargadores EV</Link> 12.000+ puntos con potencia, conectores y gasolineras cerca</li>
-            <li><Link href="/transporte-publico">Transporte público</Link> 15 operadores con páginas por ruta y por parada</li>
-            <li><Link href="/accidentes">Siniestralidad DGT</Link> con análisis por carretera (ej. <Link href="/accidentes/carretera/AP-7">AP-7</Link>, <Link href="/accidentes/carretera/A-7">A-7</Link>, <Link href="/accidentes/carretera/N-340">N-340</Link>)</li>
-            <li><Link href="/calidad-aire">Calidad del aire</Link> en vivo + <Link href="/calidad-aire/prevision">previsión CAMS 5 días</Link></li>
-          </ul>
-        </nav>
         <StructuredData
           data={[faqSchema, breadcrumbSchema, serviceSchema, speakableSchema, multimodalItemList, provincesItemList, ccaaItemList, ...datasets]}
         />
@@ -330,6 +276,39 @@ export default async function HomePage() {
 
       {/* Client-side interactive homepage */}
       <HomeClient initialStats={stats} />
+
+      {/* Visible links and the sources line speakable reads; both used to sit in
+          the screen-reader-only block above. */}
+      <section aria-labelledby="home-more-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <h2 id="home-more-heading" className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Más en trafico.live
+        </h2>
+        <ul className="flex flex-wrap gap-2">
+          {MORE_SECTIONS.map(({ href, label }) => (
+            <li key={href}>
+              <Link
+                href={href}
+                className="inline-block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+              >
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p id="home-fuentes" className="mt-6 text-sm text-gray-500 dark:text-gray-400 max-w-4xl">
+          Fuentes oficiales: DGT, AEMET, Renfe, AENA, MITECO, Ministerio de Transportes, MINETUR, CNMC,
+          INE, SCT, Euskadi, Junta de Castilla y León, ayuntamientos de Madrid, Barcelona y Valencia,
+          IPMA y DGEG (Portugal), Mobilitat Andorra, MobilityData, OpenSky, aisstream.io y Puertos del
+          Estado.
+          {stats.cameraCount > 0 && (
+            <>
+              {" "}Ahora: {stats.incidentCount.toLocaleString("es-ES")} incidencias activas,{" "}
+              {stats.cameraCount.toLocaleString("es-ES")} cámaras, {stats.radarCount.toLocaleString("es-ES")} radares,{" "}
+              {stats.stationCount.toLocaleString("es-ES")} gasolineras y {stats.chargerCount.toLocaleString("es-ES")} puntos de carga.
+            </>
+          )}
+        </p>
+      </section>
     </div>
   );
 }

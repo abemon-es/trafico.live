@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { Loader2 } from "lucide-react";
-import Link from "next/link";
 import { CamarasContent } from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
@@ -70,26 +69,6 @@ export default function CamarasPage() {
           <h2 className="sr-only">Cámaras de tráfico en directo de la DGT en toda España</h2>
         </div>
       </div>
-
-      {/* Server-rendered city links for SEO — visually hidden, fully crawlable */}
-      <nav aria-label="Cámaras de tráfico por ciudad" className="sr-only">
-        <ul>
-          {[
-            { city: "madrid", label: "Cámaras de tráfico en Madrid" },
-            { city: "barcelona", label: "Cámaras de tráfico en Barcelona" },
-            { city: "valencia", label: "Cámaras de tráfico en Valencia" },
-            { city: "sevilla", label: "Cámaras de tráfico en Sevilla" },
-            { city: "bilbao", label: "Cámaras de tráfico en Bilbao" },
-            { city: "malaga", label: "Cámaras de tráfico en Málaga" },
-            { city: "zaragoza", label: "Cámaras de tráfico en Zaragoza" },
-            { city: "murcia", label: "Cámaras de tráfico en Murcia" },
-          ].map(({ city, label }) => (
-            <li key={city}>
-              <Link href={`/camaras/${city}`}>{label}</Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
 
       {/* Client component with interactive search, filters, and live camera grid */}
       <Suspense fallback={<CamarasLoading />}>
