@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-import { Loader2, MapPin, Video, Route, Car, BarChart2, BarChart3, CloudLightning, AlertOctagon } from "lucide-react";
+import { Loader2, MapPin, Video, Route, Car, BarChart2, BarChart3, CloudLightning, AlertOctagon, Ban } from "lucide-react";
 import Link from "next/link";
 import { IncidenciasContent } from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -101,22 +101,6 @@ export default function IncidenciasPage() {
         </ul>
       </nav>
 
-      {/* SSR crawlable related-page links — hidden from sighted users, indexed by crawlers */}
-      <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
-        <div>
-          <a href="/incidencias/analytics" tabIndex={-1}>Estadísticas de incidencias</a>
-          <a href="/cortes-trafico" tabIndex={-1}>Cortes de tráfico</a>
-          <a href="/restricciones" tabIndex={-1}>Restricciones</a>
-          <a href="/atascos" tabIndex={-1}>Atascos</a>
-          <a href="/alertas-meteo" tabIndex={-1}>Alertas meteorológicas</a>
-          <a href="/trafico/madrid" tabIndex={-1}>Tráfico Madrid</a>
-          <a href="/trafico/barcelona" tabIndex={-1}>Tráfico Barcelona</a>
-          <a href="/trafico/valencia" tabIndex={-1}>Tráfico Valencia</a>
-          <a href="/operaciones" tabIndex={-1}>Operaciones DGT</a>
-          <a href="/puntos-negros" tabIndex={-1}>Puntos negros</a>
-        </div>
-      </nav>
-
       {/* Client component with interactive map, filters, and live SWR data */}
       <Suspense fallback={<IncidenciasLoading />}>
         <IncidenciasContent />
@@ -129,7 +113,7 @@ export default function IncidenciasPage() {
           { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
           { title: "Atascos y retenciones", description: "Puntos negros de tráfico y vías saturadas", href: "/atascos", icon: <Car className="w-5 h-5" /> },
           { title: "Estadísticas de incidencias", description: "Tendencias y patrones históricos de incidencias", href: "/incidencias/analytics", icon: <BarChart2 className="w-5 h-5" /> },
-          { title: "Análisis de incidencias", description: "Distribución horaria, por día y carretera", href: "/incidencias/analytics", icon: <BarChart3 className="w-5 h-5" /> },
+          { title: "Restricciones de circulación", description: "Restricciones a camiones y vehículos por fecha y carretera", href: "/restricciones", icon: <Ban className="w-5 h-5" /> },
           { title: "Cortes de tráfico", description: "Cortes de carretera activos en España", href: "/cortes-trafico", icon: <AlertOctagon className="w-5 h-5" /> },
           { title: "Alertas meteorológicas", description: "Alertas AEMET que afectan a la circulación", href: "/alertas-meteo", icon: <CloudLightning className="w-5 h-5" /> },
         ]} />

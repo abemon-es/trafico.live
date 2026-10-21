@@ -90,6 +90,98 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (84) — four hidden link blocks only crawlers could see: visible, or gone
+
+**#163 merged and gated** (`4a2cb408`, deployed 17:15Z):
+- links on territorios, ir and sobre/api navigate client-side;
+- `/status` → `/alertas?type=status` still does a full reload, as it did as an
+  `<a>`; low priority, cause not found;
+- 21 targets answer 200. `/comunidad-autonoma` (308) and `/municipio` (307)
+  on `/explorar/territorios` both redirect to `/espana`, which the same list
+  links already. Open, small.
+
+**Signal:** four `<nav aria-hidden="true" className="sr-only" tabIndex={-1}>`
+link blocks: /carga-ev, /mapa, /incidencias, and a copy of the whole mega
+menu in the header of every page. They're invisible to people and to screen
+readers, so crawler-only: «hidden links» in Google's spam policies. **CMO
+decision** (21-10): none stays hidden. Decided per destination:
+- (c) if it already has a visible link in the server HTML, it goes;
+- (b) if not, it moves to a visible link.
+- No destination may lose its last visible link.
+
+**Measured** (a browser with JS off; 17 pages, the four plus the section hubs;
+desktop 1280 and mobile 412; a link counts only if it's visible and outside
+aria-hidden/sr-only):
+
+| Block | Destinations | (c) removed | (b) made visible |
+|---|---|---|---|
+| Mega-menu copy (every page) | 84 | 70 | 14 → footer row «Más secciones» |
+| /carga-ev | 24 | 6 | 18 → list «Electrolineras por ciudad» (all 20 cities) |
+| /mapa | 8 | 8 | 0 |
+| /incidencias | 10 | 9 | 1 → `/restricciones` card in its related links (in place of a duplicate) |
+
+- The mega menu renders a panel only once it's opened (`activePanel` starts
+  as null). So its copy was the only server-HTML path to 14 sections,
+  including the four `/maritimo/*` pages, `/aviacion/aeropuertos`,
+  `/trenes/cercanias`, `/trenes/live` and `/espana`.
+- **Found on the way:** the menu (desktop and mobile) linked
+  `/transporte-publico/metro-madrid`, which is a **404**. The route resolves the
+  slugified operator name, «Metro de Madrid», so the real URL is
+  `/transporte-publico/metro-de-madrid`. It also linked `/maritimo/ferries`, a 308
+  to `/maritimo/ferries/proximo`. Both fixed in NavData and in the new row.
+
+**Fix:** the four blocks removed. The screen-reader `<h1>` on /mapa stays,
+since it's a heading, not a link. Visible links per the table.
+**`lint-baseline.json` 138 → 64**: the 74 internal-link errors were all in
+these blocks.
+
+**Guard `tests/no-hidden-links.test.ts`:** no element in `src/` is both
+`aria-hidden="true"` and `sr-only`.
+- It includes a matcher self-test.
+- Two controls: main's /mapa and DesktopNav make it fail, on
+  `mapa/page.tsx:39` and `DesktopNav.tsx:189`.
+
+**Evidence** (compute):
+- the 35 new visible targets answer 200, once the 2 URLs are fixed;
+- the guard passes on 27,656 tags;
+- dark-mode-sweep, client-timezone and theme-pre-paint pass;
+- web tsc 11; the ratchet passes, and `--update` writes 64.
+
+**Gate after deploy:**
+- the same JS-off scan: 0 links in aria-hidden/sr-only blocks on the four
+  pages;
+- every destination of the four blocks has a visible link at 1280 or 412;
+- distinct visible destinations, before → after, on /, /carga-ev, /mapa and
+  /incidencias (before: 199, 201, 194 and 197);
+- the deploy timestamp to the CMO, as an event in its readings. Pilot pages
+  A-5/A-6 untouched; the menu change is site-wide and symmetric.
+
+**Not covered, to the CMO:** visually hidden link lists that screen readers
+*can* reach (`sr-only` without aria-hidden): the home page (35 links),
+«Tráfico por ciudad» on /incidencias, the /camaras hub and /estadisticas.
+
+**Open, in order:**
+1. **L3:** merge this; the gate; the deploy time to the CMO.
+2. **L0:** aemet-forecast gate on the 19:20Z run.
+3. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+4. **L3 (CMO):** the screen-reader-reachable `sr-only` link lists above.
+5. **L2:** territorios' two redirecting links; `/status` → `/alertas` full
+   reload.
+6. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+7. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+8. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+9. **L2, low:** `set-state-in-effect` / `purity`; `prefetch={false}` on long
+   link directories; dead exports.
+10. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+11. **L3:** the index lastmod after 23-10.
+12. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+13. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (83) — 28 internal links reloaded the whole page: `<a>` → `<Link>`
 
 **#162 merged and gated** (`5d37724e`, deployed 16:38Z). Same 6 pages × 5

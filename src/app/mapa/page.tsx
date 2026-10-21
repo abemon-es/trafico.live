@@ -34,18 +34,8 @@ export const metadata: Metadata = {
 export default function MapaPage() {
   return (
     <>
-      {/* SEO content — invisible but crawlable */}
+      {/* Page heading for screen readers: the map is the visible content. */}
       <h1 className="sr-only">Mapa de infraestructuras de transporte — España</h1>
-      <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
-        <a href="/trafico/madrid" tabIndex={-1}>Tráfico en Madrid</a>
-        <a href="/trafico/barcelona" tabIndex={-1}>Tráfico en Barcelona</a>
-        <a href="/trenes" tabIndex={-1}>Red ferroviaria Renfe</a>
-        <a href="/camaras" tabIndex={-1}>Cámaras de tráfico DGT</a>
-        <a href="/radares" tabIndex={-1}>Radares de tráfico</a>
-        <a href="/gasolineras/mapa" tabIndex={-1}>Mapa de gasolineras</a>
-        <a href="/carga-ev" tabIndex={-1}>Cargadores eléctricos</a>
-        <a href="/estaciones-aforo" tabIndex={-1}>Estaciones de aforo</a>
-      </nav>
 
       <MapaInfraClient />
     </>

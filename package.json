@@ -22,6 +22,7 @@
     "test:theme-pre-paint": "tsx tests/theme-pre-paint.test.ts",
     "test:camera-images": "tsx tests/camera-images.test.ts",
     "test:client-timezone": "tsx tests/client-timezone.test.ts",
+    "test:no-hidden-links": "tsx tests/no-hidden-links.test.ts",
     "test:camera-snapshots": "tsx tests/camera-snapshots.test.ts",
     "test:lastmod": "tsx tests/sitemap-lastmod.test.ts",
     "test:service-worker": "tsx tests/service-worker.test.ts",

@@ -135,6 +135,26 @@ const GEO_PROVINCES: { name: string; slug: string; code: string }[] =
       : provinceSlug(name),
   }));
 
+// ─── Sections only the mega menu linked ─────────────────────────────────────
+// The mega menu renders a panel only once it is opened, so these had no link in
+// the server HTML except a hidden copy of the menu, removed on 2026-10-21.
+const GEO_SECTIONS: { name: string; slug: string }[] = [
+  { name: "España por provincias", slug: "/espana" },
+  { name: "Paneles DGT", slug: "/paneles" },
+  { name: "Cercanías", slug: "/trenes/cercanias" },
+  { name: "Puntualidad de trenes", slug: "/trenes/live" },
+  { name: "Histórico de precios", slug: "/gasolineras/historico" },
+  { name: "Aeropuertos", slug: "/aviacion/aeropuertos" },
+  { name: "Vuelos cancelados", slug: "/aviacion/cancelados" },
+  { name: "Mapa de buques", slug: "/barcos/mapa" },
+  { name: "Puertos", slug: "/maritimo/puertos" },
+  { name: "Ferries", slug: "/maritimo/ferries/proximo" },
+  { name: "Meteorología marina", slug: "/maritimo/meteorologia" },
+  { name: "Seguridad marítima", slug: "/maritimo/seguridad" },
+  { name: "Metro de Madrid", slug: "/transporte-publico/metro-de-madrid" },
+  { name: "TMB Barcelona", slug: "/transporte-publico/tmb" },
+];
+
 // ─── Row component ───────────────────────────────────────────────────────────
 function GeoRow({
   label,
@@ -206,6 +226,11 @@ export function GeoLinks() {
           items={GEO_ACCIDENT_CITIES}
           buildHref={(slug) => `/accidentes/${slug}`}
         />
+        <GeoRow
+          label="Más secciones"
+          items={GEO_SECTIONS}
+          buildHref={(path) => path}
+        />
       </div>
     </nav>
   );
@@ -218,5 +243,6 @@ export const GEO_LINK_COUNT =
   GEO_ROADS.length +
   GEO_RONDAS.length +
   GEO_CAMERA_CITIES.length +
-  GEO_ACCIDENT_CITIES.length;
+  GEO_ACCIDENT_CITIES.length +
+  GEO_SECTIONS.length;
 
