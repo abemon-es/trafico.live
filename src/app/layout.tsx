@@ -165,7 +165,6 @@ const webSiteSchema = generateWebSiteSchema({
   name: "trafico.live",
   url: BASE_URL,
   description: "Tráfico en tiempo real en España: incidencias, cámaras DGT, radares, precios de combustible, cargadores eléctricos y zonas de bajas emisiones.",
-  searchUrl: `${BASE_URL}/explorar?q={search_term_string}`,
 });
 
 const siteNavSchema = generateSiteNavigationSchema([
@@ -182,7 +181,6 @@ const siteNavSchema = generateSiteNavigationSchema([
   { name: "Precio diésel hoy", url: `${BASE_URL}/precio-diesel-hoy` },
   { name: "Gasolineras baratas", url: `${BASE_URL}/gasolineras/baratas` },
   { name: "Cargadores EV", url: `${BASE_URL}/carga-ev` },
-  { name: "Comunidades autónomas", url: `${BASE_URL}/comunidad-autonoma` },
   { name: "Provincias", url: `${BASE_URL}/espana` },
   { name: "Ciudades", url: `${BASE_URL}/ciudad` },
   { name: "Noticias", url: `${BASE_URL}/noticias` },
@@ -200,8 +198,6 @@ const siteNavSchema = generateSiteNavigationSchema([
   { name: "Accidentes", url: `${BASE_URL}/accidentes` },
   { name: "Clima", url: `${BASE_URL}/clima` },
   { name: "Corredores", url: `${BASE_URL}/corredores` },
-  { name: "Insights", url: `${BASE_URL}/insights` },
-  { name: "Blog", url: `${BASE_URL}/blog` },
 ]);
 
 export default function RootLayout({

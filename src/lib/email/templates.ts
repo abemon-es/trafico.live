@@ -153,7 +153,7 @@ export function weeklyDigestHtml(data: WeeklyDigestData, unsubscribeUrl: string)
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td align="center" style="padding:8px 0;">
-          <a href="${BASE_URL}/informes" style="display:inline-block; padding:12px 32px; background:#d97706; color:#ffffff; font-size:15px; font-weight:600; text-decoration:none; border-radius:8px;">
+          <a href="${BASE_URL}/noticias" style="display:inline-block; padding:12px 32px; background:#d97706; color:#ffffff; font-size:15px; font-weight:600; text-decoration:none; border-radius:8px;">
             Ver informes completos
           </a>
         </td>

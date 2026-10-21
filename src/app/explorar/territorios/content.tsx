@@ -165,7 +165,7 @@ export default function TerritoriosContent() {
           {includedCommunities.map((community) => (
             <Link
               key={community.code}
-              href={`/explorar/territorios/${community.slug}`}
+              href={`/espana/${community.slug}`}
               className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all group"
             >
               <div className="flex items-center justify-between">

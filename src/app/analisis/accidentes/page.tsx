@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PROVINCES as INE_PROVINCES, PROVINCE_NAMES } from "@/lib/geo/ine-codes";
+import { provinceSlug } from "@/lib/geo/slugify";
 import {
   AlertTriangle,
   BarChart3,
@@ -33,61 +35,14 @@ export const metadata: Metadata = {
   },
 };
 
-// 52 Spanish provinces with their URL slugs
-const PROVINCES = [
-  { name: "Álava", slug: "alava" },
-  { name: "Albacete", slug: "albacete" },
-  { name: "Alicante", slug: "alicante" },
-  { name: "Almería", slug: "almeria" },
-  { name: "Asturias", slug: "asturias" },
-  { name: "Ávila", slug: "avila" },
-  { name: "Badajoz", slug: "badajoz" },
-  { name: "Baleares", slug: "baleares" },
-  { name: "Barcelona", slug: "barcelona" },
-  { name: "Burgos", slug: "burgos" },
-  { name: "Cáceres", slug: "caceres" },
-  { name: "Cádiz", slug: "cadiz" },
-  { name: "Cantabria", slug: "cantabria" },
-  { name: "Castellón", slug: "castellon" },
-  { name: "Ceuta", slug: "ceuta" },
-  { name: "Ciudad Real", slug: "ciudad-real" },
-  { name: "Córdoba", slug: "cordoba" },
-  { name: "A Coruña", slug: "a-coruna" },
-  { name: "Cuenca", slug: "cuenca" },
-  { name: "Gipuzkoa", slug: "gipuzkoa" },
-  { name: "Girona", slug: "girona" },
-  { name: "Granada", slug: "granada" },
-  { name: "Guadalajara", slug: "guadalajara" },
-  { name: "Huelva", slug: "huelva" },
-  { name: "Huesca", slug: "huesca" },
-  { name: "Jaén", slug: "jaen" },
-  { name: "León", slug: "leon" },
-  { name: "Lleida", slug: "lleida" },
-  { name: "Lugo", slug: "lugo" },
-  { name: "Madrid", slug: "madrid" },
-  { name: "Málaga", slug: "malaga" },
-  { name: "Melilla", slug: "melilla" },
-  { name: "Murcia", slug: "murcia" },
-  { name: "Navarra", slug: "navarra" },
-  { name: "Ourense", slug: "ourense" },
-  { name: "Palencia", slug: "palencia" },
-  { name: "Las Palmas", slug: "las-palmas" },
-  { name: "Pontevedra", slug: "pontevedra" },
-  { name: "La Rioja", slug: "la-rioja" },
-  { name: "Salamanca", slug: "salamanca" },
-  { name: "Santa Cruz de Tenerife", slug: "santa-cruz-de-tenerife" },
-  { name: "Segovia", slug: "segovia" },
-  { name: "Sevilla", slug: "sevilla" },
-  { name: "Soria", slug: "soria" },
-  { name: "Tarragona", slug: "tarragona" },
-  { name: "Teruel", slug: "teruel" },
-  { name: "Toledo", slug: "toledo" },
-  { name: "Valencia", slug: "valencia" },
-  { name: "Valladolid", slug: "valladolid" },
-  { name: "Vizcaya", slug: "vizcaya" },
-  { name: "Zamora", slug: "zamora" },
-  { name: "Zaragoza", slug: "zaragoza" },
-];
+// The 52 provinces, linked straight to /estadisticas/accidentes/<slug> with
+// the slug that route resolves (provinceSlug of the official name). This list
+// used short slugs and /analisis/accidentes/<slug>, which 308s there: seven
+// of them («valencia», «alicante»…) then ended in a 404.
+const PROVINCES = INE_PROVINCES.map((p) => ({
+  name: PROVINCE_NAMES[p.code] ?? p.name,
+  slug: provinceSlug(p.name),
+})).sort((a, b) => a.name.localeCompare(b.name, "es"));
 
 const FAQ_ITEMS = [
   {
@@ -130,7 +85,7 @@ const collectionSchema = {
     "@type": "ListItem",
     position: i + 1,
     name: p.name,
-    url: `${BASE_URL}/analisis/accidentes/${p.slug}`,
+    url: `${BASE_URL}/estadisticas/accidentes/${p.slug}`,
   })),
 };
 
@@ -170,7 +125,7 @@ export default function AnalisisAccidentesHubPage() {
           {PROVINCES.map((prov) => (
             <Link
               key={prov.slug}
-              href={`/analisis/accidentes/${prov.slug}`}
+              href={`/estadisticas/accidentes/${prov.slug}`}
               className="group flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-tl-400 dark:hover:border-tl-500 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-600"
             >
               <MapPin className="w-3.5 h-3.5 shrink-0 text-tl-500 dark:text-tl-400" aria-hidden="true" />

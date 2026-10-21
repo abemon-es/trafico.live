@@ -90,6 +90,70 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (90) — 19 internal links pointed at a redirect, six of them on every page
+
+**#168 merged and deployed** (`25123f80`, collectors recreated 22:26:12Z,
+`nationalFuel` in the image). The gate is the next daily report: «vs ayer»
+must equal the stored series, and no diesel alert unless the move is
+≥ 0.5 %.
+
+**CMO data:** Googlebot's 164 of 1,815 requests (1-Sep → 21-Oct) that landed
+on a redirect. A source scan against next.config's 37 unconditional
+redirects found 20 literals. The CMO's three URLs were the visible part.
+
+| Where | Pointed at | Now |
+|---|---|---|
+| layout (site-wide schema) | /comunidad-autonoma, /insights, /blog | removed (/espana and /noticias are already in the list) |
+| layout, the WebSite search action | /explorar?q=, no search page behind it | removed (Google retired the sitelinks search box) |
+| home, the CCAA ItemList | /comunidad-autonoma/<slug> | /espana/<slug> |
+| /analisis/carreteras (cards + schema) | /analisis/carreteras/<road> | /carreteras/<ID>, canonical form |
+| /analisis/accidentes (cards + schema) | /analisis/accidentes/<short slug>; 7 then 404'd | /estadisticas/accidentes/<canonical slug> |
+| /explorar/* (breadcrumbs, cards, links) | /explorar, /explorar/carreteras/<road>, /explorar/territorios/<slug>, /comunidad-autonoma, /municipio | the destination, or removed |
+| gas stations by city and province | /gasolineras/mapa/provincia/<code> | /gasolineras/mapa |
+| maritime search results | /gasolineras/maritimas/<id> | /maritimo/combustible/<id> |
+| weekly e-mail | /informes | /noticias |
+
+- **20 of the 67 roads on /analisis/carreteras have no /carreteras page**
+  (404 through the old redirect too): A-10, A-11, A-14, A-21, A-26, A-43,
+  A-48, A-57, A-63, A-65, A-71, A-72, A-76, A-77, AP-36, AP-41, AP-46, AP-71,
+  N-3, N-5. Out of the list.
+- **Guard `tests/internal-links-final-urls.test.ts`:** parses next.config's
+  redirects. No internal link literal in src/ may match one, except in files
+  whose own route is behind a redirect (44, plus /provincias/* in the
+  middleware). On main's files it fails on exactly the 19.
+- **Not covered:** links built from data at runtime, e.g. /explorar/carreteras'
+  ranking roads with no page.
+
+**CTO heads-up:** `/opt/apps/trafico-live` has 13 untracked files
+(compose `.bak*`, `docker-compose.collectors.deploy.yml`, `docker-compose.yml`,
+`healthcheck.sh.bak`). The build doesn't read them. Archive them after
+checking which are still read by something, don't delete them.
+
+**Open, in order:**
+1. **L3:** gate this PR, per changed page: every internal link answers 200
+   with no redirect, in the server HTML. Then the timestamp to the CMO.
+2. **L1:** #168's gate on the next daily report (20:30Z, and the V16 run
+   after midnight).
+3. **L1/L3:** the fuel articles' clean-up. `scripts/archive-fuel-alerts.ts`
+   (CTO spec), the 301 to /precio-diesel-hoy, out of the sitemap, and the
+   report deltas recomputed or removed, with the dated note.
+4. **L3 (CMO):** the rest of the home.
+5. **L2:** the province accident pages' «2011-2024» (data 2021–2023); the
+   same claim on /analisis/accidentes.
+6. **L3 (CMO-approved):** 308 for the 7 short province aliases, plus «Todas
+   las provincias».
+7. **Ops (CTO):** the prod checkout's untracked files.
+8. **L3:** #145, the full-day share (PR comment); `content-fingerprints` per
+   family.
+9. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+10. **L2:** #157 part 2 and #143 (2); #143 (3) on 24-10; A-5/A-6 to the CMO.
+11. **L2, low:** lint debt; dead exports.
+12. **Security (server-28):** Report-Only CSP; the edge exemption (MJ).
+13. **Recheck:** EUSKADI 27-10; transit-gtfs 25-10.
+14. **Waiting on MJ:** the AEMET key, SASEMAR, self-merge for low-risk PRs.
+
+---
+
 ## Cycle 2026-10-22 (89) — every fuel article since April announced a ~1 % fall that didn't happen
 
 **MJ (22-10):** I'm the project's CTO and PM: I drive the plan, ask the CTO

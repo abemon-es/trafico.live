@@ -377,7 +377,7 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
       return {
         title: doc.name as string,
         subtitle: [price, location].filter(Boolean).join(" · ") || null,
-        href: `/gasolineras/maritimas/${doc.id}`,
+        href: `/maritimo/combustible/${doc.id}`,
         category: "Gasolineras maritimas",
         icon: "Anchor",
       };

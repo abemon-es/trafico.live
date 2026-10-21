@@ -410,7 +410,7 @@ export default async function BaratasCityPage({ params }: Props) {
         {/* Navigation links */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
           <Link
-            href={`/gasolineras/mapa/provincia/${cityData.provinceCode}`}
+            href="/gasolineras/mapa"
             className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
           >
             <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0" />

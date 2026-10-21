@@ -249,7 +249,7 @@ export default function CarreterasContent() {
             {rankingsData.data.roads.mostDangerous.slice(0, 10).map((road, idx) => (
               <Link
                 key={road.roadNumber}
-                href={`/explorar/carreteras/${encodeURIComponent(road.roadNumber)}`}
+                href={`/carreteras/${encodeURIComponent(road.roadNumber)}`}
                 className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-1.5 rounded-full text-sm border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
               >
                 <span className="font-medium text-red-700 dark:text-red-400">#{idx + 1}</span>
@@ -337,7 +337,7 @@ export default function CarreterasContent() {
                   {sortedRoads.slice(0, selectedType ? 100 : 12).map((road) => (
                     <Link
                       key={road.roadName}
-                      href={`/explorar/carreteras/${encodeURIComponent(road.roadName)}`}
+                      href={`/carreteras/${encodeURIComponent(road.roadName)}`}
                       className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all group"
                     >
                       <div className="flex items-center justify-between mb-3">
