@@ -84,21 +84,21 @@ const FUEL_TABS: { key: FuelKey; label: string; color: string; activeBg: string;
     label: "Gasolina 95",
     shortLabel: "G-95",
     color: "var(--tl-primary)",
-    activeBg: "bg-[var(--tl-primary-solid)]",
+    activeBg: "bg-[var(--tl-primary-solid)] text-white",
   },
   {
     key: "gasolina98",
     label: "Gasolina 98",
     shortLabel: "G-98",
     color: "#8b5cf6",
-    activeBg: "bg-violet-600",
+    activeBg: "bg-violet-600 text-white",
   },
   {
     key: "gasoleoA",
     label: "Gasóleo A",
     shortLabel: "G-A",
     color: "var(--tl-warning)",
-    activeBg: "bg-orange-700",
+    activeBg: "bg-orange-700 text-white",
   },
 ];
 
@@ -730,7 +730,7 @@ export function HistoricoContent() {
               onClick={() => setFuelKey(tab.key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
                 isActive
-                  ? `border-transparent text-white ${tab.activeBg}`
+                  ? `border-transparent ${tab.activeBg}`
                   : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600"
               }`}
             >

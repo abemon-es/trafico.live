@@ -65,15 +65,15 @@ const STATION_TYPE_LABELS: Record<string, string> = {
   COVERAGE: "Cobertura",
 };
 
-/** The IMD badge, under white text: every step is 4.5:1 or more (measured 2026-10-21). */
+/** The IMD badge: background and text together, so the contrast rules see the pair (4.51–6.97:1). */
 function imdColor(imd: number | null): string {
-  if (!imd) return "bg-gray-500"; // 4.84:1
-  if (imd >= 100000) return "bg-red-600"; // 4.77:1
-  if (imd >= 50000) return "bg-orange-700"; // 5.22:1
-  if (imd >= 20000) return "bg-yellow-700"; // 4.93:1
-  if (imd >= 10000) return "bg-green-700"; // 4.95:1
-  if (imd >= 5000) return "bg-tl-600"; // 6.97:1
-  return "bg-tl-500"; // 4.51:1
+  if (!imd) return "bg-gray-500 text-white";
+  if (imd >= 100000) return "bg-red-600 text-white";
+  if (imd >= 50000) return "bg-orange-700 text-white";
+  if (imd >= 20000) return "bg-yellow-700 text-white";
+  if (imd >= 10000) return "bg-green-700 text-white";
+  if (imd >= 5000) return "bg-tl-600 text-white";
+  return "bg-tl-500 text-white";
 }
 
 function imdLabel(imd: number | null): string {
@@ -239,7 +239,7 @@ export default function EstacionesAforoContent() {
                 {selectedStation.provinceName && ` · ${selectedStation.provinceName}`}
               </p>
             </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${imdColor(selectedStation.imd)}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${imdColor(selectedStation.imd)}`}>
               {imdLabel(selectedStation.imd)}
             </span>
           </div>

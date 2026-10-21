@@ -388,11 +388,11 @@ export default async function ClimateStationDetailPage({
             {/* Latest temperature badge */}
             {heroTemp != null && (
               <div className="flex flex-col items-center gap-1">
-                <span className={`inline-flex items-center justify-center w-20 h-20 rounded-full text-white font-mono text-2xl font-bold shadow-lg ${
-                  heroTemp >= 35 ? "bg-red-500" :
-                  heroTemp >= 25 ? "bg-amber-600" :
-                  heroTemp >= 15 ? "bg-emerald-600" :
-                  heroTemp >= 0 ? "bg-teal-600" : "bg-blue-500"
+                <span className={`inline-flex items-center justify-center w-20 h-20 rounded-full font-mono text-2xl font-bold shadow-lg ${
+                  heroTemp >= 35 ? "bg-red-600 text-white" :
+                  heroTemp >= 25 ? "bg-amber-700 text-white" :
+                  heroTemp >= 15 ? "bg-emerald-700 text-white" :
+                  heroTemp >= 0 ? "bg-teal-700 text-white" : "bg-blue-600 text-white"
                 }`}>
                   {heroTemp.toFixed(1)}°
                 </span>

@@ -30,7 +30,7 @@ function FilterChip({ label, count, active, onClick, icon, color }: FilterChipPr
         flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
         transition-all duration-200 border-2
         ${active
-          ? `${color} text-white border-transparent shadow-md`
+          ? `${color} border-transparent shadow-md`
           : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-950`
         }
       `}
@@ -56,27 +56,27 @@ const EFFECT_CONFIG: Record<IncidentEffect, { label: string; icon: React.ReactNo
   ROAD_CLOSED: {
     label: "Carreteras cortadas",
     icon: <Ban className="w-4 h-4" />,
-    color: "bg-red-600",
+    color: "bg-red-600 text-white",
   },
   SLOW_TRAFFIC: {
     label: "Tráfico lento",
     icon: <Car className="w-4 h-4" />,
-    color: "bg-orange-700",
+    color: "bg-orange-700 text-white",
   },
   RESTRICTED: {
     label: "Circulación restringida",
     icon: <CircleSlash className="w-4 h-4" />,
-    color: "bg-yellow-700",
+    color: "bg-yellow-700 text-white",
   },
   DIVERSION: {
     label: "Desvíos",
     icon: <ArrowLeftRight className="w-4 h-4" />,
-    color: "bg-tl-500",
+    color: "bg-tl-500 text-white",
   },
   OTHER_EFFECT: {
     label: "Otras afecciones",
     icon: <HelpCircle className="w-4 h-4" />,
-    color: "bg-gray-500",
+    color: "bg-gray-500 text-white",
   },
 };
 
@@ -85,27 +85,27 @@ const CAUSE_CONFIG: Record<IncidentCause, { label: string; icon: React.ReactNode
   ROADWORK: {
     label: "Obras",
     icon: <Construction className="w-4 h-4" />,
-    color: "bg-tl-amber-600",
+    color: "bg-tl-amber-600 text-white",
   },
   ACCIDENT: {
     label: "Accidentes",
     icon: <AlertTriangle className="w-4 h-4" />,
-    color: "bg-red-600",
+    color: "bg-red-600 text-white",
   },
   WEATHER: {
     label: "Meteorológicos",
     icon: <CloudRain className="w-4 h-4" />,
-    color: "bg-tl-600",
+    color: "bg-tl-600 text-white",
   },
   RESTRICTION: {
     label: "Restricciones",
     icon: <TrafficCone className="w-4 h-4" />,
-    color: "bg-purple-600",
+    color: "bg-purple-600 text-white",
   },
   OTHER_CAUSE: {
     label: "Otras",
     icon: <HelpCircle className="w-4 h-4" />,
-    color: "bg-gray-500",
+    color: "bg-gray-500 text-white",
   },
 };
 
