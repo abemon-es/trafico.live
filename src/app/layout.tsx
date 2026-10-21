@@ -245,11 +245,10 @@ export default function RootLayout({
         <WebVitals />
         <CookieConsent />
         <PwaInstallPrompt />
+        {/* The site's only service worker (tiles + push). A second register()
+            on the same scope replaces it on every page load: see public/sw.js. */}
         <Script id="sw-register" strategy="afterInteractive">
           {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}`}
-        </Script>
-        <Script id="tile-sw-register" strategy="afterInteractive">
-          {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/tile-sw.js',{scope:'/'}).catch(()=>{})}`}
         </Script>
         {gaId && (
           <>

@@ -2,7 +2,8 @@
  * trafico.live — Web Push Service Worker
  *
  * Handles incoming push notifications and sends them to the user.
- * Registered from PushPermissionPrompt.tsx.
+ * Imported by /sw.js, the site's only worker, which owns install/activate;
+ * never registered on its own (a second worker on scope "/" replaces it).
  *
  * NOTE: Push notifications require HTTPS in production.
  * On localhost without a dev certificate, subscription will fail silently —
@@ -12,14 +13,6 @@
  */
 
 "use strict";
-
-self.addEventListener("install", () => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(clients.claim());
-});
 
 /**
  * Push event — fired when the server sends a push notification via Web Push API.
