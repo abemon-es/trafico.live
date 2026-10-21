@@ -33,6 +33,12 @@ interface PriceHistoryChartProps {
 
 type TimeRange = "7d" | "30d" | "90d" | "365d";
 
+function TrendIcon({ direction }: { direction: string }) {
+  if (direction === "up") return <TrendingUp className="w-4 h-4 text-red-500" />;
+  if (direction === "down") return <TrendingDown className="w-4 h-4 text-green-500" />;
+  return <Minus className="w-4 h-4 text-gray-400 dark:text-gray-500" />;
+}
+
 export function PriceHistoryChart({
   data,
   title = "Evolución de precios",
@@ -83,12 +89,6 @@ export function PriceHistoryChart({
     gasoleoA: calculateTrend("avgGasoleoA"),
     gasolina95: calculateTrend("avgGasolina95"),
     gasolina98: calculateTrend("avgGasolina98"),
-  };
-
-  const TrendIcon = ({ direction }: { direction: string }) => {
-    if (direction === "up") return <TrendingUp className="w-4 h-4 text-red-500" />;
-    if (direction === "down") return <TrendingDown className="w-4 h-4 text-green-500" />;
-    return <Minus className="w-4 h-4 text-gray-400 dark:text-gray-500" />;
   };
 
   const formatDate = (dateStr: string) => {

@@ -276,6 +276,8 @@ export function AccidentHeatmap({ data }: { data: HeatmapCell[] }) {
 // ---------------------------------------------------------------------------
 
 export function VehicleByHourChart({ data }: { data: VehicleHourRow[] }) {
+  // Before the early return: hooks run in the same order on every render.
+  const [activeVehicle, setActiveVehicle] = useState<string | null>(null);
   if (data.length === 0) return null;
 
   const vehicleTypes = Object.keys(VEHICLE_COLORS) as Array<keyof typeof VEHICLE_COLORS>;
@@ -285,8 +287,6 @@ export function VehicleByHourChart({ data }: { data: VehicleHourRow[] }) {
   for (const vt of vehicleTypes) {
     maxValues[vt] = Math.max(...data.map((d) => d[vt as keyof VehicleHourRow] as number), 1);
   }
-
-  const [activeVehicle, setActiveVehicle] = useState<string | null>(null);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 shadow-sm">
