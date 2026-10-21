@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
 
@@ -297,9 +298,9 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           Al enviar aceptas nuestra{" "}
-          <a href="/privacidad" className="text-tl-600 hover:underline dark:text-tl-400">
+          <Link href="/privacidad" className="text-tl-600 hover:underline dark:text-tl-400">
             política de privacidad
-          </a>
+          </Link>
           .
         </p>
         <button

@@ -7,6 +7,7 @@
 
 "use client";
 
+import Link from "next/link";
 import { MailCheck, MailX } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -49,7 +50,7 @@ function VerifyEmailContent() {
           </p>
         </div>
 
-        <a
+        <Link
           href="/login"
           className="inline-block w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
           style={{
@@ -58,7 +59,7 @@ function VerifyEmailContent() {
           }}
         >
           Solicitar nuevo enlace
-        </a>
+        </Link>
       </div>
     );
   }
@@ -129,13 +130,13 @@ function VerifyEmailContent() {
         style={{ color: "color-mix(in oklch, var(--foreground) 55%, transparent)" }}
       >
         ¿No has recibido nada?{" "}
-        <a
+        <Link
           href="/login"
           className="font-medium underline hover:no-underline"
           style={{ color: "var(--tl-primary)" }}
         >
           Solicitar nuevo enlace
-        </a>
+        </Link>
       </p>
     </div>
   );

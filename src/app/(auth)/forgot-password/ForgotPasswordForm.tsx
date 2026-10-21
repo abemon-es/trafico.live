@@ -5,6 +5,7 @@
 
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Mail, ArrowRight, KeyRound } from "lucide-react";
 import { signInMagicLink } from "@/lib/auth-client";
@@ -157,13 +158,13 @@ export function ForgotPasswordForm() {
         style={{ color: "color-mix(in oklch, var(--foreground) 55%, transparent)" }}
       >
         ¿Recuerdas tu acceso?{" "}
-        <a
+        <Link
           href="/login"
           className="font-medium underline hover:no-underline"
           style={{ color: "var(--tl-primary)" }}
         >
           Volver al inicio de sesión
-        </a>
+        </Link>
       </p>
     </div>
   );

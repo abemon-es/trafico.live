@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   Car,
@@ -447,12 +448,12 @@ export function EndpointCatalog() {
       {/* Link to full docs */}
       <p className="text-xs text-center text-tl-400 dark:text-tl-500 mt-4">
         Documentación completa de los 121 endpoints en{" "}
-        <a
+        <Link
           href="/api-docs"
           className="text-[color:var(--tl-primary)] hover:underline"
         >
           /api-docs
-        </a>
+        </Link>
       </p>
     </div>
   );

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Map, Train, Bus, Plane, Car } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -94,17 +95,17 @@ export default function IrPage() {
 
         <p className="text-xs text-gray-400 dark:text-gray-500">
           Ejemplo:{" "}
-          <a href="/ir/madrid/barcelona" className="text-tl-600 dark:text-tl-400 hover:underline">
+          <Link href="/ir/madrid/barcelona" className="text-tl-600 dark:text-tl-400 hover:underline">
             Madrid → Barcelona
-          </a>
+          </Link>
           {", "}
-          <a href="/ir/sevilla/malaga" className="text-tl-600 dark:text-tl-400 hover:underline">
+          <Link href="/ir/sevilla/malaga" className="text-tl-600 dark:text-tl-400 hover:underline">
             Sevilla → Málaga
-          </a>
+          </Link>
           {", "}
-          <a href="/ir/bilbao/donostia" className="text-tl-600 dark:text-tl-400 hover:underline">
+          <Link href="/ir/bilbao/donostia" className="text-tl-600 dark:text-tl-400 hover:underline">
             Bilbao → Donostia
-          </a>
+          </Link>
         </p>
       </section>
 

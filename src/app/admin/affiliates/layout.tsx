@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { auth } from "@/lib/auth-config";
@@ -45,12 +46,12 @@ export default async function AdminAffiliatesLayout({
               Afiliados
             </span>
           </div>
-          <a
+          <Link
             href="/"
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
           >
             ← trafico.live
-          </a>
+          </Link>
         </div>
       </header>
       <div className="max-w-7xl mx-auto px-4 py-6">{children}</div>

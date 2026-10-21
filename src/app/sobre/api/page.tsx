@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import {
   Code2,
@@ -316,12 +317,12 @@ export default function ApiLandingPage() {
               </code>{" "}
               con tu clave personal. Las claves FREE se generan al instante sin
               tarjeta en{" "}
-              <a
+              <Link
                 href="/api-docs#obtener-clave"
                 className="text-[color:var(--tl-primary)] hover:underline"
               >
                 /api-docs
-              </a>
+              </Link>
               .
             </p>
             <div className="bg-tl-950 rounded-xl p-4 font-mono text-sm text-tl-100 overflow-x-auto">
@@ -452,13 +453,13 @@ export default function ApiLandingPage() {
             cuando tu proyecto crezca.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
+            <Link
               href="/api-docs#obtener-clave"
               className="inline-flex items-center justify-center gap-2 bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white font-semibold px-8 py-3 rounded-xl transition-colors"
             >
               <Key className="w-4 h-4" />
               Obtener API Key gratis
-            </a>
+            </Link>
             <a
               href="#precios"
               className="inline-flex items-center justify-center gap-2 border border-tl-700 text-tl-200 hover:bg-tl-800 font-medium px-8 py-3 rounded-xl transition-colors"
@@ -473,12 +474,12 @@ export default function ApiLandingPage() {
         <div className="text-center">
           <p className="text-sm text-tl-500 dark:text-tl-400">
             Documentación completa, ejemplos adicionales y gestión de claves en{" "}
-            <a
+            <Link
               href="/api-docs"
               className="text-[color:var(--tl-primary)] hover:underline font-medium"
             >
               trafico.live/api-docs
-            </a>
+            </Link>
           </p>
         </div>
       </div>

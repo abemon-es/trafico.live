@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { OverallStatusBanner } from "@/components/status/StatusBadge";
 import { ServicePanel } from "@/components/status/ServicePanel";
@@ -101,9 +102,9 @@ export default async function StatusPage() {
 
         <footer className="mt-12 border-t border-tl-100 pt-6 text-sm text-tl-500 dark:border-tl-900 dark:text-tl-400">
           ¿Recibir avisos? Crea una alerta en{" "}
-          <a href="/alertas?type=status" className="text-tl-700 underline hover:text-tl-900 dark:text-tl-200">
+          <Link href="/alertas?type=status" className="text-tl-700 underline hover:text-tl-900 dark:text-tl-200">
             /alertas
-          </a>
+          </Link>
           .
         </footer>
       </main>
