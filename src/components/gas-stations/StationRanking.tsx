@@ -39,7 +39,7 @@ function RankBadge({ rank, total, percentile }: { rank: number; total: number; p
   // Top 3 badges
   if (rank === 1) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 rounded-full text-xs font-semibold">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-xs font-semibold">
         <Trophy className="w-3 h-3" />
         #1
       </span>
@@ -65,7 +65,7 @@ function RankBadge({ rank, total, percentile }: { rank: number; total: number; p
   // Top 10% badge
   if (percentile <= 10) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 rounded-full text-xs font-semibold">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-semibold">
         <Trophy className="w-3 h-3" />
         Top 10%
       </span>

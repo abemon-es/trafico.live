@@ -198,7 +198,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           radar.type === "SECTION"
-                            ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800"
+                            ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300"
                             : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                         }`}>
                           {radar.type === "SECTION" ? "Tramo" : "Fijo"}
@@ -260,11 +260,11 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                     const speed = sl.speedLimit;
                     const speedBadge =
                       speed <= 60
-                        ? "bg-red-100 dark:bg-red-900/30 text-red-800"
+                        ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
                         : speed <= 80
                         ? "bg-tl-amber-100 text-tl-amber-800"
                         : speed <= 100
-                        ? "bg-green-100 dark:bg-green-900/30 text-green-800"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                         : "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200";
                     return (
                       <tr key={sl.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950">

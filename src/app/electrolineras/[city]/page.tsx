@@ -390,7 +390,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                             </span>
                           )}
                           {charger.is24h && (
-                            <span className="text-xs font-medium bg-teal-50 dark:bg-teal-900/20 text-teal-700 border border-teal-200 px-2 py-0.5 rounded flex-shrink-0">
+                            <span className="text-xs font-medium bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border border-teal-200 px-2 py-0.5 rounded flex-shrink-0">
                               24h
                             </span>
                           )}

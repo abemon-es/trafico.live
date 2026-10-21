@@ -212,7 +212,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                   {typeLabel}
                 </span>
                 {incidents.length > 0 && (
-                  <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 rounded-full text-sm font-medium flex items-center gap-1">
+                  <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium flex items-center gap-1">
                     <AlertTriangle className="w-4 h-4" />
                     {incidents.length} incidencia{incidents.length !== 1 ? "s" : ""} activa{incidents.length !== 1 ? "s" : ""}
                   </span>
@@ -377,7 +377,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                           </td>
                           <td className="py-2">
                             <span className={`px-2 py-0.5 rounded text-xs ${
-                              radar.type === "SECTION" ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800" : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                              radar.type === "SECTION" ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300" : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                             }`}>
                               {radar.type === "SECTION" ? "Tramo" : "Fijo"}
                             </span>

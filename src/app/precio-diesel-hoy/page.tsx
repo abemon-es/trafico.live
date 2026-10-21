@@ -431,10 +431,10 @@ export default async function PrecioDieselHoyPage() {
         <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-8 flex items-start gap-4">
           <Truck className="w-6 h-6 text-tl-amber-600 dark:text-tl-amber-400 mt-0.5 flex-shrink-0" />
           <div>
-            <h2 className="font-semibold text-tl-amber-900 mb-1">
+            <h2 className="font-semibold text-tl-amber-900 dark:text-tl-amber-100 mb-1">
               ¿Transportista o empresa con flota?
             </h2>
-            <p className="text-tl-amber-800 text-sm leading-relaxed mb-3">
+            <p className="text-tl-amber-800 dark:text-tl-amber-200 text-sm leading-relaxed mb-3">
               Consulta nuestra sección profesional con datos específicos para flotas: precio del
               gasóleo A en grandes volúmenes, áreas de servicio en autopistas y restricciones de
               circulación para vehículos pesados.

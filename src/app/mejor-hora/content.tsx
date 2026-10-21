@@ -111,7 +111,7 @@ function formatNumber(n: number): string {
  */
 function heatmapColorClass(intensity: number): string {
   if (intensity < 0.2) return "bg-emerald-100 text-emerald-800";
-  if (intensity < 0.4) return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800";
+  if (intensity < 0.4) return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300";
   if (intensity < 0.65) return "bg-orange-200 text-orange-900";
   return "bg-red-300 text-red-900";
 }

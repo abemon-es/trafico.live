@@ -15,6 +15,10 @@
  * 4. A page wrapper `min-h-screen bg-gray-50` with no dark background: every
  *    location page (LocationShell) sat on light grey in dark mode. The rest
  *    of the site uses `bg-gray-50 dark:bg-gray-950`.
+ * 5. A class string given a dark background (`dark:bg-X-9NN`) but not a light
+ *    text colour: `text-X-800` on it is dark on dark. bin/dark-scan.sh
+ *    measured 1.01–2.8:1 on /espana, /precio-diesel-hoy and /radares/A-3
+ *    (2026-10-21).
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -47,10 +51,19 @@ assert.ok(!BROKEN.test('className="bg-green-50/50 dark:bg-green-900/20"'));
 assert.ok(BROKEN.test('<div className="min-h-screen bg-gray-50">'));
 assert.ok(!BROKEN.test('<div className="min-h-screen bg-gray-50 dark:bg-gray-950">'));
 
+/** 5: a quoted class string with a dark background and dark text, but no dark text colour. */
+const darkBgDarkText = (line: string) =>
+  (line.match(/"[^"]*"/g) ?? []).some(
+    (s) => /\bdark:bg-[a-z]+-9\d\d\b/.test(s) && /(?<![:\w-])text-[a-z]+-[789]\d\d\b/.test(s) && !/\bdark:text-/.test(s),
+  );
+assert.ok(darkBgDarkText('badge: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",'));
+assert.ok(!darkBgDarkText('badge: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300",'));
+assert.ok(!darkBgDarkText('className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"'));
+
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {
   readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-    if (BROKEN.test(line)) hits.push(`${file.slice(process.cwd().length + 1)}:${i + 1}`);
+    if (BROKEN.test(line) || darkBgDarkText(line)) hits.push(`${file.slice(process.cwd().length + 1)}:${i + 1}`);
   });
 }
 assert.deepEqual(hits, [], `dark-mode sweep leftovers:\n${hits.join("\n")}`);

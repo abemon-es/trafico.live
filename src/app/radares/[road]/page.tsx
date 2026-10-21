@@ -77,12 +77,12 @@ const RADAR_TYPE_CONFIG: Record<string, { label: string; color: string; badge: s
   FIXED: {
     label: "Fijo",
     color: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200",
-    badge: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 border-yellow-200",
+    badge: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
   },
   SECTION: {
     label: "Tramo",
     color: "bg-orange-50 dark:bg-orange-900/20 border-orange-200",
-    badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 border-orange-200",
+    badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800",
   },
   MOBILE_ZONE: {
     label: "Zona móvil",
@@ -92,15 +92,15 @@ const RADAR_TYPE_CONFIG: Record<string, { label: string; color: string; badge: s
   TRAFFIC_LIGHT: {
     label: "Semafórico",
     color: "bg-red-50 dark:bg-red-900/20 border-red-200",
-    badge: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",
+    badge: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800",
   },
 };
 
 function getSpeedBadgeColor(speed: number | null): string {
   if (!speed) return "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400";
-  if (speed <= 60) return "bg-red-100 dark:bg-red-900/30 text-red-800 font-semibold";
-  if (speed <= 80) return "bg-tl-amber-100 text-tl-amber-800 font-semibold";
-  if (speed <= 100) return "bg-green-100 dark:bg-green-900/30 text-green-800 font-semibold";
+  if (speed <= 60) return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 font-semibold";
+  if (speed <= 80) return "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200 font-semibold";
+  if (speed <= 100) return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 font-semibold";
   return "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200 font-semibold";
 }
 
@@ -352,7 +352,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                   <Link
                     key={r}
                     href={`/radares/${encodeURIComponent(r)}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg text-sm font-semibold text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg text-sm font-semibold text-yellow-800 dark:text-yellow-300 hover:bg-yellow-100 dark:bg-yellow-900/30 transition-colors"
                   >
                     Radares {r}
                   </Link>
@@ -548,7 +548,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
           {/* Link to full road page */}
           <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
             <div>
-              <p className="font-semibold text-tl-900">
+              <p className="font-semibold text-tl-900 dark:text-tl-100">
                 Ver toda la información de la {roadId}
               </p>
               <p className="text-sm text-tl-700 dark:text-tl-300 mt-0.5">

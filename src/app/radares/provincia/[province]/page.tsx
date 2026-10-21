@@ -48,9 +48,9 @@ const RADAR_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 
 function getSpeedBadgeColor(speed: number | null): string {
   if (!speed) return "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400";
-  if (speed <= 60) return "bg-red-100 dark:bg-red-900/30 text-red-800 font-semibold";
+  if (speed <= 60) return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 font-semibold";
   if (speed <= 80) return "bg-tl-amber-100 text-tl-amber-800 font-semibold";
-  if (speed <= 100) return "bg-green-100 dark:bg-green-900/30 text-green-800 font-semibold";
+  if (speed <= 100) return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 font-semibold";
   return "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200 font-semibold";
 }
 

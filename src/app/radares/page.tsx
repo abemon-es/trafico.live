@@ -35,12 +35,12 @@ export const metadata: Metadata = {
 const RADAR_TYPE_LABELS: Record<string, { label: string; color: string; description: string }> = {
   FIXED: {
     label: "Fijo",
-    color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 border-yellow-200",
+    color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200",
     description: "Miden la velocidad instantánea en un punto fijo de la vía.",
   },
   SECTION: {
     label: "Tramo",
-    color: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 border-orange-200",
+    color: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200",
     description: "Calculan la velocidad media entre dos puntos del recorrido.",
   },
   MOBILE_ZONE: {
@@ -50,7 +50,7 @@ const RADAR_TYPE_LABELS: Record<string, { label: string; color: string; descript
   },
   TRAFFIC_LIGHT: {
     label: "Semafórico",
-    color: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",
+    color: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200",
     description: "Detectan el paso en rojo en intersecciones semafóricas.",
   },
 };
