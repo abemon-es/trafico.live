@@ -21,6 +21,7 @@
     "test:fuel-stats-day": "tsx tests/fuel-stats-day.test.ts",
     "test:theme-pre-paint": "tsx tests/theme-pre-paint.test.ts",
     "test:camera-images": "tsx tests/camera-images.test.ts",
+    "test:camera-snapshots": "tsx tests/camera-snapshots.test.ts",
     "test:lastmod": "tsx tests/sitemap-lastmod.test.ts",
     "test:city-traffic": "tsx tests/city-traffic-bcn.test.ts",
     "test:sasemar": "tsx tests/sasemar-source.test.ts",

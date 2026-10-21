@@ -14,6 +14,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma, isBuildWithoutDb } from "@/lib/db";
+import { cameraImage } from "@/lib/cameras/snapshot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { TrackEntityView } from "@/components/analytics/TrackEntityView";
@@ -179,7 +180,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const camera = await prisma.camera.findUnique({
     where: { id },
-    select: { name: true, roadNumber: true, provinceName: true, thumbnailUrl: true },
+    select: { name: true, roadNumber: true, provinceName: true, thumbnailUrl: true, snapshotFailDays: true },
   });
   if (!camera) return { title: "Cámara no encontrada" };
 
@@ -193,7 +194,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      ...(camera.thumbnailUrl ? { images: [{ url: camera.thumbnailUrl }] } : {}),
+      ...(cameraImage(camera) ? { images: [{ url: cameraImage(camera)! }] } : {}),
     },
   };
 }
@@ -221,14 +222,14 @@ export default async function CameraDetailPage({ params }: Props) {
   const { camera, nearbyCameras, nearbyIncidents } = data;
 
   // VideoObject JSON-LD: DGT thumbnail is a periodically-refreshed live feed
-  const videoSchema = camera.thumbnailUrl
+  const videoSchema = cameraImage(camera)
     ? {
         "@context": "https://schema.org",
         "@type": "VideoObject",
         name: `Cámara de tráfico DGT — ${camera.name}`,
         description: `Imagen en directo de la cámara de tráfico de la DGT en ${camera.name}${camera.roadNumber ? ` (${camera.roadNumber}${camera.kmPoint ? `, km ${Number(camera.kmPoint).toFixed(1)}` : ""})` : ""}${camera.provinceName ? `, ${camera.provinceName}` : ""}. Actualización periódica desde el centro de gestión de tráfico.`,
-        thumbnailUrl: [camera.thumbnailUrl],
-        contentUrl: camera.thumbnailUrl,
+        thumbnailUrl: [cameraImage(camera)!],
+        contentUrl: cameraImage(camera)!,
         uploadDate: camera.lastUpdated.toISOString(),
         isLiveBroadcast: true,
         isFamilyFriendly: true,
@@ -346,11 +347,11 @@ export default async function CameraDetailPage({ params }: Props) {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
         {/* Camera image / stream */}
-        {camera.thumbnailUrl ? (
+        {cameraImage(camera) ? (
           <section aria-label="Imagen en directo">
             <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 border border-gray-200 dark:border-gray-800">
               <Image
-                src={camera.thumbnailUrl}
+                src={cameraImage(camera)!}
                 alt={`Imagen en directo de la cámara de tráfico ${camera.name}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 960px"

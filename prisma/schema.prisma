@@ -386,6 +386,10 @@ model Camera {
   // Status
   isActive    Boolean  @default(true)
   lastUpdated DateTime @default(now())
+  /// Consecutive daily runs whose snapshot wasn't an image (DGT answers 404
+  /// text/html for a dead camera). 0 = the image shows; 3 = inactive
+  /// (services/collector/tasks/camera/snapshots.ts).
+  snapshotFailDays Int @default(0)
 
   @@index([province])
   @@index([roadNumber])

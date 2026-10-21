@@ -1,4 +1,5 @@
 import { Camera } from "lucide-react";
+import { cameraImage } from "@/lib/cameras/snapshot";
 import { GeoEntity } from "@/lib/geo/types";
 import { getLocationCameras } from "@/lib/data/location-data";
 
@@ -56,10 +57,10 @@ export async function CamerasSection({
           >
             {/* Thumbnail */}
             <div className="relative aspect-video bg-gray-200 overflow-hidden">
-              {cam.thumbnailUrl ? (
+              {cameraImage(cam) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={cam.thumbnailUrl}
+                  src={cameraImage(cam)!}
                   alt={cam.name}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
