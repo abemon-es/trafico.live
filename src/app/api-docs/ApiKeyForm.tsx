@@ -163,7 +163,7 @@ export function ApiKeyForm() {
       <button
         type="submit"
         disabled={loading || !email}
-        className="w-full flex items-center justify-center gap-2 bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white font-semibold px-6 py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white font-semibold px-6 py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin" />

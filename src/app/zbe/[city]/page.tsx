@@ -754,13 +754,13 @@ export default async function ZBECityPage({ params }: Props) {
                     {
                       label: "ECO",
                       sub: "Híbrido enchufable / Gas natural",
-                      labelColor: "bg-teal-400 text-white",
+                      labelColor: "bg-teal-400 text-teal-950", // white was 1.86:1; 7.77:1
                       value: cfg.access.labelEco,
                     },
                     {
                       label: "C",
                       sub: "Gasolina Euro 4+ / Diésel Euro 6",
-                      labelColor: "bg-green-500 text-white",
+                      labelColor: "bg-green-500 text-green-950", // white was 2.22:1; 6.74:1
                       value: cfg.access.labelC,
                     },
                     {

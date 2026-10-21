@@ -90,6 +90,91 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (71) — white text under 3:1: the primary blue turns light in dark mode
+
+**#150 merged and gated** (`5513e847`, deployed 10:49Z): /mejor-hora islands
+5 → 0; /maritimo/combustible and /flotas dark on dark 3 → 0 each. Dark mode is
+done site-wide; the guards cover all of `src/`.
+
+**Signal:** the 9 texts under 3:1 left after #149, measured in a browser on
+production's CSS. With Tailwind's exact oklch values: an unused colour isn't
+in the CSS, and `var()` on it fell back to the body colour, which gave a
+false 1.51:1.
+- **The API pages' buttons and badges** (/api-landing, /api-docs, /sobre/api,
+  /trenes/cercanias, /transporte-publico): `bg-[var(--tl-primary)] text-white`.
+  `--tl-primary` is #1b4bd5 in light (white 6.97:1) and **#6393ff in dark**,
+  a link colour, where white is **2.94:1**. Its hover in dark is #94b6ff.
+- **/gasolineras/historico, the selected fuel tab** (inline style
+  `tab.color`): G-95 2.94:1 in dark, G-98 4.23:1, diesel 3.00/2.05:1.
+- **/zbe labels:** white on teal-400 «ECO» 1.86:1 and on green-500 «C»
+  2.22:1, both themes.
+- **/cuanto-cuesta-cargar's savings panel:** green-100/200 on green-600,
+  2.93/2.67:1, both themes.
+
+**Fix (server-28 approved the token, with four conditions):**
+- **`--tl-primary-solid` #1b4bd5 and `--tl-primary-solid-hover` #092ea8,**
+  defined in `:root` only (dark inherits the same blue): white 6.97:1, hover
+  10.67:1. It's used **only in the 21 class strings with a --tl-primary
+  background and white text**, in 10 files. The progress bar, the toggle
+  track and the bullet carry no text and keep `--tl-primary`.
+  `--tl-primary` is still the colour of text and links.
+- **Fuel tabs:** `activeBg` per tab (G-95 the solid token, G-98 violet-600,
+  diesel orange-700): 6.97 / 5.89 / 5.22:1 in both themes. `color` still draws
+  the chart and the icons.
+- **/zbe:** ECO teal-400 + text-teal-950 7.77:1; C green-500 + text-green-950
+  6.74:1. «0 Emisiones» (3.67:1, a badge) and B (13.35:1) already passed and
+  stay.
+- **Savings panel:** green-800; its green-100/200 texts 6.48/5.91:1, white
+  above 6.5:1. green-700 only reached 4.50:1 with green-100.
+- **Rule 8** in `tests/dark-mode-sweep.test.ts`: a `--tl-primary` background
+  (or its hover) with `text-white` in the same string fails. Mutant: the
+  TierCard button back on --tl-primary → `TierCard.tsx:116`.
+
+**Light mode for the token (condition 1):**
+- the 10 button files equal main once `-solid` is renamed back (10/10);
+- the computed colours of the 33 elements on /api-landing, /api-docs,
+  /sobre/api and /trenes/cercanias are all rgb(27, 75, 213) before. The
+  snapshot is repeated after the deploy.
+
+The fuel tabs, /zbe and the savings panel do change in light: that's the
+contrast fix, in both themes.
+
+**Evidence:** dark-mode-sweep (1–8), theme-pre-paint, camera-images,
+service-worker and sitemap-lastmod pass. Web tsc 11; eslint 4 = 4 with main
+on these files.
+
+**Next batch, already measured:** `bg-green-500 text-white` (2.22:1) on 5
+other badges: alertas-meteo, the #1 of the fuel-price rankings (×3), the
+camera modal's «live» badge.
+
+**Gate after deploy:**
+- dark-scan on the 9 pages: the 9 → 0, and 0 new islands or dark on dark;
+- the light snapshot unchanged.
+
+**Open, in order:**
+1. **Accessibility:** merge this; gate after the deploy; then the 5
+   `bg-green-500 text-white` badges.
+2. **L3:** #145 after 2 gas-station runs (11:00Z and 18:00Z).
+3. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+7. **L2, low:** the eslint errors on main (internal `<a>` links, components
+   created during render).
+8. **L3:** dead cameras in the map popups (`tile_cameras`).
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+11. **L3:** the index lastmod after 23-10.
+12. **L1, low:** Euskadi id collisions.
+13. **Hygiene:** scrub the pre-October backlog entries.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (70) — dark mode, the three pages #149 left: a heat scale, arbitrary colours and a watermark
 
 **#149 merged and gated** (`f23b1544`, deployed 10:15Z, the first build of

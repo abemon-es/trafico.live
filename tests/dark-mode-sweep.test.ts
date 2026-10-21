@@ -38,6 +38,11 @@
  *    is all of src/. Something white on purpose in dark mode too (a toggle
  *    knob, a dot on a coloured badge, a white button on a brand banner) says
  *    so with `dark:bg-white`.
+ * 8. A `--tl-primary` background under white text. In dark mode --tl-primary
+ *    is a light link colour (#6393ff) and white on it is 2.94:1, so 21 buttons
+ *    and badges of the API pages read poorly until 2026-10-21. Under white text
+ *    the background is `--tl-primary-solid` (the same blue in both themes,
+ *    6.97:1), and its hover `--tl-primary-solid-hover`.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -168,12 +173,22 @@ assert.ok(!lostHoverTextBorder('className="text-gray-600 dark:text-gray-400 hove
 assert.ok(!lostHoverTextBorder('className="text-tl-700 hover:text-tl-800 dark:text-tl-300"'), "a light base and no other dark: the element's dark base");
 assert.ok(lostHoverTextBorder('className="border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700"'), "borders too");
 
+/** 8: a --tl-primary (or its hover) background with white text in the same string. */
+const PRIMARY_BG = /(?<![:\w-])(?:hover:)?bg-\[(?:color:)?var\(--tl-primary(?:-hover)?\)\]/;
+const primaryUnderWhite = (line: string) =>
+  classStrings(line).some((s) => PRIMARY_BG.test(s) && /(?<![:\w-])text-white\b/.test(s));
+assert.ok(primaryUnderWhite('className="bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white px-8"'));
+assert.ok(primaryUnderWhite('"bg-[var(--tl-primary)] text-white"'));
+assert.ok(!primaryUnderWhite('"bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white"'));
+assert.ok(!primaryUnderWhite('"h-full rounded-full bg-[var(--tl-primary)] transition-all"'), "a bar with no text");
+assert.ok(!primaryUnderWhite('"text-[var(--tl-primary)] hover:underline"'), "the link colour is still --tl-primary");
+
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {
   const rel = file.slice(process.cwd().length + 1);
   const done = DARK_DONE.some((d) => rel.startsWith(d));
   readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || lostHoverTextBorder(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
+    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || lostHoverTextBorder(line) || primaryUnderWhite(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
   });
 }
 assert.deepEqual(hits, [], `dark-mode sweep leftovers:\n${hits.join("\n")}`);

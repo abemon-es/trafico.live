@@ -325,7 +325,7 @@ const LANG_LABELS: Record<Lang, string> = {
 
 const TIER_BADGE: Record<string, string> = {
   FREE: "bg-tl-100 dark:bg-tl-900 text-tl-700 dark:text-tl-200",
-  PRO: "bg-[color:var(--tl-primary)] text-white",
+  PRO: "bg-[color:var(--tl-primary-solid)] text-white",
 };
 
 // ---------------------------------------------------------------------------
@@ -362,7 +362,7 @@ export function CodeSamples() {
             }}
             className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
               activeEndpoint === ep.id
-                ? "bg-[color:var(--tl-primary)] text-white"
+                ? "bg-[color:var(--tl-primary-solid)] text-white"
                 : "bg-tl-100 dark:bg-tl-800 text-tl-600 dark:text-tl-300 hover:bg-tl-200 dark:hover:bg-tl-700"
             }`}
           >

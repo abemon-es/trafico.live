@@ -546,7 +546,7 @@ export default function ApiDocsPage() {
                 }`}
               >
                 {tier.badge && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold bg-[color:var(--tl-primary)] text-white px-4 py-1 rounded-full shadow">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold bg-[color:var(--tl-primary-solid)] text-white px-4 py-1 rounded-full shadow">
                     {tier.badge}
                   </span>
                 )}
@@ -585,7 +585,7 @@ export default function ApiDocsPage() {
                   href="#obtener-clave"
                   className={`block text-center text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors ${
                     tier.highlight
-                      ? "bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white"
+                      ? "bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white"
                       : tier.name === "ENTERPRISE"
                       ? "bg-tl-amber-400 hover:bg-tl-amber-300 text-tl-amber-950"
                       : "border border-tl-200 dark:border-tl-700 text-tl-600 dark:text-tl-300 hover:bg-[color:var(--tl-primary-bg)]"
@@ -886,7 +886,7 @@ export default function ApiDocsPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="#obtener-clave"
-              className="inline-flex items-center justify-center gap-2 bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white font-semibold px-8 py-3 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white font-semibold px-8 py-3 rounded-xl transition-colors"
             >
               <Key className="w-4 h-4" />
               Obtener API Key gratis

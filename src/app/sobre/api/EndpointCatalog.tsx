@@ -275,7 +275,7 @@ const ENDPOINTS: EndpointDef[] = [
 
 const TIER_BADGE: Record<Tier, string> = {
   FREE: "bg-tl-100 dark:bg-tl-900 text-tl-700 dark:text-tl-200",
-  PRO: "bg-[color:var(--tl-primary)] text-white",
+  PRO: "bg-[color:var(--tl-primary-solid)] text-white",
   ENTERPRISE: "bg-tl-amber-400 text-tl-amber-950",
 };
 
@@ -322,7 +322,7 @@ export function EndpointCatalog() {
             onClick={() => setActiveCategory("all")}
             className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
               activeCategory === "all"
-                ? "bg-[color:var(--tl-primary)] text-white"
+                ? "bg-[color:var(--tl-primary-solid)] text-white"
                 : "bg-tl-100 dark:bg-tl-800 text-tl-600 dark:text-tl-300 hover:bg-tl-200 dark:hover:bg-tl-700"
             }`}
           >
@@ -337,7 +337,7 @@ export function EndpointCatalog() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
                   activeCategory === cat.id
-                    ? "bg-[color:var(--tl-primary)] text-white"
+                    ? "bg-[color:var(--tl-primary-solid)] text-white"
                     : "bg-tl-100 dark:bg-tl-800 text-tl-600 dark:text-tl-300 hover:bg-tl-200 dark:hover:bg-tl-700"
                 }`}
               >
@@ -361,7 +361,7 @@ export function EndpointCatalog() {
                     ? "bg-gray-700 text-white"
                     : t === "FREE"
                       ? "bg-tl-600 text-white"
-                      : "bg-[color:var(--tl-primary)] text-white"
+                      : "bg-[color:var(--tl-primary-solid)] text-white"
                   : "bg-tl-100 dark:bg-tl-800 text-tl-600 dark:text-tl-300 hover:bg-tl-200 dark:hover:bg-tl-700"
               }`}
             >

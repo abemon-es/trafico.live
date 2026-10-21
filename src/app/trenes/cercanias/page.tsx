@@ -453,7 +453,7 @@ export default async function CercaniasPage() {
           </div>
           <Link
             href="/trenes"
-            className="shrink-0 flex items-center gap-1.5 bg-[var(--tl-primary)] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[var(--tl-primary-hover)] transition-colors"
+            className="shrink-0 flex items-center gap-1.5 bg-[var(--tl-primary-solid)] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[var(--tl-primary-solid-hover)] transition-colors"
           >
             <Train className="w-4 h-4" />
             Ir al mapa

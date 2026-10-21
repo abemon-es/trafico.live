@@ -286,7 +286,7 @@ export default function TransportePublicoContent() {
               onClick={() => setActiveMode(m.key)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
                 activeMode === m.key
-                  ? "bg-[var(--tl-primary)] text-white"
+                  ? "bg-[var(--tl-primary-solid)] text-white"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >

@@ -282,7 +282,7 @@ export default function ApiLandingPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href="/api-docs#obtener-clave"
-                className="inline-flex items-center justify-center gap-2 bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white font-semibold px-8 py-3.5 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="inline-flex items-center justify-center gap-2 bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white font-semibold px-8 py-3.5 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <Key className="w-4 h-4" aria-hidden="true" />
                 Empezar gratis
@@ -561,7 +561,7 @@ export default function ApiLandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/api-docs#obtener-clave"
-              className="inline-flex items-center justify-center gap-2 bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white font-semibold px-8 py-3.5 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white font-semibold px-8 py-3.5 rounded-xl transition-colors"
             >
               <Key className="w-4 h-4" aria-hidden="true" />
               Obtener API Key gratis
