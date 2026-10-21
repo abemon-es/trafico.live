@@ -8,6 +8,7 @@ import { MapaFAB } from "@/components/layout/FAB";
 import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 import { CONSENT_PRE_PAINT_SCRIPT } from "@/components/cookie-consent/types";
+import { THEME_PRE_PAINT_SCRIPT } from "@/components/layout/theme-pre-paint";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { WebVitals } from "@/components/analytics/WebVitals";
 import { StructuredData, generateOrganizationSchema, generateWebSiteSchema, generateSiteNavigationSchema } from "@/components/seo/StructuredData";
@@ -214,8 +215,13 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <head>
         {/* Before first paint: hide the server-rendered cookie banner for
-            visitors who already chose (see components/cookie-consent). */}
+            visitors who already chose (see components/cookie-consent).
+            CSP hash: 'sha256-cA3juT2ubtKrf01x9PN652SXtMucjf+l/Fu+k8wu0fU=' */}
         <script dangerouslySetInnerHTML={{ __html: CONSENT_PRE_PAINT_SCRIPT }} />
+        {/* Before first paint: dark mode, so it never flashes light first
+            (see components/layout/theme-pre-paint).
+            CSP hash: 'sha256-/RbtLOqCOEBHNsaRSKFrlifWGp6YeoVK+9ih5ifaVHQ=' */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_PRE_PAINT_SCRIPT }} />
         <link rel="preconnect" href="https://tiles.trafico.live" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://tiles.trafico.live" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />

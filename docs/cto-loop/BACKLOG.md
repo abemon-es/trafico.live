@@ -88,6 +88,92 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (58) — dark mode appeared 0.3–1.4 s late, after a light page
+
+**#137 merged** (`4ae953fe`): `bin/dark-scan.sh`. server-28 reviewed the
+script: `mktemp -d` + trap, read-only mount, `--rm`.
+
+**/espana/andalucia «never dark»:** neither the page nor the theme script.
+- Alone in Chromium it sets `html.dark`, with ThemeToggle and the header
+  present, 0 page errors, 0 console errors and 0 `/_next/` ≥ 400 (same for
+  cataluna, sevilla, comunidad-de-madrid).
+- The cause was 4 browsers in parallel against the scanner's 8 s wait for
+  hydration. The scanner reported it as «not scanned» (exit 2), not as clean.
+  Batch 2 raises the wait to 20 s.
+
+**Signal (server-28's point): the flash, measured.**
+- Headless Chromium in dark mode, one page at a time, polling `html.dark`
+  every 50 ms from the first paint.
+- **At DOMContentLoaded `html.dark` was false on all pages, and the screenshot
+  was the whole page in light.**
+
+| | first paint | `html.dark` | light shown |
+|---|---|---|---|
+| desktop /espana/andalucia | 506 ms | 851 ms | ~345 ms |
+| desktop /precio-diesel-hoy | 222 ms | 548 ms | ~326 ms |
+| 4× CPU / | 422 ms | 1,816 ms | ~1.4 s |
+| 4× CPU /espana/andalucia | 292 ms | 1,497 ms | ~1.2 s |
+| 4× CPU /precio-diesel-hoy | 294 ms | 1,484 ms | ~1.2 s |
+
+- **Cause:** the only pre-paint script in `<head>` was the consent one. The
+  theme was applied in ThemeToggle's `useEffect`, after hydration.
+
+**Fix (PR below; server-28 put it ahead of batch 2):**
+- **`THEME_PRE_PAINT_SCRIPT`** (`components/layout/theme-pre-paint.ts`):
+  - inline in `<head>` next to the consent one;
+  - **static**: nothing from the server or the URL;
+  - wrapped in `try/catch`;
+  - the ThemeToggle rule: stored `theme`, otherwise `prefers-color-scheme`.
+- **ThemeToggle:**
+  - reads the class on `<html>` with `useSyncExternalStore` (a
+    MutationObserver) and flips it;
+  - no longer applies it on mount, so there's no flash at hydration and no
+    `setState` in an effect;
+  - server snapshot `false`, so hydration doesn't mismatch.
+- **CSP hashes in comments** next to both inline scripts (server-28, for the
+  strict CSP):
+  - consent `'sha256-cA3juT2ubtKrf01x9PN652SXtMucjf+l/Fu+k8wu0fU='`;
+  - theme `'sha256-/RbtLOqCOEBHNsaRSKFrlifWGp6YeoVK+9ih5ifaVHQ='`.
+  - The test recomputes them, so they can't go stale.
+- **`tests/theme-pre-paint.test.ts`** (`npm run test:theme-pre-paint`):
+  - the 5 cases in `vm` (stored dark; stored light vs a dark system; nothing
+    + dark system; nothing + light system; storage throwing);
+  - no interpolation;
+  - hashes.
+  - **Mutant:** with the system overriding «light», it fails on that case.
+- **Other checks:** web `tsc` 11; eslint 0 on the 4 files.
+
+**Verify after deploy:** the same measurement at 1× and 4× CPU →
+`html.dark=true` at DOMContentLoaded and 0 ms of light; light mode unchanged;
+the button still flips the theme.
+
+**CSP (server-28 as CSO, its own PR after batch 2):**
+- `script-src` has `'unsafe-inline'` + `'unsafe-eval'`. That's hardening
+  debt, not a hole by itself.
+- **Plan:**
+  1. a strict Report-Only CSP (nonce + strict-dynamic), with reporting to an
+     endpoint that only counts;
+  2. a week of measurement (who needs eval: maplibre, charts?);
+  3. a decision on nonces vs. the page cache.
+
+**Open, in order:**
+1. **L2:** merge and verify the pre-paint (1× and 4× CPU).
+2. **L2, dark mode batch 2:** `bg-white` cards on the location pages and
+   /espana, `bg-tl-50`, amber badges, «Suscribir»; the scanner's wait to 20 s.
+3. **L2:** #135 at 04:07Z (`Actualizado hoy`).
+4. **L1:** #132, a `weather` run that hits the key.
+5. **L3:** `content-fingerprints` 04:50 and 22-10; then the pilots.
+6. **L3:** gas stations by price.
+7. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+8. **Security (server-28):** the strict Report-Only CSP, after batch 2.
+9. **L3:** the index lastmod after 23-10.
+10. **L1, low:** Euskadi id collisions.
+11. **Hygiene:** scrub the pre-October backlog entries.
+12. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+13. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (57) — the dark-mode scanner goes into the repo; #136 verified
 
 **#136 verified** (web `e2f33d2`, 02:28Z), with the scanner after the

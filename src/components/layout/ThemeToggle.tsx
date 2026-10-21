@@ -1,32 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
 
-export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+// The class on <html> is the state: THEME_PRE_PAINT_SCRIPT sets it before the
+// first paint (components/layout/theme-pre-paint), and this button only reads
+// it and flips it. Setting it again on mount is what made dark mode appear
+// after hydration, ~0.3–1.4 s late, until 2026-10-21.
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  return () => observer.disconnect();
+}
+const isDark = () => document.documentElement.classList.contains("dark");
+const serverIsDark = () => false;
 
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (
-      stored === "dark" ||
-      (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
-      setDark(true);
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
+export function ThemeToggle() {
+  const dark = useSyncExternalStore(subscribe, isDark, serverIsDark);
 
   const toggle = () => {
     const next = !dark;
-    setDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
   };
 
   return (
