@@ -317,7 +317,7 @@ export function AlertasMeteoContent() {
               onClick={() => mutate()}
               disabled={isLoading}
               aria-label="Actualizar alertas"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950 hover:border-gray-300 dark:border-gray-700 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950 hover:border-gray-300 dark:hover:border-gray-700 transition-all disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
@@ -342,7 +342,7 @@ export function AlertasMeteoContent() {
                   className={`rounded-xl border-2 p-4 text-left transition-all ${
                     filterSeverity === sev
                       ? `${cfg.border} ${cfg.bg} shadow-sm`
-                      : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300 dark:border-gray-700 hover:shadow-sm"
+                      : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm"
                   }`}
                 >
                   <div
@@ -390,7 +390,7 @@ export function AlertasMeteoContent() {
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
                       isActive
                         ? "bg-tl-600 text-white border-tl-600 shadow-sm"
-                        : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300"
+                        : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:text-tl-700 dark:hover:text-tl-300"
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -484,7 +484,7 @@ export function AlertasMeteoContent() {
                   setFilterType("");
                   setFilterProvince("");
                 }}
-                className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 font-medium underline underline-offset-2 self-end pb-2"
+                className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 font-medium underline underline-offset-2 self-end pb-2"
               >
                 Limpiar filtros
               </button>

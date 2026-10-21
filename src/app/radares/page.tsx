@@ -237,7 +237,7 @@ export default async function RadaresPage() {
                       <span className="text-sm text-gray-400 w-5 text-right">{idx + 1}</span>
                       <Link
                         href={`/radares/${encodeURIComponent(item.roadNumber)}`}
-                        className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
+                        className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline"
                       >
                         {item.roadNumber}
                       </Link>
@@ -274,7 +274,7 @@ export default async function RadaresPage() {
                           <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                           <Link
                             href={((item.province ? provincePath(item.province) : null) ?? "/espana")}
-                            className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
+                            className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline"
                           >
                             {provinceName}
                           </Link>
@@ -309,7 +309,7 @@ export default async function RadaresPage() {
                 <Link
                   key={item.roadNumber}
                   href={`/radares/${encodeURIComponent(item.roadNumber)}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:hover:border-tl-800 transition-colors shadow-sm"
                 >
                   {item.roadNumber}
                   <span className="text-xs text-gray-400 font-data">({item._count})</span>

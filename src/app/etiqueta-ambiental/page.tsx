@@ -703,7 +703,7 @@ export default function EtiquetaAmbientalPage() {
                 <Link
                   key={city.slug}
                   href={`/zbe/${city.slug}`}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-600 dark:text-tl-400 hover:shadow-sm transition-all"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-600 dark:hover:text-tl-400 hover:shadow-sm transition-all"
                 >
                   <Leaf className="w-3.5 h-3.5 text-green-500" />
                   ZBE {city.name}

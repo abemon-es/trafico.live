@@ -56,7 +56,7 @@ export const OPERATIVOS: OperativoDefinition[] = [
     historicalSeverity: "muy alta",
     badgeLabel: "Operación especial DGT",
     badgeColor:
-      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200",
+      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800",
     avoidSlots: [
       {
         day: "Viernes (inicio)",
@@ -184,7 +184,7 @@ export const OPERATIVOS: OperativoDefinition[] = [
     historicalSeverity: "alta",
     badgeLabel: "Operación especial DGT",
     badgeColor:
-      "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800",
+      "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800",
     avoidSlots: [
       {
         day: "Jueves (inicio)",
@@ -292,7 +292,7 @@ export const OPERATIVOS: OperativoDefinition[] = [
     historicalSeverity: "muy alta",
     badgeLabel: "Operativo de verano",
     badgeColor:
-      "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-200",
+      "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
     avoidSlots: [
       {
         day: "Viernes (verano)",
@@ -400,7 +400,7 @@ export const OPERATIVOS: OperativoDefinition[] = [
     historicalSeverity: "media",
     badgeLabel: "Operación especial DGT",
     badgeColor:
-      "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200",
+      "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800",
     avoidSlots: [
       {
         day: "Viernes (inicio)",

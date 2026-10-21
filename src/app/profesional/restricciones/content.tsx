@@ -49,7 +49,7 @@ function getZBEStatus(zone: ZBEZone): { label: string; color: string } {
   const from = new Date(zone.effectiveFrom);
   const until = zone.effectiveUntil ? new Date(zone.effectiveUntil) : null;
 
-  if (from > now) return { label: "Planificada", color: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300" };
+  if (from > now) return { label: "Planificada", color: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300" };
   if (until && until < now) return { label: "Expirada", color: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300" };
   return { label: "Activa", color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400" };
 }
@@ -94,7 +94,7 @@ export default function RestriccionesContent() {
         {/* Back link */}
         <Link
           href="/profesional"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al portal profesional
@@ -123,7 +123,7 @@ export default function RestriccionesContent() {
             onClick={() => setActiveTab("zbe")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "zbe"
-                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200"
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
                 : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
@@ -134,7 +134,7 @@ export default function RestriccionesContent() {
             onClick={() => setActiveTab("roads")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "roads"
-                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200"
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
                 : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
@@ -147,10 +147,10 @@ export default function RestriccionesContent() {
         {activeTab === "zbe" && (
           <>
             {/* Info Banner */}
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-red-800">Zonas de Bajas Emisiones</h3>
+                <h3 className="font-medium text-red-800 dark:text-red-200">Zonas de Bajas Emisiones</h3>
                 <p className="text-sm text-red-700 dark:text-red-400 mt-1">
                   Las ZBE restringen el acceso de vehículos según su distintivo ambiental.
                   Verifica las restricciones específicas de cada zona antes de circular.
@@ -197,12 +197,12 @@ export default function RestriccionesContent() {
 
                         <div className="space-y-1 text-sm">
                           <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-gray-400" />
+                            <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                             {zone.cityName}
                           </p>
                           {zone.effectiveFrom && (
                             <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                               Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES")}
                             </p>
                           )}
@@ -242,7 +242,7 @@ export default function RestriccionesContent() {
             <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-tl-amber-800">Restricciones de infraestructura</h3>
+                <h3 className="font-medium text-tl-amber-800 dark:text-tl-amber-200">Restricciones de infraestructura</h3>
                 <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-1">
                   Algunos túneles y tramos tienen limitaciones de altura, peso o anchura.
                   Consulta siempre la normativa actualizada antes de planificar tu ruta.
@@ -281,7 +281,7 @@ export default function RestriccionesContent() {
                       <h3 className="font-medium text-gray-900 dark:text-gray-100">{restriction.name}</h3>
                       <p className="text-sm text-tl-600 dark:text-tl-400">{restriction.road}</p>
                     </div>
-                    <span className="text-xs bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 px-2 py-1 rounded">
+                    <span className="text-xs bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 px-2 py-1 rounded">
                       {restriction.type === "tunnel" ? "Túnel" : "Carretera"}
                     </span>
                   </div>

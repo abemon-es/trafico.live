@@ -393,7 +393,7 @@ export default function OperativosHubPage() {
                 <Link
                   key={href}
                   href={href}
-                  className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:hover:text-tl-300 transition-colors flex items-center gap-1.5"
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {label}

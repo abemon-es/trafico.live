@@ -519,7 +519,7 @@ export function IncidentStatsContent() {
             <div className="flex items-center gap-3 mb-2">
               <Link
                 href="/incidencias"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 transition-colors"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
@@ -689,7 +689,7 @@ export function IncidentStatsContent() {
         <div className="mt-4">
           <Link
             href="/incidencias"
-            className="inline-flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:text-red-400 font-medium"
+            className="inline-flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-400 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Ver mapa de incidencias en tiempo real

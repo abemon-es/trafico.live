@@ -55,7 +55,7 @@ const STATUS_STYLES: Record<string, string> = {
   open: "bg-tl-amber-50 text-tl-amber-700 dark:bg-tl-amber-900/30 dark:text-tl-amber-300",
   void: "bg-tl-100 text-tl-400 dark:bg-tl-900 dark:text-tl-500",
   uncollectible: "bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400",
-  unknown: "bg-tl-100 text-tl-400",
+  unknown: "bg-tl-100 dark:bg-tl-900/30 text-tl-400",
 };
 
 const STATUS_LABELS: Record<string, string> = {

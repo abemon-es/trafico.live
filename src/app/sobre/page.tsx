@@ -104,7 +104,7 @@ export default function SobrePage() {
                   href="https://nap.dgt.es"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 text-sm"
+                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -122,7 +122,7 @@ export default function SobrePage() {
                   href="https://www.dgt.es/menusecundario/dgt-en-cifras/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 text-sm"
+                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -140,7 +140,7 @@ export default function SobrePage() {
                   href="https://www.aemet.es"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 text-sm"
+                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -158,7 +158,7 @@ export default function SobrePage() {
                   href="https://api.euskadi.eus"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 text-sm"
+                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>
@@ -176,7 +176,7 @@ export default function SobrePage() {
                   href="https://transit.gencat.cat"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 text-sm"
+                  className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1 text-sm"
                 >
                   Visitar <ExternalLink className="w-4 h-4" />
                 </a>

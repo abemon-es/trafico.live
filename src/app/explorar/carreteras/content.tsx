@@ -52,11 +52,11 @@ interface RankingsResponse {
 
 // Road type categories
 const ROAD_TYPES = [
-  { prefix: "AP-", label: "Autopistas de peaje", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200" },
+  { prefix: "AP-", label: "Autopistas de peaje", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800" },
   { prefix: "A-", label: "Autovías", color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800" },
-  { prefix: "N-", label: "Carreteras Nacionales", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200" },
-  { prefix: "M-", label: "Madrid (Circunvalación)", color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200" },
-  { prefix: "B-", label: "Barcelona", color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200" },
+  { prefix: "N-", label: "Carreteras Nacionales", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800" },
+  { prefix: "M-", label: "Madrid (Circunvalación)", color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800" },
+  { prefix: "B-", label: "Barcelona", color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800" },
   { prefix: "C-", label: "Comarcales", color: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800" },
 ];
 
@@ -211,7 +211,7 @@ export default function CarreterasContent() {
         </div>
         <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg shadow-sm border border-tl-amber-200 dark:border-tl-amber-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-tl-amber-100 rounded-lg">
+            <div className="p-2 bg-tl-amber-100 dark:bg-tl-amber-900/30 rounded-lg">
               <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
             </div>
           </div>
@@ -240,8 +240,8 @@ export default function CarreterasContent() {
 
       {/* Top Dangerous Roads */}
       {rankingsData?.data?.roads?.mostDangerous && rankingsData.data.roads.mostDangerous.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4 mb-8">
-          <h3 className="text-sm font-semibold text-red-800 mb-3 flex items-center gap-2">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-8">
+          <h3 className="text-sm font-semibold text-red-800 dark:text-red-200 mb-3 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             Carreteras con mayor riesgo
           </h3>
@@ -250,7 +250,7 @@ export default function CarreterasContent() {
               <Link
                 key={road.roadNumber}
                 href={`/explorar/carreteras/${encodeURIComponent(road.roadNumber)}`}
-                className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-1.5 rounded-full text-sm border border-red-200 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-1.5 rounded-full text-sm border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
               >
                 <span className="font-medium text-red-700 dark:text-red-400">#{idx + 1}</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-100">{road.roadNumber}</span>
@@ -266,7 +266,7 @@ export default function CarreterasContent() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-400" />
+          <Filter className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           <span className="text-sm text-gray-600 dark:text-gray-400">Filtrar por tipo:</span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -338,13 +338,13 @@ export default function CarreterasContent() {
                     <Link
                       key={road.roadName}
                       href={`/explorar/carreteras/${encodeURIComponent(road.roadName)}`}
-                      className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+                      className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all group"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400">
                           {road.roadName}
                         </h3>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500" />
+                        <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-tl-500" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 text-sm">
@@ -386,7 +386,7 @@ export default function CarreterasContent() {
                 {!selectedType && sortedRoads.length > 12 && (
                   <button
                     onClick={() => setSelectedType(typePrefix)}
-                    className="mt-4 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
+                    className="mt-4 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline"
                   >
                     Ver todas las {sortedRoads.length} carreteras {typeInfo.label.toLowerCase()}
                   </button>

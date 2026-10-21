@@ -111,11 +111,11 @@ export default function TerritoryDetailContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
-        <Link href="/" className="hover:text-tl-600 dark:text-tl-400">
+        <Link href="/" className="hover:text-tl-600 dark:hover:text-tl-400 dark:text-tl-400">
           <Home className="w-4 h-4" />
         </Link>
         <span>/</span>
-        <Link href="/explorar/territorios" className="hover:text-tl-600 dark:text-tl-400">
+        <Link href="/explorar/territorios" className="hover:text-tl-600 dark:hover:text-tl-400 dark:text-tl-400">
           Territorios
         </Link>
         <span>/</span>
@@ -138,7 +138,7 @@ export default function TerritoryDetailContent() {
       {/* Excluded Warning */}
       {community.isExcluded && community.excludedReason && (
         <div className="mb-6 bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4">
-          <p className="text-tl-amber-800">
+          <p className="text-tl-amber-800 dark:text-tl-amber-200">
             <strong>Nota:</strong> {community.excludedReason}
           </p>
         </div>
@@ -149,7 +149,7 @@ export default function TerritoryDetailContent() {
         {/* Real-time incidents */}
         <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg shadow-sm border border-tl-amber-200 dark:border-tl-amber-800 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-tl-amber-100 rounded-lg">
+            <div className="p-2 bg-tl-amber-100 dark:bg-tl-amber-900/30 rounded-lg">
               <AlertCircle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
             </div>
           </div>
@@ -159,7 +159,7 @@ export default function TerritoryDetailContent() {
           <p className="text-sm text-tl-amber-600 dark:text-tl-amber-400">Incidencias activas</p>
         </div>
         {/* V16 beacons */}
-        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg shadow-sm border border-orange-200 p-4">
+        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg shadow-sm border border-orange-200 dark:border-orange-800 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
               <Radio className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -237,7 +237,7 @@ export default function TerritoryDetailContent() {
             <Link
               key={province.code}
               href={`/explorar/territorios/${community.slug}/${province.slug}`}
-              className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+              className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all group"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -250,11 +250,11 @@ export default function TerritoryDetailContent() {
                       : "Sin datos de población"}
                   </p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-tl-500" />
+                <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-tl-500" />
               </div>
               {province.municipalities.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-xs text-gray-400 mb-1">Ciudades principales:</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Ciudades principales:</p>
                   <div className="flex flex-wrap gap-1">
                     {province.municipalities.slice(0, 3).map((m) => (
                       <span
@@ -276,7 +276,7 @@ export default function TerritoryDetailContent() {
       <div className="mt-8">
         <Link
           href="/explorar/territorios"
-          className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
+          className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
         >
           Volver a territorios
         </Link>

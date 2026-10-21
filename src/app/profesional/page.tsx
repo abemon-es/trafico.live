@@ -51,8 +51,8 @@ const FEATURE_CARDS = [
       "Localiza en tiempo real las gasolineras con el precio de diésel más competitivo para optimizar el coste de tu flota.",
     href: "/profesional/diesel",
     icon: Fuel,
-    color: "bg-tl-amber-100 text-tl-amber-600 dark:text-tl-amber-400",
-    borderHover: "hover:border-tl-amber-300",
+    color: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-600 dark:text-tl-amber-400",
+    borderHover: "hover:border-tl-amber-300 dark:hover:border-tl-amber-700",
     stats: "Precios actualizados hoy",
     badge: null,
   },
@@ -63,7 +63,7 @@ const FEATURE_CARDS = [
     href: "/profesional/areas",
     icon: MapPin,
     color: "bg-tl-100 dark:bg-tl-900/30 text-tl-600 dark:text-tl-400",
-    borderHover: "hover:border-tl-300",
+    borderHover: "hover:border-tl-300 dark:hover:border-tl-700",
     stats: "Con servicios 24h",
     badge: null,
   },
@@ -74,7 +74,7 @@ const FEATURE_CARDS = [
     href: "/restricciones",
     icon: Ban,
     color: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
-    borderHover: "hover:border-red-300",
+    borderHover: "hover:border-red-300 dark:hover:border-red-700",
     stats: "Actualizado en tiempo real",
     badge: null,
   },
@@ -85,7 +85,7 @@ const FEATURE_CARDS = [
     href: "/calculadora",
     icon: Calculator,
     color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
-    borderHover: "hover:border-green-300",
+    borderHover: "hover:border-green-300 dark:hover:border-green-700",
     stats: "Próximamente disponible",
     badge: "Próximamente",
   },
@@ -169,7 +169,7 @@ export default function ProfesionalPage() {
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-1">{card.description}</p>
                   <div className="flex items-center justify-between mt-auto">
-                    <span className="text-xs text-gray-400">{card.stats}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">{card.stats}</span>
                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600 dark:text-green-400 transition-colors" />
                   </div>
                 </Link>
@@ -260,7 +260,7 @@ export default function ProfesionalPage() {
               </ul>
               <Link
                 href="/"
-                className="mt-5 block text-center text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-lg py-2 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                className="mt-5 block text-center text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg py-2 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
               >
                 Empezar gratis
               </Link>

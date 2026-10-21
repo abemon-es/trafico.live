@@ -118,7 +118,7 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
         <div className="mb-6">
           <Link
             href="/gasolineras/mapa"
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-2"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-2"
           >
             <ChevronLeft className="w-4 h-4" />
             Volver al mapa nacional

@@ -49,7 +49,7 @@ const RADAR_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 function getSpeedBadgeColor(speed: number | null): string {
   if (!speed) return "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400";
   if (speed <= 60) return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 font-semibold";
-  if (speed <= 80) return "bg-tl-amber-100 text-tl-amber-800 font-semibold";
+  if (speed <= 80) return "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200 font-semibold";
   if (speed <= 100) return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 font-semibold";
   return "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200 font-semibold";
 }
@@ -211,7 +211,7 @@ export default async function RadaresProvinciaPage({ params }: Props) {
                   return (
                     <div key={t.type} className="flex items-center gap-2">
                       <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full border ${cfg?.color ?? "bg-gray-100 text-gray-700 border-gray-200"}`}
+                        className={`text-xs font-medium px-2 py-1 rounded-full border ${cfg?.color ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"}`}
                       >
                         {cfg?.label ?? t.type}
                       </span>
@@ -223,7 +223,7 @@ export default async function RadaresProvinciaPage({ params }: Props) {
                 })}
                 {byRoad.length > 0 && (
                   <div className="flex items-center gap-2 ml-auto">
-                    <Route className="w-4 h-4 text-gray-400" />
+                    <Route className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       En{" "}
                       <strong className="text-gray-900 dark:text-gray-100 font-data">
@@ -260,7 +260,7 @@ export default async function RadaresProvinciaPage({ params }: Props) {
             /* Empty state */
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-10 mb-6 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
-                <Shield className="w-8 h-8 text-gray-400" />
+                <Shield className="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 No hay radares registrados en {province.name}
@@ -355,7 +355,7 @@ export default async function RadaresProvinciaPage({ params }: Props) {
                               </td>
                               <td className="px-4 py-3">
                                 <span
-                                  className={`text-xs px-2 py-0.5 rounded-full border ${typeCfg?.color ?? "bg-gray-100 text-gray-700 border-gray-200"}`}
+                                  className={`text-xs px-2 py-0.5 rounded-full border ${typeCfg?.color ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800"}`}
                                 >
                                   {typeCfg?.label ?? r.type}
                                 </span>
@@ -368,7 +368,7 @@ export default async function RadaresProvinciaPage({ params }: Props) {
                                     {r.speedLimit} km/h
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400 text-xs">—</span>
+                                  <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
                                 )}
                               </td>
                               <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs hidden sm:table-cell capitalize">

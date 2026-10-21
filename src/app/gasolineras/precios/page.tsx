@@ -102,7 +102,7 @@ function TrendIndicator({ current, previous }: { current: number | null; previou
   if (change < -0.001) {
     return <TrendingDown className="w-4 h-4 text-green-500 inline ml-1" />;
   }
-  return <Minus className="w-4 h-4 text-gray-400 inline ml-1" />;
+  return <Minus className="w-4 h-4 text-gray-400 dark:text-gray-500 inline ml-1" />;
 }
 
 export default async function PreciosPage() {
@@ -142,7 +142,7 @@ export default async function PreciosPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-          <Link href="/gasolineras" className="hover:text-gray-700 dark:text-gray-300">Gasolineras</Link>
+          <Link href="/gasolineras" className="hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300">Gasolineras</Link>
           <span>/</span>
           <span className="text-gray-900 dark:text-gray-100">Precios</span>
         </div>
@@ -200,14 +200,14 @@ export default async function PreciosPage() {
       {/* Cheapest Provinces */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {cheapestDiesel && (
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4">
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
                 <div className="text-sm text-green-600 dark:text-green-400">Gasóleo A más barato</div>
-                <div className="font-semibold text-green-800">{cheapestDiesel.name}</div>
+                <div className="font-semibold text-green-800 dark:text-green-200">{cheapestDiesel.name}</div>
               </div>
             </div>
             <div className="text-2xl font-bold text-green-700 dark:text-green-400">
@@ -223,14 +223,14 @@ export default async function PreciosPage() {
           </div>
         )}
         {cheapestGas95 && (
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4">
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
               <div>
                 <div className="text-sm text-green-600 dark:text-green-400">Gasolina 95 más barata</div>
-                <div className="font-semibold text-green-800">{cheapestGas95.name}</div>
+                <div className="font-semibold text-green-800 dark:text-green-200">{cheapestGas95.name}</div>
               </div>
             </div>
             <div className="text-2xl font-bold text-green-700 dark:text-green-400">
@@ -310,7 +310,7 @@ export default async function PreciosPage() {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/gasolineras/precios/${province.slug}`}
-                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 text-sm"
+                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 text-sm"
                     >
                       <MapPin className="w-4 h-4 inline" />
                     </Link>
@@ -326,7 +326,7 @@ export default async function PreciosPage() {
       {taxFreeProvinces.length > 0 && (
         <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-800 overflow-hidden">
           <div className="p-4 border-b border-tl-amber-200 dark:border-tl-amber-800">
-            <h2 className="text-lg font-semibold text-tl-amber-900">
+            <h2 className="text-lg font-semibold text-tl-amber-900 dark:text-tl-amber-100">
               Territorios con Fiscalidad Especial
             </h2>
             <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300">
@@ -366,7 +366,7 @@ export default async function PreciosPage() {
                     </td>
                     <td className="px-4 py-3">
                       {province.taxInfo && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-tl-amber-100 text-tl-amber-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200">
                           {province.taxInfo.tax} {province.taxInfo.rate}
                         </span>
                       )}
@@ -386,7 +386,7 @@ export default async function PreciosPage() {
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/gasolineras/precios/${province.slug}`}
-                        className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 text-sm"
+                        className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 text-sm"
                       >
                         <MapPin className="w-4 h-4 inline" />
                       </Link>

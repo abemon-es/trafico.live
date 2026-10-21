@@ -185,7 +185,7 @@ function TrendCard({
     ) : trend.direction === "down" ? (
       <ArrowDown className="w-4 h-4 text-[var(--tl-success)]" />
     ) : (
-      <Minus className="w-4 h-4 text-gray-400" />
+      <Minus className="w-4 h-4 text-gray-400 dark:text-gray-500" />
     );
 
   const changeColor =
@@ -209,7 +209,7 @@ function TrendCard({
       <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${changeColor}`}>
         {dirIcon}
         <span>{formatPercent(trend.changePercent)}</span>
-        <span className="text-gray-400 font-normal">vs 7d</span>
+        <span className="text-gray-400 dark:text-gray-500 font-normal">vs 7d</span>
         <span className="ml-1 font-mono">{formatAbsolute(trend.changeAbsolute)}</span>
       </div>
     </div>
@@ -309,8 +309,8 @@ function PriceChart({
 
       {/* Y-axis labels */}
       <div className="absolute left-0 top-0 flex flex-col justify-between h-full pointer-events-none" style={{ height: `${CHART_H}px` }}>
-        <span className="text-[10px] font-mono text-gray-400 leading-none">{maxP.toFixed(3)}</span>
-        <span className="text-[10px] font-mono text-gray-400 leading-none">{minP.toFixed(3)}</span>
+        <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 leading-none">{maxP.toFixed(3)}</span>
+        <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 leading-none">{minP.toFixed(3)}</span>
       </div>
 
       {/* X-axis labels */}
@@ -324,7 +324,7 @@ function PriceChart({
           return (
             <span
               key={pt.date}
-              className="text-[10px] text-gray-400 font-mono leading-none"
+              className="text-[10px] text-gray-400 dark:text-gray-500 font-mono leading-none"
             >
               {formatDateLabel(pt.date, groupBy)}
             </span>
@@ -364,7 +364,7 @@ function TrendPeriodRow({
         </span>
         <span
           className={`flex items-center gap-0.5 text-sm font-medium font-mono tabular-nums ${
-            isUp ? "text-[var(--tl-danger)]" : isDown ? "text-[var(--tl-success)]" : "text-gray-400"
+            isUp ? "text-[var(--tl-danger)]" : isDown ? "text-[var(--tl-success)]" : "text-gray-400 dark:text-gray-500"
           }`}
         >
           {isUp ? <TrendingUp className="w-3.5 h-3.5" /> : isDown ? <TrendingDown className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
@@ -514,7 +514,7 @@ function NationalEvolutionChart() {
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.diesel
               ? "border-tl-amber-400 bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300"
-              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 dark:text-gray-500 opacity-50"
           }`}
         >
           <span
@@ -528,7 +528,7 @@ function NationalEvolutionChart() {
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.gasolina95
               ? "border-tl-400 bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 dark:text-gray-500 opacity-50"
           }`}
         >
           <span
@@ -542,7 +542,7 @@ function NationalEvolutionChart() {
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.gasolina98
               ? "border-violet-400 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300"
-              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 dark:text-gray-500 opacity-50"
           }`}
         >
           <span
@@ -737,7 +737,7 @@ export function HistoricoContent() {
       <div className="flex flex-wrap items-center gap-4">
         {/* Period buttons */}
         <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg" role="group" aria-label="Período">
-          <Calendar className="w-4 h-4 text-gray-400 ml-1" />
+          <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500 ml-1" />
           {PERIODS.map((p) => (
             <button
               key={p.key}
@@ -755,7 +755,7 @@ export function HistoricoContent() {
 
         {/* Province dropdown */}
         <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
           <select
             value={province}
             onChange={(e) => setProvince(e.target.value)}
@@ -810,7 +810,7 @@ export function HistoricoContent() {
               }`}
             >
               <span
-                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-white shadow transition-transform ${
                   showNoTax ? "translate-x-4" : "translate-x-1"
                 }`}
               />
@@ -862,7 +862,7 @@ export function HistoricoContent() {
             { label: "Precio actual", value: stats.current, icon: <Fuel className="w-4 h-4" style={{ color: fuelTab.color }} /> },
             { label: "Precio mínimo", value: stats.min, icon: <ArrowDown className="w-4 h-4 text-[var(--tl-success)]" /> },
             { label: "Precio máximo", value: stats.max, icon: <ArrowUp className="w-4 h-4 text-[var(--tl-danger)]" /> },
-            { label: "Precio medio", value: stats.avg, icon: <BarChart3 className="w-4 h-4 text-gray-400" /> },
+            { label: "Precio medio", value: stats.avg, icon: <BarChart3 className="w-4 h-4 text-gray-400 dark:text-gray-500" /> },
           ].map((item) => (
             <div
               key={item.label}
@@ -877,7 +877,7 @@ export function HistoricoContent() {
               <div className="font-mono text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
                 {formatPrice(item.value)}
               </div>
-              <div className="text-xs text-gray-400 mt-1">{provinceName}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">{provinceName}</div>
             </div>
           ))}
         </div>

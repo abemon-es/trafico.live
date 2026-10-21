@@ -118,7 +118,7 @@ export default function CercaClient() {
         {/* Back link */}
         <Link
           href="/carga-ev"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver a cargadores
@@ -149,9 +149,9 @@ export default function CercaClient() {
         )}
 
         {locationError && (
-          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 p-6 text-center mb-8">
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 p-6 text-center mb-8">
             <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-            <h3 className="font-medium text-red-800 mb-1">{locationError}</h3>
+            <h3 className="font-medium text-red-800 dark:text-red-200 mb-1">{locationError}</h3>
             <p className="text-sm text-red-600 dark:text-red-400 mb-4">
               Para encontrar cargadores cercanos, necesitamos acceso a tu ubicación
             </p>
@@ -166,10 +166,10 @@ export default function CercaClient() {
 
         {/* Location info */}
         {location && (
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4 mb-6 flex items-center gap-3">
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 p-4 mb-6 flex items-center gap-3">
             <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
             <div>
-              <p className="text-sm font-medium text-green-800">Ubicación detectada</p>
+              <p className="text-sm font-medium text-green-800 dark:text-green-200">Ubicación detectada</p>
               <p className="text-xs text-green-600 dark:text-green-400">
                 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
               </p>
@@ -213,7 +213,7 @@ export default function CercaClient() {
                               charger.powerKw >= 50
                                 ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                                 : charger.powerKw >= 22
-                                ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
+                                ? "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300"
                                 : "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300"
                             }`}
                           >
@@ -237,7 +237,7 @@ export default function CercaClient() {
                         {charger.province && `, ${charger.province}`}
                       </p>
                       {charger.operatorName && (
-                        <p className="text-gray-400">Operador: {charger.operatorName}</p>
+                        <p className="text-gray-400 dark:text-gray-500">Operador: {charger.operatorName}</p>
                       )}
                     </div>
 
@@ -286,7 +286,7 @@ export default function CercaClient() {
         {location && !isLoading && sortedChargers.length === 0 && (
           <div className="text-center py-20">
             <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-6 h-6 text-gray-400" />
+              <Zap className="w-6 h-6 text-gray-400 dark:text-gray-500" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               No se encontraron cargadores

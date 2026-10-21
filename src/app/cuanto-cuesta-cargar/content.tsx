@@ -73,7 +73,7 @@ const CHARGING_TYPES: ChargingType[] = [
     color: "text-tl-amber-700 dark:text-tl-amber-300",
     bgColor: "bg-tl-amber-50 dark:bg-tl-amber-900/20",
     borderColor: "border-tl-amber-200 dark:border-tl-amber-800",
-    activeBg: "bg-tl-amber-100",
+    activeBg: "bg-tl-amber-100 dark:bg-tl-amber-900/30",
     activeBorder: "border-tl-amber-500",
   },
   {
@@ -84,7 +84,7 @@ const CHARGING_TYPES: ChargingType[] = [
     powerKw: 50,
     color: "text-orange-700 dark:text-orange-400",
     bgColor: "bg-orange-50 dark:bg-orange-900/20",
-    borderColor: "border-orange-200",
+    borderColor: "border-orange-200 dark:border-orange-800",
     activeBg: "bg-orange-100 dark:bg-orange-900/30",
     activeBorder: "border-orange-500",
   },
@@ -96,7 +96,7 @@ const CHARGING_TYPES: ChargingType[] = [
     powerKw: 150,
     color: "text-green-700 dark:text-green-400",
     bgColor: "bg-green-50 dark:bg-green-900/20",
-    borderColor: "border-green-200",
+    borderColor: "border-green-200 dark:border-green-800",
     activeBg: "bg-green-100 dark:bg-green-900/30",
     activeBorder: "border-green-500",
   },
@@ -193,13 +193,13 @@ function SliderInput({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-green-600"
+        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700 accent-green-600"
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
         aria-valuetext={`${value}${unit}`}
       />
-      <div className="flex justify-between text-xs text-gray-400 mt-1" aria-hidden>
+      <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1" aria-hidden>
         <span>
           {min}
           {unit}
@@ -362,7 +362,7 @@ export default function CuantoCuestaCargarContent() {
                   className={`text-left rounded-xl border px-3 py-2.5 transition-all text-sm ${
                     selectedPreset === i
                       ? "bg-green-50 dark:bg-green-900/20 border-green-500 ring-1 ring-green-500"
-                      : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
                   }`}
                 >
                   <p className="font-semibold text-gray-900 dark:text-gray-100 leading-snug">{ev.name}</p>
@@ -377,7 +377,7 @@ export default function CuantoCuestaCargarContent() {
                 className={`text-left rounded-xl border px-3 py-2.5 transition-all text-sm ${
                   selectedPreset === "custom"
                     ? "bg-green-50 dark:bg-green-900/20 border-green-500 ring-1 ring-green-500"
-                    : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
                 }`}
               >
                 <p className="font-semibold text-gray-900 dark:text-gray-100 leading-snug">Personalizado</p>
@@ -495,7 +495,7 @@ export default function CuantoCuestaCargarContent() {
                 <button
                   type="button"
                   onClick={() => setCustomPrice(null)}
-                  className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-400 underline"
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-400 dark:text-gray-400 underline"
                 >
                   Restablecer
                 </button>
@@ -510,7 +510,7 @@ export default function CuantoCuestaCargarContent() {
         <div
           className={`rounded-2xl border shadow-sm p-6 mb-6 transition-all ${
             chargeDelta > 0
-              ? "bg-white dark:bg-gray-900 border-green-200"
+              ? "bg-white dark:bg-gray-900 border-green-200 dark:border-green-800"
               : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 opacity-60"
           }`}
         >
@@ -527,7 +527,7 @@ export default function CuantoCuestaCargarContent() {
             <>
               {/* Primary metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-100">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-100 dark:border-green-800">
                   <p className="text-xs font-medium text-green-700 dark:text-green-400 uppercase tracking-wide mb-1">
                     Coste total
                   </p>
@@ -585,7 +585,7 @@ export default function CuantoCuestaCargarContent() {
                     <div className="w-24 text-xs font-medium text-gray-600 dark:text-gray-400 text-right">
                       Eléctrico
                     </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative overflow-hidden">
                       <div
                         className="h-3 bg-green-500 rounded-full"
                         style={{ width: "100%" }}
@@ -601,7 +601,7 @@ export default function CuantoCuestaCargarContent() {
                     <div className="w-24 text-xs font-medium text-gray-600 dark:text-gray-400 text-right">
                       Diésel
                     </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative overflow-hidden">
                       <div
                         className="h-3 bg-tl-amber-400 rounded-full"
                         style={{
@@ -622,7 +622,7 @@ export default function CuantoCuestaCargarContent() {
                     <div className="w-24 text-xs font-medium text-gray-600 dark:text-gray-400 text-right">
                       Gasolina 95
                     </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative overflow-hidden">
                       <div
                         className="h-3 bg-red-400 rounded-full"
                         style={{ width: "100%" }}
@@ -633,7 +633,7 @@ export default function CuantoCuestaCargarContent() {
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-2 font-data">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 font-data">
                   Gasolina: {GASOLINE_CONSUMPTION}L/100km · {GASOLINE_PRICE}€/L &nbsp;|&nbsp;
                   Diésel: {DIESEL_CONSUMPTION}L/100km · {DIESEL_PRICE}€/L
                 </p>
@@ -698,7 +698,7 @@ export default function CuantoCuestaCargarContent() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {EV_COMPARISON.map((row) => (
                   <tr
                     key={row.model}
@@ -748,14 +748,14 @@ export default function CuantoCuestaCargarContent() {
             </Link>
             <Link
               href="/carga-ev/madrid"
-              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               <MapPin className="w-4 h-4" />
               Cargadores en Madrid
             </Link>
             <Link
               href="/carga-ev/barcelona"
-              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               <MapPin className="w-4 h-4" />
               Cargadores en Barcelona
@@ -810,7 +810,7 @@ export default function CuantoCuestaCargarContent() {
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-5">
             Preguntas frecuentes sobre el coste de carga
           </h2>
-          <div className="space-y-5 divide-y divide-gray-100">
+          <div className="space-y-5 divide-y divide-gray-100 dark:divide-gray-800">
             <div className="pt-0">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 ¿Cuánto cuesta cargar un coche eléctrico en casa?

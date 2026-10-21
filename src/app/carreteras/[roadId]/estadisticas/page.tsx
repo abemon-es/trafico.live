@@ -164,7 +164,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
             </div>
             <Link
               href={`/carreteras/${road.id}`}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver

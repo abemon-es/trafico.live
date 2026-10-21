@@ -200,7 +200,7 @@ export function IncidenciasContent() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => mutate()}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors"
+                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors"
                 title="Actualizar"
               >
                 <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />

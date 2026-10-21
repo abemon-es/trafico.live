@@ -44,7 +44,7 @@ interface CiudadCargaEVContentProps {
 
 const POWER_LEVELS = [
   { id: "slow", label: "Lenta (<22 kW)", min: 0, max: 22, color: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300" },
-  { id: "fast", label: "Rápida (22-50 kW)", min: 22, max: 50, color: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300" },
+  { id: "fast", label: "Rápida (22-50 kW)", min: 22, max: 50, color: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300" },
   { id: "ultra", label: "Ultra-rápida (>50 kW)", min: 50, max: 9999, color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" },
 ];
 
@@ -114,7 +114,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
         {/* Back link */}
         <Link
           href="/carga-ev"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver a cargadores
@@ -181,7 +181,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                 className={`rounded-lg p-4 text-left transition-all ${
                   powerFilter === level.id
                     ? "ring-2 ring-green-500 " + level.color
-                    : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700"
+                    : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700"
                 }`}
               >
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{count}</p>
@@ -194,7 +194,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
         {/* Search */}
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="relative flex-1 min-w-[200px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Buscar por nombre o dirección..."
@@ -211,7 +211,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                 setSearchTerm("");
                 setPowerFilter("");
               }}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               Limpiar filtros
             </button>
@@ -254,7 +254,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                         charger.totalPowerKw >= 50
                           ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                           : charger.totalPowerKw >= 22
-                          ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
+                          ? "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300"
                           : "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300"
                       }`}
                     >
@@ -268,7 +268,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
                     <p className="text-gray-600 dark:text-gray-400 truncate">{charger.address}</p>
                   )}
                   {charger.operator && (
-                    <p className="text-gray-400">Operador: {charger.operator}</p>
+                    <p className="text-gray-400 dark:text-gray-500">Operador: {charger.operator}</p>
                   )}
                 </div>
 
@@ -304,7 +304,7 @@ export default function CiudadCargaEVContent({ ciudad, cityData }: CiudadCargaEV
         {!isLoading && filteredChargers?.length === 0 && (
           <div className="text-center py-20">
             <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-6 h-6 text-gray-400" />
+              <Zap className="w-6 h-6 text-gray-400 dark:text-gray-500" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               No se encontraron cargadores

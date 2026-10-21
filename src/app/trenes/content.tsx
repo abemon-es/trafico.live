@@ -132,7 +132,7 @@ export default function TrainesContent() {
               {trainCount} trenes en vivo
             </span>
           )}
-          {loadingTrains && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+          {loadingTrains && <Loader2 className="w-4 h-4 animate-spin text-gray-400 dark:text-gray-500" />}
         </div>
       </div>
 
@@ -210,7 +210,7 @@ export default function TrainesContent() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className={`px-3 py-1.5 rounded-full text-sm font-bold ${Number(selectedTrain.delay) <= 0 ? "bg-green-100 text-green-700" : Number(selectedTrain.delay) <= 5 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>
+              <div className={`px-3 py-1.5 rounded-full text-sm font-bold ${Number(selectedTrain.delay) <= 0 ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" : Number(selectedTrain.delay) <= 5 ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300" : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"}`}>
                 {Number(selectedTrain.delay) <= 0 ? "✓ Puntual" : `+${selectedTrain.delay} min`}
               </div>
               <Link
@@ -220,7 +220,7 @@ export default function TrainesContent() {
                 Ver página completa
                 <ArrowRight className="w-3 h-3" />
               </Link>
-              <button onClick={() => setSelectedTrain(null)} className="text-gray-400 hover:text-gray-600 p-1" aria-label="Cerrar panel">✕</button>
+              <button onClick={() => setSelectedTrain(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 p-1" aria-label="Cerrar panel">✕</button>
             </div>
           </div>
 
@@ -228,7 +228,7 @@ export default function TrainesContent() {
           <div className="px-5 py-4">
             <div className="flex items-center gap-3 text-lg font-mono font-semibold text-gray-900 dark:text-gray-100 mb-4">
               <span>{String(selectedTrain.origin)}</span>
-              <ArrowRight className="w-5 h-5 text-gray-400" />
+              <ArrowRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
               <span>{String(selectedTrain.destination)}</span>
             </div>
 
@@ -236,7 +236,7 @@ export default function TrainesContent() {
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Próxima parada</p>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{String(selectedTrain.nextStation)}</p>
-                <p className="text-xs text-gray-500">{selectedTrain.nextArrival ? String(selectedTrain.nextArrival).slice(11, 16) : ""}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{selectedTrain.nextArrival ? String(selectedTrain.nextArrival).slice(11, 16) : ""}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Parada anterior</p>
@@ -284,7 +284,7 @@ export default function TrainesContent() {
               <h2 className="text-lg font-heading font-bold text-gray-900 dark:text-gray-100">{String(selectedStation.name)}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">{String(selectedStation.provinceName || "")}{selectedStation.code ? ` · ${selectedStation.code}` : ""}</p>
             </div>
-            <button onClick={() => setSelectedStation(null)} className="text-gray-400 hover:text-gray-600 p-1">✕</button>
+            <button onClick={() => setSelectedStation(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 p-1">✕</button>
           </div>
         </div>
       )}
@@ -344,7 +344,7 @@ export default function TrainesContent() {
                 Media periodo: <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">{periodSummary.avgDelay}m</span> retraso
               </span>
               <span>
-                Puntualidad media: <span className={`font-mono font-semibold ${periodSummary.avgPunctuality >= 80 ? "text-green-600" : periodSummary.avgPunctuality >= 60 ? "text-yellow-600" : "text-red-600"}`}>{periodSummary.avgPunctuality}%</span>
+                Puntualidad media: <span className={`font-mono font-semibold ${periodSummary.avgPunctuality >= 80 ? "text-green-600 dark:text-green-400" : periodSummary.avgPunctuality >= 60 ? "text-yellow-600 dark:text-yellow-400" : "text-red-600 dark:text-red-400"}`}>{periodSummary.avgPunctuality}%</span>
               </span>
               <span>
                 Max retraso: <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">{periodSummary.maxDelay}m</span>
@@ -356,7 +356,7 @@ export default function TrainesContent() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Puntualidad</p>
-              <p className={`text-3xl font-heading font-bold font-mono ${Number(current.punctualityRate) >= 80 ? "text-[var(--tl-success)]" : Number(current.punctualityRate) >= 60 ? "text-yellow-600" : "text-[var(--tl-danger)]"}`}>
+              <p className={`text-3xl font-heading font-bold font-mono ${Number(current.punctualityRate) >= 80 ? "text-[var(--tl-success)]" : Number(current.punctualityRate) >= 60 ? "text-yellow-600 dark:text-yellow-400" : "text-[var(--tl-danger)]"}`}>
                 {Number(current.punctualityRate).toFixed(1)}%
               </p>
               <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">trenes con ≤ 5 min retraso</p>
@@ -387,7 +387,7 @@ export default function TrainesContent() {
                   return (
                     <div key={b.label} className="flex-1 flex flex-col items-center gap-0.5" title={`${b.label}: ${b.count}`}>
                       <div className="w-full rounded-t" style={{ backgroundColor: b.color, height: `${Math.max(pct * 0.3, 2)}px` }} />
-                      <span className="text-[9px] text-gray-400">{b.count}</span>
+                      <span className="text-[9px] text-gray-400 dark:text-gray-500">{b.count}</span>
                     </div>
                   );
                 })}
@@ -405,13 +405,13 @@ export default function TrainesContent() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {brandLeaderboard.map((b: { brand: string; punctuality: number; avgDelay: number; total: number }, i: number) => (
                   <div key={b.brand} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-                    <span className={`text-sm font-bold font-mono w-5 ${i === 0 ? "text-yellow-500" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-gray-500"}`}>
+                    <span className={`text-sm font-bold font-mono w-5 ${i === 0 ? "text-yellow-500" : i === 1 ? "text-gray-400 dark:text-gray-500" : i === 2 ? "text-amber-600 dark:text-amber-400" : "text-gray-500 dark:text-gray-400"}`}>
                       {i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{b.brand}</p>
                       <p className="text-[11px] text-gray-600 dark:text-gray-300">
-                        <span className={`font-mono font-semibold ${b.punctuality >= 80 ? "text-green-600" : b.punctuality >= 60 ? "text-yellow-600" : "text-red-600"}`}>
+                        <span className={`font-mono font-semibold ${b.punctuality >= 80 ? "text-green-600 dark:text-green-400" : b.punctuality >= 60 ? "text-yellow-600 dark:text-yellow-400" : "text-red-600 dark:text-red-400"}`}>
                           {b.punctuality}%
                         </span>
                         {" · "}{b.avgDelay}min · {b.total} trenes

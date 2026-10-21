@@ -391,7 +391,7 @@ export default function GasolinerasCercaContent() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:text-orange-400 transition-colors"
+                          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
                         >
                           <Navigation className="w-3 h-3" />
                           Cómo llegar

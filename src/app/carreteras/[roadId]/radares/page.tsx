@@ -123,7 +123,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
             </div>
             <Link
               href={`/carreteras/${road.id}`}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver
@@ -155,10 +155,10 @@ export default async function RoadRadarsPage({ params }: PageProps) {
 
         {/* Warning box for section radars */}
         {sectionRadars.length > 0 && (
-          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-6 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-orange-800">Radares de tramo activos</h3>
+              <h3 className="font-semibold text-orange-800 dark:text-orange-200">Radares de tramo activos</h3>
               <p className="text-sm text-orange-700 dark:text-orange-400">
                 Esta carretera cuenta con {sectionRadars.length} radar{sectionRadars.length !== 1 ? "es" : ""} de tramo.
                 Estos dispositivos calculan la velocidad media entre dos puntos, por lo que es importante
@@ -206,7 +206,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <Gauge className="w-4 h-4 text-gray-400" />
+                          <Gauge className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                           <span className="font-semibold">{radar.speedLimit || "-"}</span>
                           <span className="text-gray-500 dark:text-gray-400 text-sm">km/h</span>
                         </div>
@@ -229,7 +229,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
 
         {radars.length === 0 && (
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center">
-            <Radar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Radar className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Sin radares registrados</h2>
             <p className="text-gray-600 dark:text-gray-400">
               No hay radares de velocidad activos registrados en la {road.id}.
@@ -262,7 +262,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                       speed <= 60
                         ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
                         : speed <= 80
-                        ? "bg-tl-amber-100 text-tl-amber-800"
+                        ? "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200"
                         : speed <= 100
                         ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                         : "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200";

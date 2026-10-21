@@ -69,7 +69,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
       nodes.push(
         <h2
           key={key++}
-          className="mt-8 mb-3 text-xl font-bold text-gray-900"
+          className="mt-8 mb-3 text-xl font-bold text-gray-900 dark:text-gray-100"
           style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
         >
           {line.slice(3)}
@@ -84,7 +84,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
       nodes.push(
         <h3
           key={key++}
-          className="mt-6 mb-2 text-base font-semibold text-gray-900"
+          className="mt-6 mb-2 text-base font-semibold text-gray-900 dark:text-gray-100"
           style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
         >
           {line.slice(4)}
@@ -132,11 +132,11 @@ function renderMarkdown(text: string): React.ReactNode[] {
         <div key={key++} className="my-4 overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
+              <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                 {headers.map((h, idx) => (
                   <th
                     key={idx}
-                    className="px-4 py-2 text-left font-semibold text-gray-700"
+                    className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-300"
                   >
                     {h}
                   </th>
@@ -150,9 +150,9 @@ function renderMarkdown(text: string): React.ReactNode[] {
                   .slice(1, -1)
                   .map((c) => c.trim());
                 return (
-                  <tr key={rowIdx} className="border-b border-gray-100">
+                  <tr key={rowIdx} className="border-b border-gray-100 dark:border-gray-800">
                     {cells.map((c, cellIdx) => (
-                      <td key={cellIdx} className="px-4 py-2 text-gray-700">
+                      <td key={cellIdx} className="px-4 py-2 text-gray-700 dark:text-gray-300">
                         {c}
                       </td>
                     ))}
@@ -174,7 +174,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
         i++;
       }
       nodes.push(
-        <ul key={key++} className="my-3 space-y-1 pl-5 text-gray-700 text-sm leading-relaxed">
+        <ul key={key++} className="my-3 space-y-1 pl-5 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
           {items.map((item, idx) => (
             <li key={idx} className="list-disc">
               <InlineMarkdown text={item} />
@@ -195,7 +195,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
       nodes.push(
         <ol
           key={key++}
-          className="my-3 space-y-1 pl-5 text-gray-700 text-sm leading-relaxed"
+          className="my-3 space-y-1 pl-5 text-gray-700 dark:text-gray-300 text-sm leading-relaxed"
         >
           {items.map((item, idx) => (
             <li key={idx} className="list-decimal">
@@ -215,7 +215,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
 
     // Paragraph
     nodes.push(
-      <p key={key++} className="my-3 text-sm leading-relaxed text-gray-700">
+      <p key={key++} className="my-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
         <InlineMarkdown text={line} />
       </p>
     );
@@ -243,7 +243,7 @@ function InlineMarkdown({ text }: { text: string }): React.ReactNode {
       parts.push(
         <code
           key={k++}
-          className="rounded bg-gray-100 px-1 py-0.5 font-['JetBrains_Mono',_monospace] text-xs text-tl-700"
+          className="rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 font-['JetBrains_Mono',_monospace] text-xs text-tl-700 dark:text-tl-300"
         >
           {match[3]}
         </code>
@@ -253,7 +253,7 @@ function InlineMarkdown({ text }: { text: string }): React.ReactNode {
         <a
           key={k++}
           href={match[5]}
-          className="text-tl-700 underline-offset-2 hover:underline"
+          className="text-tl-700 dark:text-tl-300 underline-offset-2 hover:underline"
         >
           {match[4]}
         </a>
@@ -272,16 +272,16 @@ function InlineMarkdown({ text }: { text: string }): React.ReactNode {
 // ---------------------------------------------------------------------------
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Introducción: "bg-tl-50 text-tl-700",
-  API: "bg-tl-50 text-tl-700",
-  "Tiers/Pricing": "bg-tl-amber-50 text-tl-amber-700",
-  Facturación: "bg-tl-amber-50 text-tl-amber-700",
-  "MCP/AI": "bg-purple-50 text-purple-700",
-  Integraciones: "bg-cyan-50 text-cyan-700",
-  "Datos/Fuentes": "bg-emerald-50 text-emerald-700",
-  Flotas: "bg-sky-50 text-sky-700",
-  Alertas: "bg-orange-50 text-orange-700",
-  Cuenta: "bg-gray-100 text-gray-600",
+  Introducción: "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300",
+  API: "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300",
+  "Tiers/Pricing": "bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300",
+  Facturación: "bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300",
+  "MCP/AI": "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
+  Integraciones: "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300",
+  "Datos/Fuentes": "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300",
+  Flotas: "bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300",
+  Alertas: "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300",
+  Cuenta: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
 };
 
 // ---------------------------------------------------------------------------
@@ -298,7 +298,7 @@ export default async function ArticleDetailPage({
   if (!article) notFound();
 
   const related = getRelatedArticles(slug, 3);
-  const colorClass = CATEGORY_COLORS[article.category] ?? "bg-gray-100 text-gray-600";
+  const colorClass = CATEGORY_COLORS[article.category] ?? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400";
 
   // JSON-LD Article schema
   const articleSchema = {
@@ -325,7 +325,7 @@ export default async function ArticleDetailPage({
         {/* Back link */}
         <Link
           href="/ayuda"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-tl-700 transition-colors"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Volver al centro de ayuda
@@ -333,9 +333,9 @@ export default async function ArticleDetailPage({
 
         {/* Breadcrumbs (schema-friendly) */}
         <nav aria-label="Migas de pan" className="mb-6">
-          <ol className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
+          <ol className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
             <li>
-              <Link href="/" className="hover:text-tl-700 transition-colors">
+              <Link href="/" className="hover:text-tl-700 dark:hover:text-tl-300 transition-colors">
                 trafico.live
               </Link>
             </li>
@@ -343,14 +343,14 @@ export default async function ArticleDetailPage({
               <ChevronRight className="h-3 w-3" />
             </li>
             <li>
-              <Link href="/ayuda" className="hover:text-tl-700 transition-colors">
+              <Link href="/ayuda" className="hover:text-tl-700 dark:hover:text-tl-300 transition-colors">
                 Ayuda
               </Link>
             </li>
             <li aria-hidden="true">
               <ChevronRight className="h-3 w-3" />
             </li>
-            <li className="text-gray-600">{article.title}</li>
+            <li className="text-gray-600 dark:text-gray-400">{article.title}</li>
           </ol>
         </nav>
 
@@ -363,12 +363,12 @@ export default async function ArticleDetailPage({
               {article.category}
             </span>
             <h1
-              className="text-2xl font-bold text-gray-900 sm:text-3xl"
+              className="text-2xl font-bold text-gray-900 dark:text-gray-100 sm:text-3xl"
               style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
             >
               {article.title}
             </h1>
-            <p className="mt-2 text-base text-gray-500">{article.description}</p>
+            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">{article.description}</p>
           </header>
 
           {/* Article body */}
@@ -376,19 +376,19 @@ export default async function ArticleDetailPage({
         </article>
 
         {/* CTA — can't resolve doubt */}
-        <aside className="mt-12 rounded-xl border border-tl-100 bg-tl-50 p-6">
+        <aside className="mt-12 rounded-xl border border-tl-100 dark:border-tl-800 bg-tl-50 dark:bg-tl-900/20 p-6">
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tl-100">
-              <MessageCircleQuestion className="h-5 w-5 text-tl-700" aria-hidden="true" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tl-100 dark:bg-tl-900/30">
+              <MessageCircleQuestion className="h-5 w-5 text-tl-700 dark:text-tl-300" aria-hidden="true" />
             </div>
             <div>
               <h2
-                className="mb-1 text-base font-semibold text-gray-900"
+                className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100"
                 style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
               >
                 ¿No resuelve tu duda?
               </h2>
-              <p className="mb-3 text-sm text-gray-600">
+              <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
                 Nuestro equipo responde en 24 horas hábiles. Cuéntanos tu caso y encontramos
                 la solución juntos.
               </p>
@@ -407,7 +407,7 @@ export default async function ArticleDetailPage({
           <section className="mt-12" aria-labelledby="related-heading">
             <h2
               id="related-heading"
-              className="mb-5 text-lg font-semibold text-gray-900"
+              className="mb-5 text-lg font-semibold text-gray-900 dark:text-gray-100"
               style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
             >
               Artículos relacionados

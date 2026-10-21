@@ -17,7 +17,7 @@ export default function CategoryFilter({ selected, onChange }: CategoryFilterPro
         className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-500 focus-visible:ring-offset-1 ${
           selected === null
             ? "bg-tl-600 text-white"
-            : "border border-gray-200 bg-white text-gray-600 hover:border-tl-300 hover:text-tl-700"
+            : "border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300"
         }`}
       >
         Todos
@@ -31,7 +31,7 @@ export default function CategoryFilter({ selected, onChange }: CategoryFilterPro
           className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tl-500 focus-visible:ring-offset-1 ${
             selected === cat
               ? "bg-tl-600 text-white"
-              : "border border-gray-200 bg-white text-gray-600 hover:border-tl-300 hover:text-tl-700"
+              : "border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300"
           }`}
         >
           {cat}

@@ -116,18 +116,18 @@ export default function RequestAccessForm() {
     return (
       <div
         id="request-access"
-        className="rounded-2xl border border-tl-100 bg-tl-50 p-8 text-center"
+        className="rounded-2xl border border-tl-100 dark:border-tl-800 bg-tl-50 dark:bg-tl-900/20 p-8 text-center"
       >
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--tl-success)]/10">
           <CheckCircle2 className="h-7 w-7 text-[var(--tl-success)]" />
         </div>
         <h3
-          className="mb-2 font-['Exo_2'] text-xl font-bold text-gray-900"
+          className="mb-2 font-['Exo_2'] text-xl font-bold text-gray-900 dark:text-gray-100"
           style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
         >
           {delivered ? "¡Solicitud recibida!" : "Solicitud registrada"}
         </h3>
-        <p className="text-sm text-gray-600 leading-relaxed">
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           {delivered ? (
             <>
               Hemos recibido tu solicitud y nuestro equipo te responderá en{" "}
@@ -137,14 +137,14 @@ export default function RequestAccessForm() {
             <>
               La hemos registrado, pero ahora mismo no podemos garantizarte una respuesta por esta
               vía. Si la necesitas, escríbenos también a{" "}
-              <a href="mailto:support@trafico.live" className="text-tl-600 underline-offset-2 hover:underline">
+              <a href="mailto:support@trafico.live" className="text-tl-600 dark:text-tl-400 underline-offset-2 hover:underline">
                 support@trafico.live
               </a>
               .
             </>
           )}{" "}
           Mientras tanto, puedes explorar la{" "}
-          <a href="/api-docs" className="text-tl-600 underline-offset-2 hover:underline">
+          <a href="/api-docs" className="text-tl-600 dark:text-tl-400 underline-offset-2 hover:underline">
             documentación pública
           </a>
           .
@@ -181,7 +181,7 @@ export default function RequestAccessForm() {
       <div>
         <label
           htmlFor={`${formId}-name`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           Nombre completo <span aria-hidden="true" className="text-[var(--tl-danger)]">*</span>
         </label>
@@ -194,8 +194,8 @@ export default function RequestAccessForm() {
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           placeholder="María García"
           aria-describedby={fieldErrors.name ? `${formId}-name-error` : undefined}
-          className={`w-full rounded-lg border px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200 ${
-            fieldErrors.name ? "border-[var(--tl-danger)]" : "border-gray-200"
+          className={`w-full rounded-lg border px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200 ${
+            fieldErrors.name ? "border-[var(--tl-danger)]" : "border-gray-200 dark:border-gray-800"
           }`}
         />
         {fieldErrors.name && (
@@ -209,7 +209,7 @@ export default function RequestAccessForm() {
       <div>
         <label
           htmlFor={`${formId}-email`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           Email profesional <span aria-hidden="true" className="text-[var(--tl-danger)]">*</span>
         </label>
@@ -222,8 +222,8 @@ export default function RequestAccessForm() {
           onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
           placeholder="maria@empresa.com"
           aria-describedby={fieldErrors.email ? `${formId}-email-error` : undefined}
-          className={`w-full rounded-lg border px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200 ${
-            fieldErrors.email ? "border-[var(--tl-danger)]" : "border-gray-200"
+          className={`w-full rounded-lg border px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200 ${
+            fieldErrors.email ? "border-[var(--tl-danger)]" : "border-gray-200 dark:border-gray-800"
           }`}
         />
         {fieldErrors.email && (
@@ -237,9 +237,9 @@ export default function RequestAccessForm() {
       <div>
         <label
           htmlFor={`${formId}-company`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-          Empresa <span className="text-gray-400 font-normal">(opcional)</span>
+          Empresa <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
         </label>
         <input
           id={`${formId}-company`}
@@ -248,7 +248,7 @@ export default function RequestAccessForm() {
           value={form.company}
           onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
           placeholder="Acme Logistics, S.L."
-          className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200"
+          className="w-full rounded-lg border border-gray-200 dark:border-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200"
         />
       </div>
 
@@ -256,7 +256,7 @@ export default function RequestAccessForm() {
       <div>
         <label
           htmlFor={`${formId}-usecase`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           ¿Para qué necesitas la API?{" "}
           <span aria-hidden="true" className="text-[var(--tl-danger)]">*</span>
@@ -269,8 +269,8 @@ export default function RequestAccessForm() {
           onChange={(e) => setForm((f) => ({ ...f, useCase: e.target.value }))}
           placeholder="Ej: Integrar datos de tráfico en tiempo real en nuestra app de gestión de flotas para optimizar rutas…"
           aria-describedby={fieldErrors.useCase ? `${formId}-usecase-error` : undefined}
-          className={`w-full resize-none rounded-lg border px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200 ${
-            fieldErrors.useCase ? "border-[var(--tl-danger)]" : "border-gray-200"
+          className={`w-full resize-none rounded-lg border px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none transition-colors focus:border-tl-500 focus:ring-2 focus:ring-tl-200 ${
+            fieldErrors.useCase ? "border-[var(--tl-danger)]" : "border-gray-200 dark:border-gray-800"
           }`}
         />
         {fieldErrors.useCase && (
@@ -287,9 +287,9 @@ export default function RequestAccessForm() {
           type="checkbox"
           checked={form.newsletter}
           onChange={(e) => setForm((f) => ({ ...f, newsletter: e.target.checked }))}
-          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-tl-600 focus:ring-tl-500"
+          className="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 dark:text-tl-400 focus:ring-tl-500"
         />
-        <label htmlFor={`${formId}-newsletter`} className="text-sm text-gray-600 leading-snug">
+        <label htmlFor={`${formId}-newsletter`} className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
           Suscribirme al newsletter semanal con novedades de la API, nuevos endpoints y datos
           destacados de movilidad en España
         </label>
@@ -314,7 +314,7 @@ export default function RequestAccessForm() {
         )}
       </button>
 
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-gray-400 dark:text-gray-500">
         Al enviar, aceptas nuestra{" "}
         <a href="/privacidad" className="underline-offset-2 hover:underline">
           política de privacidad

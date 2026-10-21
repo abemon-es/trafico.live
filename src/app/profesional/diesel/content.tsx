@@ -107,7 +107,7 @@ export default function DieselContent() {
         {/* Back link */}
         <Link
           href="/profesional"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al portal profesional
@@ -116,7 +116,7 @@ export default function DieselContent() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-tl-amber-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-tl-amber-100 dark:bg-tl-amber-900/30 rounded-lg flex items-center justify-center">
               <Fuel className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
             </div>
             <div>
@@ -172,7 +172,7 @@ export default function DieselContent() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="relative flex-1 min-w-[200px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Buscar por nombre o localidad..."
@@ -184,7 +184,7 @@ export default function DieselContent() {
 
           {provinces.length > 0 && (
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-gray-400 dark:text-gray-500" />
               <select
                 value={provinceFilter}
                 onChange={(e) => setProvinceFilter(e.target.value)}
@@ -207,7 +207,7 @@ export default function DieselContent() {
                 setSearchTerm("");
                 setProvinceFilter("");
               }}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               Limpiar filtros
             </button>
@@ -263,7 +263,7 @@ export default function DieselContent() {
                           <p className="text-xl font-bold text-green-700 dark:text-green-400 font-data">
                             {station.priceGasoleoA?.toFixed(3)} €
                           </p>
-                          <p className="text-xs text-gray-400">Diésel A</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">Diésel A</p>
                         </div>
                       </div>
 
@@ -274,7 +274,7 @@ export default function DieselContent() {
                           {station.provinceName && `, ${station.provinceName}`}
                         </p>
                         {station.schedule && (
-                          <p className="text-xs text-gray-400">{station.schedule}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{station.schedule}</p>
                         )}
                       </div>
 
@@ -313,7 +313,7 @@ export default function DieselContent() {
         {!isLoading && filteredStations?.length === 0 && (
           <div className="text-center py-20">
             <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Fuel className="w-6 h-6 text-gray-400" />
+              <Fuel className="w-6 h-6 text-gray-400 dark:text-gray-500" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               No se encontraron gasolineras

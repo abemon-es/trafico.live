@@ -83,7 +83,7 @@ export function TraficoMapCard({
           {mapPageUrl && (
             <Link
               href={mapPageUrl}
-              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-950 rounded transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-950 rounded transition-colors"
             >
               <ExternalLink className="w-3 h-3" />
               Ver mapa

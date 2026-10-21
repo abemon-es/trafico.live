@@ -88,7 +88,7 @@ export function PriceHistoryChart({
   const TrendIcon = ({ direction }: { direction: string }) => {
     if (direction === "up") return <TrendingUp className="w-4 h-4 text-red-500" />;
     if (direction === "down") return <TrendingDown className="w-4 h-4 text-green-500" />;
-    return <Minus className="w-4 h-4 text-gray-400" />;
+    return <Minus className="w-4 h-4 text-gray-400 dark:text-gray-500" />;
   };
 
   const formatDate = (dateStr: string) => {
@@ -114,7 +114,7 @@ export function PriceHistoryChart({
                 px-3 py-1 text-xs font-medium rounded-md transition-colors
                 ${timeRange === range
                   ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                 }
               `}
             >
@@ -134,7 +134,7 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasoleoA
-              ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800"
+              ? "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800"
               : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
             }
           `}
@@ -162,7 +162,7 @@ export function PriceHistoryChart({
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
             ${selectedFuels.gasolina98
-              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200"
+              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800"
               : "bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
             }
           `}

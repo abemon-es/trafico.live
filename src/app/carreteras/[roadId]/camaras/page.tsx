@@ -112,7 +112,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
             </div>
             <Link
               href={`/carreteras/${road.id}`}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver
@@ -177,7 +177,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
                         href={camera.feedUrl || camera.thumbnailUrl || ""}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 flex items-center gap-1"
+                        className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 flex items-center gap-1"
                       >
                         Ver imagen <ExternalLink className="w-3 h-3" />
                       </a>

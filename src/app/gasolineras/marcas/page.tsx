@@ -322,7 +322,7 @@ export default async function MarcasPage() {
                     <td className="px-4 py-3.5 text-right">
                       <Link
                         href={`/gasolineras/terrestres?marca=${b.slug}`}
-                        className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 font-medium"
+                        className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 font-medium"
                         title={`Ver estaciones ${b.brand}`}
                       >
                         Ver

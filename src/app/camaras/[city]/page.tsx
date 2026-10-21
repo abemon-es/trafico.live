@@ -308,7 +308,7 @@ export default async function CamarasCityPage({ params }: Props) {
                       {road !== "Sin carretera" && (
                         <Link
                           href={`/camaras/carretera/${encodeURIComponent(road)}`}
-                          className="flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
+                          className="flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline"
                         >
                           Ver carretera
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -427,7 +427,7 @@ export default async function CamarasCityPage({ params }: Props) {
                         <Link
                           key={slug}
                           href={`/camaras/${slug}`}
-                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors"
+                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:hover:border-tl-800 transition-colors"
                         >
                           {nearbyData.name}
                         </Link>

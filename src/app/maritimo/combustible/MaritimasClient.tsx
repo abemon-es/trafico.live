@@ -60,8 +60,8 @@ const REGION_META: Record<
   },
   "Atlántico Norte": {
     label: "Atlántico Norte",
-    color: "bg-indigo-50",
-    borderColor: "border-indigo-200",
+    color: "bg-indigo-50 dark:bg-indigo-900/20",
+    borderColor: "border-indigo-200 dark:border-indigo-800",
     icon: "🌬️",
     desc: "Galicia, Asturias, Cantabria, País Vasco",
   },
@@ -185,8 +185,8 @@ function TaxInfoBox() {
     <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-800 p-5 mb-8 flex items-start gap-3">
       <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
       <div>
-        <h3 className="font-semibold text-tl-amber-900 mb-1">Fiscalidad especial del combustible náutico</h3>
-        <p className="text-sm text-tl-amber-800 leading-relaxed">
+        <h3 className="font-semibold text-tl-amber-900 dark:text-tl-amber-100 mb-1">Fiscalidad especial del combustible náutico</h3>
+        <p className="text-sm text-tl-amber-800 dark:text-tl-amber-200 leading-relaxed">
           El combustible adquirido en <strong>Canarias</strong> (IGIC 7 %), <strong>Ceuta</strong> y{" "}
           <strong>Melilla</strong> (IPSI 0,5 %) tiene una carga fiscal significativamente menor.
           La navegación comercial y de transporte en aguas comunitarias puede acceder a{" "}
@@ -321,10 +321,10 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumbs */}
       <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6">
-        <Link href="/" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Inicio</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <Link href="/maritimo" className="hover:text-gray-700 dark:text-gray-300 transition-colors">Marítimo</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+        <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300 transition-colors">Inicio</Link>
+        <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+        <Link href="/maritimo" className="hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300 transition-colors">Marítimo</Link>
+        <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
         <span className="text-gray-900 dark:text-gray-100 font-medium">Combustible</span>
       </nav>
 
@@ -474,7 +474,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
       <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Buscar por nombre, puerto, localidad..."
@@ -707,7 +707,7 @@ function StationCard({
         </div>
       )}
 
-      <div className="mt-3 flex items-center gap-1 text-xs text-gray-400">
+      <div className="mt-3 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
         <MapPin className="w-3 h-3" />
         {station.latitude.toFixed(4)}, {station.longitude.toFixed(4)}
       </div>

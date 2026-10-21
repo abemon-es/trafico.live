@@ -45,7 +45,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                 ) : (
                   <Link
                     href={item.href}
-                    className="text-tl-600 dark:text-tl-400 hover:underline hover:text-tl-700 dark:text-tl-300 transition-colors"
+                    className="text-tl-600 dark:text-tl-400 hover:underline hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
                   >
                     {item.name}
                   </Link>

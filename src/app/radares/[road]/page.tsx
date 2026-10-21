@@ -473,7 +473,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                   </p>
                   <Link
                     href={`/camaras/carretera/${encodeURIComponent(roadId)}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline"
                   >
                     Ver todas las cámaras
                     <ChevronRight className="w-4 h-4" />
