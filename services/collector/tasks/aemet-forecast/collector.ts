@@ -19,7 +19,7 @@
 import { PrismaClient } from "@prisma/client";
 import * as Sentry from "@sentry/node";
 import { log, logError } from "../../shared/utils.js";
-import { heartbeat } from "../../shared/heartbeat.js";
+import { heartbeat, markRunProgress } from "../../shared/heartbeat.js";
 import { reportKeyExpired } from "../../shared/aemet.js";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -218,7 +218,15 @@ export async function run(prisma: PrismaClient): Promise<void> {
   const forecastAt = new Date();
 
   const fetcher = new ForecastFetcher(
-    { now: Date.now, sleep, fetch: (url, init) => fetchWithTimeout(url, init), log: logJson },
+    {
+      now: Date.now,
+      sleep,
+      fetch: (url, init) => fetchWithTimeout(url, init),
+      log: logJson,
+      // A run can take 5 h on a 7 h threshold: without this, /api/health
+      // reported a run that was storing forecasts as stale.
+      progress: (p) => markRunProgress(prisma, TASK, p),
+    },
     apiKey
   );
 

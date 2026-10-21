@@ -8,7 +8,7 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
-    "test:aemet-forecast": "tsx tests/aemet-quota-window.test.ts && tsx tests/aemet-request-budget.test.ts && tsx tests/aemet-forecast-queue.test.ts && tsx tests/health-public-meta.test.ts",
+    "test:aemet-forecast": "tsx tests/aemet-quota-window.test.ts && tsx tests/aemet-request-budget.test.ts && tsx tests/aemet-forecast-queue.test.ts && tsx tests/health-public-meta.test.ts && tsx tests/heartbeat-progress.test.ts",
     "test:redis": "tsx tests/redis-reconnect.test.ts",
     "test:rate-limit": "tsx tests/rate-limit-insurance.test.ts",
     "test:cron": "tsx tests/cron-flock-exit.test.ts",

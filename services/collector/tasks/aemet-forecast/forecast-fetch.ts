@@ -52,14 +52,25 @@ export const MAX_DONE_WHEN_REFUSED = 1;
 // us under AEMET's share.
 export const BASE_PACE_MS = 2000;
 export const MAX_PACE_MS = 4000;
+/**
+ * A run reports progress after its first municipio and then every 5 min, so
+ * /api/health can tell a slow run from a dead one: it reads a report up to
+ * 15 min old (PROGRESS_FRESH_SECONDS, src/lib/heartbeat-state.ts) as running.
+ */
+export const PROGRESS_EVERY_MS = 5 * 60_000;
 
 export type LogFn = (level: "info" | "warn" | "error", msg: string, extra?: Record<string, unknown>) => void;
+
+/** How far the run got: municipios done, still queued, lost; requests made. */
+export type RunProgress = { done: number; queued: number; lost: number; attempts: number };
 
 export interface FetchDeps {
   now(): number;
   sleep(ms: number): Promise<void>;
   fetch(url: string, init?: RequestInit): Promise<Response>;
   log: LogFn;
+  /** Called every PROGRESS_EVERY_MS during collect(). */
+  progress?(p: RunProgress): Promise<void>;
 }
 
 export interface Municipio {
@@ -116,6 +127,8 @@ export class ForecastFetcher {
   private keyRefusedAt: number[] = [];
   private doneAt: number[] = [];
   private runStartedAt = 0;
+  private done = 0;
+  private lastProgressAt = -Infinity;
 
   constructor(
     private readonly deps: FetchDeps,
@@ -151,7 +164,10 @@ export class ForecastFetcher {
         lost.push(...this.abort("no-answer", [item, ...queue]));
         break;
       }
-      if (out.kind === "ok") this.doneAt.push(this.deps.now());
+      if (out.kind === "ok") {
+        this.doneAt.push(this.deps.now());
+        this.done++;
+      }
       if (out.kind === "retry" && this.keyRefusedForGood()) {
         lost.push(...this.abort("key-refused", [item, ...queue]));
         break;
@@ -172,11 +188,19 @@ export class ForecastFetcher {
         this.deps.log("warn", "No data returned", { municipio: item.mun.code, attempts: item.attempts, status: "skip" });
       }
 
+      await this.reportProgress(queue.length, lost.length);
       await this.deps.sleep(this.stats.paceMs);
     }
 
     this.stats.budgetPerMinute = this.budget.perMinute;
     return lost;
+  }
+
+  /** At most every PROGRESS_EVERY_MS: the first municipio, then each 5 min. */
+  private async reportProgress(queued: number, lost: number): Promise<void> {
+    if (!this.deps.progress || this.deps.now() - this.lastProgressAt < PROGRESS_EVERY_MS) return;
+    this.lastProgressAt = this.deps.now();
+    await this.deps.progress({ done: this.done, queued, lost, attempts: this.stats.attempts });
   }
 
   /**
