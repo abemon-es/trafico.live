@@ -90,6 +90,79 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (70) — dark mode, the three pages #149 left: a heat scale, arbitrary colours and a watermark
+
+**#149 merged and gated** (`f23b1544`, deployed 10:15Z, the first build of
+the change: the repo has no PR CI). dark-scan on the same 23 pages:
+**islands 73 → 6, dark on dark 106 → 6, low contrast 34 → 9**; 17/23 pages
+are clean. What's left, in server-28's order:
+1. /mejor-hora (5 islands): the heat map darkened its 100 tints and left the
+   200/300 ones light, so the scale didn't read in dark mode;
+2. /maritimo/combustible (3 dark on dark): arbitrary colours
+   `text-[var(--color-tl-sea-*)]`, which neither the transformer nor the
+   rules saw;
+3. /flotas (3 dark on dark): the big «01/02/03» numbers, a watermark;
+4. then the 9 white-on-mid-tone texts (under 3:1 in both themes): a
+   contrast fix, not a dark-mode one.
+
+The /gasolineras/historico white button is the documented exception.
+
+**Noise, not a cycle:** collector-realtime had 46 errors in 1 h (10:21–10:37Z).
+- 15 were Carris Metropolitana: connect timeouts to its two Cloudflare IPv4
+  addresses, while one request in between answered at once (known issue 5L,
+  non-fatal).
+- The rest are Valencia, Andorra and Euskadi at 1–3 each.
+- compute was fine: conntrack 2,683/262,144, no kernel drops, load ~20 on
+  64 cores.
+
+**Fix:**
+- **/mejor-hora:** the whole scale has its dark side, rising like the light one
+  (emerald/yellow `900/30`, orange `900/50`, red `900/60`, text 200/300/200/100),
+  in the cells and in the legend.
+- **/maritimo/combustible:** the arbitrary colours get the site's pairs (text
+  900/600/700 → 100/400/300, borders 200 → 700). The solid `bg-…-600
+  text-white` buttons, the spinner and the 500 icon read in both themes and
+  stay.
+- **/flotas:** the numbers stay a watermark, but `aria-hidden="true"` (the
+  steps' order is already in the list), as server-28 asked; no contrast
+  change.
+- **Guards:** rules 5 and 7 cover arbitrary colours, `text-[var(--color-*)]`
+  and `bg-[var(--color-*)]`. Mutant: a maritime text without its pair → the
+  test names `MaritimasClient.tsx:706`.
+
+**Evidence:** dark-mode-sweep, theme-pre-paint, camera-images, service-worker
+and sitemap-lastmod pass; web tsc 11. Light mode is byte-identical without the
+`dark:` tokens in the two colour files. /flotas changes only by the
+attribute.
+
+**Gate after deploy:** /mejor-hora islands 5 → 0; /maritimo/combustible and
+/flotas dark on dark 3 → 0 each.
+
+**Open, in order:**
+1. **L2:** merge this; gate after the deploy.
+2. **Accessibility:** the 9 white-on-mid-tone texts under 3:1 (both themes):
+   /api-landing buttons, /zbe labels, /cuanto-cuesta-cargar.
+3. **L3:** #145 after 2 gas-station runs (11:00Z and 18:00Z).
+4. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+5. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+6. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+7. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+8. **L2, low:** the 18 eslint errors on main (internal `<a>` links,
+   components created during render).
+9. **L3:** dead cameras in the map popups (`tile_cameras`).
+10. **Perf, low:** `prefetch={false}` on long link directories.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Hygiene:** scrub the pre-October backlog entries.
+15. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+16. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (69) — dark mode, batch 3: the rest of the site, and the guards go site-wide
 
 **#148 merged and gated** (`df068e16`, deployed 09:28Z). dark-scan on the
