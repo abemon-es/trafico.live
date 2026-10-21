@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Train } from "lucide-react";
 import { GeoEntity } from "@/lib/geo/types";
 import { prisma } from "@/lib/db";
@@ -112,12 +113,12 @@ export async function RailwaySection({ entity }: RailwaySectionProps) {
       </div>
 
       {/* CTA */}
-      <a
+      <Link
         href="/trenes/estaciones"
         className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
       >
         Ver todas las estaciones →
-      </a>
+      </Link>
 
       {/* Attribution */}
       <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: Renfe GTFS</p>

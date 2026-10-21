@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Radio, Loader2 } from "lucide-react";
 
 interface HeroOverlayProps {
@@ -34,7 +35,7 @@ export default function HeroOverlay({
       <div className="absolute top-0 inset-x-0 z-20 px-4 sm:px-6 lg:px-8 pt-4">
         <div className="max-w-7xl mx-auto">
           <nav className="text-xs text-gray-500 mb-1">
-            <a href="/" className="hover:text-[var(--tl-primary)]">Inicio</a>
+            <Link href="/" className="hover:text-[var(--tl-primary)]">Inicio</Link>
             <span className="mx-1.5">/</span>
             <span className="text-gray-800 dark:text-gray-200 font-medium">Red Ferroviaria</span>
           </nav>

@@ -6,6 +6,7 @@
  * Incluye checkbox opcional de newsletter (llama a /api/digest/subscribe).
  */
 
+import Link from "next/link";
 import { useState, useId } from "react";
 import { Loader2, CheckCircle2, AlertCircle, Send } from "lucide-react";
 import {
@@ -144,9 +145,9 @@ export default function RequestAccessForm() {
             </>
           )}{" "}
           Mientras tanto, puedes explorar la{" "}
-          <a href="/api-docs" className="text-tl-600 dark:text-tl-400 underline-offset-2 hover:underline">
+          <Link href="/api-docs" className="text-tl-600 dark:text-tl-400 underline-offset-2 hover:underline">
             documentación pública
-          </a>
+          </Link>
           .
         </p>
       </div>
@@ -316,9 +317,9 @@ export default function RequestAccessForm() {
 
       <p className="text-center text-xs text-gray-400 dark:text-gray-500">
         Al enviar, aceptas nuestra{" "}
-        <a href="/privacidad" className="underline-offset-2 hover:underline">
+        <Link href="/privacidad" className="underline-offset-2 hover:underline">
           política de privacidad
-        </a>
+        </Link>
         . Sin spam. Cancelación inmediata.
       </p>
     </form>

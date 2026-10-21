@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr";
 import {
@@ -199,12 +200,12 @@ function WeatherAlertBadge({ count }: { count: number }) {
         </p>
         <p className="text-xs text-tl-amber-600 dark:text-tl-amber-400">Puede afectar al tráfico</p>
       </div>
-      <a
+      <Link
         href="/estadisticas?tab=clima"
         className="text-tl-amber-700 dark:text-tl-amber-400 hover:text-tl-amber-900 dark:hover:text-tl-amber-200 flex items-center gap-1 text-sm"
       >
         Ver <ArrowRight className="w-4 h-4" />
-      </a>
+      </Link>
     </div>
   );
 }

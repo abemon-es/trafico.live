@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
@@ -1630,13 +1631,13 @@ function HistoricoSection({
             Consulta el histórico completo de siniestralidad vial desglosado para cada una de las 52 provincias españolas.
           </p>
         </div>
-        <a
+        <Link
           href="/estadisticas/accidentes"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-600 hover:bg-tl-700 text-white text-sm font-medium transition-colors flex-shrink-0"
         >
           <Link2 className="w-4 h-4" />
           Ver por provincia
-        </a>
+        </Link>
       </div>
     </div>
   );

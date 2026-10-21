@@ -90,6 +90,77 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (83) — 28 internal links reloaded the whole page: `<a>` → `<Link>`
+
+**#162 merged and gated** (`5d37724e`, deployed 16:38Z). Same 6 pages × 5
+zones as before:
+- the vessel page is ok in Madrid, Canary, UTC, New York and Tokyo, with
+  #418 gone and no served text lost (before: #418 in UTC, New York and
+  Tokyo);
+- the other 5 stay ok.
+
+**Checked and dropped:** the «now» getters in `historico`/`estadisticas` only
+work out how many days back to ask for. The browser's zone moves that by at
+most one day at a month boundary. Not worth a change.
+
+**GlitchTip TRAFICO-LIVE-3** («error running command: exit status 1»,
+14,352 events): supercronic's generic report of a failed cron job. In the
+last 6 h it was only `detector`, 11 times, from the DGT infocar outage, and
+detector's own issues already report that. The 14k is history. Nothing to do.
+
+**Signal:** the lint baseline had 118 `@next/next/no-html-link-for-pages`
+errors. Many are the same anchor reported once per matching page directory.
+They split into:
+- **74 errors (3 files) in hidden SEO blocks**: `<nav aria-hidden="true"
+  className="sr-only" tabIndex={-1}>` in `carga-ev`, `mapa` and `incidencias`.
+  Nobody can click them, so `<Link>` gains nothing there and would only add
+  prefetches. They stay `<a>`, and stay in the baseline. Whether hidden link
+  blocks are wise at all is an SEO question: **to the CMO** (Google's spam
+  policy names «hidden text and links»).
+- **44 errors = 28 visible anchors (16 files)**: territorios, ir, sobre/api,
+  status, the trenes hero, the auth forms, the contact and API access forms,
+  three location sections, the stats cards, the affiliates admin. Each click
+  was a full page reload instead of a client-side navigation.
+
+**Fix:**
+- The 28 changed at the exact positions eslint reported (a transform that
+  stops on anything other than `<a …>` … `</a>` without nesting).
+- `import Link from "next/link"` where it was missing.
+- **`lint-baseline.json` lowered: 182 → 138**, in the same PR, as the
+  PLAYBOOK requires.
+
+**Evidence** (compute):
+- web tsc 11 (baseline);
+- the ratchet before the update passes, reporting each file going to 0;
+- `--update` writes 138, and the check after it passes;
+- dark-mode-sweep and client-timezone pass.
+
+**Gate after deploy:** on `/explorar/territorios` and `/ir`, clicking a
+converted link navigates without a full reload (a `window` marker survives
+the navigation), and every target answers 200.
+
+**Open, in order:**
+1. **L2:** merge this; the client-navigation gate.
+2. **L0:** aemet-forecast gate on the 19:20Z run (running, progressAgeSeconds
+   < 900, growing counts).
+3. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+4. **L3 (CMO):** the three hidden SEO link blocks: keep, make visible, or
+   remove.
+5. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+6. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+7. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+8. **L2, low:** `set-state-in-effect` / `purity` (the next baseline rules);
+   `prefetch={false}` on long link directories; dead exports.
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (waiting on MJ's OK).
+10. **L3:** the index lastmod after 23-10.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (82) — React #418 on the vessel pages: client dates in the browser's time zone
 
 **#161 merged and deployed** (`9084f61e`, web and collectors). Recreating
