@@ -59,7 +59,9 @@ async function getPostalCodeData(cp: string) {
   // Provincial average for price comparison
   const provincialStats = provinceCode
     ? await prisma.fuelPriceDailyStats.findFirst({
-        where: { scope: `province:${provinceCode}`, date: today },
+        // The newest day on or before today: today's row only exists from the 06:00 run.
+        where: { scope: `province:${provinceCode}`, date: { lte: today } },
+        orderBy: { date: "desc" },
         select: { avgGasoleoA: true, avgGasolina95: true },
       })
     : null;

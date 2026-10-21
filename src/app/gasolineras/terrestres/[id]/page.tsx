@@ -10,6 +10,7 @@ import { TraficoMapCard } from "@/components/map/TraficoMapCard";
 import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 import { provincePath } from "@/lib/geo/geo-paths";
+import { utcDay } from "@/lib/data/fuel-stats-day";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -89,15 +90,15 @@ export default async function StationDetailPage({ params }: Props) {
     notFound();
   }
 
-  // Provincial average for comparison badges
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Provincial average for comparison badges: the newest day on or before
+  // today (UTC, as the stats are dated; today's row only exists from 06:00).
   const provincialStats = station.province
     ? await prisma.fuelPriceDailyStats.findFirst({
         where: {
-          date: today,
+          date: { lte: utcDay() },
           scope: `province:${station.province}`,
         },
+        orderBy: { date: "desc" },
         select: {
           avgGasoleoA: true,
           avgGasolina95: true,

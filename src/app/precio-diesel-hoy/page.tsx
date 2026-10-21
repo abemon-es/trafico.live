@@ -9,6 +9,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
 import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 import { FuelPriceChart } from "@/components/charts/FuelPriceChart";
+import { fuelStatsDayLabel, fuelStatsDays } from "@/lib/data/fuel-stats-day";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -77,26 +78,21 @@ function getToday() {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
-function getYesterday() {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
-}
-
 async function getDieselData() {
-  const today = getToday();
-  const yesterday = getYesterday();
+  // The newest day with stats: today's only exists from the 06:00 run on.
+  const days = await fuelStatsDays(prisma);
 
   const [nationalToday, nationalYesterday, provinceStats, cheapestStations] = await Promise.all([
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: today },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: yesterday },
-    }),
+    days.day ? prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "national", date: days.day },
+    }) : null,
+    days.previous ? prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "national", date: days.previous },
+    }) : null,
     prisma.fuelPriceDailyStats.findMany({
       where: {
         scope: { startsWith: "province:" },
-        date: today,
+        date: days.day ?? getToday(),
       },
       orderBy: { avgGasoleoA: "asc" },
     }),
@@ -120,7 +116,7 @@ async function getDieselData() {
     }),
   ]);
 
-  return { nationalToday, nationalYesterday, provinceStats, cheapestStations };
+  return { nationalToday, nationalYesterday, provinceStats, cheapestStations, days };
 }
 
 function formatPrice(price: unknown): string {
@@ -147,12 +143,12 @@ function extractProvinceCode(scope: string): string {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const today = getToday();
-  const nationalStats = await prisma.fuelPriceDailyStats.findFirst({
-    where: { scope: "national", date: today },
-  });
+  const { day } = await fuelStatsDays(prisma);
+  const nationalStats = day
+    ? await prisma.fuelPriceDailyStats.findFirst({ where: { scope: "national", date: day } })
+    : null;
 
-  const dateStr = today.toLocaleDateString("es-ES", {
+  const dateStr = (day ?? getToday()).toLocaleDateString("es-ES", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -190,10 +186,12 @@ function TrendArrow({
   current,
   previous,
   short = false,
+  vs = "ayer",
 }: {
   current: number | null;
   previous: number | null;
   short?: boolean;
+  vs?: string;
 }) {
   if (current == null || previous == null) return null;
   const change = current - previous;
@@ -202,7 +200,7 @@ function TrendArrow({
     return (
       <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 font-medium text-sm font-data">
         <TrendingUp className="w-4 h-4" />
-        +{change.toFixed(3)}€{!short && " vs ayer"}
+        +{change.toFixed(3)}€{!short && ` vs ${vs}`}
       </span>
     );
   }
@@ -210,21 +208,26 @@ function TrendArrow({
     return (
       <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400 font-medium text-sm font-data">
         <TrendingDown className="w-4 h-4" />
-        {change.toFixed(3)}€{!short && " vs ayer"}
+        {change.toFixed(3)}€{!short && ` vs ${vs}`}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
       <Minus className="w-4 h-4" />
-      {short ? "=" : "Sin cambios vs ayer"}
+      {short ? "=" : `Sin cambios vs ${vs}`}
     </span>
   );
 }
 
 export default async function PrecioDieselHoyPage() {
-  const { nationalToday, nationalYesterday, provinceStats, cheapestStations } =
+  const { nationalToday, nationalYesterday, provinceStats, cheapestStations, days } =
     await getDieselData();
+  // Before today's first run the newest stats are yesterday's: say so, and
+  // compare with the day before them, not with «ayer».
+  const previousIsDayBefore =
+    days.day !== null && days.previous !== null && days.day.getTime() - days.previous.getTime() === 86_400_000;
+  const vs = days.isToday && previousIsDayBefore ? "ayer" : days.previous ? `el ${fuelStatsDayLabel(days.previous)}` : "ayer";
 
   const todayLabel = getToday().toLocaleDateString("es-ES", {
     weekday: "long",
@@ -320,7 +323,9 @@ export default async function PrecioDieselHoyPage() {
             <Fuel className="w-4 h-4" />
             <span>Gasóleo A · Datos oficiales MITERD</span>
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-green-600 dark:text-green-400">Actualizado hoy</span>
+            <span className="text-green-600 dark:text-green-400">
+              {days.isToday || !days.day ? "Actualizado hoy" : `Datos del ${fuelStatsDayLabel(days.day)}`}
+            </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
             Precio del Diésel Hoy en España
@@ -353,7 +358,7 @@ export default async function PrecioDieselHoyPage() {
               </div>
               {avgDiesel !== null && avgDieselYesterday !== null && (
                 <div className="mt-4 bg-white/10 rounded-lg px-3 py-2 inline-flex">
-                  <TrendArrow current={avgDiesel} previous={avgDieselYesterday} />
+                  <TrendArrow current={avgDiesel} previous={avgDieselYesterday} vs={vs} />
                 </div>
               )}
             </div>
@@ -408,16 +413,16 @@ export default async function PrecioDieselHoyPage() {
           <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-4 mb-8 flex flex-wrap gap-6 items-center">
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
               <Clock className="w-4 h-4" />
-              <span className="font-medium">Gasóleo A vs ayer:</span>
+              <span className="font-medium">Gasóleo A vs {vs}:</span>
             </div>
             <div className="flex flex-wrap gap-4 text-sm">
               <span>
-                Ayer:{" "}
+                {vs === "ayer" ? "Ayer" : fuelStatsDayLabel(days.previous!)}:{" "}
                 <span className="font-bold text-gray-900 dark:text-gray-100 font-data">
                   {formatPrice(nationalYesterday.avgGasoleoA)}
                 </span>
               </span>
-              <TrendArrow current={avgDiesel} previous={avgDieselYesterday} />
+              <TrendArrow current={avgDiesel} previous={avgDieselYesterday} vs={vs} />
             </div>
           </div>
         )}
