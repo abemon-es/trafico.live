@@ -201,42 +201,42 @@ export default async function ProvinceMaritimePage({ params }: Props) {
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center shrink-0">
-              <Ship className="w-6 h-6 text-cyan-600" />
+            <div className="w-12 h-12 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center shrink-0">
+              <Ship className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div className="flex-1">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Trafico maritimo en {prov.name}
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {prov.community.name}
                 {coastalZone && ` — Zona: ${coastalZone}`}
               </p>
               <div className="mt-3 flex flex-wrap gap-3">
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {ports.length}
                   </p>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
                     Puerto{ports.length !== 1 ? "s" : ""}
                   </p>
                 </div>
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {recentVessels.length}
                   </p>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
                     Buques cercanos (48h)
                   </p>
                 </div>
                 {provinceFerries.length > 0 && (
-                  <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                    <p className="font-data text-lg font-bold text-gray-900">
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                    <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                       {provinceFerries.length}
                     </p>
-                    <p className="text-[10px] text-gray-500">Rutas de ferry</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">Rutas de ferry</p>
                   </div>
                 )}
               </div>
@@ -246,10 +246,10 @@ export default async function ProvinceMaritimePage({ params }: Props) {
 
         {/* Maritime weather alerts */}
         {weatherAlerts.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <CloudRain className="w-5 h-5 text-blue-600" />
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <CloudRain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 Alertas meteorologicas costeras
               </h2>
             </div>
@@ -257,9 +257,9 @@ export default async function ProvinceMaritimePage({ params }: Props) {
               {weatherAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className="rounded-xl border border-blue-100 bg-blue-50 p-4"
+                  className="rounded-xl border border-blue-100 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-4"
                 >
-                  <p className="text-sm text-blue-800 line-clamp-3">
+                  <p className="text-sm text-blue-800 dark:text-blue-200 line-clamp-3">
                     {alert.description}
                   </p>
                   <p className="text-[10px] text-blue-500 mt-2 font-data">
@@ -280,10 +280,10 @@ export default async function ProvinceMaritimePage({ params }: Props) {
         )}
 
         {/* Ports */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Anchor className="w-5 h-5 text-tl-600" />
-            <h2 className="font-heading text-lg font-bold text-gray-900">
+            <Anchor className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
               Puertos en {prov.name}
             </h2>
           </div>
@@ -292,17 +292,17 @@ export default async function ProvinceMaritimePage({ params }: Props) {
               <Link
                 key={port.id}
                 href={`/maritimo/puertos/${port.slug}`}
-                className="rounded-xl border border-gray-100 bg-gray-50 p-4 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+                className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all group"
               >
-                <p className="text-sm font-semibold text-gray-900 group-hover:text-tl-600 truncate">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 truncate">
                   {port.name}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-700 font-medium">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 font-medium">
                     {port.type}
                   </span>
                   {port.stationCount > 0 && (
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
                       {port.stationCount} estaciones combustible
                     </span>
                   )}
@@ -314,13 +314,13 @@ export default async function ProvinceMaritimePage({ params }: Props) {
 
         {/* Nearby vessels */}
         {recentVessels.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <Navigation className="w-5 h-5 text-tl-600" />
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <Navigation className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 Buques cercanos
               </h2>
-              <span className="text-xs text-gray-500">(ultimas 48h)</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">(ultimas 48h)</span>
             </div>
 
             {/* By type summary */}
@@ -330,7 +330,7 @@ export default async function ProvinceMaritimePage({ params }: Props) {
                 .map(([type, vessels]) => (
                   <span
                     key={type}
-                    className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-medium"
+                    className="text-xs px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium"
                   >
                     {type}{" "}
                     <span className="font-data">({vessels.length})</span>
@@ -344,25 +344,25 @@ export default async function ProvinceMaritimePage({ params }: Props) {
                 <Link
                   key={vessel.mmsi}
                   href={`/maritimo/buques/${vesselSlug(vessel.mmsi, vessel.name ?? null)}`}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all group"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-tl-600 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600 truncate">
                       {vessel.name ?? `MMSI ${vessel.mmsi}`}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400">
                         {getVesselTypeLabel(vessel.shipType)}
                       </span>
                       {vessel.flag && (
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
                           {vessel.flag}
                         </span>
                       )}
                     </div>
                   </div>
                   {vessel.sog != null && (
-                    <span className="text-xs font-data text-gray-500">
+                    <span className="text-xs font-data text-gray-500 dark:text-gray-400">
                       {vessel.sog.toFixed(1)} kn
                     </span>
                   )}
@@ -370,7 +370,7 @@ export default async function ProvinceMaritimePage({ params }: Props) {
               ))}
             </div>
             {recentVessels.length > 20 && (
-              <p className="mt-3 text-xs text-gray-500">
+              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
                 +{recentVessels.length - 20} buques mas
               </p>
             )}
@@ -379,23 +379,23 @@ export default async function ProvinceMaritimePage({ params }: Props) {
 
         {/* Ferry routes */}
         {provinceFerries.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Rutas de ferry
             </h2>
             <div className="space-y-2">
               {provinceFerries.map((route) => (
                 <div
                   key={route.id}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3"
                 >
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700 font-semibold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 font-semibold">
                     {route.operator}
                   </span>
-                  <p className="text-sm text-gray-900 truncate flex-1">
+                  <p className="text-sm text-gray-900 dark:text-gray-100 truncate flex-1">
                     {route.routeName}
                   </p>
-                  <span className="text-[10px] text-gray-500 font-data">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-data">
                     {route.stops.length} paradas
                   </span>
                 </div>
@@ -403,7 +403,7 @@ export default async function ProvinceMaritimePage({ params }: Props) {
             </div>
             <Link
               href="/maritimo"
-              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
             >
               Ver todo el trafico maritimo{" "}
               <ChevronRight className="w-4 h-4" />
@@ -415,12 +415,12 @@ export default async function ProvinceMaritimePage({ params }: Props) {
         <div className="flex items-center justify-between mt-8">
           <Link
             href={`/espana/${community}/${provSlug}`}
-            className="inline-flex items-center gap-2 text-sm text-tl-600 hover:text-tl-700 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a {prov.name}
           </Link>
-          <p className="text-[10px] text-gray-400">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
             Fuente: Puertos del Estado, aisstream.io
           </p>
         </div>

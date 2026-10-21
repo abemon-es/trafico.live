@@ -246,34 +246,34 @@ export default async function ProvinceAviacionPage({ params }: Props) {
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-              <Plane className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+              <Plane className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Aviacion en {prov.name}
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {prov.community.name}
               </p>
               {airports.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-3">
-                  <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                    <p className="font-data text-lg font-bold text-gray-900">
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                    <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                       {airports.length}
                     </p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
                       Aeropuerto{airports.length !== 1 ? "s" : ""}
                     </p>
                   </div>
                   {totalPax > 0 && (
-                    <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                      <p className="font-data text-lg font-bold text-gray-900">
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                      <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                         {formatPassengers(totalPax)}
                       </p>
-                      <p className="text-[10px] text-gray-500">
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">
                         Pasajeros/ano
                       </p>
                     </div>
@@ -286,31 +286,31 @@ export default async function ProvinceAviacionPage({ params }: Props) {
 
         {/* No airports — show nearest */}
         {airports.length === 0 && nearestAirport && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <MapPin className="w-5 h-5 text-tl-600" />
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 No hay aeropuertos en {prov.name}
               </h2>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               El aeropuerto mas cercano se encuentra a{" "}
               <span className="font-data font-semibold">
                 {nearestAirport.distance} km
               </span>
               :
             </p>
-            <div className="rounded-xl border border-tl-200 bg-tl-50 p-4">
-              <p className="text-sm font-semibold text-gray-900">
+            <div className="rounded-xl border border-tl-200 dark:border-tl-800 bg-tl-50 dark:bg-tl-900/20 p-4">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {nearestAirport.name}
               </p>
               {nearestAirport.iata && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-tl-100 text-tl-700 font-mono font-semibold">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 font-mono font-semibold">
                   {nearestAirport.iata}
                 </span>
               )}
               {nearestAirport.city && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {nearestAirport.city}
                   {nearestAirport.provinceName &&
                     `, ${nearestAirport.provinceName}`}
@@ -331,28 +331,28 @@ export default async function ProvinceAviacionPage({ params }: Props) {
           return (
             <section
               key={airport.id}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6"
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h2 className="font-heading text-lg font-bold text-gray-900">
+                  <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                     {airport.name}
                   </h2>
                   {airport.city && (
-                    <p className="text-sm text-gray-500">{airport.city}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{airport.city}</p>
                   )}
                 </div>
                 <div className="flex gap-1">
                   {airport.iata && (
-                    <span className="text-xs px-2 py-1 rounded bg-tl-100 text-tl-700 font-mono font-semibold">
+                    <span className="text-xs px-2 py-1 rounded bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 font-mono font-semibold">
                       {airport.iata}
                     </span>
                   )}
-                  <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-mono">
+                  <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-mono">
                     {airport.icao}
                   </span>
                   {airport.isAena && (
-                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium">
+                    <span className="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">
                       AENA
                     </span>
                   )}
@@ -363,9 +363,9 @@ export default async function ProvinceAviacionPage({ params }: Props) {
               {latestPax !== null && latestPax > 0 && (
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <p className="text-sm text-gray-600">
-                      <span className="font-data font-bold text-gray-900">
+                    <Users className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="font-data font-bold text-gray-900 dark:text-gray-100">
                         {formatPassengers(latestPax)}
                       </span>{" "}
                       pasajeros (ultimo dato disponible)
@@ -389,7 +389,7 @@ export default async function ProvinceAviacionPage({ params }: Props) {
                               className="w-full bg-tl-200 rounded-t"
                               style={{ height: `${heightPct}%`, minHeight: "2px" }}
                             />
-                            <span className="text-[8px] text-gray-400 font-data">
+                            <span className="text-[8px] text-gray-400 dark:text-gray-500 font-data">
                               {stat.periodStart.getFullYear()}
                             </span>
                           </div>
@@ -403,19 +403,19 @@ export default async function ProvinceAviacionPage({ params }: Props) {
               {/* Runways */}
               {runways.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs font-medium text-gray-600 mb-2">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                     Pistas ({runways.length})
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {runways.map((rwy, i) => (
                       <div
                         key={i}
-                        className="rounded-lg bg-gray-50 border border-gray-100 p-2 text-xs"
+                        className="rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 p-2 text-xs"
                       >
-                        <p className="font-data font-semibold text-gray-800">
+                        <p className="font-data font-semibold text-gray-800 dark:text-gray-200">
                           {rwy.le_ident}/{rwy.he_ident}
                         </p>
-                        <div className="flex gap-3 mt-1 text-gray-500">
+                        <div className="flex gap-3 mt-1 text-gray-500 dark:text-gray-400">
                           {rwy.length_m && (
                             <span>
                               <span className="font-data">
@@ -442,7 +442,7 @@ export default async function ProvinceAviacionPage({ params }: Props) {
               {airport.iata && (
                 <Link
                   href={`/aviacion/aeropuertos/${airport.iata.toLowerCase()}`}
-                  className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+                  className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
                 >
                   Ver detalle del aeropuerto{" "}
                   <ChevronRight className="w-4 h-4" />
@@ -456,12 +456,12 @@ export default async function ProvinceAviacionPage({ params }: Props) {
         <div className="flex items-center justify-between mt-8">
           <Link
             href={`/espana/${community}/${provSlug}`}
-            className="inline-flex items-center gap-2 text-sm text-tl-600 hover:text-tl-700 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a {prov.name}
           </Link>
-          <p className="text-[10px] text-gray-400">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
             Fuente: AENA, Eurostat, OurAirports
           </p>
         </div>

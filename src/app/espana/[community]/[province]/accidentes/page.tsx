@@ -278,42 +278,42 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-6 h-6 text-red-600" />
+            <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <div className="flex-1">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Accidentes de trafico en {prov.name}
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {prov.community.name}
               </p>
               <div className="mt-3 flex flex-wrap gap-3">
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {accidents.length.toLocaleString("es-ES")}
                   </p>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
                     Accidentes registrados
                   </p>
                 </div>
                 {latestYear && (
                   <>
-                    <div className="bg-red-50 rounded-lg px-3 py-2 border border-red-100">
-                      <p className="font-data text-lg font-bold text-red-800">
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 border border-red-100 dark:border-red-800">
+                      <p className="font-data text-lg font-bold text-red-800 dark:text-red-200">
                         {latestYear[1].fatalities}
                       </p>
-                      <p className="text-[10px] text-red-600">
+                      <p className="text-[10px] text-red-600 dark:text-red-400">
                         Fallecidos ({latestYear[0]})
                       </p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                      <p className="font-data text-lg font-bold text-gray-900">
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                      <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                         {latestYear[1].total.toLocaleString("es-ES")}
                       </p>
-                      <p className="text-[10px] text-gray-500">
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">
                         Siniestros ({latestYear[0]})
                       </p>
                     </div>
@@ -327,16 +327,16 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
         {/* Per-capita + national ranking */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Per-capita rate */}
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xs font-medium text-gray-600 mb-3">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+            <h2 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
               Tasa de fallecidos por 100.000 hab.
             </h2>
             {perCapitaRate !== null ? (
               <>
-                <p className="font-data text-2xl font-bold text-gray-900">
+                <p className="font-data text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {perCapitaRate.toFixed(1)}
                 </p>
-                <div className="h-2 bg-gray-100 rounded-full mt-3">
+                <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full mt-3">
                   <div
                     className={`h-full rounded-full ${
                       perCapitaRate < NATIONAL_RATE_PER_100K
@@ -350,30 +350,30 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
                     }}
                   />
                 </div>
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                   Media nacional: {NATIONAL_RATE_PER_100K}
                 </p>
               </>
             ) : (
-              <p className="font-data text-2xl font-bold text-gray-400">--</p>
+              <p className="font-data text-2xl font-bold text-gray-400 dark:text-gray-500">--</p>
             )}
           </section>
 
           {/* Ranking */}
           {nationalRanking && (
-            <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xs font-medium text-gray-600 mb-3">
+            <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
                 Ranking provincial por fallecidos
               </h2>
               <div className="flex items-center gap-3">
-                <span className="font-data text-3xl font-extrabold text-tl-600">
+                <span className="font-data text-3xl font-extrabold text-tl-600 dark:text-tl-400">
                   {nationalRanking.rank}
                   <span className="text-sm font-normal align-top">a</span>
                 </span>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   de {nationalRanking.total} provincias
                   {latestYearNum && (
-                    <span className="text-gray-400"> ({latestYearNum})</span>
+                    <span className="text-gray-400 dark:text-gray-500"> ({latestYearNum})</span>
                   )}
                 </p>
               </div>
@@ -383,8 +383,8 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
 
         {/* 5-year trend */}
         {years.length > 1 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Evolucion anual
             </h2>
             <div className="space-y-2">
@@ -397,23 +397,23 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
                 const isLatest = year === latestYear![0];
                 return (
                   <div key={year} className="flex items-center gap-3">
-                    <span className="font-data text-xs text-gray-500 w-10">
+                    <span className="font-data text-xs text-gray-500 dark:text-gray-400 w-10">
                       {year}
                     </span>
-                    <div className="flex-1 h-4 bg-gray-50 rounded-full overflow-hidden">
+                    <div className="flex-1 h-4 bg-gray-50 dark:bg-gray-800/50 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
                           isLatest
                             ? "bg-gradient-to-r from-tl-200 to-tl-300"
-                            : "bg-tl-100"
+                            : "bg-tl-100 dark:bg-tl-900/30"
                         }`}
                         style={{ width: `${widthPct}%` }}
                       />
                     </div>
-                    <span className="font-data text-xs text-gray-600 w-14 text-right">
+                    <span className="font-data text-xs text-gray-600 dark:text-gray-400 w-14 text-right">
                       {data.total.toLocaleString("es-ES")}
                     </span>
-                    <span className="font-data text-[10px] text-red-600 w-12 text-right">
+                    <span className="font-data text-[10px] text-red-600 dark:text-red-400 w-12 text-right">
                       {data.fatalities} fallec.
                     </span>
                   </div>
@@ -421,7 +421,7 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
               })}
             </div>
             {prevYear && latestYear && (
-              <p className="text-[10px] text-gray-500 mt-3">
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-3">
                 {(() => {
                   const diff = latestYear[1].total - prevYear[1].total;
                   const pct =
@@ -440,8 +440,8 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
         )}
 
         {/* Hour distribution */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
             Distribucion por hora del dia
           </h2>
           <div className="flex items-end gap-[2px] h-20">
@@ -467,13 +467,13 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
             })}
           </div>
           <div className="flex justify-between mt-1">
-            <span className="text-[8px] text-gray-400 font-data">0h</span>
-            <span className="text-[8px] text-gray-400 font-data">6h</span>
-            <span className="text-[8px] text-gray-400 font-data">12h</span>
-            <span className="text-[8px] text-gray-400 font-data">18h</span>
-            <span className="text-[8px] text-gray-400 font-data">23h</span>
+            <span className="text-[8px] text-gray-400 dark:text-gray-500 font-data">0h</span>
+            <span className="text-[8px] text-gray-400 dark:text-gray-500 font-data">6h</span>
+            <span className="text-[8px] text-gray-400 dark:text-gray-500 font-data">12h</span>
+            <span className="text-[8px] text-gray-400 dark:text-gray-500 font-data">18h</span>
+            <span className="text-[8px] text-gray-400 dark:text-gray-500 font-data">23h</span>
           </div>
-          <p className="text-[10px] text-gray-500 mt-2">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2">
             Hora punta:{" "}
             <span className="font-data font-semibold">
               {peakHour}:00 - {peakHour + 1}:00
@@ -483,8 +483,8 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
         </section>
 
         {/* Day of week distribution */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
             Distribucion por dia de la semana
           </h2>
           <div className="grid grid-cols-7 gap-2">
@@ -493,7 +493,7 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
               const isMax = count === maxDayCount;
               return (
                 <div key={i} className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] font-data text-gray-600">
+                  <span className="text-[10px] font-data text-gray-600 dark:text-gray-400">
                     {count}
                   </span>
                   <div className="w-full h-16 flex items-end">
@@ -506,7 +506,7 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
                       }}
                     />
                   </div>
-                  <span className="text-[10px] text-gray-500">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
                     {dayLabels[i]}
                   </span>
                 </div>
@@ -517,8 +517,8 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
 
         {/* Weather conditions */}
         {sortedWeather.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Condiciones meteorologicas
             </h2>
             <div className="space-y-2">
@@ -529,16 +529,16 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
                     : 0;
                 return (
                   <div key={condition} className="flex items-center gap-3">
-                    <span className="text-xs text-gray-700 w-24 truncate">
+                    <span className="text-xs text-gray-700 dark:text-gray-300 w-24 truncate">
                       {WEATHER_LABELS[condition] ?? condition}
                     </span>
-                    <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-tl-200 rounded-full"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="font-data text-[10px] text-gray-500 w-12 text-right">
+                    <span className="font-data text-[10px] text-gray-500 dark:text-gray-400 w-12 text-right">
                       {pct.toFixed(0)}%
                     </span>
                   </div>
@@ -550,19 +550,19 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
 
         {/* Vehicle types */}
         {vehicleEntries.length === 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Tipo de vehiculo implicado
             </h2>
-            <p className="text-sm text-gray-500 text-center py-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
               Los datos de clasificacion por tipo de vehiculo estan siendo procesados
               para este periodo. Las demas estadisticas de accidentes siguen disponibles.
             </p>
           </section>
         )}
         {vehicleEntries.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Tipo de vehiculo implicado
             </h2>
             <div className="space-y-2">
@@ -570,16 +570,16 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
                 const pct = (v.count / maxVehicleCount) * 100;
                 return (
                   <div key={v.key} className="flex items-center gap-3">
-                    <span className="text-xs text-gray-700 w-20">
+                    <span className="text-xs text-gray-700 dark:text-gray-300 w-20">
                       {v.key}
                     </span>
-                    <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${v.color}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="font-data text-xs text-gray-600 w-14 text-right">
+                    <span className="font-data text-xs text-gray-600 dark:text-gray-400 w-14 text-right">
                       {v.count.toLocaleString("es-ES")}
                     </span>
                   </div>
@@ -591,27 +591,27 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
 
         {/* Top accident roads */}
         {topRoads.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Carreteras con mas accidentes
             </h2>
             <div className="space-y-2">
               {topRoads.map(([road, count], idx) => (
                 <div
                   key={road}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3"
                 >
                   <span
                     className={`font-data text-xs w-5 text-center ${
-                      idx < 3 ? "text-red-600 font-bold" : "text-gray-400"
+                      idx < 3 ? "text-red-600 dark:text-red-400 font-bold" : "text-gray-400 dark:text-gray-500"
                     }`}
                   >
                     {idx + 1}
                   </span>
-                  <span className="text-sm font-medium text-gray-900 flex-1">
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 flex-1">
                     {road}
                   </span>
-                  <span className="font-data text-sm font-bold text-gray-700">
+                  <span className="font-data text-sm font-bold text-gray-700 dark:text-gray-300">
                     {count.toLocaleString("es-ES")}
                   </span>
                 </div>
@@ -622,8 +622,8 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
 
         {/* Road type breakdown */}
         {roadTypeEntries.length > 0 && totalRoadType > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Accidentes por tipo de via
             </h2>
             <div className="h-4 rounded-full overflow-hidden flex mb-3">
@@ -634,12 +634,12 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
                   DUAL_CARRIAGEWAY: "bg-tl-200",
                   NATIONAL: "bg-tl-amber-200",
                   URBAN: "bg-gray-300",
-                  CONVENTIONAL: "bg-tl-amber-100",
+                  CONVENTIONAL: "bg-tl-amber-100 dark:bg-tl-amber-900/30",
                 };
                 return (
                   <div
                     key={type}
-                    className={colors[type] ?? "bg-gray-100"}
+                    className={colors[type] ?? "bg-gray-100 dark:bg-gray-800"}
                     style={{ width: `${widthPct}%` }}
                     title={`${ROAD_TYPE_LABELS[type] ?? type}: ${count}`}
                   />
@@ -650,7 +650,7 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
               {roadTypeEntries.map(([type, count]) => (
                 <span
                   key={type}
-                  className="text-[10px] text-gray-600 flex items-center gap-1"
+                  className="text-[10px] text-gray-600 dark:text-gray-400 flex items-center gap-1"
                 >
                   {ROAD_TYPE_LABELS[type] ?? type}{" "}
                   <span className="font-data">
@@ -663,14 +663,14 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
         )}
 
         {/* Link to insight */}
-        <section className="bg-tl-50 rounded-2xl border border-tl-200 p-6 mb-6">
-          <p className="text-sm text-gray-700 mb-3">
+        <section className="bg-tl-50 dark:bg-tl-900/20 rounded-2xl border border-tl-200 dark:border-tl-800 p-6 mb-6">
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
             Analisis detallado sobre como la meteorologia afecta a la
             siniestralidad vial:
           </p>
           <Link
             href="/inteligencia/lluvia-y-accidentes"
-            className="inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+            className="inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
           >
             Lluvia y accidentes: correlacion meteorologica{" "}
             <ChevronRight className="w-4 h-4" />
@@ -681,12 +681,12 @@ export default async function ProvinceAccidentesPage({ params }: Props) {
         <div className="flex items-center justify-between mt-8">
           <Link
             href={`/espana/${community}/${provSlug}`}
-            className="inline-flex items-center gap-2 text-sm text-tl-600 hover:text-tl-700 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a {prov.name}
           </Link>
-          <p className="text-[10px] text-gray-400">Fuente: DGT</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
         </div>
       </div>
     </div>

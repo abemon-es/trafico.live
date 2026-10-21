@@ -200,21 +200,21 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
       : null;
 
   function TrendIcon({ diff }: { diff: number | null }) {
-    if (diff === null) return <Minus className="w-3 h-3 text-gray-400" />;
+    if (diff === null) return <Minus className="w-3 h-3 text-gray-400 dark:text-gray-500" />;
     if (diff < -0.005)
-      return <TrendingDown className="w-3 h-3 text-green-600" />;
+      return <TrendingDown className="w-3 h-3 text-green-600 dark:text-green-400" />;
     if (diff > 0.005)
-      return <TrendingUp className="w-3 h-3 text-red-600" />;
-    return <Minus className="w-3 h-3 text-gray-400" />;
+      return <TrendingUp className="w-3 h-3 text-red-600 dark:text-red-400" />;
+    return <Minus className="w-3 h-3 text-gray-400 dark:text-gray-500" />;
   }
 
   function diffColor(diff: number | null): string {
-    if (diff === null) return "text-gray-500";
+    if (diff === null) return "text-gray-500 dark:text-gray-400";
     return diff < -0.005
-      ? "text-green-600"
+      ? "text-green-600 dark:text-green-400"
       : diff > 0.005
-        ? "text-red-600"
-        : "text-gray-500";
+        ? "text-red-600 dark:text-red-400"
+        : "text-gray-500 dark:text-gray-400";
   }
 
   const breadcrumbs = [
@@ -234,16 +234,16 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-tl-amber-50 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-tl-amber-50 dark:bg-tl-amber-900/20 flex items-center justify-center shrink-0">
               <Fuel className="w-6 h-6 text-tl-amber-500" />
             </div>
             <div className="flex-1">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Precio del combustible en {prov.name}
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {prov.community.name} &middot; Datos CNMC{" "}
                 <span className="font-data">
                   {latestPrice.date.toLocaleDateString("es-ES", {
@@ -255,26 +255,26 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
               </p>
               <div className="mt-3 flex flex-wrap gap-3">
                 {currentDiesel && (
-                  <div className="bg-tl-amber-50 rounded-lg px-3 py-2 border border-tl-amber-200">
-                    <p className="font-data text-xl font-bold text-gray-900">
+                  <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg px-3 py-2 border border-tl-amber-200 dark:border-tl-amber-800">
+                    <p className="font-data text-xl font-bold text-gray-900 dark:text-gray-100">
                       {currentDiesel.toFixed(3)} &euro;/L
                     </p>
-                    <p className="text-[10px] text-tl-amber-700">Gasoleo A</p>
+                    <p className="text-[10px] text-tl-amber-700 dark:text-tl-amber-300">Gasoleo A</p>
                   </div>
                 )}
                 {currentGas95 && (
-                  <div className="bg-tl-amber-50 rounded-lg px-3 py-2 border border-tl-amber-200">
-                    <p className="font-data text-xl font-bold text-gray-900">
+                  <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg px-3 py-2 border border-tl-amber-200 dark:border-tl-amber-800">
+                    <p className="font-data text-xl font-bold text-gray-900 dark:text-gray-100">
                       {currentGas95.toFixed(3)} &euro;/L
                     </p>
-                    <p className="text-[10px] text-tl-amber-700">Gasolina 95</p>
+                    <p className="text-[10px] text-tl-amber-700 dark:text-tl-amber-300">Gasolina 95</p>
                   </div>
                 )}
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {gasStationCount.toLocaleString("es-ES")}
                   </p>
-                  <p className="text-[10px] text-gray-500">Gasolineras</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Gasolineras</p>
                 </div>
               </div>
             </div>
@@ -282,29 +282,29 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
         </section>
 
         {/* National comparison */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
             Comparativa con la media nacional
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Diesel */}
             {currentDiesel && nationalAvgDiesel && (
-              <div className="rounded-xl bg-gray-50 border border-gray-100 p-4">
-                <p className="text-xs font-medium text-gray-600 mb-2">
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 p-4">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                   Gasoleo A
                 </p>
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <p className="font-data text-lg font-bold text-gray-900">
+                    <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                       {currentDiesel.toFixed(3)} &euro;
                     </p>
-                    <p className="text-[10px] text-gray-500">{prov.name}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">{prov.name}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-data text-lg font-bold text-gray-500">
+                    <p className="font-data text-lg font-bold text-gray-500 dark:text-gray-400">
                       {nationalAvgDiesel.toFixed(3)} &euro;
                     </p>
-                    <p className="text-[10px] text-gray-500">Nacional</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">Nacional</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
@@ -322,22 +322,22 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
 
             {/* Gas 95 */}
             {currentGas95 && nationalAvgGas95 && (
-              <div className="rounded-xl bg-gray-50 border border-gray-100 p-4">
-                <p className="text-xs font-medium text-gray-600 mb-2">
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 p-4">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                   Gasolina 95
                 </p>
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <p className="font-data text-lg font-bold text-gray-900">
+                    <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                       {currentGas95.toFixed(3)} &euro;
                     </p>
-                    <p className="text-[10px] text-gray-500">{prov.name}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">{prov.name}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-data text-lg font-bold text-gray-500">
+                    <p className="font-data text-lg font-bold text-gray-500 dark:text-gray-400">
                       {nationalAvgGas95.toFixed(3)} &euro;
                     </p>
-                    <p className="text-[10px] text-gray-500">Nacional</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">Nacional</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
@@ -357,15 +357,15 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
 
         {/* 30-day trend */}
         {dieselTrend.length > 1 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Tendencia 30 dias
             </h2>
 
             {/* Diesel sparkline */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-600">
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                   Gasoleo A
                 </span>
                 {diesel30dChange !== null && (
@@ -396,7 +396,7 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
             {gasTrend.length > 1 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-gray-600">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                     Gasolina 95
                   </span>
                   {gas30dChange !== null && (
@@ -426,9 +426,9 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
 
             {/* Year-over-year */}
             {dieselYoY !== null && (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
                 <TrendIcon diff={dieselYoY} />
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   Gasoleo A interanual:{" "}
                   <span
                     className={`font-data font-semibold ${diffColor(dieselYoY)}`}
@@ -445,49 +445,49 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
 
         {/* Cheapest stations */}
         {cheapestStations.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Gasolineras mas baratas en {prov.name}
             </h2>
             <div className="space-y-2">
               {cheapestStations.map((station, idx) => (
                 <div
                   key={station.id}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3"
                 >
                   <span
                     className={`font-data text-xs w-5 text-center ${
                       idx === 0
-                        ? "text-tl-amber-700 font-bold"
-                        : "text-gray-400"
+                        ? "text-tl-amber-700 dark:text-tl-amber-300 font-bold"
+                        : "text-gray-400 dark:text-gray-500"
                     }`}
                   >
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                       {station.name}
                     </p>
                     {station.locality && (
-                      <p className="text-[10px] text-gray-500">
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">
                         {station.locality}
                       </p>
                     )}
                   </div>
                   <div className="text-right shrink-0">
                     {station.priceGasoleoA && (
-                      <p className="font-data text-sm font-bold text-gray-900">
+                      <p className="font-data text-sm font-bold text-gray-900 dark:text-gray-100">
                         {Number(station.priceGasoleoA).toFixed(3)} &euro;
                       </p>
                     )}
-                    <p className="text-[10px] text-gray-500">Gasoleo A</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">Gasoleo A</p>
                   </div>
                 </div>
               ))}
             </div>
             <Link
               href={`/gasolineras/precios/${prov.code}`}
-              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
             >
               Ver todas las gasolineras de {prov.name}{" "}
               <ChevronRight className="w-4 h-4" />
@@ -499,12 +499,12 @@ export default async function ProvinceCombustiblePage({ params }: Props) {
         <div className="flex items-center justify-between mt-8">
           <Link
             href={`/espana/${community}/${provSlug}`}
-            className="inline-flex items-center gap-2 text-sm text-tl-600 hover:text-tl-700 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a {prov.name}
           </Link>
-          <p className="text-[10px] text-gray-400">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
             Fuente: CNMC, Ministerio para la Transicion Ecologica
           </p>
         </div>

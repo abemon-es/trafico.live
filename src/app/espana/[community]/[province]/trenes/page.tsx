@@ -37,22 +37,22 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
 };
 
 const SERVICE_TYPE_COLORS: Record<string, string> = {
-  CERCANIAS: "bg-tl-100 text-tl-700",
-  RODALIES: "bg-tl-100 text-tl-700",
-  AVE: "bg-red-100 text-red-700",
-  AVLO: "bg-red-100 text-red-700",
-  ALVIA: "bg-orange-100 text-orange-700",
-  AVANT: "bg-orange-100 text-orange-700",
-  EUROMED: "bg-orange-100 text-orange-700",
-  LARGA_DISTANCIA: "bg-purple-100 text-purple-700",
-  MEDIA_DISTANCIA: "bg-indigo-100 text-indigo-700",
-  REGIONAL: "bg-gray-100 text-gray-700",
-  REGIONAL_EXPRESS: "bg-gray-100 text-gray-700",
-  PROXIMIDAD: "bg-blue-100 text-blue-700",
-  INTERCITY: "bg-purple-100 text-purple-700",
-  TRENHOTEL: "bg-indigo-100 text-indigo-700",
-  TRENCELTA: "bg-green-100 text-green-700",
-  FEVE: "bg-green-100 text-green-700",
+  CERCANIAS: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
+  RODALIES: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
+  AVE: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+  AVLO: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+  ALVIA: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+  AVANT: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+  EUROMED: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+  LARGA_DISTANCIA: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+  MEDIA_DISTANCIA: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
+  REGIONAL: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+  REGIONAL_EXPRESS: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+  PROXIMIDAD: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+  INTERCITY: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+  TRENHOTEL: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
+  TRENCELTA: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+  FEVE: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
 };
 
 async function getProvince(communitySlug: string, provinceSlug: string) {
@@ -168,41 +168,41 @@ export default async function ProvinceTrenesPage({ params }: Props) {
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-tl-50 flex items-center justify-center shrink-0">
-              <Train className="w-6 h-6 text-tl-600" />
+            <div className="w-12 h-12 rounded-xl bg-tl-50 dark:bg-tl-900/20 flex items-center justify-center shrink-0">
+              <Train className="w-6 h-6 text-tl-600 dark:text-tl-400" />
             </div>
             <div className="flex-1">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Trenes en {prov.name}
               </h1>
-              <p className="mt-1 text-sm text-gray-500">{prov.community.name}</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{prov.community.name}</p>
               <div className="mt-3 flex flex-wrap gap-3">
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {stations.length}
                   </p>
-                  <p className="text-[10px] text-gray-500">Estaciones</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Estaciones</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {routes.length}
                   </p>
-                  <p className="text-[10px] text-gray-500">Rutas</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Rutas</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {networks.length}
                   </p>
-                  <p className="text-[10px] text-gray-500">Redes</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Redes</p>
                 </div>
                 {alerts.length > 0 && (
-                  <div className="bg-red-50 rounded-lg px-3 py-2 border border-red-100">
-                    <p className="font-data text-lg font-bold text-red-700">
+                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 border border-red-100 dark:border-red-800">
+                    <p className="font-data text-lg font-bold text-red-700 dark:text-red-300">
                       {alerts.length}
                     </p>
-                    <p className="text-[10px] text-red-600">Alertas activas</p>
+                    <p className="text-[10px] text-red-600 dark:text-red-400">Alertas activas</p>
                   </div>
                 )}
               </div>
@@ -212,8 +212,8 @@ export default async function ProvinceTrenesPage({ params }: Props) {
 
         {/* Service types summary */}
         {sortedServiceTypes.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Tipos de servicio
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -221,7 +221,7 @@ export default async function ProvinceTrenesPage({ params }: Props) {
                 <span
                   key={type}
                   className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                    SERVICE_TYPE_COLORS[type] ?? "bg-gray-100 text-gray-700"
+                    SERVICE_TYPE_COLORS[type] ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {SERVICE_TYPE_LABELS[type] ?? type}{" "}
@@ -234,10 +234,10 @@ export default async function ProvinceTrenesPage({ params }: Props) {
 
         {/* Active alerts */}
         {alerts.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 Alertas activas
               </h2>
             </div>
@@ -245,14 +245,14 @@ export default async function ProvinceTrenesPage({ params }: Props) {
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className="rounded-xl border border-red-100 bg-red-50 p-4"
+                  className="rounded-xl border border-red-100 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4"
                 >
                   {alert.headerText && (
-                    <p className="text-sm font-semibold text-red-800 mb-1">
+                    <p className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
                       {alert.headerText}
                     </p>
                   )}
-                  <p className="text-sm text-red-700 line-clamp-3">
+                  <p className="text-sm text-red-700 dark:text-red-300 line-clamp-3">
                     {alert.description}
                   </p>
                   <p className="text-[10px] text-red-500 mt-2 font-data">
@@ -279,11 +279,11 @@ export default async function ProvinceTrenesPage({ params }: Props) {
         {networks.map(([network, netStations]) => (
           <section
             key={network}
-            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6"
           >
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Cercanias {network}{" "}
-              <span className="text-sm font-normal text-gray-500">
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                 ({netStations.length} estaciones)
               </span>
             </h2>
@@ -296,9 +296,9 @@ export default async function ProvinceTrenesPage({ params }: Props) {
                       ? `/trenes/estacion/${station.slug}`
                       : "/trenes/estaciones"
                   }
-                  className="rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+                  className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all group"
                 >
-                  <p className="text-sm font-medium text-gray-900 group-hover:text-tl-600 truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600 truncate">
                     {station.name}
                   </p>
                   {station.serviceTypes.length > 0 && (
@@ -308,7 +308,7 @@ export default async function ProvinceTrenesPage({ params }: Props) {
                           key={type}
                           className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                             SERVICE_TYPE_COLORS[type] ??
-                            "bg-gray-100 text-gray-700"
+                            "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                           }`}
                         >
                           {SERVICE_TYPE_LABELS[type] ?? type}
@@ -324,10 +324,10 @@ export default async function ProvinceTrenesPage({ params }: Props) {
 
         {/* Stations without network */}
         {noNetwork.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Otras estaciones{" "}
-              <span className="text-sm font-normal text-gray-500">
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                 ({noNetwork.length})
               </span>
             </h2>
@@ -340,9 +340,9 @@ export default async function ProvinceTrenesPage({ params }: Props) {
                       ? `/trenes/estacion/${station.slug}`
                       : "/trenes/estaciones"
                   }
-                  className="rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-tl-300 hover:bg-tl-50 transition-all group"
+                  className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all group"
                 >
-                  <p className="text-sm font-medium text-gray-900 group-hover:text-tl-600 truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-tl-600 truncate">
                     {station.name}
                   </p>
                   {station.serviceTypes.length > 0 && (
@@ -352,7 +352,7 @@ export default async function ProvinceTrenesPage({ params }: Props) {
                           key={type}
                           className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                             SERVICE_TYPE_COLORS[type] ??
-                            "bg-gray-100 text-gray-700"
+                            "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                           }`}
                         >
                           {SERVICE_TYPE_LABELS[type] ?? type}
@@ -368,35 +368,35 @@ export default async function ProvinceTrenesPage({ params }: Props) {
 
         {/* Routes serving this province */}
         {routes.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Rutas que pasan por {prov.name}
             </h2>
             <div className="space-y-2">
               {routes.map((route) => (
                 <div
                   key={route.id}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3"
                 >
                   {route.brand && (
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                         SERVICE_TYPE_COLORS[route.serviceType] ??
-                        "bg-gray-100 text-gray-700"
+                        "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                       }`}
                     >
                       {route.brand}
                     </span>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 truncate">
+                    <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
                       {route.originName && route.destName
                         ? `${route.originName} → ${route.destName}`
                         : route.longName ?? route.shortName ?? "Ruta"}
                     </p>
                   </div>
                   {route.shortName && (
-                    <span className="text-xs font-data text-gray-500">
+                    <span className="text-xs font-data text-gray-500 dark:text-gray-400">
                       {route.shortName}
                     </span>
                   )}
@@ -405,7 +405,7 @@ export default async function ProvinceTrenesPage({ params }: Props) {
             </div>
             <Link
               href="/trenes/lineas"
-              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
             >
               Ver todas las lineas <ChevronRight className="w-4 h-4" />
             </Link>
@@ -416,12 +416,12 @@ export default async function ProvinceTrenesPage({ params }: Props) {
         <div className="flex items-center justify-between mt-8">
           <Link
             href={`/espana/${community}/${provSlug}`}
-            className="inline-flex items-center gap-2 text-sm text-tl-600 hover:text-tl-700 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a {prov.name}
           </Link>
-          <p className="text-[10px] text-gray-400">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
             Fuente: Renfe GTFS, GTFS-RT
           </p>
         </div>

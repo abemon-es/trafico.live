@@ -131,8 +131,8 @@ export default async function CommunityPage({ params }: Props) {
       </Suspense>
 
       {/* Provinces grid */}
-      <section id="provincias" className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-        <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+      <section id="provincias" className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
           {comm.provinces.length} provincias de {comm.name}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -140,13 +140,13 @@ export default async function CommunityPage({ params }: Props) {
             <a
               key={prov.code}
               href={`/espana/${slug}/${prov.slug}`}
-              className="group flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50 hover:border-tl-300 hover:bg-tl-50 transition-all"
+              className="group flex items-center gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 hover:border-tl-300 dark:hover:border-tl-700 hover:bg-tl-50 dark:hover:bg-tl-900/20 transition-all"
             >
               <div className="flex-1">
-                <p className="font-heading font-semibold text-gray-900 group-hover:text-tl-600">
+                <p className="font-heading font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600">
                   {prov.name}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                   {prov.population?.toLocaleString("es-ES")} hab. · {prov._count.municipalities} municipios
                 </p>
               </div>

@@ -21,12 +21,12 @@ const ICA_CONFIG: Record<
   number,
   { bg: string; text: string; label: string; barColor: string }
 > = {
-  1: { bg: "bg-sky-100", text: "text-sky-700", label: "Buena", barColor: "bg-sky-400" },
-  2: { bg: "bg-green-100", text: "text-green-700", label: "Razonable", barColor: "bg-green-400" },
-  3: { bg: "bg-yellow-100", text: "text-yellow-700", label: "Regular", barColor: "bg-yellow-400" },
-  4: { bg: "bg-red-100", text: "text-red-700", label: "Desfavorable", barColor: "bg-red-400" },
-  5: { bg: "bg-red-200", text: "text-red-800", label: "Muy desfavorable", barColor: "bg-red-600" },
-  6: { bg: "bg-purple-100", text: "text-purple-700", label: "Extrema", barColor: "bg-purple-600" },
+  1: { bg: "bg-sky-100 dark:bg-sky-900/30", text: "text-sky-700 dark:text-sky-300", label: "Buena", barColor: "bg-sky-400" },
+  2: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", label: "Razonable", barColor: "bg-green-400" },
+  3: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-300", label: "Regular", barColor: "bg-yellow-400" },
+  4: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Desfavorable", barColor: "bg-red-400" },
+  5: { bg: "bg-red-200", text: "text-red-800 dark:text-red-200", label: "Muy desfavorable", barColor: "bg-red-600" },
+  6: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", label: "Extrema", barColor: "bg-purple-600" },
 };
 
 async function getProvince(communitySlug: string, provinceSlug: string) {
@@ -154,24 +154,24 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-tl-50 flex items-center justify-center shrink-0">
-              <Wind className="w-6 h-6 text-tl-600" />
+            <div className="w-12 h-12 rounded-xl bg-tl-50 dark:bg-tl-900/20 flex items-center justify-center shrink-0">
+              <Wind className="w-6 h-6 text-tl-600 dark:text-tl-400" />
             </div>
             <div className="flex-1">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Calidad del aire en {prov.name}
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {prov.community.name}
               </p>
               <div className="mt-3 flex flex-wrap gap-3">
-                <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                  <p className="font-data text-lg font-bold text-gray-900">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+                  <p className="font-data text-lg font-bold text-gray-900 dark:text-gray-100">
                     {stations.length}
                   </p>
-                  <p className="text-[10px] text-gray-500">Estaciones</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Estaciones</p>
                 </div>
                 {avgICA != null && avgIcaConfig && (
                   <div
@@ -194,8 +194,8 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
 
         {/* ICA Distribution */}
         {icaDistribution.size > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               Distribucion del indice ICA
             </h2>
             <div className="flex gap-2 h-20 items-end">
@@ -212,19 +212,19 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
                     key={ica}
                     className="flex-1 flex flex-col items-center gap-1"
                   >
-                    <span className="text-[10px] font-data text-gray-600">
+                    <span className="text-[10px] font-data text-gray-600 dark:text-gray-400">
                       {count}
                     </span>
                     <div className="w-full relative" style={{ height: "60px" }}>
                       <div
-                        className={`absolute bottom-0 w-full rounded-t ${config?.barColor ?? "bg-gray-200"}`}
+                        className={`absolute bottom-0 w-full rounded-t ${config?.barColor ?? "bg-gray-200 dark:bg-gray-700"}`}
                         style={{
                           height: `${Math.max(heightPct, count > 0 ? 5 : 0)}%`,
                         }}
                       />
                     </div>
                     <span
-                      className={`text-[10px] font-medium ${config?.text ?? "text-gray-500"}`}
+                      className={`text-[10px] font-medium ${config?.text ?? "text-gray-500 dark:text-gray-400"}`}
                     >
                       {config?.label ?? `ICA ${ica}`}
                     </span>
@@ -237,10 +237,10 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
 
         {/* Pollutant averages */}
         {pollutants.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <Activity className="w-5 h-5 text-tl-600" />
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <Activity className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 Niveles medios de contaminantes
               </h2>
             </div>
@@ -257,24 +257,24 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
                 return (
                   <div
                     key={p.key}
-                    className="rounded-xl bg-gray-50 border border-gray-100 p-3"
+                    className="rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 p-3"
                   >
                     <div className="flex items-baseline justify-between">
-                      <span className="text-xs font-semibold text-gray-700">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                         {p.key}
                       </span>
-                      <span className="font-data text-sm font-bold text-gray-900">
+                      <span className="font-data text-sm font-bold text-gray-900 dark:text-gray-100">
                         {p.value!.toFixed(1)}
                       </span>
                     </div>
-                    <p className="text-[10px] text-gray-500">{p.unit}</p>
-                    <div className="h-1.5 bg-gray-200 rounded-full mt-2">
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">{p.unit}</p>
+                    <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-2">
                       <div
                         className={`h-full rounded-full ${barColor}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <p className="text-[8px] text-gray-400 mt-0.5">
+                    <p className="text-[8px] text-gray-400 dark:text-gray-500 mt-0.5">
                       Limite: {p.limit} {p.unit}
                     </p>
                   </div>
@@ -285,10 +285,10 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
         )}
 
         {/* Station ranking (worst first) */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 mb-6">
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
             Estaciones por calidad del aire
-            <span className="text-sm font-normal text-gray-500 ml-2">
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
               (peor a mejor)
             </span>
           </h2>
@@ -301,17 +301,17 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
               return (
                 <div
                   key={station.id}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3"
                 >
-                  <span className="font-data text-xs text-gray-400 w-5 text-center">
+                  <span className="font-data text-xs text-gray-400 dark:text-gray-500 w-5 text-center">
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                       {station.name}
                     </p>
                     {station.city && (
-                      <p className="text-[10px] text-gray-500 truncate">
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
                         {station.city}
                       </p>
                     )}
@@ -320,17 +320,17 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
                   {reading && (
                     <div className="hidden sm:flex gap-2">
                       {reading.no2 != null && (
-                        <span className="text-[10px] text-gray-500 font-mono">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
                           NO2 {reading.no2.toFixed(0)}
                         </span>
                       )}
                       {reading.pm10 != null && (
-                        <span className="text-[10px] text-gray-500 font-mono">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
                           PM10 {reading.pm10.toFixed(0)}
                         </span>
                       )}
                       {reading.o3 != null && (
-                        <span className="text-[10px] text-gray-500 font-mono">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
                           O3 {reading.o3.toFixed(0)}
                         </span>
                       )}
@@ -343,7 +343,7 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
                       {icaConfig.label}
                     </span>
                   ) : (
-                    <span className="shrink-0 text-[10px] px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-500">
+                    <span className="shrink-0 text-[10px] px-2 py-0.5 rounded-full font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                       Sin datos
                     </span>
                   )}
@@ -354,13 +354,13 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
           <div className="mt-4 flex gap-4">
             <Link
               href={`/calidad-aire/provincia/${provSlug}`}
-              className="inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+              className="inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
             >
               Ver detalle provincial <ChevronRight className="w-4 h-4" />
             </Link>
             <Link
               href="/calidad-aire"
-              className="inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+              className="inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
             >
               Calidad del aire en Espana{" "}
               <ChevronRight className="w-4 h-4" />
@@ -372,12 +372,12 @@ export default async function ProvinceCalidadAirePage({ params }: Props) {
         <div className="flex items-center justify-between mt-8">
           <Link
             href={`/espana/${community}/${provSlug}`}
-            className="inline-flex items-center gap-2 text-sm text-tl-600 hover:text-tl-700 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a {prov.name}
           </Link>
-          <p className="text-[10px] text-gray-400">Fuente: MITECO</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">Fuente: MITECO</p>
         </div>
       </div>
     </div>

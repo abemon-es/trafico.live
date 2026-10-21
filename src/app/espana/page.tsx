@@ -62,9 +62,9 @@ export default function EspanaPage() {
           siniestralidad actualizadas.
         </p>
         {/* SEO intro */}
-        <section className="mt-6 mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <p className="text-sm text-gray-600 leading-relaxed">
-            <strong className="text-gray-900">trafico.live</strong> ofrece información de tráfico en tiempo real
+        <section className="mt-6 mb-8 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            <strong className="text-gray-900 dark:text-gray-100">trafico.live</strong> ofrece información de tráfico en tiempo real
             para toda España, incluyendo las 17 comunidades autónomas y más de 8.000 municipios.
             Consulta incidencias activas de la DGT, cámaras de tráfico, radares de velocidad,
             precios de combustible actualizados y puntos de recarga para vehículos eléctricos.
@@ -78,7 +78,7 @@ export default function EspanaPage() {
               <li key={community.slug}>
                 <Link
                   href={`/espana/${community.slug}`}
-                  className="block px-4 py-3 rounded-xl bg-white shadow-sm border border-gray-200 text-sm font-medium text-gray-700 hover:border-tl-300 hover:text-tl-600 hover:shadow-md transition-all"
+                  className="block px-4 py-3 rounded-xl bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-600 dark:hover:text-tl-400 hover:shadow-md transition-all"
                 >
                   {community.name}
                 </Link>
