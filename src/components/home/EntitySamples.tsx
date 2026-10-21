@@ -10,6 +10,8 @@ import {
   Fuel,
   ArrowRight,
 } from "lucide-react";
+import type { HomeStats } from "@/app/HomeClient";
+import { withCount } from "./counts";
 
 /**
  * Home-page visible entity-pages showcase.
@@ -33,6 +35,8 @@ interface EntityCard {
   category: string;
   title: string;
   example: string;
+  /** Live count shown instead of `example` («12.074 puntos →»), when it loaded. */
+  count?: { stat: "chargerCount" | "stationCount"; noun: string };
   description: string;
 }
 
@@ -88,7 +92,8 @@ const CARDS: EntityCard[] = [
     bgColorVar: "rgba(8,145,178,0.08)",
     category: "Carga eléctrica",
     title: "Cada cargador, sus conectores",
-    example: "12 000 puntos →",
+    example: "Ver puntos de carga →",
+    count: { stat: "chargerCount", noun: "puntos" },
     description:
       "Potencia, tipos de conector, métodos de pago, cargadores y gasolineras cerca. Cómo llegar en un tap.",
   },
@@ -99,13 +104,14 @@ const CARDS: EntityCard[] = [
     bgColorVar: "rgba(217,119,6,0.08)",
     category: "Combustible",
     title: "Cada gasolinera, sus precios",
-    example: "11 000 estaciones →",
+    example: "Ver gasolineras →",
+    count: { stat: "stationCount", noun: "estaciones" },
     description:
       "Precios oficiales MINETUR + histórico + comparativa con misma marca cerca y la más barata de la marca en España.",
   },
 ];
 
-export function EntitySamples() {
+export function EntitySamples({ stats }: { stats: HomeStats }) {
   return (
     <section
       aria-labelledby="entity-samples-heading"
@@ -155,7 +161,9 @@ export function EntitySamples() {
               </p>
               <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                 <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                  {card.example}
+                  {card.count && stats[card.count.stat] > 0
+                    ? `${withCount(stats[card.count.stat], card.count.noun)} →`
+                    : card.example}
                 </span>
                 <ArrowRight
                   className="w-4 h-4 text-gray-400 group-hover:text-tl-600 dark:group-hover:text-tl-400 group-hover:translate-x-0.5 transition-all"

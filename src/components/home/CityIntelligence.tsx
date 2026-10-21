@@ -1,40 +1,24 @@
 import Link from "next/link";
 
+// What a city page shows, by block. Values sat next to each label («3
+// activas», «Gasolina 95 1,229 €/L», «Score 87/100») as if they were
+// Valladolid's live data; they were made up, and no city page has a score.
+// Labels only until a live figure is wired.
 const MINI_CARDS = [
   {
     title: "Incidencias activas",
     titleColor: "text-signal-red",
-    stats: [
-      { label: "activas", value: "3" },
-      { label: "retenciones", value: "1" },
-      { label: "obras", value: "2" },
-    ],
+    items: ["activas", "retenciones", "obras"],
   },
   {
     title: "Combustible más barato",
     titleColor: "text-tl-amber-500",
-    stats: [
-      { label: "Gasolina 95", value: "1,229 €/L" },
-      { label: "Diésel", value: "1,189 €/L" },
-    ],
+    items: ["Gasolina 95", "Diésel"],
   },
   {
     title: "Infraestructura",
     titleColor: "text-tl-600",
-    stats: [
-      { label: "cámaras", value: "18" },
-      { label: "radares", value: "12" },
-      { label: "gasolineras", value: "45" },
-      { label: "cargadores", value: "24" },
-    ],
-  },
-  {
-    title: "Índice de tráfico",
-    titleColor: "text-signal-green",
-    stats: [
-      { label: "Score", value: "87/100", valueColor: "text-signal-green" },
-      { label: "IMD medio", value: "18.420 veh/día" },
-    ],
+    items: ["cámaras", "radares", "gasolineras", "cargadores"],
   },
 ];
 
@@ -75,7 +59,7 @@ export function CityIntelligence() {
 
         {/* Two-column card */}
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden grid grid-cols-1 lg:grid-cols-2">
-          {/* Left — mini stat cards */}
+          {/* Left — what each city page shows */}
           <div className="bg-gray-50 dark:bg-gray-900 p-6 flex flex-col gap-3">
             {MINI_CARDS.map((card) => (
               <div
@@ -84,14 +68,9 @@ export function CityIntelligence() {
               >
                 <h4 className={`text-xs font-semibold mb-2 ${card.titleColor}`}>{card.title}</h4>
                 <div className="flex flex-wrap gap-3">
-                  {card.stats.map((stat) => (
-                    <span key={stat.label} className="text-xs text-gray-500 dark:text-gray-400">
-                      <span
-                        className={`font-data font-medium text-gray-900 dark:text-gray-100 ${stat.valueColor ?? ""}`}
-                      >
-                        {stat.value}
-                      </span>{" "}
-                      {stat.label}
+                  {card.items.map((item) => (
+                    <span key={item} className="text-xs text-gray-500 dark:text-gray-400">
+                      {item}
                     </span>
                   ))}
                 </div>

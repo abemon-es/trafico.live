@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { EntitySamples } from "@/components/home/EntitySamples";
+import type { HomeArticle } from "@/components/home/counts";
 
 export interface HomeStats {
   incidentCount: number;
@@ -12,6 +13,7 @@ export interface HomeStats {
   v16Count: number;
   chargerCount: number;
   detectorCount: number;
+  portugalStationCount: number;
 }
 
 // Hero map moved to HeroMapDeferred: static panel first paint, live map
@@ -100,7 +102,7 @@ function CardGridSkeleton() {
   );
 }
 
-export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
+export function HomeClient({ initialStats, articles }: { initialStats: HomeStats; articles: HomeArticle[] }) {
   return (
     <>
       {/* Hero map — TraficoMap preset="home" (phase 4 migration) */}
@@ -130,7 +132,7 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
         <LiveCounterStrip initialStats={initialStats} />
       </Suspense>
 
-      <EntitySamples />
+      <EntitySamples stats={initialStats} />
 
       <Suspense fallback={<CardGridSkeleton />}>
         <VerticalShowcase />
@@ -149,11 +151,11 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
-        <FuelSection />
+        <FuelSection stationCount={initialStats.stationCount} />
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
-        <CrossBorder />
+        <CrossBorder portugalStationCount={initialStats.portugalStationCount} />
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
@@ -161,11 +163,11 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
       </Suspense>
 
       <Suspense fallback={<CardGridSkeleton />}>
-        <AdvancedFeatures />
+        <AdvancedFeatures stats={initialStats} />
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
-        <DataStory />
+        <DataStory stats={initialStats} />
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
@@ -173,7 +175,7 @@ export function HomeClient({ initialStats }: { initialStats: HomeStats }) {
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
-        <EditorialSection />
+        <EditorialSection articles={articles} />
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>

@@ -1,45 +1,36 @@
 import Link from "next/link";
+import type { HomeArticle } from "./counts";
 
-interface Article {
-  category: string;
-  categoryColor: string;
-  title: string;
-  description: string;
-  href: string;
+// Four made-up articles («Tráfico hoy: miércoles 2 de abril — 342 incidencias
+// activas») sat here from the April redesign, all four linking to a 404. The
+// cards are now the latest published articles, and no section without them.
+const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
+  DAILY_REPORT: { label: "Informe diario", color: "text-tl-600" },
+  WEEKLY_REPORT: { label: "Informe semanal", color: "text-tl-600" },
+  MONTHLY_REPORT: { label: "Informe mensual", color: "text-tl-600" },
+  ANNUAL_REPORT: { label: "Informe anual", color: "text-tl-600" },
+  PRICE_ALERT: { label: "Precios", color: "text-tl-amber-500" },
+  FUEL_TREND: { label: "Combustible", color: "text-tl-amber-500" },
+  INCIDENT_DIGEST: { label: "Incidencias", color: "text-signal-red" },
+  WEATHER_ALERT: { label: "Meteorología", color: "text-signal-red" },
+  ROAD_ANALYSIS: { label: "Carreteras", color: "text-signal-green" },
+  ANALYSIS: { label: "Análisis", color: "text-tl-amber-500" },
+  GUIDE: { label: "Guía", color: "text-signal-green" },
+  REGULATORY: { label: "Normativa", color: "text-signal-green" },
+};
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Europe/Madrid",
+  });
 }
 
-const ARTICLES: Article[] = [
-  {
-    category: "Informe diario",
-    categoryColor: "text-tl-600",
-    title: "Tráfico hoy: miércoles 2 de abril",
-    description: "342 incidencias activas, 12 retenciones. Alertas en Galicia y el litoral norte.",
-    href: "/noticias/trafico-hoy-2-abril",
-  },
-  {
-    category: "Análisis",
-    categoryColor: "text-tl-amber-500",
-    title: "El diésel cae un 3% en marzo",
-    description: "Estaciones más baratas de España y evolución mensual del precio del combustible.",
-    href: "/noticias/diesel-marzo-2025",
-  },
-  {
-    category: "Seguridad vial",
-    categoryColor: "text-signal-red",
-    title: "50 puntos negros 2025",
-    description: "Accidentalidad histórica por tramo. Los tramos con mayor siniestralidad en la red.",
-    href: "/noticias/puntos-negros-2025",
-  },
-  {
-    category: "Movilidad",
-    categoryColor: "text-signal-green",
-    title: "ZBE Madrid: cambios en abril",
-    description: "Nuevas restricciones de acceso a Madrid Central y Madrid 360 a partir de abril.",
-    href: "/noticias/zbe-madrid-abril-2025",
-  },
-];
+export function EditorialSection({ articles }: { articles: HomeArticle[] }) {
+  if (articles.length === 0) return null;
 
-export function EditorialSection() {
   return (
     <section className="py-18 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto">
@@ -63,25 +54,29 @@ export function EditorialSection() {
 
         {/* 4-column article grid — 1px gap pattern */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-          {ARTICLES.map((article) => (
-            <Link
-              key={article.title}
-              href={article.href}
-              className="bg-white dark:bg-gray-900 p-5 flex flex-col hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <p
-                className={`font-heading text-xs font-semibold uppercase tracking-wider mb-2 ${article.categoryColor}`}
+          {articles.map((article) => {
+            const category = CATEGORY_LABELS[article.category] ?? { label: "Noticias", color: "text-tl-600" };
+            return (
+              <Link
+                key={article.slug}
+                href={`/noticias/${article.slug}`}
+                className="bg-white dark:bg-gray-900 p-5 flex flex-col hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
-                {article.category}
-              </p>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-snug mb-1.5">
-                {article.title}
-              </h3>
-              <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-                {article.description}
-              </p>
-            </Link>
-          ))}
+                <p className={`font-heading text-xs font-semibold uppercase tracking-wider mb-2 ${category.color}`}>
+                  {category.label}
+                </p>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-snug mb-1.5">
+                  {article.title}
+                </h3>
+                <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed line-clamp-3 flex-1">
+                  {article.summary}
+                </p>
+                <time dateTime={article.publishedAt} className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+                  {formatDate(article.publishedAt)}
+                </time>
+              </Link>
+            );
+          })}
         </div>
 
         {/* SEO paragraph */}

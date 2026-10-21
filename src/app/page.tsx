@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { HomeClient } from "./HomeClient";
+import type { HomeArticle } from "@/components/home/counts";
 import {
   StructuredData,
   generateDatasetSchema,
@@ -55,7 +56,7 @@ const MORE_SECTIONS = [
 
 async function getHomeStats() {
   try {
-    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount] =
+    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount] =
       await Promise.all([
         prisma.trafficIncident.count({ where: { isActive: true } }),
         prisma.camera.count(),
@@ -64,10 +65,26 @@ async function getHomeStats() {
         prisma.v16BeaconEvent.count({ where: { isActive: true } }),
         prisma.eVCharger.count(),
         prisma.trafficDetector.count({ where: { isActive: true } }),
+        prisma.portugalGasStation.count(),
       ]);
-    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount };
+    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount };
   } catch {
-    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0, detectorCount: 0 };
+    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0, detectorCount: 0, portugalStationCount: 0 };
+  }
+}
+
+/** The home's «Análisis y noticias»: the latest published, or none at all. */
+async function getLatestArticles(): Promise<HomeArticle[]> {
+  try {
+    const rows = await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { publishedAt: "desc" },
+      take: 4,
+      select: { slug: true, title: true, summary: true, category: true, publishedAt: true },
+    });
+    return rows.map((r) => ({ ...r, publishedAt: r.publishedAt.toISOString() }));
+  } catch {
+    return [];
   }
 }
 
@@ -90,7 +107,7 @@ async function getCommunitiesWithProvinces() {
 }
 
 export default async function HomePage() {
-  const stats = await getHomeStats();
+  const [stats, articles] = await Promise.all([getHomeStats(), getLatestArticles()]);
   const communities = await getCommunitiesWithProvinces();
 
   const faqSchema = generateFAQSchema({
@@ -275,7 +292,7 @@ export default async function HomePage() {
       </div>
 
       {/* Client-side interactive homepage */}
-      <HomeClient initialStats={stats} />
+      <HomeClient initialStats={stats} articles={articles} />
 
       {/* Visible links and the sources line speakable reads; both used to sit in
           the screen-reader-only block above. */}

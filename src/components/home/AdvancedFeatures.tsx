@@ -1,5 +1,7 @@
 import { Globe, Radio, Radar, BrainCircuit, Ship, Video } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { HomeStats } from "@/app/HomeClient";
+import { withCount } from "./counts";
 
 interface Feature {
   icon: LucideIcon;
@@ -11,7 +13,10 @@ interface Feature {
   techDetail: string;
 }
 
-const FEATURES: Feature[] = [
+// Counts are live: the descriptions read «4.247 detectores», «4.000+ radares»
+// and «847 cámaras», written by hand, against 7.309, 737 and 1.976 in the
+// database. «Buques en tiempo real» was badged «Próximo»; AIS is live.
+const features = (stats: HomeStats): Feature[] => [
   {
     icon: Globe,
     iconBg: "bg-tl-50 dark:bg-tl-900/30",
@@ -29,7 +34,7 @@ const FEATURES: Feature[] = [
     badge: "Activo",
     title: "Flujo de tráfico vivo",
     description:
-      "4.247 detectores DGT midiendo velocidad, intensidad y ocupación cada 5 minutos. Carreteras coloreadas por estado.",
+      `Velocidad, intensidad y ocupación cada 5 minutos desde ${withCount(stats.detectorCount, "detectores DGT")}. Carreteras coloreadas por estado.`,
     techDetail: "TrafficDetector · TrafficReading · DATEX II",
   },
   {
@@ -39,7 +44,7 @@ const FEATURES: Feature[] = [
     badge: "Activo",
     title: "Alertas radar proximidad",
     description:
-      "GPS del usuario + 4.000+ radares con coordenadas exactas + límites de velocidad. Alerta por voz a 1 km y 500 m.",
+      `GPS del usuario + ${withCount(stats.radarCount, "radares")} con coordenadas exactas + límites de velocidad. Alerta por voz a 1 km y 500 m.`,
     techDetail: "useVoiceAlerts · GeolocateControl · HUD",
   },
   {
@@ -56,7 +61,7 @@ const FEATURES: Feature[] = [
     icon: Ship,
     iconBg: "bg-tl-sea-50 dark:bg-tl-sea-900/20",
     iconColor: "text-tl-sea-500 dark:text-tl-sea-400",
-    badge: "Próximo",
+    badge: "Activo",
     title: "Buques en tiempo real",
     description:
       "Posición de buques via AIS WebSocket. Historial de rutas. Tipo, velocidad y destino de cada barco.",
@@ -69,12 +74,12 @@ const FEATURES: Feature[] = [
     badge: "Próximo",
     title: "Visión por cámara (YOLO)",
     description:
-      "Conteo de vehículos, estimación de velocidad y detección de incidentes desde 847 cámaras DGT con YOLO.",
+      `Conteo de vehículos, estimación de velocidad y detección de incidentes desde ${withCount(stats.cameraCount, "cámaras DGT")} con YOLO.`,
     techDetail: "YOLOv8 · Vehicle Speed Estimation · DGT cameras",
   },
 ];
 
-export function AdvancedFeatures() {
+export function AdvancedFeatures({ stats }: { stats: HomeStats }) {
   return (
     <section className="py-18 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto">
@@ -92,7 +97,7 @@ export function AdvancedFeatures() {
 
         {/* 3-column feature grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURES.map((feature) => {
+          {features(stats).map((feature) => {
             const Icon = feature.icon;
             const isActive = feature.badge === "Activo";
 
