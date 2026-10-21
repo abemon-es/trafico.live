@@ -639,9 +639,9 @@ export default function CuantoCuestaCargarContent() {
                 </p>
               </div>
 
-              {/* Savings callout */}
+              {/* Savings callout. green-800: its green-100/200 texts are 6.48/5.91:1 (2.93/2.67:1 on green-600). */}
               {results.savingsVsGasolinePer100km > 0 && (
-                <div className="bg-green-600 rounded-xl p-4 text-white flex items-start gap-3">
+                <div className="bg-green-800 rounded-xl p-4 text-white flex items-start gap-3">
                   <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
                     <TrendingDown className="w-5 h-5 text-white" />
                   </div>

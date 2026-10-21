@@ -106,14 +106,14 @@ const CTA_CLASSES: Record<TierConfig["ctaVariant"], string> = {
   outline:
     "border border-tl-200 dark:border-tl-700 text-tl-600 dark:text-tl-300 hover:bg-tl-50 dark:hover:bg-tl-900/50",
   primary:
-    "bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white",
+    "bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white",
   amber:
     "bg-tl-amber-400 hover:bg-tl-amber-300 text-tl-amber-950",
 };
 
 const TIER_BADGE_CLASSES: Record<TierConfig["name"], string> = {
   FREE: "bg-tl-100 dark:bg-tl-900 text-tl-700 dark:text-tl-200",
-  PRO: "bg-[color:var(--tl-primary)] text-white",
+  PRO: "bg-[color:var(--tl-primary-solid)] text-white",
   ENTERPRISE: "bg-tl-amber-400 text-tl-amber-950",
 };
 
@@ -212,7 +212,7 @@ export function PricingTable() {
               }`}
             >
               {tier.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold bg-[color:var(--tl-primary)] text-white px-4 py-1 rounded-full shadow">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold bg-[color:var(--tl-primary-solid)] text-white px-4 py-1 rounded-full shadow">
                   {tier.badge}
                 </span>
               )}
@@ -222,7 +222,7 @@ export function PricingTable() {
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                     tier.highlight
-                      ? "bg-[color:var(--tl-primary)] text-white"
+                      ? "bg-[color:var(--tl-primary-solid)] text-white"
                       : "bg-[color:var(--tl-primary-bg)] text-[color:var(--tl-primary)]"
                   }`}
                 >
@@ -334,7 +334,7 @@ export function PricingTable() {
                 <button
                   type="submit"
                   disabled={checkout.loading}
-                  className="flex-1 text-sm font-semibold px-4 py-2.5 rounded-xl bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="flex-1 text-sm font-semibold px-4 py-2.5 rounded-xl bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {checkout.loading ? "Redirigiendo..." : "Ir a Stripe"}
                 </button>

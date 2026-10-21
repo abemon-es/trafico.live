@@ -113,7 +113,7 @@ export function TierCard({
         data-cta-id={`tier-${name.toLowerCase()}`}
         className={`block text-center text-sm font-semibold px-5 py-3 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-tl-600 ${
           highlight
-            ? "bg-[color:var(--tl-primary)] hover:bg-[color:var(--tl-primary-hover)] text-white focus-visible:ring-white"
+            ? "bg-[color:var(--tl-primary-solid)] hover:bg-[color:var(--tl-primary-solid-hover)] text-white focus-visible:ring-white"
             : name === "ENTERPRISE"
             ? "bg-tl-amber-400 hover:bg-tl-amber-300 text-tl-amber-950"
             : "border border-tl-200 dark:border-tl-700 text-tl-600 dark:text-tl-300 hover:bg-[color:var(--tl-primary-bg)]"

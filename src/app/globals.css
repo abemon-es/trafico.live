@@ -9,6 +9,11 @@
   /* trafico.live Brand Colors — OKLCH-generated */
   --tl-primary: #1b4bd5;
   --tl-primary-hover: #092ea8;
+  /* Backgrounds under white text: the same blue in both themes. --tl-primary
+     turns light in dark mode (#6393ff, for text and links), and white on it
+     is 2.94:1; on this one it is 6.97:1 (hover 10.67:1). Not redefined in .dark. */
+  --tl-primary-solid: #1b4bd5;
+  --tl-primary-solid-hover: #092ea8;
   --tl-primary-bg: #f0f5ff;
   --tl-primary-bg-hover: #dde8ff;
   --tl-accent: #b56200;

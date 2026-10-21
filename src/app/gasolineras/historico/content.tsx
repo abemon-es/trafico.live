@@ -72,24 +72,33 @@ interface TendenciaResponse {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FUEL_TABS: { key: FuelKey; label: string; color: string; shortLabel: string }[] = [
+/**
+ * `color` draws the chart and the icons (light in dark mode, where they sit on a
+ * dark card). `activeBg` is the selected tab, under white text: white on
+ * `color` was 2.94:1 (G-95, dark), 4.23:1 (G-98) and 3.00/2.05:1 (G-A); on
+ * these it is 6.97, 5.89 and 5.22:1 in both themes.
+ */
+const FUEL_TABS: { key: FuelKey; label: string; color: string; activeBg: string; shortLabel: string }[] = [
   {
     key: "gasolina95",
     label: "Gasolina 95",
     shortLabel: "G-95",
     color: "var(--tl-primary)",
+    activeBg: "bg-[var(--tl-primary-solid)]",
   },
   {
     key: "gasolina98",
     label: "Gasolina 98",
     shortLabel: "G-98",
     color: "#8b5cf6",
+    activeBg: "bg-violet-600",
   },
   {
     key: "gasoleoA",
     label: "Gasóleo A",
     shortLabel: "G-A",
     color: "var(--tl-warning)",
+    activeBg: "bg-orange-700",
   },
 ];
 
@@ -721,10 +730,9 @@ export function HistoricoContent() {
               onClick={() => setFuelKey(tab.key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
                 isActive
-                  ? "border-transparent text-white"
+                  ? `border-transparent text-white ${tab.activeBg}`
                   : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600"
               }`}
-              style={isActive ? { backgroundColor: tab.color, borderColor: tab.color } : {}}
             >
               <Fuel className="w-4 h-4" />
               {tab.label}
