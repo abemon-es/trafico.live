@@ -402,7 +402,7 @@ export default async function PrecioDieselHoyPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-6 mb-8 text-tl-amber-800">
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-6 mb-8 text-tl-amber-800 dark:text-tl-amber-300">
             Los precios de hoy aún no están disponibles. Los datos se actualizan varias veces al
             día desde la API oficial del MITERD.
           </div>
@@ -471,7 +471,7 @@ export default async function PrecioDieselHoyPage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 mb-8 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-tl-amber-50 dark:bg-tl-amber-900/200" />
+                <span className="w-3 h-3 rounded-full bg-tl-amber-500" />
                 10 Gasolineras Más Baratas — Gasóleo A (Diésel)
               </h2>
               <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 px-3 py-1 rounded-full hidden sm:block">

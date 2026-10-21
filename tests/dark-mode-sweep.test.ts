@@ -28,8 +28,14 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const BROKEN =
-  /bg-white dark:bg-gray-\d+\/(10|20)\b|\b(?:bg|text|border|ring|from|via|to|fill|stroke|divide|outline|shadow|placeholder|decoration|accent|caret)-[a-z]+-\d{2,3}\/(?:\d{3,}|\d+\/\d+)\b|min-h-screen bg-gray-50"/;
+// Colour names can be hyphenated (tl-amber, tl-sea): a bare [a-z]+ missed 11
+// `bg-tl-amber-50 dark:bg-tl-amber-900/200` until 2026-10-21.
+const COLOUR = "[a-z]+(?:-[a-z]+)*";
+const BROKEN = new RegExp(
+  "bg-white dark:bg-gray-\\d+\\/(10|20)\\b" +
+    `|\\b(?:bg|text|border|ring|from|via|to|fill|stroke|divide|outline|shadow|placeholder|decoration|accent|caret)-${COLOUR}-\\d{2,3}\\/(?:\\d{3,}|\\d+\\/\\d+)\\b` +
+    '|min-h-screen bg-gray-50"',
+);
 
 function* sources(dir: string): Generator<string> {
   for (const name of readdirSync(dir)) {
@@ -47,6 +53,8 @@ assert.ok(!BROKEN.test('className="w-2 h-2 rounded-full bg-green-500"'));
 assert.ok(!BROKEN.test('className="bg-tl-50 dark:bg-tl-900/20"'));
 assert.ok(!BROKEN.test('fetch(`/sitemap/200.xml`); const pct = n/100; "2026/10/21"'), "paths, maths and dates are not classes");
 assert.ok(BROKEN.test('className="bg-green-50 dark:bg-green-900/20/50"'));
+assert.ok(BROKEN.test('dotClass: "bg-tl-amber-50 dark:bg-tl-amber-900/200",'), "hyphenated colour names too");
+assert.ok(!BROKEN.test('dotClass: "bg-tl-amber-500",'));
 assert.ok(!BROKEN.test('className="bg-green-50/50 dark:bg-green-900/20"'));
 assert.ok(BROKEN.test('<div className="min-h-screen bg-gray-50">'));
 assert.ok(!BROKEN.test('<div className="min-h-screen bg-gray-50 dark:bg-gray-950">'));
@@ -54,11 +62,15 @@ assert.ok(!BROKEN.test('<div className="min-h-screen bg-gray-50 dark:bg-gray-950
 /** 5: a quoted class string with a dark background and dark text, but no dark text colour. */
 const darkBgDarkText = (line: string) =>
   (line.match(/"[^"]*"/g) ?? []).some(
-    (s) => /\bdark:bg-[a-z]+-9\d\d\b/.test(s) && /(?<![:\w-])text-[a-z]+-[789]\d\d\b/.test(s) && !/\bdark:text-/.test(s),
+    (s) =>
+      new RegExp(`\\bdark:bg-${COLOUR}-9\\d\\d\\b`).test(s) &&
+      new RegExp(`(?<![:\\w-])text-${COLOUR}-[789]\\d\\d\\b`).test(s) &&
+      !/\bdark:text-/.test(s),
   );
 assert.ok(darkBgDarkText('badge: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",'));
 assert.ok(!darkBgDarkText('badge: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300",'));
 assert.ok(!darkBgDarkText('className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"'));
+assert.ok(darkBgDarkText('"bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 text-tl-amber-800"'), "hyphenated colour names too");
 
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {

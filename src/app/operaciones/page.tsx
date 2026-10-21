@@ -250,7 +250,7 @@ export default async function OperacionesPage() {
                     ) : (
                       <div
                         className={`w-3 h-3 rounded-full mt-1 ${
-                          op.type === "festivo" ? "bg-tl-500" : "bg-tl-amber-50 dark:bg-tl-amber-900/200"
+                          op.type === "festivo" ? "bg-tl-500" : "bg-tl-amber-500"
                         }`}
                       />
                     )}

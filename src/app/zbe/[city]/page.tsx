@@ -475,7 +475,7 @@ function statusBadge(status: ZBEStatus) {
   if (status === "planificada") {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800 rounded-full text-sm font-semibold">
-        <span className="w-2 h-2 bg-tl-amber-50 dark:bg-tl-amber-900/200 rounded-full" />
+        <span className="w-2 h-2 bg-tl-amber-500 rounded-full" />
         Planificada
       </span>
     );

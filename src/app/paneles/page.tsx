@@ -409,7 +409,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                       <div
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-semibold text-sm ${
                           roadHasMessage
-                            ? "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 dark:border-tl-amber-800 text-tl-amber-800"
+                            ? "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 dark:border-tl-amber-800 text-tl-amber-800 dark:text-tl-amber-300"
                             : "bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400"
                         }`}
                       >

@@ -229,7 +229,7 @@ export function FuelPriceChart({
               : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
           }`}
         >
-          <span className="w-2 h-2 rounded-full bg-tl-amber-50 dark:bg-tl-amber-900/200" />
+          <span className="w-2 h-2 rounded-full bg-tl-amber-500" />
           Gasóleo A
         </button>
         <button

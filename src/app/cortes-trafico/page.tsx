@@ -225,7 +225,7 @@ export default async function CortesTráficoPage() {
                     Cortes de Tráfico y Obras en Carreteras
                   </h1>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800">
-                    <span className="w-2 h-2 rounded-full bg-tl-amber-50 dark:bg-tl-amber-900/200 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-tl-amber-500 animate-pulse" />
                     {closures.length} activos
                   </span>
                 </div>
