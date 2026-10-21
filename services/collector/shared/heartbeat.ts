@@ -50,17 +50,55 @@ export async function heartbeat(
  */
 export async function markRunStarted(prisma: PrismaClient, task: string): Promise<void> {
   try {
-    const row = await prisma.collectorHeartbeat.findUnique({ where: { task }, select: { meta: true } });
-    if (!row) return; // first ever run: heartbeat() will create the row
-    const meta =
-      row.meta && typeof row.meta === "object" && !Array.isArray(row.meta)
-        ? (row.meta as Record<string, unknown>)
-        : {};
-    await prisma.collectorHeartbeat.update({
-      where: { task },
-      data: { meta: { ...meta, runStartedAt: new Date().toISOString() } as Prisma.InputJsonValue },
+    await patchMeta(prisma, task, (meta) => {
+      const next: Record<string, unknown> = { ...meta, runStartedAt: new Date().toISOString() };
+      // A killed run's progress belongs to that run, not to this one.
+      delete next.runProgressAt;
+      delete next.runProgress;
+      return next;
     });
   } catch (err) {
     console.error(`[heartbeat] Failed to mark run start for ${task}:`, err);
   }
+}
+
+/**
+ * Record that a run of `task` is still moving, WITHOUT touching lastRunAt or
+ * status: `meta.runProgressAt` plus the run's counts in `meta.runProgress`.
+ * /api/health reads a fresh report as running, not stale, so a slow run is
+ * told apart from a dead one (src/lib/heartbeat-state.ts). The final
+ * heartbeat() replaces meta and both keys go with it. Never throws.
+ */
+export async function markRunProgress(
+  prisma: PrismaClient,
+  task: string,
+  progress: Record<string, number>
+): Promise<void> {
+  try {
+    await patchMeta(prisma, task, (meta) => ({
+      ...meta,
+      runProgressAt: new Date().toISOString(),
+      runProgress: progress,
+    }));
+  } catch (err) {
+    console.error(`[heartbeat] Failed to record run progress for ${task}:`, err);
+  }
+}
+
+/** Rewrite the row's meta, nothing else. No row: heartbeat() creates it at the end of the first run. */
+async function patchMeta(
+  prisma: PrismaClient,
+  task: string,
+  patch: (meta: Record<string, unknown>) => Record<string, unknown>
+): Promise<void> {
+  const row = await prisma.collectorHeartbeat.findUnique({ where: { task }, select: { meta: true } });
+  if (!row) return;
+  const meta =
+    row.meta && typeof row.meta === "object" && !Array.isArray(row.meta)
+      ? (row.meta as Record<string, unknown>)
+      : {};
+  await prisma.collectorHeartbeat.update({
+    where: { task },
+    data: { meta: patch(meta) as Prisma.InputJsonValue },
+  });
 }

@@ -17,8 +17,11 @@ import {
   BASE_PACE_MS,
   ForecastFetcher,
   MAX_ATTEMPTS,
+  PROGRESS_EVERY_MS,
   type Municipio,
+  type RunProgress,
 } from "../services/collector/tasks/aemet-forecast/forecast-fetch";
+import { PROGRESS_FRESH_SECONDS } from "../src/lib/heartbeat-state";
 
 // Works whether tsx runs this file as CommonJS (root package) or as ESM.
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
@@ -113,6 +116,7 @@ async function simulate(opts: SimOptions) {
   const urls: string[] = [];
   let step1WithoutHeader = 0;
   const logs: string[] = [];
+  const progress: Array<RunProgress & { t: number }> = [];
   const respond = (status: number, body: unknown) => new Response(JSON.stringify(body), { status });
 
   const fetcher = new ForecastFetcher(
@@ -146,6 +150,9 @@ async function simulate(opts: SimOptions) {
         return respond(200, [{ prediccion: { dia: [{ fecha: "2026-10-20T00:00:00" }] } }]);
       },
       log: (level, msg, extra) => logs.push(JSON.stringify({ level, msg, ...extra })),
+      progress: async (p) => {
+        progress.push({ t, ...p });
+      },
     },
     KEY
   );
@@ -154,7 +161,17 @@ async function simulate(opts: SimOptions) {
   const lost = await fetcher.collect(MUNICIPIOS, async (mun) => {
     done.push(mun.code);
   });
-  return { lost, done, minutes: (t - START) / 60_000, stats: fetcher.stats, logs, step1Order, urls, step1WithoutHeader };
+  return {
+    lost,
+    done,
+    minutes: (t - START) / 60_000,
+    stats: fetcher.stats,
+    logs,
+    step1Order,
+    urls,
+    step1WithoutHeader,
+    progress,
+  };
 }
 
 type Sim = Awaited<ReturnType<typeof simulate>>;
@@ -307,6 +324,31 @@ async function main() {
     assert.ok(r.lost.length > MUNICIPIOS.length - 5);
     assert.ok(r.minutes >= 15 && r.minutes <= 17, `${r.minutes.toFixed(1)} min`);
     assert.ok(r.stats.quotaHitsByStatus["500"] > 0, "the wrapped 500s were seen");
+  }
+
+  // 11. A run reports progress after its first municipio and then every 5 min,
+  // never more often, so /api/health always has a report under
+  // PROGRESS_FRESH_SECONDS old while the run lives: here the ~66 min run and the
+  // 5 h one that hits the run cap. Each municipio is done, queued or lost.
+  for (const [name, opts] of [
+    ["6/calendar minute", { quota: perCalendarMinute(6) }],
+    ["50 s per answer", { quota: () => true, latencyMs: 50_000 }],
+  ] as const) {
+    const r = await simulate(opts);
+    const at = [START, ...r.progress.map((p) => p.t), START + r.minutes * 60_000];
+    const gaps = at.slice(1).map((t, i) => t - at[i]);
+    const longest = Math.max(...gaps.slice(1));
+    console.log(`  progress, ${name}: ${r.progress.length} reports, longest gap ${(longest / 60_000).toFixed(1)} min`);
+    assert.ok(gaps[0] < 2 * 60_000, `${name}: first report ${(gaps[0] / 1000).toFixed(0)} s into the run`);
+    assert.ok(longest < PROGRESS_FRESH_SECONDS * 1000, `${name}: ${(longest / 60_000).toFixed(1)} min without a report`);
+    assert.ok(
+      r.progress.slice(1).every((p, i) => p.t - r.progress[i].t >= PROGRESS_EVERY_MS),
+      `${name}: reports under 5 min apart`
+    );
+    for (const [i, p] of r.progress.entries()) {
+      assert.equal(p.done + p.queued + p.lost, MUNICIPIOS.length, `${name}: report ${i} adds up`);
+      if (i) assert.ok(p.done >= r.progress[i - 1].done && p.attempts > r.progress[i - 1].attempts);
+    }
   }
 
   console.log("aemet-forecast-queue: ok");

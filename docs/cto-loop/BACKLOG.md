@@ -90,6 +90,90 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (81) — a slow aemet-forecast run read as dead: a progress heartbeat
+
+**#160 merged and gated** (`04127b4f`). The build log shows «[lint-ratchet]
+182 eslint errors (baseline 182)», and the deploy succeeded in 408 s.
+
+**External, monitor only:** since 15:02Z `infocar.dgt.es` answers 502 to the
+detector, SCT and DT-GV feeds, while `nap.dgt.es` answers 200. As a result
+`detector` is in error and `incident` is partial. The collectors handle it,
+and it heals when DGT does.
+
+**Signal:** aemet-forecast is «SILENT» again. lastRunAt only moves when a run
+finishes. With the expired key a run can last up to 5 h against a 7 h
+threshold, so after a short run the next one goes overdue while it is still
+storing forecasts. For example, an abort at 00:15Z, then a run from 06:00 to
+11:00Z, is stale from 07:15Z: almost 4 h of false stale on every slow run.
+server-28 approved telling «slow but alive» apart from «dead».
+
+**Fix:**
+- **`markRunProgress(prisma, task, counts)`** (`shared/heartbeat.ts`) writes
+  `meta.runProgressAt` and `meta.runProgress` and touches nothing else:
+  lastRunAt and status stay those of the last finished run. The final
+  heartbeat() replaces meta. `markRunStarted` now drops a killed run's
+  progress. Both share `patchMeta` and never throw.
+- **`ForecastFetcher`** reports `{done, queued, lost, attempts}` after the
+  first municipality and then every 5 min (`PROGRESS_EVERY_MS`), never more
+  often. The collector passes that report to `markRunProgress`.
+- **`src/lib/heartbeat-state.ts`:**
+  - `runState()`: the run in flight is running while its last report is at
+    most 15 min old (`PROGRESS_FRESH_SECONDS`, three missed reports). The
+    start must come after the last finish, and the report after that start.
+    **A run start alone is never a sign of life.** Every task marks its start,
+    so a task that dies before its heartbeat on every run would look alive
+    forever.
+  - `isStale()`: overdue and not running.
+- **`/api/health`:** stale comes from `isStale()`. While a run is reporting,
+  the entry carries `running` and `progressAgeSeconds`. Tasks that don't
+  report are unchanged.
+- **`bin/cto-signals.sh`:** a running collector reads «running, slow but
+  alive: last progress Ns ago».
+
+**Evidence** (compute: the collector image for the tests, the web image for
+tsc and lint):
+- `heartbeat-progress` (10 cases) and `aemet-forecast-queue` (new scenario
+  11) pass:
+  - the ~66 min run sends 13 reports, at most 5.7 min apart;
+  - the 5 h run that hits the cap sends 51, at most 6.0 min apart;
+  - the first report comes in the first minute;
+  - every report adds up: done + queued + lost = 197.
+- Web tsc 11, collector tsc 626, lint ratchet 182 = baseline.
+- **Each of 4 mutants fails a test:**
+  - a run start counted as a sign of life;
+  - a report on every municipality;
+  - overdue alone counted as stale;
+  - a new run that keeps the killed run's progress.
+
+**Deploy:** web via the webhook. Collectors: recreate `collector-daily`
+between the end of the 13:20Z run (~16:30Z) and the 19:20Z one, never
+mid-run. A recreate killed a run on 2026-10-19.
+
+**Gate:** during the 19:20Z run the aemet-forecast entry shows `running:
+true`, `progressAgeSeconds` < 900 and counts that grow. Once the run ends,
+both keys are gone.
+
+**Open, in order:**
+1. **L0:** merge this; recreate collector-daily outside a run; gate at 19:20Z.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L2:** #418 on /maritimo/buques/*: a shared Spanish date helper with
+   `timeZone: "Europe/Madrid"`, and the second text source.
+4. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+7. **L2:** the 118 internal `<a>` → `<Link>` (lowers the baseline).
+8. **L2, low:** `set-state-in-effect` / `purity`; `prefetch={false}` on long
+   link directories; dead exports (`GasStationPopup`, `FuelPriceTable`).
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (waiting on MJ's OK).
+10. **L3:** the index lastmod after 23-10.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (80) — the lint ratchet: eslint errors may go down, never up
 
 **#159 merged and gated** (`b2075aa9`, deployed 14:28Z), in a browser, all

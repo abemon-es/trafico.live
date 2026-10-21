@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { publicMeta } from "@/lib/health-meta";
+import { isStale, runState } from "@/lib/heartbeat-state";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -128,6 +129,10 @@ interface CollectorEntry {
   threshold: number;
   thresholdUndeclared?: boolean;
   stale: boolean;
+  /** Present while the current run reports progress: true when the last
+   *  report is fresh, so an overdue task is slow, not dead (heartbeat-state.ts). */
+  running?: boolean;
+  progressAgeSeconds?: number;
   errorMessage?: string | null;
   /** Structured reason the collector recorded (stored counts, failed sections,
    *  skipped sources...). Without this a `partial` carries no information and
@@ -189,7 +194,9 @@ async function checkHeartbeats(): Promise<{
       const ageSeconds = row.lastRunAt
         ? Math.floor((now - row.lastRunAt.getTime()) / 1000)
         : null;
-      const stale = ageSeconds === null || ageSeconds > threshold;
+      // Overdue but still reporting progress is a slow run, not a dead one.
+      const run = runState(row.meta, row.lastRunAt, now);
+      const stale = isStale(ageSeconds, threshold, run);
 
       return {
         task: row.task,
@@ -199,6 +206,9 @@ async function checkHeartbeats(): Promise<{
         threshold,
         ...(declared === undefined ? { thresholdUndeclared: true } : {}),
         stale,
+        ...(run.progressAgeSeconds !== null
+          ? { running: run.running, progressAgeSeconds: run.progressAgeSeconds }
+          : {}),
         ...(row.errorMessage ? { errorMessage: row.errorMessage } : {}),
         // Collectors have always written this; the response dropped it, so
         // every degraded status arrived unexplained (2026-08-24). Private keys
