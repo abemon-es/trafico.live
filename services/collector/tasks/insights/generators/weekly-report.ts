@@ -27,6 +27,7 @@ import {
   mdTable,
   INCIDENT_TYPE_NAMES,
   nationalFuel,
+  incidentCounts,
   num,
 } from "./shared";
 
@@ -43,74 +44,43 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
   weekAgoUTC.setUTCDate(weekAgoUTC.getUTCDate() - 7);
   const twoWeeksAgoUTC = new Date(todayUTC);
   twoWeeksAgoUTC.setUTCDate(twoWeeksAgoUTC.getUTCDate() - 14);
-  const yesterdayUTC = new Date(todayUTC);
-  yesterdayUTC.setUTCDate(yesterdayUTC.getUTCDate() - 1);
 
   // ── Queries ──────────────────────────────────────────────────────────────
-  const [
-    thisWeekStats,
-    lastWeekStats,
-    fuel,
-    provinceNameMap,
-  ] = await Promise.all([
-    prisma.dailyStats.findMany({
-      where: { dateStart: { gte: weekAgoUTC, lt: todayUTC } },
-      orderBy: { dateStart: "asc" },
-    }),
-    prisma.dailyStats.findMany({
-      where: { dateStart: { gte: twoWeeksAgoUTC, lt: weekAgoUTC } },
-      orderBy: { dateStart: "asc" },
-    }),
+  // Counted from TrafficIncident (one row per source situation) and
+  // V16BeaconEvent (one row per activation) over closed days. DailyStats sums
+  // hourly snapshots of the active set: «593.436 incidencias» a week were
+  // incident-hours, and «activaciones de balizas» beacon-hours.
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const start = new Date(weekAgoUTC);
+    start.setUTCDate(start.getUTCDate() + i);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 1);
+    return { start, end };
+  });
+  const [week, lastWeekTotal, thisWeekV16Total, perDay, fuel, provinceNameMap] = await Promise.all([
+    incidentCounts(prisma, weekAgoUTC, todayUTC),
+    prisma.trafficIncident.count({ where: { startedAt: { gte: twoWeeksAgoUTC, lt: weekAgoUTC } } }),
+    prisma.v16BeaconEvent.count({ where: { activatedAt: { gte: weekAgoUTC, lt: todayUTC } } }),
+    Promise.all(days.map((d) => prisma.trafficIncident.count({ where: { startedAt: { gte: d.start, lt: d.end } } }))),
     nationalFuel(prisma, todayUTC),
     getProvinceNameMap(prisma),
   ]);
 
-  if (thisWeekStats.length === 0) return 0;
+  if (week.total === 0) return 0;
 
-  // ── Aggregate this week ──────────────────────────────────────────────────
-  const thisWeekTotal = thisWeekStats.reduce((s, d) => s + d.incidentTotal, 0);
-  const lastWeekTotal = lastWeekStats.reduce((s, d) => s + d.incidentTotal, 0);
-  const thisWeekV16Total = thisWeekStats.reduce((s, d) => s + d.v16Total, 0);
-
-  // Aggregate byProvince across all days
-  const provinceAgg: Record<string, number> = {};
-  for (const day of thisWeekStats) {
-    const bp = (day.byProvince ?? {}) as Record<string, number>;
-    for (const [code, count] of Object.entries(bp)) {
-      provinceAgg[code] = (provinceAgg[code] ?? 0) + count;
-    }
-  }
-
-  // Aggregate byIncidentType across all days
-  const typeAgg: Record<string, number> = {};
-  for (const day of thisWeekStats) {
-    const bt = (day.byIncidentType ?? {}) as Record<string, number>;
-    for (const [type, count] of Object.entries(bt)) {
-      typeAgg[type] = (typeAgg[type] ?? 0) + count;
-    }
-  }
-
-  // Aggregate byHourOfDay across all days
-  const hourAgg: Record<number, number> = {};
-  for (const day of thisWeekStats) {
-    const bh = (day.byHourOfDay ?? {}) as Record<string, number>;
-    for (const [hour, count] of Object.entries(bh)) {
-      const h = Number(hour);
-      hourAgg[h] = (hourAgg[h] ?? 0) + count;
-    }
-  }
-
-  // Peak hour
-  const peakHourEntry = Object.entries(hourAgg).sort((a, b) => b[1] - a[1])[0];
-  const peakHour = peakHourEntry ? Number(peakHourEntry[0]) : null;
+  const thisWeekTotal = week.total;
+  const provinceAgg = week.byProvince;
+  const typeAgg = week.byType;
+  const peakHour = week.peakHour;
 
   // Best / worst day
   type DayRecord = { dateStart: Date; incidentTotal: number };
-  const worstDay = thisWeekStats.reduce<DayRecord | null>(
+  const dayRecords: DayRecord[] = days.map((d, i) => ({ dateStart: d.start, incidentTotal: perDay[i] }));
+  const worstDay = dayRecords.reduce<DayRecord | null>(
     (best, d) => (best == null || d.incidentTotal > best.incidentTotal ? d : best),
     null
   );
-  const bestDay = thisWeekStats.reduce<DayRecord | null>(
+  const bestDay = dayRecords.reduce<DayRecord | null>(
     (best, d) => (best == null || d.incidentTotal < best.incidentTotal ? d : best),
     null
   );
@@ -182,13 +152,13 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
 
   // Key metrics
   const metrics: string[] = [
-    `**${fmtInt(thisWeekTotal)}** incidencias totales esta semana`,
-    `**${fmtInt(lastWeekTotal)}** incidencias la semana anterior`,
+    `**${fmtInt(thisWeekTotal)}** incidencias nuevas esta semana`,
+    `**${fmtInt(lastWeekTotal)}** incidencias nuevas la semana anterior`,
     `**${fmtInt(thisWeekV16Total)}** activaciones de balizas V16`,
   ];
   if (peakHour != null) {
     metrics.push(
-      `Hora punta acumulada: **${String(peakHour).padStart(2, "0")}:00–${String(peakHour + 1).padStart(2, "0")}:00**`
+      `Hora en que empezaron más incidencias: **${String(peakHour).padStart(2, "0")}:00–${String(peakHour + 1).padStart(2, "0")}:00**`
     );
   }
   if (worstDay) {

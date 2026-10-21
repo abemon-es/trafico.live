@@ -24,6 +24,7 @@ import {
   mdTable,
   INCIDENT_TYPE_NAMES,
   nationalFuel,
+  incidentCounts,
   num,
 } from "./shared";
 
@@ -36,25 +37,23 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
   const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const yesterdayStart = new Date(todayStart);
   yesterdayStart.setUTCDate(yesterdayStart.getUTCDate() - 1);
-  const sevenDaysAgo = new Date(todayStart);
-  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+  // The report goes out just after 00:00Z, so it reports the day that has
+  // just closed (yesterday) against the 7 closed days before it: comparing the
+  // first minutes of today with full days read «10 nuevas hoy, -99.9 %».
+  const weekBeforeStart = new Date(yesterdayStart);
+  weekBeforeStart.setUTCDate(weekBeforeStart.getUTCDate() - 7);
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const [
     activeIncidents,
-    todayIncidents,
-    yesterdayIncidents,
+    yesterday,
     activeAlerts,
     fuel,
-    todayDailyStats,
-    sevenDayStartedCount,
+    weekBeforeCount,
     provinceNameMap,
   ] = await Promise.all([
     prisma.trafficIncident.count({ where: { isActive: true } }),
-    prisma.trafficIncident.count({ where: { startedAt: { gte: todayStart } } }),
-    prisma.trafficIncident.count({
-      where: { startedAt: { gte: yesterdayStart, lt: todayStart } },
-    }),
+    incidentCounts(prisma, yesterdayStart, todayStart),
     prisma.weatherAlert.findMany({
       where: { isActive: true },
       select: { severity: true, type: true, provinceName: true },
@@ -62,15 +61,9 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
       take: 20,
     }),
     nationalFuel(prisma, todayStart),
-    prisma.dailyStats.findFirst({
-      where: { dateStart: todayStart },
-    }),
-    // Same unit as todayIncidents: incidents STARTED per day. The previous
-    // source (DailyStats.incidentTotal) is a sum of hourly active-incident
-    // snapshots — incident-hours, ~24x larger — which produced summaries like
-    // "10 nuevas hoy (media 7d: 58.966)". Comparable numbers or none.
+    // Same unit as `yesterday`: incidents started, over 7 closed days.
     prisma.trafficIncident.count({
-      where: { startedAt: { gte: sevenDaysAgo, lt: todayStart } },
+      where: { startedAt: { gte: weekBeforeStart, lt: yesterdayStart } },
     }),
     getProvinceNameMap(prisma),
   ]);
@@ -92,13 +85,13 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
       : null;
 
   // ── 7-day average ────────────────────────────────────────────────────────
-  const avg7d = sevenDayStartedCount > 0 ? sevenDayStartedCount / 7 : null;
+  const yesterdayIncidents = yesterday.total;
+  const avg7d = weekBeforeCount > 0 ? weekBeforeCount / 7 : null;
 
-  // ── DailyStats breakdowns ────────────────────────────────────────────────
-  const byIncidentType = (todayDailyStats?.byIncidentType ?? {}) as Record<string, number>;
-  const byProvince = (todayDailyStats?.byProvince ?? {}) as Record<string, number>;
-  const peakHour: number | null = todayDailyStats?.peakHour ?? null;
-  const avgDurationSecs: number | null = todayDailyStats?.avgDurationSecs ?? null;
+  // ── Yesterday's breakdowns, from the same rows ───────────────────────────
+  const byIncidentType = yesterday.byType;
+  const byProvince = yesterday.byProvince;
+  const peakHour = yesterday.peakHour;
 
   // Top 5 provinces
   const topProvinces = Object.entries(byProvince)
@@ -121,15 +114,16 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
 
   let leadSentence: string;
   if (avg7d == null) {
-    leadSentence = `Hoy se registran **${fmtInt(todayIncidents)} incidencias** nuevas en las carreteras españolas.`;
+    leadSentence = `Ayer se registraron **${fmtInt(yesterdayIncidents)} incidencias** nuevas en las carreteras españolas.`;
   } else {
-    const ratio = todayIncidents / avg7d;
+    const ratio = yesterdayIncidents / avg7d;
+    const pct = fmtPct(((yesterdayIncidents - avg7d) / avg7d) * 100);
     if (ratio >= 1.25) {
-      leadSentence = `La jornada de hoy es **más intensa de lo habitual**: ${fmtInt(todayIncidents)} incidencias frente a una media de ${fmtInt(avg7d)} en los últimos 7 días (${fmtPct(((todayIncidents - avg7d) / avg7d) * 100)}).`;
+      leadSentence = `Ayer fue una jornada **más intensa de lo habitual**: ${fmtInt(yesterdayIncidents)} incidencias nuevas frente a una media de ${fmtInt(avg7d)} en los 7 días anteriores (${pct}).`;
     } else if (ratio <= 0.75) {
-      leadSentence = `Jornada **tranquila en carretera**: solo ${fmtInt(todayIncidents)} incidencias hoy, por debajo de la media de ${fmtInt(avg7d)} de los últimos 7 días (${fmtPct(((todayIncidents - avg7d) / avg7d) * 100)}).`;
+      leadSentence = `Ayer fue una jornada **tranquila en carretera**: ${fmtInt(yesterdayIncidents)} incidencias nuevas, por debajo de la media de ${fmtInt(avg7d)} de los 7 días anteriores (${pct}).`;
     } else {
-      leadSentence = `Tráfico **dentro de lo normal** hoy: ${fmtInt(todayIncidents)} incidencias, próximo a la media de ${fmtInt(avg7d)} de los últimos 7 días.`;
+      leadSentence = `Ayer, tráfico **dentro de lo normal**: ${fmtInt(yesterdayIncidents)} incidencias nuevas, próximo a la media de ${fmtInt(avg7d)} de los 7 días anteriores.`;
     }
   }
 
@@ -156,11 +150,6 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
   const peakHourStr =
     peakHour != null
       ? `**${String(peakHour).padStart(2, "0")}:00–${String(peakHour + 1).padStart(2, "0")}:00**`
-      : "N/D";
-
-  const avgDurStr =
-    avgDurationSecs != null
-      ? `${Math.round(avgDurationSecs / 60)} min`
       : "N/D";
 
   // ── Weather section ──────────────────────────────────────────────────────
@@ -190,13 +179,11 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
   sections.push(`### Incidencias
 
 - **${fmtInt(activeIncidents)}** incidencias activas en este momento
-- **${fmtInt(todayIncidents)}** incidencias nuevas registradas hoy
-- **${fmtInt(yesterdayIncidents)}** incidencias registradas ayer
-- Duración media: ${avgDurStr}${avg7d != null ? `\n- Media últimos 7 días: **${fmtInt(avg7d)}** incidencias/día` : ""}`);
+- **${fmtInt(yesterdayIncidents)}** incidencias nuevas ayer${avg7d != null ? `\n- Media de los 7 días anteriores: **${fmtInt(avg7d)}** incidencias nuevas al día` : ""}`);
 
   // Type breakdown
   if (typeTableRows.length > 0) {
-    sections.push(`### Tipo de incidencia
+    sections.push(`### Tipo de incidencia (nuevas ayer)
 
 ${mdTable(
   ["Tipo", "Incidencias", "% del total"],
@@ -207,7 +194,7 @@ ${mdTable(
 
   // Top provinces
   if (provinceTableRows.length > 0) {
-    sections.push(`### Provincias con más incidencias
+    sections.push(`### Provincias con más incidencias nuevas ayer
 
 ${mdTable(
   ["#", "Provincia", "Incidencias"],
@@ -219,7 +206,7 @@ ${mdTable(
   // Peak hour
   sections.push(`### Hora punta
 
-La hora con mayor concentración de incidencias hoy ha sido ${peakHourStr}.`);
+La hora en que empezaron más incidencias ayer fue ${peakHourStr}.`);
 
   // Fuel prices
   const dieselDeltaStr = dieselDelta != null ? ` (${fmtPct(dieselDelta)} vs ayer)` : "";
@@ -270,7 +257,7 @@ Sin alertas meteorológicas activas en este momento.`);
   const body = sections.join("\n\n");
 
   const title = `Informe de tráfico — ${dateStr}`;
-  const summary = `${fmtInt(activeIncidents)} incidencias activas, ${fmtInt(todayIncidents)} nuevas hoy${avg7d != null ? ` (media 7d: ${fmtInt(avg7d)})` : ""}. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
+  const summary = `${fmtInt(activeIncidents)} incidencias activas, ${fmtInt(yesterdayIncidents)} nuevas ayer${avg7d != null ? ` (media de los 7 días anteriores: ${fmtInt(avg7d)})` : ""}. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
 
   const category: ArticleCategory = "DAILY_REPORT";
 
