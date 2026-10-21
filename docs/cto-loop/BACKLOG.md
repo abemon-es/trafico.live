@@ -90,6 +90,84 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (67) — the location pages' cards were white in dark mode
+
+**#146 merged and verified** (`3a3a5ed8`, deployed 08:05Z):
+- 14 pages × 2 parallel browsers, new page per path: **14/14**. The
+  registration is `/sw.js`, with one controller change on the first page (the
+  initial claim) and 0 after, and the tile cache is kept.
+- `/sw.js` comes out of the edge with `s-maxage=60, stale-while-revalidate=120`
+  (a hotfix reaches visitors within ~3 min); `tile-sw.js` and `offline.html`
+  give 404.
+- dark-scan on the 14 pages: all scanned, no retry, 17 s (103 s before).
+- Proxy 499s with duration 0, the hour before vs after: to server-28 at 09:06Z.
+
+**GlitchTip IH («Expected RSC response, got text/plain», 14 events) is the
+edge's 429 on link prefetches**, already fixed:
+- 14–18 Oct: the edge limited 11,820 RSC prefetches from 215 external clients,
+  most from /trenes/incidencias, / and the fuel-price pages.
+- The edge fix of 18-10 (burst 20 → 60) brought them to 62 on the 19th and 0
+  since. IH's last event was 19-10 05:50Z.
+- Proposed to server-28: resolve IH with this cause.
+
+**Signal:** with dark-scan reliable, the 8 location pages (community,
+province, municipality) had **70 light islands** in dark mode: the white
+section cards and the light section-nav item. There were also 211
+low-contrast texts, the grey text inside those white cards. Dark on dark: 0.
+
+**Fix, batch 1 of the location cards: `src/components/location/**`** (33
+files, the shell and every section):
+- **535 class strings get the site's own dark pairs:**
+  - bg-white → gray-900;
+  - gray-50/100/200 → 800/50, 800, 700;
+  - 50/100 tints → 900/20, 900/30;
+  - borders → 800;
+  - grey text 900…400 → 100…500;
+  - coloured text 600/700/800 → 400/300/200;
+  - hovers → `dark:hover:`.
+- Text gets a dark colour only where its own background turns dark too.
+  Deliberately light swatches and badges (heat-map cells, `bg-red-200` badges,
+  bullet dots) keep their colours.
+- **Light mode is untouched by construction:** with every `dark:` token
+  removed, all 33 files are byte-identical to main.
+- **Pattern test (rule 7)** in `tests/dark-mode-sweep.test.ts`: in finished
+  batches (`DARK_DONE`), a light background or dark grey text with no dark
+  pair fails.
+  - Mutant: one card without its pairs → the test names its line.
+  - Each later batch adds its directory.
+
+**Evidence:** dark-mode-sweep (rules 1–7), theme-pre-paint, camera-images and
+service-worker pass. Web tsc 11, at baseline. eslint: 3 errors, all
+`<a>`-instead-of-`<Link>` on main at the same lines, not from this change.
+
+**Gate after deploy:** dark-scan on the same 8 pages; islands from these
+components 70 → ~0 and dark on dark still 0. Then batch 2: the province
+sub-pages (`src/app/espana/[community]/[province]/*`, 37 white cards).
+
+**Open, in order:**
+1. **L2:** merge this; dark-scan gate after the deploy; then batch 2.
+2. **L3:** #145 after 2 gas-station runs (11:00Z and 18:00Z).
+3. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+4. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+5. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen», the remaining tints.
+6. **L2, low:** 3 internal links as `<a>` in the location sections (air
+   quality, airports, railway): eslint errors on main.
+7. **L3:** dead cameras in the map popups (`tile_cameras`).
+8. **Perf, low:** long link lists prefetch every link (/radares sends 120
+   RSC requests per visit); consider `prefetch={false}` on the directories.
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (merged, waiting on MJ's OK).
+10. **Accessibility:** grey on white under 3:1.
+11. **L3:** the index lastmod after 23-10.
+12. **L1, low:** Euskadi id collisions.
+13. **Hygiene:** scrub the pre-October backlog entries.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (66) — two service workers on one scope: every page load swapped them, and some pages never loaded
 
 **#145 merged** (`197d933b`); web and collectors are deployed. The first
