@@ -90,6 +90,77 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (73) — coloured dark text with no dark pair: rule 7 only looked at grey
+
+**#152 merged and gated** (`d24a4dca`, deployed 11:32Z), on the same 14 pages:
+- low contrast 14 → 0 (/alertas-meteo 13 → 0, /zbe 1 → 0);
+- islands: the «Suscribir» exception only;
+- dark on dark 5 → 7. The 2 extra are /gasolineras/marcas's highlight cards
+  (lines 208/234), which #152 didn't touch: they depend on data, and they
+  weren't rendered when the baseline ran. They're this item.
+
+**Signal:** the gaps from #152's baseline. On pages no earlier batch had
+scanned there were coloured dark texts on dark: /gasolineras/baratas/madrid
+(`text-orange-800`, `text-purple-900`, `text-green-900`) and
+/gasolineras/cerca (`text-red-800`). Rule 7 only flagged *grey* dark text
+with no pair.
+
+Site-wide: **40 coloured texts 700–900 with no dark pair on an element with no
+background of its own**, in 22 files. These sit on their parent's background,
+which is dark in dark mode. An element that sets its own background
+(`bg-yellow-400 text-yellow-900`, 5 cases) is a colour pair, readable in both
+themes, and stays.
+
+**Fix:**
+- The 40 get the site's pair: 700 → 300, 800 → 200, 900 → 100.
+- `GasStationPopup` (4) is dead code, exported and never imported. It's paired
+  like the rest of its own classes, with no visible effect. If it's revived
+  inside a MapLibre popup, the theme there is `trafico-popup-dark` (set from
+  the map's theme), so the pair would hang off that selector, not `dark:`
+  (server-28).
+- **Rule 7** adds coloured dark text (700–900, not grey) with no dark pair and
+  no background of its own. Mutant: marcas's cheapest-brand card without its
+  pair → `gasolineras/marcas/page.tsx:208`.
+
+**Evidence:** light mode byte-identical without the `dark:` tokens (22/22).
+dark-mode-sweep, theme-pre-paint, camera-images, service-worker and
+sitemap-lastmod pass; web tsc 11.
+
+**Gate:** dark-scan on 18 pages, including /gasolineras/marcas with its
+highlight cards forced (the script checks that «Marca más barata» is in the
+served HTML before scanning, warming the page until it is).
+- Baseline: the cards render (first try). **Dark on dark 26**: /carreteras/A-6
+  10 (the incident list), /gasolineras/baratas/madrid 4, /gasolineras/marcas 2,
+  /restricciones 2, /gasolineras/precios/madrid 2, /sobre 2, and 1 each on
+  /gasolineras/cerca, /gasolineras/mapa, /operaciones and /calidad-aire.
+  Islands 2 (the «Suscribir» exception). Low contrast 1.
+- Every one of the 26 maps to one of the 40 strings, so after the deploy:
+  **26 → 0**, and no new islands or low contrast.
+
+**Open, in order:**
+1. **L2:** merge this; gate after the deploy.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+7. **L2, low:** the eslint errors on main.
+8. **L3:** dead cameras in the map popups (`tile_cameras`).
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Hygiene:** `GasStationPopup` and other dead exports; scrub the
+    pre-October backlog entries.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (72) — white text on 51 badges, buttons and cards that never reached 4.5:1
 
 **#151 merged and gated** (`5ea6002c`, deployed 11:09Z).
