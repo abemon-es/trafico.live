@@ -88,6 +88,40 @@ export async function nationalFuel(prisma: PrismaClient, onOrBefore: Date): Prom
   return { latest, before };
 }
 
+export interface IncidentCounts {
+  total: number;
+  byType: Record<string, number>;
+  /** By province code. */
+  byProvince: Record<string, number>;
+  /** The Madrid hour (0-23) in which most of them started, or null. */
+  peakHour: number | null;
+}
+
+/**
+ * Incidents that started in [from, to), one row per source situation: the unit
+ * «incidencias» means. DailyStats sums hourly snapshots of the active set
+ * (incident-hours), which read as «593.436 incidencias» in a week. Reports
+ * count closed periods only, so like is compared with like.
+ */
+export async function incidentCounts(prisma: PrismaClient, from: Date, to: Date): Promise<IncidentCounts> {
+  const where = { startedAt: { gte: from, lt: to } };
+  const [total, byType, byProvince, peak] = await Promise.all([
+    prisma.trafficIncident.count({ where }),
+    prisma.trafficIncident.groupBy({ by: ["type"], where, _count: { _all: true } }),
+    prisma.trafficIncident.groupBy({ by: ["province"], where: { ...where, province: { not: null } }, _count: { _all: true } }),
+    prisma.$queryRaw<{ h: number }[]>`
+      SELECT EXTRACT(HOUR FROM "startedAt" AT TIME ZONE 'Europe/Madrid')::int AS h
+      FROM "TrafficIncident" WHERE "startedAt" >= ${from} AND "startedAt" < ${to}
+      GROUP BY 1 ORDER BY count(*) DESC, 1 LIMIT 1`,
+  ]);
+  return {
+    total,
+    byType: Object.fromEntries(byType.map((r) => [r.type, r._count._all])),
+    byProvince: Object.fromEntries(byProvince.map((r) => [r.province as string, r._count._all])),
+    peakHour: peak[0]?.h ?? null,
+  };
+}
+
 /** A stored average as a number, or null. */
 export function num(v: unknown): number | null {
   return v == null ? null : Number(v);
