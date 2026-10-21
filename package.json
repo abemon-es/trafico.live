@@ -40,6 +40,7 @@
     "test:final-urls": "tsx tests/internal-links-final-urls.test.ts",
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",
     "test:reports": "tsx tests/reports-closed-days.test.ts",
+    "test:vehicle-stops": "tsx tests/vehicle-stops.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

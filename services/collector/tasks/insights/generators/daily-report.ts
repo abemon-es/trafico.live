@@ -25,6 +25,8 @@ import {
   INCIDENT_TYPE_NAMES,
   nationalFuel,
   incidentCounts,
+  countIncidents,
+  activeCounts,
   num,
 } from "./shared";
 
@@ -52,7 +54,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     weekBeforeCount,
     provinceNameMap,
   ] = await Promise.all([
-    prisma.trafficIncident.count({ where: { isActive: true } }),
+    activeCounts(prisma),
     incidentCounts(prisma, yesterdayStart, todayStart),
     prisma.weatherAlert.findMany({
       where: { isActive: true },
@@ -62,9 +64,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     }),
     nationalFuel(prisma, todayStart),
     // Same unit as `yesterday`: incidents started, over 7 closed days.
-    prisma.trafficIncident.count({
-      where: { startedAt: { gte: weekBeforeStart, lt: yesterdayStart } },
-    }),
+    countIncidents(prisma, weekBeforeStart, yesterdayStart),
     getProvinceNameMap(prisma),
   ]);
 
@@ -85,8 +85,11 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
       : null;
 
   // ── 7-day average ────────────────────────────────────────────────────────
+  // Incidents and vehicle stops apart (src/lib/vehicle-stops.ts), the same
+  // split on every figure: active, yesterday and the 7 days before.
   const yesterdayIncidents = yesterday.total;
   const avg7d = weekBeforeCount > 0 ? weekBeforeCount / 7 : null;
+  const active = activeIncidents.incidents;
 
   // ── Yesterday's breakdowns, from the same rows ───────────────────────────
   const byIncidentType = yesterday.byType;
@@ -132,8 +135,10 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     .sort((a, b) => b[1] - a[1])
     .filter(([, count]) => count > 0);
 
-  const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) || 1;
-  const typeTableRows = typeEntries.map(([type, count]) => [
+  // The type table adds the vehicle stops as their own row, so incidents plus
+  // vehicle stops is the whole: nothing hidden.
+  const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) + yesterday.vehicleStops || 1;
+  const typeTableRows = [...typeEntries, ["VEHICLE_STOPS", yesterday.vehicleStops] as [string, number]].filter(([, c]) => c > 0).map(([type, count]) => [
     INCIDENT_TYPE_NAMES[type] ?? type,
     String(count),
     fmtPct((count / totalTyped) * 100).replace("+", ""),
@@ -178,8 +183,9 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
   // Incident summary
   sections.push(`### Incidencias
 
-- **${fmtInt(activeIncidents)}** incidencias activas en este momento
-- **${fmtInt(yesterdayIncidents)}** incidencias nuevas ayer${avg7d != null ? `\n- Media de los 7 días anteriores: **${fmtInt(avg7d)}** incidencias nuevas al día` : ""}`);
+- **${fmtInt(active)}** incidencias activas en este momento
+- **${fmtInt(yesterdayIncidents)}** incidencias nuevas ayer${avg7d != null ? `\n- Media de los 7 días anteriores: **${fmtInt(avg7d)}** incidencias nuevas al día` : ""}
+- Vehículos detenidos (balizas V16 y averías): **${fmtInt(yesterday.vehicleStops)}** nuevos ayer, **${fmtInt(activeIncidents.vehicleStops)}** activos ahora`);
 
   // Type breakdown
   if (typeTableRows.length > 0) {
@@ -257,7 +263,7 @@ Sin alertas meteorológicas activas en este momento.`);
   const body = sections.join("\n\n");
 
   const title = `Informe de tráfico — ${dateStr}`;
-  const summary = `${fmtInt(activeIncidents)} incidencias activas, ${fmtInt(yesterdayIncidents)} nuevas ayer${avg7d != null ? ` (media de los 7 días anteriores: ${fmtInt(avg7d)})` : ""}. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
+  const summary = `${fmtInt(active)} incidencias activas, ${fmtInt(yesterdayIncidents)} nuevas ayer${avg7d != null ? ` (media de los 7 días anteriores: ${fmtInt(avg7d)})` : ""}, y ${fmtInt(yesterday.vehicleStops)} vehículos detenidos. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
 
   const category: ArticleCategory = "DAILY_REPORT";
 

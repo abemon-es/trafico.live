@@ -28,6 +28,7 @@ import {
   INCIDENT_TYPE_NAMES,
   nationalFuel,
   incidentCounts,
+  countIncidents,
   num,
 } from "./shared";
 
@@ -59,9 +60,9 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
   });
   const [week, lastWeekTotal, thisWeekV16Total, perDay, fuel, provinceNameMap] = await Promise.all([
     incidentCounts(prisma, weekAgoUTC, todayUTC),
-    prisma.trafficIncident.count({ where: { startedAt: { gte: twoWeeksAgoUTC, lt: weekAgoUTC } } }),
+    countIncidents(prisma, twoWeeksAgoUTC, weekAgoUTC),
     prisma.v16BeaconEvent.count({ where: { activatedAt: { gte: weekAgoUTC, lt: todayUTC } } }),
-    Promise.all(days.map((d) => prisma.trafficIncident.count({ where: { startedAt: { gte: d.start, lt: d.end } } }))),
+    Promise.all(days.map((d) => countIncidents(prisma, d.start, d.end))),
     nationalFuel(prisma, todayUTC),
     getProvinceNameMap(prisma),
   ]);
@@ -140,7 +141,8 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
     }));
 
   // ── Type breakdown ────────────────────────────────────────────────────────
-  const typeEntries = Object.entries(typeAgg)
+  // Vehicle stops as their own row: incidents plus vehicle stops is the whole.
+  const typeEntries = [...Object.entries(typeAgg), ["VEHICLE_STOPS", week.vehicleStops] as [string, number]]
     .sort((a, b) => b[1] - a[1])
     .filter(([, c]) => c > 0);
   const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) || 1;
@@ -154,6 +156,7 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
   const metrics: string[] = [
     `**${fmtInt(thisWeekTotal)}** incidencias nuevas esta semana`,
     `**${fmtInt(lastWeekTotal)}** incidencias nuevas la semana anterior`,
+    `**${fmtInt(week.vehicleStops)}** vehículos detenidos (balizas V16 y averías) esta semana`,
     `**${fmtInt(thisWeekV16Total)}** activaciones de balizas V16`,
   ];
   if (peakHour != null) {
