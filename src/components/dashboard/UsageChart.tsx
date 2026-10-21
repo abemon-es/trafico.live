@@ -40,9 +40,9 @@ interface UsageData {
 }
 
 function formatDateLabel(dateStr: string, range: Range): string {
-  const d = new Date(dateStr + "T12:00:00");
-  if (range === "7d") return new Intl.DateTimeFormat("es-ES", { weekday: "short" }).format(d);
-  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(d);
+  const d = new Date(dateStr + "T12:00:00Z");
+  if (range === "7d") return new Intl.DateTimeFormat("es-ES", { weekday: "short", timeZone: "Europe/Madrid" }).format(d);
+  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" }).format(d);
 }
 
 function downloadCsv(data: UsageData) {

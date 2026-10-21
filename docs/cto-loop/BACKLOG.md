@@ -90,6 +90,94 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (82) — React #418 on the vessel pages: client dates in the browser's time zone
+
+**#161 merged and deployed** (`9084f61e`, web and collectors). Recreating
+collector-daily cut no run: the 13:20Z aemet-forecast run ended at ~15:51Z
+with 171/197 municipalities. `/api/health` is healthy, with 0 stale and 0
+SILENT. The 19:20Z run is the first one with the progress heartbeat; its gate
+is still to do.
+
+**Correction to cycle 80:** «the server renders in UTC (measured)» was
+wrong. The web container runs with `TZ=Europe/Madrid`: a date at 23:30Z
+renders «08 oct» there. So there's no «second text source»: the only cause
+is the time zone, and only browsers outside peninsular time see it.
+
+**Signal:** a browser test with JS off vs on, /api/ blocked, on
+`/maritimo/buques/215241000-azra-theresa`:
+- **Before** (5 zones): #418 in UTC, New York and Tokyo; Madrid and Canary
+  are fine.
+- The only text that changes is the voyage and port dates. The server renders
+  «08 oct 2026», and a browser west of Madrid renders the 7th.
+- **Cause:** 48 date-formatting calls in 34 client components had no
+  `timeZone`, so at hydration they formatted in the browser's zone. The other
+  pages checked load their dates over SWR after hydration, so they didn't
+  throw. Even so, they showed a visitor abroad (or a crawler) the time in
+  their own zone.
+
+**Fix:**
+- **`timeZone: "Europe/Madrid"`** (already the codebase's idiom, in 34 places)
+  added to the 48 calls: toLocaleDateString, toLocaleTimeString,
+  Intl.DateTimeFormat, and toLocaleString on a date. A transform added it to
+  each options object (single-line, multi-line or none) and stopped on any
+  shape it didn't know.
+- **Calendar dates built at the browser's local midnight or noon:**
+  `gasolineras/historico` (`x + "T00:00:00"` → `new Date(x)`, which is UTC
+  midnight and the same day in Madrid) and `UsageChart` (`T12:00:00` →
+  `T12:00:00Z`).
+- **Local getters on a UTC date:**
+  - `TimeSeriesChart`: `getDay()` → `getUTCDay()`;
+  - `ClimateChart`: `getMonth()` → `getUTCMonth()`.
+  - Both were a day or a month off in the Americas.
+- **`StationBoard`:** train times came from `getHours()` in the browser's
+  zone, so a Canary visitor saw peninsular trains an hour off. They now use
+  toLocaleTimeString in Madrid time.
+- **Guard `tests/client-timezone.test.ts`** (`npm run test:client-timezone`),
+  in every "use client" file:
+  - every date-formatting call names a timeZone;
+  - no calendar date is built at local time;
+  - a parser self-test, and a floor of ≥ 50 calls found (60 today) so the
+    guard can't go vacuous.
+
+**Evidence** (compute):
+- the guard passes on 60 calls; dark-mode-sweep and theme-pre-paint pass;
+- web tsc 11 (baseline, none on a changed line); lint ratchet 182 = baseline;
+- **each of 3 mutants fails the guard on the right line:**
+  - VoyageTable without its zone;
+  - CameraModal back to a bare toLocaleTimeString;
+  - gasolineras/historico back to `T00:00:00`.
+
+**Gate after deploy:** the same 6 pages × 5 zones. The vessel page goes ok in
+all 5, with no served text lost. The other 5 stay ok.
+
+**Not covered, follow-up (L2, low):**
+- getters on «now» that are calendar arithmetic, not display:
+  - the period start dates in `historico`/`estadisticas`, built at local
+    midnight (check whether they reach the API through `toISOString`, which
+    in Madrid gives the previous day);
+  - `route-overlay`'s current hour/day.
+
+**Open, in order:**
+1. **L2:** merge this; zone gate on the 6 pages.
+2. **L0:** aemet-forecast gate on the 19:20Z run (running, progressAgeSeconds
+   < 900, growing counts).
+3. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+4. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+7. **L2:** the 118 internal `<a>` → `<Link>` (lowers the baseline).
+8. **L2, low:** the «now» getters above; `set-state-in-effect` / `purity`;
+   `prefetch={false}` on long link directories; dead exports.
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (waiting on MJ's OK).
+10. **L3:** the index lastmod after 23-10.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (81) — a slow aemet-forecast run read as dead: a progress heartbeat
 
 **#160 merged and gated** (`04127b4f`). The build log shows «[lint-ratchet]

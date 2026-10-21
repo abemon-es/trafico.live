@@ -144,7 +144,7 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
 
           <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
             <span>
-              Última actualización: {lastRefresh.toLocaleTimeString("es-ES")}
+              Última actualización: {lastRefresh.toLocaleTimeString("es-ES", { timeZone: "Europe/Madrid" })}
             </span>
 
             {/* View on map */}

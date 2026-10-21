@@ -191,7 +191,7 @@ export function IncidenciasContent() {
               {data?.lastUpdated && (
                 <div className="text-xs text-gray-400">
                   Actualizado:{" "}
-                  {new Date(data.lastUpdated).toLocaleTimeString("es-ES")}
+                  {new Date(data.lastUpdated).toLocaleTimeString("es-ES", { timeZone: "Europe/Madrid" })}
                 </div>
               )}
             </div>
@@ -441,6 +441,7 @@ function IncidentListItem({
                 month: "short",
                 hour: "2-digit",
                 minute: "2-digit",
+                timeZone: "Europe/Madrid",
               })}
             </span>
           </div>

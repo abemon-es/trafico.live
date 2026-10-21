@@ -141,7 +141,7 @@ function DailyTrendChart({
         {data.map((day, idx) => {
           const height = (day.count / maxCount) * 100;
           const date = new Date(day.date);
-          const dayLabel = date.toLocaleDateString("es-ES", { weekday: "short" });
+          const dayLabel = date.toLocaleDateString("es-ES", { weekday: "short", timeZone: "Europe/Madrid" });
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div

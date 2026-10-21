@@ -299,7 +299,7 @@ function DailyTrendChart({
         {data.map((day, idx) => {
           const height = maxCount > 0 ? (day.v16Count / maxCount) * 100 : 0;
           const date = new Date(day.date);
-          const dayLabel = date.toLocaleDateString("es-ES", { weekday: "short" });
+          const dayLabel = date.toLocaleDateString("es-ES", { weekday: "short", timeZone: "Europe/Madrid" });
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div
@@ -639,6 +639,7 @@ export function HistoricoContent() {
                 day: "numeric",
                 month: "long",
                 year: "numeric",
+                timeZone: "Europe/Madrid",
               })}
             </span>
           </div>
@@ -660,6 +661,7 @@ export function HistoricoContent() {
                 <span className="font-data">{new Date(realtimeData.lastUpdated).toLocaleTimeString("es-ES", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "Europe/Madrid",
                 })}</span>
                 )
               </span>
@@ -741,6 +743,7 @@ export function HistoricoContent() {
                 ? new Date(dailyData.data.peak.date).toLocaleDateString("es-ES", {
                     day: "numeric",
                     month: "short",
+                    timeZone: "Europe/Madrid",
                   })
                 : "-"
             }

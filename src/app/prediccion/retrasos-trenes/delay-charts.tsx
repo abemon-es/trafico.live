@@ -142,6 +142,7 @@ export function TrendChart({ data }: { data: TrendDay[] }) {
     date: new Date(d.date).toLocaleDateString("es-ES", {
       day: "numeric",
       month: "short",
+      timeZone: "Europe/Madrid",
     }),
     punctuality: d.punctualityRate,
     delay: d.avgDelay,

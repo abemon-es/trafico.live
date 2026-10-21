@@ -72,6 +72,7 @@ function HistoryTooltip(props: TooltipContentProps<ValueType, NameType>) {
   const formatted = d.toLocaleDateString("es-ES", {
     month: "long",
     year: "numeric",
+    timeZone: "Europe/Madrid",
   });
 
   return (
@@ -158,6 +159,7 @@ export function HistoryChart({ data }: { data: HistoryPoint[] }) {
       shortLabel: dt.toLocaleDateString("es-ES", {
         month: "short",
         year: "2-digit",
+        timeZone: "Europe/Madrid",
       }),
       diesel: d.diesel,
       gasolina: d.gasolina,

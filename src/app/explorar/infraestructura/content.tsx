@@ -479,7 +479,7 @@ export default function InfraestructuraContent() {
                     </p>
                     {zone.effectiveFrom && (
                       <p className="text-gray-500 dark:text-gray-400">
-                        Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES")}
+                        Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" })}
                       </p>
                     )}
                     {zone.fineAmount > 0 && (

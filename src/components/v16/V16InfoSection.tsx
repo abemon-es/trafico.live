@@ -268,6 +268,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
               day: "numeric",
               month: "long",
               year: "numeric",
+              timeZone: "Europe/Madrid",
             })}
           </p>
         )}

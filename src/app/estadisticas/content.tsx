@@ -613,7 +613,7 @@ function V16DailyTrendChart({
         {data.map((day, idx) => {
           const height = maxCount > 0 ? (day.v16Count / maxCount) * 100 : 0;
           const date = new Date(day.date);
-          const dayLabel = date.toLocaleDateString("es-ES", { weekday: "short" });
+          const dayLabel = date.toLocaleDateString("es-ES", { weekday: "short", timeZone: "Europe/Madrid" });
           return (
             <div key={idx} className="flex-1 flex flex-col items-center">
               <div
@@ -1221,6 +1221,7 @@ function V16Section() {
               day: "numeric",
               month: "long",
               year: "numeric",
+              timeZone: "Europe/Madrid",
             })}
           </span>
         </div>
@@ -1242,6 +1243,7 @@ function V16Section() {
               <span className="font-data">{new Date(realtimeData.lastUpdated).toLocaleTimeString("es-ES", {
                 hour: "2-digit",
                 minute: "2-digit",
+                timeZone: "Europe/Madrid",
               })}</span>
               )
             </span>
@@ -1321,6 +1323,7 @@ function V16Section() {
               ? new Date(dailyData.data.peak.date).toLocaleDateString("es-ES", {
                   day: "numeric",
                   month: "short",
+                  timeZone: "Europe/Madrid",
                 })
               : "-"
           }
@@ -2046,10 +2049,10 @@ function CorrelacionSection({
                       {corr.timeDiffMinutes === 0 ? "Durante" : `${corr.timeDiffMinutes} min`}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 font-data">
-                      {new Date(corr.v16Time).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(corr.v16Time).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 font-data">
-                      {new Date(corr.incidentTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(corr.incidentTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{corr.province || "-"}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{corr.road || "-"}</td>
