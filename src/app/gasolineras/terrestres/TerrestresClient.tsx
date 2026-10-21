@@ -263,7 +263,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
                 onClick={() => setFuelFilter(opt.value)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                   fuelFilter === opt.value
-                    ? "bg-orange-600 text-white border-orange-600"
+                    ? "bg-orange-700 text-white border-orange-700"
                     : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700 hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400"
                 }`}
               >
@@ -283,7 +283,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
             <Filter className="w-5 h-5" />
             Filtros
             {activeFilterCount > 0 && (
-              <span className="flex items-center justify-center w-5 h-5 bg-orange-600 text-white text-xs rounded-full font-bold">
+              <span className="flex items-center justify-center w-5 h-5 bg-orange-700 text-white text-xs rounded-full font-bold">
                 {activeFilterCount}
               </span>
             )}

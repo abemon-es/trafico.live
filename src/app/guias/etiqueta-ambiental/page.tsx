@@ -451,7 +451,7 @@ export default function GuiaEtiquetaAmbientalPage() {
               <div className="mt-10 mb-8 space-y-3">
                 <Link
                   href="/etiqueta-ambiental"
-                  className="flex items-center justify-between bg-teal-600 hover:bg-teal-700 text-white rounded-xl p-5 transition-colors"
+                  className="flex items-center justify-between bg-teal-700 hover:bg-teal-800 text-white rounded-xl p-5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Tag className="w-7 h-7" />

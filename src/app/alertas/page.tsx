@@ -163,7 +163,7 @@ export default function AlertasPage() {
           </div>
           <Link
             href="/api-docs#premium"
-            className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-tl-amber-500 text-white hover:bg-tl-amber-600 transition-colors"
+            className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-tl-amber-600 text-white hover:bg-tl-amber-700 transition-colors"
           >
             Ver planes
           </Link>

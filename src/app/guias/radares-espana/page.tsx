@@ -496,7 +496,7 @@ export default async function GuiaRadaresPage() {
               <div className="mt-10 mb-8">
                 <Link
                   href="/radares"
-                  className="flex items-center justify-between bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl p-5 transition-colors"
+                  className="flex items-center justify-between bg-yellow-700 hover:bg-yellow-800 text-white rounded-xl p-5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Radar className="w-7 h-7" />

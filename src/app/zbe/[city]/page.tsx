@@ -748,7 +748,7 @@ export default async function ZBECityPage({ params }: Props) {
                     {
                       label: "0 Emisiones",
                       sub: "Eléctrico / Hidrógeno",
-                      labelColor: "bg-teal-600 text-white",
+                      labelColor: "bg-teal-700 text-white",
                       value: cfg.access.label0,
                     },
                     {
@@ -772,7 +772,7 @@ export default async function ZBECityPage({ params }: Props) {
                     {
                       label: "Sin etiqueta",
                       sub: "Vehículos antiguos",
-                      labelColor: "bg-gray-400 text-white",
+                      labelColor: "bg-gray-500 text-white",
                       value: cfg.access.sinEtiqueta,
                     },
                   ] as Array<{

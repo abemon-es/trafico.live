@@ -43,6 +43,11 @@
  *    and badges of the API pages read poorly until 2026-10-21. Under white text
  *    the background is `--tl-primary-solid` (the same blue in both themes,
  *    6.97:1), and its hover `--tl-primary-solid-hover`.
+ *    8b. White text on any background lighter than the lightest shade where
+ *    white reaches 4.5:1 (small text) or 3:1 (large: text-2xl and up, or
+ *    text-xl bold), measured in Chromium with Tailwind v4's oklch and the tl-*
+ *    hex. 51 badges, buttons and cards (rankings, train brands, guide cards,
+ *    tl-amber-500 at 4.46:1) failed until 2026-10-21.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -183,12 +188,40 @@ assert.ok(!primaryUnderWhite('"bg-[color:var(--tl-primary-solid)] hover:bg-[colo
 assert.ok(!primaryUnderWhite('"h-full rounded-full bg-[var(--tl-primary)] transition-all"'), "a bar with no text");
 assert.ok(!primaryUnderWhite('"text-[var(--tl-primary)] hover:underline"'), "the link colour is still --tl-primary");
 
+/** 8b: the lightest shade of each family where white text passes (measured 2026-10-21). */
+const WHITE_MIN_SMALL: Record<string, number> = {
+  red: 600, orange: 700, amber: 700, yellow: 700, lime: 700, green: 700, emerald: 700, teal: 700, cyan: 700, sky: 700,
+  blue: 600, indigo: 500, violet: 600, purple: 600, fuchsia: 600, pink: 600, rose: 600,
+  slate: 500, gray: 500, zinc: 500, neutral: 500, stone: 500, tl: 500, "tl-amber": 600, "tl-sea": 500,
+};
+const WHITE_MIN_LARGE: Record<string, number> = {
+  red: 500, orange: 600, amber: 600, yellow: 700, lime: 600, green: 600, emerald: 600, teal: 600, cyan: 600, sky: 600,
+  blue: 500, indigo: 400, violet: 500, purple: 500, fuchsia: 500, pink: 500, rose: 500,
+  slate: 500, gray: 500, zinc: 500, neutral: 500, stone: 500, tl: 500, "tl-amber": 500, "tl-sea": 400,
+};
+const BG_SHADE = /(?<![:\w!/-])bg-((?:tl-amber|tl-sea|tl)|[a-z]+)-(\d{2,3})(?![\w/-])/g;
+const whiteTooLight = (line: string) =>
+  classStrings(line).some((s) => {
+    if (!/(?<![:\w!-])text-white\b/.test(s)) return false;
+    const large = /(?<![:\w!-])text-[2-9]xl\b/.test(s) || (/(?<![:\w!-])text-xl\b/.test(s) && /\bfont-(?:bold|extrabold|black)\b/.test(s));
+    const min = large ? WHITE_MIN_LARGE : WHITE_MIN_SMALL;
+    return [...s.matchAll(BG_SHADE)].some((m) => m[1] in min && Number(m[2]) < min[m[1]]);
+  });
+assert.ok(whiteTooLight('"bg-green-500 text-white"'), "2.22:1");
+assert.ok(whiteTooLight('"bg-tl-amber-500 hover:bg-tl-amber-600 text-white text-xs"'), "4.46:1 is under 4.5");
+assert.ok(!whiteTooLight('"bg-green-700 text-white"'), "4.95:1");
+assert.ok(!whiteTooLight('"bg-tl-600 text-white"'), "the brand blue, 6.97:1");
+assert.ok(!whiteTooLight('"text-2xl font-bold bg-orange-600 text-white"'), "large text: 3.58:1 is enough");
+assert.ok(whiteTooLight('"text-sm bg-orange-600 text-white"'), "small text: 3.58:1 is not");
+assert.ok(!whiteTooLight('"bg-white/10 text-white"'), "a translucent white overlay is not a shade");
+assert.ok(!whiteTooLight('"bg-green-300 text-green-950"'), "dark text on a light shade is fine");
+
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {
   const rel = file.slice(process.cwd().length + 1);
   const done = DARK_DONE.some((d) => rel.startsWith(d));
   readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || lostHoverTextBorder(line) || primaryUnderWhite(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
+    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || lostHoverTextBorder(line) || primaryUnderWhite(line) || whiteTooLight(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
   });
 }
 assert.deepEqual(hits, [], `dark-mode sweep leftovers:\n${hits.join("\n")}`);

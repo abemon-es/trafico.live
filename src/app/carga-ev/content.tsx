@@ -375,7 +375,7 @@ export default function CargaEVContent() {
                       onClick={() => toggleConnector(type)}
                       className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${
                         active
-                          ? "bg-green-600 text-white border-green-600"
+                          ? "bg-green-700 text-white border-green-700"
                           : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-green-400 hover:text-green-700 dark:hover:text-green-400"
                       }`}
                     >
@@ -457,7 +457,7 @@ export default function CargaEVContent() {
                         key={type}
                         className={`text-xs px-2 py-0.5 rounded transition-colors ${
                           connectorFilter.includes(type)
-                            ? "bg-green-600 text-white"
+                            ? "bg-green-700 text-white"
                             : "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400"
                         }`}
                       >

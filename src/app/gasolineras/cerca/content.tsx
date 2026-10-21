@@ -286,7 +286,7 @@ export default function GasolinerasCercaContent() {
                       onClick={() => setRadius(r)}
                       className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                         radius === r
-                          ? "bg-orange-600 text-white"
+                          ? "bg-orange-700 text-white"
                           : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950"
                       }`}
                     >
@@ -419,7 +419,7 @@ export default function GasolinerasCercaContent() {
             </p>
             <button
               onClick={() => setRadius(radius === 5 ? 10 : 20)}
-              className="px-5 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
+              className="px-5 py-2 bg-orange-700 text-white rounded-lg text-sm hover:bg-orange-800 transition-colors"
             >
               Ampliar a {radius === 5 ? 10 : 20} km
             </button>

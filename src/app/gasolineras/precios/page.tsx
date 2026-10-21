@@ -285,9 +285,9 @@ export default async function PreciosPage() {
                     <div className="flex items-center gap-2">
                       {idx < 3 && (
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                          idx === 0 ? "bg-green-500 text-white" :
-                          idx === 1 ? "bg-green-400 text-white" :
-                          "bg-green-300 text-white"
+                          idx === 0 ? "bg-green-900 text-white" :
+                          idx === 1 ? "bg-green-800 text-white" :
+                          "bg-green-700 text-white"
                         }`}>
                           {idx + 1}
                         </span>
