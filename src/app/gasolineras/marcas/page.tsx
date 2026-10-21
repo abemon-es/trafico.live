@@ -277,8 +277,8 @@ export default async function MarcasPage() {
                 const isLast = idx === brands.length - 1 && b.avgDiesel != null;
 
                 let rowClass = "";
-                if (isFirst) rowClass = "bg-green-50 dark:bg-green-900/20/60";
-                else if (isLast) rowClass = "bg-red-50 dark:bg-red-900/20/40";
+                if (isFirst) rowClass = "bg-green-50/60 dark:bg-green-900/20";
+                else if (isLast) rowClass = "bg-red-50/40 dark:bg-red-900/20";
 
                 return (
                   <tr key={b.slug} className={`hover:bg-gray-50 dark:bg-gray-950 transition-colors ${rowClass}`}>

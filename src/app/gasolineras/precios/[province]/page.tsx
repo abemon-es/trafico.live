@@ -164,7 +164,7 @@ export default async function ProvincePricesPage({ params }: Props) {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {stations.map((station, idx) => (
-                <tr key={station.id} className={idx < 3 ? "bg-green-50 dark:bg-green-900/20/50" : ""}>
+                <tr key={station.id} className={idx < 3 ? "bg-green-50/50 dark:bg-green-900/20" : ""}>
                   <td className="px-4 py-3">
                     <div className="flex items-start gap-2">
                       {idx < 3 && (

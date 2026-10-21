@@ -875,8 +875,8 @@ function ResumenSection({
         />
         <StatCard
           icon={MapPin}
-          iconBgColor="bg-indigo-50"
-          iconColor="text-indigo-600"
+          iconBgColor="bg-indigo-50 dark:bg-indigo-900/20"
+          iconColor="text-indigo-600 dark:text-indigo-400"
           value={hasV16 ? v16Stats.data.totals.daysWithData : "-"}
           label="Días con Datos"
           isLoading={v16Loading}

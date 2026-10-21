@@ -280,7 +280,7 @@ export default async function PreciosPage() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {mainlandProvinces.map((province, idx) => (
-                <tr key={province.code} className={idx < 3 ? "bg-green-50 dark:bg-green-900/20/50" : ""}>
+                <tr key={province.code} className={idx < 3 ? "bg-green-50/50 dark:bg-green-900/20" : ""}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {idx < 3 && (
