@@ -25,16 +25,16 @@ const RISK_TYPE_LABELS: Record<string, string> = {
 };
 
 const RISK_TYPE_COLORS: Record<string, string> = {
-  INVIVE: "bg-purple-100 text-purple-800",
-  MOTORCYCLE: "bg-orange-100 text-orange-800",
-  WILDLIFE: "bg-green-100 text-green-700",
-  CAMINO: "bg-yellow-100 text-yellow-800",
+  INVIVE: "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200",
+  MOTORCYCLE: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200",
+  WILDLIFE: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+  CAMINO: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
 };
 
 const SEVERITY_COLORS: Record<string, string> = {
-  low: "bg-yellow-50 border-yellow-200 text-yellow-800",
-  medium: "bg-orange-50 border-orange-200 text-orange-800",
-  high: "bg-red-50 border-red-200 text-red-800",
+  low: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200",
+  medium: "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-800 dark:text-orange-200",
+  high: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200",
 };
 
 export async function RiskZonesSection({
@@ -52,19 +52,19 @@ export async function RiskZonesSection({
   return (
     <section
       id="zonas-riesgo"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <ShieldAlert className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} zona{total !== 1 ? "s" : ""} de riesgo en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" title="Datos estáticos"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -85,7 +85,7 @@ export async function RiskZonesSection({
               {/* Type badge */}
               <span
                 className={`shrink-0 text-[10px] font-medium px-2 py-1 rounded-full ${
-                  RISK_TYPE_COLORS[zone.type] ?? "bg-gray-100 text-gray-700"
+                  RISK_TYPE_COLORS[zone.type] ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
               >
                 {RISK_TYPE_LABELS[zone.type] ?? zone.type}
@@ -94,8 +94,8 @@ export async function RiskZonesSection({
               {/* Location */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-data font-medium truncate">
-                  <span className="text-tl-700">{zone.road}</span>
-                  <span className="text-gray-500 font-normal">
+                  <span className="text-tl-700 dark:text-tl-300">{zone.road}</span>
+                  <span className="text-gray-500 dark:text-gray-400 font-normal">
                     {" "}
                     km {zone.fromKm.toFixed(0)}–{zone.toKm.toFixed(0)}
                   </span>
@@ -122,14 +122,14 @@ export async function RiskZonesSection({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver las {total} zonas →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

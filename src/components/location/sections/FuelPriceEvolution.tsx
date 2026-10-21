@@ -74,17 +74,17 @@ export async function FuelPriceEvolution({
   return (
     <section
       id="evolucion-precios"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* A. Section header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-tl-amber-50 text-tl-amber-500 flex items-center justify-center text-sm">
+          <div className="w-7 h-7 rounded-lg bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-500 flex items-center justify-center text-sm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 Evolucion de precios &middot; 90 dias
               </h2>
               <span className="w-2 h-2 rounded-full bg-tl-amber-400" />
@@ -94,7 +94,7 @@ export async function FuelPriceEvolution({
       </div>
 
       {/* B. SVG area chart */}
-      <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5">
+      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800 p-4 mb-5">
         <svg
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
           preserveAspectRatio="none"
@@ -129,18 +129,18 @@ export async function FuelPriceEvolution({
         <div className="flex items-center gap-4 mt-2">
           <div className="flex items-center gap-1">
             <div className="w-4 h-[2px] bg-amber-600 rounded" />
-            <span className="text-[10px] text-gray-600 font-data">
+            <span className="text-[10px] text-gray-600 dark:text-gray-400 font-data">
               {entity.name}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-4 h-[2px] bg-gray-400 rounded" style={{ borderTop: "1px dashed #9ca3af" }} />
-            <span className="text-[10px] text-gray-600 font-data">Nacional</span>
+            <span className="text-[10px] text-gray-600 dark:text-gray-400 font-data">Nacional</span>
           </div>
         </div>
 
         {/* Trend summary */}
-        <p className="text-[10px] text-gray-500 mt-2">
+        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2">
           Tendencia: {trendArrow} {trendDirection} &middot; El gasoleo ha{" "}
           {priceDiff < 0 ? "bajado" : "subido"}{" "}
           <span className="font-data">
@@ -153,7 +153,7 @@ export async function FuelPriceEvolution({
       {/* C. Station consistency ranking */}
       {stations.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-gray-600 mb-3">
+          <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
             Consistencia &middot; Quien es mas barato mas dias?
           </p>
 
@@ -163,16 +163,16 @@ export async function FuelPriceEvolution({
                 <span
                   className={`font-data text-xs w-5 text-center ${
                     idx === 0
-                      ? "text-tl-amber-700 font-bold"
-                      : "text-gray-400"
+                      ? "text-tl-amber-700 dark:text-tl-amber-300 font-bold"
+                      : "text-gray-400 dark:text-gray-500"
                   }`}
                 >
                   {idx + 1}
                 </span>
-                <span className="text-xs text-gray-700 truncate flex-1 min-w-0">
+                <span className="text-xs text-gray-700 dark:text-gray-300 truncate flex-1 min-w-0">
                   {station.name}
                 </span>
-                <div className="w-20 h-[6px] bg-gray-100 rounded-full flex-shrink-0">
+                <div className="w-20 h-[6px] bg-gray-100 dark:bg-gray-800 rounded-full flex-shrink-0">
                   <div
                     className="h-full bg-tl-amber-400 rounded-full"
                     style={{
@@ -183,7 +183,7 @@ export async function FuelPriceEvolution({
                     }}
                   />
                 </div>
-                <span className="font-data text-[10px] text-gray-500 w-12 text-right flex-shrink-0">
+                <span className="font-data text-[10px] text-gray-500 dark:text-gray-400 w-12 text-right flex-shrink-0">
                   {station.cheapestDays}/{station.totalDays} dias
                 </span>
               </div>
@@ -193,7 +193,7 @@ export async function FuelPriceEvolution({
       )}
 
       {/* Attribution */}
-      <p className="mt-5 text-[10px] text-gray-400">
+      <p className="mt-5 text-[10px] text-gray-400 dark:text-gray-500">
         Fuente: Ministerio para la Transicion Ecologica
       </p>
     </section>

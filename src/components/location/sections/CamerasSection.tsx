@@ -30,19 +30,19 @@ export async function CamerasSection({
   return (
     <section
       id="camaras"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Camera className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Camera className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} cámara{total !== 1 ? "s" : ""} en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-tl-amber-400 shrink-0" title="Actualizado frecuentemente"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -53,10 +53,10 @@ export async function CamerasSection({
         {items.map((cam) => (
           <div
             key={cam.id}
-            className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50 group"
+            className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 group"
           >
             {/* Thumbnail */}
-            <div className="relative aspect-video bg-gray-200 overflow-hidden">
+            <div className="relative aspect-video bg-gray-200 dark:bg-gray-700 overflow-hidden">
               {cameraImage(cam) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -66,7 +66,7 @@ export async function CamerasSection({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                <div className="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
                   <Camera className="w-6 h-6" />
                 </div>
               )}
@@ -74,11 +74,11 @@ export async function CamerasSection({
 
             {/* Info */}
             <div className="p-2">
-              <p className="text-xs font-medium text-gray-800 truncate">
+              <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">
                 {cam.name}
               </p>
               {cam.roadNumber && (
-                <p className="text-[10px] text-gray-500 font-data">
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-data">
                   {cam.roadNumber}
                   {cam.kmPoint != null &&
                     ` · km ${Number(cam.kmPoint).toFixed(0)}`}
@@ -93,14 +93,14 @@ export async function CamerasSection({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver las {total} cámaras →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

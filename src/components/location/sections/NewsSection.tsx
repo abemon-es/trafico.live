@@ -25,19 +25,19 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  DAILY_REPORT: "bg-blue-50 text-blue-700",
-  WEEKLY_REPORT: "bg-blue-100 text-blue-800",
-  MONTHLY_REPORT: "bg-indigo-100 text-indigo-800",
-  ANNUAL_REPORT: "bg-indigo-50 text-indigo-700",
-  PRICE_ALERT: "bg-amber-100 text-amber-800",
-  INCIDENT_DIGEST: "bg-red-50 text-red-700",
-  WEATHER_ALERT: "bg-orange-100 text-orange-800",
-  FUEL_TREND: "bg-yellow-50 text-yellow-700",
-  ROAD_ANALYSIS: "bg-tl-100 text-tl-800",
-  GUIDE: "bg-green-50 text-green-700",
-  NEWS: "bg-gray-100 text-gray-700",
-  ANALYSIS: "bg-purple-50 text-purple-700",
-  REGULATORY: "bg-gray-200 text-gray-800",
+  DAILY_REPORT: "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
+  WEEKLY_REPORT: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200",
+  MONTHLY_REPORT: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-200",
+  ANNUAL_REPORT: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300",
+  PRICE_ALERT: "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200",
+  INCIDENT_DIGEST: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300",
+  WEATHER_ALERT: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200",
+  FUEL_TREND: "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300",
+  ROAD_ANALYSIS: "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200",
+  GUIDE: "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300",
+  NEWS: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+  ANALYSIS: "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
+  REGULATORY: "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200",
 };
 
 export async function NewsSection({
@@ -52,18 +52,18 @@ export async function NewsSection({
   return (
     <section
       id="noticias"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Newspaper className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Newspaper className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             Noticias sobre {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-tl-amber-400 shrink-0" title="Actualizado frecuentemente"></span>
         </div>
-        <span className="text-xs text-gray-400 font-data">
+        <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
           {total} artículo{total !== 1 ? "s" : ""}
         </span>
       </div>
@@ -74,7 +74,7 @@ export async function NewsSection({
           <a
             key={article.id}
             href={`/noticias/${article.slug}`}
-            className="flex-shrink-0 w-64 rounded-xl border border-gray-100 bg-gray-50 overflow-hidden hover:border-tl-200 hover:shadow-sm transition-all group"
+            className="flex-shrink-0 w-64 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 overflow-hidden hover:border-tl-200 dark:hover:border-tl-700 hover:shadow-sm transition-all group"
           >
             {/* Image placeholder or article image */}
             {article.imageUrl && (
@@ -92,24 +92,24 @@ export async function NewsSection({
               <span
                 className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                   CATEGORY_COLORS[article.category] ??
-                  "bg-gray-100 text-gray-600"
+                  "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                 }`}
               >
                 {CATEGORY_LABELS[article.category] ?? article.category}
               </span>
 
               {/* Title */}
-              <h3 className="font-heading text-sm font-semibold text-gray-900 mt-2 line-clamp-2 group-hover:text-tl-700 transition-colors">
+              <h3 className="font-heading text-sm font-semibold text-gray-900 dark:text-gray-100 mt-2 line-clamp-2 group-hover:text-tl-700 transition-colors">
                 {article.title}
               </h3>
 
               {/* Summary */}
-              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                 {article.summary}
               </p>
 
               {/* Date */}
-              <p className="text-[10px] text-gray-400 font-data mt-2">
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-data mt-2">
                 {new Date(article.publishedAt).toLocaleDateString("es-ES", {
                   day: "numeric",
                   month: "short",
@@ -127,7 +127,7 @@ export async function NewsSection({
           href={
             spokeHref ?? `/noticias/tag/${entity.slug}`
           }
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver los {total} artículos →
         </a>

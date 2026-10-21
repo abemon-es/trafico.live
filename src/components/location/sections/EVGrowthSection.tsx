@@ -116,12 +116,12 @@ export async function EVGrowthSection({ entity }: EVGrowthSectionProps) {
   return (
     <section
       id="ev-crecimiento"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Zap className="w-5 h-5 text-signal-green" />
-        <h2 className="font-heading text-lg font-bold text-gray-900">
+        <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
           Crecimiento de la red de carga EV
         </h2>
       </div>
@@ -136,17 +136,17 @@ export async function EVGrowthSection({ entity }: EVGrowthSectionProps) {
           )}
         </div>
 
-        <p className="text-sm text-gray-700">
-          <span className="font-data text-gray-500">{first.label}:</span>{" "}
+        <p className="text-sm text-gray-700 dark:text-gray-300">
+          <span className="font-data text-gray-500 dark:text-gray-400">{first.label}:</span>{" "}
           <strong className="font-data">{first.cumulative}</strong> puntos{" "}
-          <span className="text-gray-400 mx-1">&rarr;</span>{" "}
-          <span className="font-data text-gray-500">{current.label}:</span>{" "}
+          <span className="text-gray-400 dark:text-gray-500 mx-1">&rarr;</span>{" "}
+          <span className="font-data text-gray-500 dark:text-gray-400">{current.label}:</span>{" "}
           <strong className="font-data">{current.cumulative}</strong> puntos
         </p>
 
         {projected != null && monthsRemaining > 0 && (
-          <p className="text-xs text-gray-500 mt-1">
-            <span className="text-gray-400">&rarr;</span> Dic{" "}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <span className="text-gray-400 dark:text-gray-500">&rarr;</span> Dic{" "}
             {now.getFullYear()}:{" "}
             <span className="font-data">~{projected}</span> est.
           </p>
@@ -185,7 +185,7 @@ export async function EVGrowthSection({ entity }: EVGrowthSectionProps) {
       <div className="flex justify-between mt-1.5">
         {timeline.map((entry, i) =>
           labelIndices.has(i) ? (
-            <span key={entry.month} className="text-[10px] text-gray-400">
+            <span key={entry.month} className="text-[10px] text-gray-400 dark:text-gray-500">
               {entry.label}
             </span>
           ) : (
@@ -195,7 +195,7 @@ export async function EVGrowthSection({ entity }: EVGrowthSectionProps) {
       </div>
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: MITERD</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: MITERD</p>
     </section>
   );
 }

@@ -25,6 +25,11 @@
  *    a hover must be `dark:hover:`. Not when the string has a light base and
  *    no other dark background: there `dark:bg-Y` is the element's dark base,
  *    written by hand (brand buttons, the cookie banner), and stays.
+ * 7. Batches done: in DARK_DONE every class string with a light background
+ *    has a dark one, and dark grey text has a dark colour unless its own
+ *    background stays light on purpose (a data swatch, a light badge). The
+ *    location cards were white islands in dark mode until 2026-10-21 (70 on
+ *    8 location pages); each later batch adds its directory.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -104,10 +109,32 @@ assert.ok(!lostHover('className="bg-tl-50 hover:bg-tl-100 dark:bg-slate-800"'), 
 assert.ok(lostHover("      className={`w-full hover:bg-gray-50 dark:bg-gray-950 transition-colors ${"), "an unclosed template literal");
 assert.ok(lostHover("                  border-b border-gray-100 hover:bg-gray-50 dark:bg-gray-950"), "a line inside a template literal");
 
+/** 7: in a finished batch, a light background or dark grey text with no dark pair. */
+const DARK_DONE = ["src/components/location/"];
+const LIGHT_BG = new RegExp(`(?<![:\\w/-])bg-(?:white|${COLOUR}-(?:50|100))(?![\\w/-])`);
+const ANY_LIGHT_BG = new RegExp(`(?<![:\\w/-])bg-(?:white|${COLOUR}-[1-3]?\\d0)(?![\\w-])`);
+const DARK_GREY_TEXT = /(?<![:\w-])text-gray-[6-9]00(?![\w/-])/;
+const unpaired = (line: string) =>
+  classStrings(line).some(
+    (s) =>
+      (LIGHT_BG.test(s) && !/\bdark:bg-/.test(s)) ||
+      (DARK_GREY_TEXT.test(s) && !/\bdark:text-/.test(s) && !ANY_LIGHT_BG.test(s)),
+  );
+assert.ok(unpaired('className="bg-white rounded-2xl border border-gray-200 p-6"'));
+assert.ok(!unpaired('className="bg-white dark:bg-gray-900 rounded-2xl"'));
+assert.ok(unpaired('<h2 className="font-heading text-lg text-gray-900">'), "dark text on the card, nothing for dark mode");
+assert.ok(!unpaired('<h2 className="text-gray-900 dark:text-gray-100">'));
+assert.ok(!unpaired('HIGH: "bg-red-200 text-red-900 font-semibold",'), "a light badge kept light keeps its dark text");
+assert.ok(!unpaired('<div className="w-3 h-3 bg-tl-200 text-gray-700">'), "a data swatch");
+assert.ok(unpaired('LOW: "bg-yellow-100 text-yellow-800",'), "a 50/100 tint must have its dark pair");
+assert.ok(!unpaired('className="hover:bg-gray-50 dark:hover:bg-gray-800"'), "a hover alone is not a background");
+
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {
+  const rel = file.slice(process.cwd().length + 1);
+  const done = DARK_DONE.some((d) => rel.startsWith(d));
   readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line)) hits.push(`${file.slice(process.cwd().length + 1)}:${i + 1}`);
+    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
   });
 }
 assert.deepEqual(hits, [], `dark-mode sweep leftovers:\n${hits.join("\n")}`);

@@ -55,14 +55,14 @@ export async function CitySeoProse({ entity }: CitySeoProseProp) {
     : null;
 
   return (
-    <section className="bg-gray-50 rounded-2xl border border-gray-200 p-6">
-      <div className="text-sm text-gray-600 leading-relaxed space-y-3">
-        <h2 className="font-heading text-sm font-bold text-gray-900">
+    <section className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+      <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-3">
+        <h2 className="font-heading text-sm font-bold text-gray-900 dark:text-gray-100">
           Sobre el trafico en {name}
         </h2>
 
         <p>
-          <strong className="text-gray-900">{name}</strong> es un municipio de{" "}
+          <strong className="text-gray-900 dark:text-gray-100">{name}</strong> es un municipio de{" "}
           {entity.population.toLocaleString("es-ES")} habitantes
           {provinceName && (
             <>
@@ -92,7 +92,7 @@ export async function CitySeoProse({ entity }: CitySeoProseProp) {
 
         {roadCount > 0 && (
           <>
-            <h3 className="font-heading text-sm font-bold text-gray-800">
+            <h3 className="font-heading text-sm font-bold text-gray-800 dark:text-gray-200">
               Infraestructura vial
             </h3>
             <p>
@@ -113,7 +113,7 @@ export async function CitySeoProse({ entity }: CitySeoProseProp) {
 
         {accidentsLatestYear != null && accidentYear != null && (
           <>
-            <h3 className="font-heading text-sm font-bold text-gray-800">
+            <h3 className="font-heading text-sm font-bold text-gray-800 dark:text-gray-200">
               Seguridad vial
             </h3>
             <p>
@@ -135,7 +135,7 @@ export async function CitySeoProse({ entity }: CitySeoProseProp) {
           </>
         )}
 
-        <p className="text-xs text-gray-400 pt-2 border-t border-gray-100">
+        <p className="text-xs text-gray-400 dark:text-gray-500 pt-2 border-t border-gray-100 dark:border-gray-800">
           Todos los datos se actualizan en tiempo real. Fuentes: DGT, MINETUR,
           AEMET, MITERD.
         </p>

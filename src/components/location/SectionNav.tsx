@@ -48,8 +48,8 @@ export function SectionNav({ sections, variant }: SectionNavProps) {
                 : "px-3 py-1.5 rounded-full text-xs whitespace-nowrap",
               "transition-colors",
               isActive
-                ? "bg-tl-50 text-tl-700 font-semibold"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100",
+                ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300 font-semibold"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
             ].join(" ")}
           >
             {s.label}
@@ -58,7 +58,7 @@ export function SectionNav({ sections, variant }: SectionNavProps) {
                 className={[
                   "ml-1 font-data",
                   variant === "sidebar" ? "text-xs" : "text-[10px]",
-                  isActive ? "text-tl-500" : "text-gray-400",
+                  isActive ? "text-tl-500" : "text-gray-400 dark:text-gray-500",
                 ].join(" ")}
               >
                 {s.count}

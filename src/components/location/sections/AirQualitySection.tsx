@@ -64,13 +64,13 @@ export async function AirQualitySection({ entity }: AirQualitySectionProps) {
   return (
     <section
       id="calidad-aire"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Wind className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Wind className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} estación{total !== 1 ? "es" : ""} de calidad del aire en{" "}
             {entity.name}
           </h2>
@@ -91,10 +91,10 @@ export async function AirQualitySection({ entity }: AirQualitySectionProps) {
           return (
             <div
               key={station.id}
-              className="rounded-xl border border-gray-100 bg-gray-50 p-3"
+              className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3"
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium text-gray-900 truncate flex-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate flex-1">
                   {station.name}
                 </p>
                 {icaStyle && (
@@ -106,24 +106,24 @@ export async function AirQualitySection({ entity }: AirQualitySectionProps) {
                 )}
               </div>
               {station.network && (
-                <p className="text-xs text-gray-500 mt-0.5 truncate">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                   {station.network}
                 </p>
               )}
               {latestReading && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {latestReading.no2 != null && (
-                    <span className="text-[10px] text-gray-500 font-mono">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
                       NO₂ {latestReading.no2.toFixed(0)} µg/m³
                     </span>
                   )}
                   {latestReading.pm10 != null && (
-                    <span className="text-[10px] text-gray-500 font-mono">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
                       PM10 {latestReading.pm10.toFixed(0)} µg/m³
                     </span>
                   )}
                   {latestReading.o3 != null && (
-                    <span className="text-[10px] text-gray-500 font-mono">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
                       O₃ {latestReading.o3.toFixed(0)} µg/m³
                     </span>
                   )}
@@ -137,13 +137,13 @@ export async function AirQualitySection({ entity }: AirQualitySectionProps) {
       {/* CTA */}
       <a
         href="/calidad-aire"
-        className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+        className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
       >
         Ver calidad del aire →
       </a>
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: MITECO</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: MITECO</p>
     </section>
   );
 }

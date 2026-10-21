@@ -33,7 +33,7 @@ function formatDistance(km: number): string {
 }
 
 function scoreColor(score: number | null): string {
-  if (score == null) return "text-gray-400";
+  if (score == null) return "text-gray-400 dark:text-gray-500";
   return score >= 70 ? "text-signal-green" : "text-tl-amber-400";
 }
 
@@ -55,16 +55,16 @@ export async function NearbyCities({ entity }: NearbyCitiesProps) {
   return (
     <section
       id="cercanas"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-1">
-        <MapPin className="w-5 h-5 text-tl-600" />
-        <h2 className="font-heading text-lg font-bold text-gray-900">
+        <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+        <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
           Ciudades cercanas
         </h2>
       </div>
-      <p className="text-xs text-gray-400 mb-4">
+      <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
         Comparativa con municipios vecinos
       </p>
 
@@ -72,34 +72,34 @@ export async function NearbyCities({ entity }: NearbyCitiesProps) {
       <div className="overflow-x-auto -mx-6 px-6">
         <table className="w-full text-[12px]">
           <thead>
-            <tr className="border-b-2 border-gray-200">
-              <th className="text-left text-[9px] text-gray-400 uppercase tracking-[.12em] pb-2 pr-3">
+            <tr className="border-b-2 border-gray-200 dark:border-gray-800">
+              <th className="text-left text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[.12em] pb-2 pr-3">
                 Ciudad
               </th>
-              <th className="text-right text-[9px] text-gray-400 uppercase tracking-[.12em] pb-2 px-2">
+              <th className="text-right text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[.12em] pb-2 px-2">
                 Dist.
               </th>
-              <th className="text-right text-[9px] text-gray-400 uppercase tracking-[.12em] pb-2 px-2">
+              <th className="text-right text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[.12em] pb-2 px-2">
                 Hab.
               </th>
-              <th className="text-right text-[9px] text-gray-400 uppercase tracking-[.12em] pb-2 px-2">
+              <th className="text-right text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[.12em] pb-2 px-2">
                 Incid.
               </th>
-              <th className="text-right text-[9px] text-gray-400 uppercase tracking-[.12em] pb-2 px-2">
+              <th className="text-right text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[.12em] pb-2 px-2">
                 Gasoil
               </th>
-              <th className="text-right text-[9px] text-gray-400 uppercase tracking-[.12em] pb-2 pl-2">
+              <th className="text-right text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[.12em] pb-2 pl-2">
                 Score
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {/* Current city row — highlighted */}
-            <tr className="bg-tl-50/30">
-              <td className="py-2.5 pr-3 font-semibold text-tl-700">
+            <tr className="bg-tl-50/30 dark:bg-tl-900/20">
+              <td className="py-2.5 pr-3 font-semibold text-tl-700 dark:text-tl-300">
                 {entity.name} (actual)
               </td>
-              <td className="py-2.5 px-2 text-right font-data text-gray-400">
+              <td className="py-2.5 px-2 text-right font-data text-gray-400 dark:text-gray-500">
                 {"\u2014"}
               </td>
               <td className="py-2.5 px-2 text-right font-data">
@@ -117,12 +117,12 @@ export async function NearbyCities({ entity }: NearbyCitiesProps) {
                   <span>{entityStats?.activeIncidentCount ?? "\u2014"}</span>
                 )}
               </td>
-              <td className="py-2.5 px-2 text-right font-data text-tl-amber-600">
+              <td className="py-2.5 px-2 text-right font-data text-tl-amber-600 dark:text-tl-amber-400">
                 {entityStats?.minDieselPrice != null
                   ? formatPrice(Number(entityStats.minDieselPrice))
                   : "\u2014"}
               </td>
-              <td className="py-2.5 pl-2 text-right font-data text-gray-400">
+              <td className="py-2.5 pl-2 text-right font-data text-gray-400 dark:text-gray-500">
                 {"\u2014"}
               </td>
             </tr>
@@ -133,15 +133,15 @@ export async function NearbyCities({ entity }: NearbyCitiesProps) {
                 <td className="py-2.5 pr-3">
                   <a
                     href={city.href}
-                    className="text-tl-600 hover:underline font-medium"
+                    className="text-tl-600 dark:text-tl-400 hover:underline font-medium"
                   >
                     {city.name}
                   </a>
                 </td>
-                <td className="py-2.5 px-2 text-right font-data text-gray-600">
+                <td className="py-2.5 px-2 text-right font-data text-gray-600 dark:text-gray-400">
                   {formatDistance(city.distance)}
                 </td>
-                <td className="py-2.5 px-2 text-right font-data text-gray-600">
+                <td className="py-2.5 px-2 text-right font-data text-gray-600 dark:text-gray-400">
                   {formatPopulation(city.population)}
                 </td>
                 <td className="py-2.5 px-2 text-right font-data">
@@ -150,12 +150,12 @@ export async function NearbyCities({ entity }: NearbyCitiesProps) {
                       {city.incidentCount}
                     </span>
                   ) : (
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 dark:text-gray-400">
                       {city.incidentCount ?? "\u2014"}
                     </span>
                   )}
                 </td>
-                <td className="py-2.5 px-2 text-right font-data text-tl-amber-600">
+                <td className="py-2.5 px-2 text-right font-data text-tl-amber-600 dark:text-tl-amber-400">
                   {formatPrice(city.minDieselPrice)}
                 </td>
                 <td

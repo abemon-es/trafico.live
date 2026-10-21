@@ -18,8 +18,8 @@ const ROAD_TYPE_LABELS: Record<string, string> = {
 const ROAD_TYPE_COLORS: Record<string, string> = {
   HIGHWAY: "bg-tl-200",
   DUAL_CARRIAGEWAY: "bg-tl-200",
-  NATIONAL: "bg-tl-amber-100",
-  URBAN: "bg-gray-200",
+  NATIONAL: "bg-tl-amber-100 dark:bg-tl-amber-900/30",
+  URBAN: "bg-gray-200 dark:bg-gray-700",
   CONVENTIONAL: "bg-tl-amber-200",
 };
 
@@ -216,19 +216,19 @@ export async function AccidentAnalyticsSection({
   return (
     <section
       id="accidentes-historicos"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* A. Section header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-sm">
+          <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center text-sm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </div>
           <div>
-            <h2 className="font-heading text-lg font-bold text-gray-900">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
               Accidentes historicos
             </h2>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {province?.name ? `Provincia de ${province.name}` : entity.name}{" "}
               &middot; {minYear}–{maxYear}
             </p>
@@ -239,11 +239,11 @@ export async function AccidentAnalyticsSection({
       {/* B. Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {/* Accidents */}
-        <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-          <p className="font-data text-xl font-extrabold text-gray-900">
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 text-center border border-gray-100 dark:border-gray-800">
+          <p className="font-data text-xl font-extrabold text-gray-900 dark:text-gray-100">
             {latest.accidents.toLocaleString("es-ES")}
           </p>
-          <p className="text-[10px] text-gray-500 mt-1">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
             Accidentes {latestYear}
           </p>
           {accidentYoY !== null && (
@@ -259,11 +259,11 @@ export async function AccidentAnalyticsSection({
         </div>
 
         {/* Fatalities */}
-        <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
-          <p className="font-data text-xl font-extrabold text-red-800">
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center border border-red-100 dark:border-red-800">
+          <p className="font-data text-xl font-extrabold text-red-800 dark:text-red-200">
             {latest.fatalities.toLocaleString("es-ES")}
           </p>
-          <p className="text-[10px] text-red-600 mt-1">
+          <p className="text-[10px] text-red-600 dark:text-red-400 mt-1">
             Fallecidos {latestYear}
           </p>
           {fatalityYoY !== null && (
@@ -279,16 +279,16 @@ export async function AccidentAnalyticsSection({
         </div>
 
         {/* Per-capita rate */}
-        <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 text-center border border-gray-100 dark:border-gray-800">
           {perCapitaRate !== null ? (
             <>
-              <p className="font-data text-xl font-extrabold text-gray-900">
+              <p className="font-data text-xl font-extrabold text-gray-900 dark:text-gray-100">
                 {perCapitaRate.toFixed(1)}
               </p>
-              <p className="text-[10px] text-gray-500 mt-1">
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
                 Fallecidos / 100k hab.
               </p>
-              <div className="h-[4px] bg-gray-100 rounded-full mt-2 mx-2">
+              <div className="h-[4px] bg-gray-100 dark:bg-gray-800 rounded-full mt-2 mx-2">
                 <div
                   className={`h-full rounded-full ${
                     perCapitaRate < NATIONAL_RATE_PER_100K
@@ -302,22 +302,22 @@ export async function AccidentAnalyticsSection({
                   }}
                 />
               </div>
-              <p className="text-[8px] text-gray-400 mt-1">
+              <p className="text-[8px] text-gray-400 dark:text-gray-500 mt-1">
                 Media nacional: {NATIONAL_RATE_PER_100K}
               </p>
             </>
           ) : (
             <>
-              <p className="font-data text-xl font-extrabold text-gray-400">
+              <p className="font-data text-xl font-extrabold text-gray-400 dark:text-gray-500">
                 —
               </p>
-              <p className="text-[10px] text-gray-500 mt-1">Tasa per capita</p>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Tasa per capita</p>
             </>
           )}
         </div>
 
         {/* Severity donut */}
-        <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 text-center border border-gray-100 dark:border-gray-800">
           {donutPaths.length > 0 ? (
             <>
               <svg
@@ -352,7 +352,7 @@ export async function AccidentAnalyticsSection({
                 {donutSegments.map((seg) => (
                   <span
                     key={seg.label}
-                    className="text-[8px] text-gray-500 flex items-center gap-0.5"
+                    className="text-[8px] text-gray-500 dark:text-gray-400 flex items-center gap-0.5"
                   >
                     <span
                       className="inline-block w-1.5 h-1.5 rounded-full"
@@ -364,16 +364,16 @@ export async function AccidentAnalyticsSection({
               </div>
             </>
           ) : (
-            <p className="font-data text-xl font-extrabold text-gray-400">—</p>
+            <p className="font-data text-xl font-extrabold text-gray-400 dark:text-gray-500">—</p>
           )}
-          <p className="text-[10px] text-gray-500 mt-1">Severidad</p>
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Severidad</p>
         </div>
       </div>
 
       {/* C. Road type breakdown */}
       {roadTypeEntries.length > 1 && roadTypeTotal > 0 && (
         <div className="mb-5">
-          <p className="text-xs font-medium text-gray-600 mb-2">
+          <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
             Accidentes por tipo de via
           </p>
           <div className="h-3 rounded-full overflow-hidden flex">
@@ -382,7 +382,7 @@ export async function AccidentAnalyticsSection({
               return (
                 <div
                   key={type}
-                  className={ROAD_TYPE_COLORS[type] ?? "bg-gray-100"}
+                  className={ROAD_TYPE_COLORS[type] ?? "bg-gray-100 dark:bg-gray-800"}
                   style={{ width: `${widthPct}%` }}
                   title={`${ROAD_TYPE_LABELS[type] ?? type}: ${count}`}
                 />
@@ -393,10 +393,10 @@ export async function AccidentAnalyticsSection({
             {roadTypeEntries.map(([type, count]) => (
               <span
                 key={type}
-                className="text-[10px] text-gray-500 flex items-center gap-1"
+                className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1"
               >
                 <span
-                  className={`inline-block w-2 h-2 rounded-sm ${ROAD_TYPE_COLORS[type] ?? "bg-gray-100"}`}
+                  className={`inline-block w-2 h-2 rounded-sm ${ROAD_TYPE_COLORS[type] ?? "bg-gray-100 dark:bg-gray-800"}`}
                 />
                 {ROAD_TYPE_LABELS[type] ?? type}{" "}
                 {Math.round((count / roadTypeTotal) * 100)}%
@@ -408,7 +408,7 @@ export async function AccidentAnalyticsSection({
 
       {/* D. 5-year trend with projection */}
       <div className="mb-5">
-        <p className="text-xs font-medium text-gray-600 mb-2">
+        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
           Tendencia {trendYears[0]}–{trendYears[trendYears.length - 1]}
         </p>
         <div className="space-y-1.5">
@@ -418,20 +418,20 @@ export async function AccidentAnalyticsSection({
             const isLatest = year === latestYear;
             return (
               <div key={year} className="flex items-center gap-2">
-                <span className="font-data text-[10px] text-gray-500 w-8">
+                <span className="font-data text-[10px] text-gray-500 dark:text-gray-400 w-8">
                   {year}
                 </span>
-                <div className="flex-1 h-[14px] bg-gray-50 rounded-full overflow-hidden">
+                <div className="flex-1 h-[14px] bg-gray-50 dark:bg-gray-800/50 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${
                       isLatest
                         ? "bg-gradient-to-r from-tl-200 to-tl-300"
-                        : "bg-tl-100"
+                        : "bg-tl-100 dark:bg-tl-900/30"
                     }`}
                     style={{ width: `${widthPct}%` }}
                   />
                 </div>
-                <span className="font-data text-[10px] text-gray-600 w-12 text-right">
+                <span className="font-data text-[10px] text-gray-600 dark:text-gray-400 w-12 text-right">
                   {data.accidents.toLocaleString("es-ES")}
                 </span>
               </div>
@@ -441,10 +441,10 @@ export async function AccidentAnalyticsSection({
           {/* Projection row */}
           {projectedAccidents !== null && (
             <div className="flex items-center gap-2">
-              <span className="font-data text-[10px] text-tl-600 w-8">
+              <span className="font-data text-[10px] text-tl-600 dark:text-tl-400 w-8">
                 {latestYear + 1}*
               </span>
-              <div className="flex-1 h-[14px] border border-tl-200 border-dashed bg-tl-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-[14px] border border-tl-200 dark:border-tl-800 border-dashed bg-tl-100 dark:bg-tl-900/30 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-tl-200 rounded-full opacity-50"
                   style={{
@@ -452,14 +452,14 @@ export async function AccidentAnalyticsSection({
                   }}
                 />
               </div>
-              <span className="font-data text-[10px] text-tl-600 w-12 text-right">
+              <span className="font-data text-[10px] text-tl-600 dark:text-tl-400 w-12 text-right">
                 ~{projectedAccidents.toLocaleString("es-ES")}
               </span>
             </div>
           )}
         </div>
         {projectedAccidents !== null && (
-          <p className="text-[8px] text-gray-400 mt-1">
+          <p className="text-[8px] text-gray-400 dark:text-gray-500 mt-1">
             * Proyeccion basada en la tendencia interanual
           </p>
         )}
@@ -467,13 +467,13 @@ export async function AccidentAnalyticsSection({
 
       {/* E. Provincial ranking */}
       {ranking && (
-        <div className="bg-tl-50 rounded-xl p-3 border border-tl-200">
+        <div className="bg-tl-50 dark:bg-tl-900/20 rounded-xl p-3 border border-tl-200 dark:border-tl-800">
           <div className="flex items-center gap-3">
-            <span className="font-data text-xl font-extrabold text-tl-600">
+            <span className="font-data text-xl font-extrabold text-tl-600 dark:text-tl-400">
               {ranking.rank}
               <span className="text-xs font-normal align-top">a</span>
             </span>
-            <p className="text-xs text-gray-700">
+            <p className="text-xs text-gray-700 dark:text-gray-300">
               {province?.name ?? entity.name} es la{" "}
               <span className="font-semibold">{ranking.rank}a</span> provincia
               por accidentes de {ranking.total}
@@ -483,7 +483,7 @@ export async function AccidentAnalyticsSection({
       )}
 
       {/* Attribution */}
-      <p className="mt-5 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-5 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

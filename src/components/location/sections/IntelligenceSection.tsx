@@ -54,8 +54,8 @@ function heatmapCellClasses(count: number): {
   className: string;
   style?: React.CSSProperties;
 } {
-  if (count === 0) return { className: "bg-tl-50" };
-  if (count <= 2) return { className: "bg-tl-100" };
+  if (count === 0) return { className: "bg-tl-50 dark:bg-tl-900/20" };
+  if (count <= 2) return { className: "bg-tl-100 dark:bg-tl-900/30" };
   if (count <= 4) return { className: "bg-tl-200" };
   if (count <= 6) return { className: "bg-tl-amber-200" };
   if (count <= 8) return { className: "", style: { background: "#eca66e" } };
@@ -146,22 +146,22 @@ export async function IntelligenceSection({
   return (
     <section
       id="inteligencia"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* A. Section header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-tl-100 text-tl-700 flex items-center justify-center text-sm">
+          <div className="w-7 h-7 rounded-lg bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 flex items-center justify-center text-sm">
             🧠
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 Inteligencia de trafico
               </h2>
               <span className="w-2 h-2 rounded-full bg-tl-amber-400" />
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Analisis de {heatmap.total.toLocaleString("es-ES")} incidencias
               &middot; Ultimos 12 meses
             </p>
@@ -171,7 +171,7 @@ export async function IntelligenceSection({
 
       {/* B. 24x7 Heatmap */}
       <div className="mb-6">
-        <p className="text-xs font-medium text-gray-600 mb-2">
+        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
           Mapa de calor &middot; Incidencias por hora y dia
         </p>
 
@@ -188,7 +188,7 @@ export async function IntelligenceSection({
           {Array.from({ length: 24 }, (_, h) => (
             <div
               key={`h-${h}`}
-              className="text-[8px] font-data text-gray-400 text-center"
+              className="text-[8px] font-data text-gray-400 dark:text-gray-500 text-center"
             >
               {h}
             </div>
@@ -199,7 +199,7 @@ export async function IntelligenceSection({
             <>
               <div
                 key={`label-${day}`}
-                className="font-data text-[9px] text-gray-500 flex items-center"
+                className="font-data text-[9px] text-gray-500 dark:text-gray-400 flex items-center"
               >
                 {DAY_LABELS[day]}
               </div>
@@ -223,9 +223,9 @@ export async function IntelligenceSection({
 
         {/* Legend */}
         <div className="flex items-center gap-1 mt-2">
-          <span className="text-[8px] text-gray-400 mr-1">Menos</span>
-          <div className="w-3 h-3 rounded-[2px] bg-tl-50" />
-          <div className="w-3 h-3 rounded-[2px] bg-tl-100" />
+          <span className="text-[8px] text-gray-400 dark:text-gray-500 mr-1">Menos</span>
+          <div className="w-3 h-3 rounded-[2px] bg-tl-50 dark:bg-tl-900/20" />
+          <div className="w-3 h-3 rounded-[2px] bg-tl-100 dark:bg-tl-900/30" />
           <div className="w-3 h-3 rounded-[2px] bg-tl-200" />
           <div className="w-3 h-3 rounded-[2px] bg-tl-amber-200" />
           <div
@@ -233,7 +233,7 @@ export async function IntelligenceSection({
             style={{ background: "#eca66e" }}
           />
           <div className="w-3 h-3 rounded-[2px] bg-signal-red" />
-          <span className="text-[8px] text-gray-400 ml-1">Mas</span>
+          <span className="text-[8px] text-gray-400 dark:text-gray-500 ml-1">Mas</span>
         </div>
       </div>
 
@@ -241,14 +241,14 @@ export async function IntelligenceSection({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         {/* 1. Peak period */}
         <div className="border-l-3 border-signal-red rounded-r-xl p-3 bg-signal-red/5">
-          <p className="text-xs font-semibold text-gray-900">Periodo pico</p>
-          <p className="text-sm font-data font-bold text-gray-800 mt-1">
+          <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">Periodo pico</p>
+          <p className="text-sm font-data font-bold text-gray-800 dark:text-gray-200 mt-1">
             {peakDayName} {heatmap.peakHour}:00–{peakHourEnd}:00
           </p>
-          <p className="text-[10px] text-gray-500 mt-1">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
             Concentra el {peakPercentage}% de todas las incidencias semanales
           </p>
-          <div className="h-[4px] bg-gray-100 rounded-full mt-2">
+          <div className="h-[4px] bg-gray-100 dark:bg-gray-800 rounded-full mt-2">
             <div
               className="h-full bg-signal-red rounded-full"
               style={{ width: `${Math.min(peakPercentage, 100)}%` }}
@@ -258,15 +258,15 @@ export async function IntelligenceSection({
 
         {/* 2. Weather correlation */}
         {weatherCorrelation.totalAlerts > 0 && (
-          <div className="border-l-3 border-tl-sea-500 rounded-r-xl p-3 bg-tl-sea-50">
-            <p className="text-xs font-semibold text-gray-900">
+          <div className="border-l-3 border-tl-sea-500 rounded-r-xl p-3 bg-tl-sea-50 dark:bg-tl-sea-900/20">
+            <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">
               Correlacion meteorologica
             </p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="font-data text-sm font-bold text-gray-700">
+              <span className="font-data text-sm font-bold text-gray-700 dark:text-gray-300">
                 {weatherCorrelation.avgIncidentsWithout}
               </span>
-              <span className="text-gray-400">&rarr;</span>
+              <span className="text-gray-400 dark:text-gray-500">&rarr;</span>
               <span className="font-data text-sm font-bold text-tl-sea-500">
                 {weatherCorrelation.avgIncidentsWithAlert}
               </span>
@@ -274,7 +274,7 @@ export async function IntelligenceSection({
                 +{weatherCorrelation.percentageIncrease}%
               </span>
             </div>
-            <p className="text-[10px] text-gray-500 mt-1">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
               Lluvia &rarr; +{weatherCorrelation.percentageIncrease}% incidencias
               &middot; Basado en {weatherCorrelation.totalAlerts} alertas
             </p>
@@ -282,24 +282,24 @@ export async function IntelligenceSection({
         )}
 
         {/* 3. Road hotspot */}
-        <div className="border-l-3 border-tl-amber-500 rounded-r-xl p-3 bg-tl-amber-50">
-          <p className="text-xs font-semibold text-gray-900">Punto critico</p>
-          <p className="text-sm font-data text-gray-700 mt-1">
+        <div className="border-l-3 border-tl-amber-500 rounded-r-xl p-3 bg-tl-amber-50 dark:bg-tl-amber-900/20">
+          <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">Punto critico</p>
+          <p className="text-sm font-data text-gray-700 dark:text-gray-300 mt-1">
             Zona con mayor concentracion de incidencias
           </p>
-          <p className="text-[10px] text-gray-500 mt-1">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
             Datos en mejora continua con geolocalizacion de incidentes
           </p>
         </div>
 
         {/* 4. Seasonality */}
         {monthlyTrend.months.length > 0 && (
-          <div className="border-l-3 border-tl-600 rounded-r-xl p-3 bg-tl-50">
-            <p className="text-xs font-semibold text-gray-900">Estacionalidad</p>
-            <p className="text-sm font-data font-bold text-gray-800 mt-1">
+          <div className="border-l-3 border-tl-600 rounded-r-xl p-3 bg-tl-50 dark:bg-tl-900/20">
+            <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">Estacionalidad</p>
+            <p className="text-sm font-data font-bold text-gray-800 dark:text-gray-200 mt-1">
               {lowestMonth}: {seasonalityDiff}% vs {highestMonth}
             </p>
-            <p className="text-[10px] text-gray-500 mt-1">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
               {lowestMonth} registra menos incidencias que {highestMonth}
             </p>
           </div>
@@ -309,7 +309,7 @@ export async function IntelligenceSection({
       {/* D. Monthly incident trend */}
       {monthlyTrend.months.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-gray-600 mb-3">
+          <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
             Tendencia mensual &middot; Incidencias
           </p>
 
@@ -329,7 +329,7 @@ export async function IntelligenceSection({
                     className={`w-full rounded-t-sm ${
                       isCurrent
                         ? "bg-tl-amber-200 border-b-2 border-tl-amber-500"
-                        : "bg-tl-100"
+                        : "bg-tl-100 dark:bg-tl-900/30"
                     }`}
                     style={{ height: `${heightPct}%` }}
                     title={`${m.month}: ${m.count} incidencias`}
@@ -345,7 +345,7 @@ export async function IntelligenceSection({
               return (
                 <div
                   key={`label-${m.month}`}
-                  className="flex-1 text-center text-[8px] font-data text-gray-400"
+                  className="flex-1 text-center text-[8px] font-data text-gray-400 dark:text-gray-500"
                 >
                   {MONTH_LETTERS[monthIdx]}
                 </div>
@@ -354,7 +354,7 @@ export async function IntelligenceSection({
           </div>
 
           {currentMonthData && (
-            <p className="text-[10px] text-gray-500 mt-2">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2">
               {MONTH_ABBR[now.getMonth()]} {now.getFullYear()}:{" "}
               {currentMonthData.count.toLocaleString("es-ES")} incidencias
               {currentMonthTrend !== null && (
@@ -378,7 +378,7 @@ export async function IntelligenceSection({
       )}
 
       {/* Attribution */}
-      <p className="mt-5 text-[10px] text-gray-400">Fuente: DGT, AEMET</p>
+      <p className="mt-5 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT, AEMET</p>
     </section>
   );
 }

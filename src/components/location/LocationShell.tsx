@@ -32,7 +32,7 @@ export function LocationShell({
           </aside>
 
           {/* Mobile nav — sticky horizontal strip */}
-          <div className="lg:hidden sticky top-16 z-30 -mx-4 px-4 bg-white/95 backdrop-blur border-b border-gray-200">
+          <div className="lg:hidden sticky top-16 z-30 -mx-4 px-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-800">
             <SectionNav sections={visibleSections} variant="horizontal" />
           </div>
 

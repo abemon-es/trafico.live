@@ -68,19 +68,19 @@ function StatCard({ icon, label, value, unit, highlight }: StatCard) {
       className={[
         "flex flex-col items-start gap-1 rounded-xl p-3 border",
         highlight
-          ? "bg-tl-50 border-tl-200"
-          : "bg-white border-gray-200",
+          ? "bg-tl-50 dark:bg-tl-900/20 border-tl-200 dark:border-tl-800"
+          : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800",
       ].join(" ")}
     >
-      <div className="flex items-center gap-1.5 text-gray-500">
+      <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
         {icon}
         <span className="text-xs font-medium">{label}</span>
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="font-data text-xl font-bold text-gray-900">
+        <span className="font-data text-xl font-bold text-gray-900 dark:text-gray-100">
           {typeof value === "number" ? value.toLocaleString("es-ES") : value}
         </span>
-        {unit && <span className="text-xs text-gray-400 font-data">{unit}</span>}
+        {unit && <span className="text-xs text-gray-400 dark:text-gray-500 font-data">{unit}</span>}
       </div>
       {/* Mini visual indicator: pulse for real-time, bars for infrastructure */}
       {highlight ? (
@@ -123,12 +123,12 @@ export async function StatsBar({ entity }: StatsBarProps) {
       highlight: (stats.activeIncidentCount ?? 0) > 0,
     },
     {
-      icon: <Camera className="w-4 h-4 text-tl-600" />,
+      icon: <Camera className="w-4 h-4 text-tl-600 dark:text-tl-400" />,
       label: "Cámaras DGT",
       value: stats.cameraCount ?? null,
     },
     {
-      icon: <Radar className="w-4 h-4 text-tl-600" />,
+      icon: <Radar className="w-4 h-4 text-tl-600 dark:text-tl-400" />,
       label: "Radares",
       value: stats.radarCount ?? null,
     },
@@ -151,13 +151,13 @@ export async function StatsBar({ entity }: StatsBarProps) {
       value: stats.evChargerCount ?? null,
     },
     {
-      icon: <Radio className="w-4 h-4 text-tl-600" />,
+      icon: <Radio className="w-4 h-4 text-tl-600 dark:text-tl-400" />,
       label: "V16 activos",
       value: stats.activeV16Count ?? null,
       highlight: (stats.activeV16Count ?? 0) > 0,
     },
     {
-      icon: <Route className="w-4 h-4 text-tl-600" />,
+      icon: <Route className="w-4 h-4 text-tl-600 dark:text-tl-400" />,
       label: "Carreteras",
       value: stats.roadCount ?? null,
     },
@@ -181,7 +181,7 @@ export async function StatsBar({ entity }: StatsBarProps) {
         ))}
       </div>
       {stats?.realtimeUpdatedAt && (
-        <p className="text-[10px] text-gray-400 font-data mt-1 text-right">
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-data mt-1 text-right">
           Actualizado{" "}
           {new Date(stats.realtimeUpdatedAt).toLocaleTimeString("es-ES", {
             hour: "2-digit",

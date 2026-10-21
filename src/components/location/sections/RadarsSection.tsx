@@ -25,10 +25,10 @@ const RADAR_TYPE_LABELS: Record<string, string> = {
 };
 
 const RADAR_TYPE_COLORS: Record<string, string> = {
-  FIXED: "bg-red-100 text-red-800",
-  SECTION: "bg-orange-100 text-orange-800",
-  MOBILE_ZONE: "bg-yellow-100 text-yellow-800",
-  TRAFFIC_LIGHT: "bg-blue-100 text-blue-800",
+  FIXED: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
+  SECTION: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200",
+  MOBILE_ZONE: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+  TRAFFIC_LIGHT: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200",
 };
 
 const DIRECTION_LABELS: Record<string, string> = {
@@ -50,19 +50,19 @@ export async function RadarsSection({
   return (
     <section
       id="radares"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Radar className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Radar className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} radar{total !== 1 ? "es" : ""} en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" title="Datos estáticos"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -72,7 +72,7 @@ export async function RadarsSection({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
+            <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
               <th className="pb-2 pr-3 font-medium">Vía</th>
               <th className="pb-2 pr-3 font-medium font-data">Km</th>
               <th className="pb-2 pr-3 font-medium">Tipo</th>
@@ -80,19 +80,19 @@ export async function RadarsSection({
               <th className="pb-2 font-medium">Sentido</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
             {items.map((radar) => (
-              <tr key={radar.id} className="text-gray-700">
-                <td className="py-2 pr-3 font-data font-medium text-tl-700">
+              <tr key={radar.id} className="text-gray-700 dark:text-gray-300">
+                <td className="py-2 pr-3 font-data font-medium text-tl-700 dark:text-tl-300">
                   {radar.roadNumber}
                 </td>
-                <td className="py-2 pr-3 font-data text-gray-600">
+                <td className="py-2 pr-3 font-data text-gray-600 dark:text-gray-400">
                   {Number(radar.kmPoint).toFixed(1)}
                 </td>
                 <td className="py-2 pr-3">
                   <span
                     className={`text-[11px] px-2 py-0.5 rounded-full ${
-                      RADAR_TYPE_COLORS[radar.type] ?? "bg-gray-100 text-gray-700"
+                      RADAR_TYPE_COLORS[radar.type] ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                     }`}
                   >
                     {RADAR_TYPE_LABELS[radar.type] ?? radar.type}
@@ -100,12 +100,12 @@ export async function RadarsSection({
                 </td>
                 <td className="py-2 pr-3 font-data font-semibold">
                   {radar.speedLimit != null ? (
-                    <span className="text-red-700">{radar.speedLimit} km/h</span>
+                    <span className="text-red-700 dark:text-red-300">{radar.speedLimit} km/h</span>
                   ) : (
-                    <span className="text-gray-400">—</span>
+                    <span className="text-gray-400 dark:text-gray-500">—</span>
                   )}
                 </td>
-                <td className="py-2 text-xs text-gray-500">
+                <td className="py-2 text-xs text-gray-500 dark:text-gray-400">
                   {radar.direction
                     ? (DIRECTION_LABELS[radar.direction] ?? radar.direction)
                     : "—"}
@@ -120,14 +120,14 @@ export async function RadarsSection({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver los {total} radares →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }
