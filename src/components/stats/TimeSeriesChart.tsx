@@ -83,7 +83,7 @@ export function TimeSeriesChart({
   const transformedDailyData: DailyDataPoint[] | undefined = dailyApiData?.success
     ? dailyApiData.data.dailyData.map((d: { date: string; v16Count: number; incidentCount: number }) => {
         const date = new Date(d.date);
-        const dayOfWeek = date.getDay();
+        const dayOfWeek = date.getUTCDay();
         return {
           day: DAY_NAMES[dayOfWeek],
           v16: d.v16Count,

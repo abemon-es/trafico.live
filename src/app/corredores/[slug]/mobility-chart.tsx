@@ -36,6 +36,7 @@ export function MobilityChart({ data, originCity, destCity }: MobilityChartProps
     date: new Date(d.date).toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "short",
+      timeZone: "Europe/Madrid",
     }),
     viajes: d.tripCount,
   }));

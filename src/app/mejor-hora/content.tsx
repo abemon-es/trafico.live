@@ -707,9 +707,7 @@ export default function MejorHoraContent() {
               Datos basados en incidencias de los últimos 30 días registradas por
               DGT, SCT, Euskadi y Madrid.
               {data.generatedAt
-                ? ` Actualizado: ${new Date(data.generatedAt).toLocaleString(
-                    "es-ES"
-                  )}.`
+                ? ` Actualizado: ${new Date(data.generatedAt).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}.`
                 : ""}
             </p>
           </div>

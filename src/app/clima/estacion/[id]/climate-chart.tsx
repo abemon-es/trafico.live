@@ -81,7 +81,7 @@ export function ClimateChart({ data }: ClimateChartProps) {
   // Format month labels
   const chartData = data.map((d) => {
     const date = new Date(d.month);
-    const monthLabel = MONTH_NAMES[date.getMonth()] ?? d.month;
+    const monthLabel = MONTH_NAMES[date.getUTCMonth()] ?? d.month;
     return {
       ...d,
       label: monthLabel,

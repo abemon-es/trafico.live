@@ -162,11 +162,11 @@ function groupByForPeriod(periodKey: string): "day" | "week" | "month" {
 }
 
 function formatDateLabel(dateStr: string, groupBy: "day" | "week" | "month"): string {
-  const d = new Date(dateStr + "T00:00:00");
+  const d = new Date(dateStr);
   if (groupBy === "month") {
-    return d.toLocaleDateString("es-ES", { month: "short", year: "2-digit" });
+    return d.toLocaleDateString("es-ES", { month: "short", year: "2-digit", timeZone: "Europe/Madrid" });
   }
-  return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  return d.toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" });
 }
 
 // ─── Trend Card ───────────────────────────────────────────────────────────────
@@ -470,9 +470,9 @@ function NationalEvolutionChart() {
       for (const pt of points) {
         let entry = dateMap.get(pt.date);
         if (!entry) {
-          const d = new Date(pt.date + "T00:00:00");
+          const d = new Date(pt.date);
           entry = {
-            label: d.toLocaleDateString("es-ES", { month: "short", year: "2-digit" }),
+            label: d.toLocaleDateString("es-ES", { month: "short", year: "2-digit", timeZone: "Europe/Madrid" }),
             rawDate: pt.date,
             diesel: null,
             gasolina95: null,

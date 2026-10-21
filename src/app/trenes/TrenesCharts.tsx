@@ -48,7 +48,7 @@ export default function TrenesCharts({ timeline, dailyTrend }: TrenesChartsProps
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timeline.map((s) => ({
-                time: new Date(s.recordedAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+                time: new Date(s.recordedAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }),
                 punctuality: Number(s.punctualityRate),
                 delay: Number(s.avgDelay),
                 trains: s.totalTrains,
@@ -97,7 +97,7 @@ export default function TrenesCharts({ timeline, dailyTrend }: TrenesChartsProps
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dailyTrend.map((d) => ({
-                date: new Date(d.date).toLocaleDateString("es-ES", { day: "numeric", month: "short" }),
+                date: new Date(d.date).toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" }),
                 punctuality: Number(d.punctualityRate),
                 delay: Number(d.avgDelay),
                 maxDelay: d.maxDelay,

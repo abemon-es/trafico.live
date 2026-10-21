@@ -165,6 +165,7 @@ export function AlertCard({ alert, onToggle, onDelete }: AlertCardProps) {
               {new Date(alert.lastTriggeredAt).toLocaleDateString("es-ES", {
                 day: "numeric",
                 month: "short",
+                timeZone: "Europe/Madrid",
               })}
             </span>
           )}

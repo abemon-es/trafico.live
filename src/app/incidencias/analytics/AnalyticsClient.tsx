@@ -527,7 +527,7 @@ export function IncidenciasAnalyticsClient() {
             <p className="text-xs text-gray-400 text-center pb-4">
               Datos obtenidos de DGT, SCT, Euskadi y Madrid.{" "}
               {data.generatedAt
-                ? `Última actualización: ${new Date(data.generatedAt).toLocaleString("es-ES")}`
+                ? `Última actualización: ${new Date(data.generatedAt).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}`
                 : ""}
             </p>
           </div>

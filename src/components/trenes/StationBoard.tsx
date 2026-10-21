@@ -68,10 +68,11 @@ function delayColorClasses(minutes: number): string {
 }
 
 function formatTime(iso: string): string {
-  const d = new Date(iso);
-  const h = d.getHours().toString().padStart(2, "0");
-  const m = d.getMinutes().toString().padStart(2, "0");
-  return `${h}:${m}`;
+  return new Date(iso).toLocaleTimeString("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Madrid",
+  });
 }
 
 function delaySeverity(minutes: number): "on-time" | "slight" | "moderate" | "severe" | "critical" {

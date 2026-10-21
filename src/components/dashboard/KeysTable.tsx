@@ -26,7 +26,7 @@ interface KeysTableProps {
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Nunca";
-  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", year: "numeric" }).format(
+  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Madrid" }).format(
     new Date(iso)
   );
 }

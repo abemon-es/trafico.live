@@ -93,7 +93,7 @@ export function PriceHistoryChart({
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+    return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", timeZone: "Europe/Madrid" });
   };
 
   const formatPrice = (value: number) => `${value.toFixed(3)}€`;
@@ -211,6 +211,7 @@ export function PriceHistoryChart({
                   weekday: "long",
                   day: "numeric",
                   month: "long",
+                  timeZone: "Europe/Madrid",
                 })
               }
               contentStyle={{

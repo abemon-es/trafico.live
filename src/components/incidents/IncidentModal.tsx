@@ -234,6 +234,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
                     month: "short",
                     hour: "2-digit",
                     minute: "2-digit",
+                    timeZone: "Europe/Madrid",
                   })}
                 </span>
               </div>
@@ -246,6 +247,7 @@ export function IncidentModal({ incident, onClose }: IncidentModalProps) {
                       month: "short",
                       hour: "2-digit",
                       minute: "2-digit",
+                      timeZone: "Europe/Madrid",
                     })}
                   </span>
                 </div>

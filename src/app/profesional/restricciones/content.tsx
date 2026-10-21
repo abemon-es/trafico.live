@@ -203,7 +203,7 @@ export default function RestriccionesContent() {
                           {zone.effectiveFrom && (
                             <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                              Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES")}
+                              Desde: {new Date(zone.effectiveFrom).toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" })}
                             </p>
                           )}
                           {zone.activeAllYear && (
