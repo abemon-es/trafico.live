@@ -90,6 +90,75 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (91) — the published fuel articles: 123 archived behind a 308, 274 reports corrected
+
+**#169 merged** (`375a10b4`). Its post-deploy crawl (8 pages, every internal
+link 200 without a redirect) is running. Event #4 goes to the CMO when it
+lands; the CMO measures Googlebot's 3xx/404 share at +7 d from a fixed
+edge.log offset (baseline 9.0 % 3xx, 0.4 % 404, ~36 req/day).
+
+**This PR** (the CMO and CTO decisions from cycle 89):
+- `services/collector/scripts/archive-fuel-alerts.ts`:
+  - WHERE PUBLISHED, PRICE_ALERT, MITERD, auto-generated, `precio-diesel-%`,
+    published from 2026-04-01 up to #168's deploy (22:26:12Z);
+  - dry run by default; `--apply --expect N` in one transaction, rolled back
+    unless N rows change; status only, reversible.
+  - Dry run on prod data (read-only credentials): **123**, first
+    `precio-diesel-2026-04-02`, last `precio-diesel-2026-10-21`.
+- `/noticias/<slug>`: an ARCHIVED `precio-diesel-*` 308s to
+  `/precio-diesel-hoy`; other archived slugs still 404. The sitemap, the news
+  sitemap, /noticias, the home, the API and the related lists all read
+  PUBLISHED.
+- `services/collector/scripts/correct-fuel-reports.ts`:
+  - drops the national price delta columns and the inline «(x% vs ayer)»,
+    and the fuel summary's «(x% vs hace 7d)»;
+  - adds the dated note; leaves URL, publishedAt and updatedAt as they are;
+  - skips reports that only ever showed «N/D», since there's nothing false
+    in them;
+  - refuses to apply while any delta text is left, updates each row only if
+    its body is unchanged, all in one transaction.
+  - Dry run: **274** to correct (daily 191 of 203, fuel 57 of 58, weekly
+    26 of 29), 0 with delta text left.
+- Unit test `tests/fuel-articles-cleanup.test.ts`, on fixtures of the real
+  report shapes.
+- **GSC, 90 d:** no `precio-diesel-<date>` URL in any of 67 daily top-20 page
+  snapshots, so no measurable traffic to keep; the 308 holds whatever there
+  is.
+- **Order:** deploy this web change first, then the CTO runs the archive (so
+  an archived URL 308s at once, never 404s), then the corrections. Their
+  timestamps go to the CMO.
+
+**Found, not changed (next items):**
+- **L1 (daily report):** generated just after 00:00Z, it compares the day's
+  first incidents («10 nuevas hoy») with full-day averages (18.261,
+  «-99.9 %»).
+- **L1 (weekly report):** «593.436 incidencias» sums `DailyStats.incidentTotal`,
+  hourly snapshots, i.e. incident-hours. The daily report had the same unit
+  and was fixed; the weekly wasn't.
+- **L2:** the report pages (`/informes/*`, `/informe-diario/[date]`) render
+  an article by slug without checking its status.
+- «La gasolina 95 es … más barato»: gender agreement in daily-fuel.
+
+**Open, in order:**
+1. **L3:** #169's gate, then event #4 to the CMO.
+2. **L1:** this PR's deploy, then the CTO runs the archive and the
+   corrections, then I verify. The archived URL must 308 to /precio-diesel-hoy;
+   a corrected report must show the note, no delta, and the same lastmod.
+3. **L1:** #168's gate on the next daily report.
+4. **L1:** the daily report's partial-day comparison; the weekly report's
+   incident-hours.
+5. **L3 (CMO):** the rest of the home.
+6. **L2:** the province accident pages' «2011-2024»; the report pages'
+   missing status check.
+7. **L3 (CMO-approved):** 308 for the 7 short province aliases, plus «Todas
+   las provincias».
+8. **Ops (CTO):** the prod checkout's untracked files (I list what reads
+   them).
+9. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+10. **Waiting on MJ:** the AEMET key, SASEMAR, self-merge for low-risk PRs.
+
+---
+
 ## Cycle 2026-10-22 (90) — 19 internal links pointed at a redirect, six of them on every page
 
 **#168 merged and deployed** (`25123f80`, collectors recreated 22:26:12Z,
