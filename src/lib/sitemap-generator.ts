@@ -1605,15 +1605,16 @@ async function gasStationSitemap(
   const stations = await prisma.gasStation.findMany({
     skip: shardIndex * SHARD_SIZE,
     take: SHARD_SIZE,
-    select: { id: true, lastPriceUpdate: true },
+    select: { id: true },
     orderBy: { id: "asc" },
   });
 
+  // When this station's page (its prices) last changed, not when the feed was
+  // read (lastPriceUpdate, 3×/day: 4,474 of 5,000 «today» until 2026-10-21).
+  const changedAt = await contentChangedAt(["gas-station"]);
   return stations.map((station) => ({
     url: `${BASE_URL}/gasolineras/terrestres/${station.id}`,
-    // When the price feed was last read (3×/day), not when this station's prices
-    // changed; still to be fingerprinted like the cameras (src/lib/seo/lastmod.ts).
-    lastModified: station.lastPriceUpdate ?? undefined,
+    lastModified: changedAt.get(fingerprintKey("gas-station", station.id)),
     changeFrequency: "daily" as const,
     priority: 0.6,
   }));

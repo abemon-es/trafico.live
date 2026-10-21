@@ -52,6 +52,7 @@ const STALE_THRESHOLDS: Record<string, number> = {
                                // 36000 equalled the gap exactly: age peaks just
                                // under it, so any run slower than the previous
                                // one tipped it stale. Knife-edge, not a buffer.
+  "content-fingerprints-gas": 39600, // last step of each gas-station run (sitemap lastmod)
   "maritime-fuel": 39600,      // 3x/day at 07/14/21 — max gap 10h + 1h grace
   "portugal-fuel": 39600,      // 3x/day at 08/15/22 — max gap 10h + 1h grace
   // daily (collector-daily)
