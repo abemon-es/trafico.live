@@ -65,14 +65,15 @@ const STATION_TYPE_LABELS: Record<string, string> = {
   COVERAGE: "Cobertura",
 };
 
+/** The IMD badge, under white text: every step is 4.5:1 or more (measured 2026-10-21). */
 function imdColor(imd: number | null): string {
-  if (!imd) return "bg-gray-200 dark:bg-gray-700";
-  if (imd >= 100000) return "bg-red-500";
-  if (imd >= 50000) return "bg-orange-500";
-  if (imd >= 20000) return "bg-yellow-500";
-  if (imd >= 10000) return "bg-green-500";
-  if (imd >= 5000) return "bg-tl-500";
-  return "bg-tl-300";
+  if (!imd) return "bg-gray-500"; // 4.84:1
+  if (imd >= 100000) return "bg-red-600"; // 4.77:1
+  if (imd >= 50000) return "bg-orange-700"; // 5.22:1
+  if (imd >= 20000) return "bg-yellow-700"; // 4.93:1
+  if (imd >= 10000) return "bg-green-700"; // 4.95:1
+  if (imd >= 5000) return "bg-tl-600"; // 6.97:1
+  return "bg-tl-500"; // 4.51:1
 }
 
 function imdLabel(imd: number | null): string {

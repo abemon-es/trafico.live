@@ -315,9 +315,9 @@ export default async function ProvinceClimatePage({
               <div className="flex flex-col items-center gap-1">
                 <span className={`inline-flex items-center justify-center w-20 h-20 rounded-full text-white font-mono text-2xl font-bold shadow-lg ${
                   heroTemp >= 35 ? "bg-red-500" :
-                  heroTemp >= 25 ? "bg-amber-500" :
-                  heroTemp >= 15 ? "bg-emerald-500" :
-                  heroTemp >= 0 ? "bg-teal-500" : "bg-blue-500"
+                  heroTemp >= 25 ? "bg-amber-600" :
+                  heroTemp >= 15 ? "bg-emerald-600" :
+                  heroTemp >= 0 ? "bg-teal-600" : "bg-blue-500"
                 }`}>
                   {heroTemp.toFixed(1)}°
                 </span>

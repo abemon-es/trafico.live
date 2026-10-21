@@ -1035,7 +1035,7 @@ function IncidenciasSection({
                   <div className="w-24 text-sm text-gray-600 dark:text-gray-400 truncate">{item.label}</div>
                   <div className="flex-1 h-5 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
                     <div
-                      className={`h-full ${typeColors[item.type] || "bg-gray-50 dark:bg-gray-9500"} rounded`}
+                      className={`h-full ${typeColors[item.type] || "bg-gray-500"} rounded`}
                       style={{ width: `${item.percentage}%` }}
                     />
                   </div>
@@ -1428,7 +1428,7 @@ function V16Section() {
                       Alta: "bg-red-500",
                       "Muy Alta": "bg-red-900",
                     };
-                    const bgColor = colors[item.name] || "bg-gray-50 dark:bg-gray-9500";
+                    const bgColor = colors[item.name] || "bg-gray-500";
                     return (
                       <div key={idx} className="flex items-center gap-3">
                         <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.name}</div>
@@ -1650,9 +1650,9 @@ function CarreterasSection({
 
   const riskColors: Record<string, { bg: string; text: string; label: string }> = {
     CRITICAL: { bg: "bg-red-600", text: "text-red-600 dark:text-red-400", label: "Crítico" },
-    HIGH: { bg: "bg-orange-500", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
-    MEDIUM: { bg: "bg-yellow-500", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
-    LOW: { bg: "bg-green-500", text: "text-green-600 dark:text-green-400", label: "Bajo" },
+    HIGH: { bg: "bg-orange-700", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
+    MEDIUM: { bg: "bg-yellow-700", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
+    LOW: { bg: "bg-green-700", text: "text-green-600 dark:text-green-400", label: "Bajo" },
   };
 
   return (
@@ -2269,7 +2269,7 @@ function RankingsSection({
                       <span className="w-6 text-sm text-gray-500 dark:text-gray-400">#{idx + 1}</span>
                       <span className="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{p.province}</span>
                       <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-900 rounded overflow-hidden">
-                        <div className="h-full bg-gray-50 dark:bg-gray-9500 rounded" style={{ width: `${width}%` }} />
+                        <div className="h-full bg-gray-500 rounded" style={{ width: `${width}%` }} />
                       </div>
                       <span className="w-16 text-sm text-gray-600 dark:text-gray-400 text-right font-data">{p.accidentsPer100k.toFixed(1)}</span>
                     </div>

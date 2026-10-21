@@ -90,6 +90,80 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (75) — the 7 «to review» white-text templates, and the sweep's «bg-gray-9500»
+
+**#154 merged** (`WHITE_OVER_INTERPOLATED` and rule 8c); its gate is running.
+
+**Signal:** rule 8c's list had 7 templates «to review» (fixed `text-white`
+over an interpolated background). Their values, measured with the table from
+#152:
+- **cortes-trafico** (red-600 4.77, tl-amber-600 6.79) and **PriceAlertForm**
+  (tl-amber-600 6.79, tl-600 6.97) already pass.
+- **IMD badge** on /estaciones-aforo: yellow-500 1.91, green-500 2.22,
+  tl-300 2.02, orange-500 2.89, red-500 3.81, and gray-200 for «no data».
+- **Risk badge** on /estadisticas: orange/yellow/green 500, 1.91–2.89.
+- **Incident filter chips**: orange-500, yellow-500, and «bg-gray-50
+  dark:bg-gray-9500».
+- **Temperature circles** on /clima (text-2xl bold, large text, 3:1):
+  amber-500 2.13, emerald-500 2.47, teal-500 2.42.
+
+**And the sweep's damage, a new kind:** `bg-gray-500` → `bg-gray-50
+dark:bg-gray-9500` (rule 2's `bg-X-50` inside `bg-X-500`, with no opacity
+after it). That's a four-digit shade, near-white in light mode and nothing
+in dark. There were 8 fallback bars and chips (/estadisticas,
+/incidencias/estadisticas, /historico, the incident filters).
+
+**Fix:**
+- IMD: red-600 / orange-700 / yellow-700 / green-700 / tl-600 / tl-500, and
+  gray-500 for «no data» (4.51–6.97:1).
+- Risk: orange/yellow/green → 700 (4.77–5.22).
+- Filter chips: orange/yellow → 700.
+- Temperature circles: amber/emerald/teal → 600 (3.20–3.67, large).
+- The 8 `bg-gray-50 dark:bg-gray-9500` → `bg-gray-500` (4.84).
+- Every entry in `WHITE_OVER_INTERPOLATED` is now «measured», with its
+  numbers.
+- **Rule 2:** a four-digit shade fails (mutant: historico's fallback bar →
+  caught).
+
+**Known limit:** a «measured» entry pins the values as reviewed; a later
+change to `imdColor`'s returns isn't caught by the test. The robust fix is
+the one #154 used for the DGT badges, with the text colour next to each
+background. Offered to server-28 as a follow-up.
+
+**Evidence:** the measuring script: 0 failing. dark-mode-sweep (1–8c),
+theme-pre-paint, camera-images, service-worker and sitemap-lastmod pass. Web
+tsc 11; eslint 1 = 1 with main.
+
+**Gate after deploy:** these badges appear on interaction (a selected
+station, risk data, an active chip), and dark-scan doesn't see them by
+default. Their evidence is the measured numbers. The gate checks the pages
+for 0 new islands or dark on dark, and that the fallback bars render.
+
+**Open, in order:**
+1. **Accessibility:** merge this; gate. Then the follow-up: the text colour
+   from the same function/map as the background, for the interpolated ones.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+7. **L2, low:** the eslint errors on main.
+8. **L3:** dead cameras in the map popups (`tile_cameras`).
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Hygiene:** `GasStationPopup` and other dead exports; scrub the
+    pre-October backlog entries.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (74) — the DGT sticker badges: white text, and a gap in rule 8b
 
 **#153 merged and gated** (`2c95fce`, deployed 11:50Z). On the 18 pages, with

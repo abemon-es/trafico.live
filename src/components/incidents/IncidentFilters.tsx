@@ -61,12 +61,12 @@ const EFFECT_CONFIG: Record<IncidentEffect, { label: string; icon: React.ReactNo
   SLOW_TRAFFIC: {
     label: "Tráfico lento",
     icon: <Car className="w-4 h-4" />,
-    color: "bg-orange-500",
+    color: "bg-orange-700",
   },
   RESTRICTED: {
     label: "Circulación restringida",
     icon: <CircleSlash className="w-4 h-4" />,
-    color: "bg-yellow-500",
+    color: "bg-yellow-700",
   },
   DIVERSION: {
     label: "Desvíos",
@@ -76,7 +76,7 @@ const EFFECT_CONFIG: Record<IncidentEffect, { label: string; icon: React.ReactNo
   OTHER_EFFECT: {
     label: "Otras afecciones",
     icon: <HelpCircle className="w-4 h-4" />,
-    color: "bg-gray-50 dark:bg-gray-9500",
+    color: "bg-gray-500",
   },
 };
 
@@ -105,7 +105,7 @@ const CAUSE_CONFIG: Record<IncidentCause, { label: string; icon: React.ReactNode
   OTHER_CAUSE: {
     label: "Otras",
     icon: <HelpCircle className="w-4 h-4" />,
-    color: "bg-gray-50 dark:bg-gray-9500",
+    color: "bg-gray-500",
   },
 };
 

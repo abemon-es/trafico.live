@@ -848,7 +848,7 @@ export function HistoricoContent() {
                       Alta: "bg-red-500",
                       "Muy Alta": "bg-red-900",
                     };
-                    const bgColor = colors[item.name] || "bg-gray-50 dark:bg-gray-9500";
+                    const bgColor = colors[item.name] || "bg-gray-500";
                     return (
                       <div key={idx} className="flex items-center gap-3">
                         <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.name}</div>
