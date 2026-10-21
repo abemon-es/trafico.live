@@ -58,10 +58,11 @@ export function PushPermissionPrompt({ userId }: PushPermissionPromptProps) {
     setShow(true);
   }, []);
 
-  // Register SW on mount (noop if already registered)
+  // The site's only worker, which imports sw-push.js (noop if already
+  // registered). Registering another script on the same scope would replace it.
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("/sw-push.js").catch((err) => {
+    navigator.serviceWorker.register("/sw.js").catch((err) => {
       console.warn("[push] SW registration failed:", err);
     });
   }, []);

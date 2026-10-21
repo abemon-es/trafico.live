@@ -1,45 +1,46 @@
-// trafico.live Service Worker — stale-while-revalidate + tile caching + offline fallback
-// Version bump here to force cache refresh on deploy
-const CACHE_VERSION = "v3";
-const CACHE_NAME = `trafico-${CACHE_VERSION}`;
-const TILES_CACHE_NAME = `trafico-tiles-${CACHE_VERSION}`;
-const OFFLINE_URL = "/offline.html";
+// trafico.live Service Worker — the site's only one: map tile cache + Web Push.
+//
+// One worker per scope. Until 2026-10-21 every page registered /sw.js and
+// /tile-sw.js on the same scope "/" (and /alertas a third, /sw-push.js). A
+// scope has a single registration, so each register() with another script
+// replaced the worker: every page load swapped the controller once or twice,
+// each activate deleted the other worker's caches, and a navigation that
+// started during a swap was cancelled and never loaded.
+//
+// It does what visitors actually got, since /tile-sw.js won every swap:
+// - tiles.trafico.live static files (fonts, sprites): stale-while-revalidate;
+//   PMTiles are read with Range requests, which go straight to the network
+//   (the Cache API refuses a 206, so they were never cached anyway);
+// - dynamic Martin tiles (/dynamic/): network first, 5 s, then the cache or
+//   an empty 204 (with a null body: an empty string throws for a 204, and the
+//   tile request then hung, as in /tile-sw.js);
+// - Web Push: /sw-push.js.
+// Pages are not intercepted. The old network-first/offline and
+// stale-while-revalidate HTML never ran (its cache was wiped on every page
+// load), and stale HTML after a deploy would point at chunks that are gone.
 
-// Tiles CDN origin
+importScripts("/sw-push.js");
+
+// The name /tile-sw.js used, so the tiles visitors already have stay cached.
+const CACHE_NAME = "trafico-tiles-v1";
 const TILES_ORIGIN = "https://tiles.trafico.live";
+const STATIC_PATHS = ["/tiles/", "/fonts/", "/sprites/", "/spain.pmtiles"];
+const DYNAMIC_PATH = "/dynamic/";
+const DYNAMIC_TIMEOUT_MS = 5000;
 
-// Tile max-age: 1 day in seconds
-const TILES_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
-// Routes to precache and serve stale-while-revalidate
-const SWR_ROUTES = ["/", "/mapa", "/trenes", "/maritimo", "/aviacion"];
-
-// Assets to precache on install
-const PRECACHE_URLS = [OFFLINE_URL];
-
-// ─── Install ──────────────────────────────────────────────────────────────────
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
-  );
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
-// ─── Activate ─────────────────────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((k) => k !== CACHE_NAME && k !== TILES_CACHE_NAME)
-          .map((k) => caches.delete(k))
-      )
-    )
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
   );
   self.clients.claim();
 });
 
-// ─── Fetch ────────────────────────────────────────────────────────────────────
 self.addEventListener("fetch", (event) => {
   let url;
   try {
@@ -47,117 +48,53 @@ self.addEventListener("fetch", (event) => {
   } catch {
     return;
   }
+  if (event.request.method !== "GET" || url.origin !== TILES_ORIGIN) return;
+  if (event.request.headers.has("range")) return;
 
-  // Skip non-GET requests
-  if (event.request.method !== "GET") return;
-
-  // ── Map tiles (tiles.trafico.live) — cache 1 day, stale-while-revalidate ──
-  if (url.origin === TILES_ORIGIN) {
-    event.respondWith(handleTileRequest(event.request));
-    return;
-  }
-
-  // Only handle same-origin requests below this point
-  if (url.origin !== self.location.origin) return;
-
-  // ── Skip /api/* — always go to network ───────────────────────────────────
-  if (url.pathname.startsWith("/api/")) return;
-
-  // ── Skip Next.js internals ───────────────────────────────────────────────
-  if (
-    url.pathname.startsWith("/_next/") ||
-    url.pathname.startsWith("/__nextjs") ||
-    url.pathname.startsWith("/monitoring")
-  ) {
-    return;
-  }
-
-  // ── SWR routes: /, /mapa, /trenes, /maritimo, /aviacion ─────────────────
-  const isSwrRoute = SWR_ROUTES.some(
-    (route) => url.pathname === route || url.pathname === route + "/"
-  );
-
-  if (isSwrRoute && event.request.mode === "navigate") {
-    event.respondWith(handleSwrNavigation(event.request));
-    return;
-  }
-
-  // ── All other navigation requests — network-first, offline fallback ───────
-  if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        caches
-          .match(OFFLINE_URL)
-          .then((cached) => cached || new Response("Offline", { status: 503 }))
-      )
-    );
+  if (STATIC_PATHS.some((p) => url.pathname.startsWith(p))) {
+    event.respondWith(staleWhileRevalidate(event.request));
+  } else if (url.pathname.startsWith(DYNAMIC_PATH)) {
+    event.respondWith(networkFirst(event.request));
   }
 });
 
-// ─── Stale-while-revalidate for navigation routes ────────────────────────────
-async function handleSwrNavigation(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
-
-  // Kick off a background revalidation
-  const networkFetch = fetch(request)
-    .then((response) => {
-      if (response.ok) {
-        cache.put(request, response.clone());
-      }
-      return response;
-    })
-    .catch(() => null);
-
-  // If we have a cached copy, return it immediately and revalidate in background
-  if (cached) {
-    // Don't await — let the update happen in background
-    event.waitUntil?.(networkFetch);
-    return cached;
-  }
-
-  // No cache — wait for network
-  const networkResponse = await networkFetch;
-  if (networkResponse) return networkResponse;
-
-  // Network failed — return offline page
-  return (
-    (await cache.match(OFFLINE_URL)) ||
-    new Response("Offline", { status: 503 })
-  );
+// Cloned now, before the page reads the body: cloning it later throws.
+function remember(request, response) {
+  if (response.status !== 200 && response.status !== 204) return;
+  const copy = response.clone();
+  caches
+    .open(CACHE_NAME)
+    .then((cache) => cache.put(request, copy))
+    .catch(() => {});
 }
 
-// ─── Tile caching — stale-while-revalidate with 1-day TTL ────────────────────
-async function handleTileRequest(request) {
-  const cache = await caches.open(TILES_CACHE_NAME);
-  const cached = await cache.match(request);
+async function staleWhileRevalidate(request) {
+  const cached = await caches.match(request, { cacheName: CACHE_NAME });
+  const network = fetch(request)
+    .then((response) => {
+      remember(request, response);
+      return response;
+    })
+    .catch(() => cached || Response.error());
+  return cached || network;
+}
 
-  if (cached) {
-    // Check age via Date header
-    const dateHeader = cached.headers.get("date");
-    const age = dateHeader ? Date.now() - new Date(dateHeader).getTime() : 0;
-
-    if (age < TILES_MAX_AGE_MS) {
-      // Still fresh — return cached, revalidate in background
-      fetch(request)
-        .then((response) => {
-          if (response.ok) cache.put(request, response.clone());
-        })
-        .catch(() => {});
-      return cached;
-    }
-  }
-
-  // Stale or missing — fetch from network
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    // Network failed — return stale copy if available
-    if (cached) return cached;
-    return new Response("", { status: 204 });
-  }
+function networkFirst(request) {
+  return new Promise((resolve) => {
+    const fallback = () =>
+      caches
+        .match(request, { cacheName: CACHE_NAME })
+        .then((cached) => resolve(cached || new Response(null, { status: 204 })));
+    const timeout = setTimeout(fallback, DYNAMIC_TIMEOUT_MS);
+    fetch(request)
+      .then((response) => {
+        clearTimeout(timeout);
+        remember(request, response);
+        resolve(response);
+      })
+      .catch(() => {
+        clearTimeout(timeout);
+        fallback();
+      });
+  });
 }

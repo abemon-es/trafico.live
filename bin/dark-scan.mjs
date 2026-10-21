@@ -16,18 +16,32 @@
 // - other text under 3:1 (light grey on white and the like): an accessibility
 //   matter in both themes, reported but not failed.
 //
+// The edge rate-limits by client IP, and every browser on compute arrives as
+// one. Next.js prefetches each <Link> in view as an RSC request (/radares sent
+// 120, and 111 got a 429), which spent the bucket, so the next page's document
+// got a 429 and came out «NOT DARK» (cycle 61). The scan blocks the prefetches,
+// which change nothing on the page, and retries a document 429, waiting as
+// Retry-After says or 5, 15 and 30 s.
+//
 // Exit code: 0 none found · 1 light islands or dark-on-dark text · 2 a page
-// could not be scanned.
+// could not be scanned (an HTTP error, still 429 after the retries, or never
+// dark).
 
 import { chromium } from "playwright-core";
 
 const paths = process.argv.slice(2);
+// Only for testing the scanner against a stub server.
+const BASE = process.env.DARK_SCAN_BASE || "https://trafico.live";
+const RETRY_WAITS_S = [5, 15, 30];
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH,
   // /dev/shm is 64 MB in a container: without this, heavy pages crash the tab.
   args: [`--host-resolver-rules=MAP trafico.live ${process.env.HOST_IP}`, "--disable-dev-shm-usage"],
 });
 const ctx = await browser.newContext({ colorScheme: "dark", viewport: { width: 1280, height: 2400 } });
+await ctx.route("**/*", (route) =>
+  route.request().headers()["next-router-prefetch"] ? route.abort() : route.fallback(),
+);
 await ctx.addInitScript(() => {
   try {
     localStorage.setItem("theme", "dark");
@@ -37,11 +51,30 @@ await ctx.addInitScript(() => {
 
 let found = 0;
 let failed = 0;
+
+/** page.goto, retrying a 429; returns the last response and how many retries it took. */
+async function open(page, url) {
+  for (let retries = 0; ; retries++) {
+    const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
+    if (response?.status() !== 429 || retries === RETRY_WAITS_S.length) return { response, retries };
+    const after = Number(response.headers()["retry-after"]);
+    await page.waitForTimeout(1000 * (after > 0 ? Math.min(after, 60) : RETRY_WAITS_S[retries]));
+  }
+}
+
 for (const path of paths) {
   const page = await ctx.newPage();
   let response = null;
   try {
-    response = await page.goto(`https://trafico.live${path}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    const opened = await open(page, `${BASE}${path}`);
+    response = opened.response;
+    const retried = opened.retries ? ` (after ${opened.retries} × 429)` : "";
+    if (!response || response.status() >= 400) {
+      failed++;
+      console.log(`${path} HTTP ${response?.status() ?? "none"}${retried}: not scanned`);
+      await page.close().catch(() => {});
+      continue;
+    }
     await page.waitForLoadState("networkidle", { timeout: 12000 }).catch(() => {});
     // 20 s: several browsers in parallel on heavy pages hydrate slowly (the
     // theme itself is set before the first paint since #138).
@@ -127,7 +160,7 @@ for (const path of paths) {
       const darkOnDark = r.lowContrast.filter((i) => i.darkOnDark);
       const other = r.lowContrast.filter((i) => !i.darkOnDark);
       found += r.islands.length + darkOnDark.length;
-      console.log(`${path} islands=${r.islands.length} darkOnDark=${darkOnDark.length} lowContrast(info)=${other.length}`);
+      console.log(`${path} islands=${r.islands.length} darkOnDark=${darkOnDark.length} lowContrast(info)=${other.length}${retried}`);
       const byClass = new Map();
       for (const i of r.islands) byClass.set(i.cls, (byClass.get(i.cls) || []).concat(i));
       for (const [cls, list] of [...byClass].sort((a, b) => b[1].length - a[1].length).slice(0, 8)) {

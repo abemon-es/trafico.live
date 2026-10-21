@@ -238,11 +238,13 @@ with `BEGIN READ ONLY` … `ROLLBACK`, and give the pg client a `query_timeout`
 instead of a server-side timeout (PgBouncer rejects `statement_timeout` as a
 startup parameter anyway).
 
-server-28 (2026-10-21) is adding a read-only role with its own PgBouncer
-entry, and so its own pool, which can't contaminate the app's and can't write.
-Once its `DATABASE_URL_RO` exists, every read-only check goes through it, and
-`DATABASE_URL` is only for the app. The CTO's change-log says where the URL
-lives; it's never printed.
+**Since 2026-10-21 every read-only check goes through `DATABASE_URL_RO`**, and
+`DATABASE_URL` is only for the app. It's a read-only role with its own
+PgBouncer entry, so its own pool: it can't contaminate the app's and can't
+write, and it carries its own statement timeout. Scripts read it from the
+environment, passed in with `--env-file` (the CTO's change-log says where the
+file lives). It's never printed or copied anywhere. `BEGIN READ ONLY` and the
+client `query_timeout` stay in the scripts anyway.
 
 ### Ask a detector WHAT it acts on, not whether it runs
 The hardest failure of the week left no hole to look into. On the infra side a
