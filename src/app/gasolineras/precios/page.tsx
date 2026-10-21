@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { TrendingUp, TrendingDown, Minus, MapPin } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
+import { fuelStatsDayLabel, fuelStatsDays, utcDay, type FuelStatsDays } from "@/lib/data/fuel-stats-day";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -46,15 +47,11 @@ const TAX_FREE_INFO: Record<string, { tax: string; rate: string }> = {
   "52": { tax: "IPSI", rate: "0.5%" },
 };
 
-async function getProvinceStats() {
-  // Use UTC date to ensure consistency across timezones
-  const now = new Date();
-  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-
+async function getProvinceStats(day: Date | null) {
   const stats = await prisma.fuelPriceDailyStats.findMany({
     where: {
       scope: { startsWith: "province:" },
-      date: today,
+      date: day ?? utcDay(),
     },
     orderBy: { avgGasoleoA: "asc" },
   });
@@ -82,19 +79,14 @@ async function getProvinceStats() {
   return { mainlandProvinces, taxFreeProvinces };
 }
 
-async function getNationalStats() {
-  // Use UTC date to ensure consistency across timezones
-  const now = new Date();
-  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
-
+async function getNationalStats(days: FuelStatsDays) {
   const [todayStats, yesterdayStats] = await Promise.all([
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: today },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: yesterday },
-    }),
+    days.day ? prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "national", date: days.day },
+    }) : null,
+    days.previous ? prisma.fuelPriceDailyStats.findFirst({
+      where: { scope: "national", date: days.previous },
+    }) : null,
   ]);
 
   return { today: todayStats, yesterday: yesterdayStats };
@@ -114,9 +106,11 @@ function TrendIndicator({ current, previous }: { current: number | null; previou
 }
 
 export default async function PreciosPage() {
+  // The newest day with stats: today's only exists from the 06:00 run on.
+  const days = await fuelStatsDays(prisma);
   const [{ mainlandProvinces, taxFreeProvinces }, nationalStats] = await Promise.all([
-    getProvinceStats(),
-    getNationalStats(),
+    getProvinceStats(days.day),
+    getNationalStats(days),
   ]);
 
   const formatPrice = (price: number | null) => {
@@ -156,6 +150,9 @@ export default async function PreciosPage() {
           Precios de Combustible Hoy
         </h1>
         <p className="text-gray-600 dark:text-gray-400 capitalize">{today}</p>
+        {days.day && !days.isToday && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">Datos del {fuelStatsDayLabel(days.day)}</p>
+        )}
       </div>
 
       {/* National Summary */}

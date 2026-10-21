@@ -114,7 +114,8 @@ async function getPortugalFuelData() {
 
     // Spanish national stats for comparison
     prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: "national", date: today },
+      where: { scope: "national", date: { lte: today } },
+      orderBy: { date: "desc" },
       select: { avgGasoleoA: true, avgGasolina95: true, avgGasolina98: true },
     }),
 

@@ -18,6 +18,7 @@
     "test:indexability": "tsx tests/seo-indexability.test.ts",
     "test:alert-urls": "tsx tests/alert-urls.test.ts",
     "test:dark-sweep": "tsx tests/dark-mode-sweep.test.ts",
+    "test:fuel-stats-day": "tsx tests/fuel-stats-day.test.ts",
     "test:lastmod": "tsx tests/sitemap-lastmod.test.ts",
     "test:city-traffic": "tsx tests/city-traffic-bcn.test.ts",
     "test:sasemar": "tsx tests/sasemar-source.test.ts",

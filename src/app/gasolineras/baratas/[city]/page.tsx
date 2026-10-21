@@ -147,8 +147,10 @@ export default async function BaratasCityPage({ params }: Props) {
       orderBy: { priceGasolina95E5: "asc" },
       take: 10,
     }),
+    // The newest day on or before today: today's row only exists from the 06:00 run.
     prisma.fuelPriceDailyStats.findFirst({
-      where: { scope: `province:${cityData.provinceCode}`, date: today },
+      where: { scope: `province:${cityData.provinceCode}`, date: { lte: today } },
+      orderBy: { date: "desc" },
     }),
     prisma.gasStation.count({
       where: { province: cityData.provinceCode, schedule: { contains: "24" } },

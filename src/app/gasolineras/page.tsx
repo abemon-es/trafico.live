@@ -126,7 +126,9 @@ async function getStats() {
       orderBy: { date: "desc" },
     }),
     prisma.fuelPriceDailyStats.findMany({
-      where: { scope: { in: ["province:35", "province:38"] }, date: today },
+      where: { scope: { in: ["province:35", "province:38"] }, date: { lte: today } },
+      orderBy: { date: "desc" },
+      take: 2,
     }),
   ]);
 

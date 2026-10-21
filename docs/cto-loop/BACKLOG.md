@@ -87,6 +87,89 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (55) — about four hours a day with no price on the price pages
+
+**#134 verified** (web `7971e10`, 23:43Z; measured after the post-deploy
+window):
+- /estadisticas: the same 60 elements, **0** `/200` left in the DOM;
+- light and dark both compute `oklch(0.637 0.237 25.331)` = red-500 (before:
+  `oklch(0.971 …)` and `rgba(0,0,0,0)`);
+- the screenshots show the «Tendencia» bars in full colour.
+
+**Found in the dark screenshot (pending, L2):**
+- The «Días con Datos» card on /estadisticas has `iconBgColor="bg-indigo-50"`
+  with no dark variant, so it's bright white in dark mode. It's the only one
+  of its 33.
+- **The general case:** 268 lines in `src` with a light tint
+  (`bg-X-50|100`) and no `dark:bg-` on the same line (gray 92 · tl 45 ·
+  red 26 · orange 20 · blue 15 · …).
+  - Some are fine: light contexts, or the dark class on another element.
+  - Under the bulk-refactor rule this is a dark-mode coverage audit with
+    screenshots per page, not a sweep.
+
+**Signal (server-28's hypothesis, confirmed):**
+- At **00:10Z** /precio-diesel-hoy and /precio-gasolina-hoy had **no national
+  price** («Precio Medio Nacional» absent, after forcing the regeneration).
+- **Cause:** the pages looked up `FuelPriceDailyStats` for the exact
+  **UTC** day, and `gas-station` (06/13/20 Madrid) only writes the new day at
+  04:00Z. That's about 4 h with no price every day.
+  - The fallback box said «Los precios de hoy aún no están disponibles», and
+    the title was «Precio Diésel Hoy … — consulta el precio».
+- **/gasolineras had already fixed it in June** (2026-06-10 audit P1,
+  `lte: today`). The fix never spread, and even its own Canarias query kept
+  the exact day.
+
+**Fix (PR below):**
+- **`src/lib/data/fuel-stats-day.ts`:**
+  - `fuelStatsDays()` → the newest day with national stats on or before
+    today, the one before it, and `isToday`;
+  - `utcDay()` and `fuelStatsDayLabel()`.
+- **/precio-diesel-hoy and /precio-gasolina-hoy:**
+  - data and metadata use that day (title with the price and the data's
+    date);
+  - «Actualizado hoy» → «Datos del 20 de octubre» when it isn't today;
+  - the comparison says «vs ayer» only if the data is today's and the
+    previous day is the one before it, otherwise «vs el 19 de octubre».
+- **/gasolineras/precios:** the same day for national and provinces, plus
+  «Datos del …» when it isn't today.
+- **Single lookups → `date: { lte: … }` + newest first:** /gasolineras/baratas,
+  /codigo-postal, /gasolineras/terrestres, the comparison API, /portugal, and
+  the Canarias rows on /gasolineras.
+  - The station page and the comparison API used `setHours(0,0,0,0)` (local
+    midnight); they now use `utcDay()`, as the collector dates them.
+- **`tests/fuel-stats-day.test.ts`** (`npm run test:fuel-stats-day`):
+  - the 00:10Z case (the newest is the 20th, compared with the 19th, not
+    today);
+  - after 06:00 (today);
+  - no stats;
+  - **no `fuelPriceDailyStats.find*` with `date: today|yesterday` in `src`.**
+  - **Mutant:** /portugal back to the exact day → fails at `page.tsx:116`.
+- **Other checks:** web `tsc` 11, eslint 0 errors (3 old warnings).
+
+**Verify after deploy:**
+- tonight between 00:00Z and 04:00Z, both pages with the hero and «Datos del
+  21 de octubre»;
+- after 04:05Z, «Actualizado hoy».
+
+**Open, in order:**
+1. **L2:** merge and verify this fix (tonight 00:10Z and 04:05Z).
+2. **L1:** #132, a `weather` run that hits the key (00:00Z went through) →
+   server-28 resolves JL and I8.
+3. **L3:** the first `content-fingerprints` run (04:50) and 22-10's; then
+   the pilots.
+4. **L3, the next lastmod item:** gas stations by price.
+5. **L1:** aemet-forecast 01:20Z → `key-refused`.
+6. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+7. **L2:** the indigo icon on «Días con Datos»; the dark-mode coverage audit
+   (268 lines), page by page with screenshots.
+8. **L3:** the index lastmod after 23-10.
+9. **L1, low:** Euskadi id collisions.
+10. **Hygiene:** scrub the pre-October backlog entries.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (54) — the same sweep turned 112 coloured bars and dots almost white
 
 **#133 verified** (web `24f6c6d`, 23:11Z). Headless Chromium on compute, with

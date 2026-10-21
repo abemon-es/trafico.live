@@ -2,6 +2,7 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
+import { utcDay } from "@/lib/data/fuel-stats-day";
 
 // Cache for 5 minutes (prices update 3x daily)
 export const revalidate = 300;
@@ -74,25 +75,25 @@ export async function GET(
       );
     }
 
-    // Get today's date for daily stats lookup
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Get province and national stats from FuelPriceDailyStats
+    // Province and national stats: the newest day on or before today (UTC, as
+    // the stats are dated; today's row only exists from the 06:00 run).
+    const today = utcDay();
     const [provinceStats, nationalStats] = await Promise.all([
       station.province
         ? prisma.fuelPriceDailyStats.findFirst({
             where: {
-              date: today,
+              date: { lte: today },
               scope: `province:${station.province}`,
             },
+            orderBy: { date: "desc" },
           })
         : null,
       prisma.fuelPriceDailyStats.findFirst({
         where: {
-          date: today,
+          date: { lte: today },
           scope: "national",
         },
+        orderBy: { date: "desc" },
       }),
     ]);
 
