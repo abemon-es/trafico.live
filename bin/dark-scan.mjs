@@ -39,8 +39,9 @@ let found = 0;
 let failed = 0;
 for (const path of paths) {
   const page = await ctx.newPage();
+  let response = null;
   try {
-    await page.goto(`https://trafico.live${path}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    response = await page.goto(`https://trafico.live${path}`, { waitUntil: "domcontentloaded", timeout: 45000 });
     await page.waitForLoadState("networkidle", { timeout: 12000 }).catch(() => {});
     // 20 s: several browsers in parallel on heavy pages hydrate slowly (the
     // theme itself is set before the first paint since #138).
@@ -111,8 +112,17 @@ for (const path of paths) {
       return { dark: document.documentElement.classList.contains("dark"), islands, lowContrast };
     });
     if (!r.dark) {
+      // Since #138 an inline <head> script sets html.dark before the first
+      // paint, so «not dark» means the page or this setup failed: say which.
       failed++;
-      console.log(`${path} NOT DARK (html.dark never set): not scanned`);
+      const why = await page.evaluate(() => ({
+        readyState: document.readyState,
+        url: location.href,
+        stored: (() => { try { return localStorage.getItem("theme"); } catch { return "storage error"; } })(),
+        prePaint: [...document.querySelectorAll("head script:not([src])")].some((s) => s.textContent.includes('localStorage.getItem("theme")')),
+        htmlClass: document.documentElement.className.slice(0, 80),
+      })).catch((e) => ({ evaluateError: String(e).split("\n")[0] }));
+      console.log(`${path} NOT DARK: not scanned — HTTP ${response?.status() ?? "none"} ${JSON.stringify(why)}`);
     } else {
       const darkOnDark = r.lowContrast.filter((i) => i.darkOnDark);
       const other = r.lowContrast.filter((i) => !i.darkOnDark);

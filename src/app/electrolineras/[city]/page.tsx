@@ -505,7 +505,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/carga-ev"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 dark:text-tl-300 bg-white dark:bg-gray-900 border border-tl-200 dark:border-tl-800 px-3 py-2 rounded-lg hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 dark:text-tl-300 bg-white dark:bg-gray-900 border border-tl-200 dark:border-tl-800 px-3 py-2 rounded-lg hover:bg-tl-100 dark:hover:bg-tl-900/30 transition-colors"
               >
                 <Activity className="w-4 h-4" />
                 Mapa nacional de electrolineras
@@ -513,7 +513,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
               </Link>
               <Link
                 href="/cuanto-cuesta-cargar"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 dark:text-tl-300 bg-white dark:bg-gray-900 border border-tl-200 dark:border-tl-800 px-3 py-2 rounded-lg hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-700 dark:text-tl-300 bg-white dark:bg-gray-900 border border-tl-200 dark:border-tl-800 px-3 py-2 rounded-lg hover:bg-tl-100 dark:hover:bg-tl-900/30 transition-colors"
               >
                 <Zap className="w-4 h-4" />
                 ¿Cuánto cuesta cargar un coche eléctrico?
@@ -560,7 +560,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                   key={item.question}
                   className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group"
                 >
-                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none text-sm">
+                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors select-none text-sm">
                     {item.question}
                     <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
                   </summary>

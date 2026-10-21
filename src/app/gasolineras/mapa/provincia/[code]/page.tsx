@@ -184,7 +184,7 @@ export default async function ProvinceGasMapPage({ params }: PageProps) {
             {cheapestGas95 && (
               <Link
                 href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-                className="bg-tl-50 dark:bg-tl-900/20 rounded-lg border border-tl-200 dark:border-tl-800 p-4 hover:bg-tl-100 dark:bg-tl-900/30 transition-colors"
+                className="bg-tl-50 dark:bg-tl-900/20 rounded-lg border border-tl-200 dark:border-tl-800 p-4 hover:bg-tl-100 dark:hover:bg-tl-900/30 transition-colors"
               >
                 <div className="text-sm text-tl-600 dark:text-tl-400 mb-1">Gasolina 95 más barata</div>
                 <div className="font-semibold text-gray-900 dark:text-gray-100">{cheapestGas95.name}</div>

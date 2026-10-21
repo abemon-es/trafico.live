@@ -200,7 +200,7 @@ export function IncidenciasContent() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => mutate()}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors"
+                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors"
                 title="Actualizar"
               >
                 <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
@@ -211,7 +211,7 @@ export function IncidenciasContent() {
                   className={`px-3 py-2 flex items-center gap-1.5 text-sm ${
                     viewMode === "map"
                       ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-                      : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
+                      : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950"
                   }`}
                 >
                   <MapIcon className="w-4 h-4" />
@@ -222,7 +222,7 @@ export function IncidenciasContent() {
                   className={`px-3 py-2 flex items-center gap-1.5 text-sm ${
                     viewMode === "list"
                       ? "bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-                      : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
+                      : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950"
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -237,7 +237,7 @@ export function IncidenciasContent() {
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 mb-4">
           <button
             onClick={() => setFiltersExpanded(!filtersExpanded)}
-            className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+            className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
           >
             <span className="flex items-center gap-2">
               Filtros
@@ -397,7 +397,7 @@ function IncidentListItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:bg-gray-950 transition-colors ${
+      className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors ${
         isSelected ? "bg-tl-50 dark:bg-tl-900/20" : ""
       }`}
     >

@@ -362,7 +362,7 @@ export default function CuantoCuestaCargarContent() {
                   className={`text-left rounded-xl border px-3 py-2.5 transition-all text-sm ${
                     selectedPreset === i
                       ? "bg-green-50 dark:bg-green-900/20 border-green-500 ring-1 ring-green-500"
-                      : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 hover:bg-green-50 dark:bg-green-900/20"
+                      : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                   }`}
                 >
                   <p className="font-semibold text-gray-900 dark:text-gray-100 leading-snug">{ev.name}</p>
@@ -377,7 +377,7 @@ export default function CuantoCuestaCargarContent() {
                 className={`text-left rounded-xl border px-3 py-2.5 transition-all text-sm ${
                   selectedPreset === "custom"
                     ? "bg-green-50 dark:bg-green-900/20 border-green-500 ring-1 ring-green-500"
-                    : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 hover:bg-green-50 dark:bg-green-900/20"
+                    : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                 }`}
               >
                 <p className="font-semibold text-gray-900 dark:text-gray-100 leading-snug">Personalizado</p>
@@ -702,7 +702,7 @@ export default function CuantoCuestaCargarContent() {
                 {EV_COMPARISON.map((row) => (
                   <tr
                     key={row.model}
-                    className="hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                   >
                     <td className="py-3 pr-4 font-medium text-gray-900 dark:text-gray-100">
                       {row.model}
@@ -748,14 +748,14 @@ export default function CuantoCuestaCargarContent() {
             </Link>
             <Link
               href="/carga-ev/madrid"
-              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:bg-green-900/20 hover:text-green-700 dark:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               <MapPin className="w-4 h-4" />
               Cargadores en Madrid
             </Link>
             <Link
               href="/carga-ev/barcelona"
-              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:bg-green-900/20 hover:text-green-700 dark:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-900 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:text-green-400 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               <MapPin className="w-4 h-4" />
               Cargadores en Barcelona

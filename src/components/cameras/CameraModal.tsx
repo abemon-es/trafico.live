@@ -73,7 +73,7 @@ export function CameraModal({ camera, onClose }: CameraModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:bg-gray-900 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
             aria-label={`Cerrar detalles de ${camera.name}`}
           >
             <X className="w-5 h-5 text-gray-600 dark:text-gray-400" aria-hidden />

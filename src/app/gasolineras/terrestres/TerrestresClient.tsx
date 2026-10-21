@@ -277,7 +277,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
             className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
               activeFilterCount > 0
                 ? "border-orange-400 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400"
-                : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-950"
+                : "border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
             <Filter className="w-5 h-5" />
@@ -540,7 +540,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
                     const glpPrice = formatPrice(station.priceGLP);
 
                     return (
-                      <tr key={station.id} className="hover:bg-orange-50 dark:bg-orange-900/20 transition-colors">
+                      <tr key={station.id} className="hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
                         <td className="px-4 py-3">
                           <Link
                             href={`/gasolineras/terrestres/${station.id}`}
@@ -593,7 +593,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-950"
               >
                 Anterior
               </button>
@@ -603,7 +603,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
               <button
                 onClick={() => setPage(Math.min(data.pagination.totalPages, page + 1))}
                 disabled={page === data.pagination.totalPages}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-950"
               >
                 Siguiente
               </button>

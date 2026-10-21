@@ -774,7 +774,7 @@ export default function CalculadoraContent() {
                     className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-all text-left ${
                       isSelected
                         ? `${d.bgColor} ${d.borderColor} ${d.color} shadow-sm`
-                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-950"
+                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-950"
                     }`}
                   >
                     {d.label}
@@ -815,7 +815,7 @@ export default function CalculadoraContent() {
                     className={`w-9 h-9 rounded-lg border text-sm font-bold transition-all ${
                       pasajeros === n
                         ? "bg-tl-600 border-tl-600 text-white shadow-sm"
-                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:bg-tl-50 dark:bg-tl-900/20"
+                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:bg-tl-50 dark:hover:bg-tl-900/20"
                     }`}
                   >
                     {n}

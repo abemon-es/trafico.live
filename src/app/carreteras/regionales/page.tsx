@@ -157,7 +157,7 @@ export default async function RegionalesPage() {
                         const incidents = incidentCounts.get(road.id) || 0;
 
                         return (
-                          <tr key={road.id} className="border-b hover:bg-gray-50 dark:bg-gray-950">
+                          <tr key={road.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-950">
                             <td className="py-2 px-4">
                               <Link
                                 href={`/carreteras/${road.id}`}

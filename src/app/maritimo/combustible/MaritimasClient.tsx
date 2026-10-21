@@ -212,7 +212,7 @@ function FAQSection() {
           <div key={idx} className="border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
             <button
               onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
             >
               {faq.q}
               <ChevronDown
@@ -414,7 +414,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
               <Link
                 key={s.id}
                 href={`/maritimo/combustible/${s.id}`}
-                className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:bg-gray-900 transition-colors"
+                className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
               >
                 <span className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold flex items-center justify-center flex-shrink-0">
                   {idx + 1}
@@ -449,7 +449,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
               activeRegion === null
                 ? "bg-[var(--color-tl-sea-600)] text-white"
-                : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
+                : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
             Todas las costas
@@ -461,7 +461,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeRegion === key
                   ? "bg-[var(--color-tl-sea-600)] text-white"
-                  : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950"
+                  : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950"
               }`}
             >
               {meta.icon} {meta.label}
@@ -485,7 +485,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-950"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-950"
           >
             <Filter className="w-5 h-5" />
             Filtrar por provincia
@@ -601,7 +601,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-950"
               >
                 Anterior
               </button>
@@ -611,7 +611,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
               <button
                 onClick={() => setPage(Math.min(data.pagination.totalPages, page + 1))}
                 disabled={page === data.pagination.totalPages}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:bg-gray-950"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-950"
               >
                 Siguiente
               </button>

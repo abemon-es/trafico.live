@@ -328,7 +328,7 @@ export default async function CiclistasPage() {
                       return (
                         <tr
                           key={zone.id}
-                          className={`hover:bg-gray-50 dark:bg-gray-950 ${config.rowClass}`}
+                          className={`hover:bg-gray-50 dark:hover:bg-gray-950 ${config.rowClass}`}
                         >
                           <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                             {zone.roadNumber ?? "—"}
@@ -401,7 +401,7 @@ export default async function CiclistasPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {yearRows.map((row) => (
-                      <tr key={row.year} className="hover:bg-gray-50 dark:bg-gray-950">
+                      <tr key={row.year} className="hover:bg-gray-50 dark:hover:bg-gray-950">
                         <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                           {row.year}
                         </td>

@@ -114,7 +114,7 @@ export function FuelPriceTable({
         <thead>
           <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
             <th
-              className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
+              className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
               onClick={() => handleSort("name")}
             >
               <div className="flex items-center gap-1">
@@ -126,7 +126,7 @@ export function FuelPriceTable({
               <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400">Carretera</th>
             )}
             <th
-              className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
+              className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
               onClick={() => handleSort("locality")}
             >
               <div className="flex items-center gap-1">
@@ -135,7 +135,7 @@ export function FuelPriceTable({
               </div>
             </th>
             <th
-              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
+              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
               onClick={() => handleSort("priceGasoleoA")}
             >
               <div className="flex items-center justify-end gap-1">
@@ -144,7 +144,7 @@ export function FuelPriceTable({
               </div>
             </th>
             <th
-              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
+              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
               onClick={() => handleSort("priceGasolina95E5")}
             >
               <div className="flex items-center justify-end gap-1">
@@ -153,7 +153,7 @@ export function FuelPriceTable({
               </div>
             </th>
             <th
-              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-900"
+              className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
               onClick={() => handleSort("priceGasolina98E5")}
             >
               <div className="flex items-center justify-end gap-1">
@@ -174,7 +174,7 @@ export function FuelPriceTable({
               <tr
                 key={station.id}
                 className={`
-                  border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950
+                  border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950
                   ${isHighlighted ? "bg-green-50 dark:bg-green-900/20" : ""}
                 `}
               >

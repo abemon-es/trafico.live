@@ -9,7 +9,7 @@ const QUICK_ACTIONS = [
     description: "Consulta tu trayecto",
     href: "/carreteras",
     icon: Route,
-    color: "bg-tl-50 dark:bg-tl-900/20 hover:bg-tl-100 dark:bg-tl-900/30 border-tl-200 dark:border-tl-800",
+    color: "bg-tl-50 dark:bg-tl-900/20 hover:bg-tl-100 dark:hover:bg-tl-900/30 border-tl-200 dark:border-tl-800",
     iconColor: "text-tl-600 dark:text-tl-400",
   },
   {
@@ -25,7 +25,7 @@ const QUICK_ACTIONS = [
     description: "Planifica tu carga",
     href: "/carga-ev",
     icon: Zap,
-    color: "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:bg-green-900/30 border-green-200",
+    color: "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 border-green-200",
     iconColor: "text-green-600 dark:text-green-400",
   },
   {
@@ -33,7 +33,7 @@ const QUICK_ACTIONS = [
     description: "Comprueba tu acceso",
     href: "/profesional/restricciones",
     icon: Ban,
-    color: "bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:bg-red-900/30 border-red-200",
+    color: "bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border-red-200",
     iconColor: "text-red-600 dark:text-red-400",
   },
 ];

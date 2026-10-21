@@ -135,7 +135,7 @@ export default async function AutoviasPage() {
                       .map((p) => PROVINCE_NAMES[p] || p);
 
                     return (
-                      <tr key={road.id} className="border-b hover:bg-gray-50 dark:bg-gray-950">
+                      <tr key={road.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-950">
                         <td className="py-3 px-4">
                           <Link
                             href={`/carreteras/${road.id}`}

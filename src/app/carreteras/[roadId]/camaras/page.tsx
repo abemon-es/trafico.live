@@ -157,7 +157,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
             <div className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {provCameras.map((camera) => (
-                  <div key={camera.id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:bg-gray-50 dark:bg-gray-950">
+                  <div key={camera.id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-950">
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <h3 className="font-medium text-gray-900 dark:text-gray-100">{camera.name || `Cámara ${camera.id}`}</h3>

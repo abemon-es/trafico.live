@@ -317,7 +317,7 @@ export function AlertasMeteoContent() {
               onClick={() => mutate()}
               disabled={isLoading}
               aria-label="Actualizar alertas"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950 hover:border-gray-300 dark:border-gray-700 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950 hover:border-gray-300 dark:border-gray-700 transition-all disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}

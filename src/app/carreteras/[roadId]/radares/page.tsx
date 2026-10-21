@@ -191,7 +191,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                 </thead>
                 <tbody>
                   {provRadars.map((radar) => (
-                    <tr key={radar.radarId} className="border-b hover:bg-gray-50 dark:bg-gray-950">
+                    <tr key={radar.radarId} className="border-b hover:bg-gray-50 dark:hover:bg-gray-950">
                       <td className="py-3 px-4">
                         <span className="font-medium">km {Number(radar.kmPoint).toFixed(1)}</span>
                       </td>
@@ -267,7 +267,7 @@ export default async function RoadRadarsPage({ params }: PageProps) {
                         ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                         : "bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200";
                     return (
-                      <tr key={sl.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950">
+                      <tr key={sl.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950">
                         <td className="py-3 px-4">{Number(sl.kmStart).toFixed(1)}</td>
                         <td className="py-3 px-4">{Number(sl.kmEnd).toFixed(1)}</td>
                         <td className="py-3 px-4">

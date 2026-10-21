@@ -96,7 +96,7 @@ export default async function ProvincePricesPage({ params }: Props) {
         {cheapestDiesel && (
           <Link
             href={`/gasolineras/terrestres/${cheapestDiesel.id}`}
-            className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4 hover:bg-green-100 dark:bg-green-900/30 transition-colors"
+            className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -116,7 +116,7 @@ export default async function ProvincePricesPage({ params }: Props) {
         {cheapestGas95 && (
           <Link
             href={`/gasolineras/terrestres/${cheapestGas95.id}`}
-            className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4 hover:bg-green-100 dark:bg-green-900/30 transition-colors"
+            className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 p-4 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">

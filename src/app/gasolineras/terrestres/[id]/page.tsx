@@ -390,7 +390,7 @@ export default async function StationDetailPage({ params }: Props) {
               </a>
               <Link
                 href={`/gasolineras/mapa?lat=${station.latitude}&lng=${station.longitude}&zoom=15`}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
               >
                 <MapPin className="w-4 h-4" />
                 Ver en mapa
@@ -710,7 +710,7 @@ export default async function StationDetailPage({ params }: Props) {
                 <Link
                   key={alt.id}
                   href={`/gasolineras/terrestres/${alt.id}`}
-                  className="flex items-center justify-between py-3 hover:bg-gray-50 dark:bg-gray-950 -mx-2 px-2 rounded transition-colors"
+                  className="flex items-center justify-between py-3 hover:bg-gray-50 dark:hover:bg-gray-950 -mx-2 px-2 rounded transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="w-6 h-6 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">

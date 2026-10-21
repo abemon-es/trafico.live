@@ -1713,7 +1713,7 @@ function CarreterasSection({
                 {data.data.roads.slice(0, 20).map((road, idx) => {
                   const risk = riskColors[road.riskLevel] || riskColors.LOW;
                   return (
-                    <tr key={idx} className="hover:bg-gray-50 dark:bg-gray-950">
+                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-950">
                       <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{road.road}</td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-center font-data">{road.incidentCount}</td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 text-center font-data">{road.v16Count}</td>
@@ -2040,7 +2040,7 @@ function CorrelacionSection({
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {data.data.sampleCorrelations.slice(0, 10).map((corr, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 dark:bg-gray-950">
+                  <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-950">
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 font-data">{corr.distanceKm} km</td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 font-data">
                       {corr.timeDiffMinutes === 0 ? "Durante" : `${corr.timeDiffMinutes} min`}
@@ -2153,7 +2153,7 @@ function RankingsSection({
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               rankingType === "provinces"
                 ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800"
-                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
             Provincias
@@ -2163,7 +2163,7 @@ function RankingsSection({
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               rankingType === "roads"
                 ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800"
-                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
             Carreteras
