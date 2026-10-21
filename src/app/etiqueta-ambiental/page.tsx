@@ -53,7 +53,7 @@ const LABELS = [
     code: "0",
     name: "Distintivo 0 Emisiones",
     color: "bg-teal-500",
-    textColor: "text-teal-700",
+    textColor: "text-teal-700 dark:text-teal-300",
     bgLight: "bg-teal-50 dark:bg-teal-900/20",
     borderColor: "border-teal-200",
     dot: "bg-teal-500",
@@ -624,7 +624,7 @@ export default function EtiquetaAmbientalPage() {
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-4 mb-5 flex items-start gap-3">
               <Ban className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-red-800 font-semibold mb-0.5">
+                <p className="text-sm text-red-800 dark:text-red-200 font-semibold mb-0.5">
                   Sanción base: 200 € (infracción leve)
                 </p>
                 <p className="text-sm text-red-700 dark:text-red-400 leading-relaxed">

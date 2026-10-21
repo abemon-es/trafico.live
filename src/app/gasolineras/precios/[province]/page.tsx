@@ -104,7 +104,7 @@ export default async function ProvincePricesPage({ params }: Props) {
               </div>
               <div>
                 <div className="text-sm text-green-600 dark:text-green-400">Gasóleo A más barato</div>
-                <div className="font-semibold text-green-800">{cheapestDiesel.name}</div>
+                <div className="font-semibold text-green-800 dark:text-green-200">{cheapestDiesel.name}</div>
               </div>
             </div>
             <div className="text-2xl font-bold text-green-700 dark:text-green-400 mb-1">
@@ -124,7 +124,7 @@ export default async function ProvincePricesPage({ params }: Props) {
               </div>
               <div>
                 <div className="text-sm text-green-600 dark:text-green-400">Gasolina 95 más barata</div>
-                <div className="font-semibold text-green-800">{cheapestGas95.name}</div>
+                <div className="font-semibold text-green-800 dark:text-green-200">{cheapestGas95.name}</div>
               </div>
             </div>
             <div className="text-2xl font-bold text-green-700 dark:text-green-400 mb-1">

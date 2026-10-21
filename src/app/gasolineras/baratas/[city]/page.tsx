@@ -262,7 +262,7 @@ export default async function BaratasCityPage({ params }: Props) {
         {total24h > 0 && (
           <div className="flex items-center gap-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg px-4 py-3 mb-8 text-sm">
             <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-            <span className="text-orange-800">
+            <span className="text-orange-800 dark:text-orange-200">
               <strong>{total24h} gasolineras</strong> abiertas las 24 horas en la provincia de {cityData.province}.
               Útil para repostar de noche o en festivos.
             </span>
@@ -415,7 +415,7 @@ export default async function BaratasCityPage({ params }: Props) {
           >
             <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0" />
             <div>
-              <div className="font-semibold text-purple-900 text-sm">Ver en el mapa</div>
+              <div className="font-semibold text-purple-900 dark:text-purple-100 text-sm">Ver en el mapa</div>
               <div className="text-xs text-purple-700 dark:text-purple-400">Gasolineras en {cityData.province}</div>
             </div>
           </Link>
@@ -425,7 +425,7 @@ export default async function BaratasCityPage({ params }: Props) {
           >
             <Fuel className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
             <div>
-              <div className="font-semibold text-green-900 text-sm">Precios por municipio</div>
+              <div className="font-semibold text-green-900 dark:text-green-100 text-sm">Precios por municipio</div>
               <div className="text-xs text-green-700 dark:text-green-400">Tabla completa provincia {cityData.province}</div>
             </div>
           </Link>

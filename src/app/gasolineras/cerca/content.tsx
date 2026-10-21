@@ -227,7 +227,7 @@ export default function GasolinerasCercaContent() {
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-red-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h2 className="font-semibold text-red-800 mb-1">
+                <h2 className="font-semibold text-red-800 dark:text-red-200 mb-1">
                   Permite la ubicación para ver las gasolineras más cercanas
                 </h2>
                 <p className="text-sm text-red-700 dark:text-red-400 mb-4">{locationError}</p>
@@ -258,7 +258,7 @@ export default function GasolinerasCercaContent() {
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 <div>
-                  <p className="text-sm font-medium text-orange-900">Ubicación detectada</p>
+                  <p className="text-sm font-medium text-orange-900 dark:text-orange-100">Ubicación detectada</p>
                   <p className="text-xs text-orange-600 dark:text-orange-400">
                     {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                   </p>

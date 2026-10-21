@@ -318,7 +318,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
             <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-orange-800">
+                <p className="font-semibold text-orange-800 dark:text-orange-200">
                   {typeCount["SECTION"]} radar{typeCount["SECTION"] !== 1 ? "es" : ""} de tramo en la {roadId}
                 </p>
                 <p className="text-sm text-orange-700 dark:text-orange-400 mt-0.5">

@@ -109,7 +109,7 @@ const ICA_COLORS = [
   "text-tl-amber-500",
   "text-signal-red",
   "text-purple-500",
-  "text-purple-700",
+  "text-purple-700 dark:text-purple-300",
 ];
 
 const FAQ_ITEMS = [

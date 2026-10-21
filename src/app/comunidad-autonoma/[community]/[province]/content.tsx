@@ -404,7 +404,7 @@ export default function ProvinceContent() {
 
             {/* Comparison to National Average */}
             <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg p-4">
-              <h3 className="font-medium text-tl-900 mb-2">Comparación con Media Nacional</h3>
+              <h3 className="font-medium text-tl-900 dark:text-tl-100 mb-2">Comparación con Media Nacional</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-tl-800 dark:text-tl-200">
                 <div>
                   <span className="font-medium">Incidencias:</span>{" "}
