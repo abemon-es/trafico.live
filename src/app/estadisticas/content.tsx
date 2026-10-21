@@ -1648,11 +1648,11 @@ function CarreterasSection({
 }) {
   const hasData = data?.success;
 
-  const riskColors: Record<string, { bg: string; text: string; label: string }> = {
-    CRITICAL: { bg: "bg-red-600", text: "text-red-600 dark:text-red-400", label: "Crítico" },
-    HIGH: { bg: "bg-orange-700", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
-    MEDIUM: { bg: "bg-yellow-700", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
-    LOW: { bg: "bg-green-700", text: "text-green-600 dark:text-green-400", label: "Bajo" },
+  const riskColors: Record<string, { badge: string; text: string; label: string }> = {
+    CRITICAL: { badge: "bg-red-600 text-white", text: "text-red-600 dark:text-red-400", label: "Crítico" },
+    HIGH: { badge: "bg-orange-700 text-white", text: "text-orange-600 dark:text-orange-400", label: "Alto" },
+    MEDIUM: { badge: "bg-yellow-700 text-white", text: "text-yellow-600 dark:text-yellow-400", label: "Medio" },
+    LOW: { badge: "bg-green-700 text-white", text: "text-green-600 dark:text-green-400", label: "Bajo" },
   };
 
   return (
@@ -1721,7 +1721,7 @@ function CarreterasSection({
                         {road.avgDurationMins ? `${road.avgDurationMins}m` : "-"}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${risk.bg} text-white`}>
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${risk.badge}`}>
                           {risk.label}
                         </span>
                       </td>

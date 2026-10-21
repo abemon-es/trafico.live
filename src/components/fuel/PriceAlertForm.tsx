@@ -94,8 +94,8 @@ export function PriceAlertForm({
   const titleColor = isAmber ? "text-tl-amber-900 dark:text-tl-amber-100" : "text-tl-800 dark:text-tl-200";
   const iconColor = isAmber ? "text-tl-amber-600 dark:text-tl-amber-400" : "text-tl-600 dark:text-tl-400";
   const btnClass = isAmber
-    ? "bg-tl-amber-600 hover:bg-tl-amber-700 focus:ring-tl-amber-500"
-    : "bg-tl-600 hover:bg-tl-700 focus:ring-tl-500 dark:ring-tl-400";
+    ? "bg-tl-amber-600 hover:bg-tl-amber-700 focus:ring-tl-amber-500 text-white"
+    : "bg-tl-600 hover:bg-tl-700 focus:ring-tl-500 dark:ring-tl-400 text-white";
   const inputFocusClass = isAmber
     ? "focus:ring-tl-amber-400 focus:border-tl-amber-400"
     : "focus:ring-tl-400 focus:border-tl-400";
@@ -275,7 +275,7 @@ export function PriceAlertForm({
           <button
             type="submit"
             disabled={status === "loading"}
-            className={`mt-4 w-full flex items-center justify-center gap-2 ${btnClass} text-white text-sm font-medium py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition disabled:opacity-60 disabled:cursor-not-allowed`}
+            className={`mt-4 w-full flex items-center justify-center gap-2 ${btnClass} text-sm font-medium py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition disabled:opacity-60 disabled:cursor-not-allowed`}
           >
             {status === "loading" ? (
               <>

@@ -90,6 +90,79 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (76) — white text travels with its background: WHITE_OVER_INTERPOLATED is empty
+
+**#154 and #155 merged and gated.**
+- **/etiqueta-ambiental:** low contrast 1 → 0 (0/0/0, /zbe as well).
+- **#155**, with an interaction forced as server-28 asked: the 10 incident
+  filter chips on /incidencias clicked active one by one and measured in
+  light and dark, all 4.51–6.97:1, exactly as the table said (before:
+  orange-500 2.89, yellow-500 1.91, the «9500» grey ≈1.03).
+- `bg-gray-9500` is gone from the served HTML of the 6 pages; 0/0/0 on all of
+  them (the «Suscribir» exception on /clima).
+
+**Signal:** the limit I reported on #155. A «measured» entry in
+`WHITE_OVER_INTERPOLATED` pins the values as they were reviewed; a later edit
+to `imdColor` or a chip colour wasn't caught.
+
+**Fix (server-28's next item):** each colour function or map returns the
+**pair** (`"bg-red-600 text-white"`), and its template no longer adds a fixed
+`text-white`. Rule 8b then checks it like any other class string. 8 sources
+changed:
+- the IMD badge (`imdColor`);
+- the risk badge (`riskColors.badge`, was `bg`);
+- the 10 incident filter chip colours;
+- the fuel tabs (`activeBg`);
+- the /cortes-trafico road codes;
+- the PriceAlertForm button;
+- the two /clima temperature circles.
+
+**`WHITE_OVER_INTERPOLATED` is empty.** Rule 8c(b) stays: a new template with
+a fixed `text-white` over an interpolated background fails until it's listed
+with numbers, or better, returns the pair.
+
+**What changes visually:** only the /clima circles. Rule 8b sees the size only
+in the same string, so they now use the small-text shades (≥4.5:1): red-600,
+amber-700, emerald-700, teal-700, blue-600, one shade darker. Everything else
+gets exactly the same classes on the same element, defined elsewhere.
+
+**Evidence:**
+- **Mutant:** `imdColor`'s yellow step back to yellow-500 → the test names
+  `estaciones-aforo/content.tsx:73`. That's the case the «measured» entry
+  missed.
+- The measuring script: 0 failing. dark-mode-sweep, theme-pre-paint,
+  camera-images, service-worker and sitemap-lastmod pass. Web tsc 11; eslint
+  1 = 1 with main.
+
+**Gate after deploy:** the active chips again (unchanged numbers expected),
+dark-scan on /clima/provincia/madrid, /estaciones-aforo, /estadisticas,
+/gasolineras/historico, /cortes-trafico and /incidencias: 0 new islands or
+dark on dark.
+
+**Open, in order:**
+1. **L2:** merge this; gate.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+7. **L2, low:** the eslint errors on main.
+8. **L3:** dead cameras in the map popups (`tile_cameras`).
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Hygiene:** `GasStationPopup` and other dead exports; scrub the
+    pre-October backlog entries.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (75) — the 7 «to review» white-text templates, and the sweep's «bg-gray-9500»
 
 **#154 merged** (`WHITE_OVER_INTERPOLATED` and rule 8c); its gate is running.

@@ -345,10 +345,10 @@ export default async function CortesTráficoPage() {
                             {incident.roadNumber ? (
                               <Link
                                 href={`/carreteras/${encodeURIComponent(incident.roadNumber)}`}
-                                className={`inline-block px-3 py-1.5 text-white text-sm font-bold rounded-lg transition-colors ${
+                                className={`inline-block px-3 py-1.5 text-sm font-bold rounded-lg transition-colors ${
                                   group.color === "red"
-                                    ? "bg-red-600 hover:bg-red-700"
-                                    : "bg-tl-amber-600 hover:bg-tl-amber-700"
+                                    ? "bg-red-600 hover:bg-red-700 text-white"
+                                    : "bg-tl-amber-600 hover:bg-tl-amber-700 text-white"
                                 }`}
                               >
                                 {incident.roadNumber}

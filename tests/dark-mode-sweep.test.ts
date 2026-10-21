@@ -62,6 +62,8 @@
  *    checked together, and (b) a template with a fixed `text-white` over an
  *    interpolated background must be in WHITE_OVER_INTERPOLATED, which says
  *    whether its values were measured. A new one fails until someone looks.
+ *    The list is empty: the 8 that were there return the pair from their own
+ *    function or map now, which rule 8b checks like any other string.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -258,14 +260,9 @@ assert.deepEqual(mapEntryTooLight('{\n    color: "bg-gray-500",\n    badgeText: 
  * Each one is listed with what is known about the values it interpolates.
  */
 const WHITE_OVER_INTERPOLATED: Record<string, string> = {
-  "src/app/gasolineras/historico/content.tsx tab.activeBg": "measured: 6.97 / 5.89 / 5.22:1 (#151)",
-  "src/app/estaciones-aforo/content.tsx imdColor(selectedStation.imd)": "measured: 4.51–6.97:1 (small text; was 1.91–4.51)",
-  "src/app/clima/estacion/[id]/page.tsx (computed)": "measured: 3.20–3.81:1 (text-2xl bold, large; was 2.13–3.81)",
-  "src/app/clima/provincia/[slug]/page.tsx (computed)": "measured: 3.20–3.81:1 (text-2xl bold, large; was 2.13–3.81)",
-  "src/app/cortes-trafico/page.tsx (computed)": "measured: red-600 4.77 / tl-amber-600 6.79:1, unchanged",
-  "src/app/estadisticas/content.tsx risk.bg": "measured: 4.77–5.22:1 (small text; was 1.91–4.77)",
-  "src/components/fuel/PriceAlertForm.tsx btnClass": "measured: tl-amber-600 6.79 / tl-600 6.97:1, unchanged",
-  "src/components/incidents/IncidentFilters.tsx color": "measured: 4.51–6.97:1 (small text; was 1.03–6.97)",
+  // Empty since 2026-10-21: every colour function or map returns its background
+  // and text together ("bg-red-600 text-white"), so rule 8b checks the pair.
+  // Add an entry only with the measured numbers of every value it can take.
 };
 const whiteOverInterpolated = (rel: string, line: string) =>
   (line.match(/`[^`]*`|`[^`]*$/g) ?? []).flatMap((t) => {
