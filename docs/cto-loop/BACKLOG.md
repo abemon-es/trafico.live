@@ -13,7 +13,8 @@ last.
 > screenshots of the pages it touches) or a test of the pattern it must not
 > leave behind. The dark-mode sweep `dc3f166c` touched 138 files with neither,
 > and left white on white (#133) and 112 near-white bars and dots (cycle 54)
-> for months.
+> for months. For dark mode the visual diff is `bin/dark-scan.sh` (run on
+> compute, before and after, on the pages touched).
 
 > 🎯 **MILESTONE 2026-08-18 00:26 — degraded = 0/51.** Every collector healthy
 > simultaneously for the first time. Saturday's baseline: 9 degraded including
@@ -84,6 +85,67 @@ own text on hubs).
   (manual actions, indexing report trend, crawl stats, links, CWV mobile,
   request indexing top 20). Leading metric, re-measured every Monday by CMO:
   Googlebot requests/day, then "unknown" → "crawled".
+
+---
+
+## Cycle 2026-10-21 (57) — the dark-mode scanner goes into the repo; #136 verified
+
+**#136 verified** (web `e2f33d2`, 02:28Z), with the scanner after the
+post-deploy window:
+
+| page | before | after |
+|---|---|---|
+| /gasolineras/precios | 3 (the `/20/50` rows) | **0** |
+| /gasolineras/precios/madrid | — | 0 |
+| /maritimo/combustible (/gasolineras/maritimas) | 2 badges | **0** |
+| /historico (indigo icon) | 1 | **0** |
+| /estadisticas | — | 0 |
+| /espana/…/madrid | 1 light wrapper, 11,908 px | wrapper dark |
+
+- **The `tl-sea` badge** (the one non-trivial line, from server-28's
+  review), measured by pixel:
+  - light: background 200,230,250 / text 1,34,53;
+  - dark: 0,17,26 / 144,205,244.
+  - Readable in both.
+
+**What the dark wrapper uncovered (batch 2, pending):**
+- **`bg-white` cards with no dark variant:**
+  - /espana: 20;
+  - /espana/…/madrid: 9;
+  - a municipality page (Alcalá): 3;
+  - /gasolineras/marcas: «Suscribir».
+- **Smaller ones:** `bg-tl-50` nav items on the location pages; `bg-tl-amber-100`
+  badges on /radares/A-3 («80 km/h») and /espana.
+- /espana/andalucia never turned dark (`html.dark` doesn't appear within 8 s):
+  to look at.
+
+**The scanner, versioned (server-28):** `bin/dark-scan.sh` +
+`bin/dark-scan.mjs`.
+- It runs **on compute**.
+- It spreads the paths across N browsers in the Playwright image and reads
+  each background as a painted pixel.
+- It uses `--disable-dev-shm-usage`: without it, the 64 MB `/dev/shm` of the
+  container killed tabs on heavy pages.
+- **Exit codes:** 0 nothing light, 1 islands, 2 a page that couldn't be scanned
+  (it never turned dark, or didn't load).
+- **Tested** on 6 pages: 0 crashes, exit 1 (the batch-2 islands above).
+- The bulk-refactor rule at the top of this file now names it.
+
+**Open, in order:**
+1. **L2, dark mode batch 2:** the `bg-white` cards on the location pages and
+   /espana, `bg-tl-50`, amber badges, «Suscribir», with `bin/dark-scan.sh`
+   before and after; /espana/andalucia not turning dark.
+2. **L2:** #135 at 04:07Z (`Actualizado hoy`).
+3. **L1:** #132, a `weather` run that hits the key (00:00–02:00Z went
+   through).
+4. **L3:** `content-fingerprints` at 04:50 and 22-10's; then the pilots.
+5. **L3:** gas stations by price.
+6. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+7. **L3:** the index lastmod after 23-10.
+8. **L1, low:** Euskadi id collisions.
+9. **Hygiene:** scrub the pre-October backlog entries.
+10. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+11. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
 
 ---
 
