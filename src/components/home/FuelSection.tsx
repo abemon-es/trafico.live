@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import Link from "next/link";
+import { withCount } from "./counts";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -22,20 +23,19 @@ interface FuelCard {
   key: string;
   slug: string;
   label: string;
-  staticPrice: number;
-  staticDelta: number;
   getPrice: (d: FuelPricesToday) => number | null | undefined;
   getDelta: (d: FuelPricesToday) => number | null | undefined;
   isGlp?: boolean;
 }
 
+// Each card used to fall back to a price written by hand (1,389 €/L…) under
+// «Precios hoy» until the API answered, and for good when it didn't. A price
+// shows only once the API returns it.
 const FUEL_CARDS: FuelCard[] = [
   {
     key: "g95",
     slug: "tipo/gasolina-95",
     label: "Gasolina 95",
-    staticPrice: 1.389,
-    staticDelta: -0.8,
     getPrice: (d) => d.national?.avgGasolina95,
     getDelta: (d) => d.national?.deltaGasolina95,
   },
@@ -43,8 +43,6 @@ const FUEL_CARDS: FuelCard[] = [
     key: "ga",
     slug: "tipo/gasoleo-a",
     label: "Gasóleo A",
-    staticPrice: 1.312,
-    staticDelta: -1.2,
     getPrice: (d) => d.national?.avgGasoleoA,
     getDelta: (d) => d.national?.deltaGasoleoA,
   },
@@ -52,8 +50,6 @@ const FUEL_CARDS: FuelCard[] = [
     key: "g98",
     slug: "tipo/gasolina-98",
     label: "Gasolina 98",
-    staticPrice: 1.542,
-    staticDelta: 0.3,
     getPrice: (d) => d.national?.avgGasolina98,
     getDelta: (d) => d.national?.deltaGasolina98,
   },
@@ -61,8 +57,6 @@ const FUEL_CARDS: FuelCard[] = [
     key: "glp",
     slug: "tipo/glp",
     label: "GLP",
-    staticPrice: 0.734,
-    staticDelta: -0.5,
     getPrice: (d) => d.national?.avgGlp,
     getDelta: (d) => d.national?.deltaGlp,
     isGlp: true,
@@ -76,7 +70,7 @@ const BOTTOM_TAGS = [
   { label: "Por provincia", href: "/gasolineras/precios" },
   { label: "Histórico", href: "/gasolineras/historico" },
   { label: "Marítimo", href: "/maritimo/combustible" },
-  { label: "Portugal (3.000+)", href: "/portugal/combustible" },
+  { label: "Portugal", href: "/portugal/combustible" },
 ];
 
 function formatPrice(price: number): string {
@@ -106,7 +100,7 @@ function DeltaBadge({ delta }: { delta: number }) {
   );
 }
 
-export function FuelSection() {
+export function FuelSection({ stationCount }: { stationCount: number }) {
   const { data } = useSWR<FuelPricesToday>("/api/fuel-prices/today", fetcher, {
     refreshInterval: 300000,
   });
@@ -121,7 +115,7 @@ export function FuelSection() {
               Precios hoy
             </p>
             <h2 className="font-heading text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-              Combustible · 12.437 estaciones
+              Combustible · {withCount(stationCount, "estaciones")}
             </h2>
           </div>
           <Link
@@ -135,10 +129,8 @@ export function FuelSection() {
         {/* Price cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
           {FUEL_CARDS.map((card) => {
-            const rawPrice = data ? card.getPrice(data) : null;
-            const rawDelta = data ? card.getDelta(data) : null;
-            const price = rawPrice != null ? rawPrice : card.staticPrice;
-            const delta = rawDelta != null ? rawDelta : card.staticDelta;
+            const price = data ? card.getPrice(data) : null;
+            const delta = data ? card.getDelta(data) : null;
 
             return (
               <Link
@@ -156,12 +148,12 @@ export function FuelSection() {
                       : "text-tl-amber-500 dark:text-tl-amber-400"
                   }`}
                 >
-                  {formatPrice(price)}
+                  {price != null ? formatPrice(price) : "—"}
                 </p>
                 <p className="text-[0.6rem] text-gray-400 dark:text-gray-500">
                   €/litro
                 </p>
-                <DeltaBadge delta={delta} />
+                {price != null && delta != null && <DeltaBadge delta={delta} />}
               </Link>
             );
           })}

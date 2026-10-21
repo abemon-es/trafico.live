@@ -90,6 +90,87 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (88) — the home showed made-up figures as live data, and four articles that 404
+
+**#166 merged and gated** (`c560a215`, deployed 20:54:42Z). Server HTML with
+JS off, 1280 and 412:
+- visible destinations: / 212→226, /incidencias 212→223, /camaras 208→209,
+  /estadisticas 212→216;
+- sr-only links 58 → 0;
+- every formerly hidden destination is visible on its own page.
+
+The CMO logged it as site-wide event #2.
+
+**Found** while checking the CTO's /noticias note: «Análisis y noticias», on
+the home, rendered four hand-written articles from the 2026-04-02 redesign
+(«Tráfico hoy: miércoles 2 de abril — 342 incidencias activas»). All four
+links 404. The CTO and the CMO approved one rule for the whole redesign:
+- live data comes from the database, or isn't shown;
+- the articles are the latest 4 published, or no section.
+
+**Sweep of the 17 home components** (with several patterns: prices, thousands,
+stat values, dates, article slugs). Each hand-written figure, with the
+database value on 21-10:
+
+| Component | Shown | Database / truth | Now |
+|---|---|---|---|
+| EditorialSection | 4 articles, 4 slugs | none exist (404) | latest 4 published, or nothing |
+| CityIntelligence («Ejemplo: Valladolid») | 3 activas · 1 retención · 2 obras · 1,229/1,189 €/L · 18 cámaras · 12 radares · 45 gasolineras · 24 cargadores · Score 87/100 · IMD 18.420 | made up; no city page has a score | labels only; score card gone |
+| RoadsSection | 23/156/89 · 87/412/234 · 165/389 · 2.400+/290 | radars total 737 (the cards add up to 1,247) | examples + link only |
+| FuelSection | fallback prices 1,389 · 1,312 · 1,542 · 0,734 €/L under «Precios hoy» | API value | «—» until the API answers |
+| FuelSection, DataStory, EntitySamples | gas stations 12.437 / «11 000» | 12,470 | live count |
+| DataStory, EntitySamples | chargers 18.642 / «12 000» | 12,074 | live count |
+| AdvancedFeatures | 4.247 detectors · 4.000+ radars · 847 cameras | 7,309 · 737 · 1,976 | live counts |
+| CrossBorder, FuelSection, TerritorialGrid | Portugal «3.000+» gas stations | 2,519 | live count, or none |
+| DataStory | «6.117 sensores Madrid» | 4,902 reporting in 30 min | removed |
+| DataStory | accidents «2003–25» | microdata 2019–2023 | «2019–23» |
+| AdvancedFeatures | «Buques en tiempo real»: Próximo | AIS live | Activo |
+
+- **Live counts:** page.tsx counts at render; a count of 0 (no DB) shows no
+  number.
+- **Kept as stable facts:** 14.400+ counting stations (14,436), 8.131
+  municipalities, 52 provinces, 80+ territory pages, 2019–23.
+- **Guard `tests/home-no-invented-figures.test.ts`:** no hand-written price,
+  grouped count, stat value, date or article link in the home's components.
+  On main's files it fails with ~60 hits.
+
+**Not changed, for the CMO:**
+- the «Próximo» roadmap claims (IA prediction, YOLO);
+- «Semana Santa 2026» and «Puente de Mayo 2026» links in October;
+- «13+ zonas», «40+ endpoints», «42 puertos», «13 capas»;
+- the home hero's «actualizados cada minuto».
+
+**Also found, separate items:**
+- **L1:** today's two «Precio medio del diésel hoy» articles both read
+  1.875 €/L. Check the generator against the CNMC/MINETUR average.
+- **L1:** the weather-alert article title «13 avisos en 1 provincias».
+- **L2:** /estadisticas/accidentes/[provincia] claims «2011-2024», while
+  HistoricalAccidents holds 2021–2023.
+
+**Open, in order:**
+1. **L2:** gate this PR. On the home's server HTML: 0 /noticias/* links
+   non-200, and every card title equals a published article in the database.
+   Then the deploy time to the CMO as event #3.
+2. **L1:** the diesel 1.875 €/L check; «1 provincias».
+3. **L2:** the province accident pages' year claim.
+4. **L3 (CMO-approved):** 308 for the 7 short province aliases, plus
+   «Todas las provincias» on /estadisticas.
+5. **L3:** #145, the full-day share after 22-10's runs (PR comment).
+6. **L2:** territorios' two redirecting links; `/status` → `/alertas` full
+   reload; /incidencias' two SSR cards that both link /incidencias/analytics.
+7. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+8. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+9. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+10. **L2, low:** `set-state-in-effect` / `purity`; `prefetch={false}` on long
+    link directories; dead exports.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+13. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (87) — the four sr-only link lists: shown on their page, or gone
 
 **#165 merged and gated** (`52859c60`, deployed 19:58:34Z). Server HTML:
@@ -118,7 +199,8 @@ own text on hubs).
     the database answered;
   - the 20 destinations already visible on the home are dropped.
 - **Footer «Más secciones»:** + /noticias. No page linked the news hub
-  visibly.
+  visibly in the server HTML without JS. The home's «Ver todas →» arrives in
+  a streamed Suspense chunk, hidden until JS swaps it in.
 - **/incidencias:** a visible «Tráfico por ciudad» row (10 cities) replaces
   the sr-only nav.
 - **/camaras:** the sr-only nav is removed; its 8 cities are in the footer

@@ -106,7 +106,7 @@ export function TerritorialGrid() {
 
         {/* SEO footer paragraph */}
         <p className="mt-6 text-xs text-gray-400 dark:text-gray-500 leading-relaxed max-w-3xl">
-          Además de las principales ciudades, trafico.live ofrece datos de tráfico para los 8.131 municipios de España, así como cobertura en Portugal (más de 3.000 gasolineras y meteorología IPMA) y Andorra (incidencias y cámaras de Mobilitat).
+          Además de las principales ciudades, trafico.live ofrece datos de tráfico para los 8.131 municipios de España, así como cobertura en Portugal (gasolineras DGEG y meteorología IPMA) y Andorra (incidencias y cámaras de Mobilitat).
         </p>
       </div>
     </section>

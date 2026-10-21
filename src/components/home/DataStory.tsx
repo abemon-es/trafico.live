@@ -1,35 +1,26 @@
-const BIG_NUMBERS = [
-  {
-    value: "14.400+",
-    label: "Estaciones de aforo",
-    detail: "IMD desde 2017",
-    colorClass: "text-tl-600",
-  },
-  {
-    value: "12.437",
-    label: "Gasolineras",
-    detail: "Precios diarios",
-    colorClass: "text-tl-amber-500",
-  },
-  {
-    value: "18.642",
-    label: "Cargadores EV",
-    detail: "Red completa",
-    colorClass: "text-signal-green",
-  },
-  {
-    value: "6.117",
-    label: "Sensores Madrid",
-    detail: "Cada 5 min",
-    colorClass: "text-tl-sea-500",
-  },
-  {
-    value: "2003–25",
-    label: "Histórico accidentes",
-    detail: "Series DGT",
-    colorClass: "text-signal-red",
-  },
-];
+import type { HomeStats } from "@/app/HomeClient";
+
+interface BigNumber {
+  value: string;
+  label: string;
+  detail: string;
+  colorClass: string;
+}
+
+// Gas stations and chargers are counted live (they read 12.437 and 18.642,
+// written by hand; the database had 12.470 and 12.074), and drop out when the
+// count didn't load. Gone: «6.117 sensores Madrid» (4.902 report today) and
+// «2003–25» accidents, a range no table holds.
+function bigNumbers(stats: HomeStats): BigNumber[] {
+  const live = (n: number, item: Omit<BigNumber, "value">): BigNumber[] =>
+    n > 0 ? [{ value: n.toLocaleString("es-ES"), ...item }] : [];
+  return [
+    { value: "14.400+", label: "Estaciones de aforo", detail: "IMD desde 2017", colorClass: "text-tl-600" },
+    ...live(stats.stationCount, { label: "Gasolineras", detail: "Precios diarios", colorClass: "text-tl-amber-500" }),
+    ...live(stats.chargerCount, { label: "Cargadores EV", detail: "Red completa", colorClass: "text-signal-green" }),
+    { value: "2019–23", label: "Accidentes con víctimas", detail: "Microdatos DGT", colorClass: "text-signal-red" },
+  ];
+}
 
 const SOURCES = [
   "DGT NAP",
@@ -46,7 +37,7 @@ const SOURCES = [
   "ArcGIS REST",
 ];
 
-export function DataStory() {
+export function DataStory({ stats }: { stats: HomeStats }) {
   return (
     <section className="py-18 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 border-t border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto text-center">
@@ -59,8 +50,8 @@ export function DataStory() {
         </h2>
 
         {/* Big numbers row */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
-          {BIG_NUMBERS.map((item) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          {bigNumbers(stats).map((item) => (
             <div key={item.label} className="text-center">
               <p
                 className={`font-data text-4xl font-bold tracking-tight leading-none mb-1 ${item.colorClass}`}

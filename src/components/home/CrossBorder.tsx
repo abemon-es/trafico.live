@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { withCount } from "./counts";
 
 interface StatPill {
   value: string;
@@ -13,7 +14,9 @@ interface BorderCard {
   href: string;
 }
 
-const CARDS: BorderCard[] = [
+// Portugal's station count is live: it read «3.000+», written by hand, against
+// 2.519 in the database. With no count, the card names the source instead.
+const cards = (portugalStationCount: number): BorderCard[] => [
   {
     flag: "🇪🇸",
     title: "España",
@@ -30,9 +33,11 @@ const CARDS: BorderCard[] = [
     flag: "🇵🇹",
     title: "Portugal",
     description:
-      "3.000+ gasolineras DGEG. Meteorología IPMA. Accidentes ANSR. Combustible actualizado diariamente.",
+      `${portugalStationCount > 0 ? withCount(portugalStationCount, "gasolineras") : "Gasolineras"} DGEG. Meteorología IPMA. Accidentes ANSR. Combustible actualizado diariamente.`,
     stats: [
-      { value: "3.000+", label: "gasolineras" },
+      portugalStationCount > 0
+        ? { value: portugalStationCount.toLocaleString("es-ES"), label: "gasolineras" }
+        : { value: "DGEG", label: "gasolineras" },
       { value: "IPMA", label: "meteo" },
       { value: "ANSR", label: "accidentes" },
     ],
@@ -52,7 +57,7 @@ const CARDS: BorderCard[] = [
   },
 ];
 
-export function CrossBorder() {
+export function CrossBorder({ portugalStationCount }: { portugalStationCount: number }) {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto">
@@ -70,7 +75,7 @@ export function CrossBorder() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {CARDS.map((card) => (
+          {cards(portugalStationCount).map((card) => (
             <Link
               key={card.title}
               href={card.href}

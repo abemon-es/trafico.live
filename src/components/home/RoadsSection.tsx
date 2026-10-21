@@ -5,21 +5,18 @@ interface RoadTypeCard {
   typeLabelColor: string;
   title: string;
   examples: string;
-  stats: Array<{ value: string; label: string }>;
   href: string;
 }
 
+// Per-type counts («23 autopistas · 156 radares · 89 cámaras») used to sit on
+// each card; they were made up (the four radar figures alone added up to more
+// than the radars in the database). Examples and a link only.
 const ROAD_TYPES: RoadTypeCard[] = [
   {
     typeLabel: "Alta capacidad",
     typeLabelColor: "text-tl-600 dark:text-tl-400",
     title: "Autopistas",
     examples: "AP-1 · AP-2 · AP-6 · AP-7 · AP-68",
-    stats: [
-      { value: "23", label: "autopistas" },
-      { value: "156", label: "radares" },
-      { value: "89", label: "cámaras" },
-    ],
     href: "/carreteras/autopistas",
   },
   {
@@ -27,11 +24,6 @@ const ROAD_TYPES: RoadTypeCard[] = [
     typeLabelColor: "text-tl-600 dark:text-tl-400",
     title: "Autovías",
     examples: "A-1 · A-2 · A-3 · A-4 · A-5 · A-6",
-    stats: [
-      { value: "87", label: "autovías" },
-      { value: "412", label: "radares" },
-      { value: "234", label: "cámaras" },
-    ],
     href: "/carreteras/autovias",
   },
   {
@@ -39,10 +31,6 @@ const ROAD_TYPES: RoadTypeCard[] = [
     typeLabelColor: "text-tl-amber-500 dark:text-tl-amber-400",
     title: "Nacionales",
     examples: "N-I · N-II · N-III · N-IV · N-V",
-    stats: [
-      { value: "165", label: "nacionales" },
-      { value: "389", label: "radares" },
-    ],
     href: "/carreteras/nacionales",
   },
   {
@@ -50,10 +38,6 @@ const ROAD_TYPES: RoadTypeCard[] = [
     typeLabelColor: "text-gray-400 dark:text-gray-500",
     title: "Regionales",
     examples: "M-30 · B-20 · AG-55 · CT-31",
-    stats: [
-      { value: "2.400+", label: "vías" },
-      { value: "290", label: "radares" },
-    ],
     href: "/carreteras/regionales",
   },
 ];
@@ -111,23 +95,9 @@ export function RoadsSection() {
               <h3 className="font-heading text-[0.85rem] font-semibold text-gray-900 dark:text-gray-100 mb-0.5">
                 {road.title}
               </h3>
-              <p className="font-data text-[0.625rem] text-gray-400 dark:text-gray-500 mb-2">
+              <p className="font-data text-[0.625rem] text-gray-400 dark:text-gray-500">
                 {road.examples}
               </p>
-
-              {/* Stats row */}
-              <div className="flex gap-3 pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
-                {road.stats.map((stat) => (
-                  <div key={stat.label}>
-                    <span className="font-data text-[0.725rem] font-medium text-gray-900 dark:text-gray-100 block">
-                      {stat.value}
-                    </span>
-                    <span className="text-[0.575rem] text-gray-400 dark:text-gray-500">
-                      {stat.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
             </Link>
           ))}
         </div>
