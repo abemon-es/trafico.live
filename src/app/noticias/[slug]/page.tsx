@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { isStaleArticle } from "@/lib/seo/indexability";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -22,6 +22,18 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+// Archived alerts send their reader to the live page instead of a 404. The
+// daily diesel alerts of April–October 2026 compared two different averages
+// and announced a fall that didn't happen; they were archived on 2026-10-22.
+const ARCHIVED_REDIRECTS: Array<[prefix: string, to: string]> = [["precio-diesel-", "/precio-diesel-hoy"]];
+
+async function redirectIfArchived(slug: string): Promise<void> {
+  const to = ARCHIVED_REDIRECTS.find(([prefix]) => slug.startsWith(prefix))?.[1];
+  if (!to) return;
+  const archived = await prisma.article.findFirst({ where: { slug, status: "ARCHIVED" }, select: { id: true } });
+  if (archived) permanentRedirect(to);
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await prisma.article.findUnique({
@@ -30,6 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 
   if (!article) {
+    await redirectIfArchived(slug);
     return { title: "Artículo no encontrado" };
   }
 
@@ -75,6 +88,7 @@ export default async function ArticlePage({ params }: Props) {
   });
 
   if (!article) {
+    await redirectIfArchived(slug);
     notFound();
   }
 
