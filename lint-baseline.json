@@ -1,9 +1,4 @@
 {
-  "@next/next/no-html-link-for-pages": {
-    "src/app/carga-ev/page.tsx": 46,
-    "src/app/incidencias/page.tsx": 14,
-    "src/app/mapa/page.tsx": 14
-  },
   "@typescript-eslint/ban-ts-comment": {
     "src/app/aviacion/cancelados/page.tsx": 1
   },

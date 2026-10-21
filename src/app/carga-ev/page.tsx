@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { Metadata } from "next";
 import { Loader2, Zap, Fuel, ShieldCheck, CircleDollarSign, MapPin, Leaf } from "lucide-react";
 import CargaEVContent from "./content";
@@ -7,6 +8,29 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+
+const EV_CITIES = [
+  { slug: "madrid", name: "Madrid" },
+  { slug: "barcelona", name: "Barcelona" },
+  { slug: "valencia", name: "Valencia" },
+  { slug: "sevilla", name: "Sevilla" },
+  { slug: "zaragoza", name: "Zaragoza" },
+  { slug: "malaga", name: "Málaga" },
+  { slug: "murcia", name: "Murcia" },
+  { slug: "palma", name: "Palma" },
+  { slug: "bilbao", name: "Bilbao" },
+  { slug: "alicante", name: "Alicante" },
+  { slug: "cordoba", name: "Córdoba" },
+  { slug: "valladolid", name: "Valladolid" },
+  { slug: "vigo", name: "Vigo" },
+  { slug: "gijon", name: "Gijón" },
+  { slug: "vitoria", name: "Vitoria" },
+  { slug: "granada", name: "Granada" },
+  { slug: "oviedo", name: "Oviedo" },
+  { slug: "santander", name: "Santander" },
+  { slug: "san-sebastian", name: "San Sebastián" },
+  { slug: "pamplona", name: "Pamplona" },
+];
 
 export const metadata: Metadata = {
   title: "Cargadores de Vehículos Eléctricos",
@@ -55,40 +79,28 @@ export default function CargaEVPage() {
           ]}
         />
 
-        {/* Server-rendered subpage links for SEO — visually hidden, fully crawlable */}
-        <h2 className="sr-only">Puntos de carga para vehículos eléctricos en España</h2>
-        <nav aria-hidden="true" className="sr-only" tabIndex={-1}>
-          <div>
-            <a href="/carga-ev/cerca" tabIndex={-1}>Cargadores eléctricos cerca de mí</a>
-            <a href="/carga-ev" tabIndex={-1}>Electrolineras en España</a>
-            <a href="/carga-ev/madrid" tabIndex={-1}>Electrolineras en Madrid</a>
-            <a href="/carga-ev/barcelona" tabIndex={-1}>Electrolineras en Barcelona</a>
-            <a href="/carga-ev/valencia" tabIndex={-1}>Electrolineras en Valencia</a>
-            <a href="/carga-ev/sevilla" tabIndex={-1}>Electrolineras en Sevilla</a>
-            <a href="/carga-ev/zaragoza" tabIndex={-1}>Electrolineras en Zaragoza</a>
-            <a href="/carga-ev/malaga" tabIndex={-1}>Electrolineras en Malaga</a>
-            <a href="/carga-ev/murcia" tabIndex={-1}>Electrolineras en Murcia</a>
-            <a href="/carga-ev/palma" tabIndex={-1}>Electrolineras en Palma</a>
-            <a href="/carga-ev/bilbao" tabIndex={-1}>Electrolineras en Bilbao</a>
-            <a href="/carga-ev/alicante" tabIndex={-1}>Electrolineras en Alicante</a>
-            <a href="/carga-ev/cordoba" tabIndex={-1}>Electrolineras en Cordoba</a>
-            <a href="/carga-ev/valladolid" tabIndex={-1}>Electrolineras en Valladolid</a>
-            <a href="/carga-ev/vigo" tabIndex={-1}>Electrolineras en Vigo</a>
-            <a href="/carga-ev/gijon" tabIndex={-1}>Electrolineras en Gijon</a>
-            <a href="/carga-ev/vitoria" tabIndex={-1}>Electrolineras en Vitoria</a>
-            <a href="/carga-ev/granada" tabIndex={-1}>Electrolineras en Granada</a>
-            <a href="/carga-ev/oviedo" tabIndex={-1}>Electrolineras en Oviedo</a>
-            <a href="/carga-ev/santander" tabIndex={-1}>Electrolineras en Santander</a>
-            <a href="/carga-ev/san-sebastian" tabIndex={-1}>Electrolineras en San Sebastian</a>
-            <a href="/carga-ev/pamplona" tabIndex={-1}>Electrolineras en Pamplona</a>
-            <a href="/cuanto-cuesta-cargar" tabIndex={-1}>¿Cuánto cuesta cargar un coche eléctrico?</a>
-            <a href="/etiqueta-ambiental" tabIndex={-1}>Etiqueta ambiental DGT</a>
-          </div>
-        </nav>
-
         <Suspense fallback={<LoadingFallback />}>
           <CargaEVContent />
         </Suspense>
+        {/* Every city page linked, and visible, in the server HTML: the content
+            above loads its data in the browser. */}
+        <section aria-labelledby="ev-cities-heading" className="mt-8">
+          <h2 id="ev-cities-heading" className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Electrolineras por ciudad
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {EV_CITIES.map((city) => (
+              <li key={city.slug}>
+                <Link
+                  href={`/carga-ev/${city.slug}`}
+                  className="inline-block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                >
+                  {city.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
         <RelatedLinks links={[
           { title: "Electrolineras en España", description: "Directorio completo de puntos de carga por provincia", href: "/carga-ev", icon: <Zap className="w-5 h-5" /> },
           { title: "Gasolineras más baratas", description: "Precios de carburante en tiempo real en toda España", href: "/gasolineras", icon: <Fuel className="w-5 h-5" /> },

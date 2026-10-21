@@ -303,7 +303,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Mapa AIS de buques", href: "/barcos/mapa", icon: Ship, description: "Tráfico marítimo en vivo" },
           { name: "Puertos", href: "/maritimo/puertos", icon: Anchor, description: "Directorio de puertos" },
-          { name: "Ferries", href: "/maritimo/ferries", icon: Ship, description: "Rutas y horarios" },
+          { name: "Ferries", href: "/maritimo/ferries/proximo", icon: Ship, description: "Rutas y horarios" },
           { name: "Seguridad marítima", href: "/maritimo/seguridad", icon: ShieldAlert, description: "Canal 16 y 900 202 202" },
           { name: "Meteorología marina", href: "/maritimo/meteorologia", icon: Wind, description: "Alertas y previsiones" },
         ],
@@ -320,7 +320,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         title: "Transporte público",
         items: [
           { name: "Operadores", href: "/transporte-publico", icon: Bus, description: "15+ operadores GTFS" },
-          { name: "Metro Madrid", href: "/transporte-publico/metro-madrid", icon: Train },
+          { name: "Metro Madrid", href: "/transporte-publico/metro-de-madrid", icon: Train },
           { name: "TMB Barcelona", href: "/transporte-publico/tmb", icon: Bus },
           { name: "Buses urbanos", href: "/transporte-publico", icon: Bus },
         ],
@@ -454,7 +454,7 @@ export const footerColumns: FooterColumn[] = [
     links: [
       { name: "Buques AIS", href: "/barcos/mapa" },
       { name: "Puertos", href: "/maritimo/puertos" },
-      { name: "Ferries", href: "/maritimo/ferries" },
+      { name: "Ferries", href: "/maritimo/ferries/proximo" },
       { name: "Aviones en vivo", href: "/aviacion" },
       { name: "Aeropuertos AENA", href: "/aviacion/aeropuertos" },
       { name: "Transporte público", href: "/transporte-publico" },
