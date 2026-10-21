@@ -3,7 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AccidentesClient } from "./AccidentesClient";
-import { PROVINCE_TO_COMMUNITY } from "@/lib/geo/province-mapping";
+import { PROVINCES, PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
@@ -133,11 +133,13 @@ async function fetchStats() {
 
 // ─── Static province list (all 52) ────────────────────────────────────────────
 
-const ALL_PROVINCES: { name: string; slug: string }[] = Object.keys(
-  PROVINCE_TO_COMMUNITY
-)
-  .sort((a, b) => a.localeCompare(b, "es"))
-  .map((name) => ({ name, slug: provinceSlug(name) }));
+// The short name shows («Valencia»); the slug is the one [provincia] resolves,
+// from the official name («Valencia/València»). Slugging the short name sent
+// five of these links to a 404.
+const ALL_PROVINCES: { name: string; slug: string }[] = PROVINCES.map((p) => ({
+  name: PROVINCE_NAMES[p.code] ?? p.name,
+  slug: provinceSlug(p.name),
+})).sort((a, b) => a.name.localeCompare(b.name, "es"));
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 

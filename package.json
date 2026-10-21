@@ -34,6 +34,7 @@
     "test:euskadi": "tsx tests/euskadi-active.test.ts",
     "test:incident-status": "tsx tests/incident-run-status.test.ts",
     "test:cyl": "tsx tests/cyl-incidents.test.ts",
+    "test:accident-links": "tsx tests/accident-province-links.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
