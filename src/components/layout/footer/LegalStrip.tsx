@@ -9,7 +9,7 @@ const LEGAL_LINKS: { name: string; href: string; external?: boolean }[] = [
   { name: "Aviso legal", href: "/aviso-legal" },
   { name: "Privacidad", href: "/politica-privacidad" },
   { name: "Cookies", href: "/cookies" },
-  { name: "Términos", href: "/terminos" },
+  { name: "Términos", href: "/aviso-legal#condiciones-uso" },
   { name: "Sitemap", href: "/sitemap.xml", external: true },
   { name: "Status", href: "https://status.trafico.live", external: true },
   { name: "API status", href: "https://status.trafico.live/api", external: true },
