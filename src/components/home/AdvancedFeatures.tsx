@@ -1,4 +1,4 @@
-import { Globe, Radio, Radar, BrainCircuit, Ship, Video } from "lucide-react";
+import { Globe, Radio, Radar, Ship } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { HomeStats } from "@/app/HomeClient";
 import { withCount } from "./counts";
@@ -13,9 +13,11 @@ interface Feature {
   techDetail: string;
 }
 
-// Counts are live: the descriptions read «4.247 detectores», «4.000+ radares»
-// and «847 cámaras», written by hand, against 7.309, 737 and 1.976 in the
-// database. «Buques en tiempo real» was badged «Próximo»; AIS is live.
+// Counts are live: the descriptions read «4.247 detectores» and «4.000+
+// radares», written by hand, against 7.309 and 737 in the database. Only
+// features that work today: «Predicción IA» and «Visión por cámara (YOLO)»,
+// badged «Próximo», are off the home until they ship; «Buques en tiempo
+// real», badged «Próximo» too, has been live since the AIS collector.
 const features = (stats: HomeStats): Feature[] => [
   {
     icon: Globe,
@@ -48,16 +50,6 @@ const features = (stats: HomeStats): Feature[] => [
     techDetail: "useVoiceAlerts · GeolocateControl · HUD",
   },
   {
-    icon: BrainCircuit,
-    iconBg: "bg-purple-50 dark:bg-purple-900/20",
-    iconColor: "text-purple-600 dark:text-purple-400",
-    badge: "Próximo",
-    title: "Predicción IA",
-    description:
-      'LSTM/GRU entrenado con perfiles horarios por sensor. Toggle en el mapa: "Ahora" vs "En 30 min" vs "En 1h".',
-    techDetail: "TrafficFlowPrediction · HourlyTrafficProfile",
-  },
-  {
     icon: Ship,
     iconBg: "bg-tl-sea-50 dark:bg-tl-sea-900/20",
     iconColor: "text-tl-sea-500 dark:text-tl-sea-400",
@@ -66,16 +58,6 @@ const features = (stats: HomeStats): Feature[] => [
     description:
       "Posición de buques via AIS WebSocket. Historial de rutas. Tipo, velocidad y destino de cada barco.",
     techDetail: "AISStream.io · OpenSeaMap · MaritimeEmergency",
-  },
-  {
-    icon: Video,
-    iconBg: "bg-red-50 dark:bg-red-900/20",
-    iconColor: "text-signal-red",
-    badge: "Próximo",
-    title: "Visión por cámara (YOLO)",
-    description:
-      `Conteo de vehículos, estimación de velocidad y detección de incidentes desde ${withCount(stats.cameraCount, "cámaras DGT")} con YOLO.`,
-    techDetail: "YOLOv8 · Vehicle Speed Estimation · DGT cameras",
   },
 ];
 
@@ -96,7 +78,7 @@ export function AdvancedFeatures({ stats }: { stats: HomeStats }) {
         </p>
 
         {/* 3-column feature grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {features(stats).map((feature) => {
             const Icon = feature.icon;
             const isActive = feature.badge === "Activo";

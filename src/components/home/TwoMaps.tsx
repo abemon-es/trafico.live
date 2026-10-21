@@ -37,7 +37,7 @@ const SEA_LAYERS = [
   "Posición de buques AIS en vivo",
   "Emergencias y alertas SASEMAR",
   "Meteorología costera AEMET",
-  "Combustible en 42 puertos",
+  "Combustible en puertos",
   "Oleaje y viento marino",
 ];
 
@@ -57,7 +57,7 @@ export function TwoMaps() {
               Mapa de tráfico en tiempo real
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-              El mapa de carreteras de trafico.live integra más de 13 capas interactivas sobre una base vectorial de alta resolución con tecnología MapLibre GL. Visualiza el flujo de tráfico en vivo con colores por velocidad, la posición exacta de incidencias DGT, cámaras en directo y radares con alertas de proximidad. Los datos se actualizan cada 5 minutos vía DATEX II y cada 30 segundos vía SSE para incidencias.
+              El mapa de carreteras de trafico.live integra capas interactivas sobre una base vectorial de alta resolución con tecnología MapLibre GL. Visualiza el flujo de tráfico en vivo con colores por velocidad, la posición exacta de incidencias DGT, cámaras en directo y radares con alertas de proximidad. Los datos se actualizan cada 5 minutos vía DATEX II y cada 30 segundos vía SSE para incidencias.
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
               Disponible en vista Globe para una perspectiva tridimensional de la Península Ibérica, Baleares, Canarias y territorios continentales. Incluye capas opcionales de gasolineras, cargadores eléctricos, zonas ZBE, balizas V16 activas y alertas meteorológicas AEMET.
@@ -85,7 +85,7 @@ export function TwoMaps() {
           <div className="flex flex-col gap-4">
             <div className="bg-gradient-to-br from-tl-50 to-tl-100 dark:from-tl-950/40 dark:to-tl-900/40 rounded-2xl h-64 flex items-center justify-center border border-tl-200 dark:border-tl-800/50">
               <span className="font-data text-xs text-tl-400 dark:text-tl-500 select-none">
-                MapLibre GL · 13 capas · Globe View
+                MapLibre GL · Globe View
               </span>
             </div>
 

@@ -93,9 +93,28 @@ const COLUMN_4 = {
   ],
 };
 
+// Seasonal operations with their own page: each shows only from three weeks
+// before it starts until it ends (Madrid dates). «Semana Santa 2026» and
+// «Puente de Mayo 2026» stayed on the home into October. The pages remain as
+// an archive; a new operation gets a row here when its page exists.
+const SEASONAL = [
+  { label: "Semana Santa 2026", href: "/semana-santa-2026", start: "2026-04-02", end: "2026-04-06" },
+  { label: "Puente de Mayo 2026", href: "/puente-mayo-2026", start: "2026-04-30", end: "2026-05-03" },
+];
+const LEAD_DAYS = 21;
+
+/** The operations to show on `today` (YYYY-MM-DD, Madrid). */
+function seasonalLinks(today: string): { label: string; href: string }[] {
+  return SEASONAL.filter(({ start, end }) => {
+    const from = new Date(`${start}T00:00:00Z`);
+    from.setUTCDate(from.getUTCDate() - LEAD_DAYS);
+    return today >= from.toISOString().slice(0, 10) && today <= end;
+  }).map(({ label, href }) => ({ label, href }));
+}
+
+const madridToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
+
 const DESTACADO_LINKS = [
-  { label: "Semana Santa 2026", href: "/semana-santa-2026" },
-  { label: "Puente de Mayo 2026", href: "/puente-mayo-2026" },
   { label: "Operaciones DGT", href: "/operaciones" },
   { label: "Informe diario", href: "/informe-diario" },
   { label: "Profesional", href: "/profesional" },
@@ -203,7 +222,7 @@ export function VerticalShowcase() {
             Destacado
           </p>
           <div className="flex flex-wrap gap-2">
-            {DESTACADO_LINKS.map((link) => (
+            {[...seasonalLinks(madridToday()), ...DESTACADO_LINKS].map((link) => (
               <Link
                 key={`${link.href}-${link.label}`}
                 href={link.href}

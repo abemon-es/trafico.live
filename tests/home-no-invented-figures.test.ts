@@ -14,7 +14,10 @@
  *   2. no hand-written price (a figure before €) and no fallback price;
  *   3. no hand-written count with a thousands separator («12.437», «11 000»),
  *      and no stat value, except the stable catalogue facts in ALLOWED;
- *   4. no hand-written calendar date («miércoles 2 de abril»).
+ *   4. no hand-written calendar date («miércoles 2 de abril»);
+ *   5. only what works today: no «Próximo» feature, and a dated seasonal page
+ *      («Semana Santa 2026», on the home in October) only through a row that
+ *      carries its start and end dates.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:home-figures
@@ -59,6 +62,8 @@ function check(text: string): string[] {
       if (!ALLOWED.has(m[1]) && !ALLOWED.has(m[1].replace(/\+$/, ""))) out.push(`${at}: stat value by hand «${m[1]}»`);
     }
     if (DATE.test(line)) out.push(`${at}: date by hand`);
+    if (/badge:\s*"Próximo"/.test(line)) out.push(`${at}: unreleased feature`);
+    if (/href:\s*"\/[a-z0-9-]+-20\d\d"/.test(line) && !/start:\s*"\d{4}-\d\d-\d\d"/.test(line)) out.push(`${at}: dated page without dates`);
   });
   return out;
 }
@@ -73,6 +78,9 @@ assert.deepEqual(check('    title: "Tráfico hoy: miércoles 2 de abril",'), ["1
 assert.deepEqual(check('      { value: "8.131", label: "municipios" },'), []);
 assert.deepEqual(check("  const n = stats.stationCount.toLocaleString(\"es-ES\");"), []);
 assert.deepEqual(check('                href={`/noticias/${article.slug}`}'), []);
+assert.deepEqual(check('    badge: "Próximo",'), ["1: unreleased feature"]);
+assert.deepEqual(check('  { label: "Semana Santa 2026", href: "/semana-santa-2026" },'), ["1: dated page without dates"]);
+assert.deepEqual(check('  { label: "Semana Santa 2026", href: "/semana-santa-2026", start: "2026-04-02", end: "2026-04-06" },'), []);
 
 const dir = join(ROOT, "src/components/home");
 const files = [...readdirSync(dir).filter((f) => f.endsWith(".tsx")).map((f) => join(dir, f)), join(ROOT, "src/app/HomeClient.tsx")];

@@ -14,6 +14,8 @@ export interface HomeStats {
   chargerCount: number;
   detectorCount: number;
   portugalStationCount: number;
+  /** When the incident collector last read the active incidents (ISO), or null. */
+  lastIncidentAt: string | null;
 }
 
 // Hero map moved to HeroMapDeferred: static panel first paint, live map
@@ -117,7 +119,19 @@ export function HomeClient({ initialStats, articles }: { initialStats: HomeStats
             </h1>
             <p className="mt-1.5 text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-2xl">
               Incidencias DGT, trenes Renfe, vuelos, barcos AIS, calidad del aire y combustible.
-              Datos oficiales actualizados cada minuto.
+              {/* A stamp read from the database, not a promise («actualizados
+                  cada minuto»): no feed on screen is guaranteed that cadence. */}
+              {initialStats.lastIncidentAt && (
+                <>
+                  {" "}Incidencias actualizadas a las{" "}
+                  {new Date(initialStats.lastIncidentAt).toLocaleTimeString("es-ES", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZone: "Europe/Madrid",
+                  })}
+                  .
+                </>
+              )}
             </p>
           </div>
         </header>

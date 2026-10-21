@@ -17,7 +17,7 @@ const PRO_FEATURES: ProFeature[] = [
   {
     icon: Ban,
     label: "ZBE check",
-    detail: "13+ zonas activas",
+    detail: "Zonas por ciudad",
   },
   {
     icon: Route,
@@ -27,7 +27,7 @@ const PRO_FEATURES: ProFeature[] = [
   {
     icon: Code2,
     label: "API REST",
-    detail: "40+ endpoints",
+    detail: "Documentada",
   },
   {
     icon: Truck,

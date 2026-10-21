@@ -25,7 +25,6 @@ const cards = (portugalStationCount: number): BorderCard[] => [
     stats: [
       { value: "52", label: "provincias" },
       { value: "8.131", label: "municipios" },
-      { value: "80+", label: "páginas" },
     ],
     href: "/espana",
   },
