@@ -12,6 +12,17 @@ RUN npm install --ignore-scripts --include=dev
 RUN mv prisma.config.ts prisma.config.ts.bak || true
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/db" npx prisma generate
 
+# Lint ratchet (bin/lint-ratchet.mjs): eslint errors may go down, never up,
+# per rule and per file against lint-baseline.json. The repo has no PR CI, so
+# the deploy build is where it's enforced. Emergency deploy only:
+# --build-arg LINT_RATCHET_SKIP=1, which this step prints in the build log.
+ARG LINT_RATCHET_SKIP=
+RUN if [ -n "$LINT_RATCHET_SKIP" ]; then \
+      echo "[lint-ratchet] SKIPPED (LINT_RATCHET_SKIP=$LINT_RATCHET_SKIP): emergency deploy, eslint not checked"; \
+    else \
+      node bin/lint-ratchet.mjs; \
+    fi
+
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Build with a real DATABASE_URL when deploy.sh supplies one as a BuildKit

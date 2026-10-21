@@ -446,3 +446,17 @@ Learned the hard way; assume these unless re-verified.
   `--since 2026-08-17T07:04:00Z`, absolute, in Z.
 - In jq, `.x // null` **swallows `false`** — a broken boolean becomes "unknown".
   Test with `has("ok")` instead. This bug briefly hid the SEO pipeline outage.
+
+### The lint ratchet: eslint errors may go down, never up (2026-10-21)
+The repo has no PR CI, so the deploy build enforces it. A step in the
+Dockerfile, before `npm run build`, runs `bin/lint-ratchet.mjs`. It compares
+eslint's errors per rule and per file with the committed `lint-baseline.json`;
+more errors than the baseline fail the deploy, naming the rule and the file. It
+started at 182 (main after #159), so it blocks nothing that already exists.
+- **A PR that fixes lint errors lowers the baseline in the same PR:**
+  `node bin/lint-ratchet.mjs --update`, run on compute in the web image like
+  any other check. A stale baseline lets errors come back up to the old count.
+- **Emergency deploy only:** `--build-arg LINT_RATCHET_SKIP=1`, which the build
+  prints («[lint-ratchet] SKIPPED …»); never silent. Today that's a manual
+  deploy by the CTO.
+- It costs about a minute per deploy (52 s on 4 CPUs).
