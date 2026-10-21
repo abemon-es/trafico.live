@@ -90,6 +90,90 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (72) — white text on 51 badges, buttons and cards that never reached 4.5:1
+
+**#151 merged and gated** (`5ea6002c`, deployed 11:09Z).
+- The light snapshot of the 33 primary elements is identical, all rgb(27, 75,
+  213).
+- On the 8 pages, the 9 low-contrast texts → 1. The one left, /zbe «Sin
+  etiqueta», is in this batch.
+- Dark on dark 0, and no new islands. The «Suscribir» CTA is the documented
+  exception.
+
+**#145, first gas-station run after the deploy** (11:00Z):
+`content-fingerprints-gas` ok, 12,470 seen, all new, 0 changed, 341 ms.
+Gas-station sitemap shards 1 and 2: 5,000 URLs and **0 lastmod** each (shard
+1 had 4,474 «today»). The 18:00Z run gives the first real `changedAt`.
+
+**Signal:** white text on every Tailwind 400/500/600/700/800/900 shade and on
+the tl-* palette, measured in Chromium (Tailwind v4 oklch, tl-* hex from
+`globals.css`):
+- under 3:1: every 300/400 shade and the 500 of orange, amber, yellow, lime,
+  green, emerald, teal, cyan and sky;
+- under 4.5:1 (server-28: small text needs 4.5; 3:1 is only for large text
+  and non-text UI): also the 600 of those families, and **tl-amber-500 at
+  4.46:1** (8 buttons).
+
+There were **51 such backgrounds in 25 files**: rankings (1st/2nd/3rd),
+train-brand badges, the guides' CTA cards, the weather-alert, ZBE and
+«live» badges, and buttons.
+
+**Fix:** each background goes to the lightest shade of its family where white
+reaches **4.5:1, whatever the text size** (the lowest after the change is
+4.77:1).
+- Hovers move with it, and a border equal to the background too.
+- The 3-step rankings keep their order: green and orange 500/400/300 →
+  900/800/700, tl-amber → 800/700/600, tl → 800/700/600. The 1st place of the
+  `tl` one already passed and moves to keep the order.
+- Two train brands would have collided with a sibling, so they take the next
+  shade: Regional Express green-800 (Regional is 700), Rodalies orange-800
+  (Media Distancia is 700).
+- The camera modal's «live» dot goes back to white (`dark:bg-white`): batch
+  3's transformer had darkened it.
+
+**Guard:** rule 8b in `tests/dark-mode-sweep.test.ts`. White text on a shade
+lighter than its family's lightest passing one fails (4.5:1, or 3:1 with
+text-2xl and up, or text-xl bold). Mutant: the «live» badge back on green-500
+→ `CameraModal.tsx:103`.
+
+**Evidence:** the measuring script finds 0 failing backgrounds after the change
+(51 before). dark-mode-sweep (1–8b), theme-pre-paint, camera-images,
+service-worker and sitemap-lastmod pass. Web tsc 11; eslint 6 = 6 with main.
+
+**Baseline for the gate** (dark-scan, 14 pages): low contrast /alertas-meteo
+13 (the «Severo» badges, 2.89:1) and /zbe 1; the ranking badges are below
+the scanner's 2,400 px window. After the deploy, both → 0.
+
+**Found on the way, next item:** 5 coloured dark texts on dark (/gasolineras/
+baratas/madrid: `text-orange-800`, `text-purple-900`, `text-green-900`;
+/gasolineras/cerca: `text-red-800`). Rule 7 only checks *grey* dark text with
+no dark pair; coloured dark text under a parent that turns dark slips through.
+
+**Open, in order:**
+1. **Accessibility:** merge this; gate after the deploy.
+2. **L2:** rule 7 for coloured dark text (700–900) with no dark pair; fix
+   what it finds (at least the 5 above).
+3. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod
+   per shard, to server-28.
+4. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+5. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+6. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+7. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+8. **L2, low:** the eslint errors on main.
+9. **L3:** dead cameras in the map popups (`tile_cameras`).
+10. **Perf, low:** `prefetch={false}` on long link directories.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Hygiene:** scrub the pre-October backlog entries.
+15. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+16. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (71) — white text under 3:1: the primary blue turns light in dark mode
 
 **#150 merged and gated** (`5513e847`, deployed 10:49Z): /mejor-hora islands
