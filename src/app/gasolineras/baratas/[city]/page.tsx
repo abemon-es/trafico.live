@@ -411,7 +411,7 @@ export default async function BaratasCityPage({ params }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
           <Link
             href={`/gasolineras/mapa/provincia/${cityData.provinceCode}`}
-            className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/30 transition-colors"
+            className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
           >
             <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0" />
             <div>
@@ -421,7 +421,7 @@ export default async function BaratasCityPage({ params }: Props) {
           </Link>
           <Link
             href={`/gasolineras/precios/${cityData.provinceSlug}`}
-            className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 hover:bg-green-100 dark:bg-green-900/30 transition-colors"
+            className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             <Fuel className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
             <div>
@@ -438,7 +438,7 @@ export default async function BaratasCityPage({ params }: Props) {
           </h2>
           <div className="space-y-4">
             <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
-              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none">
+              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors select-none">
                 ¿Cuál es la gasolinera más barata de {cityData.name} ahora mismo?
                 <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90" />
               </summary>
@@ -461,7 +461,7 @@ export default async function BaratasCityPage({ params }: Props) {
             </details>
 
             <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
-              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none">
+              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors select-none">
                 ¿Cuánto puedo ahorrar en {cityData.name} eligiendo la gasolinera más barata?
                 <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90" />
               </summary>
@@ -475,7 +475,7 @@ export default async function BaratasCityPage({ params }: Props) {
             </details>
 
             <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
-              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:bg-gray-950 transition-colors select-none">
+              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors select-none">
                 ¿Hay gasolineras abiertas 24 horas en {cityData.name}?
                 <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90" />
               </summary>

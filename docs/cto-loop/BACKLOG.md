@@ -14,7 +14,9 @@ last.
 > leave behind. The dark-mode sweep `dc3f166c` touched 138 files with neither,
 > and left white on white (#133) and 112 near-white bars and dots (cycle 54)
 > for months. For dark mode the visual diff is `bin/dark-scan.sh` (run on
-> compute, before and after, on the pages touched).
+> compute, before and after, on the pages touched), and **it is the final gate
+> of every dark-mode batch**: a pattern test can't see a background set on the
+> parent with the text colour on the child, and dark-scan does (cycle 60).
 
 > 🎯 **MILESTONE 2026-08-18 00:26 — degraded = 0/51.** Every collector healthy
 > simultaneously for the first time. Saturday's baseline: 9 degraded including
@@ -85,6 +87,76 @@ own text on hubs).
   (manual actions, indexing report trend, crawl stats, links, CWV mobile,
   request indexing top 20). Leading metric, re-measured every Monday by CMO:
   Googlebot requests/day, then "unknown" → "crawled".
+
+---
+
+## Cycle 2026-10-21 (61) — «lost hover»: 121 hovers that were a permanent background in dark mode
+
+**#140 verified** (web `5d3bd05`, 04:10Z). dark-scan: **0 dark-on-dark** on
+/espana, /precio-diesel-hoy, /puntos-negros (it was 1, and 10 islands → 0),
+/radares/A-3 and /radares (it was 1).
+- /radares came out «NOT DARK» in the parallel run; alone, dark and 0/0.
+  server-28 asked for that not to be called «transient»: since #138 the theme
+  is set before the first paint, so «not dark» means the load or the setup
+  failed. The scanner now says why (below).
+
+**#135, the second half, verified (04:07Z, after gas-station 04:00:53Z):**
+- both «hoy» pages show «Actualizado hoy» with no «Datos del»;
+- title «… 21 de octubre … — 1.772€/L» (1.773 the day before).
+
+**Signal:** the 4th artifact of the sweep `dc3f166c`.
+- `hover:bg-X` became `hover:bg-X dark:bg-Y`, with the dark half missing its
+  `hover:`. In dark mode the hover colour was a permanent background, and
+  there was no hover.
+- **132 pairs.** Classified before touching them:
+  - 45 have their own dark background;
+  - 76 have no base background;
+  - **11 have a light base and no other dark background.** Their `dark:bg-Y`
+    is the element's real dark base, written by hand (brand buttons
+    `bg-tl-600 hover:bg-tl-700 dark:bg-tl-500`, the cookie banner, map nav
+    in `slate-800`), so **they stay**.
+
+**Fix (PR below):**
+- **118 + 3 pairs → `hover:bg-X dark:hover:bg-Y`** (51 files).
+  - Only same-family pairs (the sweep's signature), and never the shape of
+    the 11.
+  - The 3 extras were inside multi-line template literals. My rewrite and the
+    test only read quotes closed on the same line.
+- **`tests/dark-mode-sweep.test.ts` rule 6:**
+  - the same classifier, hyphen-aware;
+  - **it reads class strings that are closed, the unclosed tail of a
+    template literal, and lines inside one with no quote at all** (rule 5
+    reads them the same way now).
+  - **Mutant:** the `FuelPriceTable` pair inside a template back to
+    `dark:bg-` → fails at `FuelPriceTable.tsx:177`.
+- **`bin/dark-scan.mjs`, «NOT DARK» with its cause** (server-28): HTTP
+  status, `readyState`, the final URL, the stored `theme`, whether the
+  pre-paint script is in `<head>`, and the class on `<html>`.
+- **Other checks:** web `tsc` 11; eslint on the 51 files 21/25, **the same on
+  `main` and on the branch**; scanner and test with 0 errors.
+
+**Verify after deploy (final gate, server-28's rule):**
+- dark-scan on /incidencias, /radares/A-3, /calculadora, /alertas-meteo,
+  /carga-ev and /camaras/madrid → 0 dark-on-dark and no new islands;
+- a table row in dark mode: transparent before the hover, the colour with the
+  hover.
+
+**Open, in order:**
+1. **L2:** merge and verify this batch.
+2. **L2:** location cards, bg + border + text, with dark-scan as the gate.
+3. **L2:** the remaining tints with no dark variant, page by page (and the
+   11 hand-written hovers, checked there).
+4. **L1:** #132, a `weather` run that hits the key.
+5. **L3:** `content-fingerprints` 04:50 and 22-10; then the pilots.
+6. **L3:** gas stations by price.
+7. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+8. **Security (server-28):** a strict Report-Only CSP.
+9. **Accessibility:** grey on white under 3:1.
+10. **L3:** the index lastmod after 23-10.
+11. **L1, low:** Euskadi id collisions.
+12. **Hygiene:** scrub the pre-October backlog entries.
+13. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+14. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
 
 ---
 

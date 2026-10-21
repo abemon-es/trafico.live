@@ -492,7 +492,7 @@ export default function EtiquetaAmbientalPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {VEHICLE_TABLE.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                      <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
                         <td className="py-2.5 px-4 text-gray-800 dark:text-gray-200 font-medium">{row.fuel}</td>
                         <td className="py-2.5 px-4 text-gray-600 dark:text-gray-400">{row.norm}</td>
                         <td className="py-2.5 px-4 text-gray-600 dark:text-gray-400">{row.years}</td>
@@ -580,7 +580,7 @@ export default function EtiquetaAmbientalPage() {
                       icons: ["x", "x", "x", "x"],
                     },
                   ].map((row) => (
-                    <tr key={row.label} className="hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                    <tr key={row.label} className="hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
                       <td className={`py-3 px-4 ${row.color}`}>{row.label}</td>
                       {row.cols.map((col, i) => (
                         <td key={i} className="py-3 px-4">

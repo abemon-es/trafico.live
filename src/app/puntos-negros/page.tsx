@@ -341,7 +341,7 @@ export default async function PuntosNegrosPage() {
                         return (
                           <tr
                             key={zone.id}
-                            className={`hover:bg-gray-50 dark:bg-gray-950 transition-colors ${cfg.rowClass}`}
+                            className={`hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors ${cfg.rowClass}`}
                           >
                             <td className="px-4 py-3">
                               <Link
@@ -410,7 +410,7 @@ export default async function PuntosNegrosPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {yearRows.map((row) => (
-                        <tr key={row.year} className="hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                        <tr key={row.year} className="hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
                           <td className="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100 font-data">{row.year}</td>
                           <td className="px-4 py-3 text-right text-gray-900 dark:text-gray-100 font-data">
                             {(row._sum.accidents ?? 0).toLocaleString("es-ES")}
@@ -469,7 +469,7 @@ export default async function PuntosNegrosPage() {
                     return (
                       <div
                         key={item.province}
-                        className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                        className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2 min-w-0">
@@ -524,7 +524,7 @@ export default async function PuntosNegrosPage() {
                     return (
                       <div
                         key={item.roadType ?? "null"}
-                        className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                        className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <div>

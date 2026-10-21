@@ -281,7 +281,7 @@ export default async function MarcasPage() {
                 else if (isLast) rowClass = "bg-red-50/40 dark:bg-red-900/20";
 
                 return (
-                  <tr key={b.slug} className={`hover:bg-gray-50 dark:bg-gray-950 transition-colors ${rowClass}`}>
+                  <tr key={b.slug} className={`hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors ${rowClass}`}>
                     <td className="px-4 py-3.5">
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${

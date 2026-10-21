@@ -421,7 +421,7 @@ export default async function CamarasCityPage({ params }: Props) {
                         <Link
                           key={slug}
                           href={`/camaras/${slug}`}
-                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors"
+                          className="inline-flex items-center px-3 py-1.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors"
                         >
                           {nearbyData.name}
                         </Link>

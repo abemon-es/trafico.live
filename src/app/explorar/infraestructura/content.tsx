@@ -221,7 +221,7 @@ export default function InfraestructuraContent() {
                 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
                 ${isActive
                   ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border border-tl-200 dark:border-tl-800"
-                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
                 }
               `}
             >

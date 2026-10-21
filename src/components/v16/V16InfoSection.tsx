@@ -61,7 +61,7 @@ function FAQAccordion({ item }: { item: FAQItem }) {
     <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+        className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
       >
         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 pr-4">{item.question}</span>
         {isOpen ? (

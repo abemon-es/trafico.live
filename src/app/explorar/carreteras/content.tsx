@@ -250,7 +250,7 @@ export default function CarreterasContent() {
               <Link
                 key={road.roadNumber}
                 href={`/explorar/carreteras/${encodeURIComponent(road.roadNumber)}`}
-                className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-1.5 rounded-full text-sm border border-red-200 hover:bg-red-100 dark:bg-red-900/30 transition-colors"
+                className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-1.5 rounded-full text-sm border border-red-200 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
               >
                 <span className="font-medium text-red-700 dark:text-red-400">#{idx + 1}</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-100">{road.roadNumber}</span>
@@ -275,7 +275,7 @@ export default function CarreterasContent() {
             className={`px-3 py-1 text-sm rounded-full border transition-colors ${
               selectedType === null
                 ? "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-300"
-                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
             Todas
@@ -287,7 +287,7 @@ export default function CarreterasContent() {
               className={`px-3 py-1 text-sm rounded-full border transition-colors ${
                 selectedType === type.prefix
                   ? type.color
-                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
               }`}
             >
               {type.prefix.replace("-", "")}

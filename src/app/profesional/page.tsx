@@ -214,7 +214,7 @@ export default function ProfesionalPage() {
             <div className="flex-shrink-0">
               <Link
                 href="/api-docs"
-                className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 dark:bg-gray-900 transition-colors"
+                className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
               >
                 Ver documentación API
                 <ArrowRight className="w-4 h-4" />
@@ -260,7 +260,7 @@ export default function ProfesionalPage() {
               </ul>
               <Link
                 href="/"
-                className="mt-5 block text-center text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-lg py-2 hover:bg-green-100 dark:bg-green-900/30 transition-colors"
+                className="mt-5 block text-center text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-lg py-2 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
               >
                 Empezar gratis
               </Link>

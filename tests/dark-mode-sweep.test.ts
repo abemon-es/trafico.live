@@ -19,6 +19,12 @@
  *    text colour: `text-X-800` on it is dark on dark. bin/dark-scan.sh
  *    measured 1.01–2.8:1 on /espana, /precio-diesel-hoy and /radares/A-3
  *    (2026-10-21).
+ * 6. «Lost hover»: `hover:bg-X` became `hover:bg-X dark:bg-Y`, so in dark mode
+ *    the hover colour was a permanent background and there was no hover
+ *    (118 pairs in 51 files until 2026-10-21). A same-family pair right after
+ *    a hover must be `dark:hover:`. Not when the string has a light base and
+ *    no other dark background: there `dark:bg-Y` is the element's dark base,
+ *    written by hand (brand buttons, the cookie banner), and stays.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -59,9 +65,13 @@ assert.ok(!BROKEN.test('className="bg-green-50/50 dark:bg-green-900/20"'));
 assert.ok(BROKEN.test('<div className="min-h-screen bg-gray-50">'));
 assert.ok(!BROKEN.test('<div className="min-h-screen bg-gray-50 dark:bg-gray-950">'));
 
+// Class strings on a line: closed quotes, the tail of a template literal that
+// goes on to the next line, or the whole line inside one (no quote at all).
+// Per-line closed quotes alone missed 3 pairs inside multi-line templates.
+const classStrings = (line: string) => line.match(/"[^"]*"|`[^`]*`|`[^`]*$|^[^"`]*$/g) ?? [];
 /** 5: a quoted class string with a dark background and dark text, but no dark text colour. */
 const darkBgDarkText = (line: string) =>
-  (line.match(/"[^"]*"/g) ?? []).some(
+  classStrings(line).some(
     (s) =>
       new RegExp(`\\bdark:bg-${COLOUR}-9\\d\\d\\b`).test(s) &&
       new RegExp(`(?<![:\\w-])text-${COLOUR}-[789]\\d\\d\\b`).test(s) &&
@@ -72,10 +82,32 @@ assert.ok(!darkBgDarkText('badge: "bg-red-100 dark:bg-red-900/30 text-red-800 da
 assert.ok(!darkBgDarkText('className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"'));
 assert.ok(darkBgDarkText('"bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 text-tl-amber-800"'), "hyphenated colour names too");
 
+/** 6: a sweep-made `hover:bg-X dark:bg-X'` pair (same colour family) that should be `dark:hover:`. */
+const GREYS = new Set(["gray", "slate", "zinc", "neutral", "stone"]);
+const family = (c: string) => (GREYS.has(c) ? "grey" : c);
+const LOST_HOVER = new RegExp(`(?<![:\\w-])hover:bg-(${COLOUR})-\\d+(?:\\/\\d+)? dark:bg-(${COLOUR})-\\d+(?:\\/\\d+)?\\b`, "g");
+const lostHover = (line: string) =>
+  classStrings(line).some((s) =>
+    [...s.matchAll(LOST_HOVER)].some((m) => {
+      if (family(m[1]) !== family(m[2])) return false;
+      const rest = s.slice(0, m.index) + s.slice((m.index ?? 0) + m[0].length);
+      const lightBase = new RegExp(`(?<![:\\w-])bg-(?:${COLOUR}-\\d+|white)\\b`).test(rest);
+      const ownDark = new RegExp(`(?<![\\w-])dark:bg-(?:${COLOUR}-\\d+|white)`).test(rest);
+      return !(lightBase && !ownDark);
+    }),
+  );
+assert.ok(lostHover('className="flex hover:bg-gray-50 dark:bg-gray-950 transition"'));
+assert.ok(lostHover('className="bg-white dark:bg-gray-900 hover:bg-tl-amber-50 dark:bg-tl-amber-900/20"'), "hyphenated colour");
+assert.ok(!lostHover('className="flex hover:bg-gray-50 dark:hover:bg-gray-950"'));
+assert.ok(!lostHover('className="bg-tl-600 hover:bg-tl-700 dark:bg-tl-500"'), "a hand-written dark base stays");
+assert.ok(!lostHover('className="bg-tl-50 hover:bg-tl-100 dark:bg-slate-800"'), "different family: not the sweep's");
+assert.ok(lostHover("      className={`w-full hover:bg-gray-50 dark:bg-gray-950 transition-colors ${"), "an unclosed template literal");
+assert.ok(lostHover("                  border-b border-gray-100 hover:bg-gray-50 dark:bg-gray-950"), "a line inside a template literal");
+
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {
   readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-    if (BROKEN.test(line) || darkBgDarkText(line)) hits.push(`${file.slice(process.cwd().length + 1)}:${i + 1}`);
+    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line)) hits.push(`${file.slice(process.cwd().length + 1)}:${i + 1}`);
   });
 }
 assert.deepEqual(hits, [], `dark-mode sweep leftovers:\n${hits.join("\n")}`);

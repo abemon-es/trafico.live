@@ -231,7 +231,7 @@ export default async function RadaresPage() {
                 {byRoad.map((item, idx) => (
                   <div
                     key={item.roadNumber}
-                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-gray-400 w-5 text-right">{idx + 1}</span>
@@ -268,7 +268,7 @@ export default async function RadaresPage() {
                     return (
                       <div
                         key={item.province}
-                        className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                        className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
@@ -309,7 +309,7 @@ export default async function RadaresPage() {
                 <Link
                   key={item.roadNumber}
                   href={`/radares/${encodeURIComponent(item.roadNumber)}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
                 >
                   {item.roadNumber}
                   <span className="text-xs text-gray-400 font-data">({item._count})</span>

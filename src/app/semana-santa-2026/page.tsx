@@ -664,7 +664,7 @@ export default async function SemanaSanta2026Page() {
                   </Link>
                   <Link
                     href="/precio-diesel-hoy"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white dark:bg-gray-900 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-300 px-3 py-1.5 rounded-lg hover:bg-tl-amber-50 dark:bg-tl-amber-900/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium bg-white dark:bg-gray-900 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-300 px-3 py-1.5 rounded-lg hover:bg-tl-amber-50 dark:hover:bg-tl-amber-900/20 transition-colors"
                   >
                     Precio diésel hoy
                     <ChevronRight className="w-3.5 h-3.5" />

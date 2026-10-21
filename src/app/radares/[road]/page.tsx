@@ -352,7 +352,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                   <Link
                     key={r}
                     href={`/radares/${encodeURIComponent(r)}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg text-sm font-semibold text-yellow-800 dark:text-yellow-300 hover:bg-yellow-100 dark:bg-yellow-900/30 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg text-sm font-semibold text-yellow-800 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
                   >
                     Radares {r}
                   </Link>
@@ -396,7 +396,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                         return (
                           <tr
                             key={radar.radarId}
-                            className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950 transition-colors ${
+                            className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors ${
                               idx % 2 === 0 ? "" : "bg-gray-50 dark:bg-gray-950/50"
                             }`}
                           >
@@ -513,7 +513,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                       {speedLimits.slice(0, 12).map((sl) => (
                         <tr
                           key={sl.id}
-                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                          className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
                         >
                           <td className="py-2 font-mono text-xs text-gray-700 dark:text-gray-300 font-data">
                             {Number(sl.kmStart).toFixed(1)}
@@ -575,7 +575,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 <Link
                   key={r}
                   href={`/radares/${encodeURIComponent(r)}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 dark:bg-yellow-900/20 hover:border-yellow-300 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-300 transition-colors shadow-sm"
                 >
                   <Radar className="w-3.5 h-3.5" />
                   Radares {r}
@@ -583,7 +583,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
               ))}
               <Link
                 href="/radares"
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-950 transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors shadow-sm"
               >
                 Ver todas las carreteras
                 <ChevronRight className="w-3.5 h-3.5" />

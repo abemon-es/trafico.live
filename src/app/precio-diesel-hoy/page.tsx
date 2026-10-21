@@ -483,7 +483,7 @@ export default async function PrecioDieselHoyPage() {
                 <Link
                   key={station.id}
                   href={`/gasolineras/terrestres/${station.id}`}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-tl-amber-50 dark:bg-tl-amber-900/20 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-tl-amber-50 dark:hover:bg-tl-amber-900/20 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
                     <span
@@ -571,7 +571,7 @@ export default async function PrecioDieselHoyPage() {
                           const isCheap = avg !== null && nationalAvg !== null && avg < nationalAvg - 0.005;
                           const isExpensive = avg !== null && nationalAvg !== null && avg > nationalAvg + 0.005;
                           return (
-                            <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                            <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
                               <td className="py-3 px-2">
                                 {province ? (
                                   <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit">
@@ -627,7 +627,7 @@ export default async function PrecioDieselHoyPage() {
                         const isCheap = avg !== null && nationalAvg !== null && avg < nationalAvg - 0.005;
                         const isExpensive = avg !== null && nationalAvg !== null && avg > nationalAvg + 0.005;
                         return (
-                          <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:bg-gray-950 transition-colors">
+                          <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
                             <td className="py-3 px-2">
                               {province ? (
                                 <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit">

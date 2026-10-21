@@ -296,7 +296,7 @@ export default async function RoadStatisticsPage({ params }: PageProps) {
                 </thead>
                 <tbody>
                   {recentIncidents.map((incident) => (
-                    <tr key={incident.id} className="border-b hover:bg-gray-50 dark:bg-gray-950">
+                    <tr key={incident.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-950">
                       <td className="py-2 px-3 text-gray-600 dark:text-gray-400">
                         {new Date(incident.startedAt).toLocaleDateString("es-ES")}
                       </td>

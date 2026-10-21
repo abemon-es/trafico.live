@@ -289,7 +289,7 @@ export default function CargaEVContent() {
               <Link
                 key={city.slug}
                 href={`/carga-ev/${city.slug}`}
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-green-100 dark:bg-green-900/30 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:text-green-400 rounded-full text-sm transition-colors"
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:text-green-400 rounded-full text-sm transition-colors"
               >
                 {city.name}
               </Link>

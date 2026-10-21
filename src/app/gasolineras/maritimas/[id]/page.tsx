@@ -248,7 +248,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
               </a>
               <Link
                 href={`/gasolineras/mapa?lat=${station.latitude}&lng=${station.longitude}&zoom=15&layer=maritime`}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
               >
                 <MapPin className="w-4 h-4" />
                 Ver en mapa

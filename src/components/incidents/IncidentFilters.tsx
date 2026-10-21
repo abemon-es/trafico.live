@@ -31,7 +31,7 @@ function FilterChip({ label, count, active, onClick, icon, color }: FilterChipPr
         transition-all duration-200 border-2
         ${active
           ? `${color} text-white border-transparent shadow-md`
-          : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-950`
+          : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-950`
         }
       `}
     >
@@ -187,7 +187,7 @@ export function IncidentFilters({
         {hasActiveFilters && (
           <button
             onClick={onClearAll}
-            className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-900 rounded-full transition-colors"
+            className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
           >
             Limpiar filtros
           </button>
@@ -253,7 +253,7 @@ export function IncidentFilters({
         <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
           <button
             onClick={onClearAll}
-            className="w-full px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:bg-gray-900 rounded-lg transition-colors"
+            className="w-full px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors"
           >
             Limpiar todos los filtros
           </button>

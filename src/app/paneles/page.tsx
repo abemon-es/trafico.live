@@ -370,7 +370,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                 {(filterProvince || filterRoad || onlyWithMessage) && (
                   <Link
                     href="/paneles"
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                   >
                     Limpiar
                   </Link>
@@ -539,7 +539,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                 .map((item, idx) => (
                   <div
                     key={item.roadNumber}
-                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:bg-gray-950 transition-colors"
+                    className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-gray-400 w-5 text-right">
@@ -579,7 +579,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   <Link
                     key={item.roadNumber}
                     href={`/paneles?carretera=${encodeURIComponent(item.roadNumber!)}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
                   >
                     {item.roadNumber}
                     <span className="text-xs text-gray-400">

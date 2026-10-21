@@ -124,7 +124,7 @@ export default function RestriccionesContent() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "zbe"
                 ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200"
-                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
             <Ban className="w-4 h-4 inline mr-2" />
@@ -135,7 +135,7 @@ export default function RestriccionesContent() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "roads"
                 ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200"
-                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-950"
             }`}
           >
             <Truck className="w-4 h-4 inline mr-2" />
