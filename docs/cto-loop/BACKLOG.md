@@ -90,6 +90,86 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (80) — the lint ratchet: eslint errors may go down, never up
+
+**#159 merged and gated** (`b2075aa9`, deployed 14:28Z), in a browser, all
+HTTP 200:
+- the aircraft page, the gas station, /inteligencia/hora-punta-y-accidentes
+  and the province fuel page: 0 errors;
+- sorting works on FlightTable and VoyageTable.
+- **The vessel page (/maritimo/buques/*) throws React #418** (hydration,
+  «text»). Not from #159: its change there is identical, static markup. Found
+  so far:
+  - VoyageTable (client) formats dates with `toLocaleDateString("es-ES")` and
+    no `timeZone`. The server renders in UTC (measured) and a Spanish
+    browser in Europe/Madrid: «21 oct» → «22 oct» for late voyages. It dates
+    from May.
+  - The gate browser was in UTC too, so there's a second text source on the
+    page.
+  - New L2 item (below).
+
+**aemet-forecast «SILENT»** (overall flipped to degraded at 14:53Z): the 13:20Z
+run is alive and progressing. The queue went 139 → 93 in 45 min; in 40 min, 45
+ok, 30 × 401 and 15 × 500, about 1 municipality per minute. A heartbeat is
+written only at the end, so a run slowed by the expired key outlasts the 7 h
+threshold since the last finished one. It heals when the run ends (~16:30Z),
+and for good with the renewed key (MJ).
+
+**Signal:** 182 eslint errors on main after #159, and nothing stops a new one:
+the repo has no PR CI. server-28 approved a ratchet in the deploy build.
+
+**Fix:**
+- **`bin/lint-ratchet.mjs`:** eslint on `src/`, errors per rule and per file
+  against `lint-baseline.json`. More → exit 1, naming the rule and file. Fewer
+  → passes, and says to lower the baseline. `--update` rewrites it.
+  - It's in `bin/`, not `scripts/`: `/scripts/` is gitignored, and a file the
+    build depends on can't live there.
+- **`lint-baseline.json`:** 182 errors, 12 rules, per file.
+- **Dockerfile:** a step after `prisma generate` and before `npm run build`.
+  `--build-arg LINT_RATCHET_SKIP=1` prints «[lint-ratchet] SKIPPED …» in the
+  build log instead of running.
+  - Passing it from the deployer's env is server-28's (deploy.sh). For now an
+    emergency is a manual deploy with the build-arg; automated only if a lint
+    emergency ever happens.
+- **PLAYBOOK:** the rule (lower the baseline in the same PR; the escape hatch;
+  the cost).
+
+**Evidence** (compute, the web image):
+- `--update` writes 182; the check passes in 52 s (4 CPUs);
+- **mutant:** a new internal `<a>` in /sobre fails with
+  «@next/next/no-html-link-for-pages in src/app/sobre/page.tsx: 0 → 1»;
+- the skip path prints its line.
+
+**Gate after deploy:** the build log shows «[lint-ratchet] 182 eslint errors
+(baseline 182)» and the deploy succeeds.
+
+**Open, in order:**
+1. **L0:** merge this; check the build log.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L2:** #418 on /maritimo/buques/*:
+   - a shared Spanish date helper with `timeZone: "Europe/Madrid"`, for
+     server and client (server-28);
+   - find the second text source (relative times, `Math.random`, number
+     formatting in a client).
+4. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+7. **L2:** the 118 internal `<a>` → `<Link>` (its own batch; it lowers the
+   baseline).
+8. **L2, low:** `set-state-in-effect` / `purity`.
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Hygiene:** `GasStationPopup`, `FuelPriceTable` and other dead exports;
+    scrub the pre-October backlog entries.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **L3:** the index lastmod after 23-10.
+13. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+14. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (79) — eslint on main: a conditional hook and 19 components created during render
 
 **#158 merged and gated** (`cdd16ec6`, deployed 13:45Z), with a real hover in
