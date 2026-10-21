@@ -328,7 +328,7 @@ export default async function StationDetailPage({ params }: Props) {
       {/* Back button */}
       <Link
         href="/gasolineras/terrestres"
-        className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 mb-6"
+        className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver al listado

@@ -111,11 +111,11 @@ export default function TerritoryDetailContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
-        <Link href="/" className="hover:text-tl-600 dark:hover:text-tl-400 dark:text-tl-400">
+        <Link href="/" className="hover:text-tl-600 dark:hover:text-tl-300 dark:text-tl-400">
           <Home className="w-4 h-4" />
         </Link>
         <span>/</span>
-        <Link href="/explorar/territorios" className="hover:text-tl-600 dark:hover:text-tl-400 dark:text-tl-400">
+        <Link href="/explorar/territorios" className="hover:text-tl-600 dark:hover:text-tl-300 dark:text-tl-400">
           Territorios
         </Link>
         <span>/</span>
@@ -241,7 +241,7 @@ export default function TerritoryDetailContent() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                     {province.name}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">

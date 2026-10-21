@@ -164,7 +164,7 @@ export default function ProfesionalPage() {
                   >
                     <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-green-700 dark:text-green-400 transition-colors">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">
                     {card.title}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-1">{card.description}</p>
@@ -214,7 +214,7 @@ export default function ProfesionalPage() {
             <div className="flex-shrink-0">
               <Link
                 href="/api-docs"
-                className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+                className="inline-flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Ver documentación API
                 <ArrowRight className="w-4 h-4" />

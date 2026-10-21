@@ -352,7 +352,7 @@ export default function OperativosHubPage() {
                   <div className={`p-2.5 ${bg} rounded-lg`}>
                     <Icon className={`w-5 h-5 ${color}`} />
                   </div>
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-snug group-hover:text-gray-900 dark:text-gray-100 transition-colors">
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-snug group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">
                     {label}
                   </span>
                 </Link>

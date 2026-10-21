@@ -337,7 +337,7 @@ export default async function Gasolineras24hPage() {
                         {idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-orange-700 dark:text-orange-400 transition-colors truncate">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors truncate">
                           {station.name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5 truncate">
@@ -381,7 +381,7 @@ export default async function Gasolineras24hPage() {
                 <MapPin className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-700 dark:text-orange-400 transition-colors">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors">
                   Ver todas las gasolineras 24h en el mapa
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">

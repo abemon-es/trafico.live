@@ -32,6 +32,11 @@
  *    kept their dark-mode hover colour as a permanent colour until
  *    2026-10-21. There it's a lost hover when the string has a light base and
  *    its own dark base too; with no other dark it's the element's dark base.
+ *    The same for `group-hover:` (40 card titles that were permanently the
+ *    hover colour in dark mode until 2026-10-21).
+ *    6c. A dark hover equal to the element's dark base: no feedback in dark
+ *    mode (21 until 2026-10-21, /profesional's CTA among them). Inside a
+ *    template literal each branch string is its own element.
  * 7. Batches done: in DARK_DONE every class string with a light background
  *    has a dark one, and dark grey text has a dark colour unless its own
  *    background stays light on purpose (a data swatch, a light badge). The
@@ -275,6 +280,38 @@ const whiteOverInterpolated = (rel: string, line: string) =>
 assert.deepEqual(whiteOverInterpolated("src/x.tsx", "className={`rounded ${color} text-white`}"), ["src/x.tsx color"]);
 assert.deepEqual(whiteOverInterpolated("src/x.tsx", "className={`rounded ${bg} ${text}`}"), [], "text from the same entry");
 
+/** 6, group-hover: the same lost hover on `group-hover:`. */
+const lostGroupHover = (line: string) =>
+  classStrings(line).some((s) =>
+    (["bg", "text", "border"] as const).some((prop) =>
+      [...s.matchAll(new RegExp(`(?<![:\\w-])group-hover:${prop}-(${COLOUR})-\\d+(?:\\/\\d+)? dark:${prop}-(${COLOUR})-\\d+(?:\\/\\d+)?(?![\\w/-])`, "g"))].some((m) => {
+        if (family(m[1]) !== family(m[2])) return false;
+        const rest = s.slice(0, m.index) + s.slice((m.index ?? 0) + m[0].length);
+        const lightBase = new RegExp(`(?<![:\\w/-])${prop}-(?:${COLOUR}-\\d+|white)(?![\\w-])`).test(rest);
+        const ownDark = new RegExp(`(?<![\\w-])dark:${prop}-(?:${COLOUR}-\\d+|white)`).test(rest);
+        return lightBase && ownDark;
+      }),
+    ),
+  );
+assert.ok(lostGroupHover('"font-medium text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:text-green-400"'));
+assert.ok(!lostGroupHover('"font-medium text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-400"'));
+
+/** 6c: the units of a class string: a template's static parts and each "..." branch. */
+const units = (s: string) =>
+  s.startsWith("`") ? [s.replace(/\$\{[^}]*\}/g, " "), ...(s.match(/"[^"]*"/g) ?? [])] : [s];
+const deadDarkHover = (line: string) =>
+  classStrings(line).some((cs) =>
+    units(cs).some((s) =>
+      (["bg", "text", "border"] as const).some((prop) => {
+        const bases = [...s.matchAll(new RegExp(`(?<![\\w:-])dark:${prop}-(${COLOUR}-\\d+(?:\\/\\d+)?)(?![\\w/-])`, "g"))].map((m) => m[1]);
+        return [...s.matchAll(new RegExp(`(?<![\\w-])dark:(?:group-hover|hover):${prop}-(${COLOUR}-\\d+(?:\\/\\d+)?)(?![\\w/-])`, "g"))].some((m) => bases.includes(m[1]));
+      }),
+    ),
+  );
+assert.ok(deadDarkHover('"bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-900"'));
+assert.ok(!deadDarkHover('"bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800"'));
+assert.ok(!deadDarkHover('className={`x ${a ? "dark:text-tl-300" : "dark:hover:text-tl-300"}`}'), "two branches are two elements");
+
 const unlisted: string[] = [];
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {
@@ -284,7 +321,7 @@ for (const file of sources(join(process.cwd(), "src"))) {
   for (const pair of mapEntryTooLight(src)) hits.push(`${rel}: map entry ${pair}`);
   src.split("\n").forEach((line, i) => {
     unlisted.push(...whiteOverInterpolated(rel, line).map((k) => `${k} (line ${i + 1})`));
-    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || lostHoverTextBorder(line) || primaryUnderWhite(line) || whiteTooLight(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
+    if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || lostHoverTextBorder(line) || lostGroupHover(line) || deadDarkHover(line) || primaryUnderWhite(line) || whiteTooLight(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
   });
 }
 assert.deepEqual(hits, [], `dark-mode sweep leftovers:\n${hits.join("\n")}`);

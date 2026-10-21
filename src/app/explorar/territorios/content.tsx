@@ -170,7 +170,7 @@ export default function TerritoriosContent() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                     {community.name}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">

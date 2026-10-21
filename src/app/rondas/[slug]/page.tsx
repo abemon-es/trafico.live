@@ -502,7 +502,7 @@ export default async function RondaSlugPage({
                       <div className="flex items-center gap-2">
                         <Route className="w-4 h-4 text-tl-500 group-hover:text-tl-700 dark:text-tl-300" />
                         <div>
-                          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:text-tl-300 transition-colors">
+                          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm group-hover:text-tl-700 dark:group-hover:text-tl-300 transition-colors">
                             {related.shortName}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">

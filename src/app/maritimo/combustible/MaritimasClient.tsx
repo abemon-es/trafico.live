@@ -321,9 +321,9 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumbs */}
       <nav aria-label="Migas de pan" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-6">
-        <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300 transition-colors">Inicio</Link>
+        <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-200 dark:text-gray-300 transition-colors">Inicio</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-        <Link href="/maritimo" className="hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300 transition-colors">Marítimo</Link>
+        <Link href="/maritimo" className="hover:text-gray-700 dark:hover:text-gray-200 dark:text-gray-300 transition-colors">Marítimo</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
         <span className="text-gray-900 dark:text-gray-100 font-medium">Combustible</span>
       </nav>

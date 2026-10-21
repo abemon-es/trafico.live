@@ -171,7 +171,7 @@ export default function EspanaContent() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:text-tl-400">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-600 dark:group-hover:text-tl-400">
                       {community.name}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -246,25 +246,25 @@ export default function EspanaContent() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link
               href="/mapa"
-              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 dark:text-tl-300 hover:underline text-sm"
+              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
             >
               Ver mapa completo →
             </Link>
             <Link
               href="/estadisticas"
-              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 dark:text-tl-300 hover:underline text-sm"
+              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
             >
               Estadísticas históricas →
             </Link>
             <Link
               href="/sobre"
-              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 dark:text-tl-300 hover:underline text-sm"
+              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
             >
               Sobre el proyecto →
             </Link>
             <Link
               href="/"
-              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 dark:text-tl-300 hover:underline text-sm"
+              className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
             >
               Inicio →
             </Link>

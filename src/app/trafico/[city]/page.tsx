@@ -532,7 +532,7 @@ export default async function TraficoCityPage({ params }: Props) {
               >
                 <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-700 dark:text-tl-300">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-700 dark:group-hover:text-tl-300">
                     Mapa en vivo
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">España completa</div>
@@ -545,7 +545,7 @@ export default async function TraficoCityPage({ params }: Props) {
               >
                 <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-red-700 dark:text-red-400">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-red-700 dark:group-hover:text-red-400">
                     Incidencias
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">Todas las vías</div>
@@ -571,7 +571,7 @@ export default async function TraficoCityPage({ params }: Props) {
               >
                 <Radio className="w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-700 dark:text-orange-400">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-700 dark:group-hover:text-orange-400">
                     Radares
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">DGT España</div>
@@ -584,7 +584,7 @@ export default async function TraficoCityPage({ params }: Props) {
               >
                 <Fuel className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:text-green-400">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-400">
                     Gasolineras baratas
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">{cityData.name}</div>

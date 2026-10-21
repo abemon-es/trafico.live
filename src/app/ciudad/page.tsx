@@ -123,7 +123,7 @@ export default function CiudadesPage() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-700 dark:text-tl-300 transition-colors">
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-tl-700 dark:group-hover:text-tl-300 transition-colors">
                     {city.name}
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{city.province}</p>

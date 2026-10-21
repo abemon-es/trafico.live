@@ -100,7 +100,7 @@ export function CameraSection({
 
             {/* Info */}
             <div className="p-2">
-              <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-tl-600 dark:text-tl-400 transition-colors">
+              <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-tl-600 dark:group-hover:text-tl-400 transition-colors">
                 {camera.road}
                 {camera.kmPoint !== null && (
                   <span className="text-gray-500 dark:text-gray-400 font-normal">

@@ -439,7 +439,7 @@ export default function GasolinerasCercaContent() {
                 className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group text-sm"
               >
                 <Fuel className="w-4 h-4 text-orange-500 dark:text-orange-400 flex-shrink-0" />
-                <span className="text-gray-700 dark:text-gray-300 group-hover:text-orange-700 dark:text-orange-400 transition-colors line-clamp-1">
+                <span className="text-gray-700 dark:text-gray-300 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors line-clamp-1">
                   {link.label}
                 </span>
               </Link>

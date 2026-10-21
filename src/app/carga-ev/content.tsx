@@ -233,7 +233,7 @@ export default function CargaEVContent() {
             className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm transition-all group"
           >
             <Navigation className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
-            <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:text-green-400">
+            <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-400">
               Cerca de mí
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Usar ubicación</p>
@@ -352,7 +352,7 @@ export default function CargaEVContent() {
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300 ml-auto"
+                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 ml-auto"
               >
                 <X className="w-3.5 h-3.5" />
                 Limpiar filtros
